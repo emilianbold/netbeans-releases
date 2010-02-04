@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -103,7 +104,7 @@ public class CssIndex {
      */
     public Collection<FileObject> find(String keyName, String value) {
         try {
-            String searchExpression = ".*(" + value + ")[,;].*";
+            String searchExpression = ".*(" + value + ")[,;].*"; //NOI18N
             Collection<FileObject> matchedFiles = new LinkedList<FileObject>();
             Collection<? extends IndexResult> results = querySupport.query(keyName, searchExpression, QuerySupport.Kind.REGEXP, keyName);
             for (IndexResult result : results) {
@@ -129,28 +130,33 @@ public class CssIndex {
             DependenciesGraph deps = new DependenciesGraph(cssFile);
             Collection<? extends IndexResult> results = querySupport.query(CssIndexer.IMPORTS_KEY, "", QuerySupport.Kind.PREFIX, CssIndexer.IMPORTS_KEY);
 
-            //create the refering part of the graph (imported files)
-            //map of FileObject to list of imported files
-            Map<FileObject, Collection<String>> files2imports = new HashMap<FileObject, Collection<String>>();
+            //todo: performance - cache and incrementally update the maps?!?!
+            //create map of refering files to the peers and second map vice versa
+            Map<FileObject, Collection<FileObject>> source2dests = new HashMap<FileObject, Collection<FileObject>>();
+            Map<FileObject, Collection<FileObject>> dest2sources = new HashMap<FileObject, Collection<FileObject>>();
             for (IndexResult result : results) {
                 String importsValue = result.getValue(CssIndexer.IMPORTS_KEY);
                 FileObject file = result.getFile();
-                files2imports.put(file, decodeListValue(importsValue));
-            }
-            resolveImports(deps.getSourceNode(), files2imports);
-
-            //resolve importing files
-            //TODO the recursive algrithm uses linear search - this deserves
-            //fixing even if the number of css files is typically quite small
-
-            //reversed map of imports to files
-            Map<String, FileObject> imports2files = new HashMap<String, FileObject>();
-            for (FileObject file : files2imports.keySet()) {
-                for (String imp : files2imports.get(file)) {
-                    imports2files.put(imp, file);
+                Collection<String> imports = decodeListValue(importsValue);
+                Collection<FileObject> imported = new HashSet<FileObject>();
+                for (String importedFileName : imports) {
+                    //resolve the file
+                    FileObject resolvedFileObject = resolve(file, importedFileName);
+                    if (resolvedFileObject != null) {
+                        imported.add(resolvedFileObject);
+                        //add reverse dependency
+                        Collection<FileObject> sources = dest2sources.get(resolvedFileObject);
+                        if(sources == null) {
+                            sources = new HashSet<FileObject>();
+                            dest2sources.put(resolvedFileObject, sources);
+                        }
+                        sources.add(file);
+                    }
                 }
+                source2dests.put(file, imported);
             }
-            resolveImporting(deps.getSourceNode(), imports2files);
+
+            resolveDependencies(deps.getSourceNode(), source2dests, dest2sources);
 
             return deps;
 
@@ -160,47 +166,30 @@ public class CssIndex {
 
         return null;
     }
+    
 
-    private void resolveImporting(Node sourceNode, Map<String, FileObject> imports2files) {
-        FileObject source = sourceNode.getFile();
-        //a. find all entries which may possibly be references to our base file
-        String baseFileName = source.getNameExt();
-        //hmm, linear search :-(, wouldn't it be faster to uset the index instead?
-        Collection<String> possiblyValidImports = new LinkedList<String>();
-        for (String imp : imports2files.keySet()) {
-            if (imp.indexOf(baseFileName) != -1) {
-                //might possibly import the base file
-                possiblyValidImports.add(imp);
+    private void resolveDependencies(Node base, Map<FileObject, Collection<FileObject>> source2dests, Map<FileObject, Collection<FileObject>> dest2sources) {
+        FileObject baseFile = base.getFile();
+        Collection<FileObject> destinations = source2dests.get(baseFile);
+        if (destinations != null) {
+            //process destinations (file this one refers to)
+            for(FileObject destination : destinations) {
+                Node node = base.getDependencyGraph().getNode(destination);
+                if(base.addReferedNode(node)) {
+                    //recurse only if we haven't been there yet
+                    resolveDependencies(node, source2dests, dest2sources);
+                }
             }
         }
-
-        //b.now check if the possible imports do really import our base file
-        for (String possibleImport : possiblyValidImports) {
-            FileObject base = imports2files.get(possibleImport);
-            FileObject resolved = resolve(base, possibleImport);
-            if (resolved != null && resolved.equals(source)) {
-                //gotcha!
-                Node node = sourceNode.getDependencyGraph().getNode(base);
-                sourceNode.addReferingNode(node);
-                resolveImporting(node, imports2files);
-            }
-        }
-    }
-
-    private void resolveImports(Node base, Map<FileObject, Collection<String>> file2imports) {
-        FileObject source = base.getFile();
-        Collection<String> imports = file2imports.get(source);
-        if (imports == null) {
-            return;
-        }
-
-        for (String importedFileName : imports) {
-            //resolve the file
-            FileObject resolvedFileObject = resolve(source, importedFileName);
-            if (resolvedFileObject != null) {
-                Node node = base.getDependencyGraph().getNode(resolvedFileObject);
-                base.addReferedNode(node);
-                resolveImports(node, file2imports);
+        Collection<FileObject> sources = dest2sources.get(baseFile);
+        if(sources != null) {
+            //process sources (file this one is refered by)
+            for(FileObject source : sources) {
+                Node node = base.getDependencyGraph().getNode(source);
+                if(base.addReferingNode(node)) {
+                    //recurse only if we haven't been there yet
+                    resolveDependencies(node, source2dests, dest2sources);
+                }
             }
         }
 
@@ -251,4 +240,5 @@ public class CssIndex {
         }
         return list;
     }
+
 }
