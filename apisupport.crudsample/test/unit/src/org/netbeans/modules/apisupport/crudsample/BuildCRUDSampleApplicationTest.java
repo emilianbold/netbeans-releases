@@ -143,7 +143,6 @@ public class BuildCRUDSampleApplicationTest extends TestBase {
     /**
      * Invokes build-jnlp target on crudsample
      */
-    /* XXX jrechtacek's changes broke this again:
     public void testBuildJNLP() throws Exception {
         int ret = runAntTargetsOncrudsample(new String[] {"build-jnlp"});
         assertEquals("build-jnlp ant target should return zero - build successful", 0 , ret);
@@ -151,7 +150,6 @@ public class BuildCRUDSampleApplicationTest extends TestBase {
         File warFile = new File(dist,"crud_sample_application.war");
         assertTrue("crud_sample_application.war file should be in dist folder", warFile.exists());
     }
-     */
 
     /**
      * Invokes build-zip target on crudsample
