@@ -130,18 +130,17 @@ public class CndUtils {
         return getNumberCndWorkerThreads();
     }
 
-    private final static String includeFileNamePrefix;
-    static {
+    private static final class FileNamePrefixAccessor {
         // use always Unix path, because java.io.File on windows understands it well
-        includeFileNamePrefix = System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
+        private static final String path = System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
     }
 
     public static String getIncludeFileBase() {
-        return includeFileNamePrefix;
+        return FileNamePrefixAccessor.path;
     }
 
     public static String getIncludeFilePrefix(String hostid) {
-        return includeFileNamePrefix + hostid + "/"; //NOI18N
+        return getIncludeFileBase() + hostid + "/"; //NOI18N
     }
     
     public static void assertFalse(boolean value) {
