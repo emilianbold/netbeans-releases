@@ -41,7 +41,6 @@ package org.netbeans.modules.css.editor;
 import java.io.IOException;
 import java.util.WeakHashMap;
 import javax.swing.text.Document;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
@@ -77,20 +76,10 @@ public class CssProjectSupport {
 	    if (p == null) {
 		return null;
 	    }
-	    ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-	    if (classPath == null) {
-                //Bug #180257 temporary workaround -  CSS refactoring doesn't work in PHP project
-                //PHP Project defines its own Source path type id
-                classPath = ClassPath.getClassPath(fo, "classpath/php-source"); //NOI18N
-                //<<<
-                if (classPath == null) {
-                    return null;
-                }
-            }
             synchronized (INSTANCIES) {
 		CssProjectSupport instance = INSTANCIES.get(p);
 		if (instance == null) {
-		    instance = new CssProjectSupport(p, classPath);
+		    instance = new CssProjectSupport(p);
 		    INSTANCIES.put(p, instance);
 		}
                 return instance;
@@ -101,15 +90,12 @@ public class CssProjectSupport {
 
 	return null;
     }
-    private ClassPath classPath;
     private Project project;
     private CssIndex index;
 
-    public CssProjectSupport(Project project, ClassPath classPath) throws IOException {
-	this.classPath = classPath;
+    public CssProjectSupport(Project project) throws IOException {
 	this.project = project;
-
-	this.index = CssIndex.create(classPath.getRoots());
+	this.index = CssIndex.create(project);
     }
 
     public CssIndex getIndex() {
