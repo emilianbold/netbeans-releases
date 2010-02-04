@@ -342,7 +342,8 @@ public class XMLDataObject extends MultiDataObject {
         if (ERR.isLoggable(Level.FINE)) {
             ERR.fine("getCookie returns " + cake + " for " + this); // NOI18N
         }
-        
+
+        assert cake == null || cls.isInstance(cake) : "Cannot return " + cake + " for " + cls + " from " + this;
         return cls.cast(cake);
     }
 
