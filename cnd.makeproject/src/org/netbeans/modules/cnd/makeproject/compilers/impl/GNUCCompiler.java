@@ -47,15 +47,6 @@ import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescripto
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /*package*/ class GNUCCompiler extends GNUCCCCompiler {
-
-    @Override
-    public String getDevelopmentModeOptions(int value) {
-        CompilerDescriptor compiler = getFlavor().getToolchainDescriptor().getC();
-        if (compiler != null && compiler.getDevelopmentModeFlags() != null && compiler.getDevelopmentModeFlags().length > value){
-            return compiler.getDevelopmentModeFlags()[value];
-        }
-        return ""; // NOI18N
-    }
     
     /** Creates a new instance of GNUCCompiler */
     protected GNUCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {

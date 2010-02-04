@@ -129,6 +129,20 @@ public class CndUtils {
     public static int getConcurrencyLevel() {
         return getNumberCndWorkerThreads();
     }
+
+    private final static String includeFileNamePrefix;
+    static {
+        // use always Unix path, because java.io.File on windows understands it well
+        includeFileNamePrefix = System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
+    }
+
+    public static String getIncludeFileBase() {
+        return includeFileNamePrefix;
+    }
+
+    public static String getIncludeFilePrefix(String hostid) {
+        return includeFileNamePrefix + hostid + "/"; //NOI18N
+    }
     
     public static void assertFalse(boolean value) {
        if ( isDebugMode()) {
