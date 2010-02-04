@@ -925,7 +925,7 @@ public final class ModuleManager {
                 Util.err.fine("enable: no class loader yet, not appending");
             }
             Util.err.fine("enable: continuing to installation");
-            NetigsoFramework.turnOn(classLoader);
+            NetigsoFramework.turnOn(classLoader, this.modules);
             installer.load(toEnable);
         }
         {

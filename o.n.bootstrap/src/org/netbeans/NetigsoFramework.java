@@ -67,7 +67,7 @@ public abstract class NetigsoFramework {
      */
     protected abstract void prepare(
         Lookup loadFrameworkFrom,
-        Collection<? extends ModuleInfo> preregister
+        Collection<? extends Module> preregister
     );
 
     /** Start the OSGi framework */
@@ -105,12 +105,13 @@ public abstract class NetigsoFramework {
         toEnable.addAll(newlyEnabling);
     }
 
-    static void turnOn(ClassLoader findNetigsoFrameworkIn) {
+    static void turnOn(ClassLoader findNetigsoFrameworkIn, Collection<Module> allModules) {
         boolean found = false;
         if (framework == null) {
             for (Module m : toEnable) {
                 if (m instanceof NetigsoModule) {
                     found = true;
+                    break;
                 }
             }
         } else {
@@ -124,7 +125,7 @@ public abstract class NetigsoFramework {
         if (framework == null) {
             throw new IllegalStateException("No NetigsoFramework found, is org.netbeans.core.netigso module enabled?"); // NOI18N
         }
-        getDefault().prepare(lkp, toEnable);
+        getDefault().prepare(lkp, allModules);
         toEnable.clear();
         delayedInit();
         if (framework != null) {
