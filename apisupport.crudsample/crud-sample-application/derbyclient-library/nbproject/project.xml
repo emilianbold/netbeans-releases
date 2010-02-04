@@ -6,7 +6,9 @@
             <code-name-base>org.netbeans.modules.derbyclientlibrary</code-name-base>
             <suite-component/>
             <module-dependencies/>
-            <public-packages/>
+            <public-packages>
+                <package>org.apache.derby.jdbc</package>
+            </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/derbyclient.jar</runtime-relative-path>
                 <binary-origin>${derbyclient.jar}</binary-origin>
