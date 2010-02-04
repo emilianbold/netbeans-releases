@@ -147,6 +147,38 @@ public abstract class BasicCompiler extends Tool {
         return ""; // NOI18N
     }
 
+    public String getMTLevelOptions(int value) {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getMultithreadingFlags() != null && compiler.getMultithreadingFlags().length > value) {
+            return compiler.getMultithreadingFlags()[value];
+        }
+        return ""; // NOI18N
+    }
+
+    public String getLanguageExtOptions(int value) {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getLanguageExtensionFlags() != null && compiler.getLanguageExtensionFlags().length > value) {
+            return compiler.getLanguageExtensionFlags()[value];
+        }
+        return ""; // NOI18N
+    }
+
+    public String getLibraryLevelOptions(int value) {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getLibraryFlags() != null && compiler.getLibraryFlags().length > value) {
+            return compiler.getLibraryFlags()[value];
+        }
+        return ""; // NOI18N
+    }
+
+    public String getStandardEvaluationOptions(int value) {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getStandardFlags() != null && compiler.getStandardFlags().length > value) {
+            return compiler.getStandardFlags()[value];
+        }
+        return ""; // NOI18N
+    }
+    
     public List<String> getSystemPreprocessorSymbols() {
         return new Vector<String>();
     }
@@ -184,5 +216,12 @@ public abstract class BasicCompiler extends Tool {
     protected final String applyPathPrefix(String path) {
         String prefix = getIncludeFilePathPrefix();
         return normalizePath( prefix != null ? prefix + path : path );
+    }
+    
+    /**
+     * restore default compiler system properties,
+     * i.e. default include paths, predefined macros, ...
+     */
+    public void resetSystemProperties() {
     }
 }

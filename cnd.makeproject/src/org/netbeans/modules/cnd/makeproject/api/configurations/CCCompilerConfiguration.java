@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.makeproject.compilers.impl.CCCCompiler;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -99,12 +98,11 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     }
     
     public String getCCFlagsBasic(BasicCompiler compiler) {
-        CCCCompiler cccCompiler = (CCCCompiler)compiler;
         String options = ""; // NOI18N
-        options += cccCompiler.getMTLevelOptions(getMTLevel().getValue()) + " "; // NOI18N
-        options += cccCompiler.getLibraryLevelOptions(getLibraryLevel().getValue()) + " "; // NOI18N
-        options += cccCompiler.getStandardsEvolutionOptions(getStandardsEvolution().getValue()) + " "; // NOI18N
-        options += cccCompiler.getLanguageExtOptions(getLanguageExt().getValue()) + " "; // NOI18N
+        options += compiler.getMTLevelOptions(getMTLevel().getValue()) + " "; // NOI18N
+        options += compiler.getLibraryLevelOptions(getLibraryLevel().getValue()) + " "; // NOI18N
+        options += compiler.getStandardEvaluationOptions(getStandardsEvolution().getValue()) + " "; // NOI18N
+        options += compiler.getLanguageExtOptions(getLanguageExt().getValue()) + " "; // NOI18N
         //options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
         options += compiler.getSixtyfourBitsOption(getSixtyfourBits().getValue()) + " "; // NOI18N
         if (getDevelopmentMode().getValue() == DEVELOPMENT_MODE_TEST) {

@@ -66,7 +66,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
-public abstract class CCCCompiler extends BasicCompiler {
+/*package*/ abstract class CCCCompiler extends BasicCompiler {
 
     private static final String DEV_NULL = "/dev/null"; // NOI18N
 
@@ -148,7 +148,7 @@ public abstract class CCCCompiler extends BasicCompiler {
     @Override
     public void waitReady(boolean reset) {
         if (reset) {
-            resetSystemIncludesAndDefines();
+            resetSystemProperties();
         } else {
             getSystemIncludesAndDefines();
         }
@@ -164,43 +164,12 @@ public abstract class CCCCompiler extends BasicCompiler {
             }
         }
     }
-
-    public void resetSystemIncludesAndDefines() {
+    
+    @Override
+    public void resetSystemProperties() {
         CndUtils.assertNonUiThread();
         compilerDefinitions = getFreshSystemIncludesAndDefines();
         saveSystemIncludesAndDefines();
-    }
-    
-    public String getMTLevelOptions(int value) {
-        CompilerDescriptor compiler = getDescriptor();
-        if (compiler != null && compiler.getMultithreadingFlags() != null && compiler.getMultithreadingFlags().length > value){
-            return compiler.getMultithreadingFlags()[value];
-        }
-        return ""; // NOI18N
-    }
-
-    public String getLibraryLevelOptions(int value) {
-        CompilerDescriptor compiler = getDescriptor();
-        if (compiler != null && compiler.getLibraryFlags() != null && compiler.getLibraryFlags().length > value){
-            return compiler.getLibraryFlags()[value];
-        }
-        return ""; // NOI18N
-    }
-    
-    public String getStandardsEvolutionOptions(int value) {
-        CompilerDescriptor compiler = getDescriptor();
-        if (compiler != null && compiler.getStandardFlags() != null && compiler.getStandardFlags().length > value){
-            return compiler.getStandardFlags()[value];
-        }
-        return ""; // NOI18N
-    }
-    
-    public String getLanguageExtOptions(int value) {
-        CompilerDescriptor compiler = getDescriptor();
-        if (compiler != null && compiler.getLanguageExtensionFlags() != null && compiler.getLanguageExtensionFlags().length > value){
-            return compiler.getLanguageExtensionFlags()[value];
-        }
-        return ""; // NOI18N
     }
     
     protected final void getSystemIncludesAndDefines(String arguments, boolean stdout, Pair pair) throws IOException {

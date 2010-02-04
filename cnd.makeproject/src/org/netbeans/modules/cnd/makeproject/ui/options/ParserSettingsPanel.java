@@ -44,7 +44,6 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import javax.swing.JList;
 import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
-import org.netbeans.modules.cnd.makeproject.compilers.impl.CCCCompiler;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,6 +66,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
+import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.ui.api.IsChangedListener;
 import org.netbeans.modules.cnd.toolchain.ui.api.ToolsCacheManager;
@@ -238,11 +238,11 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             String key = ""+tool.getKind()+csp.displayName + tool.getPath(); // display name has collection name and hkey
             PredefinedPanel predefinedPanel = predefinedPanels.get(key);
             if (predefinedPanel == null) {
-                predefinedPanel = new PredefinedPanel((CCCCompiler) tool, this);
+                predefinedPanel = new PredefinedPanel((BasicCompiler) tool, this);
                 predefinedPanels.put(key, predefinedPanel);
             //modified = true; // See 126368
             } else {
-                predefinedPanel.updateCompiler((CCCCompiler) tool);
+                predefinedPanel.updateCompiler((BasicCompiler) tool);
             }
             tabbedPane.addTab(tool.getDisplayName(), predefinedPanel);
         }
