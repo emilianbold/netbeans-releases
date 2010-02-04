@@ -236,7 +236,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     }
 
     protected CharSequence getPositionString() {
-        StringBuilder sb = new StringBuilder("[");
+        StringBuilder sb = new StringBuilder("["); // NOI18N
         Position pos;
         pos = getStartPosition();
         sb.append(pos.getLine());

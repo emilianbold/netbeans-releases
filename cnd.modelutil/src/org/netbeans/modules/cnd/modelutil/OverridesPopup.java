@@ -176,10 +176,10 @@ public class OverridesPopup extends JPanel implements FocusListener {
             border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
             if (hasFocus) {
                 if (selected) {
-                    border = UIManager.getBorder("List.focusSelectedCellHighlightBorder");
+                    border = UIManager.getBorder("List.focusSelectedCellHighlightBorder"); // NOI18N
                 }
                 if (border == null) {
-                    border = UIManager.getBorder("List.focusCellHighlightBorder");
+                    border = UIManager.getBorder("List.focusCellHighlightBorder"); // NOI18N
                 }
             } else {
                 border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
