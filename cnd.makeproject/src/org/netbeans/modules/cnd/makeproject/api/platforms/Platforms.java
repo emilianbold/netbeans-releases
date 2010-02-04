@@ -40,10 +40,17 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
+import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformMacOSX;
+import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformNone;
+import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformLinux;
+import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformWindows;
+import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformSolarisIntel;
+import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformGeneric;
+import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformSolarisSparc;
 import java.util.ArrayList;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 
-public class Platforms {
+public final class Platforms {
     private static final ArrayList<Platform> platforms = new ArrayList<Platform>();
 
     static {
@@ -55,19 +62,6 @@ public class Platforms {
         platforms.add(new PlatformGeneric());
         platforms.add(new PlatformNone());
         platforms.trimToSize();
-    }
-
-    public static ArrayList<Platform> getPlatforms() {
-        return platforms;
-    }
-
-    public static Platform getPlatform(String name) {
-        for (Platform pl : getPlatforms()) {
-            if (pl.getName().equals(name)) {
-                return pl;
-            }
-        }
-        return null;
     }
 
     public static Platform getPlatform(int id) {
@@ -91,6 +85,10 @@ public class Platforms {
             ret.add(pl.getDisplayName());
         }
         return ret.toArray(new String[ret.size()]);
+    }
+
+    private static ArrayList<Platform> getPlatforms() {
+        return platforms;
     }
 
     private Platforms() {

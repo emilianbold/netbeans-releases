@@ -127,7 +127,7 @@ SJSAS_ID="${sjsas.id}"
             </filterset>
         </copy>
         
-        <chmod dir="${scriptsdir}" perm="ugo+x"/>
+        <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
 
         <echo message="Building baseide.pkg into ${basedir}/../../build/baseide.pkg"/>
         

@@ -47,8 +47,10 @@ import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 
 public abstract class BasicCompiler extends Tool {
 
@@ -56,33 +58,12 @@ public abstract class BasicCompiler extends Tool {
     protected BasicCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
         if (!env.isLocal()) {
-            includeFilePrefix = getIncludeFilePrefix(env);
+            includeFilePrefix = CndUtils.getIncludeFilePrefix(EnvUtils.toHostID(env));
         } else {
             includeFilePrefix = null;
         }
     }
     private String includeFilePrefix;
-
-    // FIXUP: still a fixup. Think over, who is responsible for this
-    public static String getIncludeFilePrefix(ExecutionEnvironment env) {
-        String hostid = toHostID(env);
-        return getIncludeFileBase() + hostid + "/"; //NOI18N
-    }
-
-    public static String toHostID(ExecutionEnvironment env) {
-        String hostid = env.getHost() + "_"+env.getSSHPort(); // NOI18N
-        return hostid;
-    }
-
-    private static String includeFileNamePrefix;
-    // FIXUP: still a fixup. Think over, who is responsible for this
-    public static String getIncludeFileBase() {
-        if (includeFileNamePrefix == null) {
-            // use always Unix path, because java.io.File on windows understands it well
-            includeFileNamePrefix = System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
-        }
-        return includeFileNamePrefix;
-    }
 
     @Override
     public String getIncludeFilePathPrefix() {
@@ -147,6 +128,38 @@ public abstract class BasicCompiler extends Tool {
         return ""; // NOI18N
     }
 
+    public String getMTLevelOptions(int value) {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getMultithreadingFlags() != null && compiler.getMultithreadingFlags().length > value) {
+            return compiler.getMultithreadingFlags()[value];
+        }
+        return ""; // NOI18N
+    }
+
+    public String getLanguageExtOptions(int value) {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getLanguageExtensionFlags() != null && compiler.getLanguageExtensionFlags().length > value) {
+            return compiler.getLanguageExtensionFlags()[value];
+        }
+        return ""; // NOI18N
+    }
+
+    public String getLibraryLevelOptions(int value) {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getLibraryFlags() != null && compiler.getLibraryFlags().length > value) {
+            return compiler.getLibraryFlags()[value];
+        }
+        return ""; // NOI18N
+    }
+
+    public String getStandardEvaluationOptions(int value) {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getStandardFlags() != null && compiler.getStandardFlags().length > value) {
+            return compiler.getStandardFlags()[value];
+        }
+        return ""; // NOI18N
+    }
+    
     public List<String> getSystemPreprocessorSymbols() {
         return new Vector<String>();
     }
@@ -184,5 +197,12 @@ public abstract class BasicCompiler extends Tool {
     protected final String applyPathPrefix(String path) {
         String prefix = getIncludeFilePathPrefix();
         return normalizePath( prefix != null ? prefix + path : path );
+    }
+    
+    /**
+     * restore default compiler system properties,
+     * i.e. default include paths, predefined macros, ...
+     */
+    public void resetSystemProperties() {
     }
 }

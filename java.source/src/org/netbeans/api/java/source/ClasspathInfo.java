@@ -69,6 +69,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
 import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.CachingFileManager;
+import org.netbeans.modules.java.source.parsing.NullWriteFileManager;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.ProxyFileManager;
 import org.netbeans.modules.java.source.parsing.SourceFileManager;
@@ -78,9 +79,8 @@ import org.netbeans.modules.java.source.classpath.SourcePath;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.AptSourceFileManager;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.parsing.FileObjects.InferableJavaFileObject;
+import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.MemoryFileManager;
-import org.netbeans.modules.java.source.parsing.NullWriteAptSourceFileManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -385,15 +385,15 @@ public final class ClasspathInfo {
     synchronized JavaFileManager getFileManager() {
         if (this.fileManager == null) {
             boolean hasSources = this.cachedSrcClassPath != null;
-            this.fileManager = new ProxyFileManager (
+            JavaFileManager jfm = new ProxyFileManager (
                 new CachingFileManager (this.archiveProvider, this.cachedBootClassPath, true, true),
                 new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
                 hasSources ? (!useModifiedFiles ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
                     : new SourceFileManager (this.cachedUserSrcClassPath, ignoreExcludes)) : null,
-                cachedAptSrcClassPath != null ? (backgroundCompilation ? new AptSourceFileManager(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, new CacheMarker(this.cachedUserSrcClassPath))
-                    : new NullWriteAptSourceFileManager(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath)) : null,
+                cachedAptSrcClassPath != null ? new AptSourceFileManager(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, new CacheMarker(this.cachedUserSrcClassPath)) : null,
                 hasSources ? outFileManager = new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedUserSrcClassPath, this.cachedAptSrcClassPath) : null
             , this.memoryFileManager);
+            this.fileManager = backgroundCompilation ? jfm : new NullWriteFileManager(jfm);
         }
         return this.fileManager;
     }

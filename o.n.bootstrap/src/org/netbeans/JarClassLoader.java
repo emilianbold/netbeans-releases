@@ -111,7 +111,7 @@ public class JarClassLoader extends ProxyClassLoader {
             try {
                 archive.save(cache);
             } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, null, ioe);
+                LOGGER.log(Level.WARNING, "saving archive", ioe);
             }
         } else {
             archive.stopGathering();
@@ -271,11 +271,12 @@ public class JarClassLoader extends ProxyClassLoader {
     
     public @Override void destroy() {
         super.destroy ();
-        
-        try {
-            for (Source src : sources) src.destroy();
-        } catch (IOException ioe) {
-            LOGGER.log(Level.WARNING, null, ioe);
+        for (Source src : sources) {
+            try {
+                src.destroy();
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, "could not destroy " + src, ioe);
+            }
         }
     }
 
@@ -329,7 +330,7 @@ public class JarClassLoader extends ProxyClassLoader {
             try {
                 return readClass(path);
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, null, e);
+                LOGGER.log(Level.WARNING, "looking up " + path, e);
             }
             return null;
         }
@@ -532,7 +533,9 @@ public class JarClassLoader extends ProxyClassLoader {
                         }
                     }
                 }
-            } catch (ZipException x) {
+            } catch (ZipException x) { // Unix
+                LOGGER.log(Level.INFO, "Cannot open " + file, x);
+            } catch (FileNotFoundException x) { // Windows
                 LOGGER.log(Level.INFO, "Cannot open " + file, x);
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, "problems with " + file, ioe);
@@ -660,7 +663,7 @@ public class JarClassLoader extends ProxyClassLoader {
                     try {
                         toClose.doCloseJar();
                     } catch (IOException ioe) {
-                        LOGGER.log(Level.WARNING, null, ioe);
+                        LOGGER.log(Level.INFO, "closing " + toClose, ioe);
                     }
                 }
                 LOGGER.log(Level.FINE, "Opening module JAR {0} for {1}", new Object[] {source.file, forWhat});

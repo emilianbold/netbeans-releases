@@ -42,6 +42,10 @@
 package org.netbeans.modules.apisupport.project.ui.platform;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory.NbPlatformListModel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -49,13 +53,15 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 /**
  * @author Martin Krauskopf
  */
-public class PlatformComponentFactoryTest extends TestBase {
+public class PlatformComponentFactoryTest extends NbTestCase {
 
     public PlatformComponentFactoryTest(String testName) {
         super(testName);
     }
 
     public void testNbPlatformListModelSorting() throws Exception {
+        TestBase.initializeBuildProperties(getWorkDir(), null);
+
         File first = new File(getWorkDir(), "first");
         TestBase.makePlatform(first);
         NbPlatform.addPlatform("first", first, "AAA first");
@@ -71,12 +77,18 @@ public class PlatformComponentFactoryTest extends TestBase {
         NbPlatform.reset();
         
         NbPlatformListModel model = new NbPlatformListModel();
-        assertEquals("four platforms " + NbPlatform.getPlatforms(), 5, model.getSize());
-        assertSame("first (AAA first)", NbPlatform.getPlatformByID("first"), model.getElementAt(0));
-        assertSame("second (Invalid Platform)", NbPlatform.getPlatformByID("custom"), model.getElementAt(1));
-        assertSame("third (KKK between)", NbPlatform.getPlatformByID("between"), model.getElementAt(2));
-        assertSame("fourth (NetBeans IDE....)", NbPlatform.getDefaultPlatform(), model.getElementAt(3));
-        assertSame("fifth (ZZZ last)", NbPlatform.getPlatformByID("last"), model.getElementAt(4));
+
+        int size = model.getSize();
+        List<NbPlatform> actual = new ArrayList<NbPlatform>(size);
+        for (int i = 0; i < size; i++) {
+            actual.add((NbPlatform) model.getElementAt(i));
+        }
+        assertEquals(Arrays.asList(
+                NbPlatform.getPlatformByID("first"),
+                NbPlatform.getPlatformByID("between"),
+                NbPlatform.getDefaultPlatform(),
+                NbPlatform.getPlatformByID("last")
+                ), actual);
     }
     
 }

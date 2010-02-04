@@ -39,11 +39,9 @@
 
 package org.netbeans.modules.cnd.toolchain.compilers.impl;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,6 +49,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
@@ -59,9 +58,12 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import static org.netbeans.modules.cnd.toolchain.api.ToolchainManager.*;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.nativeexecution.api.util.Path;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -286,12 +288,10 @@ public final class ToolchainManagerImpl {
         }
         pattern = Pattern.compile(c.getVersionPattern());
         String command = LinkSupport.resolveWindowsLink(file.getAbsolutePath());
-        String s = getCommandOutput(path, command + " " + flag); // NOI18N
+        String s = getCommandOutput(path, command, flag);
         boolean res = pattern.matcher(s).find();
         if (TRACE && !res) {
             System.err.println("No match for pattern [" + c.getVersionPattern() + "]:"); // NOI18N
-        }
-        if (TRACE && !res) {
             System.err.println("Run " + path + "/" + c.getNames()[0] + " " + flag + "\n" + s); // NOI18N
         }
         return res;
@@ -362,24 +362,16 @@ public final class ToolchainManagerImpl {
     }
 
     private String readRegistry(String key, String pattern) {
-        List<String> list = new ArrayList<String>();
-        list.add("C:/Windows/System32/reg.exe"); // NOI18N
-        list.add("query"); // NOI18N
-        list.add(key);
-        list.add("/s"); // NOI18N
-        ProcessBuilder pb = new ProcessBuilder(list);
-        pb.redirectErrorStream(true);
+        if (TRACE) {
+            System.err.println("Read registry " + key); // NOI18N
+        }
+        ExitStatus status = ProcessUtils.execute(ExecutionEnvironmentFactory.getLocal(), "C:/Windows/System32/reg.exe", "query", key, "/s"); // NOI18N
         String base = null;
-        try {
-            if (TRACE) {
-                System.err.println("Read registry " + key); // NOI18N
-            }
-            Process process = pb.start();
-            BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        if (status.isOK()){
             Pattern p = Pattern.compile(pattern);
-            String line;
-            while ((line = br.readLine()) != null) {
-                line = line.trim();
+            StringTokenizer st = new StringTokenizer(status.output, "\n"); // NOI18N
+            while(st.hasMoreTokens()) {
+                String line = st.nextToken().trim();
                 if (TRACE) {
                     System.err.println("\t" + line); // NOI18N
                 }
@@ -391,10 +383,6 @@ public final class ToolchainManagerImpl {
                     }
                 }
             }
-        } catch (Exception ex) {
-            if (TRACE) {
-                ex.printStackTrace();
-            }
         }
         if (base == null && key.startsWith("hklm\\")) { // NOI18N
             // Cygwin on my Vista system has this information in HKEY_CURRENT_USER
@@ -404,78 +392,28 @@ public final class ToolchainManagerImpl {
     }
 
     private static final WeakHashMap<String, String> commandCache = new WeakHashMap<String, String>();
-    private static String getCommandOutput(String path, String command) {
-        String res = commandCache.get(command); // NOI18N
+    private static String getCommandOutput(String path, String command, String flags) {
+        String res = commandCache.get(command+" "+flags); // NOI18N
         if (res != null) {
             //System.err.println("Get command output from cache #"+command); // NOI18N
             return res;
         }
+        ArrayList<String> args = new ArrayList<String>();
+        StringTokenizer st = new StringTokenizer(flags," "); // NOI18N
+        while(st.hasMoreTokens()) {
+            args.add(st.nextToken());
+        }
         if (path == null) {
             path = ""; // NOI18N
         }
-        ArrayList<String> envp = new ArrayList<String>();
-        for (String key : System.getenv().keySet()) {
-            String value = System.getenv().get(key);
-            if (key.equals(Path.getPathName())) {
-                envp.add(Path.getPathName() + "=" + path + File.pathSeparatorChar + value); // NOI18N
-            } else {
-                String entry = key + "=" + (value != null ? value : ""); // NOI18N
-                envp.add(entry);
-            }
-        }
+        ExitStatus status = ProcessUtils.executeInDir(path, ExecutionEnvironmentFactory.getLocal(), command, args.toArray(new String[args.size()]));
         StringBuilder buf = new StringBuilder();
-        try {
-            Process process = Runtime.getRuntime().exec(command, envp.toArray(new String[envp.size()])); // NOI18N
-            InputStream is = process.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            try {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    buf.append(line);
-                    buf.append('\n'); // NOI18N
-                }
-            } catch (IOException ex) {
-                if (TRACE) {
-                    ex.printStackTrace();
-                }
-            }
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException ex) {
-                if (TRACE) {
-                    ex.printStackTrace();
-                }
-            }
-            is = process.getErrorStream();
-            reader = new BufferedReader(new InputStreamReader(is));
-            try {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    buf.append(line);
-                    buf.append('\n'); // NOI18N
-                }
-            } catch (IOException ex) {
-                if (TRACE) {
-                    ex.printStackTrace();
-                }
-            }
-            try {
-                if (is != null) {
-                    is.close();
-                }
-            } catch (IOException ex) {
-                if (TRACE) {
-                    ex.printStackTrace();
-                }
-            }
-        } catch (IOException ex) {
-            if (TRACE) {
-                ex.printStackTrace();
-            }
+        if (status.isOK()){
+            buf.append(status.output);
+            buf.append('\n');
+            buf.append(status.error);
         }
-        commandCache.put(command, buf.toString()); // NOI18N
+        commandCache.put(command+" "+flags, buf.toString()); // NOI18N
         return buf.toString();
     }
 
