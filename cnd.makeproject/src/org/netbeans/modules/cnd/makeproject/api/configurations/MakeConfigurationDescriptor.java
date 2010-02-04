@@ -255,7 +255,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
             rootFolder.addNewFolder(RESOURCE_FILES_FOLDER, getString("ResourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
         }
-        testItems = rootFolder.addNewFolder(TEST_FILES_FOLDER, "Tests", true, Folder.Kind.TEST_LOGICAL_FOLDER);
+        testItems = rootFolder.addNewFolder(TEST_FILES_FOLDER, "Tests", true, Folder.Kind.TEST_LOGICAL_FOLDER); // NOI18N
         externalFileItems = rootFolder.addNewFolder(EXTERNAL_FILES_FOLDER, getString("ImportantFilesTxt"), false, Folder.Kind.IMPORTANT_FILES_FOLDER);
 //        if (sourceFileFolders != null)
 //            setExternalFileItems(sourceFileFolders); // From makefile wrapper wizard
