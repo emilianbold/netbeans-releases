@@ -280,6 +280,12 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-cnd-makeproject-api-actions-NewFolderAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction"/>
             </file>
+            <file name="org-netbeans-modules-cnd-makeproject-api-actions-NewTestAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.NewTestAction"/>
+            </file>
+            <file name="org-netbeans-modules-cnd-makeproject-api-actions-TestAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.TestAction"/>
+            </file>
             <file name="org-netbeans-modules-cnd-makeproject-api-actions-BatchBuildAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.api.actions.BatchBuildAction.MainBatchBuildAction"/>
             </file>
