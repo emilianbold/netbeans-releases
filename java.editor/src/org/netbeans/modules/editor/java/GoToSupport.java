@@ -869,7 +869,7 @@ public class GoToSupport {
                 VariableElement ve = listIt.next();
                 TypeMirror      type = typesIt != null ? typesIt.next() : ve.asType();
 
-                result.append(Utilities.getTypeName(type, true));
+                result.append(getTypeName(type, true));
                 result.append(" ");
                 result.append(ve.getSimpleName());
 
