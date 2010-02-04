@@ -97,6 +97,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.Manager;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.cookies.EditorCookie;
@@ -921,6 +922,7 @@ public class WebProjectValidation extends J2eeTestCase {
     }
 
     public void initDisplayer() {
+        MockServices.setServices(TestURLDisplayer.class);
         if (urlDisplayer == null) {
             urlDisplayer = TestURLDisplayer.getInstance();
         }
