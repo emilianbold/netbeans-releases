@@ -54,6 +54,7 @@ import java.util.*;
 import java.io.File;
 import java.util.Map.Entry;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
 
@@ -74,6 +75,7 @@ class SearchExecutor implements Runnable {
         new SimpleDateFormat("yyyy-MM-dd"), // NOI18N
     };
 
+    private static final Logger LOG = Logger.getLogger(SearchExecutor.class.getName());
     private final SearchHistoryPanel    master;
     private Map<SVNUrl, Set<File>>      workFiles;
     private Map<String,File>            pathToRoot;
@@ -120,7 +122,8 @@ class SearchExecutor implements Runnable {
             if(url != null) {
                 String rootPath = SVNUrlUtils.getRelativePath(rootUrl, url, true);
                 if (rootPath == null) {
-                    Subversion.LOG.log(Level.WARNING, "populatePathToRoot: rootUrl: {0}, url: {1}", new String[] {rootUrl.toString(), url.toString()});
+                    LOG.log(Level.FINE, "populatePathToRoot: rootUrl: {0}, url: {1}, probably svn:externals", new String[] {rootUrl.toString(), url.toString()});
+                    continue;
                 }
                 String fileAbsPath = e.getKey().getAbsolutePath().replace(File.separatorChar, '/');
                 int commonPathLength = getCommonPostfixLength(rootPath, fileAbsPath);

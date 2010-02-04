@@ -60,8 +60,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
-import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.execution.impl.ToolchainSPIAccessor;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerSetFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileUtil;
@@ -137,13 +137,13 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
                 "dist/Debug/.../libhello3lib." + libsuffix));
         conf.getLinkerConfiguration().getLibrariesConfiguration().add(projectItem);
 
-        CompilerFlavor flavor = CompilerFlavorAccessor.toFlavor(flavorName, platform);
-        CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
+        CompilerFlavor flavor = CompilerFlavor.toFlavor(flavorName, platform);
         CompilerSet compilerSetold = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSet("MyCompilerSet");
         if (compilerSetold != null) {
-            CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).remove(compilerSetold);
+            ToolchainSPIAccessor.remove(ExecutionEnvironmentFactory.getLocal(), compilerSetold);
         }
-        CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).add(compilerSet);
+        CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
+        ToolchainSPIAccessor.add(ExecutionEnvironmentFactory.getLocal(), compilerSet);
         conf.getCompilerSet().setNameAndFlavor("MyCompilerSet|" + flavorName, 51);
         conf.getDevelopmentHost().setBuildPlatform(platform);
 
@@ -204,13 +204,13 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         makeConfigurationDescriptor.init(conf);
         makeConfigurationDescriptor.getLogicalFolders().addItem(new Item("test.cc"));
 
-        CompilerFlavor flavor = CompilerFlavorAccessor.toFlavor(flavorName, platform);
-        CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
+        CompilerFlavor flavor = CompilerFlavor.toFlavor(flavorName, platform);
         CompilerSet compilerSetold = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSet("MyCompilerSet");
         if (compilerSetold != null) {
-            CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).remove(compilerSetold);
+            ToolchainSPIAccessor.remove(ExecutionEnvironmentFactory.getLocal(), compilerSetold);
         }
-        CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).add(compilerSet);
+        CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
+        ToolchainSPIAccessor.add(ExecutionEnvironmentFactory.getLocal(), compilerSet);
         conf.getCompilerSet().setNameAndFlavor("MyCompilerSet|" + flavorName, 51);
         conf.getDevelopmentHost().setBuildPlatform(platform);
 

@@ -46,12 +46,15 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -420,12 +423,12 @@ public class LineBreakpoint extends JPDABreakpoint {
                                             implements Comparable, FileChangeListener,
                                                        ChangeListener, PropertyChangeListener {
         
-       // We need to hold our FileObject so that it's not GC'ed, because we'd loose our listener.
-       private FileObject fo;
-       private ChangeListener registryListener;
-       private FileChangeListener fileListener;
+        // We need to hold our FileObject so that it's not GC'ed, because we'd loose our listener.
+        private FileObject fo;
+        private ChangeListener registryListener;
+        private FileChangeListener fileListener;
        
-       public LineBreakpointImpl(String url) {
+        public LineBreakpointImpl(String url) {
             super(url);
             if (url.length() > 0) {
                 try {
@@ -562,6 +565,9 @@ public class LineBreakpoint extends JPDABreakpoint {
                 }
                 fo = newFO;
                 DebuggerManager.getDebuggerManager().addBreakpoint(this);
+                firePropertyChange("groupProperties", null, null);
+            } else if (DebuggerEngine.class.getName().equals(evt.getPropertyName())) {
+                enginePropertyChange(evt);
             }
         }
 
@@ -595,6 +601,10 @@ public class LineBreakpoint extends JPDABreakpoint {
                     }
                 }
                 return null;
+            }
+
+            public DebuggerEngine[] getEngines() {
+                return LineBreakpointImpl.this.getEngines();
             }
 
             public boolean isHidden() {

@@ -84,11 +84,12 @@ final class OnePassCompileWorker extends CompileWorker {
 
     ParsingOutput compile(ParsingOutput previous, final Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
         final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(javaContext.cpInfo);
-        final Map<JavaFileObject, List<String>> file2FQNs = new HashMap<JavaFileObject, List<String>>();
-        final Set<ElementHandle<TypeElement>> addedTypes = new HashSet<ElementHandle<TypeElement>>();
-        final Set<File> createdFiles = new HashSet<File>();
-        final Set<Indexable> finished = new HashSet<Indexable>();
-        final Set<ElementHandle<TypeElement>> modifiedTypes = new HashSet<ElementHandle<TypeElement>>();
+        final Map<JavaFileObject, List<String>> file2FQNs = previous != null ? previous.file2FQNs : new HashMap<JavaFileObject, List<String>>();
+        final Set<ElementHandle<TypeElement>> addedTypes = previous != null ? previous.addedTypes : new HashSet<ElementHandle<TypeElement>>();
+        final Set<File> createdFiles = previous != null ? previous.createdFiles : new HashSet<File>();
+        final Set<Indexable> finished = previous != null ? previous.finishedFiles : new HashSet<Indexable>();
+        final Set<ElementHandle<TypeElement>> modifiedTypes = previous != null ? previous.modifiedTypes : new HashSet<ElementHandle<TypeElement>>();
+        final Set<CompileTuple> aptGenerated = previous != null ? previous.aptGenerated : new HashSet<CompileTuple>();
         final ClassNamesForFileOraculumImpl cnffOraculum = new ClassNamesForFileOraculumImpl(file2FQNs);
 
         final LMListener mem = new LMListener();
@@ -112,7 +113,7 @@ final class OnePassCompileWorker extends CompileWorker {
                         public @Override boolean isCanceled() {
                             return context.isCancelled();
                         }
-                    });
+                    }, APTUtils.get(context.getRoot()));
                 }
                 for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
                     if (units != null)
@@ -151,7 +152,7 @@ final class OnePassCompileWorker extends CompileWorker {
         }
 
         if (units == null) {
-            return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes);
+            return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         }
 
         CompileTuple active = null;
@@ -161,19 +162,26 @@ final class OnePassCompileWorker extends CompileWorker {
                 if (mem.isLowMemory()) {
                     units = null;
                     System.gc();
-                    return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes);
+                    return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
-                Iterable<? extends TypeElement> types = jt.enterTrees(Collections.singletonList(unit.first));
+                Iterable<? extends TypeElement> types;
+                fileManager.handleOption("apt-origin", Collections.singletonList(active.indexable.getURL().toString()).iterator()); //NOI18N
+                try {
+                    types = jt.enterTrees(Collections.singletonList(unit.first));
+                } finally {
+                    fileManager.handleOption("apt-origin", Collections.singletonList("").iterator()); //NOI18N
+                    JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
+                }
                 if (mem.isLowMemory()) {
                     units = null;
                     System.gc();
-                    return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes);
+                    return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 jt.analyze(types);
                 if (mem.isLowMemory()) {
                     units = null;
                     System.gc();
-                    return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes);
+                    return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 boolean[] main = new boolean[1];
                 if (javaContext.checkSums.checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
@@ -198,7 +206,7 @@ final class OnePassCompileWorker extends CompileWorker {
                 Log.instance(jt.getContext()).nerrors = 0;
                 finished.add(active.indexable);
             }
-            return new ParsingOutput(true, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes);
+            return new ParsingOutput(true, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         } catch (CouplingAbort ca) {
             //Coupling error
             TreeLoader.dumpCouplingAbort(ca, null);
@@ -253,7 +261,6 @@ final class OnePassCompileWorker extends CompileWorker {
                 JavaIndex.LOG.log(Level.WARNING, message, t);  //NOI18N
             }
         }
-        return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes);
-
+        return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
     }
 }

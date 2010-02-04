@@ -2163,6 +2163,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public static boolean traceFile(CharSequence file) {
-        return true; // file.toString().endsWith("newfile.h") || file.toString().endsWith("shared.h"); // NOI18N
+        if (TraceFlags.TRACE_FILE_NAME != null) {
+            if (TraceFlags.TRACE_FILE_NAME.length() == 0) {
+                // trace all files
+                return true;
+            }
+            return file.toString().endsWith(TraceFlags.TRACE_FILE_NAME);
+        }
+        return false;
     }
 }

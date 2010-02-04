@@ -329,6 +329,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if(issue.getRepository() instanceof KenaiRepository) {
                 String productName = ((KenaiRepository)issue.getRepository()).getProductName();
                 selectInCombo(productCombo, productName, true);
+            } else {
+                productCombo.setSelectedIndex(0);
             }
         }
     }
@@ -382,6 +384,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         reportedField.setVisible(!isNew);
         modifiedLabel.setVisible(!isNew);
         modifiedField.setVisible(!isNew);
+        statusLabel.setVisible(!isNew);
+        statusCombo.setVisible(!isNew);
+        resolutionLabel.setVisible(!isNew);
         separator.setVisible(!isNew);
         commentsPanel.setVisible(!isNew);
         attachmentsLabel.setVisible(!isNew);

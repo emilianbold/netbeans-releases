@@ -51,10 +51,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler.Pair;
-import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
-import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -125,8 +124,8 @@ public class GNUCCCCompilerTest {
         if (TRACE) {
             System.out.println("Parse Compiler Output of GCC on Solaris");
         }
-        CompilerFlavor flavor = CompilerFlavorAccessor.toFlavor("GNU", PlatformTypes.PLATFORM_SOLARIS_INTEL);
-        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, ToolKind.CCCompiler, "GNU", "GNU", "/usr/sfw/bin");
+        CompilerFlavor flavor = CompilerFlavor.toFlavor("GNU", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCCompiler, "GNU", "GNU", "/usr/sfw/bin");
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
@@ -181,8 +180,8 @@ public class GNUCCCCompilerTest {
         if (TRACE) {
             System.out.println("Parse Compiler Output of GNU on Mac");
         }
-        CompilerFlavor flavor = CompilerFlavorAccessor.toFlavor("GNU", PlatformTypes.PLATFORM_MACOSX);
-        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, ToolKind.CCCompiler, "GNU", "GNU", "/usr/sfw/bin");
+        CompilerFlavor flavor = CompilerFlavor.toFlavor("GNU", PlatformTypes.PLATFORM_MACOSX);
+        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCCompiler, "GNU", "GNU", "/usr/sfw/bin");
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
@@ -244,8 +243,8 @@ public class GNUCCCCompilerTest {
         if (TRACE) {
             System.out.println("Parse Compiler Output of MinGW on Windows");
         }
-        CompilerFlavor flavor = CompilerFlavorAccessor.toFlavor("MinGW", PlatformTypes.PLATFORM_WINDOWS);
-        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, ToolKind.CCCompiler, "MinGW", "MinGW", "C:\\MinGW\\bin");
+        CompilerFlavor flavor = CompilerFlavor.toFlavor("MinGW", PlatformTypes.PLATFORM_WINDOWS);
+        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCCompiler, "MinGW", "MinGW", "C:\\MinGW\\bin");
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
@@ -314,8 +313,8 @@ public class GNUCCCCompilerTest {
         if (TRACE) {
             System.out.println("Parse Compiler Output of TDM MinGW on Windows");
         }
-        CompilerFlavor flavor = CompilerFlavorAccessor.toFlavor("MinGW_TDM", PlatformTypes.PLATFORM_WINDOWS);
-        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, ToolKind.CCCompiler, "MinGW_TDM", "MinGW_TDM", "D:\\tec\\mingw\\bin");
+        CompilerFlavor flavor = CompilerFlavor.toFlavor("MinGW_TDM", PlatformTypes.PLATFORM_WINDOWS);
+        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCCompiler, "MinGW_TDM", "MinGW_TDM", "D:\\tec\\mingw\\bin");
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
@@ -376,8 +375,8 @@ public class GNUCCCCompilerTest {
         if (TRACE) {
             System.out.println("Parse Compiler Output of Cygwin on Windows");
         }
-        CompilerFlavor flavor = CompilerFlavorAccessor.toFlavor("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
-        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, ToolKind.CCCompiler, "Cygwin", "Cygwin", "C:\\cygwin\\bin");
+        CompilerFlavor flavor = CompilerFlavor.toFlavor("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
+        MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCCompiler, "Cygwin", "Cygwin", "C:\\cygwin\\bin");
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
@@ -406,7 +405,7 @@ public class GNUCCCCompilerTest {
 
     private static final class MyGNUCCCompiler  extends GNUCCCompiler {
         Pair pair = new Pair();
-        protected MyGNUCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+        protected MyGNUCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
             super(env, flavor, kind, name, displayName, path);
         }
         @Override

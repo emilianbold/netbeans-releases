@@ -63,9 +63,9 @@ public class HtmlLexerTest extends NbTestCase {
         LexerTestUtilities.setTesting(true);
     }
 
-    public static Test xsuite() {
+    public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new HtmlLexerTest("testIssue149968"));
+        suite.addTest(new HtmlLexerTest("testEmbeddedCss"));
         return suite;
     }
 
@@ -113,6 +113,16 @@ public class HtmlLexerTest extends NbTestCase {
 
     public void testIssue149968() {
         checkTokens("<div @@@/>", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " @@@|WS", "/>|TAG_CLOSE_SYMBOL");
+    }
+
+    public void testEmbeddedCss() {
+        //not css attribute
+        checkTokens("<div align=\"center\"/>", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "align|ARGUMENT",
+                "=|OPERATOR", "\"center\"|VALUE", "/>|TAG_CLOSE_SYMBOL");
+
+        //css attribute
+        checkTokens("<div class=\"myclass\"/>", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "class|ARGUMENT",
+                "=|OPERATOR", "\"myclass\"|VALUE_CSS");
     }
 
     private void checkTokens(String text, String... descriptions) {

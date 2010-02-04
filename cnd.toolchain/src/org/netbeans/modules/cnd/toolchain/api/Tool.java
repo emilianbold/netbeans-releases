@@ -56,22 +56,21 @@ public class Tool {
     }
     
     private final ExecutionEnvironment executionEnvironment;
-    private CompilerFlavor flavor;
-    private ToolKindBase kind;
+    private final CompilerFlavor flavor;
+    private final ToolKind kind;
     private String name;
-    private String displayName;
+    private final String displayName;
     private String path;
-    private CompilerSet compilerSet = null;
+    private CompilerSet compilerSet;
 
     /** Creates a new instance of GenericCompiler */
-    protected Tool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+    protected Tool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         this.executionEnvironment = executionEnvironment;
         this.flavor = flavor;
         this.kind = kind;
         this.name = name;
         this.displayName = displayName;
         this.path = path;
-        compilerSet = null;
     }
 
     public ToolDescriptor getDescriptor() {
@@ -79,20 +78,14 @@ public class Tool {
     }
 
     public Tool createCopy() {
-        Tool copy = new Tool(executionEnvironment, flavor, kind, "", displayName, path);
-        copy.setName(getName());
-        return copy;
-    }
-
-    static Tool createTool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
         return new Tool(executionEnvironment, flavor, kind, name, displayName, path);
     }
 
-    public ExecutionEnvironment getExecutionEnvironment() {
+    public final ExecutionEnvironment getExecutionEnvironment() {
         return executionEnvironment;
     }
 
-    public CompilerFlavor getFlavor() {
+    public final CompilerFlavor getFlavor() {
         return flavor;
     }
 
@@ -122,32 +115,31 @@ public class Tool {
     public void waitReady(boolean reset) {
     }
 
-    public ToolKindBase getKind() {
+    public final ToolKind getKind() {
         return kind;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
+    public final String getName() {
         return name;
     }
 
-    public String getPath() {
+    public final String getPath() {
         return path;
     }
 
-    public void setPath(String p) {
-        if (p == null) {
-        } else {
-            path = p;
-            name = ToolUtils.getBaseName(path);
-        }
+    public final String getDisplayName() {
+        return displayName;
     }
 
-    public String getDisplayName() {
-        return displayName;
+    public String getIncludeFilePathPrefix() {
+        // TODO: someone put this here only because OutputWindowWriter in core
+        // wants to get information about compilers which are defined in makeprojects.
+        // abstract Tool shouldn't care about include paths for compilers
+        throw new UnsupportedOperationException();
+    }
+
+    public final CompilerSet getCompilerSet() {
+        return compilerSet;
     }
 
     @Override
@@ -160,27 +152,36 @@ public class Tool {
         }
     }
 
-    public String getIncludeFilePathPrefix() {
-        // TODO: someone put this here only because OutputWindowWriter in core
-        // wants to get information about compilers which are defined in makeprojects.
-        // abstract Tool shouldn't care about include paths for compilers
-        throw new UnsupportedOperationException();
+    private void setPath(String p) {
+        if (p != null) {
+            path = p;
+            name = ToolUtils.getBaseName(path);
+        }
     }
 
-    public CompilerSet getCompilerSet() {
-        return compilerSet;
-    }
-
-    public void setCompilerSet(CompilerSet compilerSet) {
+    private void setCompilerSet(CompilerSet compilerSet) {
         this.compilerSet = compilerSet;
+    }
+
+    private static Tool createTool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+        return new Tool(executionEnvironment, flavor, kind, name, displayName, path);
     }
 
     private static final class APIAccessorImpl extends APIAccessor {
 
         @Override
-        public Tool createTool(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+        public Tool createTool(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
             return Tool.createTool(env, flavor, kind, name, displayName, path);
         }
 
+        @Override
+        public void setCompilerSet(Tool tool, CompilerSet cs) {
+            tool.setCompilerSet(cs);
+        }
+
+        @Override
+        public void setToolPath(Tool tool, String p) {
+            tool.setPath(p);
+        }
     }
 }

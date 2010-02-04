@@ -54,6 +54,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -66,26 +67,38 @@ import org.openide.util.lookup.Lookups;
  */
 public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
 
-    private Line        line;
-    private String      type;
-    private JPDAThread  thread;
+    private final Line        line;
+    private final String      type;
+    private final JPDAThread  thread;
 
 
     DebuggerAnnotation (String type, Line line, JPDAThread thread) {
         this.type = type;
         this.line = line;
         this.thread = thread;
+        if ("Breakpoint".equals(type)) {    // Bug #169096
+            Exceptions.printStackTrace(new IllegalStateException("Wrong annotation type: "+type+". Please report to bug #169096."));
+        }
         attach (line);
     }
     
     DebuggerAnnotation (String type, Line.Part linePart) {
         this.type = type;
         this.line = linePart.getLine();
+        this.thread = null;
+        if ("Breakpoint".equals(type)) {    // Bug #169096
+            Exceptions.printStackTrace(new IllegalStateException("Wrong annotation type: "+type+". Please report to bug #169096."));
+        }
         attach (linePart);
     }
     
     DebuggerAnnotation (String type, AttributeSet attrs, int start, int end, FileObject fo) {
         this.type = type;
+        this.line = null;
+        this.thread = null;
+        if ("Breakpoint".equals(type)) {    // Bug #169096
+            Exceptions.printStackTrace(new IllegalStateException("Wrong annotation type: "+type+". Please report to bug #169096."));
+        }
         attach (new HighlightAnnotatable(attrs, start, end, fo));
     }
     

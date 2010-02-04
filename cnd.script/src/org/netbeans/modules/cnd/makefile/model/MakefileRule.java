@@ -40,24 +40,26 @@ package org.netbeans.modules.cnd.makefile.model;
 
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Alexey Vladykin
  */
-public final class MakefileRule implements MakefileElement {
+public final class MakefileRule extends AbstractMakefileElement {
 
     private final List<String> targets;
     private final List<String> prereqs;
 
-    public MakefileRule(List<String> targets, List<String> prereqs) {
+    public MakefileRule(List<String> targets, List<String> prereqs, FileObject file, int startOffset, int endOffset) {
+        super(ElementKind.RULE, first(targets), file, startOffset, endOffset);
+        Parameters.notNull("targets", targets);
+        Parameters.notNull("prereqs", prereqs);
         this.targets = Collections.unmodifiableList(targets);
         this.prereqs = Collections.unmodifiableList(prereqs);
-    }
-
-    @Override
-    public Kind getKind() {
-        return Kind.RULE;
     }
 
     public List<String> getTargets() {
@@ -66,6 +68,13 @@ public final class MakefileRule implements MakefileElement {
 
     public List<String> getPrerequisites() {
         return prereqs;
+    }
+
+    @Override
+    public boolean signatureEquals(ElementHandle that) {
+        return that instanceof MakefileRule
+                && that.getKind() == this.getKind()
+                && that.toString().equals(this.toString());
     }
 
     @Override

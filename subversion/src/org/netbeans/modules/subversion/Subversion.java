@@ -78,7 +78,7 @@ public class Subversion {
      * Fired when textual annotations and badges have changed. The NEW value is Set<File> of files that changed or NULL
      * if all annotaions changed.
      */
-    static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged";
+    public static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged";
 
     static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged";
 
@@ -517,11 +517,11 @@ public class Subversion {
         support.firePropertyChange(PROP_BASE_FILE_CHANGED, null, s);
     }
 
-    void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
-    void removePropertyChangeListener(PropertyChangeListener listener) {
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
 

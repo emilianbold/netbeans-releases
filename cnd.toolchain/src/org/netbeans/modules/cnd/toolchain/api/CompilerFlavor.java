@@ -40,23 +40,63 @@
 package org.netbeans.modules.cnd.toolchain.api;
 
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerFlavorImpl;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface CompilerFlavor {
+public abstract class CompilerFlavor {
 
-    String getCommandFolder(int platform);
+    public static CompilerFlavor getUnknown(int platform) {
+        return CompilerFlavorImpl.getUnknown(platform);
+    }
 
-    ToolchainDescriptor getToolchainDescriptor();
+    public static CompilerFlavor toFlavor(String name, int platform) {
+        return CompilerFlavorImpl.toFlavor(name, platform);
+    }
 
-    boolean isCygwinCompiler();
+    /**
+     *
+     * @param platform The Platform kind.
+     * @return The path to folder where unix-like commands are located. Defined for Windows platform.
+     */
+    public abstract String getCommandFolder(int platform);
 
-    boolean isGnuCompiler();
+    /**
+     *
+     * @return The tool collection descriptor that loaded from xml file from folder CND/ToolChain/ in file system
+     */
+    public abstract ToolchainDescriptor getToolchainDescriptor();
 
-    boolean isMinGWCompiler();
+    /**
+     *
+     * @return True if tool chain like to GNU compilers
+     */
+    public abstract boolean isGnuCompiler();
 
-    boolean isSunStudioCompiler();
+    /**
+     *
+     * @return True if tool chain like to SunStudio compilers
+     */
+    public abstract boolean isSunStudioCompiler();
 
+    /**
+     *
+     * @return True if tool chain like to Windows Cygwin compilers
+     */
+    public abstract boolean isCygwinCompiler();
+
+    /**
+     *
+     * @return True if tool chain like to Windows MinGW compilers
+     */
+    public abstract boolean isMinGWCompiler();
+
+    
+    protected CompilerFlavor() {
+        if (!getClass().equals(CompilerFlavorImpl.class)) {
+            throw new UnsupportedOperationException("this class can not be overriden by clients"); // NOI18N
+        }
+    }
 }

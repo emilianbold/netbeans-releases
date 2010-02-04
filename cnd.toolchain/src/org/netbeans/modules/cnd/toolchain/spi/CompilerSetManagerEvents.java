@@ -38,12 +38,14 @@
  */
 package org.netbeans.modules.cnd.toolchain.spi;
 
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.SPIAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -54,10 +56,18 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  *
  * @author Sergey Grinev
  */
-public class CompilerSetManagerEvents {
+public final class CompilerSetManagerEvents {
+
+    static {
+        SPIAccessor.register(new SPIAccessorImpl());
+    }
 
     private static final Map<ExecutionEnvironment, CompilerSetManagerEvents> map =
             new HashMap<ExecutionEnvironment, CompilerSetManagerEvents>();
+
+    private final ExecutionEnvironment executionEnvironment;
+    private boolean isCodeModelInfoReady;
+    private List<Runnable> tasks = new ArrayList<Runnable>();
 
     public static synchronized CompilerSetManagerEvents get(ExecutionEnvironment env) {
         CompilerSetManagerEvents instance = map.get(env);
@@ -68,16 +78,6 @@ public class CompilerSetManagerEvents {
         return instance;
     }
 
-    public CompilerSetManagerEvents(ExecutionEnvironment env) {
-        this.executionEnvironment = env;
-        this.isCodeModelInfoReady = ((CompilerSetManagerImpl)CompilerSetManager.get(executionEnvironment)).isComplete();
-    }
-
-    private final ExecutionEnvironment executionEnvironment;
-
-    private boolean isCodeModelInfoReady;
-    private List<Runnable> tasks = new ArrayList<Runnable>();
-
     public void runOnCodeModelReadiness(Runnable task) {
         if (executionEnvironment.isLocal() || isCodeModelInfoReady) {
             task.run();
@@ -86,7 +86,12 @@ public class CompilerSetManagerEvents {
         }
     }
 
-    public void runTasks() {
+    private CompilerSetManagerEvents(ExecutionEnvironment env) {
+        this.executionEnvironment = env;
+        this.isCodeModelInfoReady = ((CompilerSetManagerImpl)CompilerSetManager.get(executionEnvironment)).isComplete();
+    }
+
+    private void runTasks() {
         isCodeModelInfoReady = true;
         if (tasks != null) {
             for (Runnable task : tasks) {
@@ -94,5 +99,28 @@ public class CompilerSetManagerEvents {
             }
         }
         tasks = null;
+    }
+
+    private static final class SPIAccessorImpl extends SPIAccessor {
+
+        @Override
+        public void runTasks(CompilerSetManagerEvents event) {
+            event.runTasks();
+        }
+
+        @Override
+        public CompilerSetManagerEvents createEvent(ExecutionEnvironment env) {
+            return new CompilerSetManagerEvents(env);
+        }
+
+        @Override
+        public void add(ExecutionEnvironment env, CompilerSet cs) {
+            ((CompilerSetManagerImpl)CompilerSetManagerImpl.get(env)).add(cs);
+        }
+
+        @Override
+        public void remove(ExecutionEnvironment env, CompilerSet cs) {
+            ((CompilerSetManagerImpl)CompilerSetManagerImpl.get(env)).remove(cs);
+        }
     }
 }

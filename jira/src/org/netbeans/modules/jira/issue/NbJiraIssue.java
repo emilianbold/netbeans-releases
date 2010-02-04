@@ -122,7 +122,9 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     static final String LABEL_NAME_ASSIGNED_TO      = "jira.issue.assigned";    // NOI18N
 
     static final String LABEL_NAME_PROJECT          = "jira.issue.project";     // NOI18N
-    static final String LABEL_NAME_COMPONENTS       = "jira.issue.components";     // NOI18N
+    static final String LABEL_NAME_COMPONENTS       = "jira.issue.components";  // NOI18N
+    static final String LABEL_NAME_AFFECTS_VERSION  = "jira.issue.affectsversion"; // NOI18N
+    static final String LABEL_NAME_FIX_VERSION      = "jira.issue.fixversion";  // NOI18N
     static final String LABEL_NAME_CREATED          = "jira.issue.created";     // NOI18N
     static final String LABEL_NAME_UPDATED          = "jira.issue.updated";     // NOI18N
     static final String LABEL_NAME_DUE              = "jira.issue.due";         // NOI18N
@@ -1024,6 +1026,14 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                 new ColumnDescriptor<String>(LABEL_NAME_COMPONENTS, String.class,
                                               loc.getString("CTL_Issue_Components_Title"),        // NOI18N
                                               loc.getString("CTL_Issue_Components_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_AFFECTS_VERSION, String.class,
+                                              loc.getString("CTL_Issue_Affects_Version_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Affects_Version_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_FIX_VERSION, String.class,
+                                              loc.getString("CTL_Issue_Fix_Version_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Fix_Version_Desc"),         // NOI18N
                                               0, false),
                 new ColumnDescriptor<String>(LABEL_NAME_CREATED, String.class,
                                               loc.getString("CTL_Issue_Created_Title"),        // NOI18N

@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 import java.io.BufferedReader;
 import java.io.IOException;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.ErrorManager;
@@ -54,14 +54,13 @@ public class SunCCompiler extends SunCCCCompiler {
      * Creates a new instance of SunCCompiler
      * private: use factory methods instead
      */
-    private SunCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+    private SunCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
     }
     
     @Override
     public SunCCompiler createCopy() {
-        SunCCompiler copy = new SunCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), "", getDisplayName(), getPath());
-        copy.setName(getName());
+        SunCCompiler copy = new SunCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
         if (isReady()) {
             copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
             copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());
@@ -69,7 +68,7 @@ public class SunCCompiler extends SunCCCCompiler {
         return copy;
     }
 
-    public static SunCCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+    public static SunCCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         return new SunCCompiler(env, flavor, kind, name, displayName, path);
     }
 

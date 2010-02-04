@@ -467,8 +467,8 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
     }
 
     private static void registerFormatterIndenter(LayerBuilder b, String mimeType) {
-        instanceFile(b, "Editors/" + mimeType, null, GsfReformatTaskFactory.class, null, ReformatTask.class).write(); //NOI18N
-        instanceFile(b, "Editors/" + mimeType, null, GsfIndentTaskFactory.class, null, IndentTask.class).write(); //NOI18N
+        instanceFile(b, "Editors/" + mimeType, null, GsfReformatTaskFactory.class, null, ReformatTask.Factory.class).write(); //NOI18N
+        instanceFile(b, "Editors/" + mimeType, null, GsfIndentTaskFactory.class, null, IndentTask.Factory.class).write(); //NOI18N
     }
 
     private static String makeFilesystemName(String s) {

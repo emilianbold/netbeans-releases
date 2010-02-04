@@ -74,6 +74,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private String[] javacClasspath = new String[]{"javac.classpath"};    //NOI18N
     private String[] processorClasspath = new String[]{ProjectProperties.JAVAC_PROCESSORPATH};    //NOI18N
     private String[] javacTestClasspath = new String[]{"javac.test.classpath"};  //NOI18N
+    private String[] processorTestClasspath = new String[]{"javac.test.processorpath"};  //NOI18N
     private String[] runClasspath = new String[]{"run.classpath"};    //NOI18N
     private String[] runTestClasspath = new String[]{"run.test.classpath"};  //NOI18N
     private String[] endorsedClasspath = new String[]{ProjectProperties.ENDORSED_CLASSPATH};  //NOI18N
@@ -327,7 +328,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             else {
                 cp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, /*XXX*/processorClasspath)); // NOI18N
+                    projectDirectory, evaluator, processorTestClasspath)); // NOI18N
             }
             cache[9+type] = cp;
         }
@@ -512,7 +513,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             }
             else if (ClassPath.EXECUTE.equals(type)) {
                 return runTestClasspath;
-            }//XXX: processor path
+            } else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
+                return processorTestClasspath;
+            }
             else {
                 return null;
             }

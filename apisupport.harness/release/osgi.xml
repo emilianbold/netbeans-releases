@@ -89,7 +89,7 @@ made subject to such option by the copyright holder.
                 <pathfileset>
                     <path refid="cluster.path.id"/>
                     <or>
-                        <filename name="core/osgi*.jar"/>
+                        <filename name="modules/ext/osgi*.jar"/>
                         <filename name="modules/ext/felix*.jar"/>
                     </or>
                 </pathfileset>

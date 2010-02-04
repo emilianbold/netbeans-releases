@@ -51,7 +51,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
-import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -79,8 +78,8 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         CompilerSet cs = getCompilerSetManager().getDefaultCompilerSet();
         String csName = (cs == null) ? null : cs.getName();
         if (csName == null || csName.length() == 0) {
-            if (getCompilerSetManager().getCompilerSetNames().size() > 0) {
-                csName = getCompilerSetManager().getCompilerSet(0).getName();
+            if (getCompilerSetManager().getCompilerSets().size() > 0) {
+                csName = getCompilerSetManager().getCompilerSets().get(0).getName();
             } else {
                 if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
                     csName = "Sun"; // NOI18N
@@ -95,7 +94,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     }
 
     // we can't store CSM because it's dependent on devHostConfig name which is not persistent
-    public CompilerSetManager getCompilerSetManager() {
+    public final CompilerSetManager getCompilerSetManager() {
         return CompilerSetManager.get(dhconf.getExecutionEnvironment());
     }
 
@@ -141,7 +140,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
             nm = name;
             fl = name;
         }
-        setValue(CompilerFlavorAccessor.mapOldToNew(nm, version), CompilerFlavorAccessor.mapOldToNew(fl, version));
+        setValue(CompilerSet2Configuration.mapOldToNew(nm, version), CompilerSet2Configuration.mapOldToNew(fl, version));
     }
 
     public void setValue(String name, String flavor) {
@@ -159,8 +158,8 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         String s = getCompilerSetName().getValue();
         if (s != null) {
             int i = 0;
-            for (String csname : CompilerSetManager.get(dhconf.getExecutionEnvironment()).getCompilerSetNames()) {
-                if (s.equals(csname)) {
+            for(CompilerSet cs : CompilerSetManager.get(dhconf.getExecutionEnvironment()).getCompilerSets()) {
+                if (s.equals(cs.getName())) {
                     return i;
                 }
                 i++;
@@ -330,7 +329,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
             ocs = CompilerSetManager.get(env).getDefaultCompilerSet();
         }
         if (ocs == null) {
-            ocs = CompilerSetManager.get(env).getCompilerSet(0);
+            ocs = CompilerSetManager.get(env).getCompilerSets().get(0);
         }
         if (ocs == null) {
             return;
@@ -357,5 +356,32 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
                 }
             });
         }
+    }
+
+    private static String mapOldToNew(String flavor, int version) {
+        if (version <= 43) {
+            if (flavor.equals("Sun")) { // NOI18N
+                return "SunStudio"; // NOI18N
+            } else if (flavor.equals("SunExpress")) { // NOI18N
+                return "SunStudioExpress"; // NOI18N
+            } else if (flavor.equals("Sun12")) { // NOI18N
+                return "SunStudio_12"; // NOI18N
+            } else if (flavor.equals("Sun11")) { // NOI18N
+                return "SunStudio_11"; // NOI18N
+            } else if (flavor.equals("Sun10")) { // NOI18N
+                return "SunStudio_10"; // NOI18N
+            } else if (flavor.equals("Sun9")) { // NOI18N
+                return "SunStudio_9"; // NOI18N
+            } else if (flavor.equals("Sun8")) { // NOI18N
+                return "SunStudio_8"; // NOI18N
+            } else if (flavor.equals("DJGPP")) { // NOI18N
+                return "GNU"; // NOI18N
+            } else if (flavor.equals("Interix")) { // NOI18N
+                return "GNU"; // NOI18N
+            } else if (flavor.equals(CompilerSet.UNKNOWN)) {
+                return "GNU"; // NOI18N
+            }
+        }
+        return flavor;
     }
 }

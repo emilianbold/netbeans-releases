@@ -98,7 +98,8 @@ public class MakefileLexerTest extends NbTestCase {
         assertNextTokenEquals(ts, MakefileTokenId.COLON, ":");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.TAB, "\t");
-        assertNextTokenEquals(ts, MakefileTokenId.SHELL, "$(COMPILE.cc) source.cpp -o source.o");
+        assertNextTokenEquals(ts, MakefileTokenId.MACRO, "$(COMPILE.cc)");
+        assertNextTokenEquals(ts, MakefileTokenId.SHELL, " source.cpp -o source.o");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.SPECIAL_TARGET, ".PHONY");
@@ -178,18 +179,14 @@ public class MakefileLexerTest extends NbTestCase {
         TokenSequence<?> ts = hi.tokenSequence();
 
         assertNextTokenEquals(ts, MakefileTokenId.TAB, "\t");
-        assertNextTokenEquals(ts, MakefileTokenId.SHELL_MODIFIER, "@");
-        assertNextTokenEquals(ts, MakefileTokenId.SHELL_MODIFIER, "+");
-        assertNextTokenEquals(ts, MakefileTokenId.SHELL_MODIFIER, "-");
-        assertNextTokenEquals(ts, MakefileTokenId.SHELL, "echo foo\\\nbar\\\n\tbaz");
+        assertNextTokenEquals(ts, MakefileTokenId.SHELL, "@+-echo foo\\\nbar\\\n\tbaz");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "foo");
         assertNextTokenEquals(ts, MakefileTokenId.COLON, ":");
         assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
         assertNextTokenEquals(ts, MakefileTokenId.SEMICOLON, ";");
         assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
-        assertNextTokenEquals(ts, MakefileTokenId.SHELL_MODIFIER, "-");
-        assertNextTokenEquals(ts, MakefileTokenId.SHELL, "bar");
+        assertNextTokenEquals(ts, MakefileTokenId.SHELL, "-bar");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
 
         assertFalse("Unexpected tokens remaining", ts.moveNext());
@@ -228,7 +225,7 @@ public class MakefileLexerTest extends NbTestCase {
     }
 
     public void testEscapes() {
-        String text = "a\\:=b\nc\\=d\ne\\+=f\n\\:all\\::\n\techo $(a\\) $(c\\) $(e\\)";
+        String text = "a\\:=b\nc\\=d\ne\\+=f\n\\:all\\::\\#\n\techo $(a\\) $(c\\) $(e\\)";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, new MakefileLanguageHierarchy().language());
         TokenSequence<?> ts = hi.tokenSequence();
 
@@ -246,9 +243,15 @@ public class MakefileLexerTest extends NbTestCase {
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "\\:all\\:");
         assertNextTokenEquals(ts, MakefileTokenId.COLON, ":");
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "\\#");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.TAB, "\t");
-        assertNextTokenEquals(ts, MakefileTokenId.SHELL, "echo $(a\\) $(c\\) $(e\\)");
+        assertNextTokenEquals(ts, MakefileTokenId.SHELL, "echo ");
+        assertNextTokenEquals(ts, MakefileTokenId.MACRO, "$(a\\)");
+        assertNextTokenEquals(ts, MakefileTokenId.SHELL, " ");
+        assertNextTokenEquals(ts, MakefileTokenId.MACRO, "$(c\\)");
+        assertNextTokenEquals(ts, MakefileTokenId.SHELL, " ");
+        assertNextTokenEquals(ts, MakefileTokenId.MACRO, "$(e\\)");
 
         assertFalse("Unexpected tokens remaining", ts.moveNext());
     }

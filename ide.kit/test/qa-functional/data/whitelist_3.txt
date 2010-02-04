@@ -1,3 +1,8 @@
+#179838
+org.apache.derby.jdbc.AutoloadedDriver
+org.h2.Driver
+org.netbeans.modules.db.explorer.DatabaseConnector
+
 # Bug 169991
 # Don't load classes until language is used & use @annotation to generate layer
 org.netbeans.modules.csl.api.DataLoadersBridge
@@ -7039,3 +7044,25 @@ org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$URLCache
 org.netbeans.modules.parsing.spi.indexing.support.QuerySupport$IndexerQuery
 org.openide.explorer.ExplorerManager$1SetExploredContextAndSelection
 org.openide.explorer.view.Visualizer
+
+# OK after elimination of impl deps from platform and API for error badges
+org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$BinaryIndexers
+org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$SourceIndexers
+org.netbeans.modules.parsing.impl.indexing.errors.ErrorAnnotator
+org.netbeans.modules.parsing.impl.indexing.errors.Settings
+org.netbeans.modules.parsing.impl.indexing.errors.TaskCache
+org.netbeans.modules.parsing.impl.indexing.errors.TaskProvider
+org.netbeans.modules.parsing.impl.indexing.errors.Utilities
+org.netbeans.modules.parsing.spi.indexing.ErrorsCache$Convertor
+org.netbeans.modules.progress.spi.Controller
+org.netbeans.modules.progress.spi.ExtractedProgressUIWorker
+org.netbeans.modules.progress.spi.InternalHandle
+org.netbeans.modules.progress.spi.ProgressEvent
+org.netbeans.modules.progress.spi.ProgressUIWorker
+org.netbeans.modules.progress.spi.ProgressUIWorkerProvider
+org.netbeans.modules.progress.spi.ProgressUIWorkerWithModel
+org.netbeans.modules.progress.spi.TaskModel
+org.openide.util.NbPreferences$Provider
+org.openide.util.actions.ActionPresenterProvider
+org.openide.util.lookup.implspi.NamedServicesProvider
+org.openide.windows.RetainLocation

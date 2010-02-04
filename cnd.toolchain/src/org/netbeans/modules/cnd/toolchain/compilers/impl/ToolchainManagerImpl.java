@@ -78,6 +78,7 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @author Alexander Simon
  */
+@SuppressWarnings({"PackageVisibleInnerClass","PackageVisibleField"})
 public final class ToolchainManagerImpl {
 
     private static final boolean TRACE = Boolean.getBoolean("cnd.toolchain.personality.trace"); // NOI18N
@@ -87,7 +88,7 @@ public final class ToolchainManagerImpl {
     private List<ToolchainDescriptor> descriptors = new ArrayList<ToolchainDescriptor>();
     private static final Logger log = Logger.getLogger("cnd.toolchain.logger"); // NOI18N
 
-    public static final ToolchainManagerImpl getImpl() {
+    public static ToolchainManagerImpl getImpl() {
         return manager;
     }
 
@@ -404,6 +405,11 @@ public final class ToolchainManagerImpl {
 
     private static final WeakHashMap<String, String> commandCache = new WeakHashMap<String, String>();
     private static String getCommandOutput(String path, String command) {
+        String res = commandCache.get(command); // NOI18N
+        if (res != null) {
+            //System.err.println("Get command output from cache #"+command); // NOI18N
+            return res;
+        }
         if (path == null) {
             path = ""; // NOI18N
         }
@@ -416,11 +422,6 @@ public final class ToolchainManagerImpl {
                 String entry = key + "=" + (value != null ? value : ""); // NOI18N
                 envp.add(entry);
             }
-        }
-        String res = commandCache.get(command); // NOI18N
-        if (res != null) {
-            //System.err.println("Get command output from cache #"+command); // NOI18N
-            return res;
         }
         StringBuilder buf = new StringBuilder();
         try {
@@ -1249,10 +1250,12 @@ public final class ToolchainManagerImpl {
             this.kind = kind;
         }
 
+        @Override
         public String getPath() {
             return path;
         }
 
+        @Override
         public PathKind getKind() {
             return kind;
         }
@@ -2077,18 +2080,22 @@ public final class ToolchainManagerImpl {
             this.v = v;
         }
 
+        @Override
         public String getFileName() {
             return v.toolChainFileName;
         }
 
+        @Override
         public String getName() {
             return v.toolChainName;
         }
 
+        @Override
         public String getDisplayName() {
             return v.toolChainDisplay;
         }
 
+        @Override
         public String[] getFamily() {
             if (v.family != null && v.family.length() > 0) {
                 return v.family.split(","); // NOI18N
@@ -2096,6 +2103,7 @@ public final class ToolchainManagerImpl {
             return new String[]{};
         }
 
+        @Override
         public String[] getPlatforms() {
             if (v.platforms != null && v.platforms.length() > 0) {
                 return v.platforms.split(","); // NOI18N
@@ -2103,34 +2111,42 @@ public final class ToolchainManagerImpl {
             return new String[]{};
         }
 
+        @Override
         public String getUpdateCenterUrl() {
             return v.uc;
         }
 
+        @Override
         public String getUpdateCenterDisplayName() {
             return v.ucName;
         }
 
+        @Override
         public String getUpgradeUrl() {
             return v.upgrage;
         }
 
+        @Override
         public String getModuleID() {
             return v.module;
         }
 
+        @Override
         public boolean isAbstract() {
             return v.isAbstract;
         }
 
+        @Override
         public String getDriveLetterPrefix() {
             return v.driveLetterPrefix;
         }
 
+        @Override
         public String getMakefileWriter() {
             return v.makefileWriter;
         }
 
+        @Override
         public CompilerDescriptor getC() {
             if (c == null && v.c.isValid()) {
                 c = new CompilerDescriptorImpl(v.c);
@@ -2138,6 +2154,7 @@ public final class ToolchainManagerImpl {
             return c;
         }
 
+        @Override
         public List<BaseFolder> getBaseFolders() {
             if (v.baseFolder == null) {
                 return null;
@@ -2149,6 +2166,7 @@ public final class ToolchainManagerImpl {
             return res;
         }
 
+        @Override
         public List<BaseFolder> getCommandFolders() {
             if (v.commandFolder == null) {
                 return null;
@@ -2160,10 +2178,12 @@ public final class ToolchainManagerImpl {
             return res;
         }
 
+        @Override
         public String getQmakeSpec() {
             return v.qmakespec;
         }
 
+        @Override
         public CompilerDescriptor getCpp() {
             if (cpp == null && v.cpp.isValid()) {
                 cpp = new CompilerDescriptorImpl(v.cpp);
@@ -2171,6 +2191,7 @@ public final class ToolchainManagerImpl {
             return cpp;
         }
 
+        @Override
         public CompilerDescriptor getFortran() {
             if (fortran == null && v.fortran.isValid()) {
                 fortran = new CompilerDescriptorImpl(v.fortran);
@@ -2178,6 +2199,7 @@ public final class ToolchainManagerImpl {
             return fortran;
         }
 
+        @Override
         public CompilerDescriptor getAssembler() {
             if (assembler == null && v.assembler.isValid()) {
                 assembler = new CompilerDescriptorImpl(v.assembler);
@@ -2185,6 +2207,7 @@ public final class ToolchainManagerImpl {
             return assembler;
         }
 
+        @Override
         public ScannerDescriptor getScanner() {
             if (scanner == null) {
                 scanner = new ScannerDescriptorImpl(v.scanner);
@@ -2192,6 +2215,7 @@ public final class ToolchainManagerImpl {
             return scanner;
         }
 
+        @Override
         public LinkerDescriptor getLinker() {
             if (linker == null) {
                 linker = new LinkerDescriptorImpl(v.linker);
@@ -2199,6 +2223,7 @@ public final class ToolchainManagerImpl {
             return linker;
         }
 
+        @Override
         public MakeDescriptor getMake() {
             if (make == null) {
                 make = new MakeDescriptorImpl(v.make);
@@ -2206,10 +2231,12 @@ public final class ToolchainManagerImpl {
             return make;
         }
 
+        @Override
         public Map<String, List<String>> getDefaultLocations() {
             return v.default_locations;
         }
 
+        @Override
         public DebuggerDescriptor getDebugger() {
             if (debugger == null) {
                 debugger = new DebuggerDescriptorImpl(v.debugger);
@@ -2217,6 +2244,7 @@ public final class ToolchainManagerImpl {
             return debugger;
         }
 
+        @Override
         public QMakeDescriptor getQMake() {
             if (qmake == null) {
                 qmake = new QMakeDescriptorImpl(v.qmake);
@@ -2224,6 +2252,7 @@ public final class ToolchainManagerImpl {
             return qmake;
         }
 
+        @Override
         public CMakeDescriptor getCMake() {
             if (cmake == null) {
                 cmake = new CMakeDescriptorImpl(v.cmake);
@@ -2244,18 +2273,22 @@ public final class ToolchainManagerImpl {
             this.info = info;
         }
 
+        @Override
         public String getFolderKey() {
             return info.folderKey;
         }
 
+        @Override
         public String getFolderPattern() {
             return info.folderPattern;
         }
 
+        @Override
         public String getFolderSuffix() {
             return info.folderSuffix;
         }
 
+        @Override
         public String getFolderPathPattern() {
             return info.folderPathPattern;
         }
@@ -2269,6 +2302,7 @@ public final class ToolchainManagerImpl {
             this.tool = tool;
         }
 
+        @Override
         public String[] getNames() {
             if (tool.name != null && tool.name.length() > 0) {
                 return tool.name.split(","); // NOI18N
@@ -2276,14 +2310,17 @@ public final class ToolchainManagerImpl {
             return new String[]{};
         }
 
+        @Override
         public String getVersionFlags() {
             return tool.versionFlags;
         }
 
+        @Override
         public String getVersionPattern() {
             return tool.versionPattern;
         }
 
+        @Override
         public AlternativePath[] getAlternativePath() {
             if (tool.alternativePath != null) {
                 return tool.alternativePath.toArray(new AlternativePath[tool.alternativePath.size()] );
@@ -2291,6 +2328,7 @@ public final class ToolchainManagerImpl {
             return null;
         }
 
+        @Override
         public boolean skipSearch() {
             return tool.skipSearch;
         }
@@ -2303,98 +2341,122 @@ public final class ToolchainManagerImpl {
             super(compiler);
         }
 
+        @Override
         public String getPathPattern() {
             return tool.pathPattern;
         }
 
+        @Override
         public String getExistFolder() {
             return tool.existFolder;
         }
 
+        @Override
         public String getIncludeFlags() {
             return tool.includeFlags;
         }
 
+        @Override
         public String getIncludeParser() {
             return tool.includeOutputParser;
         }
 
+        @Override
         public String getRemoveIncludePathPrefix() {
             return tool.removeIncludePathPrefix;
         }
 
+        @Override
         public String getRemoveIncludeOutputPrefix() {
             return tool.removeIncludeOutputPrefix;
         }
 
+        @Override
         public String getUserIncludeFlag() {
             return tool.userIncludeFlag;
         }
 
+        @Override
         public String getMacroFlags() {
             return tool.macrosFlags;
         }
 
+        @Override
         public String getMacroParser() {
             return tool.macrosOutputParser;
         }
 
+        @Override
         public List<PredefinedMacro> getPredefinedMacros() {
             return tool.predefinedMacros;
         }
 
+        @Override
         public String getUserMacroFlag() {
             return tool.userMacroFlag;
         }
 
+        @Override
         public String[] getDevelopmentModeFlags() {
             return tool.developmentMode.values();
         }
 
+        @Override
         public String[] getWarningLevelFlags() {
             return tool.warningLevel.values();
         }
 
+        @Override
         public String[] getArchitectureFlags() {
             return tool.architecture.values();
         }
 
+        @Override
         public String getStripFlag() {
             return tool.strip;
         }
 
+        @Override
         public String[] getMultithreadingFlags() {
             return tool.multithreading.values();
         }
 
+        @Override
         public String[] getStandardFlags() {
             return tool.standard.values();
         }
 
+        @Override
         public String[] getLanguageExtensionFlags() {
             return tool.languageExtension.values();
         }
 
+        @Override
         public String[] getLibraryFlags() {
             return tool.library.values();
         }
 
+        @Override
         public String getOutputObjectFileFlags() {
             return tool.outputObjectFileFlags;
         }
 
+        @Override
         public String getDependencyGenerationFlags() {
             return tool.dependencyGenerationFlags;
         }
 
+        @Override
         public String getPrecompiledHeaderFlags() {
             return tool.precompiledHeaderFlags;
         }
 
+        @Override
         public String getPrecompiledHeaderSuffix() {
             return tool.precompiledHeaderSuffix;
         }
 
+        @Override
         public boolean getPrecompiledHeaderSuffixAppend() {
             return tool.precompiledHeaderSuffixAppend;
         }
@@ -2414,10 +2476,12 @@ public final class ToolchainManagerImpl {
             this.flags = flags;
         }
 
+        @Override
         public String getMacro() {
             return macro;
         }
 
+        @Override
         public String getFlags() {
             return flags;
         }
@@ -2434,10 +2498,12 @@ public final class ToolchainManagerImpl {
             this.s = s;
         }
 
+        @Override
 	public String getID() {
 	    return s.id;
 	}
 
+        @Override
 	public List<ScannerPattern> getPatterns() {
             if (patterns == null) {
                 patterns = new ArrayList<ScannerPattern>();
@@ -2448,30 +2514,37 @@ public final class ToolchainManagerImpl {
             return patterns;
         }
 
+        @Override
         public String getChangeDirectoryPattern() {
             return s.changeDirectoryPattern;
         }
 
+        @Override
         public String getEnterDirectoryPattern() {
             return s.enterDirectoryPattern;
         }
 
+        @Override
         public String getLeaveDirectoryPattern() {
             return s.leaveDirectoryPattern;
         }
 
+        @Override
         public String getMakeAllInDirectoryPattern() {
             return s.makingAllInDirectoryPattern;
         }
 
+        @Override
         public String getStackHeaderPattern() {
             return s.stackHeaderPattern;
         }
 
+        @Override
         public String getStackNextPattern() {
             return s.stackNextPattern;
         }
 
+        @Override
 	public List<String> getFilterOutPatterns() {
 	    if (filterOut == null){
                 filterOut = new ArrayList<String>();
@@ -2491,14 +2564,17 @@ public final class ToolchainManagerImpl {
             this.e = e;
         }
 
+        @Override
         public String getPattern() {
             return e.pattern;
         }
 
+        @Override
         public String getSeverity() {
             return e.severity;
         }
 
+        @Override
         public String getLanguage() {
             return e.language;
         }
@@ -2512,38 +2588,47 @@ public final class ToolchainManagerImpl {
             this.l = l;
         }
 
+        @Override
         public String getLibrarySearchFlag() {
             return l.librarySearchFlag;
         }
 
+        @Override
         public String getDynamicLibrarySearchFlag() {
             return l.dynamicLibrarySearchFlag;
         }
 
+        @Override
         public String getLibraryFlag() {
             return l.libraryFlag;
         }
 
+        @Override
         public String getLibraryPrefix() {
             return l.library_prefix;
         }
 
+        @Override
         public String getPICFlag() {
             return l.PICFlag;
         }
 
+        @Override
         public String getStaticLibraryFlag() {
             return l.staticLibraryFlag;
         }
 
+        @Override
         public String getDynamicLibraryFlag() {
             return l.dynamicLibraryFlag;
         }
 
+        @Override
         public String getDynamicLibraryBasicFlag() {
             return l.dynamicLibraryBasicFlag;
         }
 
+        @Override
         public String getOutputFileFlag() {
             return l.outputFileFlag;
         }
@@ -2556,6 +2641,7 @@ public final class ToolchainManagerImpl {
             super(make);
         }
 
+        @Override
         public String getDependencySupportCode() {
             return tool.dependencySupportCode;
         }

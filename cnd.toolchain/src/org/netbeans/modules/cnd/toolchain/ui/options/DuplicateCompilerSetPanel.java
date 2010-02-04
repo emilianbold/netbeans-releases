@@ -47,7 +47,8 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerFlavorImpl;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
@@ -58,14 +59,14 @@ import org.openide.util.NbBundle;
  */
 /*package-local*/ final class DuplicateCompilerSetPanel extends javax.swing.JPanel implements DocumentListener {
     private DialogDescriptor dialogDescriptor = null;
-    private CompilerSetManager csm;
+    private CompilerSetManagerImpl csm;
     
     /** Creates new form AddCompilerSetPanel */
     public DuplicateCompilerSetPanel(CompilerSetManager csm, CompilerSet cs) {
         initComponents();
-        this.csm = csm;
+        this.csm = (CompilerSetManagerImpl) csm;
         
-        List<CompilerFlavor> list = CompilerFlavorAccessor.getFlavors(csm.getPlatform());
+        List<CompilerFlavor> list = CompilerFlavorImpl.getFlavors(csm.getPlatform());
         for (CompilerFlavor cf : list) {
             cbFamily.addItem(cf);
         }

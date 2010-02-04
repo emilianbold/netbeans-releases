@@ -46,13 +46,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.swing.event.ChangeListener;
@@ -164,7 +163,7 @@ public final class ClasspathInfo {
         }
         else {
             this.srcClassPath = srcCp;
-            final boolean allowAptRoots = false; //todo: Set by PROCESSOR_PATH != null
+            final boolean allowAptRoots = true; //todo: Set by PROCESSOR_PATH != null
             this.cachedUserSrcClassPath = SourcePath.sources(srcCp, backgroundCompilation);
             this.cachedAptSrcClassPath = allowAptRoots ? SourcePath.apt(srcCp, backgroundCompilation) : null;
             this.cachedSrcClassPath =    allowAptRoots ? ClassPathSupport.createProxyClassPath(this.cachedUserSrcClassPath,this.cachedAptSrcClassPath) : this.cachedUserSrcClassPath;
@@ -376,7 +375,7 @@ public final class ClasspathInfo {
             usagesQuery = new ClassIndex (
                     this.bootClassPath,
                     this.compileClassPath,
-                    this.cachedSrcClassPath);
+                    this.cachedUserSrcClassPath);
         }
         return usagesQuery;
     }
@@ -391,8 +390,8 @@ public final class ClasspathInfo {
                 new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
                 hasSources ? (!useModifiedFiles ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
                     : new SourceFileManager (this.cachedUserSrcClassPath, ignoreExcludes)) : null,
-                cachedAptSrcClassPath != null ? (backgroundCompilation ? new AptSourceFileManager(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, new CacheMarker(this.cachedUserSrcClassPath), true)
-                    : new NullWriteAptSourceFileManager(this.cachedAptSrcClassPath, true)) : null,
+                cachedAptSrcClassPath != null ? (backgroundCompilation ? new AptSourceFileManager(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath, new CacheMarker(this.cachedUserSrcClassPath))
+                    : new NullWriteAptSourceFileManager(this.cachedUserSrcClassPath, this.cachedAptSrcClassPath)) : null,
                 hasSources ? outFileManager = new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedUserSrcClassPath, this.cachedAptSrcClassPath) : null
             , this.memoryFileManager);
         }
@@ -488,7 +487,7 @@ public final class ClasspathInfo {
     private static class CacheMarker implements AptSourceFileManager.Marker {
 
         private final ClassPath userRoots;
-        private final List<URL> children = new LinkedList<URL>();
+        private final Set<URL> children = new HashSet<URL>();
 
         public CacheMarker(final @NonNull ClassPath userRoots) {
             assert userRoots != null;
@@ -515,6 +514,9 @@ public final class ClasspathInfo {
                     final File classCache = JavaIndex.getClassFolder(sourceRoot);
                     final String relativePath = FileObjects.stripExtension(FileObjects.getRelativePath(sourceRoot, sourceFile));
                     final File cacheFile = new File (classCache, relativePath+'.'+FileObjects.RAPT);
+                    if (!cacheFile.getParentFile().exists()) {
+                        cacheFile.getParentFile().mkdirs();
+                    }
                     final Writer out = new OutputStreamWriter(new FileOutputStream(cacheFile),Charset.forName("UTF-8"));  //NOI18N
                     try {
                         out.write(sb.toString());

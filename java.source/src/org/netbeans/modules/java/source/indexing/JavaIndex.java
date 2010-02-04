@@ -138,8 +138,10 @@ public final class JavaIndex {
             if (attributeValue != null) {
                 p.setProperty(attributeName, attributeValue);
                 storeProperties(root, p);
+                return true;
+            } else {
+                return false;
             }
-            return false;
         }
         if (current.equals(attributeValue)) {
             return false;

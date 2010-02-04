@@ -474,7 +474,7 @@ public final class ClassIndex {
             }
             else {
                 srcRoots = new URL[] {entry.getURL()};
-            }                
+            }
             for (URL srcRoot : srcRoots) {
                 oldState.add (srcRoot);
                 ClassIndexImpl ci = ClassIndexManager.getDefault().getUsagesQuery(srcRoot);
@@ -482,7 +482,7 @@ public final class ClassIndex {
                     ci.addClassIndexImplListener(spiListener);
                     queries.add (ci);
                 }
-            }	    
+            }
 	}
     }
     

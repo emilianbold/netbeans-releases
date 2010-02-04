@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.navigation.overrides;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.logging.Level;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -50,6 +49,8 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
 import org.netbeans.modules.cnd.model.tasks.EditorAwareCsmFileTaskFactory;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.modelutil.NamedEntity;
+import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -68,19 +69,33 @@ public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
     public OverrideTaskFactory() {
     }
 
+    private static boolean isEnabled() {
+        NamedEntity namedEntity = new NamedEntity() {
+            public String getName() {
+                return "overrides-annotations"; //NOI18N
+            }
+            public boolean isEnabledByDefault() {
+                return true;
+            }
+        };
+        return NamedEntityOptions.instance().isEnabled(namedEntity);
+    }
+
     @Override
     protected PhaseRunner createTask(FileObject fo) {
         PhaseRunner pr = null;
-        try {
-            final DataObject dobj = DataObject.find(fo);
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            final CsmFile file = CsmUtilities.getCsmFile(dobj, false);
-            final StyledDocument doc = ec.getDocument();
-            if (doc != null && file != null) {
-                pr = new PhaseRunnerImpl(dobj, file, doc);
+        if (isEnabled()) {
+            try {
+                final DataObject dobj = DataObject.find(fo);
+                    EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                    final CsmFile file = CsmUtilities.getCsmFile(dobj, false);
+                    final StyledDocument doc = ec.getDocument();
+                    if (doc != null && file != null) {
+                        pr = new PhaseRunnerImpl(dobj, file, doc);
+                    }
+            } catch (DataObjectNotFoundException ex)  {
+                ex.printStackTrace();
             }
-        } catch (DataObjectNotFoundException ex)  {
-            ex.printStackTrace();
         }
         return pr != null ? pr : lazyRunner();
     }
@@ -112,7 +127,7 @@ public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
         private final DataObject dobj;
         private final CsmFile file;
         private final WeakReference<StyledDocument> weakDoc;
-        private final Collection<OverriddeAnnotation> annotations = new ArrayList<OverriddeAnnotation>();
+        private final Collection<BaseAnnotation> annotations = new ArrayList<BaseAnnotation>();
 
         private PhaseRunnerImpl(DataObject dobj,CsmFile file, Document doc){
             this.dobj = dobj;
@@ -126,6 +141,10 @@ public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
 
         @Override
         public void run(Phase phase) {
+            if (!isEnabled()) {
+                AnnotationsHolder.clearIfNeed(dobj);
+                return;
+            }
             StyledDocument doc = getDocument();
             if (doc != null) {
                 if (phase == Phase.PARSED || phase == Phase.INIT || phase == Phase.PROJECT_PARSED) {
@@ -141,18 +160,18 @@ public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
         }
 
         private void addAnnotations(CsmFile file, StyledDocument doc, DataObject dobj) {
-            final Collection<OverriddeAnnotation> toAdd = new ArrayList<OverriddeAnnotation>();
-            OverriddeAnnotation.LOGGER.log(Level.FINE, ">> Computing annotations for {0}", file);
+            final Collection<BaseAnnotation> toAdd = new ArrayList<BaseAnnotation>();
+            BaseAnnotation.LOGGER.log(Level.FINE, ">> Computing annotations for {0}", file);
             long time = System.currentTimeMillis();
-            ComputeAnnotations.getInstance().computeAnnotations(file.getDeclarations(), toAdd, file, doc, dobj);
+            ComputeAnnotations.getInstance(file, doc, dobj).computeAnnotations(toAdd);
             time = System.currentTimeMillis() - time;
-            OverriddeAnnotation.LOGGER.log(Level.FINE, "<< Computed sannotations for {0} in {1} ms", new Object[] { file, time });
-            final Collection<OverriddeAnnotation> toClear;
-            AnnotationsHolder.get(dobj.getPrimaryFile()).setNewAnnotations(toAdd);
+            BaseAnnotation.LOGGER.log(Level.FINE, "<< Computed sannotations for {0} in {1} ms", new Object[] { file, time });
+            final Collection<BaseAnnotation> toClear;
+            AnnotationsHolder.get(dobj).setNewAnnotations(toAdd);
         }
 
         private void clearAnnotations(StyledDocument doc, DataObject dobj) {
-            AnnotationsHolder.get(dobj.getPrimaryFile()).setNewAnnotations(Collections.<OverriddeAnnotation>emptyList());
+            AnnotationsHolder.clearIfNeed(dobj);
         }
 
 

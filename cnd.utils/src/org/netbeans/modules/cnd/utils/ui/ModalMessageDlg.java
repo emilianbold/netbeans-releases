@@ -83,6 +83,64 @@ public class ModalMessageDlg extends javax.swing.JPanel {
         runLongTaskImpl(parent, workTask, postEDTTask, title, message, canceller);
     }
 
+    /**
+     *
+     * @param parent
+     * @param title
+     * @param message
+     * @param workTask if workTask is Cancellable => dialog will have Cancel button
+     *                 if not => no Cancel button is shown
+     */
+    public static void runLongTask(Window parent, String title, String message,
+            final LongWorker workTask, final Cancellable canceller) {
+
+        final JDialog dialog = createDialog(parent, title);
+
+        final Runnable finalizer = new Runnable() {
+            @Override
+            public void run() {
+                // hide dialog and run action if successfully connected
+                dialog.setVisible(false);
+                dialog.dispose();
+                workTask.doPostRunInEDT();
+            }
+        };
+
+        JPanel panel;
+        if (canceller != null) {
+            panel = new ModalMessageDlgPane(message);
+        } else {
+            Cancellable wrapper = new Cancellable() {
+                /** is invoked from a separate cancellation thread */
+                @Override
+                public boolean cancel() {
+                    if (canceller.cancel()) {
+                        // remember for return value
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            };
+            panel = new ModalMessageDlgCancellablePane(message, wrapper);
+        }
+        addPanel(parent, dialog, panel);
+
+        RequestProcessor.getDefault().post(new NamedRunnable(title) {
+            @Override
+            public void runImpl() {
+                try {
+                    workTask.doWork();
+                } finally {
+                    SwingUtilities.invokeLater(finalizer);
+                }
+            }
+        });
+        if (!CndUtils.isStandalone()) { // this means we run in tests
+            dialog.setVisible(true);
+        }
+    }
+
     private static boolean runLongTaskImpl(Window parent, final Runnable workTask, final Runnable postEDTTask,
             String title, String message, final Cancellable canceller) {
 
@@ -90,6 +148,7 @@ public class ModalMessageDlg extends javax.swing.JPanel {
         final AtomicBoolean cancelled = new AtomicBoolean(false);
 
         final Runnable finalizer = new Runnable() {
+            @Override
             public void run() {
                 // hide dialog and run action if successfully connected
                 dialog.setVisible(false);
@@ -106,6 +165,7 @@ public class ModalMessageDlg extends javax.swing.JPanel {
         } else {
             Cancellable wrapper = new Cancellable() {
                 /** is invoked from a separate cancellation thread */
+                @Override
                 public boolean cancel() {
                     if (canceller.cancel()) {
                         cancelled.set(true);
@@ -121,6 +181,7 @@ public class ModalMessageDlg extends javax.swing.JPanel {
         addPanel(parent, dialog, panel);
 
         RequestProcessor.getDefault().post(new NamedRunnable(title) {
+            @Override
             public void runImpl() {
                 try {
                     workTask.run();
@@ -133,61 +194,6 @@ public class ModalMessageDlg extends javax.swing.JPanel {
             dialog.setVisible(true);
         }
         return !cancelled.get();
-    }    
-
-    /**
-     *
-     * @param parent
-     * @param title
-     * @param message
-     * @param workTask if workTask is Cancellable => dialog will have Cancel button
-     *                 if not => no Cancel button is shown
-     */
-    public static void runLongTask(Window parent, String title, String message,
-            final LongWorker workTask, final Cancellable canceller) {
-
-        final JDialog dialog = createDialog(parent, title);
-
-        final Runnable finalizer = new Runnable() {
-            public void run() {
-                // hide dialog and run action if successfully connected
-                dialog.setVisible(false);
-                dialog.dispose();
-                workTask.doPostRunInEDT();
-            }
-        };
-
-        JPanel panel;
-        if (canceller != null) {
-            panel = new ModalMessageDlgPane(message);
-        } else {
-            Cancellable wrapper = new Cancellable() {
-                /** is invoked from a separate cancellation thread */
-                public boolean cancel() {
-                    if (canceller.cancel()) {
-                        // remember for return value
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-            };
-            panel = new ModalMessageDlgCancellablePane(message, wrapper);
-        }
-        addPanel(parent, dialog, panel);
-
-        RequestProcessor.getDefault().post(new NamedRunnable(title) {
-            public void runImpl() {
-                try {
-                    workTask.doWork();
-                } finally {
-                    SwingUtilities.invokeLater(finalizer);
-                }
-            }
-        });
-        if (!CndUtils.isStandalone()) { // this means we run in tests
-            dialog.setVisible(true);
-        }
     }
 
     private static JDialog createDialog(Window parent, String title) {

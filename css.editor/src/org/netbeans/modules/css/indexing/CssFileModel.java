@@ -70,6 +70,7 @@ public class CssFileModel {
 
     private static final Logger LOGGER = Logger.getLogger(CssIndex.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
+    //private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*[\\u0022]?([^\\u0022]*)[\\u0022]?\\s*\\)"); //NOI18N
     private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)");
     private Collection<Entry> classes, ids, htmlElements, imports;
     private boolean isParserBased;
@@ -157,7 +158,10 @@ public class CssFileModel {
     }
 
     private void init(CssParserResult parserResult) {
-        SimpleNodeUtil.visitChildren(parserResult.root(), new AstVisitor());
+        SimpleNode root = parserResult.root();
+        if(root != null) {
+            SimpleNodeUtil.visitChildren(root, new AstVisitor());
+        } //else completely broken source, no parser result
     }
 
     @Override
@@ -170,10 +174,12 @@ public class CssFileModel {
             buf.append(',');
         }
         for (Entry c : getClasses()) {
+            buf.append('.');
             buf.append(c);
             buf.append(',');
         }
         for (Entry c : getIds()) {
+            buf.append('#');
             buf.append(c);
             buf.append(',');
         }
@@ -198,24 +204,33 @@ public class CssFileModel {
                     || node.kind() == CssParserTreeConstants.JJTHASH
                     || node.kind() == CssParserTreeConstants.JJTELEMENTNAME) {
 
-                Entry e = createEntry(node.image(), new OffsetRange(node.startOffset(), node.endOffset()));
-                if (e != null) {
-                    Collection<Entry> collection;
-                    switch (node.kind()) {
-                        case CssParserTreeConstants.JJT_CLASS:
-                            collection = getClassesCollectionInstance();
-                            break;
-                        case CssParserTreeConstants.JJTHASH:
-                            collection = getIdsCollectionInstance();
-                            break;
-                        case CssParserTreeConstants.JJTELEMENTNAME:
-                            collection = getHtmlElementsCollectionInstance();
-                            break;
-                        default:
-                            collection = null; //cannot happen
-                    }
+                Collection<Entry> collection;
+                int start_offset_diff;
+                switch (node.kind()) {
+                    case CssParserTreeConstants.JJT_CLASS:
+                        collection = getClassesCollectionInstance();
+                        start_offset_diff = 1; //cut off the dot (.)
+                        break;
+                    case CssParserTreeConstants.JJTHASH:
+                        collection = getIdsCollectionInstance();
+                        start_offset_diff = 1; //cut of the hash (#)
+                        break;
+                    case CssParserTreeConstants.JJTELEMENTNAME:
+                        collection = getHtmlElementsCollectionInstance();
+                        start_offset_diff = 0;
+                        break;
+                    default:
+                        collection = null; //cannot happen
+                        start_offset_diff = 0;
+                }
+
+                String image = node.image().substring(start_offset_diff);
+                OffsetRange range = new OffsetRange(node.startOffset() + start_offset_diff, node.endOffset());
+                Entry e = createEntry(image, range);
+                if(e != null) {
                     collection.add(e);
                 }
+
             }
         }
 
@@ -253,14 +268,17 @@ public class CssFileModel {
         int documentFrom = snapshot.getOriginalOffset(range.getStart());
         int documentTo = snapshot.getOriginalOffset(range.getEnd());
 
+        OffsetRange documentRange = null;
         if (documentFrom == -1 || documentTo == -1) {
-            LOGGER.info("Ast offset range " + range.toString()
+            LOGGER.info("Ast offset range " + range.toString() +
+                    ", text='" + snapshot.getText().subSequence(range.getStart(), range.getEnd())+ "', "
                     + " cannot be properly mapped to source offset range: ["
                     + documentFrom + "," + documentTo + "] in file "
                     + CssFileModel.this.fileObject.getPath()); //NOI18N
-            return null;
+        } else {
+            documentRange = new OffsetRange(documentFrom, documentTo);
         }
-        return new Entry(name, range, new OffsetRange(documentFrom, documentTo));
+        return new Entry(name, range, documentRange);
     }
 
     public class Entry {
@@ -273,6 +291,10 @@ public class CssFileModel {
             this.name = name;
             this.astRange = astRange;
             this.documentRange = documentRange;
+        }
+
+        public boolean isValidInSourceDocument() {
+            return documentRange != null;
         }
 
         public String getName() {
@@ -289,7 +311,7 @@ public class CssFileModel {
 
         @Override
         public String toString() {
-            return "Entry[" + getName() + "; " + getRange().getStart() + " - " + getRange().getEnd() + "]";
+            return "Entry["+ (!isValidInSourceDocument() ? "INVALID! " : "") + getName() + "; " + getRange().getStart() + " - " + getRange().getEnd() + "]";//NOI18N
         }
     }
 }

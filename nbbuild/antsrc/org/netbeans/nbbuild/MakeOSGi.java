@@ -132,8 +132,6 @@ public class MakeOSGi extends Task {
             String cnb = codename.replaceFirst("/\\d+$", "");
             if (cnb.equals("org.netbeans.core.netigso")) {
                 // special handling...
-                netbeans.getMainAttributes().remove(new Attributes.Name("OpenIDE-Module-Install"));
-                netbeans.getMainAttributes().remove(new Attributes.Name("Class-Path"));
                 osgi.getMainAttributes().putValue("Bundle-Activator", "org.netbeans.core.osgi.Activator");
                 osgi.getMainAttributes().putValue("Import-Package", "org.osgi.framework, org.osgi.framework.launch, org.osgi.service.url");
             }

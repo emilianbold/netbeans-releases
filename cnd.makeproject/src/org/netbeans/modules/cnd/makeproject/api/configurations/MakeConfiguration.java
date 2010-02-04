@@ -50,7 +50,7 @@ import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -662,16 +662,16 @@ public class MakeConfiguration extends Configuration {
                         itemConfiguration.getExcluded().getValue()) {
                     continue;
                 }
-                if (itemConfiguration.getTool() == ToolKind.CCompiler) {
+                if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
                     hasCFiles = true;
                 }
-                if (itemConfiguration.getTool() == ToolKind.CCCompiler) {
+                if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                     hasCPPFiles = true;
                 }
-                if (itemConfiguration.getTool() == ToolKind.FortranCompiler) {
+                if (itemConfiguration.getTool() == PredefinedToolKind.FortranCompiler) {
                     hasFortranFiles = true;
                 }
-                if (itemConfiguration.getTool() == ToolKind.Assembler) {
+                if (itemConfiguration.getTool() == PredefinedToolKind.Assembler) {
                     hasAssemblerFiles = true;
                 }
             //            if (itemConfiguration.getTool() == Tool.AsmCompiler) {

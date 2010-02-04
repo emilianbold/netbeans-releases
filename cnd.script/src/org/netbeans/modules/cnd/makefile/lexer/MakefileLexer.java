@@ -51,33 +51,61 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
 /**
+ * Makefile lexer. Works with
+ * <a href="http://www.opengroup.org/onlinepubs/009695399/utilities/make.html">standard makefiles</a>
+ * and some extensions.
+ *
  * @author Jan Jancura
  * @author Alexey Vladykin
  */
 /*package*/ final class MakefileLexer implements Lexer<MakefileTokenId> {
 
     private static final Set<String> SPECIAL_TARGETS = new HashSet<String>(Arrays.asList(
+            // standard
             ".DEFAULT", // NOI18N
-            ".DONE", // NOI18N
-            ".FAILED", // NOI18N
-            ".GET_POSIX", // NOI18N
             ".IGNORE", // NOI18N
-            ".INIT", // NOI18N
-            ".KEEP_STATE", // NOI18N
-            ".KEEP_STATE_FILE", // NOI18N
-            ".MAKE_VERSION", // NOI18N
-            ".NO_PARALLEL", // NOI18N
-            ".PARALLEL", // NOI18N
-            ".PHONY", // NOI18N
             ".POSIX", // NOI18N
             ".PRECIOUS", // NOI18N
             ".SCCS_GET", // NOI18N
-            ".SCCS_GET_POSIX", // NOI18N
             ".SILENT", // NOI18N
             ".SUFFIXES", // NOI18N
-            ".WAIT")); // NOI18N
 
+            // gmake extensions
+            // http://www.gnu.org/software/automake/manual/make/Special-Targets.html
+            ".PHONY", // NOI18N
+            ".INTERMEDIATE", // NOI18N
+            ".SECONDARY", // NOI18N
+            ".SECONDEXPANSION", // NOI18N
+            ".DELETE_ON_ERROR", // NOI18N
+            ".LOW_RESOLUTION_TIME", // NOI18N
+            ".EXPORT_ALL_VARIABLES", // NOI18N
+            ".NOTPARALLEL", // NOI18N
+
+            // dmake extensions
+            // http://docs.sun.com/source/820-4180/man1/dmake.1.html
+            ".KEEP_STATE", // NOI18N
+            ".KEEP_STATE_FILE", // NOI18N
+            ".NO_PARALLEL", // NOI18N
+            ".PARALLEL", // NOI18N
+            ".LOCAL", // NOI18N
+            ".WAIT", // NOI18N
+
+            // other extensions
+            ".DONE", // NOI18N
+            ".FAILED", // NOI18N
+            ".GET_POSIX", // NOI18N
+            ".INIT", // NOI18N
+            ".MAKE_VERSION", // NOI18N
+            ".SCCS_GET_POSIX")); // NOI18N
+
+    /**
+     * All keywords are extensions of the standard.
+     */
     private static final Set<String> KEYWORDS = new HashSet<String>(Arrays.asList(
+            // gmake
+            "override", // NOI18N
+            "define", // NOI18N
+            "endef", // NOI18N
             "include", // NOI18N
             "ifdef", // NOI18N
             "ifndef", // NOI18N
@@ -90,6 +118,7 @@ import org.netbeans.spi.lexer.TokenFactory;
         AT_LINE_START,
         AFTER_LINE_START,
         AFTER_TAB_OR_SEMICOLON,
+        IN_SHELL,
         AFTER_EQUALS,
         AFTER_COLON
     }
@@ -158,17 +187,38 @@ import org.netbeans.spi.lexer.TokenFactory;
                 break;
 
             case AFTER_TAB_OR_SEMICOLON:
-                token = readWhitespaceOrModifierOrShell();
-                if (token == null) {
-                    token = readToken(false, false, false, false);
-                    if (token != null) {
-                        switch (token.id()) {
-                            case NEW_LINE:
-                                state = State.AT_LINE_START;
-                                break;
-                            default:
-                                throw new IllegalStateException("Internal error"); // NOI18N
-                        }
+                token = readTokenInShell(true);
+                if (token != null) {
+                    switch (token.id()) {
+                        case NEW_LINE:
+                            state = State.AT_LINE_START;
+                            break;
+                        case SHELL:
+                        case MACRO:
+                            state = State.IN_SHELL;
+                            break;
+                        case WHITESPACE:
+                            // remain in AFTER_TAB_OR_SEMICOLON state
+                            break;
+                        default:
+                            throw new IllegalStateException("Internal error"); // NOI18N
+                    }
+                }
+                break;
+
+            case IN_SHELL:
+                token = readTokenInShell(false);
+                if (token != null) {
+                    switch (token.id()) {
+                        case NEW_LINE:
+                            state = State.AT_LINE_START;
+                            break;
+                        case SHELL:
+                        case MACRO:
+                            // remain in IN_SHELL state
+                            break;
+                        default:
+                            throw new IllegalStateException("Internal error"); // NOI18N
                     }
                 }
                 break;
@@ -253,7 +303,7 @@ import org.netbeans.spi.lexer.TokenFactory;
                 return factory.createToken(MakefileTokenId.WHITESPACE);
 
             case '#':
-                consumeAnythingTillEndOfLine(input);
+                consumeAnythingTillEndOfLine(input, false);
                 return factory.createToken(MakefileTokenId.COMMENT);
 
             case '\r':
@@ -377,25 +427,28 @@ import org.netbeans.spi.lexer.TokenFactory;
         }
     }
 
-    private Token<MakefileTokenId> readWhitespaceOrModifierOrShell() {
+    private Token<MakefileTokenId> readTokenInShell(boolean wantWhitespace) {
         LexerInput input = info.input();
         TokenFactory<MakefileTokenId> factory = info.tokenFactory();
 
         switch (input.read()) {
-            case '@':
-            case '-':
-            case '+':
-                return factory.createToken(MakefileTokenId.SHELL_MODIFIER);
+            case '$':
+                return readMacro(input, factory);
             case ' ':
             case '\t':
-                consumeWhitespace(input);
-                return factory.createToken(MakefileTokenId.WHITESPACE);
-            default:
-                input.backup(1);
+                if (wantWhitespace) {
+                    consumeWhitespace(input);
+                    return factory.createToken(MakefileTokenId.WHITESPACE);
+                }
+                break;
         }
 
-        if (consumeAnythingTillEndOfLine(input)) {
+        input.backup(1);
+
+        if (consumeAnythingTillEndOfLine(input, true)) {
             return factory.createToken(MakefileTokenId.SHELL);
+        } else if (0 < consumeNewline(input)) {
+            return factory.createToken(MakefileTokenId.NEW_LINE);
         } else {
             return null;
         }
@@ -415,6 +468,7 @@ import org.netbeans.spi.lexer.TokenFactory;
 
             case ' ':
             case '\t':
+            case '#':
                 return;
 
             default:
@@ -441,7 +495,7 @@ import org.netbeans.spi.lexer.TokenFactory;
      * @param input
      * @return <code>true</code> if consumed at least one character
      */
-    private static boolean consumeAnythingTillEndOfLine(LexerInput input) {
+    private static boolean consumeAnythingTillEndOfLine(LexerInput input, boolean wantMacro) {
         int consumed = 0;
         for (;;) {
             switch (input.read()) {
@@ -453,6 +507,13 @@ import org.netbeans.spi.lexer.TokenFactory;
 
                 case '\\':
                     consumed += 1 + consumeNewline(input);
+                    break;
+
+                case '$':
+                    if (wantMacro) {
+                        input.backup(1);
+                        return 0 < consumed;
+                    }
                     break;
 
                 default:

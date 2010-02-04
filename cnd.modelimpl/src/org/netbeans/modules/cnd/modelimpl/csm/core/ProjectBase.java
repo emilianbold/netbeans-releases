@@ -1225,7 +1225,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * to get state lock use
      * Object stateLock = getFileContainer().getLock(file);
      */
-    private final void putPreprocState(File file, APTPreprocHandler.State state) {
+    private void putPreprocState(File file, APTPreprocHandler.State state) {
         if (state != null && !state.isCleaned()) {
             state = APTHandlersSupport.createCleanPreprocState(state);
         }
@@ -1266,7 +1266,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    private static final boolean TRACE_FILE = false;
+    private static final boolean TRACE_FILE = (TraceFlags.TRACE_FILE_NAME != null);
     /**
      * called to inform that file was #included from another file with specific preprocHandler
      *
@@ -1409,7 +1409,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean,
                                 clean ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
                         csmFile.setAPTCacheEntry(preprocHandler, aptCacheEntry, clean);
-                        if (TraceFlags.TRACE_PC_STATE || TraceFlags.TRACE_PC_STATE_COMPARISION) {
+                        if (TRACE_FILE && FileImpl.traceFile(file) &&
+                                (TraceFlags.TRACE_PC_STATE || TraceFlags.TRACE_PC_STATE_COMPARISION)) {
                             traceIncludeStates("scheduling", csmFile, newState, pcState, clean, // NOI18N
                                     statesToParse, statesToKeep);
                         }
@@ -1419,7 +1420,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             return csmFile;
         } finally {
-            if (!isDisposing() && updateFileContainer) {
+            if (updateFileContainer) {
                 getFileContainer().put();
             }
         }
@@ -1498,9 +1499,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             entryNotFoundMessage(file.getAbsolutePath());
             return false;
         }
-        synchronized (entry.getLock()) {
-            return entry.setParsedPCState(ppState, pcState);
+        boolean entryChanged = entry.setParsedPCState(ppState, pcState);
+        if (entryChanged) {
+            FileContainer fileContainer = getFileContainer();
+            fileContainer.put();
         }
+        return entryChanged;
     }
 
     void notifyOnWaitParseLock() {
@@ -2131,7 +2135,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         onParseFinishImpl(false);
     }
 
-    private final void onParseFinishImpl(boolean libsAlreadyParsed) {
+    private void onParseFinishImpl(boolean libsAlreadyParsed) {
         synchronized (waitParseLock) {
             waitParseLock.notifyAll();
         }
@@ -2240,7 +2244,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    private final void cleanAllFakeFunctionAST() {
+    private void cleanAllFakeFunctionAST() {
         synchronized (fakeASTs) {
             fakeASTs.clear();
         }

@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfigurat
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
@@ -125,7 +125,12 @@ public class PkgConfigImpl implements PkgConfig {
             String baseDirectory = getPkgConfihPath();
             if (baseDirectory == null) {
                 if (set == null) {
-                    set = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSet(CompilerFlavorAccessor.toFlavor("Cygwin", PlatformTypes.PLATFORM_WINDOWS)); // NOI18N
+                    for(CompilerSet cs : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()) {
+                        if (cs.getCompilerFlavor().isCygwinCompiler()) {
+                            set = cs;
+                            break;
+                        }
+                    }
                 }
                 if (set != null){
                     baseDirectory = set.getDirectory();

@@ -47,9 +47,8 @@ import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerProvider;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Exceptions;
@@ -102,7 +101,7 @@ public final class CompilerSetPreferences {
         }
     }
 
-    public static void saveToDisk(CompilerSetManager manager) {
+    public static void saveToDisk(CompilerSetManagerImpl manager) {
         if (!manager.getCompilerSets().isEmpty()) {
             getPreferences().putDouble(CSM + VERSION, csm_version);
             String executionEnvironmentKey = ExecutionEnvironmentFactory.toUniqueID(manager.getExecutionEnvironment());
@@ -177,8 +176,7 @@ public final class CompilerSetPreferences {
                 if (toolFlavorName != null) {
                     toolFlavor = CompilerFlavorImpl.toFlavor(toolFlavorName, pform);
                 }
-                Tool tool = CompilerSetPreferences.getCompilerProvider().createCompiler(env, toolFlavor, ToolKind.getTool(toolKind), "", toolDisplayName, toolPath);
-                tool.setName(toolName);
+                Tool tool = CompilerSetPreferences.getCompilerProvider().createCompiler(env, toolFlavor, PredefinedToolKind.getTool(toolKind), toolName, toolDisplayName, toolPath);
                 cs.addTool(tool);
             }
             css.add(cs);
@@ -233,9 +231,8 @@ public final class CompilerSetPreferences {
                     toolFlavor = CompilerFlavorImpl.toFlavor(toolFlavorName, PlatformTypes.getDefaultPlatform());
                 }
                 Tool tool = CompilerSetPreferences.getCompilerProvider().createCompiler(ExecutionEnvironmentFactory.getLocal(),
-                        toolFlavor, ToolKind.getTool(toolKind), "", toolDisplayName, toolPath); //NOI18N
-                tool.setName(toolName);
-                (cs).addTool(tool);
+                        toolFlavor, PredefinedToolKind.getTool(toolKind), toolName, toolDisplayName, toolPath); //NOI18N
+                cs.addTool(tool);
             }
             CompilerSetManagerImpl.completeCompilerSet(ExecutionEnvironmentFactory.getLocal(), cs, css);
             css.add(cs);

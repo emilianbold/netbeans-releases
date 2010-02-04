@@ -239,7 +239,7 @@ public final class ToolchainScriptGenerator {
         }
     }
 
-    int level = 0;
+    private int level = 0;
     private void line(String line){
         String l = line.trim();
         if (TRACE) {
