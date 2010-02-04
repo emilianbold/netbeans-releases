@@ -43,7 +43,6 @@ package org.netbeans.modules.apisupport.project.ui;
 
 import java.awt.EventQueue;
 import java.util.Arrays;
-import javax.swing.JDialog;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
@@ -129,9 +128,6 @@ public class ModuleOperationsTest extends TestBase {
         final NbModuleProject project = generateStandaloneModule("module");
         cgpi.setProject(project);
         DialogDisplayerImpl dd = (DialogDisplayerImpl) Lookup.getDefault().lookup(DialogDisplayer.class);
-        dd.setDialog(new JDialog() {
-            public @Override void setVisible(boolean b) { /* do not show during test-run */ }
-        });
         FileObject lock = FileUtil.createData(project.getProjectDirectory(), "build/testuserdir/lock");
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
