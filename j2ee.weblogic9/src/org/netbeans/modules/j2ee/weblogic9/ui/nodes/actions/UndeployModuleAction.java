@@ -37,58 +37,66 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.core.syntax.completion;
+package org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions;
 
-import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Petr Hejl
  */
-public abstract class JspTagLibImportProcessor implements ImportProcessor {
+public class UndeployModuleAction extends NodeAction {
 
-    public void addImport(Document document, final String fqn) {
-        final BaseDocument doc = (BaseDocument)document;
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                doc.runAtomic(new Runnable() {
+    @Override
+    protected boolean enable(org.openide.nodes.Node[] nodes) {
+        UndeployModuleCookie cookie;
+        for (int i = 0; i < nodes.length; i++) {
+            cookie = nodes[i].getCookie(UndeployModuleCookie.class);
+            if (cookie == null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(UndeployModuleAction.class, "LBL_UndeployModuleAction"); // NOI18N
+    }
+
+    @Override
+    protected void performAction(org.openide.nodes.Node[] nodes) {
+        for (int i = 0; i < nodes.length; i++) {
+            final UndeployModuleCookie cookie = nodes[i].getCookie(UndeployModuleCookie.class);
+            if (cookie != null) {
+                final Node node = nodes[i].getParentNode();
+                WLDeploymentFactory.getInstance().getExecutorService().submit(new Runnable() {
+
+                    @Override
                     public void run() {
-                        try {
-                            processDocument(doc, fqn);
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
+                        cookie.undeploy();
+                        RefreshModulesCookie refresh = node.getCookie(RefreshModulesCookie.class);
+                        if (refresh != null) {
+                            refresh.refresh();
                         }
                     }
                 });
             }
-        });
-    }
-
-    protected abstract String createImportDirective(String fqn);
-
-    private void processDocument(BaseDocument doc, final String fqn) throws BadLocationException {
-        int insertPos = Util.findPositionForJspDirective(doc);
-        doc.insertString(insertPos, createImportDirective(fqn), null);
-    }
-
-    public static class JspImportProcessor extends JspTagLibImportProcessor{
-
-        @Override
-        protected String createImportDirective(String fqn) {
-            return "<%@page import=\"" + fqn + "\"%>\n";
         }
     }
 
-    public static class TagImportProcessor extends JspTagLibImportProcessor{
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
 
-        @Override
-        protected String createImportDirective(String fqn) {
-            return "<%@tag import=\"" + fqn + "\"%>\n";
-        }
+    @Override
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
 }

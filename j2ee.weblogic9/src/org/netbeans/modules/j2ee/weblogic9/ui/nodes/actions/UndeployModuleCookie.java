@@ -37,58 +37,16 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.core.syntax.completion;
+package org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions;
 
-import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
-import org.openide.util.Exceptions;
+import org.openide.nodes.Node;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Petr Hejl
  */
-public abstract class JspTagLibImportProcessor implements ImportProcessor {
+public interface UndeployModuleCookie extends Node.Cookie {
 
-    public void addImport(Document document, final String fqn) {
-        final BaseDocument doc = (BaseDocument)document;
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                doc.runAtomic(new Runnable() {
-                    public void run() {
-                        try {
-                            processDocument(doc, fqn);
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-            }
-        });
-    }
+    void undeploy();
 
-    protected abstract String createImportDirective(String fqn);
-
-    private void processDocument(BaseDocument doc, final String fqn) throws BadLocationException {
-        int insertPos = Util.findPositionForJspDirective(doc);
-        doc.insertString(insertPos, createImportDirective(fqn), null);
-    }
-
-    public static class JspImportProcessor extends JspTagLibImportProcessor{
-
-        @Override
-        protected String createImportDirective(String fqn) {
-            return "<%@page import=\"" + fqn + "\"%>\n";
-        }
-    }
-
-    public static class TagImportProcessor extends JspTagLibImportProcessor{
-
-        @Override
-        protected String createImportDirective(String fqn) {
-            return "<%@tag import=\"" + fqn + "\"%>\n";
-        }
-    }
 }

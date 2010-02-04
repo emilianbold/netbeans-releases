@@ -39,56 +39,32 @@
 
 package org.netbeans.modules.web.core.syntax.completion;
 
-import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
-import org.openide.util.Exceptions;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
+ * Associate the short names (prefixes) of most often used tag libraries
+ * with their URI. This is used to guess and insert missing tag lib import
+ * directive.
+ *
+ * TODO: perhaps the functionality of this class could be replaced with
+ * a call to JspSyntaxSupport.getTagLibraryMappings() and then
+ * parsing all the TLDs. At this stage it seems inefficient and not
+ * necessary though.
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public abstract class JspTagLibImportProcessor implements ImportProcessor {
+public class StandardTagLibraryPrefixes {
+    private static Map<String, String> standardPrefixes = new TreeMap<String, String>();
 
-    public void addImport(Document document, final String fqn) {
-        final BaseDocument doc = (BaseDocument)document;
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                doc.runAtomic(new Runnable() {
-                    public void run() {
-                        try {
-                            processDocument(doc, fqn);
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-            }
-        });
+    static {
+        standardPrefixes.put("c", "http://java.sun.com/jstl/core");
+        standardPrefixes.put("x", "http://java.sun.com/jstl/xml");
+        standardPrefixes.put("fmt", "http://java.sun.com/jstl/fmt");
+        standardPrefixes.put("sql", "http://java.sun.com/jstl/sql");
     }
 
-    protected abstract String createImportDirective(String fqn);
-
-    private void processDocument(BaseDocument doc, final String fqn) throws BadLocationException {
-        int insertPos = Util.findPositionForJspDirective(doc);
-        doc.insertString(insertPos, createImportDirective(fqn), null);
-    }
-
-    public static class JspImportProcessor extends JspTagLibImportProcessor{
-
-        @Override
-        protected String createImportDirective(String fqn) {
-            return "<%@page import=\"" + fqn + "\"%>\n";
-        }
-    }
-
-    public static class TagImportProcessor extends JspTagLibImportProcessor{
-
-        @Override
-        protected String createImportDirective(String fqn) {
-            return "<%@tag import=\"" + fqn + "\"%>\n";
-        }
+    public static String get(String prefix){
+        return standardPrefixes.get(prefix);
     }
 }
