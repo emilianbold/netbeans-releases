@@ -76,4 +76,11 @@ made subject to such option by the copyright holder.
         </zip>
     </target>
 
+    <target name="clean" depends="clean-jars,projectized-common.clean"/>
+    
+    <target name="clean-jars">
+        <property name="release-dir" location="crud-sample-application/toplink-essentials-library/release"/>
+        <delete dir="${release-dir}"/>
+    </target>
+        
 </project>
