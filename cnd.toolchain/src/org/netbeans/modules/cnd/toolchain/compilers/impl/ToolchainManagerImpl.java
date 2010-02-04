@@ -365,11 +365,11 @@ public final class ToolchainManagerImpl {
         if (TRACE) {
             System.err.println("Read registry " + key); // NOI18N
         }
-        ExitStatus status = ProcessUtils.execute(ExecutionEnvironmentFactory.getLocal(), "C:/Windows/System32/reg.exe", "query", key, "/s");
+        ExitStatus status = ProcessUtils.execute(ExecutionEnvironmentFactory.getLocal(), "C:/Windows/System32/reg.exe", "query", key, "/s"); // NOI18N
         String base = null;
         if (status.isOK()){
             Pattern p = Pattern.compile(pattern);
-            StringTokenizer st = new StringTokenizer(status.output, "\n");
+            StringTokenizer st = new StringTokenizer(status.output, "\n"); // NOI18N
             while(st.hasMoreTokens()) {
                 String line = st.nextToken().trim();
                 if (TRACE) {
@@ -399,7 +399,7 @@ public final class ToolchainManagerImpl {
             return res;
         }
         ArrayList<String> args = new ArrayList<String>();
-        StringTokenizer st = new StringTokenizer(flags," ");
+        StringTokenizer st = new StringTokenizer(flags," "); // NOI18N
         while(st.hasMoreTokens()) {
             args.add(st.nextToken());
         }
