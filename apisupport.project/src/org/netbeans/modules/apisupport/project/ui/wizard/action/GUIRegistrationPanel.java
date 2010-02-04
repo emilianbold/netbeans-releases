@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
-import java.awt.Component;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -54,15 +53,12 @@ import javax.swing.DefaultListModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.plaf.UIResource;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
@@ -91,10 +87,6 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     private static final String ACTIONS_DIR = "Actions"; // NOI18N
     
     private FileSystem sfs;
-    
-    private final ListCellRenderer POSITION_RENDERER = new PositionRenderer();
-    private static final String POSITION_HERE = getMessage("CTL_PositionHere");
-    private static final String POSITION_SEPARATOR = " - "; // NOI18N
     
     private DataModel data;
     
@@ -484,7 +476,6 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         org.openide.awt.Mnemonics.setLocalizedText(menuPositionTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_Position")); // NOI18N
 
         menuPosition.setPrototypeDisplayValue(DataModel.Position.PROTOTYPE);
-        menuPosition.setRenderer(POSITION_RENDERER);
 
         org.openide.awt.Mnemonics.setLocalizedText(menuSeparatorBefore, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_SeparatorBefore")); // NOI18N
 
@@ -508,7 +499,6 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         org.openide.awt.Mnemonics.setLocalizedText(toolbarPositionTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_Position")); // NOI18N
 
         toolbarPosition.setPrototypeDisplayValue(DataModel.Position.PROTOTYPE);
-        toolbarPosition.setRenderer(POSITION_RENDERER);
 
         org.openide.awt.Mnemonics.setLocalizedText(globalKeyboardShortcut, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_GlobalKeyboardShortcut")); // NOI18N
         globalKeyboardShortcut.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -598,7 +588,6 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         org.openide.awt.Mnemonics.setLocalizedText(ftPositionTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_Position")); // NOI18N
 
         ftPosition.setPrototypeDisplayValue(DataModel.Position.PROTOTYPE);
-        ftPosition.setRenderer(POSITION_RENDERER);
 
         ftSeparatorPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
@@ -628,7 +617,6 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         org.openide.awt.Mnemonics.setLocalizedText(edPositionTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_Position")); // NOI18N
 
         edPosition.setPrototypeDisplayValue(DataModel.Position.PROTOTYPE);
-        edPosition.setRenderer(POSITION_RENDERER);
 
         edSeparatorPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
@@ -727,40 +715,34 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(categoryTxt)
+                        .addGap(12, 12, 12)
+                        .addComponent(category, 0, 411, Short.MAX_VALUE))
+                    .addComponent(globalMenuItem)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(menuSeparatorBefore)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(menuSeparatorAfter))
+                    .addComponent(globalToolbarButton)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(toolbarTxt)
+                        .addGap(16, 16, 16)
+                        .addComponent(toolbar, 0, 418, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(toolbarPositionTxt)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(toolbarPosition, 0, 418, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(categoryTxt)
-                                .addGap(12, 12, 12)
-                                .addComponent(category, 0, 411, Short.MAX_VALUE))
-                            .addComponent(globalMenuItem)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(menuSeparatorBefore)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(menuSeparatorAfter))
-                            .addComponent(globalToolbarButton)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(toolbarTxt)
-                                .addGap(16, 16, 16)
-                                .addComponent(toolbar, 0, 418, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(toolbarPositionTxt)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(toolbarPosition, 0, 418, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(menuTxt)
-                                    .addComponent(menuPositionTxt))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(menu, 0, 418, Short.MAX_VALUE)
-                                    .addComponent(menuPosition, 0, 418, Short.MAX_VALUE))))
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(alwaysEnabledPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 493, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(contextSensitivePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())))
+                            .addComponent(menuTxt)
+                            .addComponent(menuPositionTxt))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(menu, 0, 418, Short.MAX_VALUE)
+                            .addComponent(menuPosition, 0, 418, Short.MAX_VALUE)))
+                    .addComponent(alwaysEnabledPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 493, Short.MAX_VALUE)
+                    .addComponent(contextSensitivePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -970,50 +952,6 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                 getFolders(f, folders);
             }
         }
-    }
-    
-    private static class PositionRenderer extends JLabel implements ListCellRenderer, UIResource {
-        
-        public PositionRenderer () {
-            setOpaque(true);
-        }
-        
-        public Component getListCellRendererComponent(
-                JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            // #93658: GTK needs name to render cell renderer "natively"
-            setName("ComboBox.listRenderer"); // NOI18N
-            
-            String text;
-            if (value == null || value == CustomizerComponentFactory.WAIT_VALUE) {
-                text = CustomizerComponentFactory.WAIT_VALUE;
-            } else if (value == CustomizerComponentFactory.EMPTY_VALUE) {
-                text = CustomizerComponentFactory.EMPTY_VALUE;
-            } else {
-                Position pos = (Position) value;
-                String before = pos.getBeforeName() == null ? "" : pos.getBeforeName() + POSITION_SEPARATOR;
-                String after = pos.getAfterName() == null ? "" : POSITION_SEPARATOR + pos.getAfterName();
-                text = before + POSITION_HERE + after;
-            }
-            setText(text);
-            
-            if ( isSelected ) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());             
-            }
-            else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-            
-            return this;
-        }
-        
-        // #93658: GTK needs name to render cell renderer "natively"
-        public String getName() {
-            String name = super.getName();
-            return name == null ? "ComboBox.renderer" : name;  // NOI18N
-        }
-        
     }
     
     private class PML implements PopupMenuListener {
