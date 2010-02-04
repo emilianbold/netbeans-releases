@@ -183,7 +183,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         while((sup = cSym.getSuperclass()) != null && sup.getKind() == TypeKind.DECLARED) {
                             cSym = (ClassSymbol) ((DeclaredType) sup).asElement();
                             CompileTuple u = jfo2tuples.get(cSym.sourcefile);
-                            if (u != null && !previous.finishedFiles.contains(u.indexable)) {
+                            if (u != null && !previous.finishedFiles.contains(u.indexable) && !u.indexable.equals(active.indexable)) {
                                 if (!yield) {
                                     toProcess.addFirst(active);
                                 }
