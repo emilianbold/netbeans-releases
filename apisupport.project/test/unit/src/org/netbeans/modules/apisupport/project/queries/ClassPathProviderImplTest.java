@@ -609,7 +609,7 @@ public class ClassPathProviderImplTest extends TestBase {
 
     @Override
     protected int timeOut() {
-        return 30000;   // testCyclicDependenciesDetected may loop endlessly
+        return 300000;   // testCyclicDependenciesDetected may loop endlessly
     }
 
 
