@@ -76,6 +76,7 @@ public class ModuleTypePanelCreatorTest extends TestBase {
         WizardDescriptor wizardDescriptor = new WizardDescriptor() {};
         
         MockPropertyChangeListener l = new MockPropertyChangeListener();
+        l.ignore(NotifyDescriptor.PROP_MESSAGE, NotifyDescriptor.PROP_TITLE);
         wizardDescriptor.addPropertyChangeListener(l);
         
         JComponent typeChooserPanel = ModuleTypePanel.createComponent(wizardDescriptor);
@@ -83,13 +84,11 @@ public class ModuleTypePanelCreatorTest extends TestBase {
         ModuleTypePanel.setProjectFolder(wizardDescriptor, new File(""));
         
         l.assertEvents(TypeChooserPanelImpl.IS_NETBEANS_ORG,
-                NotifyDescriptor.PROP_MESSAGE,
                 TypeChooserPanelImpl.IS_STANDALONE_OR_SUITE_COMPONENT,
                 TypeChooserPanelImpl.SUITE_ROOT,
                 TypeChooserPanelImpl.ACTIVE_PLATFORM_ID,
                 TypeChooserPanelImpl.ACTIVE_NB_PLATFORM,
-                TypeChooserPanelImpl.PROJECT_FOLDER,
-                NotifyDescriptor.PROP_TITLE);
+                TypeChooserPanelImpl.PROJECT_FOLDER);
     }
     
     public void testIsPanelUpdated() throws IOException {
