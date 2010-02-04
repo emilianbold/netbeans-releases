@@ -235,6 +235,10 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue167791.php", 5);
     }
 
+    public void test176224() throws Exception {
+        reformatFileContents("testfiles/formatting/issue176224.php");
+    }
+
     // blank lines
     public void testBLClass01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
