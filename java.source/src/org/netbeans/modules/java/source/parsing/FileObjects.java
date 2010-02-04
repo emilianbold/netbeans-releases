@@ -360,7 +360,7 @@ public class FileObjects {
      * @param content the content of the {@link JavaFileObject}
      * @return {@link JavaFileObject}, never returns null
      */
-    public static FileObjects.InferableJavaFileObject memoryFileObject(final CharSequence pkg, final CharSequence name,
+    public static InferableJavaFileObject memoryFileObject(final CharSequence pkg, final CharSequence name,
         final URI uri, final long lastModified, final CharSequence content) {
         Parameters.notNull("pkg", pkg);
         Parameters.notNull("name", name);
@@ -595,25 +595,6 @@ public class FileObjects {
             }
         }
         folder.delete();
-    }
-    
-    // Private methods ---------------------------------------------------------
-    
-    // Innerclasses ------------------------------------------------------------
-    
-    /**
-     * JavaFileObject which is able to infer itself.
-     * 
-     */
-    public static interface InferableJavaFileObject extends JavaFileObject {
-        
-        /**
-         * Returns binary name of the {@link JavaFileObject}.
-         * @return the binary name or null when {@link JavaFileObject}
-         * is not able to infer.
-         */
-        public String inferBinaryName ();
-        
     }
     
     public static abstract class Base implements InferableJavaFileObject {
