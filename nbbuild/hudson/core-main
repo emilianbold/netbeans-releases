@@ -18,6 +18,11 @@ if [ "$action" = "build" ]; then
     testmodule api.java.classpath
     testmodule api.progress
     testmodule api.visual
+    testmodule apisupport.crudsample
+    testmodule apisupport.feedreader
+    testmodule apisupport.harness
+    testmodule apisupport.paintapp
+    testmodule apisupport.project
     testmodule autoupdate.services
     testmodule autoupdate.ui
     testmodule core.execution

@@ -148,18 +148,18 @@ public class SuitePropertiesTest extends TestBase {
         
         NbModuleProject module2ToAdd = generateStandaloneModule("module2");
         NbModuleProject module3ToAdd = generateStandaloneModule("module3");
-        SuiteProvider suiteProvider = module2ToAdd.getLookup().lookup(SuiteProvider.class);
-        assertNotNull(suiteProvider);
-        assertNull("module2ToAdd is standalone module - doesn't have valid SuiteProvider", suiteProvider.getSuiteDirectory());
+        assertNull(module2ToAdd.getLookup().lookup(SuiteProvider.class));
         model.addModule(module2ToAdd);
         model.addModule(module3ToAdd);
         
         saveProperties(suiteProps);
-        
-        assertNotNull("module2ToAdd is standalone module - has valid SuiteProvider", suiteProvider.getSuiteDirectory());
+
+        SuiteProvider suiteProvider = module2ToAdd.getLookup().lookup(SuiteProvider.class);
+        assertNotNull(suiteProvider);
+        assertNotNull(suiteProvider.getSuiteDirectory());
         
         suiteProps.refresh(NbCollections.checkedSetByFilter(spp.getSubprojects(), NbModuleProject.class, true));
-        assertNotNull("module2ToAdd is standalone module - has valid SuiteProvider", suiteProvider.getSuiteDirectory());
+        assertNotNull(suiteProvider.getSuiteDirectory());
         assertEquals("three module suite components", 3, suiteProps.getModulesListModel().getSize());
     }
     
