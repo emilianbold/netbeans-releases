@@ -67,9 +67,9 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
-import org.netbeans.modules.java.source.parsing.OutputFileObject;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
@@ -256,8 +256,8 @@ final class MultiPassCompileWorker extends CompileWorker {
                 }
                 ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
                 for (JavaFileObject generated : jt.generate(types)) {
-                    if (generated instanceof OutputFileObject) {
-                        previous.createdFiles.add(((OutputFileObject) generated).getFile());
+                    if (generated instanceof FileObjects.FileBase) {
+                        previous.createdFiles.add(((FileObjects.FileBase) generated).getFile());
                     } else {
                         // presumably should not happen
                     }
