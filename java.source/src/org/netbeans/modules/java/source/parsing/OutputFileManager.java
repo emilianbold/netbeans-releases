@@ -171,7 +171,7 @@ public class OutputFileManager extends CachingFileManager {
                 activeRoot.mkdirs();
             }
             File f = FileUtil.normalizeFile(new File (activeRoot, nameStr));
-            return OutputFileObject.create (activeRoot, f);
+            return FileObjects.fileFileObject(f, activeRoot, null, null);
         }
     }
 
@@ -203,7 +203,7 @@ public class OutputFileManager extends CachingFileManager {
             }
         }
         File file = FileUtil.normalizeFile(new File (folder,relativeName));
-        return OutputFileObject.create (activeRoot,file);
+        return FileObjects.fileFileObject(file, activeRoot,null,null);
     }
 
 

@@ -136,10 +136,10 @@ public class CompletionUtil {
         if (index == -1) return null;
 
         String prefixName = tagName.substring(0, index);
-        if (prefixName.startsWith(TAG_FIRST_CHAR)) {
-            prefixName = prefixName.substring(TAG_FIRST_CHAR.length());
-        } else if (prefixName.startsWith(END_TAG_PREFIX)) {
+        if (prefixName.startsWith(END_TAG_PREFIX)) {
             prefixName = prefixName.substring(END_TAG_PREFIX.length());
+        } else if (prefixName.startsWith(TAG_FIRST_CHAR)) {
+            prefixName = prefixName.substring(TAG_FIRST_CHAR.length());
         }
         return prefixName;
     }
@@ -800,7 +800,7 @@ public class CompletionUtil {
             TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
             if (isCaretInsideTag(caretPos, tokenSequence)) return null;
 
-            boolean beforeUnclosedStartTagFound = isBeforeUnclosedStartTagFound(
+            boolean beforeUnclosedStartTagFound = isUnclosedStartTagFoundBefore(
                 caretPos, tokenSequence);
             if (! beforeUnclosedStartTagFound) return null;
 
@@ -808,7 +808,7 @@ public class CompletionUtil {
             String startTagName = getTokenTagName(token);
             if (startTagName == null) return null;
 
-            boolean closingTagFound = isAfterClosingEndTagFound(caretPos,
+            boolean closingTagFound = isClosingEndTagFoundAfter(caretPos,
                 tokenSequence, startTagName);
             if (closingTagFound) return null;
 
@@ -824,7 +824,7 @@ public class CompletionUtil {
         }
     }
 
-    private static boolean isBeforeUnclosedStartTagFound(int caretPos,
+    private static boolean isUnclosedStartTagFoundBefore(int caretPos,
         TokenSequence tokenSequence) {
         tokenSequence.move(caretPos);
 
@@ -848,6 +848,7 @@ public class CompletionUtil {
                 if ((startTagName != null) && (endTagName != null) &&
                     startTagName.equals(endTagName)) {
                     existingEndTags.pop();
+                    tagLastCharFound = startTagFound = false;
                     continue;
                 }
                 startTagFound = true;
@@ -857,7 +858,7 @@ public class CompletionUtil {
         return startTagFound;
     }
 
-    private static boolean isAfterClosingEndTagFound(int caretPos,
+    private static boolean isClosingEndTagFoundAfter(int caretPos,
         TokenSequence tokenSequence, String startTagName) {
         tokenSequence.move(caretPos);
 

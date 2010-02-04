@@ -1722,6 +1722,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
         });
         String mdn = m.getDisplayName();
+        initNodes();
         ClusterNode node = libChildren.findCluster(m.getCluster());
         if (node == null) {
             // #162155: dirty hack of race conditions; proper solution would be to copy everything for doUpdateDependencyWarnings,

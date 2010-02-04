@@ -186,6 +186,10 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ViewAction.instance"/>
                         <attr name="position" intvalue="1000"/>
                     </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+			<attr name="position" intvalue="1290"/>
+		    </file>
                     <file name="generate-code">
                         <attr name="position" intvalue="1333"/>
                     </file>
@@ -292,8 +296,12 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ViewAction.instance"/>
                         <attr name="position" intvalue="1000"/>
                     </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+			<attr name="position" intvalue="1290"/>
+		    </file>
                     <file name="format">
-                        <attr name="position" intvalue="1333"/>
+                        <attr name="position" intvalue="1400"/>
                     </file>
                     <file name="SeparatorAfterFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

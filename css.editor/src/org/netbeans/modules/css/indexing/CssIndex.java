@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.indexing.DependenciesGraph.Node;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -66,16 +67,19 @@ public class CssIndex {
     private static final Logger LOGGER = Logger.getLogger(CssIndex.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
-    public static CssIndex create(FileObject[] sourceRoots) throws IOException {
-        return new CssIndex(sourceRoots);
+    public static CssIndex create(Project project) throws IOException {
+        return new CssIndex(project);
     }
     private final QuerySupport querySupport;
 
     /** Creates a new instance of JsfIndex */
-    private CssIndex(FileObject[] sourceRoots) throws IOException {
-        //QuerySupport now refreshes the roots indexes so it can held until
-        //the source roots are valid
-        this.querySupport = QuerySupport.forRoots(CssIndexer.Factory.NAME, CssIndexer.Factory.VERSION, sourceRoots);
+    private CssIndex(Project project) throws IOException {
+        //QuerySupport now refreshes the roots indexes so it can held until the source roots are valid
+        Collection<FileObject> sourceRoots = QuerySupport.findRoots(project,
+                null /* all source roots */,
+                Collections.<String>emptyList(),
+                Collections.<String>emptyList());
+        this.querySupport = QuerySupport.forRoots(CssIndexer.Factory.NAME, CssIndexer.Factory.VERSION, sourceRoots.toArray(new FileObject[]{}));
     }
 
     public Collection<FileObject> findIds(String id) {

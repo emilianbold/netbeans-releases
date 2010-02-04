@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,34 +34,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.profiler.tests.jfluid.cpu;
+package org.netbeans.modules.java.source.parsing;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
+import javax.tools.JavaFileObject;
 
 /**
- *
- * @author dt153238
+ * JavaFileObject which is able to infer itself.
+ * @author Tomas Zezula
  */
-public class BasicTest3 {
+public interface InferableJavaFileObject extends JavaFileObject {
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(org.netbeans.lib.profiler.tests.jfluid.cpu.BasicTest.class).addTest(
-                "testSettingsInstrumentManyMethodsTotal",
-                "testSettingsInstrumentNotSpawnedThreads",
-                "testSettingsInstrumentNotSpawnedThreadsServer",
-                "testSettingsInstrumentRootMethod",
-                "testSettingsInstrumentRootMethodServer",
-                "testSettingsLimitedThreads",
-                "testSettingsLimitedThreadsServer",
-                "testSettingsSampledProfilingEager",
-                "testSettingsSampledProfilingLazy",
-                "testSettingsSampledProfilingServerEager",
-                "testSettingsSampledProfilingServerLazy",
-                "testSettingsSampledProfilingServerTotal",
-                "testSettingsSampledProfilingTotal").enableModules(".*").clusters(".*"));
-    }
+    /**
+     * Returns binary name of the {@link JavaFileObject}.
+     * @return the binary name or null when {@link JavaFileObject}
+     * is not able to infer.
+     */
+    public String inferBinaryName();
 }

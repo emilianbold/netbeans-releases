@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,37 +34,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.lib.profiler.tests.jfluid.cpu;
+package org.netbeans.modules.web.core.syntax.completion;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
+ * Associate the short names (prefixes) of most often used tag libraries
+ * with their URI. This is used to guess and insert missing tag lib import
+ * directive.
  *
- * @author dt153238
+ * TODO: perhaps the functionality of this class could be replaced with
+ * a call to JspSyntaxSupport.getTagLibraryMappings() and then
+ * parsing all the TLDs. At this stage it seems inefficient and not
+ * necessary though.
+ *
+ * @author Tomasz.Slota@Sun.COM
  */
-public class BasicTest2 {
+public class StandardTagLibraryPrefixes {
+    private static Map<String, String> standardPrefixes = new TreeMap<String, String>();
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(org.netbeans.lib.profiler.tests.jfluid.cpu.BasicTest.class).addTest(
-            "testMethodWithWaitLazyServer",
-            "testMethodWithWaitTotal",
-            "testMethodWithWaitTotalServer",
-            "testSettingsDefault",
-            "testSettingsInstrumenManyMethodsLazy",
-            "testSettingsInstrumentAllEager",
-            "testSettingsInstrumentAllEagerServer",
-            "testSettingsInstrumentAllLazy",
-            "testSettingsInstrumentAllLazyServer",
-            "testSettingsInstrumentAllTotal",
-            "testSettingsInstrumentAllTotalServer",
-            "testSettingsInstrumentExcludeJavas",
-            "testSettingsInstrumentExcludeJavasServer"
-            ).enableModules(".*").clusters(".*"));
+    static {
+        standardPrefixes.put("c", "http://java.sun.com/jstl/core");
+        standardPrefixes.put("x", "http://java.sun.com/jstl/xml");
+        standardPrefixes.put("fmt", "http://java.sun.com/jstl/fmt");
+        standardPrefixes.put("sql", "http://java.sun.com/jstl/sql");
     }
 
+    public static String get(String prefix){
+        return standardPrefixes.get(prefix);
+    }
 }

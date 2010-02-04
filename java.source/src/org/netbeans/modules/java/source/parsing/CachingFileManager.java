@@ -234,7 +234,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
             sb.append(base.getNameWithoutExtension());
             return sb.toString();
         }
-        else if (javaFileObject instanceof FileObjects.InferableJavaFileObject) {
+        else if (javaFileObject instanceof InferableJavaFileObject) {
             return ((SourceFileObject)javaFileObject).inferBinaryName();
         }
         return null;

@@ -155,6 +155,8 @@ public class DbUtil {
                     String drivername = DriverMaps.getDriverName(url);
                     if (drivername != null) {
                         driverClass = drivername;
+                    } else {
+                        driverClass = driverClassName;
                     }
                 }
             }
