@@ -55,6 +55,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import org.netbeans.modules.apisupport.project.api.EditableManifest;
+import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.Dependency;
@@ -103,6 +104,7 @@ public final class ManifestManager {
     public static final String BUNDLE_EXPORT_PACKAGE = "Export-Package"; // NOI18N
     public static final String BUNDLE_IMPORT_PACKAGE = "Import-Package"; // NOI18N
     public static final String BUNDLE_REQUIRE_BUNDLE = "Require-Bundle"; // NOI18N
+    public static final String BUNDLE_LOCALIZATION = "Bundle-Localization"; // NOI18N
     public static final String OPENIDE_MODULE_FRIENDS = "OpenIDE-Module-Friends"; // NOI18N
     public static final String OPENIDE_MODULE_MODULE_DEPENDENCIES = "OpenIDE-Module-Module-Dependencies"; // NOI18N
     public static final String CLASS_PATH = "Class-Path"; // NOI18N
@@ -320,7 +322,7 @@ public final class ManifestManager {
                 provides, // provides
                 requires, // requires
                 null, // needs
-                attr.getValue(OPENIDE_MODULE_LOCALIZING_BUNDLE),
+                attr.getValue(BUNDLE_LOCALIZATION) + ".properties", // NOI18N
                 attr.getValue(OPENIDE_MODULE_LAYER),
                 withGeneratedLayer,
                 attr.getValue(CLASS_PATH),
@@ -361,11 +363,13 @@ public final class ManifestManager {
         if (osgi) {
             em.setAttribute(BUNDLE_SYMBOLIC_NAME, cnb, null);
             em.setAttribute(BUNDLE_VERSION, specVer, null);
+            em.setAttribute(BUNDLE_LOCALIZATION, bundlePath.replaceFirst("[.]properties$", ""), null);
+            em.setAttribute("Bundle-Name", "%" + LocalizedBundleInfo.NAME, null); // NOI18N
         } else {
             em.setAttribute(OPENIDE_MODULE, cnb, null);
             em.setAttribute(OPENIDE_MODULE_SPECIFICATION_VERSION, specVer, null);
+            em.setAttribute(OPENIDE_MODULE_LOCALIZING_BUNDLE, bundlePath, null);
         }
-        em.setAttribute(OPENIDE_MODULE_LOCALIZING_BUNDLE, bundlePath, null);
         if (layerPath != null) {
             em.setAttribute(OPENIDE_MODULE_LAYER, layerPath, null);
         }
@@ -457,7 +461,14 @@ public final class ManifestManager {
     public String[] getNeededTokens() {
         return neededTokens;
     }
-    
+
+    /**
+     * Produces the {@code OpenIDE-Module-Localizing-Bundle} or {@code Bundle-Localization} header if there is one.
+     * This may be used as a default place to stick new bundle keys if there is no
+     * better place (e.g. in the same package as newly created Java code); might be
+     * used, for example, for {@code displayName} attributes on layer entries.
+     * Use {@link LocalizedBundleInfo} if you need to work with module-system-defined keys.
+     */
     public String getLocalizingBundle() {
         return localizingBundle;
     }
