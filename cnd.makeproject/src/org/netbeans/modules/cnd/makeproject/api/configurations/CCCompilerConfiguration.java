@@ -41,14 +41,14 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
+import org.netbeans.modules.cnd.makeproject.compilers.impl.CCCCompiler;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -211,7 +211,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     public Sheet getSheet(MakeConfiguration conf, Folder folder) {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        BasicCompiler ccCompiler = compilerSet == null ? null : (BasicCompiler)compilerSet.getTool(ToolKind.CCCompiler);
+        BasicCompiler ccCompiler = compilerSet == null ? null : (BasicCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
         
         sheet.put(getSet());
         if (conf.isCompileConfiguration() && folder == null) {

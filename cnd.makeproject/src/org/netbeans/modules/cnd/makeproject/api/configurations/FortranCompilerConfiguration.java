@@ -46,8 +46,8 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
-import org.netbeans.modules.cnd.makeproject.api.compilers.SunFortranCompiler;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
+import org.netbeans.modules.cnd.makeproject.compilers.impl.SunFortranCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
@@ -136,7 +136,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
     public Sheet getGeneralSheet(MakeConfiguration conf) {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        BasicCompiler fortranCompiler = compilerSet == null ? null : (BasicCompiler) compilerSet.getTool(ToolKind.FortranCompiler);
+        BasicCompiler fortranCompiler = compilerSet == null ? null : (BasicCompiler) compilerSet.getTool(PredefinedToolKind.FortranCompiler);
 
         sheet.put(getBasicSet());
         if (getMaster() != null) {

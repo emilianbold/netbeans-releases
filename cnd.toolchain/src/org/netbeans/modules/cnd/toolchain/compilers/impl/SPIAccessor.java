@@ -39,12 +39,13 @@
 
 package org.netbeans.modules.cnd.toolchain.compilers.impl;
 
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerSetManagerEvents;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author as204739
+ * @author Alexander Simon
  */
 public abstract class SPIAccessor {
 
@@ -80,4 +81,9 @@ public abstract class SPIAccessor {
     public abstract void runTasks(CompilerSetManagerEvents event);
 
     public abstract CompilerSetManagerEvents createEvent(ExecutionEnvironment env);
+
+    public abstract void add(ExecutionEnvironment env, CompilerSet cs);
+
+    public abstract void remove(ExecutionEnvironment env, CompilerSet cs);
+
 }

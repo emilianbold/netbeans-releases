@@ -45,7 +45,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
@@ -223,7 +223,7 @@ public final class ConfigureUtils {
 
     private static String getDefaultC(){
         CompilerSet def = CompilerSetManager.get(ServerList.getDefaultRecord().getExecutionEnvironment()).getDefaultCompilerSet();
-        String cCompiler = getToolPath(def, ToolKind.CCompiler);
+        String cCompiler = getToolPath(def, PredefinedToolKind.CCompiler);
         if (cCompiler != null) {
             return cCompiler;
         }
@@ -239,7 +239,7 @@ public final class ConfigureUtils {
 
     private static String getDefaultCpp(){
         CompilerSet def = CompilerSetManager.get(ServerList.getDefaultRecord().getExecutionEnvironment()).getDefaultCompilerSet();
-        String cppCompiler = getToolPath(def, ToolKind.CCCompiler);
+        String cppCompiler = getToolPath(def, PredefinedToolKind.CCCompiler);
         if (cppCompiler != null) {
             return cppCompiler;
         }
@@ -253,7 +253,7 @@ public final class ConfigureUtils {
         return cppCompiler;
     }
 
-    private static String getToolPath(CompilerSet compilerSet, ToolKind tool){
+    private static String getToolPath(CompilerSet compilerSet, PredefinedToolKind tool){
         if (compilerSet == null) {
             return null;
         }

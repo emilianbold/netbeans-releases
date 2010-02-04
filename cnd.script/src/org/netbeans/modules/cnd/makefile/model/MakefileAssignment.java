@@ -39,36 +39,37 @@
 
 package org.netbeans.modules.cnd.makefile.model;
 
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /**
- *
  * @author Alexey Vladykin
  */
-public final class MakefileAssignment extends MakefileElement {
+public final class MakefileAssignment extends AbstractMakefileElement {
 
-    private final String name;
     private final String value;
 
-    public MakefileAssignment(FileObject file, int startOffset, int endOffset, String name, String value) {
-        super(Kind.ASSIGNMENT, file, startOffset, endOffset);
-        Parameters.notNull("name", name);
+    public MakefileAssignment(String name, String value, FileObject file, int startOffset, int endOffset) {
+        super(ElementKind.VARIABLE, name, file, startOffset, endOffset);
         Parameters.notNull("value", value);
-        this.name = name;
         this.value = value;
     }
 
-    public String getMacroName() {
-        return name;
-    }
-
-    public String getMacroValue() {
+    public String getValue() {
         return value;
     }
 
     @Override
+    public boolean signatureEquals(ElementHandle that) {
+        return that instanceof MakefileAssignment
+                && that.getKind() == this.getKind()
+                && that.getName().equals(this.getName());
+    }
+
+    @Override
     public String toString() {
-        return name + " = " + value; // NOI18N
+        return getName() + " = " + getValue(); // NOI18N
     }
 }

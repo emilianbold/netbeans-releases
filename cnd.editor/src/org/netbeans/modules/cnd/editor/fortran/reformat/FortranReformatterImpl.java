@@ -98,11 +98,6 @@ public class FortranReformatterImpl {
             }
             isFirst = false;
             switch(id){
-                case KW_CONTAINS:
-                {
-                    System.out.println("");
-                }
-                break;
                 case PREPROCESSOR_DIRECTIVE: //(null, "preprocessor"),
                 {
                     preprocessorFormatter.indentPreprocessor(current);

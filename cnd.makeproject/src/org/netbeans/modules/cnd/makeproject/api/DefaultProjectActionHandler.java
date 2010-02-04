@@ -62,7 +62,7 @@ import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -219,7 +219,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 env.put(pi.getPathName(), path);
                 // Pass QMAKE from compiler set to the Makefile (IZ 174731)
                 if (conf.isQmakeConfiguration()) {
-                    String qmakePath = conf.getCompilerSet().getCompilerSet().getTool(ToolKind.QMakeTool).getPath();
+                    String qmakePath = conf.getCompilerSet().getCompilerSet().getTool(PredefinedToolKind.QMakeTool).getPath();
                     qmakePath = CppUtils.normalizeDriveLetter(conf.getCompilerSet().getCompilerSet(), qmakePath.replace('\\', '/')); // NOI18N
                     args.add("QMAKE=" + IpeUtils.escapeOddCharacters(qmakePath)); // NOI18N
                 }

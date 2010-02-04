@@ -100,6 +100,8 @@ import org.openide.util.Lookup;
  */
 public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
 
+    private static final boolean TRACE_START_STOP = false;
+
     static {
         // Setting netbeans.dirs makes installedFileLocator work properly
         File[] clusters = findClusters();
@@ -193,13 +195,17 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        System.err.println("End   "+getName()+" at "+Calendar.getInstance().getTime());
+        if (TRACE_START_STOP) {
+            System.err.println("End   "+getName()+" at "+Calendar.getInstance().getTime());
+        }
     }
     
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        System.err.println("Start "+getName()+" at "+Calendar.getInstance().getTime());
+        if (TRACE_START_STOP) {
+            System.err.println("Start "+getName()+" at "+Calendar.getInstance().getTime());
+        }
         
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
         System.setProperty("cnd.mode.unittest", "true");
