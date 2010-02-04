@@ -1499,9 +1499,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             entryNotFoundMessage(file.getAbsolutePath());
             return false;
         }
-        if (csmFile.getAbsolutePath().toString().endsWith("h.c")) {
-            int i = 0;
-        }
         boolean entryFound;
         // IZ#179861: unstable test RepositoryValidation
         synchronized (entry.getLock()) {
