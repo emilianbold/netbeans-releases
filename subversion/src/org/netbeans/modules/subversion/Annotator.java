@@ -637,12 +637,13 @@ public class Annotator {
         boolean available = true;
         if (!SvnClientFactory.isInitialized()) {
             Subversion.getInstance().getRequestProcessor().post(new Runnable() {
+                @Override
                 public void run() {
-                    SvnClientFactory.init();
-                    if (files != null && files.length > 0) {
-                        // ask annotator again
-                        Subversion.getInstance().refreshAnnotations(files);
+                    if (SvnClientFactory.isInitialized()) {
+                        return;
                     }
+                    SvnClientFactory.init();
+                    Subversion.getInstance().refreshAllAnnotations();
                 }
             });
             Subversion.LOG.log(Level.FINE, " skipping {0} due to not yet initialized client", methodName); //NOI18N

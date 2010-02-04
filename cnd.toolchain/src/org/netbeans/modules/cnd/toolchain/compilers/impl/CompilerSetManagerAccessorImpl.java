@@ -104,7 +104,7 @@ public class CompilerSetManagerAccessorImpl {
         return ToolchainScriptGenerator.generateScript(path);
     }
 
-    public static void save(CompilerSetManager csm) {
+    public static void save(CompilerSetManagerImpl csm) {
         synchronized (MASTER_LOCK) {
             CompilerSetPreferences.saveToDisk(csm);
         }

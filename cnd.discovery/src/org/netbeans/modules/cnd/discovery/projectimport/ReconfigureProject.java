@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.actions.QMakeAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
@@ -620,7 +620,7 @@ public class ReconfigureProject {
     }
 
     private String getCCompilerName(){
-        String path = getToolPath(ToolKind.CCompiler);
+        String path = getToolPath(PredefinedToolKind.CCompiler);
         if (path == null) {
             if (isSunCompiler()) {
                 return "cc"; // NOI18N
@@ -632,7 +632,7 @@ public class ReconfigureProject {
     }
 
     private String getCppCompilerName(){
-        String path = getToolPath(ToolKind.CCCompiler);
+        String path = getToolPath(PredefinedToolKind.CCCompiler);
         if (path == null) {
             if (isSunCompiler()) {
                 return "CC"; // NOI18N
@@ -643,7 +643,7 @@ public class ReconfigureProject {
         return path;
     }
 
-    private String getToolPath(ToolKind tool){
+    private String getToolPath(PredefinedToolKind tool){
         Tool compiler = compilerSet.findTool(tool);
         if (compiler == null) {
             return null;

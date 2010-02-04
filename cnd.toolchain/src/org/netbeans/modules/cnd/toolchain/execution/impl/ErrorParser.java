@@ -43,7 +43,7 @@ import java.io.File;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
@@ -110,7 +110,7 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
                 }
                 List<CompilerSet> compilerSets = CompilerSetManager.get(execEnv).getCompilerSets();
                 for (CompilerSet set : compilerSets) {
-                    Tool cCompiler = set.getTool(ToolKind.CCompiler);
+                    Tool cCompiler = set.getTool(PredefinedToolKind.CCompiler);
                     if (cCompiler != null) {
                         String includePrefix = cCompiler.getIncludeFilePathPrefix();
                         File file = new File(includePrefix + absPath1);

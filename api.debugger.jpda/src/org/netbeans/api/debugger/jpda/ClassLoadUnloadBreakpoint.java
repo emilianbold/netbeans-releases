@@ -41,10 +41,13 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.filesystems.FileObject;
@@ -66,7 +69,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jan Jancura
  */
-public final class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
+public class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
 
     /** Property name constant */
     public static final String          PROP_CLASS_FILTERS = "classFilters"; // NOI18N
@@ -105,7 +108,7 @@ public final class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
         boolean isExclusionFilter,
         int breakpointType
     ) {
-        ClassLoadUnloadBreakpoint b = new ClassLoadUnloadBreakpoint ();
+        ClassLoadUnloadBreakpoint b = new ClassLoadUnloadBreakpointImpl ();
         if (isExclusionFilter)
             b.setClassExclusionFilters (new String[] {classNameFilter});
         else
@@ -204,58 +207,70 @@ public final class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
         return "ClassLoadUnloadBreakpoint " + Arrays.toString(classFilters);
     }
 
-    //@Override
-    private Object/*public GroupProperties*/ getGroupProperties() {
-        return new ClassGroupProperties();
-    }
+    private static final class ClassLoadUnloadBreakpointImpl extends ClassLoadUnloadBreakpoint implements PropertyChangeListener {
 
-
-    private final class ClassGroupProperties {//extends GroupProperties {
-
-        public String getType() {
-            return "Class Load/Unload";
+        //@Override
+        public Object /*public GroupProperties*/ getGroupProperties() {
+            return new ClassGroupProperties();
         }
 
-        public String getLanguage() {
-            return "Java";
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            enginePropertyChange(evt);
         }
 
-        public FileObject[] getFiles() {
-            String[] filters = getClassFilters();
-            String[] exfilters = getClassExclusionFilters();
-            List<FileObject> files = new ArrayList<FileObject>();
-            for (int i = 0; i < filters.length; i++) {
-                // TODO: annotate also other matched classes
-                if (!filters[i].startsWith("*") && !filters[i].endsWith("*")) {
-                    fillFilesForClass(filters[i], files);
-                }
+
+        private final class ClassGroupProperties {//extends GroupProperties {
+
+            public String getType() {
+                return "Class Load/Unload";
             }
-            return files.toArray(new FileObject[] {});
-        }
 
-        public Project[] getProjects() {
-            FileObject[] files = getFiles();
-            List<Project> projects = new ArrayList<Project>();
-            for (FileObject f : files) {
-                while (f != null) {
-                    f = f.getParent();
-                    if (f != null && ProjectManager.getDefault().isProject(f)) {
-                        break;
+            public String getLanguage() {
+                return "Java";
+            }
+
+            public FileObject[] getFiles() {
+                String[] filters = getClassFilters();
+                String[] exfilters = getClassExclusionFilters();
+                List<FileObject> files = new ArrayList<FileObject>();
+                for (int i = 0; i < filters.length; i++) {
+                    // TODO: annotate also other matched classes
+                    if (!filters[i].startsWith("*") && !filters[i].endsWith("*")) {
+                        fillFilesForClass(filters[i], files);
                     }
                 }
-                if (f != null) {
-                    try {
-                        projects.add(ProjectManager.getDefault().findProject(f));
-                    } catch (IOException ex) {
-                    } catch (IllegalArgumentException ex) {
+                return files.toArray(new FileObject[] {});
+            }
+
+            public Project[] getProjects() {
+                FileObject[] files = getFiles();
+                List<Project> projects = new ArrayList<Project>();
+                for (FileObject f : files) {
+                    while (f != null) {
+                        f = f.getParent();
+                        if (f != null && ProjectManager.getDefault().isProject(f)) {
+                            break;
+                        }
+                    }
+                    if (f != null) {
+                        try {
+                            projects.add(ProjectManager.getDefault().findProject(f));
+                        } catch (IOException ex) {
+                        } catch (IllegalArgumentException ex) {
+                        }
                     }
                 }
+                return projects.toArray(new Project[] {});
             }
-            return projects.toArray(new Project[] {});
-        }
 
-        public boolean isHidden() {
-            return ClassLoadUnloadBreakpoint.this.isHidden();
+            public DebuggerEngine[] getEngines() {
+                return ClassLoadUnloadBreakpointImpl.this.getEngines();
+            }
+
+            public boolean isHidden() {
+                return ClassLoadUnloadBreakpointImpl.this.isHidden();
+            }
         }
 
     }

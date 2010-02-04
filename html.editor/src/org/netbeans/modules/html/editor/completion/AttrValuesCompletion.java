@@ -94,7 +94,8 @@ public abstract class AttrValuesCompletion {
         putSupport("form", "action", FILE_NAME_SUPPORT); //NOI18N
 
         putSupport("script", "type", CONTENT_TYPE_SUPPORT); //NOI18N
-        putSupport("stype", "type", CONTENT_TYPE_SUPPORT); //NOI18N
+        putSupport("style", "type", CONTENT_TYPE_SUPPORT); //NOI18N
+        putSupport("link", "type", CONTENT_TYPE_SUPPORT); //NOI18N
     }
 
     private static void putSupport(String tag, String attr, AttrValuesCompletion support) {

@@ -554,7 +554,6 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
             for (BugzillaLazyIssue issue : watchedIssues.values()) {
                 if (issue instanceof KenaiBugzillaLazyIssue) {
                     Kenai issueKenai = KenaiUtil.getKenai(issue.getUrl().toString());
-                    assert issueKenai != null;
                     if(notifiedKenai.equals(issueKenai)) {
                         ((KenaiBugzillaLazyIssue) issue).notifyKenaiLogin();
                     }
@@ -776,7 +775,10 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
             if (loginStatusChanged) {
                 try {
                     LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for: " + projectName);
-                    repo = KenaiUtil.getKenaiBugtrackingRepository(getUrl().toString(), projectName);
+                    String url = getUrl().toString();
+                    if (KenaiUtil.getKenai(url) != null) {
+                        repo = KenaiUtil.getKenaiBugtrackingRepository(url, projectName);
+                    }
                 } catch (KenaiException ex) {
                     LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for " + projectName, ex);
                 }

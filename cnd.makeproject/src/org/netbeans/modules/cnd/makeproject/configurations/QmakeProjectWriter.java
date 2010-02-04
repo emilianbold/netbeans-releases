@@ -46,7 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -186,9 +186,9 @@ public class QmakeProjectWriter {
                 expandAndQuote(configuration.getQmakeConfiguration().getUiDir().getValue()));
 
         write(bw, Variable.QMAKE_CC, Operation.SET,
-                ConfigurationMakefileWriter.getCompilerName(configuration, ToolKind.CCompiler));
+                ConfigurationMakefileWriter.getCompilerName(configuration, PredefinedToolKind.CCompiler));
         write(bw, Variable.QMAKE_CXX, Operation.SET,
-                ConfigurationMakefileWriter.getCompilerName(configuration, ToolKind.CCCompiler));
+                ConfigurationMakefileWriter.getCompilerName(configuration, PredefinedToolKind.CCCompiler));
 
         CompilerSet compilerSet = configuration.getCompilerSet().getCompilerSet();
         OptionToString defineVisitor = new OptionToString(compilerSet, null);

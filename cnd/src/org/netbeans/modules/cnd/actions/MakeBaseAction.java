@@ -52,7 +52,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
@@ -82,7 +82,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
 
     @Override
     protected boolean accept(DataObject object) {
-        return object.getCookie(MakeExecSupport.class) != null;
+        return object != null && object.getCookie(MakeExecSupport.class) != null;
     }
 
     @Override
@@ -134,9 +134,9 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         final FileObject fileObject = dataObject.getPrimaryFile();
         File makefile = FileUtil.toFile(fileObject);
         // Build directory
-        String buildDir = getBuildDirectory(node,ToolKind.MakeTool);
+        String buildDir = getBuildDirectory(node,PredefinedToolKind.MakeTool);
         // Executable
-        String executable = getCommand(node, project, ToolKind.MakeTool, "make"); // NOI18N
+        String executable = getCommand(node, project, PredefinedToolKind.MakeTool, "make"); // NOI18N
         // Arguments
         String[] args;
         if (target.length() == 0) {

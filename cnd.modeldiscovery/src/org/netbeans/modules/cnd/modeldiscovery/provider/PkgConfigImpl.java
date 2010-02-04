@@ -125,7 +125,12 @@ public class PkgConfigImpl implements PkgConfig {
             String baseDirectory = getPkgConfihPath();
             if (baseDirectory == null) {
                 if (set == null) {
-                    set = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSet(CompilerFlavor.toFlavor("Cygwin", PlatformTypes.PLATFORM_WINDOWS)); // NOI18N
+                    for(CompilerSet cs : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()) {
+                        if (cs.getCompilerFlavor().isCygwinCompiler()) {
+                            set = cs;
+                            break;
+                        }
+                    }
                 }
                 if (set != null){
                     baseDirectory = set.getDirectory();

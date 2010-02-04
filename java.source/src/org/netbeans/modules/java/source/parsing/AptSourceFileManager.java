@@ -78,9 +78,8 @@ public class AptSourceFileManager extends SourceFileManager {
 
     public AptSourceFileManager (final @NonNull ClassPath userRoots,
                               final @NonNull ClassPath aptRoots,
-                              final @NullAllowed Marker marker,
-                              final boolean ignoreExcludes) {
-        super(aptRoots,ignoreExcludes);
+                              final @NullAllowed Marker marker) {
+        super(aptRoots, true);
         assert userRoots != null;
         this.userRoots = userRoots;
         this.marker = marker;

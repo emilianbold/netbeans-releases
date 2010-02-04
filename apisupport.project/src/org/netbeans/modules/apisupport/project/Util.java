@@ -229,7 +229,7 @@ public final class Util {
     public static final NamespaceContext nbmNamespaceContext() {
         return new NamespaceContext() {
             public String getNamespaceURI(String prefix) {
-                return prefix.equals("nbm") ? NbModuleProjectType.NAMESPACE_SHARED : null; // NOI18N
+                return prefix.equals("nbm") ? NbModuleProject.NAMESPACE_SHARED : null; // NOI18N
             }
             public String getPrefix(String namespaceURI) {return null;}
             public Iterator getPrefixes(String namespaceURI) {return null;}

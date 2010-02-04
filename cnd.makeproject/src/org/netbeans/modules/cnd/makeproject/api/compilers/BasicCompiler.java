@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Vector;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -53,7 +53,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 public abstract class BasicCompiler extends Tool {
 
     /** Creates a new instance of GenericCompiler */
-    protected BasicCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+    protected BasicCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
         if (!env.isLocal()) {
             includeFilePrefix = getIncludeFilePrefix(env);

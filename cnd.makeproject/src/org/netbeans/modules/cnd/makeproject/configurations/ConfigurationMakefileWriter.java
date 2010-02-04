@@ -71,7 +71,7 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;
@@ -328,7 +328,7 @@ public class ConfigurationMakefileWriter {
         }
     }
 
-    public static String getCompilerName(MakeConfiguration conf, ToolKind tool) {
+    public static String getCompilerName(MakeConfiguration conf, PredefinedToolKind tool) {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         if (compilerSet != null) {
             Tool compiler = compilerSet.getTool(tool);
@@ -366,10 +366,10 @@ public class ConfigurationMakefileWriter {
         if (compilerSet == null) {
             return;
         }
-        BasicCompiler cCompiler = (BasicCompiler) compilerSet.getTool(ToolKind.CCompiler);
-        BasicCompiler ccCompiler = (BasicCompiler) compilerSet.getTool(ToolKind.CCCompiler);
-        BasicCompiler fortranCompiler = (BasicCompiler) compilerSet.getTool(ToolKind.FortranCompiler);
-        BasicCompiler assemblerCompiler = (BasicCompiler) compilerSet.getTool(ToolKind.Assembler);
+        BasicCompiler cCompiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.CCompiler);
+        BasicCompiler ccCompiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
+        BasicCompiler fortranCompiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.FortranCompiler);
+        BasicCompiler assemblerCompiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.Assembler);
 
         bw.write("#\n"); // NOI18N
         bw.write("# Generated Makefile - do not edit!\n"); // NOI18N
@@ -385,16 +385,16 @@ public class ConfigurationMakefileWriter {
         bw.write("CP=cp\n"); // NOI18N
         bw.write("CCADMIN=CCadmin\n"); // NOI18N
         bw.write("RANLIB=ranlib\n"); // NOI18N
-        bw.write("CC=" + getCompilerName(conf, ToolKind.CCompiler) + "\n"); // NOI18N
-        bw.write("CCC=" + getCompilerName(conf, ToolKind.CCCompiler) + "\n"); // NOI18N
-        bw.write("CXX=" + getCompilerName(conf, ToolKind.CCCompiler) + "\n"); // NOI18N
-        bw.write("FC=" + getCompilerName(conf, ToolKind.FortranCompiler) + "\n"); // NOI18N
-        bw.write("AS=" + getCompilerName(conf, ToolKind.Assembler) + "\n"); // NOI18N
+        bw.write("CC=" + getCompilerName(conf, PredefinedToolKind.CCompiler) + "\n"); // NOI18N
+        bw.write("CCC=" + getCompilerName(conf, PredefinedToolKind.CCCompiler) + "\n"); // NOI18N
+        bw.write("CXX=" + getCompilerName(conf, PredefinedToolKind.CCCompiler) + "\n"); // NOI18N
+        bw.write("FC=" + getCompilerName(conf, PredefinedToolKind.FortranCompiler) + "\n"); // NOI18N
+        bw.write("AS=" + getCompilerName(conf, PredefinedToolKind.Assembler) + "\n"); // NOI18N
         if (conf.getArchiverConfiguration().getTool().getModified()) {
             bw.write("AR=" + conf.getArchiverConfiguration().getTool().getValue() + "\n"); // NOI18N
         }
         if (conf.isQmakeConfiguration()) {
-            bw.write("QMAKE=" + getCompilerName(conf, ToolKind.QMakeTool) + "\n"); // NOI18N
+            bw.write("QMAKE=" + getCompilerName(conf, PredefinedToolKind.QMakeTool) + "\n"); // NOI18N
         }
         bw.write("\n"); // NOI18N
 
@@ -618,7 +618,7 @@ public class ConfigurationMakefileWriter {
                         command += IpeUtils.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet,items[i].getPath(true)));
                     }
                     additionalDep = compilerConfiguration.getAdditionalDependencies().getValue();
-                } else if (itemConfiguration.getTool() == ToolKind.CustomTool) {
+                } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
                     CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                     if (customToolConfiguration.getModified()) {
                         target = customToolConfiguration.getOutputs().getValue(" + "); // NOI18N
@@ -750,7 +750,7 @@ public class ConfigurationMakefileWriter {
                 if (itemConfiguration.getExcluded().getValue()) {
                     continue;
                 }
-                if (itemConfiguration.getTool() == ToolKind.CustomTool && itemConfiguration.getCustomToolConfiguration().getModified()) {
+                if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool && itemConfiguration.getCustomToolConfiguration().getModified()) {
                     bw.write("\t${RM} " + itemConfiguration.getCustomToolConfiguration().getOutputs().getValue() + "\n"); // NOI18N
                 }
             }

@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.makeproject.ui.options;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import javax.swing.JList;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -226,11 +226,11 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
         // Show only the selected C and C++ compiler from the compiler collection
         ArrayList<Tool> toolSet = new ArrayList<Tool>();
-        Tool cCompiler = compilerCollection.getTool(ToolKind.CCompiler);
+        Tool cCompiler = compilerCollection.getTool(PredefinedToolKind.CCompiler);
         if (cCompiler != null && cCompiler.getPath().length() > 0) {
             toolSet.add(cCompiler);
         }
-        Tool cppCompiler = compilerCollection.getTool(ToolKind.CCCompiler);
+        Tool cppCompiler = compilerCollection.getTool(PredefinedToolKind.CCCompiler);
         if (cppCompiler != null && cppCompiler.getPath().length() > 0) {
             toolSet.add(cppCompiler);
         }

@@ -73,7 +73,7 @@ public class MakefileLanguageHierarchy extends LanguageHierarchy<MakefileTokenId
     protected LanguageEmbedding<?> embedding(Token<MakefileTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
         switch (token.id()) {
             case SHELL:
-                return LanguageEmbedding.create(ShTokenId.language(), 0, 0);
+                return LanguageEmbedding.create(ShTokenId.language(), 0, 0, true);
             default:
                 return null;
         }

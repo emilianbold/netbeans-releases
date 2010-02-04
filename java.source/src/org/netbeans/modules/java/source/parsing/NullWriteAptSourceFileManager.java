@@ -36,127 +36,148 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.source.parsing;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URI;
+import java.nio.CharBuffer;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
+import javax.tools.FileObject;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
-
+import org.netbeans.modules.java.source.parsing.FileObjects.InferableJavaFileObject;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class NullWriteAptSourceFileManager extends SourceFileManager {
+public class NullWriteAptSourceFileManager extends AptSourceFileManager {
 
-    public NullWriteAptSourceFileManager (final @NonNull ClassPath aptRoots, final boolean ignoreExcludes) {
-        super(aptRoots,ignoreExcludes);
+    public NullWriteAptSourceFileManager(final @NonNull ClassPath userRoots, final @NonNull ClassPath aptRoots) {
+        super(userRoots, aptRoots, null);
     }
 
     @Override
     public javax.tools.FileObject getFileForOutput(Location l, String pkgName, String relativeName, javax.tools.FileObject sibling)
-        throws IOException, UnsupportedOperationException, IllegalArgumentException {
+            throws IOException, UnsupportedOperationException, IllegalArgumentException {
         if (l != StandardLocation.SOURCE_OUTPUT) {
             throw new UnsupportedOperationException("Only apt output is supported."); // NOI18N
         }
+        try {
+            FileObject fo = super.getFileForOutput(l, pkgName, relativeName, sibling);
+            if (fo instanceof InferableJavaFileObject) {
+                return new NullFileObject((InferableJavaFileObject) fo);
+            }
+        } catch (Exception e) {}
         final String ext = FileObjects.getExtension(relativeName);
         final String name = FileObjects.stripExtension(relativeName);
-        return new NullFileObject(relativeName, pkgName+'.'+name, FileObjects.getKind(ext));
+        return new NullFileObject(relativeName, pkgName + '.' + name, FileObjects.getKind(ext));
     }
 
-
     @Override
-    public JavaFileObject getJavaFileForOutput (Location l, String className, JavaFileObject.Kind kind, javax.tools.FileObject sibling) {
+    public JavaFileObject getJavaFileForOutput(Location l, String className, JavaFileObject.Kind kind, javax.tools.FileObject sibling)
+            throws IOException, UnsupportedOperationException, IllegalArgumentException {
         if (l != StandardLocation.SOURCE_OUTPUT) {
             throw new UnsupportedOperationException("Only apt output is supported."); // NOI18N
         }
-        return new NullFileObject(className,FileObjects.getBaseName(className, '.'),kind);
+        try {
+            JavaFileObject fo = super.getJavaFileForOutput(l, className, kind, sibling);
+            if (fo instanceof InferableJavaFileObject) {
+                return new NullFileObject((InferableJavaFileObject) fo);
+            }
+        } catch (Exception e) {}
+        return new NullFileObject(className, FileObjects.getBaseName(className, '.'), kind);
     }
-
 
     static class NullFileObject implements FileObjects.InferableJavaFileObject {
 
+        private final FileObjects.InferableJavaFileObject delegate;
         private final JavaFileObject.Kind kind;
         private final String name;
         private final String binaryName;
 
-
-        NullFileObject (final String name, final String binaryName, final JavaFileObject.Kind kind) {
+        NullFileObject(final String name, final String binaryName, final JavaFileObject.Kind kind) {
+            this.delegate = null;
             this.name = name;
             this.binaryName = binaryName;
             this.kind = kind;
         }
 
+        NullFileObject(final FileObjects.InferableJavaFileObject delegate) {
+            this.delegate = delegate;
+            this.name = null;
+            this.binaryName = null;
+            this.kind = null;
+        }
 
         public String inferBinaryName() {
-            return binaryName;
+            return delegate != null ? delegate.inferBinaryName() : binaryName;
         }
 
         public Kind getKind() {
-            return kind;
+            return delegate != null ? delegate.getKind() : kind;
         }
 
         public boolean isNameCompatible(String simpleName, Kind kind) {
-            return this.kind == kind && name.equals(simpleName);
+            return delegate != null ? delegate.isNameCompatible(simpleName, kind) : this.kind == kind && name.equals(simpleName);
         }
 
         public NestingKind getNestingKind() {
-            return null;
+            return delegate != null ? delegate.getNestingKind() : null;
         }
 
         public Modifier getAccessLevel() {
-            return null;
+            return delegate != null ? delegate.getAccessLevel() : null;
         }
 
         public URI toUri() {
+            if (delegate != null) {
+                return delegate.toUri();
+            }
             //todo: implement this if needed
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         public String getName() {
-            return name;
+            return delegate != null ? delegate.getName() : null;
         }
 
         public InputStream openInputStream() throws IOException {
-            throw new UnsupportedOperationException("Read not supported");
+            return delegate != null ? delegate.openInputStream() : new NullInputStream();
         }
 
         public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
-            throw new UnsupportedOperationException("Read not supported");
+            return delegate != null ? delegate.openReader(ignoreEncodingErrors) : new InputStreamReader(openInputStream());
         }
 
         public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-            throw new UnsupportedOperationException("Read not supported");
+            return delegate != null ? delegate.getCharContent(ignoreEncodingErrors) : CharBuffer.allocate(0);
         }
 
         public OutputStream openOutputStream() throws IOException {
-            return new NullOutputStream ();
+            return new NullOutputStream();
         }
-
 
         public Writer openWriter() throws IOException {
             return new OutputStreamWriter(openOutputStream());
         }
 
         public long getLastModified() {
-            return System.currentTimeMillis();
+            return delegate != null ? delegate.getLastModified() : System.currentTimeMillis();
         }
 
         public boolean delete() {
             return true;
         }
-
     }
 
     static class NullOutputStream extends OutputStream {
@@ -165,7 +186,13 @@ public class NullWriteAptSourceFileManager extends SourceFileManager {
         public void write(int b) throws IOException {
             //pass
         }
-
     }
 
+    static class NullInputStream extends InputStream {
+
+        @Override
+        public int read() throws IOException {
+            return -1;
+        }
+    }
 }

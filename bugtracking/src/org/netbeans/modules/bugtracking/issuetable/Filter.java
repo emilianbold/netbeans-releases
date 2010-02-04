@@ -27,8 +27,8 @@ public abstract class Filter {
     public static Filter getAllFilter(Query query) {
         return getFilter(query, AllFilter.class);
     }
-    public static Filter getNotSeenFilter() {
-        return getFilter(null, NotSeenFilter.class);
+    public static Filter getNotSeenFilter(Query query) {
+        return getFilter(query, NotSeenFilter.class);
     }
     public static Filter getNewFilter(Query query) {
         return getFilter(query, NewFilter.class);
@@ -76,11 +76,13 @@ public abstract class Filter {
         }
         @Override
         public boolean accept(Issue issue) {
-            return query.contains(issue) || !IssueCacheUtils.wasSeen(issue);
+            return query.contains(issue);
         }
     }
     private static class NotSeenFilter extends Filter {
-        NotSeenFilter() {
+        private final Query query;
+        NotSeenFilter(Query query) {
+            this.query = query;
         }
         @Override
         public String getDisplayName() {
@@ -88,7 +90,7 @@ public abstract class Filter {
         }
         @Override
         public boolean accept(Issue issue) {
-            return !IssueCacheUtils.wasSeen(issue);
+            return !IssueCacheUtils.wasSeen(issue) && query.contains(issue);
         }
     }
     private static class NewFilter extends Filter {

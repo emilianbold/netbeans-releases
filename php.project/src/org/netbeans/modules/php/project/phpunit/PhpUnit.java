@@ -359,7 +359,7 @@ public abstract class PhpUnit extends PhpProgram {
             }
         }
         warnAboutMissingFiles(missingFiles);
-        return new ConfigFiles(bootstrap, configuration, suite);
+        return new ConfigFiles(bootstrap, ProjectPropertiesSupport.usePhpUnitBootstrapForCreateTests(project), configuration, suite);
     }
 
     public static File getCustomSuite(PhpProject project) {
@@ -591,11 +591,13 @@ public abstract class PhpUnit extends PhpProgram {
 
     public static final class ConfigFiles {
         public final File bootstrap;
+        public final boolean useBootstrapForCreateTests;
         public final File configuration;
         public final File suite;
 
-        public ConfigFiles(File bootstrap, File configuration, File suite) {
+        public ConfigFiles(File bootstrap, boolean useBootstrapForCreateTests, File configuration, File suite) {
             this.bootstrap = bootstrap;
+            this.useBootstrapForCreateTests = useBootstrapForCreateTests;
             this.configuration = configuration;
             this.suite = suite;
         }

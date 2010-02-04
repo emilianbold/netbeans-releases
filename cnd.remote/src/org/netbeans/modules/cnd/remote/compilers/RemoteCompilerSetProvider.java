@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.remote.compilers;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerSetProvider;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
@@ -107,14 +106,6 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
     @Override
     public String getNextCompilerSetData() {
         return manager.getNextCompilerSetData();
-    }
-
-    @Override
-    public Runnable createCompilerSetDataLoader(List<CompilerSet> sets) {
-        return new Runnable() {
-            @Override
-            public void run() {}
-        };
     }
 
     @Override

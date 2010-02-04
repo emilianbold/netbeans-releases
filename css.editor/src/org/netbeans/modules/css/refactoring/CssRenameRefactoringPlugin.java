@@ -124,11 +124,10 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             if (element.kind() == CssParserTreeConstants.JJT_CLASS
                     || element.kind() == CssParserTreeConstants.JJTHASH) {
                 //class or id refactoring
-
-                String elementName = element.image();
+                elementImage = elementImage.substring(1); //cut off the dot or hash
                 Collection<FileObject> files = element.kind() == CssParserTreeConstants.JJT_CLASS
-                        ? index.findClasses(elementName)
-                        : index.findIds(elementName);
+                        ? index.findClasses(elementImage)
+                        : index.findIds(elementImage);
 
                 DependenciesGraph deps = index.getDependencies(context.getFileObject());
 
@@ -144,16 +143,17 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                 //now we have a list of files which contain the given class or id and are
                 //related to the base file
                 if (LOG) {
-                    LOGGER.fine("Refactoring element " + elementName + " in file " + context.getFileObject().getPath()); //NOI18N
+                    LOGGER.fine("Refactoring element " + element.image() + " in file " + context.getFileObject().getPath()); //NOI18N
                     LOGGER.fine("Dependencies graph:\n"); //NOI18N
                     LOGGER.fine(deps.toString() + "\n"); //NOI18N
 
-                    LOGGER.fine("Involved files declaring the element " + elementName + ":"); //NOI18N
+                    LOGGER.fine("Involved files declaring the element " + element.image() + ":"); //NOI18N
                     for (FileObject fo : involvedFiles) {
                         LOGGER.fine(fo.getPath() + "\n"); //NOI18N
                     }
                 }
 
+                String newName = refactoring.getNewName().substring(1); //cut off the dot or hash
                 //make css simple models for all involved files 
                 //where we already have the result
                 for (FileObject file : involvedFiles) {
@@ -175,12 +175,12 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
                         List<Difference> diffs = new ArrayList<Difference>();
                         for (Entry entry : entries) {
-                            if (elementImage.equals(entry.getName())) {
+                            if (entry.isValidInSourceDocument() && elementImage.equals(entry.getName())) {
                                 diffs.add(new Difference(Difference.Kind.CHANGE,
                                         editor.createPositionRef(entry.getDocumentRange().getStart(), Bias.Forward),
                                         editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),
                                         entry.getName(),
-                                        refactoring.getNewName(),
+                                        newName,
                                         NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Selector"))); //NOI18N
                             }
                         }
@@ -198,7 +198,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                 List<Difference> diffs = new ArrayList<Difference>();
                 CloneableEditorSupport editor = Css.findCloneableEditorSupport(context.getFileObject());
                 for(Entry entry : model.getHtmlElements()) {
-                    if(elementImage.equals(entry.getName())) {
+                    if(entry.isValidInSourceDocument() && elementImage.equals(entry.getName())) {
                         diffs.add(new Difference(Difference.Kind.CHANGE,
                                         editor.createPositionRef(entry.getDocumentRange().getStart(), Bias.Forward),
                                         editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),

@@ -1,3 +1,8 @@
+#179838
+org.apache.derby.jdbc.AutoloadedDriver
+org.h2.Driver
+org.netbeans.modules.db.explorer.DatabaseConnector
+
 #177514
 org.netbeans.modules.cnd.api.model.CsmClass
 org.netbeans.modules.cnd.api.model.CsmClassifier

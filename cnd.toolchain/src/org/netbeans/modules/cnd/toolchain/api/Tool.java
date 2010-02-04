@@ -57,14 +57,14 @@ public class Tool {
     
     private final ExecutionEnvironment executionEnvironment;
     private final CompilerFlavor flavor;
-    private final ToolKindBase kind;
+    private final ToolKind kind;
     private String name;
     private final String displayName;
     private String path;
     private CompilerSet compilerSet;
 
     /** Creates a new instance of GenericCompiler */
-    protected Tool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+    protected Tool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         this.executionEnvironment = executionEnvironment;
         this.flavor = flavor;
         this.kind = kind;
@@ -81,11 +81,11 @@ public class Tool {
         return new Tool(executionEnvironment, flavor, kind, name, displayName, path);
     }
 
-    public ExecutionEnvironment getExecutionEnvironment() {
+    public final ExecutionEnvironment getExecutionEnvironment() {
         return executionEnvironment;
     }
 
-    public CompilerFlavor getFlavor() {
+    public final CompilerFlavor getFlavor() {
         return flavor;
     }
 
@@ -115,26 +115,19 @@ public class Tool {
     public void waitReady(boolean reset) {
     }
 
-    public ToolKindBase getKind() {
+    public final ToolKind getKind() {
         return kind;
     }
 
-    public String getName() {
+    public final String getName() {
         return name;
     }
 
-    public String getPath() {
+    public final String getPath() {
         return path;
     }
 
-    public void setPath(String p) {
-        if (p != null) {
-            path = p;
-            name = ToolUtils.getBaseName(path);
-        }
-    }
-
-    public String getDisplayName() {
+    public final String getDisplayName() {
         return displayName;
     }
 
@@ -145,7 +138,7 @@ public class Tool {
         throw new UnsupportedOperationException();
     }
 
-    public CompilerSet getCompilerSet() {
+    public final CompilerSet getCompilerSet() {
         return compilerSet;
     }
 
@@ -159,24 +152,36 @@ public class Tool {
         }
     }
 
+    private void setPath(String p) {
+        if (p != null) {
+            path = p;
+            name = ToolUtils.getBaseName(path);
+        }
+    }
+
     private void setCompilerSet(CompilerSet compilerSet) {
         this.compilerSet = compilerSet;
     }
 
-    private static Tool createTool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+    private static Tool createTool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         return new Tool(executionEnvironment, flavor, kind, name, displayName, path);
     }
 
     private static final class APIAccessorImpl extends APIAccessor {
 
         @Override
-        public Tool createTool(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+        public Tool createTool(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
             return Tool.createTool(env, flavor, kind, name, displayName, path);
         }
 
         @Override
         public void setCompilerSet(Tool tool, CompilerSet cs) {
             tool.setCompilerSet(cs);
+        }
+
+        @Override
+        public void setToolPath(Tool tool, String p) {
+            tool.setPath(p);
         }
     }
 }

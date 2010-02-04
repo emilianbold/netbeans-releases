@@ -51,6 +51,7 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Properties;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -68,7 +69,7 @@ public class BreakpointsTreeModel implements TreeModel {
     private Listener listener;
     private Vector listeners = new Vector ();
     private Properties bpProperties = Properties.getDefault().getProperties("Breakpoints");
-    private PropertyChangeListener pchl;
+    private PropertyChangeListener pchl, oppchl;
     
     /** 
      *
@@ -85,6 +86,9 @@ public class BreakpointsTreeModel implements TreeModel {
     public Object[] getChildren (Object parent, int from, int to)
     throws UnknownTypeException {
         if (parent == ROOT) {
+            if (listener == null) {
+                listener = new Listener (this);
+            }
             if (pchl == null) {
                 pchl = new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
@@ -92,6 +96,16 @@ public class BreakpointsTreeModel implements TreeModel {
                     }
                 };
                 bpProperties.addPropertyChangeListener(WeakListeners.propertyChange(pchl, bpProperties));
+            }
+            boolean openProjectsOnly = bpProperties.getBoolean(BreakpointGroup.PROP_FROM_OPEN_PROJECTS, true);
+            if (openProjectsOnly) {
+                oppchl = WeakListeners.propertyChange(pchl, OpenProjects.getDefault());
+                OpenProjects.getDefault().addPropertyChangeListener(oppchl);
+            } else {
+                if (oppchl != null) {
+                    OpenProjects.getDefault().removePropertyChangeListener(oppchl);
+                }
+                oppchl = null;
             }
             Object[] groupsAndBreakpoints = BreakpointGroup.createGroups(bpProperties);
             if (to == 0 || to >= groupsAndBreakpoints.length && from == 0) {
@@ -121,8 +135,6 @@ public class BreakpointsTreeModel implements TreeModel {
      */
     public int getChildrenCount (Object node) throws UnknownTypeException {
         if (node == ROOT) {
-            if (listener == null)
-                listener = new Listener (this);
             // Performance, see issue #59058.
             return Integer.MAX_VALUE;
             //return getChildren (node, 0, 0).length;
@@ -204,7 +216,7 @@ public class BreakpointsTreeModel implements TreeModel {
             }
             return m;
         }
-        
+
         @Override
         public void breakpointAdded (Breakpoint breakpoint) {
             BreakpointsTreeModel m = getModel ();

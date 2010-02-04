@@ -117,7 +117,7 @@ public class ImplementMBeanRegistrationActions extends ActionsTestCase {
                 SOURCE_PACKAGES + "|" + packageName + "|" + SIMPLE_1);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
     
     public void test2() {
@@ -129,7 +129,7 @@ public class ImplementMBeanRegistrationActions extends ActionsTestCase {
                 SOURCE_PACKAGES + "|" + packageName + "|" + DYNAMIC_2);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
     
     public void test3() throws Exception {
@@ -143,7 +143,7 @@ public class ImplementMBeanRegistrationActions extends ActionsTestCase {
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -178,7 +178,7 @@ public class ImplementMBeanRegistrationActions extends ActionsTestCase {
         // Check menu item
         EditorOperator eo = new EditorOperator(SIMPLE_1);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
     
     public void test5() {
@@ -193,7 +193,7 @@ public class ImplementMBeanRegistrationActions extends ActionsTestCase {
         // Check menu item
         EditorOperator eo = new EditorOperator(DYNAMIC_2);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
     
     public void test6() {
@@ -209,7 +209,7 @@ public class ImplementMBeanRegistrationActions extends ActionsTestCase {
         new OpenAction().perform(node);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);

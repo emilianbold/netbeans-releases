@@ -66,15 +66,11 @@ public class ExceptionsSettingsTest extends NbTestCase {
     }
 
     public void testPasswd() {
-        String str = "MY_PASSWD";
-        String previous;
+        char[] str = "MY_PASSWD".toCharArray();
         ExceptionsSettings settings = new ExceptionsSettings();
         assertNotNull(settings);
-        previous = settings.getPasswd();
         settings.setPasswd(str);
-        assertEquals(str, settings.getPasswd());
-        settings.setPasswd(previous);
-        assertEquals(previous, settings.getPasswd());
+        assertArraysEquals("MY_PASSWD".toCharArray(), settings.getPasswd());
     }
 
     public void testIsGuest() {
@@ -93,15 +89,25 @@ public class ExceptionsSettingsTest extends NbTestCase {
         ExceptionsSettings settings = new ExceptionsSettings();
         assertNotNull(settings);
         settings.setGuest(false);
-        settings.setPasswd("HALLO");
+        settings.setPasswd("HALLO".toCharArray());
         settings.setRememberPasswd(false);
         ReportPanel panel = new ReportPanel();
-        assertEquals("correctly loaded", "HALLO", panel.getPasswd());
+        assertArraysEquals("correctly loaded", "HALLO".toCharArray(), panel.getPasswdChars());
         assertEquals("correctly loaded", false, panel.asAGuest());
         panel.saveUserData();
         panel = new ReportPanel();
-        assertEquals("should not save passwd","", panel.getPasswd());
+        assertArraysEquals("should not save passwd", new char[0], panel.getPasswdChars());
         assertEquals("correctly loaded", false, panel.asAGuest());
     }
 
+    public void assertArraysEquals(String message, char[] x, char[] y){
+        assertEquals(message, x.length, y.length);
+        for (int i = 0; i < y.length; i++) {
+            assertEquals(message, x[i], y[i]);
+        }
+
+    }
+    public void assertArraysEquals(char[] x, char[] y){
+        assertArraysEquals(null, x, y);
+    }
 }

@@ -41,8 +41,8 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.toolchain.api.ToolKind;
-import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -51,7 +51,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * @author Alexander Simon
  */
 public class GeneralTool extends Tool {
-    private GeneralTool(ExecutionEnvironment env, ToolKindBase kind, CompilerFlavor flavor, String name, String displayName, String path) {
+    private GeneralTool(ExecutionEnvironment env, ToolKind kind, CompilerFlavor flavor, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path); // NOI18N
     }
 
@@ -60,15 +60,15 @@ public class GeneralTool extends Tool {
         return new GeneralTool(getExecutionEnvironment(), getKind(), getFlavor(),  getName(), getDisplayName(), getPath());
     }
 
-    public static GeneralTool create(ExecutionEnvironment env, ToolKindBase kind, CompilerFlavor flavor, String name, String displayName, String path) {
+    public static GeneralTool create(ExecutionEnvironment env, ToolKind kind, CompilerFlavor flavor, String name, String displayName, String path) {
         return new GeneralTool(env, kind, flavor, name, displayName, path);
     }
 
     @Override
     public ToolDescriptor getDescriptor() {
-        if (getKind() == ToolKind.QMakeTool) {
+        if (getKind() == PredefinedToolKind.QMakeTool) {
             return getFlavor().getToolchainDescriptor().getQMake();
-        } else if (getKind() == ToolKind.CMakeTool) {
+        } else if (getKind() == PredefinedToolKind.CMakeTool) {
             return getFlavor().getToolchainDescriptor().getCMake();
         }
         return null;

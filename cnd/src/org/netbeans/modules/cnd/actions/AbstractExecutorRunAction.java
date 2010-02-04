@@ -60,7 +60,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.toolchain.spi.ToolchainProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -238,7 +238,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return set;
     }
 
-    protected static String getCommand(Node node, Project project, ToolKind tool, String defaultName){
+    protected static String getCommand(Node node, Project project, PredefinedToolKind tool, String defaultName){
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         if (project == null) {
@@ -265,17 +265,17 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         if (command == null || command.length()==0) {
-            if (tool == ToolKind.MakeTool) {
+            if (tool == PredefinedToolKind.MakeTool) {
                 MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
                 if (mes != null) {
                     command = mes.getMakeCommand();
                 }
-            } else if (tool == ToolKind.QMakeTool) {
+            } else if (tool == PredefinedToolKind.QMakeTool) {
                 QMakeExecSupport mes = node.getCookie(QMakeExecSupport.class);
                 if (mes != null) {
                     command = mes.getQMakeCommand();
                 }
-            } else if (tool == ToolKind.CMakeTool) {
+            } else if (tool == PredefinedToolKind.CMakeTool) {
                 CMakeExecSupport mes = node.getCookie(CMakeExecSupport.class);
                 if (mes != null) {
                     command = mes.getCMakeCommand();
@@ -288,23 +288,23 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return command;
     }
 
-    protected static String getBuildDirectory(Node node, ToolKind tool){
+    protected static String getBuildDirectory(Node node, PredefinedToolKind tool){
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         File makefile = FileUtil.toFile(fileObject);
         // Build directory
         String bdir = null;
-        if (tool == ToolKind.MakeTool) {
+        if (tool == PredefinedToolKind.MakeTool) {
             MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
             if (mes != null) {
                 bdir = mes.getBuildDirectory();
             }
-        } else if (tool == ToolKind.QMakeTool) {
+        } else if (tool == PredefinedToolKind.QMakeTool) {
             QMakeExecSupport mes = node.getCookie(QMakeExecSupport.class);
             if (mes != null) {
                 bdir = mes.getRunDirectory();
             }
-        } else if (tool == ToolKind.CMakeTool) {
+        } else if (tool == PredefinedToolKind.CMakeTool) {
             CMakeExecSupport mes = node.getCookie(CMakeExecSupport.class);
             if (mes != null) {
                 bdir = mes.getRunDirectory();
@@ -317,14 +317,14 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return buildDir.getAbsolutePath();
     }
 
-    protected static String[] getArguments(Node node, ToolKind tool) {
+    protected static String[] getArguments(Node node, PredefinedToolKind tool) {
         String[] args = null;
-        if (tool == ToolKind.QMakeTool) {
+        if (tool == PredefinedToolKind.QMakeTool) {
             QMakeExecSupport mes = node.getCookie(QMakeExecSupport.class);
             if (mes != null) {
                 args = mes.getArguments();
             }
-        } else if (tool == ToolKind.CMakeTool) {
+        } else if (tool == PredefinedToolKind.CMakeTool) {
             CMakeExecSupport mes = node.getCookie(CMakeExecSupport.class);
             if (mes != null) {
                 args = mes.getArguments();

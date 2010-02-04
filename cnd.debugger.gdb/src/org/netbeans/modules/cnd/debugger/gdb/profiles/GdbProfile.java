@@ -48,7 +48,7 @@ import java.util.ArrayList;
 import org.netbeans.modules.cnd.toolchain.ui.api.BuildToolsAction;
 
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.openide.nodes.Sheet;
@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Confi
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerSetFactory;
@@ -71,7 +72,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
-public class GdbProfile implements ConfigurationAuxObject {
+public final class GdbProfile implements ConfigurationAuxObject {
 
     public static final String GDB_PROFILE_ID = "gdbdebugger"; // NOI18N
     
@@ -141,9 +142,6 @@ public class GdbProfile implements ConfigurationAuxObject {
     }
     
     public String getGdbPath(MakeConfiguration conf, boolean canAskUser) {
-        if (getClass().getName().contains("gd" + "b2")) { // NOI18N - Debugging code only...
-            return "/usr/local/bin/gd" + "b2"; // NOI18N - DEBUG tool for debugger co-existance development
-        }
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         CompilerSet cs;
         String csname;
@@ -153,11 +151,13 @@ public class GdbProfile implements ConfigurationAuxObject {
             cs = CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(csname);
         } else {
             csname = csconf.getOldName();
-            cs = CompilerSetFactory.getCompilerSet(conf.getDevelopmentHost().getExecutionEnvironment(), csname, conf.getPlatformInfo().getPlatform());
-            CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).add(cs);
+            final int platform = conf.getPlatformInfo().getPlatform();
+            CompilerFlavor flavor = CompilerFlavor.toFlavor(csname, platform);
+            flavor = flavor == null ? CompilerFlavor.getUnknown(platform) : flavor;
+            cs = CompilerSetFactory.getCompilerSet(conf.getDevelopmentHost().getExecutionEnvironment(), flavor, csname);
             csconf.setValid();
         }
-        Tool debuggerTool = cs.getTool(ToolKind.DebuggerTool);
+        Tool debuggerTool = cs.getTool(PredefinedToolKind.DebuggerTool);
         ExecutionEnvironment execEnv = null;
         if (debuggerTool != null) {
             String gdbPath = debuggerTool.getPath();
@@ -205,7 +205,7 @@ public class GdbProfile implements ConfigurationAuxObject {
 //                }
                 conf.getCompilerSet().setValue(model.getSelectedCompilerSetName());
                 cs = CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(model.getSelectedCompilerSetName());
-                return cs.getTool(ToolKind.DebuggerTool).getPath();
+                return cs.getTool(PredefinedToolKind.DebuggerTool).getPath();
             }
         }
         return null;

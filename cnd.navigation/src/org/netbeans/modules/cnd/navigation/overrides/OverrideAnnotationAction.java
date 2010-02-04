@@ -61,7 +61,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ImplementationProvider;
 import org.netbeans.editor.Utilities;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
@@ -154,15 +153,15 @@ public class OverrideAnnotationAction extends AbstractAction {
     }
 
     private List<BaseAnnotation> findAnnotations(JTextComponent component, int startOffset, int endOffset) {
-        FileObject file = getFile(component);
-        if (file == null) {
+        DataObject dao = getDataObject(component);
+        if (dao == null) {
             if (ErrorManager.getDefault().isLoggable(ErrorManager.WARNING)) {
                 ErrorManager.getDefault().log(ErrorManager.WARNING, "component=" + component + " does not have a file specified in the document."); //NOI18N
             }
             return null;
         }
 
-        AnnotationsHolder ah = AnnotationsHolder.get(file);
+        AnnotationsHolder ah = AnnotationsHolder.get(dao);
         if (ah == null) {
             BaseAnnotation.LOGGER.log(Level.INFO, "component={0} does not have attached AnnotationsHolder", component); //NOI18N
             return null;
@@ -179,15 +178,15 @@ public class OverrideAnnotationAction extends AbstractAction {
     }
 
     private BaseAnnotation findAnnotation(JTextComponent component, AnnotationDesc desc, int startOffset, int endOffset) {
-        FileObject file = getFile(component);
-        if (file == null) {
+        DataObject dao = getDataObject(component);
+        if (dao == null) {
             if (ErrorManager.getDefault().isLoggable(ErrorManager.WARNING)) {
                 ErrorManager.getDefault().log(ErrorManager.WARNING, "component=" + component + " does not have a file specified in the document."); //NOI18N
             }
             return null;
         }
 
-        AnnotationsHolder ah = AnnotationsHolder.get(file);
+        AnnotationsHolder ah = AnnotationsHolder.get(dao);
         if (ah == null) {
             BaseAnnotation.LOGGER.log(Level.INFO, "component={0} does not have attached a IsOverriddenAnnotationHandler", component); //NOI18N
             return null;
@@ -204,15 +203,9 @@ public class OverrideAnnotationAction extends AbstractAction {
         return null;
     }
 
-    private FileObject getFile(JTextComponent component) {
+    private DataObject getDataObject(JTextComponent component) {
         Document doc = component.getDocument();
-        DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-
-        if (od == null) {
-            return null;
-        }
-
-        return od.getPrimaryFile();
+        return (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
     }
 
 
