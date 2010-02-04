@@ -469,6 +469,8 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         add(categoryTxt, gridBagConstraints);
+
+        category.setPrototypeDisplayValue("Window | Debug");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -504,6 +506,8 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
         add(menuTxt, gridBagConstraints);
+
+        menu.setPrototypeDisplayValue("Profile | Advanced");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -524,6 +528,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
         add(menuPositionTxt, gridBagConstraints);
 
+        menuPosition.setPrototypeDisplayValue(DataModel.Position.PROTOTYPE);
         menuPosition.setRenderer(POSITION_RENDERER);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -579,6 +584,8 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
         add(toolbarTxt, gridBagConstraints);
+
+        toolbar.setPrototypeDisplayValue("Quick Search");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -599,6 +606,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
         add(toolbarPositionTxt, gridBagConstraints);
 
+        toolbarPosition.setPrototypeDisplayValue(DataModel.Position.PROTOTYPE);
         toolbarPosition.setRenderer(POSITION_RENDERER);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -722,6 +730,8 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
         add(ftContentTypeTxt, gridBagConstraints);
+
+        ftContentType.setPrototypeDisplayValue("text/xhtml+xml");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 12;
@@ -742,6 +752,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
         add(ftPositionTxt, gridBagConstraints);
 
+        ftPosition.setPrototypeDisplayValue(DataModel.Position.PROTOTYPE);
         ftPosition.setRenderer(POSITION_RENDERER);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -797,6 +808,8 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
         add(edContentTypeTxt, gridBagConstraints);
+
+        edContentType.setPrototypeDisplayValue("text/xhtml+xml");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 16;
@@ -817,6 +830,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
         add(edPositionTxt, gridBagConstraints);
 
+        edPosition.setPrototypeDisplayValue(DataModel.Position.PROTOTYPE);
         edPosition.setRenderer(POSITION_RENDERER);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

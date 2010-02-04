@@ -546,6 +546,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     }
     
     static final class Position {
+
+        public static final Position PROTOTYPE = new Position(null, null, "One Thing", "Another Thing"); // NOI18N
         
         private String before;
         private String after;
