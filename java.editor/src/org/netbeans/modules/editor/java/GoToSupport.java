@@ -461,7 +461,8 @@ public class GoToSupport {
                 NewClassTree nct = (NewClassTree) enclTreePath.getParentPath().getLeaf();
                 
                 if (nct.getClassBody() != null) {
-                    List<? extends TypeMirror> sup = info.getTypes().directSupertypes(classType);
+                    List<? extends TypeMirror> sup = classType != null && classType.getKind() == TypeKind.DECLARED
+                            ? info.getTypes().directSupertypes(classType) : Collections.<TypeMirror>emptyList();
                     TypeElement jlObject = info.getElements().getTypeElement("java.lang.Object");
 
                     if (jlObject != null) {
