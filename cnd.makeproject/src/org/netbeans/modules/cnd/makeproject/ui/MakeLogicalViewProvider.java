@@ -857,7 +857,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 node = (Node) key;
             } else if (key instanceof Folder) {
                 Folder folder = (Folder) key;
-                if (folder.isProjectFiles()) {
+                if (folder.isProjectFiles() || folder.isTestLogicalFolder() || folder.isTest()) {
                     //FileObject srcFileObject = project.getProjectDirectory().getFileObject("src");
                     FileObject srcFileObject = project.getProjectDirectory();
                     DataObject srcDataObject = null;
