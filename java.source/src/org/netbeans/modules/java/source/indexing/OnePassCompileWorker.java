@@ -192,7 +192,7 @@ final class OnePassCompileWorker extends CompileWorker {
                         while((sup = cSym.getSuperclass()) != null && sup.getKind() == TypeKind.DECLARED) {
                             cSym = (ClassSymbol) ((DeclaredType) sup).asElement();
                             Pair<CompilationUnitTree, CompileTuple> u = jfo2units.get(cSym.sourcefile);
-                            if (u != null && !finished.contains(u.second.indexable)) {
+                            if (u != null && !finished.contains(u.second.indexable) && !u.second.indexable.equals(active.indexable)) {
                                 if (!yield) {
                                     units.addFirst(unit);
                                 }
