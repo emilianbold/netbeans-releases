@@ -61,6 +61,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComponentOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.Operator;
+import org.openide.util.Lookup;
 
 /** Operator for Output tab. It resides in output top component.
  * <p>
@@ -256,8 +257,7 @@ public class OutputTabOperator extends JComponentOperator {
             public int map() {
                 Document document = documentForTab(getSource());
                 try {
-                    Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
-                    Method getLengthMethod = clazz.getDeclaredMethod("getLength", (Class[])null);
+                    Method getLengthMethod = getOutputDocumentClass().getDeclaredMethod("getLength", (Class[])null);
                     getLengthMethod.setAccessible(true);
                     return ((Integer)getLengthMethod.invoke(document, (Object[])null)).intValue();
                 } catch (Exception e) {
@@ -293,8 +293,7 @@ public class OutputTabOperator extends JComponentOperator {
             public Object map() {
                 Document document = documentForTab(getSource());
                 try {
-                    Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
-                    Method getTextMethod = clazz.getDeclaredMethod("getText", new Class[] {int.class, int.class});
+                    Method getTextMethod = getOutputDocumentClass().getDeclaredMethod("getText", new Class[] {int.class, int.class});
                     getTextMethod.setAccessible(true);
                     return getTextMethod.invoke(document, new Object[] {Integer.valueOf(0), Integer.valueOf(length)}).toString();
                 } catch (Exception e) {
@@ -342,8 +341,7 @@ public class OutputTabOperator extends JComponentOperator {
             public Object map() {
                 Document document = documentForTab(getSource());
                 try {
-                    Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
-                    Method getElementCountMethod = clazz.getDeclaredMethod("getElementCount", (Class[])null);
+                    Method getElementCountMethod = getOutputDocumentClass().getDeclaredMethod("getElementCount", (Class[])null);
                     getElementCountMethod.setAccessible(true);
                     return (Integer)getElementCountMethod.invoke(document, (Object[])null);
                 } catch (Exception e) {
@@ -351,7 +349,11 @@ public class OutputTabOperator extends JComponentOperator {
                 }
             }})).intValue();
     }
-    
+
+    private Class getOutputDocumentClass() throws ClassNotFoundException{
+        ClassLoader scl = Lookup.getDefault().lookup(ClassLoader.class);
+        return Class.forName("org.netbeans.core.output2.OutputDocument", true, scl);
+    }
     /** Returns operator for OutputPane component.
      * All events should be dispatched to this component.
      * @return operator for OutputPane component
@@ -375,7 +377,7 @@ public class OutputTabOperator extends JComponentOperator {
             public Object map() {
                 Document document = documentForTab(getSource());
                 try {
-                    Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
+                    Class clazz = getOutputDocumentClass();
                     Method getLineStartMethod = clazz.getDeclaredMethod("getLineStart", new Class[] {int.class});
                     getLineStartMethod.setAccessible(true);
                     Integer lineStart = (Integer) getLineStartMethod.invoke(document, new Object[] {Integer.valueOf(line)});
