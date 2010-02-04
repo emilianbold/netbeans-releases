@@ -79,9 +79,15 @@ public class CssProjectSupport {
 	    }
 	    ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
 	    if (classPath == null) {
-		return null;
-	    }
-	    synchronized (INSTANCIES) {
+                //Bug #180257 temporary workaround -  CSS refactoring doesn't work in PHP project
+                //PHP Project defines its own Source path type id
+                classPath = ClassPath.getClassPath(fo, "classpath/php-source"); //NOI18N
+                //<<<
+                if (classPath == null) {
+                    return null;
+                }
+            }
+            synchronized (INSTANCIES) {
 		CssProjectSupport instance = INSTANCIES.get(p);
 		if (instance == null) {
 		    instance = new CssProjectSupport(p, classPath);
