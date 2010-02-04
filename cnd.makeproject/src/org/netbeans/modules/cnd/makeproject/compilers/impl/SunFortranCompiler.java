@@ -59,14 +59,6 @@ public final class SunFortranCompiler extends BasicCompiler {
         return new SunFortranCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
     }
 
-    public String getMTLevelOptions(int value) {
-        CompilerDescriptor compiler = getDescriptor();
-        if (compiler != null && compiler.getMultithreadingFlags() != null && compiler.getMultithreadingFlags().length > value){
-            return compiler.getMultithreadingFlags()[value];
-        }
-        return ""; // NOI18N
-    }
-
     public static SunFortranCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         return new SunFortranCompiler(env, flavor, kind, name, displayName, path);
     }

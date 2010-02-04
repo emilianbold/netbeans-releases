@@ -112,9 +112,25 @@ import org.openide.ErrorManager;
                 }
                 parseUserMacros(line, pair.systemPreprocessorSymbolsList);
                 if (line.startsWith("#define ")) { // NOI18N
-                    int i = line.indexOf(' ', 8);
-                    if (i > 0) {
-                        String token = line.substring(8, i) + "=" + line.substring(i+1); // NOI18N
+                    int sepIdx = -1; // index of space separating macro name and body
+                    int parCount = 0; // parenthesis counter
+                    loop: for (int i = 8; i < line.length(); ++i) {
+                        switch (line.charAt(i)) {
+                            case '(':
+                                ++parCount;
+                                break;
+                            case ')':
+                                --parCount;
+                                break;
+                            case ' ':
+                                if (parCount == 0) {
+                                    sepIdx = i;
+                                    break loop;
+                                }
+                        }
+                    }
+                    if (sepIdx > 0) {
+                        String token = line.substring(8, sepIdx) + "=" + line.substring(sepIdx + 1); // NOI18N
                         pair.systemPreprocessorSymbolsList.addUnique(token);
                     }
                 }
