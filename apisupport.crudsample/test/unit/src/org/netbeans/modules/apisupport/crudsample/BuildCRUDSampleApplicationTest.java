@@ -43,6 +43,7 @@ package org.netbeans.modules.apisupport.crudsample;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.InputStream;
+import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
@@ -122,9 +123,15 @@ public class BuildCRUDSampleApplicationTest extends TestBase {
         FileObject buildScript = crudSampleSuite.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
         assertNotNull(buildScript);
         assertTrue(buildScript.isValid());
+        Properties props = new Properties();
+        File toplinkJar1 = new File(destDirF, "java/modules/ext/toplink/toplink-essentials.jar");
+        assertTrue(toplinkJar1.getAbsolutePath(), toplinkJar1.isFile());
+        File toplinkJar2 = new File(destDirF, "java/modules/ext/toplink/toplink-essentials-agent.jar");
+        assertTrue(toplinkJar2.getAbsolutePath(), toplinkJar2.isFile());
+        props.setProperty("libs.toplink.classpath", "" + toplinkJar1 + File.pathSeparator + toplinkJar2);
 
         System.out.println("------------- BUILD OUTPUT --------------");
-        ExecutorTask et = ActionUtils.runTarget(buildScript, targets, null);
+        ExecutorTask et = ActionUtils.runTarget(buildScript, targets, props);
         et.waitFinished();
         System.out.println("-----------------------------------------");
         // ant task executor returns 0 on win and jdk 1.5.0_xxx
