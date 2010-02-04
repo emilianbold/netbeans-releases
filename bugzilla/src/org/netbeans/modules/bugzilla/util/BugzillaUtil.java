@@ -142,7 +142,7 @@ public class BugzillaUtil {
         ResourceBundle bundle = NbBundle.getBundle(BugzillaUtil.class);
         if (BugzillaUtil.show(kp, bundle.getString("LBL_Keywords"), bundle.getString("LBL_Ok"))) { // NOI18N
             String[] values = kp.getSelectedKeywords();
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < values.length; i++) {
                 String s = values[i];
                 sb.append(s);
@@ -181,7 +181,7 @@ public class BugzillaUtil {
     }
 
     public static boolean showIssueType(BugzillaRepository repo) {
-        return isNbRepository(repo) || !(repo instanceof KenaiRepository);
+        return isNbRepository(repo);
     }
 
 }

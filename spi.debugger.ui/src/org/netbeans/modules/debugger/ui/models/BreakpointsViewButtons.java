@@ -112,9 +112,9 @@ public class BreakpointsViewButtons {
                     menu.add(createJRadioButtonMenuItem(group, brkpGroup));
                 }
                 menu.addSeparator();
-                menu.add(createCheckBoxMenuItem("LBL_BreakpointsFromOpenProjectsOnly", "fromOpenProjects", props));
+                menu.add(createCheckBoxMenuItem("LBL_BreakpointsFromOpenProjectsOnly", BreakpointGroup.PROP_FROM_OPEN_PROJECTS, props));
                 if (currentSessionHaveProjects()) {
-                    menu.add(createCheckBoxMenuItem("LBL_BreakpointsFromCurrentDebugSessionOnly", "fromCurrentSessionProjects", props));
+                    menu.add(createCheckBoxMenuItem("LBL_BreakpointsFromCurrentDebugSessionOnly", BreakpointGroup.PROP_FROM_CURRENT_SESSION_PROJECTS, props));
                 }
                 menu.show(button, 16, 0);
 

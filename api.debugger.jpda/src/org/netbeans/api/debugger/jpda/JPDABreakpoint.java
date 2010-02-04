@@ -42,7 +42,9 @@
 package org.netbeans.api.debugger.jpda;
 
 import com.sun.jdi.request.EventRequest;
+import java.beans.PropertyChangeEvent;
 import java.net.URL;
+import java.util.ArrayList;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -55,6 +57,7 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
@@ -105,6 +108,7 @@ public class JPDABreakpoint extends Breakpoint {
     private String                      printText;
     private Collection<JPDABreakpointListener>  breakpointListeners = new HashSet<JPDABreakpointListener>();
     private JPDADebugger                session;
+    private List<DebuggerEngine> engines = new ArrayList<DebuggerEngine>();
     
    
     JPDABreakpoint () {
@@ -218,6 +222,7 @@ public class JPDABreakpoint extends Breakpoint {
 
     /**
      * Set the specific session where this breakpoint belongs to.
+     * This will make the breakpoint session-specific
      *
      * @param session the specific session
      */
@@ -270,6 +275,28 @@ public class JPDABreakpoint extends Breakpoint {
                 new HashSet<JPDABreakpointListener>(breakpointListeners).iterator();
         while (i.hasNext ())
             i.next().breakpointReached (event);
+    }
+
+    void enginePropertyChange(PropertyChangeEvent evt) {
+        if (DebuggerEngine.class.getName().equals(evt.getPropertyName())) {
+            DebuggerEngine oldEngine = (DebuggerEngine) evt.getOldValue();
+            DebuggerEngine newEngine = (DebuggerEngine) evt.getNewValue();
+            if (oldEngine != null) {
+                engines.remove(oldEngine);
+            }
+            if (newEngine != null) {
+                engines.add(newEngine);
+            }
+            firePropertyChange("groupProperties", null, null);
+        }
+    }
+
+    DebuggerEngine[] getEngines() {
+        if (engines.size() == 0) {
+            return null;
+        } else {
+            return engines.toArray(new DebuggerEngine[0]);
+        }
     }
 
     static void fillFilesForClass(String className, List<FileObject> files) {

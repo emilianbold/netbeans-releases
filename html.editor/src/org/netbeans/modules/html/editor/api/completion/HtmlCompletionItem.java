@@ -55,6 +55,7 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.javadoc.HelpManager;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
@@ -494,22 +495,24 @@ public class HtmlCompletionItem implements CompletionItem {
     public static class Attribute extends HtmlCompletionItem {
 
         private boolean required;
+        private boolean autocompleteQuotes;
 
         protected static final String ATTR_NAME_COLOR = hexColorCode(Color.green.darker());
 
         public Attribute(String value, int offset, boolean required, String helpId) {
             super(value, offset, helpId);
             this.required = required;
+            this.autocompleteQuotes = HtmlPreferences.autocompleteQuotesAfterEqualSign();
         }
 
         @Override
         protected String getSubstituteText() {
-            return getItemText() + "=\"\""; //NOI18N
+            return getItemText() + (autocompleteQuotes ? "=\"\"" : ""); //NOI18N
         }
 
         @Override
         protected int getMoveBackLength() {
-            return 1; //last quotation
+            return autocompleteQuotes ? 1 : 0; //last quotation
         }
 
         @Override

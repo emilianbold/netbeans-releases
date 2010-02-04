@@ -70,9 +70,8 @@ public class CssFileModel {
 
     private static final Logger LOGGER = Logger.getLogger(CssIndex.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-
+    //private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*[\\u0022]?([^\\u0022]*)[\\u0022]?\\s*\\)"); //NOI18N
     private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)");
-    
     private Collection<Entry> classes, ids, htmlElements, imports;
     private boolean isParserBased;
     private FileObject fileObject;
@@ -82,12 +81,13 @@ public class CssFileModel {
         this.fileObject = source.getFileObject();
         isParserBased = true;
         ParserManager.parse(Collections.singletonList(source), new UserTask() {
+
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 ResultIterator cssRi = Css.getResultIterator(resultIterator, Css.CSS_MIME_TYPE);
-                if(cssRi != null) {
+                if (cssRi != null) {
                     snapshot = cssRi.getSnapshot();
-                    init((CssParserResult)cssRi.getParserResult());
+                    init((CssParserResult) cssRi.getParserResult());
                 }
             }
         });
@@ -130,35 +130,38 @@ public class CssFileModel {
 
     //single threaded - called from constructor only, no need for synch
     private Collection<Entry> getClassesCollectionInstance() {
-        if(classes == null) {
+        if (classes == null) {
             classes = new ArrayList<Entry>();
         }
         return classes;
     }
-    
+
     private Collection<Entry> getIdsCollectionInstance() {
-        if(ids == null) {
+        if (ids == null) {
             ids = new ArrayList<Entry>();
         }
         return ids;
     }
 
     private Collection<Entry> getHtmlElementsCollectionInstance() {
-        if(htmlElements == null) {
+        if (htmlElements == null) {
             htmlElements = new ArrayList<Entry>();
         }
         return htmlElements;
     }
 
     private Collection<Entry> getImportsCollectionInstance() {
-        if(imports == null) {
+        if (imports == null) {
             imports = new ArrayList<Entry>();
         }
         return imports;
     }
 
     private void init(CssParserResult parserResult) {
-        SimpleNodeUtil.visitChildren(parserResult.root(), new AstVisitor());
+        SimpleNode root = parserResult.root();
+        if(root != null) {
+            SimpleNodeUtil.visitChildren(root, new AstVisitor());
+        } //else completely broken source, no parser result
     }
 
     @Override
@@ -171,10 +174,12 @@ public class CssFileModel {
             buf.append(',');
         }
         for (Entry c : getClasses()) {
+            buf.append('.');
             buf.append(c);
             buf.append(',');
         }
         for (Entry c : getIds()) {
+            buf.append('#');
             buf.append(c);
             buf.append(',');
         }
@@ -192,26 +197,47 @@ public class CssFileModel {
         public void visit(SimpleNode node) {
             if (node.kind() == CssParserTreeConstants.JJTIMPORTRULE) {
                 Entry entry = getImportedEntry(node);
-                if(entry != null) {
+                if (entry != null) {
                     getImportsCollectionInstance().add(entry);
                 }
-            } else if (node.kind() == CssParserTreeConstants.JJT_CLASS) {
-                Entry e = createEntry(node.image(), new OffsetRange(node.startOffset(), node.endOffset()));
-                getClassesCollectionInstance().add(e);
-            } else if (node.kind() == CssParserTreeConstants.JJTHASH) {
-                Entry e = createEntry(node.image(), new OffsetRange(node.startOffset(), node.endOffset()));
-                getIdsCollectionInstance().add(e);
-            } else if (node.kind() == CssParserTreeConstants.JJTELEMENTNAME) {
-                Entry e = createEntry(node.image(), new OffsetRange(node.startOffset(), node.endOffset()));
-                getHtmlElementsCollectionInstance().add(e);
-            }
+            } else if (node.kind() == CssParserTreeConstants.JJT_CLASS
+                    || node.kind() == CssParserTreeConstants.JJTHASH
+                    || node.kind() == CssParserTreeConstants.JJTELEMENTNAME) {
 
+                Collection<Entry> collection;
+                int start_offset_diff;
+                switch (node.kind()) {
+                    case CssParserTreeConstants.JJT_CLASS:
+                        collection = getClassesCollectionInstance();
+                        start_offset_diff = 1; //cut off the dot (.)
+                        break;
+                    case CssParserTreeConstants.JJTHASH:
+                        collection = getIdsCollectionInstance();
+                        start_offset_diff = 1; //cut of the hash (#)
+                        break;
+                    case CssParserTreeConstants.JJTELEMENTNAME:
+                        collection = getHtmlElementsCollectionInstance();
+                        start_offset_diff = 0;
+                        break;
+                    default:
+                        collection = null; //cannot happen
+                        start_offset_diff = 0;
+                }
+
+                String image = node.image().substring(start_offset_diff);
+                OffsetRange range = new OffsetRange(node.startOffset() + start_offset_diff, node.endOffset());
+                Entry e = createEntry(image, range);
+                if(e != null) {
+                    collection.add(e);
+                }
+
+            }
         }
 
         private Entry getImportedEntry(SimpleNode node) {
             //@import "resources/global.css";
             Token token = SimpleNodeUtil.getNodeToken(node, CssParserConstants.STRING);
-            if(token != null) {
+            if (token != null) {
                 String image = token.image;
                 boolean quoted = SimpleNodeUtil.isValueQuoted(image);
                 return createEntry(SimpleNodeUtil.unquotedValue(image),
@@ -221,19 +247,19 @@ public class CssFileModel {
 
             //@import url("another.css");
             token = SimpleNodeUtil.getNodeToken(node, CssParserConstants.URI);
-            if(token != null) {
+            if (token != null) {
                 Matcher m = URI_PATTERN.matcher(token.image);
-                if(m.matches()) {
+                if (m.matches()) {
                     int groupIndex = 1;
                     String content = m.group(groupIndex);
                     boolean quoted = SimpleNodeUtil.isValueQuoted(content);
                     int from = m.start(groupIndex);
                     int to = m.end(groupIndex);
                     return createEntry(SimpleNodeUtil.unquotedValue(content),
-                        new OffsetRange(from + (quoted ? 1 : 0), to - (quoted ? 1 : 0)));
+                            new OffsetRange(from + (quoted ? 1 : 0), to - (quoted ? 1 : 0)));
                 }
             }
-            
+
             return null;
         }
     }
@@ -242,17 +268,21 @@ public class CssFileModel {
         int documentFrom = snapshot.getOriginalOffset(range.getStart());
         int documentTo = snapshot.getOriginalOffset(range.getEnd());
 
-        if(documentFrom == -1 || documentTo == -1) {
-            LOGGER.info("Ast offset range " + range.toString() + 
-                    " cannot be properly mapped to source offset range: ["
-                    + documentFrom + "," + documentTo + "] in file " +
-                    CssFileModel.this.fileObject.getPath()); //NOI18N
-            return null;
+        OffsetRange documentRange = null;
+        if (documentFrom == -1 || documentTo == -1) {
+            LOGGER.info("Ast offset range " + range.toString() +
+                    ", text='" + snapshot.getText().subSequence(range.getStart(), range.getEnd())+ "', "
+                    + " cannot be properly mapped to source offset range: ["
+                    + documentFrom + "," + documentTo + "] in file "
+                    + CssFileModel.this.fileObject.getPath()); //NOI18N
+        } else {
+            documentRange = new OffsetRange(documentFrom, documentTo);
         }
-        return new Entry(name, range, new OffsetRange(documentFrom, documentTo));
+        return new Entry(name, range, documentRange);
     }
 
     public class Entry {
+
         private String name;
         private OffsetRange astRange;
         private OffsetRange documentRange;
@@ -261,6 +291,10 @@ public class CssFileModel {
             this.name = name;
             this.astRange = astRange;
             this.documentRange = documentRange;
+        }
+
+        public boolean isValidInSourceDocument() {
+            return documentRange != null;
         }
 
         public String getName() {
@@ -277,10 +311,7 @@ public class CssFileModel {
 
         @Override
         public String toString() {
-            return "Entry[" + getName() + "; " + getRange().getStart() + " - " + getRange().getEnd() + "]";
+            return "Entry["+ (!isValidInSourceDocument() ? "INVALID! " : "") + getName() + "; " + getRange().getStart() + " - " + getRange().getEnd() + "]";//NOI18N
         }
-
-
     }
-    
 }

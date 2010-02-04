@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.kenai.ui.nodes;
 
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -48,6 +49,7 @@ import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node.PropertySet;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -67,8 +69,17 @@ public class KenaiInstanceNode extends AbstractNode implements PropertyChangeLis
         instance.addPropertyChangeListener(Kenai.PROP_URL_CHANGED, this);
         setDisplayName(instance.getName());
         setShortDescription(instance.getName() + " (" + instance.getUrl() + ")"); // NOI18N
-        setIconBaseWithExtension("org/netbeans/modules/kenai/ui/resources/kenai-small.png");//NOI18N
         properties = new KenaiInstanceProperties(instance.getName(),instance.getUrl().toString());
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        return ImageUtilities.icon2Image(kenaiInstance.getIcon());
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
     }
 
     @Override

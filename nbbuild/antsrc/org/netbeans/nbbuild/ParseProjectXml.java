@@ -1055,11 +1055,9 @@ public final class ParseProjectXml extends Task {
                     "Cluster.path is: " + clusterPath;
             throw new BuildException(msg, getLocation());
         }
-        /* XXX consider readding:
         if (excludedModules != null && excludedModules.contains(cnb)) { // again #68716
             throw new BuildException("Module " + cnb + " excluded from the target platform", getLocation());
         }
-         */
         if (!jar.isFile()) {
             File srcdir = module.getSourceLocation();
             if (Project.toBoolean(getProject().getProperty(DO_NOT_RECURSE))) {

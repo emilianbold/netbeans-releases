@@ -69,6 +69,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
@@ -125,6 +126,11 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
      */
     final void set () {
         breakpoint.addPropertyChangeListener (this);
+        if (breakpoint instanceof PropertyChangeListener && isApplicable()) {
+            Session s = debugger.getSession();
+            DebuggerEngine de = s.getEngineForLanguage ("Java");
+            ((PropertyChangeListener) breakpoint).propertyChange(new PropertyChangeEvent(this, DebuggerEngine.class.getName(), null, de));
+        }
         update ();
     }
     
@@ -149,6 +155,10 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         if (breakpoint.isEnabled () && isEnabled()) {
             setRequests ();
         }
+    }
+
+    protected boolean isApplicable() {
+        return true;
     }
     
     protected boolean isEnabled() {
@@ -194,6 +204,11 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         }
         breakpoint.removePropertyChangeListener(this);
         setValidity(Breakpoint.VALIDITY.UNKNOWN, null);
+        if (breakpoint instanceof ChangeListener) {
+            Session s = debugger.getSession();
+            DebuggerEngine de = s.getEngineForLanguage ("Java");
+            ((PropertyChangeListener) breakpoint).propertyChange(new PropertyChangeEvent(this, DebuggerEngine.class.getName(), de, null));
+        }
         compiledCondition = null;
     }
 
@@ -793,5 +808,21 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         public String toString() {
             return reason;
         }
+    }
+
+    private static final class EngineChangeEvent extends ChangeEvent {
+
+        private final DebuggerEngine newEngine;
+
+        public EngineChangeEvent(DebuggerEngine e, DebuggerEngine newEngine) {
+            super(e);
+            this.newEngine = newEngine;
+        }
+
+        @Override
+        public Object getSource() {
+            return newEngine;
+        }
+
     }
 }

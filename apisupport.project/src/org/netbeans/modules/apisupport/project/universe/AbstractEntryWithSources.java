@@ -50,7 +50,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -138,15 +137,15 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
         }
         Element data = project.getPrimaryConfigurationData();
         Element moduleDependencies = Util.findElement(data,
-            "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+            "module-dependencies", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         assert moduleDependencies != null : "Malformed metadata in " + project;
         for (Element dep : Util.findSubElements(moduleDependencies)) {
             if (Util.findElement(dep, "run-dependency", // NOI18N
-                    NbModuleProjectType.NAMESPACE_SHARED) == null) {
+                    NbModuleProject.NAMESPACE_SHARED) == null) {
                 continue;
             }
             Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
-                NbModuleProjectType.NAMESPACE_SHARED);
+                NbModuleProject.NAMESPACE_SHARED);
             String cnb = Util.findText(cnbEl);
             deps.add(cnb);
         }
