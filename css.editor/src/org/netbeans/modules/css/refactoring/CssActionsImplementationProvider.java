@@ -160,6 +160,52 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	}
     }
 
+    @Override
+    public boolean canFindUsages(Lookup lookup) {
+        return false;
+//        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+//	//we are able to rename only one node selection [at least for now ;-) ]
+//	if (nodes.size() != 1) {
+//	    return false;
+//	}
+//
+//	//check if the file is a file with .css extension or represents
+//	//an opened file which code embeds a css content on the caret position
+//	Node node = nodes.iterator().next();
+//	if (isCssContext(node)) {
+//	    return true;
+//	}
+//        return false;
+    }
+
+    @Override
+    public void doFindUsages(Lookup lookup) {
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+	if (representsOpenedFile(ec)) {
+	    new TextComponentTask(ec) {
+                //editor element context
+		@Override
+		protected RefactoringUI createRefactoringUI(CssElementContext context) {
+		    return new CssRenameRefactoringUI(context);
+		}
+	    }.run();
+	} else {
+	    //file context
+	    Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+	    assert nodes.size() == 1;
+	    Node currentNode = nodes.iterator().next();
+	    new NodeToFileTask(currentNode) {
+
+		@Override
+		protected RefactoringUI createRefactoringUI(CssElementContext context) {
+		    return new CssRenameRefactoringUI(context);
+		}
+	    }.run();
+	}
+    }
+
+
+
     private static boolean isCssContext(Node node) {
 	//for the one thing check if the node represents a css file itself
 	FileObject fo = getFileObjectFromNode(node);
