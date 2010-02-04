@@ -49,9 +49,12 @@ import java.util.ListIterator;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.AbstractDocument;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.xml.axi.AbstractAttribute;
@@ -121,8 +124,8 @@ public class CompletionContextImpl extends CompletionContext {
     /**
      * Creates a new instance of CompletionQueryHelper
      */
-    public CompletionContextImpl(FileObject primaryFile,
-            XMLSyntaxSupport support, int offset) {
+    public CompletionContextImpl(FileObject primaryFile, XMLSyntaxSupport support,
+        int offset) {
         try {
             this.completionAtOffset = offset;
             this.primaryFile = primaryFile;
@@ -296,6 +299,11 @@ public class CompletionContextImpl extends CompletionContext {
                         }
                         */
                         EmptyTag tag = (EmptyTag) element;
+                        if (isCaretInsideTag()) {
+                            completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
+                            pathFromRoot = getPathFromRoot(element);
+                            break;
+                        }
                         if ((element.getElementOffset() + 1 == completionAtOffset) ||
                             (token.getOffset() + token.getImage().length() == completionAtOffset)) {
                             completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
@@ -416,10 +424,26 @@ public class CompletionContextImpl extends CompletionContext {
         } catch (Exception ex) {
             return false;
         }
-        
         return true;        
     }
-       
+
+    private boolean isCaretInsideTag() {
+        int caretPos = completionAtOffset;
+        try {
+            ((AbstractDocument) document).readLock();
+
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(document);
+            TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+            return CompletionUtil.isCaretInsideTag(caretPos, tokenSequence);
+        } catch(Exception e) {
+            _logger.log(Level.WARNING,
+                e.getMessage() == null ? e.getClass().getName() : e.getMessage(), e);
+        } finally {
+            ((AbstractDocument) document).readUnlock();
+        }
+        return false;
+    }
+
     public List<DocRootAttribute> getDocRootAttributes() {
         return docRoot.getAttributes();
     }

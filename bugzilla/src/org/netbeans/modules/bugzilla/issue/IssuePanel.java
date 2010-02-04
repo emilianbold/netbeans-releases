@@ -49,6 +49,8 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -112,9 +114,11 @@ import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.CustomIssueField;
 import org.netbeans.modules.bugzilla.repository.IssueField;
+import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
+import org.openide.awt.HtmlBrowser;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -394,6 +398,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         refreshButton.setVisible(!isNew);
         separatorLabel.setVisible(!isNew);
         cancelButton.setVisible(!isNew);
+        separatorLabel3.setVisible(!isNew);
+        showInBrowserButton.setVisible(!isNew);
         assignedField.setEditable(issue.isNew() || issue.canReassign());
         assignedCombo.setEnabled(assignedField.isEditable());
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
@@ -1301,10 +1307,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         headerLabel = new javax.swing.JLabel();
         refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         reloadButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        showInBrowserButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         separatorLabel = new javax.swing.JLabel();
         resolutionLabel = new javax.swing.JLabel();
         tasklistButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         separatorLabel2 = new javax.swing.JLabel();
+        separatorLabel3 = new javax.swing.JLabel();
         productLabel = new javax.swing.JLabel();
         componentLabel = new javax.swing.JLabel();
         versionLabel = new javax.swing.JLabel();
@@ -1460,6 +1468,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         reloadButton.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.reloadButton.toolTipText")); // NOI18N
         reloadButton.addActionListener(formListener);
 
+        org.openide.awt.Mnemonics.setLocalizedText(showInBrowserButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.showInBrowserButton.text")); // NOI18N
+        showInBrowserButton.addActionListener(formListener);
+
         separatorLabel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         org.openide.awt.Mnemonics.setLocalizedText(resolutionLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolutionLabel.text")); // NOI18N
@@ -1468,6 +1479,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         tasklistButton.addActionListener(formListener);
 
         separatorLabel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        separatorLabel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         org.openide.awt.Mnemonics.setLocalizedText(productLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.productLabel.text")); // NOI18N
 
@@ -1536,7 +1549,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(separatorLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(reloadButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(reloadButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(separatorLabel3)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(showInBrowserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(urlLabel)
@@ -1674,7 +1691,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .add(tasklistButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(separatorLabel)
                     .add(reloadButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(separatorLabel3)
+                    .add(showInBrowserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(productLabel)
@@ -1799,7 +1818,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        layout.linkSize(new java.awt.Component[] {refreshButton, reloadButton, separatorLabel, separatorLabel2}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(new java.awt.Component[] {refreshButton, reloadButton, separatorLabel, separatorLabel2, separatorLabel3, showInBrowserButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         layout.linkSize(new java.awt.Component[] {dummyLabel1, dummyLabel2, dummyLabel3, priorityCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
@@ -1899,6 +1918,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
             else if (evt.getSource() == assignedCombo) {
                 IssuePanel.this.assignedComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == showInBrowserButton) {
+                IssuePanel.this.showInBrowserButtonActionPerformed(evt);
             }
         }
     }// </editor-fold>//GEN-END:initComponents
@@ -2339,6 +2361,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         cancelHighlight(issueTypeLabel);
     }//GEN-LAST:event_issueTypeComboActionPerformed
 
+    private void showInBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showInBrowserButtonActionPerformed
+        try {
+            URL url = new URL(issue.getRepository().getUrl() + BugzillaConstants.URL_SHOW_BUG + issue.getID());
+            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+        } catch (MalformedURLException muex) {
+            Bugzilla.LOG.log(Level.INFO, "Unable to show the issue in the browser.", muex); // NOI18N
+        }
+    }//GEN-LAST:event_showInBrowserButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea addCommentArea;
     private javax.swing.JLabel addCommentLabel;
@@ -2413,8 +2444,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JSeparator separator;
     private javax.swing.JLabel separatorLabel;
     private javax.swing.JLabel separatorLabel2;
+    private javax.swing.JLabel separatorLabel3;
     private javax.swing.JComboBox severityCombo;
     private javax.swing.JLabel severityWarning;
+    private org.netbeans.modules.bugtracking.util.LinkButton showInBrowserButton;
     private javax.swing.JComboBox statusCombo;
     private javax.swing.JLabel statusLabel;
     private javax.swing.JLabel statusWarning;

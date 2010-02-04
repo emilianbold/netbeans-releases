@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
-import org.netbeans.modules.cnd.makeproject.api.compilers.SunFortranCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
@@ -92,9 +91,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
     public String getFFlagsBasic(BasicCompiler compiler) {
         String options = ""; // NOI18N
         options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
-        if (compiler instanceof SunFortranCompiler) {
-            options += ((SunFortranCompiler)compiler).getMTLevelOptions(getMTLevel().getValue()) + " "; // NOI18N
-        }
+        options += compiler.getMTLevelOptions(getMTLevel().getValue()) + " "; // NOI18N
         options += compiler.getSixtyfourBitsOption(getSixtyfourBits().getValue()) + " "; // NOI18N
         if (getDevelopmentMode().getValue() == DEVELOPMENT_MODE_TEST) {
             options += compiler.getDevelopmentModeOptions(DEVELOPMENT_MODE_TEST);

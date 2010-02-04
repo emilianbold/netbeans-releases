@@ -50,14 +50,15 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 
 /**
@@ -170,11 +171,11 @@ public abstract class QtInfoProvider {
                     if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                         baseDir = queryBaseQtIncludeDir(execEnv, qmakePath);
                         if (baseDir != null && execEnv.isRemote()) {
-                            baseDir = BasicCompiler.getIncludeFilePrefix(execEnv) + baseDir;
+                            baseDir = CndUtils.getIncludeFilePrefix(EnvUtils.toHostID(execEnv)) + baseDir;
                         }
                         cache.put(cacheKey, baseDir);
                     } else {
-                        baseDir = BasicCompiler.getIncludeFilePrefix(execEnv)
+                        baseDir = CndUtils.getIncludeFilePrefix(EnvUtils.toHostID(execEnv))
                                 + guessBaseQtIncludeDir(qmakePath);
                         // do not cache this result, so that we can
                         // really query qmake once connection is up

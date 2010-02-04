@@ -40,7 +40,9 @@
 package org.netbeans.modules.php.zend;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
@@ -54,6 +56,8 @@ import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.zend.commands.ZendCommand;
 import org.netbeans.modules.php.zend.commands.ZendCommandSupport;
 import org.netbeans.modules.php.zend.ui.options.ZendOptions;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
@@ -71,6 +75,9 @@ public class ZendScript extends PhpProgram {
     public static final String CMD_INIT_PROJECT = "create"; // NOI18N
     public static final String[] CMD_INIT_PROJECT_ARGS = new String[] {"project", "."}; // NOI18N
     public static final String[] CMD_INIT_PROJECT_ARGS_TITLE = new String[] {"project"}; // NOI18N
+
+    private static final String[] CMD_CREATE_CONFIG = new String[] {"create", "config"}; // NOI18N
+    private static final String[] CMD_ENABLE_CONFIG = new String[] {"enable", "config.provider", "NetBeansCommandsProvider"}; // NOI18N
 
     static {
         String scriptName = null;
@@ -155,6 +162,42 @@ public class ZendScript extends PhpProgram {
 
     public static String validate(String command) {
         return new ZendScript(command).validate();
+    }
+
+    // 180184, needed for ZF 1.10+
+    public static void registerNetBeansProvider() {
+        try {
+            ZendScript zendScript = getDefault();
+
+            ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
+                    .outProcessorFactory(ANSI_STRIPPING_FACTORY)
+                    .errProcessorFactory(ANSI_STRIPPING_FACTORY)
+                    .optionsPath(getOptionsPath());
+
+            // create config
+            ExternalProcessBuilder processBuilder = ZendCommandSupport.registerIncludePathPrepend(zendScript.getProcessBuilder());
+            for (String arg : CMD_CREATE_CONFIG) {
+                processBuilder = processBuilder.addArgument(arg);
+            }
+            executeAndWait(processBuilder, executionDescriptor, StringUtils.implode(Arrays.asList(CMD_CREATE_CONFIG), " ")); // NOI18N
+
+            // enable config
+            processBuilder = ZendCommandSupport.registerIncludePathPrepend(zendScript.getProcessBuilder());
+            for (String arg : CMD_ENABLE_CONFIG) {
+                processBuilder = processBuilder.addArgument(arg);
+            }
+            executeAndWait(processBuilder, executionDescriptor, StringUtils.implode(Arrays.asList(CMD_ENABLE_CONFIG), " ")); // NOI18N
+
+            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
+                NbBundle.getMessage(ZendScript.class, "MSG_ProviderRegistrationInfo"),
+                NotifyDescriptor.INFORMATION_MESSAGE));
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (InvalidPhpProgramException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
     }
 
     public boolean initProject(PhpModule phpModule) {

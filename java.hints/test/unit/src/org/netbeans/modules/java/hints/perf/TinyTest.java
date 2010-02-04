@@ -342,6 +342,16 @@ public class TinyTest extends TestBase {
                             "3:16-3:86:verifier:ERR_Tiny_enumMap");
     }
 
+    public void testEnumMap2() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     private java.util.Map<java.lang.annotation.RetentionPolicy, Boolean> test() {\n" +
+                            "         return new java.util.EnumMap<java.lang.annotation.RetentionPolicy, Boolean>(java.lang.annotation.RetentionPolicy.class);\n" +
+                            "     }\n" +
+                            "}\n");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();

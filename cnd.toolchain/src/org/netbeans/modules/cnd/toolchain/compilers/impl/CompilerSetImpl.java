@@ -183,7 +183,7 @@ public final class CompilerSetImpl extends CompilerSet {
 
     @Override
     public String getDirectory() {
-        return directory.toString();
+        return directory;
     }
 
     @Override

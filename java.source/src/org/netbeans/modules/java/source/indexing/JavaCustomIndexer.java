@@ -78,7 +78,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.parsing.FileObjects.InferableJavaFileObject;
+import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.tasklist.TasklistSettings;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
@@ -436,7 +436,7 @@ public class JavaCustomIndexer extends CustomIndexer {
     }
 
     public static void verifySourceLevel(URL root, String sourceLevel) throws IOException {
-        if (JavaIndex.ensureAttributeValue(root, SOURCE_LEVEL_ROOT, sourceLevel)) {
+        if (!sourceLevel.equals(JavaIndex.getAttribute(root, SOURCE_LEVEL_ROOT, sourceLevel))) {
             JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
             IndexingManager.getDefault().refreshIndex(root, null);
         }
