@@ -188,14 +188,12 @@ public class BuildCRUDSampleApplicationTest extends TestBase {
         File viewerNbm = new File(updatesFolder, "org-netbeans-modules-customerviewer.nbm");
         File editorNbm = new File(updatesFolder, "org-netbeans-modules-customereditor.nbm");
         File customerDbNbm = new File(updatesFolder, "org-netbeans-modules-customerdb.nbm");
-        File toplinkNbm = new File(updatesFolder, "org-netbeans-modules-toplinklibrary.nbm");
         File derbyNbm = new File(updatesFolder, "org-netbeans-modules-derbyclientlibrary.nbm");
         assertTrue("Viewer NBM is in build/updates folder", viewerNbm.exists());
         assertTrue("Editor NBM is in build/updates folder", editorNbm.exists());
         assertTrue("Customer DB NBM is in build/updates folder", customerDbNbm.exists());
-        assertTrue("Customer NBM is in build/updates folder", toplinkNbm.exists());
         assertTrue("Derby NBM is in build/updates folder", derbyNbm.exists());
-        assertEquals("5 nbms are in build/updates folder", 5, updatesFolder.list(new FilenameFilter() {
+        assertEquals("5 nbms are in build/updates folder", 4, updatesFolder.list(new FilenameFilter() {
 
             public boolean accept(File dir, String name) {
                 return name.indexOf("nbm") != -1;
