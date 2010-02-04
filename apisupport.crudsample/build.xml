@@ -60,10 +60,10 @@ made subject to such option by the copyright holder.
                 </not>
             </condition>
         </fail>
-        <property name="external-dir" location="${build.classes.dir}/org/netbeans/modules/apisupport/crudsample/"/>
-        <mkdir dir="${external-dir}/external"/>
-        <copy file="${toplink-essentials.jar}" tofile="${external-dir}/external/toplink-essentials.jar"/>
-        <copy file="${toplink-essentials.jar}" tofile="${external-dir}/external/toplink-essentials-agent.jar"/>
+        <property name="crudsample-dir" location="${build.classes.dir}/org/netbeans/modules/apisupport/crudsample/"/>
+        <mkdir dir="${crudsample-dir}/external"/>
+        <copy file="${toplink-essentials.jar}" tofile="${crudsample-dir}/external/toplink-essentials.jar"/>
+        <copy file="${toplink-essentials.jar}" tofile="${crudsample-dir}/external/toplink-essentials-agent.jar"/>
     </target>
     
     <target name="zip-project" depends="init">
@@ -74,7 +74,7 @@ made subject to such option by the copyright holder.
             <exclude name="**/dist/"/>
             <exclude name="**/nbproject/private/"/>
         </zip>
-        <zip basedir="${external-dir}" update="yes" destfile="${examples}/SampleCRUDAppProject.zip">
+        <zip basedir="${crudsample-dir}" update="yes" destfile="${examples}/SampleCRUDAppProject.zip">
             <include name="external/"/>
         </zip>
     </target>
