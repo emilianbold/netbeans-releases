@@ -36,73 +36,71 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor;
 
-import java.io.IOException;
-import java.util.WeakHashMap;
-import javax.swing.text.Document;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.csl.api.DataLoadersBridge;
-import org.netbeans.modules.css.indexing.CssIndex;
-import org.netbeans.modules.parsing.api.Source;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+package org.netbeans.modules.glassfish.javaee.db;
+
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Set;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author marekfukala
+ * @author vkraemer
  */
-public class CssProjectSupport {
+public class Hk2DatasourceManagerTest {
 
-    private static final WeakHashMap<Project, CssProjectSupport> INSTANCIES = new WeakHashMap<Project, CssProjectSupport>();
-
-    public static CssProjectSupport findFor(Source source) {
-	FileObject fo = source.getFileObject();
-	if (fo == null) {
-	    return null;
-	} else {
-	    return findFor(fo);
-	}
+    public Hk2DatasourceManagerTest() {
     }
 
-    public static CssProjectSupport findFor(Document doc) {
-	return findFor(DataLoadersBridge.getDefault().getFileObject(doc));
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
 
-    public static CssProjectSupport findFor(FileObject fo) {
-	try {
-	    Project p = FileOwnerQuery.getOwner(fo);
-	    if (p == null) {
-		return null;
-	    }
-            synchronized (INSTANCIES) {
-		CssProjectSupport instance = INSTANCIES.get(p);
-		if (instance == null) {
-		    instance = new CssProjectSupport(p);
-		    INSTANCIES.put(p, instance);
-		}
-                return instance;
-	    }
-	} catch (IOException ex) {
-	    Exceptions.printStackTrace(ex);
-	}
-
-	return null;
-    }
-    private Project project;
-    private CssIndex index;
-
-    public CssProjectSupport(Project project) throws IOException {
-	this.project = project;
-	this.index = CssIndex.create(project);
+    @AfterClass
+    public static void tearDownClass() throws Exception {
     }
 
-    public CssIndex getIndex() {
-	return index;
+    @Before
+    public void setUp() {
     }
 
-    public Project getProject() {
-	return project;
+    @After
+    public void tearDown() {
     }
+
+
+    /**
+     * Test of getDatasources method, of class Hk2DatasourceManager.
+     */
+    @Test
+    public void testGetDatasources_File() {
+        System.out.println("getDatasources");
+        // expected data in source
+        URL codebase = getClass().getProtectionDomain().getCodeSource().getLocation();
+        if (!codebase.getProtocol().equals("file")) {  // NOI18N
+            throw new Error("Cannot find data directory from " + codebase); // NOI18N
+        }
+        File resourceDir = null;
+        try {
+            resourceDir = new File(new File(codebase.toURI()).getParentFile(), "data/178776");  // NOI18N
+        } catch (URISyntaxException x) {
+            throw new Error(x);
+        }
+        Set<Datasource> result = Hk2DatasourceManager.getDatasources(resourceDir);
+//        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        assert null != result : "null result";
+        for (Datasource ds : result) {
+            assertNotNull(ds.getDriverClassName());
+        }
+    }
+
 }
