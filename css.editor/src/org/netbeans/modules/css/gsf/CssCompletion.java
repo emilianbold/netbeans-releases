@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -76,18 +77,22 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.css.editor.CssHelpResolver;
+import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.editor.CssPropertyValue;
 import org.netbeans.modules.css.editor.LexerUtils;
 import org.netbeans.modules.css.editor.Property;
 import org.netbeans.modules.css.editor.PropertyModel;
 import org.netbeans.modules.css.editor.model.HtmlTags;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
+import org.netbeans.modules.css.indexing.CssIndex;
+import org.netbeans.modules.css.indexing.DependenciesGraph;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -104,6 +109,7 @@ public class CssCompletion implements CodeCompletionHandler {
     public CodeCompletionResult complete(CodeCompletionContext context) {
         CssParserResult info = (CssParserResult) context.getParserResult();
         Snapshot snapshot = info.getSnapshot();
+        FileObject file = snapshot.getSource().getFileObject();
 
         int caretOffset = context.getCaretOffset();
         String prefix = context.getPrefix() != null ? context.getPrefix() : "";
@@ -115,8 +121,17 @@ public class CssCompletion implements CodeCompletionHandler {
 
         int offset = caretOffset - prefix.length();
         int astOffset = snapshot.getEmbeddedOffset(offset);
+        boolean unmappableClassOrId = false;
         if (astOffset == -1) {
-            return null;
+            if((prefix.length() == 1 && prefix.charAt(0) == '.') || (prefix.length() > 0 && prefix.charAt(0) == '#')) {
+                //this happens if completion is invoked in empty css embedding,
+                //for example in <div class="|"/>. The virtual source contains doesn't
+                //map the position do the document, se we need to hack it
+                unmappableClassOrId = true;
+            } else {
+                //cannot map the offset
+                return null;
+            }
         }
 
         ts.move(astOffset);
@@ -148,6 +163,7 @@ public class CssCompletion implements CodeCompletionHandler {
             return CodeCompletionResult.NONE; //no parse tree, just quit
         }
 
+        int originalNodeKind = node.kind();
         if (node.kind() == CssParserTreeConstants.JJTREPORTERROR) {
             node = (SimpleNode) node.jjtGetParent();
             if (node == null) {
@@ -167,8 +183,89 @@ public class CssCompletion implements CodeCompletionHandler {
         //
         //In such case the prefix is empty and the cc would offer all 
         //possible values there
-        //
-        if (node.kind() == CssParserTreeConstants.JJTSTYLESHEETRULELIST) {
+        
+        if(node.kind() == CssParserTreeConstants.JJT_CLASS || 
+                (unmappableClassOrId || originalNodeKind == CssParserTreeConstants.JJTREPORTERROR) && prefix.length() == 1 && prefix.charAt(0) == '.') {
+            //complete class selectors
+            CssProjectSupport sup = CssProjectSupport.findFor(file);
+            if(sup != null) {
+                CssIndex index = sup.getIndex();
+                DependenciesGraph deps = index.getDependencies(file);
+                Collection<FileObject> refered = deps.getAllReferedFiles();
+
+                //adjust prefix - if there's just . before the caret, it is returned
+                //as a prefix. If there are another characters, the dot is ommited
+                if(prefix.length() == 1 && prefix.charAt(0) == '.') {
+                    prefix = "";
+                    offset++; //offset point to the dot position, we need to skip it
+                }
+                //get map of all fileobject declaring classes with the prefix
+                Map<FileObject, Collection<String>> search = index.findClassesByPrefix(prefix); 
+                Collection<String> classes = new HashSet<String>();
+                for(FileObject fo : search.keySet()) {
+                    //is the file refered by the current file?
+                    if(refered.contains(fo)) {
+                        //yes - add its classes
+                        classes.addAll(search.get(fo));
+                    }
+                }
+ 
+                //lets create the completion items
+                List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(classes.size());
+                for(String clazz : classes) {
+                   proposals.add(new SelectorCompletionItem(new CssElement(clazz),
+                        clazz,
+                        CompletionItemKind.VALUE,
+                        offset));
+                }
+                if (proposals.size() > 0) {
+                    return new DefaultCompletionResult(proposals, false);
+                }
+
+            }
+        } else if (node.kind() == CssParserTreeConstants.JJTHASH
+                || (unmappableClassOrId || originalNodeKind == CssParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE ||
+                originalNodeKind == CssParserTreeConstants.JJTERROR_SKIPBLOCK) && prefix.length() == 1 && prefix.charAt(0) == '#') {
+            //complete class selectors
+            CssProjectSupport sup = CssProjectSupport.findFor(file);
+            if (sup != null) {
+                CssIndex index = sup.getIndex();
+                DependenciesGraph deps = index.getDependencies(file);
+                Collection<FileObject> refered = deps.getAllReferedFiles();
+
+                //adjust prefix - if there's just # before the caret, it is returned as a prefix
+                //if there is some text behind the prefix the hash is part of the prefix
+                if (prefix.length() == 1 && prefix.charAt(0) == '#') {
+                    prefix = "";
+                } else {
+                    prefix = prefix.substring(1); //cut off the #
+                }
+                offset++; //offset point to the hash position, we need to skip it
+
+                //get map of all fileobject declaring classes with the prefix
+                Map<FileObject, Collection<String>> search = index.findIdsByPrefix(prefix); //cut off the dot (.)
+                Collection<String> ids = new HashSet<String>();
+                for (FileObject fo : search.keySet()) {
+                    //is the file refered by the current file?
+                    if (refered.contains(fo)) {
+                        //yes - add its classes
+                        ids.addAll(search.get(fo));
+                    }
+                }
+
+                //lets create the completion items
+                List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(ids.size());
+                for (String id : ids) {
+                    proposals.add(new SelectorCompletionItem(new CssElement(id),
+                            id,
+                            CompletionItemKind.VALUE,
+                            offset));
+                }
+                if (proposals.size() > 0) {
+                    return new DefaultCompletionResult(proposals, false);
+                }
+            }
+        } else if (node.kind() == CssParserTreeConstants.JJTSTYLESHEETRULELIST) {
             List<CompletionProposal> all = new ArrayList<CompletionProposal>();
             //complete at keywords without prefix
             all.addAll(wrapRAWValues(AT_RULES, CompletionItemKind.VALUE, caretOffset).getItems());
@@ -384,7 +481,7 @@ public class CssCompletion implements CodeCompletionHandler {
             if (proposals.size() > 0) {
                 return new DefaultCompletionResult(proposals, false);
             }
-        }
+        } 
 
         return CodeCompletionResult.NONE;
     }
@@ -513,17 +610,22 @@ public class CssCompletion implements CodeCompletionHandler {
 
     @Override
     public String getPrefix(ParserResult info, final int caretOffset, boolean upToOffset) {
-        final Document document = info.getSnapshot().getSource().getDocument(false);
-        if (document == null) {
-            return null;
-        }
-        final String[] retval = new String[1];
-        ((BaseDocument) document).render(new Runnable() {
-            public void run() {
-                retval[0] = getPrefix(LexerUtils.getCssTokenSequence(document, caretOffset), caretOffset);
-            }
-        });
-        return retval[0];
+        Snapshot snapshot = info.getSnapshot();
+        TokenHierarchy hi = snapshot.getTokenHierarchy();
+        return getPrefix(hi.tokenSequence(), snapshot.getEmbeddedOffset(caretOffset));
+
+
+//        final Document document = info.getSnapshot().getSource().getDocument(false);
+//        if (document == null) {
+//            return null;
+//        }
+//        final String[] retval = new String[1];
+//        ((BaseDocument) document).render(new Runnable() {
+//            public void run() {
+//                retval[0] = getPrefix(LexerUtils.getCssTokenSequence(document, caretOffset), caretOffset);
+//            }
+//        });
+//        return retval[0];
     }
     
     private String normalizeLink(ElementHandle handle , String link){
