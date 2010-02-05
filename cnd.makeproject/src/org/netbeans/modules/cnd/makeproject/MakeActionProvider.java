@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ValidateInstrumentationProvider.ValidateInstrumentation;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import java.awt.Dialog;
 import java.awt.Frame;
@@ -59,7 +60,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.toolchain.ui.BuildToolsAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
@@ -116,7 +116,6 @@ import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.ShellValidationStatus;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -135,7 +134,7 @@ import org.openide.windows.WindowManager;
 /** Action provider of the Make project. This is the place where to do
  * strange things to Make actions. E.g. compile-single.
  */
-public class MakeActionProvider implements ActionProvider {
+public final class MakeActionProvider implements ActionProvider {
 
     // Commands available from Make project
     public static final String COMMAND_BATCH_BUILD = "batch_build"; // NOI18N
@@ -183,7 +182,6 @@ public class MakeActionProvider implements ActionProvider {
     private static final String DEBUG_SINGLE_STEP = "debug-single"; // NOI18N
     private static final String COMPILE_SINGLE_STEP = "compile-single"; // NOI18N
     private static final String CUSTOM_ACTION_STEP = "custom-action"; // NOI18N
-    private static final String REMOVE_INSTRUMENTATION_STEP = "remove-instrumentation"; // NOI18N
     private static final String CONFIGURE_STEP = "configure"; // NOI18N
 
     public MakeActionProvider(MakeProject project) {
@@ -208,10 +206,6 @@ public class MakeActionProvider implements ActionProvider {
             }
         }
         return res;
-    }
-
-    private FileObject findBuildXml() {
-        return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
     }
 
     private boolean isProjectDescriptorLoaded() {
@@ -268,8 +262,6 @@ public class MakeActionProvider implements ActionProvider {
         }
 
         // Basic info
-        ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
-        final String projectName = info.getDisplayName();
         final MakeConfigurationDescriptor pd = getProjectDescriptor();
         MakeConfiguration activeConf = pd.getActiveConfiguration();
         if (activeConf == null) {
@@ -299,7 +291,7 @@ public class MakeActionProvider implements ActionProvider {
             protected void runImpl() {
                 ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
                 for (MakeConfiguration conf : confs) {
-                    addAction(actionEvents, projectName, pd, conf, finalCommand, context, cancelled);
+                    addAction(actionEvents, pd, conf, finalCommand, context, cancelled);
                 }
                 // Execute actions
                 if (actionEvents.size() > 0 && ! cancelled.get()) {
@@ -316,12 +308,12 @@ public class MakeActionProvider implements ActionProvider {
         invokeRemoteHostAction(record, actionWorker);
     }
 
-    public void invokeCustomAction(final String projectName, final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final ProjectActionHandler customProjectActionHandler) {
+    public void invokeCustomAction(final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final ProjectActionHandler customProjectActionHandler) {
         CancellableTask actionWorker = new CancellableTask() {
             @Override
             protected void runImpl() {
                 ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
-                addAction(actionEvents, projectName, pd, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null, cancelled);
+                addAction(actionEvents, pd, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null, cancelled);
                 ProjectActionSupport.getInstance().fireActionPerformed(
                         actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]),
                         customProjectActionHandler);
@@ -387,7 +379,7 @@ public class MakeActionProvider implements ActionProvider {
         ModalMessageDlg.runLongTask(mainWindow, wrapper, null, wrapper, title, msg);
     }
 
-    public void addAction(ArrayList<ProjectActionEvent> actionEvents, String projectName,
+    private void addAction(ArrayList<ProjectActionEvent> actionEvents,
             MakeConfigurationDescriptor pd, MakeConfiguration conf, String command, Lookup context,
             AtomicBoolean cancelled) throws IllegalArgumentException {
 
@@ -398,31 +390,33 @@ public class MakeActionProvider implements ActionProvider {
         AtomicBoolean validated = new AtomicBoolean(false);
         lastValidation = false;
 
-        String[] targetNames = getTargetNames(command, context);
+        String[] targetNames = getTargetNames(command);
         if (targetNames == null || targetNames.length == 0) {
             return;
         }
 
-        List<String> removeInstrumentation = null;
         for (int i = 0; i < targetNames.length; i++) {
-            String targetName = targetNames[i];
-            if (targetName.equals(REMOVE_INSTRUMENTATION_STEP)) { // NOI18N
-                removeInstrumentation = validateInstrumentation();
-                for (String t : removeInstrumentation) {
-                    addTarget(t, actionEvents, projectName, pd, conf, context, cancelled, validated);
+            final String targetName = targetNames[i];
+            List<String> tail = new ArrayList<String>();
+            for (int j = i + 1; j < targetNames.length; j++) {
+                tail.add(targetNames[j]);
+            }
+            List<String> delegate = validateInstrumentation(targetName, tail);
+            if (delegate != null) {
+                for(String target : delegate) {
+                    if (!addTarget(target, actionEvents, pd, conf, context, cancelled, validated)) {
+                        break;
+                    }
                 }
             } else {
-                if (removeInstrumentation != null && removeInstrumentation.contains(targetName)) {
-                    continue;
-                }
-                if (!addTarget(targetName, actionEvents, projectName, pd, conf, context, cancelled, validated)) {
+                if (!addTarget(targetName, actionEvents, pd, conf, context, cancelled, validated)) {
                     break;
                 }
             }
         }
     }
 
-    private boolean addTarget(String targetName, ArrayList<ProjectActionEvent> actionEvents, String projectName,
+    private boolean addTarget(String targetName, ArrayList<ProjectActionEvent> actionEvents, 
             MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, AtomicBoolean cancelled, AtomicBoolean validated) throws IllegalArgumentException {
         if (cancelled.get()) {
             return false; // getPlatformInfo() might be costly for remote host
@@ -431,27 +425,27 @@ public class MakeActionProvider implements ActionProvider {
         if (targetName.equals(SAVE_STEP)) {
             return onSaveStep();
         } else if (targetName.equals(BUILD_STEP)) {
-            return onBuildStep(targetName, actionEvents, projectName, pd, conf, cancelled, validated, ProjectActionEvent.Type.BUILD);
+            return onBuildStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PrefefinedType.BUILD);
         } else if (targetName.equals(BUILD_PACKAGE_STEP)) {
-            return onBuildPackageStep(targetName, actionEvents, projectName, conf, ProjectActionEvent.Type.BUILD);
+            return onBuildPackageStep(actionEvents, conf, ProjectActionEvent.PrefefinedType.BUILD);
         } else if (targetName.equals(CLEAN_STEP)) {
-            return onCleanStep(targetName, actionEvents, projectName, pd, conf, cancelled, validated, ProjectActionEvent.Type.CLEAN);
+            return onCleanStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PrefefinedType.CLEAN);
         } else if (targetName.equals(COMPILE_SINGLE_STEP)) {
-            return onCompileSingleStep(targetName, actionEvents, projectName, pd, conf, context, cancelled, validated, ProjectActionEvent.Type.BUILD);
+            return onCompileSingleStep(actionEvents, pd, conf, context, cancelled, validated, ProjectActionEvent.PrefefinedType.BUILD);
         } else if (targetName.equals(RUN_STEP)) {
-            return onRunStep(targetName, actionEvents, projectName, pd, conf, cancelled, validated, ProjectActionEvent.Type.RUN);
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PrefefinedType.RUN);
         } else if (targetName.equals(RUN_SINGLE_STEP) || targetName.equals(DEBUG_SINGLE_STEP)) {
-            return onRunSingleStep(conf, actionEvents, projectName, context, ProjectActionEvent.Type.RUN);
+            return onRunSingleStep(conf, actionEvents, context, ProjectActionEvent.PrefefinedType.RUN);
         } else if (targetName.equals(DEBUG_STEP)) {
-            return onRunStep(targetName, actionEvents, projectName, pd, conf, cancelled, validated, ProjectActionEvent.Type.DEBUG);
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PrefefinedType.DEBUG);
         } else if (targetName.equals(DEBUG_STEPINTO_STEP)) {
-            return onRunStep(targetName, actionEvents, projectName, pd, conf, cancelled, validated, ProjectActionEvent.Type.DEBUG_STEPINTO);
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PrefefinedType.DEBUG_STEPINTO);
         } else if (targetName.equals(DEBUG_LOAD_ONLY_STEP)) {
-            return onRunStep(targetName, actionEvents, projectName, pd, conf, cancelled, validated, ProjectActionEvent.Type.DEBUG_LOAD_ONLY);
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PrefefinedType.DEBUG_LOAD_ONLY);
         } else if (targetName.equals(CUSTOM_ACTION_STEP)) {
-            return onCustomActionStep(targetName, actionEvents, projectName, conf, context, ProjectActionEvent.Type.CUSTOM_ACTION);
+            return onCustomActionStep(actionEvents, conf, context, ProjectActionEvent.PrefefinedType.CUSTOM_ACTION);
         } else if (targetName.equals(CONFIGURE_STEP)) {
-            return onConfigureStep(targetName, actionEvents, projectName, pd, conf, cancelled, validated, ProjectActionEvent.Type.CONFIGURE);
+            return onConfigureStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PrefefinedType.CONFIGURE);
         } else {
             // TODO: process user step
             //actionEvent = ProjectActionEvent.Type.RUN;
@@ -470,12 +464,12 @@ public class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private boolean onRunStep(String targetName, ArrayList<ProjectActionEvent> actionEvents, String projectName, MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated, Type actionEvent) {
+    private boolean onRunStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated, Type actionEvent) {
         PlatformInfo pi = conf.getPlatformInfo();
         validated.set(true);
         if (conf.isMakefileConfiguration()) {
             String path;
-            if (targetName.equals(RUN_STEP)) {
+            if (actionEvent == ProjectActionEvent.PrefefinedType.RUN) {
                 path = conf.getMakefileConfiguration().getOutput().getValue();
                 if (path.length() > 0 && !IpeUtils.isPathAbsolute(path)) {
                     // make path relative to run working directory
@@ -488,7 +482,7 @@ public class MakeActionProvider implements ActionProvider {
                 path = conf.getMakefileConfiguration().getAbsOutput();
                 path = FilePathAdaptor.normalize(path);
             }
-            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, getActionName(projectName, targetName, conf), path, conf, null, false);
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
             actionEvents.add(projectActionEvent);
             RunDialogPanel.addElementToExecutablePicklist(path);
         } else if (conf.isLibraryConfiguration()) {
@@ -606,7 +600,7 @@ public class MakeActionProvider implements ActionProvider {
             }
             MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
             String path;
-            if (targetName.equals(RUN_STEP)) {
+            if (actionEvent == ProjectActionEvent.PrefefinedType.RUN) {
                 // naturalize if relative
                 path = makeArtifact.getOutput();
                 //TODO: we also need remote aware IpeUtils..........
@@ -621,7 +615,7 @@ public class MakeActionProvider implements ActionProvider {
                 // Always absolute
                 path = IpeUtils.toAbsolutePath(conf.getBaseDir(), makeArtifact.getOutput());
             }
-            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, getActionName(projectName, targetName, conf), path, conf, runProfile, false);
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, runProfile, false);
             actionEvents.add(projectActionEvent);
             RunDialogPanel.addElementToExecutablePicklist(path);
         } else {
@@ -630,12 +624,12 @@ public class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private boolean onRunSingleStep(MakeConfiguration conf, ArrayList<ProjectActionEvent> actionEvents, String projectName, Lookup context, Type actionEvent) {
+    private boolean onRunSingleStep(MakeConfiguration conf, ArrayList<ProjectActionEvent> actionEvents, Lookup context, Type actionEvent) {
         // FIXUP: not sure this is used...
         if (conf.isMakefileConfiguration()) {
             DataObject d = context.lookup(DataObject.class);
             String path = FileUtil.toFile(d.getPrimaryFile()).getPath();
-            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, getActionName(projectName, RUN_STEP, conf), path, conf, null, false);
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
             actionEvents.add(projectActionEvent);
             RunDialogPanel.addElementToExecutablePicklist(path);
         } else {
@@ -644,7 +638,7 @@ public class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private boolean onBuildStep(String targetName, ArrayList<ProjectActionEvent> actionEvents, String projectName, MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated, Type actionEvent) {
+    private boolean onBuildStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated, Type actionEvent) {
         if (conf.isCompileConfiguration() && !validateProject(conf)) {
             return true;
         }
@@ -659,7 +653,7 @@ public class MakeActionProvider implements ActionProvider {
             }
             RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
             profile.setArgs(args);
-            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, getActionName(projectName, targetName, conf), buildCommand, conf, profile, true);
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
             actionEvents.add(projectActionEvent);
         } else {
             return false; // Stop here
@@ -668,7 +662,7 @@ public class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private boolean onBuildPackageStep(String targetName, ArrayList<ProjectActionEvent> actionEvents, String projectName, MakeConfiguration conf, Type actionEvent) {
+    private boolean onBuildPackageStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfiguration conf, Type actionEvent) {
         if (!validatePackaging(conf)) {
             actionEvents.clear();
             return true;
@@ -688,12 +682,12 @@ public class MakeActionProvider implements ActionProvider {
         args += "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
         RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getDevelopmentHost().getBuildPlatform());
         profile.setArgs(args);
-        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, getActionName(projectName, targetName, conf), buildCommand, conf, profile, true);
+        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
         actionEvents.add(projectActionEvent);
         return true;
     }
 
-    private boolean onCleanStep(String targetName, ArrayList<ProjectActionEvent> actionEvents, String projectName,MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated, Type actionEvent) {
+    private boolean onCleanStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated, Type actionEvent) {
         if (validateBuildSystem(pd, conf, validated.get(), cancelled)) {
             MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
             String buildCommand = makeArtifact.getCleanCommand(getMakeCommand(pd, conf), ""); // NOI18N
@@ -705,7 +699,7 @@ public class MakeActionProvider implements ActionProvider {
             }
             RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
             profile.setArgs(args);
-            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, getActionName(projectName, targetName, conf), buildCommand, conf, profile, true);
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
             actionEvents.add(projectActionEvent);
         } else {
             return false; // Stop here
@@ -714,9 +708,9 @@ public class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private boolean onConfigureStep(String targetName, ArrayList<ProjectActionEvent> actionEvents, String projectName,MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated, Type actionEvent) {
+    private boolean onConfigureStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated, Type actionEvent) {
         if (validateBuildSystem(pd, conf, validated.get(), cancelled)) {
-            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, getActionName(projectName, targetName, conf), null, conf, null, true);
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, null, conf, null, true);
             actionEvents.add(projectActionEvent);
         } else {
             return false; // Stop here
@@ -725,7 +719,7 @@ public class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private boolean onCompileSingleStep(String targetName, ArrayList<ProjectActionEvent> actionEvents, String projectName,MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, AtomicBoolean cancelled, AtomicBoolean validated, Type actionEvent) {
+    private boolean onCompileSingleStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, AtomicBoolean cancelled, AtomicBoolean validated, Type actionEvent) {
         if (validateBuildSystem(pd, conf, validated.get(), cancelled)) {
             Iterator<? extends Node> it = context.lookupAll(Node.class).iterator();
             while (it.hasNext()) {
@@ -775,7 +769,7 @@ public class MakeActionProvider implements ActionProvider {
                 }
                 RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
                 profile.setArgs(args);
-                ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, ProjectActionEvent.Type.CLEAN, getActionName(projectName, CLEAN_STEP, conf), commandLine, conf, profile, true);
+                ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, ProjectActionEvent.PrefefinedType.CLEAN, commandLine, conf, profile, true);
                 actionEvents.add(projectActionEvent);
                 // Build commandLine
                 commandLine = getMakeCommand(pd, conf) + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
@@ -787,7 +781,7 @@ public class MakeActionProvider implements ActionProvider {
                 }
                 profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
                 profile.setArgs(args);
-                projectActionEvent = new ProjectActionEvent(project, actionEvent, getActionName(projectName, targetName, conf), commandLine, conf, profile, true);
+                projectActionEvent = new ProjectActionEvent(project, actionEvent, commandLine, conf, profile, true);
                 actionEvents.add(projectActionEvent);
             }
         } else {
@@ -797,21 +791,11 @@ public class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private boolean onCustomActionStep(String targetName, ArrayList<ProjectActionEvent> actionEvents, String projectName, MakeConfiguration conf, Lookup context, Type actionEvent) {
+    private boolean onCustomActionStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfiguration conf, Lookup context, Type actionEvent) {
         String exe = conf.getAbsoluteOutputValue();
-        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, getActionName(projectName, targetName, conf), exe, conf, null, true, context);
+        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, exe, conf, null, true, context);
         actionEvents.add(projectActionEvent);
         return true;
-    }
-
-    private static String getActionName(String projectName, String targetName, MakeConfiguration conf) {
-        StringBuilder actionName = new StringBuilder(projectName);
-        actionName.append(" (").append(targetName); // NOI18N
-        if (!conf.getDevelopmentHost().isLocalhost()) {
-            actionName.append(" - ").append(conf.getDevelopmentHost().getHostKey()); // NOI18N
-        }
-        actionName.append(")"); // NOI18N
-        return actionName.toString();
     }
 
     private boolean validateProject(MakeConfiguration conf) {
@@ -841,7 +825,7 @@ public class MakeActionProvider implements ActionProvider {
     /**
      * @return array of targets or null to stop execution; can return empty array
      */
-    private String[] getTargetNames(String command, Lookup context) throws IllegalArgumentException {
+    private String[] getTargetNames(String command) throws IllegalArgumentException {
         String[] targetNames = new String[0];
         if (command.equals(COMMAND_COMPILE_SINGLE)) {
             targetNames = commands.get(command);
@@ -975,8 +959,12 @@ public class MakeActionProvider implements ActionProvider {
         return cmd;
     }
 
-    private List<String> validateInstrumentation(){
-        return ValidateInstrumentationProvider.getDefault().validate(project);
+    private List<String> validateInstrumentation(String id, List<String> tailSteps){
+        ValidateInstrumentation validator = ValidateInstrumentationProvider.getValidator(id);
+        if (validator == null) {
+            return null;
+        }
+        return validator.validate(project, id, tailSteps);
     }
 
     private boolean validateBuildSystem(MakeConfigurationDescriptor pd, MakeConfiguration conf,
@@ -1279,31 +1267,6 @@ public class MakeActionProvider implements ActionProvider {
         }
         return result;
     }
-
-//    private static String getExePath(MakeConfigurationDescriptor mcd, MakeConfiguration conf) {
-//        String buildResult = conf.getMakefileConfiguration().getOutput().getValue();
-//
-//        if (buildResult == null || buildResult.length() == 0) {
-//            return buildResult;
-//        }
-//
-//        List<String> paths = new ArrayList<String>();
-//        if (isAbsolutePath(conf, buildResult)) {
-//            paths.add(buildResult);
-//        }
-//        paths.add(conf.getBaseDir());
-//        paths.addAll(mcd.getSourceRoots());
-//
-//        for (String dir : paths) {
-//            dir = dir.replace("\\", "/");  // NOI18N
-//            String path = dir + '/' + buildResult; // gdb *requires* forward slashes!
-//            File file = new File(path);
-//            if (file.exists()) {
-//                return path;
-//            }
-//        }
-//        return "";
-//    }
 
     // Private methods -----------------------------------------------------
     /** Look up i18n strings here */

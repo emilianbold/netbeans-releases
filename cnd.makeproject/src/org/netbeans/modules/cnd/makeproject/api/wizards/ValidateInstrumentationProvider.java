@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.makeproject.api.wizards;
 
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.openide.util.Lookup;
@@ -50,38 +49,37 @@ import org.openide.util.Lookup;
  */
 public abstract class ValidateInstrumentationProvider {
 
-    private static ValidateInstrumentationProvider DEFAULT = new Default();
+    private static Default DEFAULT = new Default();
 
-    public abstract List<String> validate(Project makeProject);
+    public interface ValidateInstrumentation {
+        public abstract String getID();
+        public abstract List<String> validate(Project makeProject, String step, List<String> tailSteps);
+    }
+
+    public abstract ValidateInstrumentation getValidator();
+
+    public static ValidateInstrumentation getValidator(String id) {
+        return DEFAULT.getValidator(id);
+    }
 
     protected ValidateInstrumentationProvider() {
     }
 
-    public static ValidateInstrumentationProvider getDefault() {
-        return DEFAULT;
-    }
-
-    private static final class Default extends ValidateInstrumentationProvider {
+    private static final class Default {
         private final Lookup.Result<ValidateInstrumentationProvider> res;
 
         private Default() {
             res = Lookup.getDefault().lookupResult(ValidateInstrumentationProvider.class);
         }
 
-        private ValidateInstrumentationProvider getService(){
-            for (ValidateInstrumentationProvider validator : res.allInstances()) {
-                return validator;
+        public ValidateInstrumentation getValidator(String id) {
+            for (ValidateInstrumentationProvider provider : res.allInstances()) {
+                ValidateInstrumentation validator = provider.getValidator();
+                if (id.equals(validator.getID())) {
+                    return validator;
+                }
             }
             return null;
-        }
-
-        @Override
-        public List<String> validate(Project makeProject) {
-            ValidateInstrumentationProvider validator = getService();
-            if (validator != null) {
-                return validator.validate(makeProject);
-            }
-            return Collections.<String>emptyList();
         }
     }
 }
