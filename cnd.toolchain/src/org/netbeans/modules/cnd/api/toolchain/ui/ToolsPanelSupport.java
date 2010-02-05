@@ -36,12 +36,12 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.toolchain.ui.api;
+package org.netbeans.modules.cnd.api.toolchain.ui;
 
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
 import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManagerImpl;
 import org.openide.util.WeakSet;

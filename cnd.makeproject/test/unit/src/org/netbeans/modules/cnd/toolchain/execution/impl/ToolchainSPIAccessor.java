@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.cnd.toolchain.execution.impl;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.SPIAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 

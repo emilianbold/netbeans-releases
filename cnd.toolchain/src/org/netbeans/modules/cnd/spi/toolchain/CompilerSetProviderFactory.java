@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,23 +34,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.spi;
+package org.netbeans.modules.cnd.spi.toolchain;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * Interface is returned by project lookup.
- *
- * @author Alexander Simon
+ * An SPI for creation CompilerSetProvider instances
+ * @author Vladimir Kvashin
  */
-public interface ToolchainProject {
-
+public interface CompilerSetProviderFactory {
     /**
-     *
-     * @return toolchain for active project configuration
+     * Creates a new instance of CompilerSetProvider
+     * for the given execution environment
+     * @param execEnv execution environment to create CompilerSetProvider for
+     * @return new CompilerSetProvider instance
      */
-    CompilerSet getCompilerSet();
+    public CompilerSetProvider createNew(ExecutionEnvironment execEnv);
 }

@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.spi;
+package org.netbeans.modules.cnd.spi.toolchain;
 
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.toolchain.execution.impl.ErrorAnnotation;
@@ -46,13 +46,13 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ScannerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerDescriptor;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerFlavorImpl;
-import org.netbeans.modules.cnd.toolchain.spi.ErrorParserProvider.ErrorParser;
-import org.netbeans.modules.cnd.toolchain.spi.ErrorParserProvider.Result;
+import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.ErrorParser;
+import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;

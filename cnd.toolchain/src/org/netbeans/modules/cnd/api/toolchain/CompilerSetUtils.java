@@ -37,11 +37,11 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.api;
+package org.netbeans.modules.cnd.api.toolchain;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolchainManagerImpl;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.openide.util.Utilities;

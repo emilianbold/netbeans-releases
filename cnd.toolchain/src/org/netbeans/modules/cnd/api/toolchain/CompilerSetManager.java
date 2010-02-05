@@ -37,66 +37,64 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.api;
+package org.netbeans.modules.cnd.api.toolchain;
 
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerFlavorImpl;
+import java.io.Writer;
+import java.util.List;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerAccessorImpl;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
  * @author Alexander Simon
  */
-public abstract class CompilerFlavor {
-
-    public static CompilerFlavor getUnknown(int platform) {
-        return CompilerFlavorImpl.getUnknown(platform);
+public abstract class CompilerSetManager {
+    /**
+     * Find or create a default CompilerSetManager for the given key. A default
+     * CSM is one which is active in the system. A non-default is one which gets
+     * created but has no affect unless its made default.
+     *
+     * For instance, the Build Tools tab (on C/C++ Tools->Options) creates a non-Default
+     * CSM and only makes it default if the OK button is pressed. If Cancel is pressed,
+     * it never becomes default.
+     *
+     * @param env specifies execution environment
+     * @return A default CompilerSetManager for the given key
+     */
+    public static CompilerSetManager get(ExecutionEnvironment env) {
+        return CompilerSetManagerAccessorImpl.getDefault(env);
     }
 
-    public static CompilerFlavor toFlavor(String name, int platform) {
-        return CompilerFlavorImpl.toFlavor(name, platform);
-    }
+    public abstract CompilerSet getCompilerSet(String name);
+
+    public abstract List<CompilerSet> getCompilerSets();
+
+    public abstract CompilerSet getDefaultCompilerSet();
+
+    public abstract boolean isDefaultCompilerSet(CompilerSet cs);
+
+    public abstract int getPlatform();
+
+    public abstract void setDefault(CompilerSet newDefault);
 
     /**
-     *
-     * @param platform The Platform kind.
-     * @return The path to folder where unix-like commands are located. Defined for Windows platform.
+     * CAUTION: this is a slow method. It should NOT be called from the EDT thread
      */
-    public abstract String getCommandFolder(int platform);
+    public abstract void initialize(boolean save, boolean runCompilerSetDataLoader, Writer reporter);
 
-    /**
-     *
-     * @return The tool collection descriptor that loaded from xml file from folder CND/ToolChain/ in file system
-     */
-    public abstract ToolchainDescriptor getToolchainDescriptor();
+    public abstract void finishInitialization();
 
-    /**
-     *
-     * @return True if tool chain like to GNU compilers
-     */
-    public abstract boolean isGnuCompiler();
+    public abstract boolean isEmpty();
 
-    /**
-     *
-     * @return True if tool chain like to SunStudio compilers
-     */
-    public abstract boolean isSunStudioCompiler();
+    public abstract boolean isPending();
 
-    /**
-     *
-     * @return True if tool chain like to Windows Cygwin compilers
-     */
-    public abstract boolean isCygwinCompiler();
+    public abstract boolean isUninitialized();
 
-    /**
-     *
-     * @return True if tool chain like to Windows MinGW compilers
-     */
-    public abstract boolean isMinGWCompiler();
-
-    
-    protected CompilerFlavor() {
-        if (!getClass().equals(CompilerFlavorImpl.class)) {
+    protected CompilerSetManager() {
+        if (!getClass().equals(CompilerSetManagerImpl.class)) {
             throw new UnsupportedOperationException("this class can not be overriden by clients"); // NOI18N
         }
     }
+
 }

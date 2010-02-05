@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.toolchain.ui.api;
+package org.netbeans.modules.cnd.api.toolchain.ui;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -49,8 +49,8 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.ui.options.DownloadUtils;
 import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
