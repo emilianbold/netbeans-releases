@@ -36,83 +36,22 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.refactoring;
 
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
-import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
+package org.netbeans.modules.css.refactoring;
 
 /**
  *
  * @author marekfukala
  */
-public class WhereUsedUI implements RefactoringUI {
+class CssRefactoringExtraInfo {
 
-    private WhereUsedPanel panel;
-    private final WhereUsedQuery query;
-    private CssElementContext context;
-    private CssRefactoringExtraInfo info;
+    private boolean refactorAll;
 
-    public WhereUsedUI(CssElementContext context) {
-	this.context = context;
-        this.info = new CssRefactoringExtraInfo();
-	this.query = new WhereUsedQuery(Lookups.fixed(context, info));
+    void setRefactorAll(boolean refactorAll) {
+        this.refactorAll = refactorAll;
     }
 
-    @Override
-    public String getName() {
-	return NbBundle.getMessage(WhereUsedUI.class, "LBL_FindUsages"); //NOI18N
+    public boolean isRefactorAll() {
+        return refactorAll;
     }
-
-    @Override
-    public String getDescription() {
-	return NbBundle.getMessage(WhereUsedUI.class, "LBL_FindUsages"); //NOI18N
-    }
-
-    @Override
-    public boolean isQuery() {
-	return true;
-    }
-
-    @Override
-    public CustomRefactoringPanel getPanel(ChangeListener parent) {
-       if(panel == null) {
-           panel = new WhereUsedPanel();
-       }
-        return panel;
-    }
-
-    @Override
-    public Problem setParameters() {
-        this.info.setRefactorAll(panel.isFindAllOccurances());
-
-	return query.checkParameters();
-    }
-
-    @Override
-    public Problem checkParameters() {
-	return query.fastCheckParameters();
-    }
-
-    @Override
-    public boolean hasParameters() {
-	return true;
-    }
-
-    @Override
-    public AbstractRefactoring getRefactoring() {
-	return this.query;
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-	return null;
-    }
-
 }
