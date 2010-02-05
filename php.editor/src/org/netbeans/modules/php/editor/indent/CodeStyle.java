@@ -224,6 +224,10 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceAroundAssignOps, getDefaultAsBoolean(spaceAroundAssignOps));
     }
 
+    public boolean spaceAroundObjectOps() {
+        return preferences.getBoolean(spaceAroundObjectOps, getDefaultAsBoolean(spaceAroundObjectOps));
+    }
+
     public boolean spaceBeforeClassDeclLeftBrace() {
         return preferences.getBoolean(spaceBeforeClassDeclLeftBrace, getDefaultAsBoolean(spaceBeforeClassDeclLeftBrace));
     }

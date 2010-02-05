@@ -126,16 +126,22 @@ class WSTransformer extends DefaultTreePathVisitor {
         Token<? extends PHPTokenId> token;
 
 	while (ts.moveNext()) {
-	    token = LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_OPERATOR));
-	    String text = token.text().toString();
-	    if (ASSIGN_OPERATORS.contains(text)) {
-			checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundAssignOps());
+	    token = LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_OPERATOR, 
+		    PHPTokenId.PHP_OBJECT_OPERATOR));
+	    if (token.id() == PHPTokenId.PHP_OBJECT_OPERATOR) {
+		checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundObjectOps());
 	    }
-	    else if (BINARY_OPERATORS.contains(text)) {
-		checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundBinaryOps());
-	    }
-	    else if (UNARY_OPERATOS.contains(text)) {
-		checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundUnaryOps());
+	    else {
+		String text = token.text().toString();
+		if (ASSIGN_OPERATORS.contains(text)) {
+			    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundAssignOps());
+		}
+		else if (BINARY_OPERATORS.contains(text)) {
+		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundBinaryOps());
+		}
+		else if (UNARY_OPERATOS.contains(text)) {
+		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundUnaryOps());
+		}
 	    }
 	}
     }

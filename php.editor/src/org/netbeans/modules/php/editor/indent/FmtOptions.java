@@ -132,6 +132,7 @@ public class FmtOptions {
     public static final String spaceAroundBinaryOps = "spaceAroundBinaryOps"; //NOI18N
     public static final String spaceAroundTernaryOps = "spaceAroundTernaryOps"; //NOI18N
     public static final String spaceAroundAssignOps = "spaceAroundAssignOps"; //NOI18N
+    public static final String spaceAroundObjectOps = "spaceAroundObjectOps"; //NOI18N
     public static final String spaceBeforeClassDeclLeftBrace = "spaceBeforeClassDeclLeftBrace"; //NOI18N
     public static final String spaceBeforeMethodDeclLeftBrace = "spaceBeforeMethodDeclLeftBrace"; //NOI18N
     public static final String spaceBeforeIfLeftBrace = "spaceBeforeIfLeftBrace"; //NOI18N
@@ -239,6 +240,7 @@ public class FmtOptions {
             { spaceAroundBinaryOps, TRUE},
             { spaceAroundTernaryOps, TRUE},
             { spaceAroundAssignOps, TRUE},
+	    { spaceAroundObjectOps, FALSE},
             { spaceBeforeClassDeclLeftBrace, TRUE},
             { spaceBeforeMethodDeclLeftBrace, TRUE},
             { spaceBeforeIfLeftBrace, TRUE},
