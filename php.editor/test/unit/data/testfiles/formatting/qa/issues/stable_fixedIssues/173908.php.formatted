@@ -11,7 +11,7 @@ class Test {
       }
     }
     catch (Exception $e) {
-      $this->_flashMessenger->addMessage('Chyba: '.$e);
+      $this->_flashMessenger->addMessage('Chyba: ' . $e);
     }
   }
 }
