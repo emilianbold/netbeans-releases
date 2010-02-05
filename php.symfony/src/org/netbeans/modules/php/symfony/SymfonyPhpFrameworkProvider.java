@@ -91,8 +91,6 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public boolean isInPhpModule(PhpModule phpModule) {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
-
         // #170775
         // first search "symfony", then "config/ProjectConfiguration.class.php"
         FileObject symfony = locate(phpModule, SymfonyScript.SCRIPT_NAME, false);
@@ -115,7 +113,6 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public PhpModuleProperties getPhpModuleProperties(PhpModule phpModule) {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
         PhpModuleProperties properties = new PhpModuleProperties();
         FileObject web = locate(phpModule, "web", true); // NOI18N
         if (web != null) {
