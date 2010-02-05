@@ -92,7 +92,6 @@ public abstract class CssElementContext {
     public static class File extends AbstractFileContext {
 
 	private Collection<CssParserResult> results;
-	private FileObject fileObject; //store this separately even if all the parser results refers to it
 
 	public File(FileObject fileObject, Collection<CssParserResult> result) {
 	    super(fileObject);

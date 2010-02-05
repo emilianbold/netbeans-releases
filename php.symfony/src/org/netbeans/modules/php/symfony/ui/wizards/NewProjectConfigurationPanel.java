@@ -55,6 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -71,8 +72,8 @@ import org.openide.util.Utilities;
 /**
  * @author Tomas Mysik
  */
-public class NewProjectConfigurationPanel extends JPanel {
-    private static final long serialVersionUID = -1785087564128594L;
+public class NewProjectConfigurationPanel extends JPanel implements ChangeListener {
+    private static final long serialVersionUID = -1785087654312318594L;
     private static final String APP_FRONTEND = "frontend"; // NOI18N
     private static final String APP_BACKEND = "backend"; // NOI18N
     private static final Pattern APP_NAME_PATTERN = Pattern.compile("\\S+"); // NOI18N
@@ -112,6 +113,18 @@ public class NewProjectConfigurationPanel extends JPanel {
             }
         });
         enableOptionsLabel();
+    }
+
+    @Override
+    public void addNotify() {
+        SymfonyOptions.getInstance().addChangeListener(this);
+        super.addNotify();
+    }
+
+    @Override
+    public void removeNotify() {
+        SymfonyOptions.getInstance().removeChangeListener(this);
+        super.removeNotify();
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -456,5 +469,10 @@ public class NewProjectConfigurationPanel extends JPanel {
         private void processUpdate() {
             fireChange();
         }
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        fireChange();
     }
 }

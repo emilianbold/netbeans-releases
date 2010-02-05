@@ -187,8 +187,14 @@ public abstract class CompletionResultItem implements CompletionItem {
                         String insertingText = getInsertingText(component, text);
                         doc.insertString(offset, insertingText, null);
                     }
-                    //position the caret
-                    component.setCaretPosition(offset + getCaretPosition());
+                    // change the caret position
+                    int caretPos = offset + getCaretPosition(), docLength = doc.getLength();
+                    if (docLength == 0) {
+                        caretPos = 0;
+                    } else if (caretPos > doc.getLength()) {
+                        caretPos = doc.getLength();
+                    }
+                    component.setCaretPosition(caretPos);
                     
                     String prefix = CompletionUtil.getPrefixFromTag(text);
                     if (prefix == null) {

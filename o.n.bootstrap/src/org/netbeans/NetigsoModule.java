@@ -83,8 +83,13 @@ final class NetigsoModule extends Module {
     }
 
     @Override
+    public File getJarFile() {
+        return jar;
+    }
+
+    @Override
     public List<File> getAllJars() {
-        return Collections.emptyList();
+        return Collections.singletonList(jar);
     }
 
     @Override

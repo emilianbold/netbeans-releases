@@ -59,6 +59,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.Module;
 import org.netbeans.NetigsoFramework;
 import org.netbeans.ProxyClassLoader;
 import org.netbeans.Stamps;
@@ -88,7 +89,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     }
 
     @Override
-    protected void prepare(Lookup lkp, Collection<? extends ModuleInfo> preregister) {
+    protected void prepare(Lookup lkp, Collection<? extends Module> preregister) {
         if (framework == null) {
             readBundles();
             
@@ -114,7 +115,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             LOG.finer("OSGi Container initialized"); // NOI18N
         }
         activator.register(preregister);
-        for (ModuleInfo mi : preregister) {
+        for (Module mi : preregister) {
             try {
                 fakeOneModule(mi);
             } catch (IOException ex) {
@@ -153,16 +154,12 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     protected Set<String> createLoader(ModuleInfo m, ProxyClassLoader pcl, File jar) throws IOException {
         try {
             Bundle b = null;
-            if (registered.add(m.getCodeNameBase())) {
-                BundleContext bc = framework.getBundleContext();
-                LOG.log(Level.FINE, "Installing bundle {0}", jar);
-                b = bc.installBundle(jar.toURI().toURL().toExternalForm());
-            } else {
-                for (Bundle bb : framework.getBundleContext().getBundles()) {
-                    if (bb.getSymbolicName().equals(m.getCodeNameBase())) {
-                        b = bb;
-                        break;
-                    }
+            assert registered.contains(m.getCodeNameBase()) : m.getCodeNameBase();
+            for (Bundle bb : framework.getBundleContext().getBundles()) {
+                final String bbName = bb.getSymbolicName().replace('-', '_');
+                if (bbName.equals(m.getCodeNameBase())) {
+                    b = bb;
+                    break;
                 }
             }
             if (b == null) {
@@ -226,23 +223,27 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         dir.delete();
     }
 
-    private void fakeOneModule(ModuleInfo m) throws IOException {
-        if (m.getAttribute("Bundle-SymbolicName") != null) { // NOI18N
-            return;
-        }
+    private void fakeOneModule(Module m) throws IOException {
         if (!registered.add(m.getCodeNameBase())) {
             return;
         }
-        InputStream is = fakeBundle(m);
-        if (is != null) {
-            try {
-                //NetigsoActivator.register(m);
-                framework.getBundleContext().installBundle("netigso://" + m.getCodeNameBase(), is);
-                is.close();
-            } catch (BundleException ex) {
-                throw new IOException(ex.getMessage());
+        Bundle b;
+        try {
+            if (m.getAttribute("Bundle-SymbolicName") != null) { // NOI18N
+                BundleContext bc = framework.getBundleContext();
+                File jar = m.getJarFile();
+                LOG.log(Level.FINE, "Installing bundle {0}", jar);
+                b = bc.installBundle(jar.toURI().toURL().toExternalForm());
+            } else {
+                InputStream is = fakeBundle(m);
+                if (is != null) {
+                    framework.getBundleContext().installBundle("netigso://" + m.getCodeNameBase(), is);
+                    is.close();
+                }
             }
             Stamps.getModulesJARs().scheduleSave(this, "netigso-bundles", false); // NOI18N
+        } catch (BundleException ex) {
+            throw new IOException(ex.getMessage());
         }
     }
     

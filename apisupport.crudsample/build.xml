@@ -43,8 +43,29 @@ made subject to such option by the copyright holder.
 <project basedir="." default="netbeans" name="apisupport.crudsample">
     <import file="../nbbuild/templates/projectized.xml"/>
 
-    <target name="jar" depends="zip-project,projectized-common.jar"/>
+    <target name="jar" depends="copy-jars,zip-project,projectized-common.jar"/>
 
+    <target name="copy-jars">
+        <fail message="toplink-essentials.jar doesn't found on ${toplink-essentials.jar}.">
+            <condition>
+                <not>
+                    <available file="${toplink-essentials.jar}"/>
+                </not>
+            </condition>
+        </fail>
+        <fail message="toplink-essentials-agent.jar doesn't found on ${toplink-essentials-agent.jar}.">
+            <condition>
+                <not>
+                    <available file="${toplink-essentials-agent.jar}"/>
+                </not>
+            </condition>
+        </fail>
+        <property name="crudsample-dir" location="${build.classes.dir}/org/netbeans/modules/apisupport/crudsample/"/>
+        <mkdir dir="${crudsample-dir}/external"/>
+        <copy file="${toplink-essentials.jar}" tofile="${crudsample-dir}/external/toplink-essentials.jar"/>
+        <copy file="${toplink-essentials.jar}" tofile="${crudsample-dir}/external/toplink-essentials-agent.jar"/>
+    </target>
+    
     <target name="zip-project" depends="init">
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/apisupport/crudsample/"/>
         <mkdir dir="${examples}"/>
@@ -52,6 +73,9 @@ made subject to such option by the copyright holder.
             <exclude name="**/build/"/>
             <exclude name="**/dist/"/>
             <exclude name="**/nbproject/private/"/>
+        </zip>
+        <zip basedir="${crudsample-dir}" update="yes" destfile="${examples}/SampleCRUDAppProject.zip">
+            <include name="external/"/>
         </zip>
     </target>
 

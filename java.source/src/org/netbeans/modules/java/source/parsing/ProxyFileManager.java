@@ -303,8 +303,8 @@ public class ProxyFileManager implements JavaFileManager {
         }
         String result;
         //If instanceof FileObject.Base no need to delegate it
-        if (javaFileObject instanceof FileObjects.InferableJavaFileObject) {
-            final FileObjects.InferableJavaFileObject ifo = (FileObjects.InferableJavaFileObject) javaFileObject;
+        if (javaFileObject instanceof InferableJavaFileObject) {
+            final InferableJavaFileObject ifo = (InferableJavaFileObject) javaFileObject;
             result = ifo.inferBinaryName();
             if (result != null) {
                 this.lastInfered = javaFileObject;            
