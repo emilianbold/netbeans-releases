@@ -57,10 +57,12 @@ public class WhereUsedUI implements RefactoringUI {
     private WhereUsedPanel panel;
     private final WhereUsedQuery query;
     private CssElementContext context;
+    private CssRefactoringExtraInfo info;
 
     public WhereUsedUI(CssElementContext context) {
 	this.context = context;
-	this.query = new WhereUsedQuery(Lookups.singleton(context));
+        this.info = new CssRefactoringExtraInfo();
+	this.query = new WhereUsedQuery(Lookups.fixed(context, info));
     }
 
     @Override
@@ -88,6 +90,8 @@ public class WhereUsedUI implements RefactoringUI {
 
     @Override
     public Problem setParameters() {
+        this.info.setRefactorAll(panel.isFindAllOccurances());
+
 	return query.checkParameters();
     }
 

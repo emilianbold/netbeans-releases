@@ -207,22 +207,26 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceBeforeSwitchParen, getDefaultAsBoolean(spaceBeforeSwitchParen));
     }
 
-//
-//    public boolean spaceAroundUnaryOps() {
-//        return preferences.getBoolean(spaceAroundUnaryOps, getDefaultAsBoolean(spaceAroundUnaryOps));
-//    }
-//
-//    public boolean spaceAroundBinaryOps() {
-//        return preferences.getBoolean(spaceAroundBinaryOps, getDefaultAsBoolean(spaceAroundBinaryOps));
-//    }
-//
-//    public boolean spaceAroundTernaryOps() {
-//        return preferences.getBoolean(spaceAroundTernaryOps, getDefaultAsBoolean(spaceAroundTernaryOps));
-//    }
-//
-//    public boolean spaceAroundAssignOps() {
-//        return preferences.getBoolean(spaceAroundAssignOps, getDefaultAsBoolean(spaceAroundAssignOps));
-//    }
+
+    public boolean spaceAroundUnaryOps() {
+        return preferences.getBoolean(spaceAroundUnaryOps, getDefaultAsBoolean(spaceAroundUnaryOps));
+    }
+
+    public boolean spaceAroundBinaryOps() {
+        return preferences.getBoolean(spaceAroundBinaryOps, getDefaultAsBoolean(spaceAroundBinaryOps));
+    }
+
+    public boolean spaceAroundTernaryOps() {
+        return preferences.getBoolean(spaceAroundTernaryOps, getDefaultAsBoolean(spaceAroundTernaryOps));
+    }
+
+    public boolean spaceAroundAssignOps() {
+        return preferences.getBoolean(spaceAroundAssignOps, getDefaultAsBoolean(spaceAroundAssignOps));
+    }
+
+    public boolean spaceAroundObjectOps() {
+        return preferences.getBoolean(spaceAroundObjectOps, getDefaultAsBoolean(spaceAroundObjectOps));
+    }
 
     public boolean spaceBeforeClassDeclLeftBrace() {
         return preferences.getBoolean(spaceBeforeClassDeclLeftBrace, getDefaultAsBoolean(spaceBeforeClassDeclLeftBrace));

@@ -128,10 +128,11 @@ public class FmtOptions {
     public static final String spaceBeforeWhileParen = "spaceBeforeWhileParen"; //NOI18N
     public static final String spaceBeforeCatchParen = "spaceBeforeCatchParen"; //NOI18N
     public static final String spaceBeforeSwitchParen = "spaceBeforeSwitchParen"; //NOI18N
-//    public static final String spaceAroundUnaryOps = "spaceAroundUnaryOps"; //NOI18N
-//    public static final String spaceAroundBinaryOps = "spaceAroundBinaryOps"; //NOI18N
-//    public static final String spaceAroundTernaryOps = "spaceAroundTernaryOps"; //NOI18N
-//    public static final String spaceAroundAssignOps = "spaceAroundAssignOps"; //NOI18N
+    public static final String spaceAroundUnaryOps = "spaceAroundUnaryOps"; //NOI18N
+    public static final String spaceAroundBinaryOps = "spaceAroundBinaryOps"; //NOI18N
+    public static final String spaceAroundTernaryOps = "spaceAroundTernaryOps"; //NOI18N
+    public static final String spaceAroundAssignOps = "spaceAroundAssignOps"; //NOI18N
+    public static final String spaceAroundObjectOps = "spaceAroundObjectOps"; //NOI18N
     public static final String spaceBeforeClassDeclLeftBrace = "spaceBeforeClassDeclLeftBrace"; //NOI18N
     public static final String spaceBeforeMethodDeclLeftBrace = "spaceBeforeMethodDeclLeftBrace"; //NOI18N
     public static final String spaceBeforeIfLeftBrace = "spaceBeforeIfLeftBrace"; //NOI18N
@@ -235,10 +236,11 @@ public class FmtOptions {
             { spaceBeforeWhileParen, TRUE},
             { spaceBeforeCatchParen, TRUE},
             { spaceBeforeSwitchParen, TRUE},
-//            { spaceAroundUnaryOps, FALSE},
-//            { spaceAroundBinaryOps, TRUE},
-//            { spaceAroundTernaryOps, TRUE},
-//            { spaceAroundAssignOps, TRUE},
+            { spaceAroundUnaryOps, FALSE},
+            { spaceAroundBinaryOps, TRUE},
+            { spaceAroundTernaryOps, TRUE},
+            { spaceAroundAssignOps, TRUE},
+	    { spaceAroundObjectOps, FALSE},
             { spaceBeforeClassDeclLeftBrace, TRUE},
             { spaceBeforeMethodDeclLeftBrace, TRUE},
             { spaceBeforeIfLeftBrace, TRUE},

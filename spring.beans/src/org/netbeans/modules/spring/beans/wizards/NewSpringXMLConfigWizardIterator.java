@@ -64,7 +64,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.ConfigFileManager;
@@ -290,21 +290,25 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
 
         try {
             Class<?> kitClass = CloneableEditorSupport.getEditorKit(SpringConstants.CONFIG_MIME_TYPE).getClass();
-            BaseDocument doc = new BaseDocument(kitClass, false);
-            Formatter f = Formatter.getFormatter(kitClass);
+            final BaseDocument doc = new BaseDocument(true, SpringConstants.CONFIG_MIME_TYPE);
+            final Reformat reformat = Reformat.get(doc);
             
             doc.remove(0, doc.getLength());
             doc.insertString(0, sb.toString(), null);
-            f.reformatLock();
+            reformat.lock();
             try {
-                doc.atomicLock();
-                try {
-                    f.reformat(doc, 0, doc.getLength());
-                } finally {
-                    doc.atomicUnlock();
-                }
+                doc.runAtomic(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            reformat.reformat(0, doc.getLength());
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
             } finally {
-                f.reformatUnlock();
+                reformat.unlock();
             }
             
             sb.replace(0, sb.length(), doc.getText(0, doc.getLength()));

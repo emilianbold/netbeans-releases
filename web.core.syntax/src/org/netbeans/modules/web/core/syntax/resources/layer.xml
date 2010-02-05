@@ -156,9 +156,26 @@ made subject to such option by the copyright holder.
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 <folder name="Popup">
-                    <file name="format">
-                        <attr name="position" intvalue="1125"/>
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+                        <attr name="position" intvalue="1280"/>
                     </file>
+                    <file name="SeparatorAfterWhereUsed.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+		    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+			<attr name="position" intvalue="1500"/>
+		    </file>
+                    <file name="format">
+                        <attr name="position" intvalue="1562"/>
+                    </file>
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1600"/>
+                    </file>
+
                     <file name="SeparatorProperties.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="4100"/>
@@ -249,23 +266,24 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
                 <folder name="Popup">
-                    <folder name="goto">
-                        <!--
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.editor.Bundle"/>
-                        <file name="goto"/>
-                        <file name="org-netbeans-modules-editor-java-JavaFastOpenAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaFastOpenAction.getInstance"/>
-                        </file>
-                        <attr name="goto/org-netbeans-modules-editor-java-JavaFastOpenAction.instance" boolvalue="true"/>
-                        -->
-                        <attr name="position" intvalue="900"/>
-                    </folder>
-                    <file name="format">
-                        <attr name="position" intvalue="1333"/>
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+                        <attr name="position" intvalue="1280"/>
                     </file>
-                    <file name="Separator5.instance">
+                    <file name="SeparatorAfterWhereUsed.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1666"/>
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+		    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+			<attr name="position" intvalue="1500"/>
+		    </file>
+                    <file name="format">
+                        <attr name="position" intvalue="1562"/>
+                    </file>
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1600"/>
                     </file>
                     <file name="SeparatorProperties.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

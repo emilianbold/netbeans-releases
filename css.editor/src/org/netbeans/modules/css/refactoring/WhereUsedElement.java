@@ -61,6 +61,7 @@ import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -120,6 +121,10 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     }
 
     public static WhereUsedElement create(CssFileModel.Entry entry, ElementKind kind) {
+        return create(entry, kind, true);
+    }
+
+    public static WhereUsedElement create(CssFileModel.Entry entry, ElementKind kind, boolean related) {
         Icon icon = UiUtils.getElementIcon(kind, Collections.<Modifier>emptyList());
         String name = entry.getName();
         OffsetRange range = entry.getDocumentRange();
@@ -190,6 +195,10 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         sb.append(content.subSequence(start, end));
         sb.append("</b>"); // NOI18N
         sb.append(encodeCharRefs(content.subSequence(end, en).toString()));
+        if(!related) {
+            sb.append(NbBundle.getMessage(WhereUsedElement.class, "MSG_Unrelated_Where_Used_Occurance")); //NOI18N
+        }
+
 
         CloneableEditorSupport ces = Css.findCloneableEditorSupport(fileObject);
         PositionRef ref1 = ces.createPositionRef(start, Bias.Forward);

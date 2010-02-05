@@ -88,17 +88,33 @@ public class DependenciesGraph {
      */
     public Collection<FileObject> getAllRelatedFiles() {
         Collection<FileObject> files = new HashSet<FileObject>();
-        walk(files, getSourceNode());
+        walk(files, getSourceNode(), true, true);
         return files;
     }
 
-    private void walk(Collection<FileObject> files, Node node) {
+    public Collection<FileObject> getAllReferedFiles() {
+        Collection<FileObject> files = new HashSet<FileObject>();
+        walk(files, getSourceNode(), true, false);
+        return files;
+    }
+
+    public Collection<FileObject> getAllReferingFiles() {
+        Collection<FileObject> files = new HashSet<FileObject>();
+        walk(files, getSourceNode(), false, true);
+        return files;
+    }
+
+    private void walk(Collection<FileObject> files, Node node, boolean refered, boolean refering) {
         if(files.add(node.getFile())) {
-            for(Node n : node.refered) {
-                walk(files, n);
+            if(refered) {
+                for(Node n : node.refered) {
+                    walk(files, n, refered, refering);
+                }
             }
-            for(Node n : node.refering) {
-                walk(files, n);
+            if(refering) {
+                for(Node n : node.refering) {
+                    walk(files, n, refered, refering);
+                }
             }
         }
     }

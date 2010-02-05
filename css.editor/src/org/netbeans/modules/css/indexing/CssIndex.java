@@ -83,16 +83,94 @@ public class CssIndex {
         this.querySupport = QuerySupport.forRoots(CssIndexer.Factory.NAME, CssIndexer.Factory.VERSION, sourceRoots.toArray(new FileObject[]{}));
     }
 
+    /**
+     *
+     * @param id
+     * @return collection of files defining exactly the given element
+     */
     public Collection<FileObject> findIds(String id) {
         return find(CssIndexer.IDS_KEY, id);
     }
 
+    /**
+     *
+     * @param id
+     * @return collection of files defining exactly the given element
+     */
     public Collection<FileObject> findClasses(String clazz) {
         return find(CssIndexer.CLASSES_KEY, clazz);
     }
 
+    /**
+     *
+     * @param id
+     * @return collection of files defining exactly the given element
+     */
     public Collection<FileObject> findHtmlElement(String htmlElement) {
         return find(CssIndexer.HTML_ELEMENTS_KEY, htmlElement);
+    }
+
+    /**
+     *
+     * @param prefix
+     * @return map of fileobject to collection of classes defined in the file starting with prefix
+     */
+    public Map<FileObject, Collection<String>> findClassesByPrefix(String prefix) {
+        return findByPrefix(CssIndexer.CLASSES_KEY, prefix);
+    }
+
+    /**
+     *
+     * @param prefix
+     * @return map of fileobject to collection of ids defined in the file starting with prefix
+     */
+    public Map<FileObject, Collection<String>> findIdsByPrefix(String prefix) {
+        return findByPrefix(CssIndexer.IDS_KEY, prefix);
+    }
+    
+    public Map<FileObject, Collection<String>> findByPrefix(String keyName, String prefix) {
+        Map<FileObject, Collection<String>> map = new HashMap<FileObject, Collection<String>>();
+        try {
+            Collection<? extends IndexResult> results;
+            if(prefix.length() == 0) {
+                results = results = querySupport.query(keyName, "", QuerySupport.Kind.PREFIX, keyName);
+            } else {
+                String searchExpression = ".*("+prefix+").*"; //NOI18N
+                results = querySupport.query(keyName, searchExpression, QuerySupport.Kind.REGEXP, keyName);
+            }
+            for (IndexResult result : results) {
+                Collection<String> elements = decodeListValue(result.getValue(keyName));
+                for(String e : elements) {
+                    if(e.startsWith(prefix)) {
+                        Collection<String> col = map.get(result.getFile());
+                        if(col == null) {
+                            col = new LinkedList<String>();
+                            map.put(result.getFile(), col);
+                        }
+                        col.add(e);
+                    }
+                }
+
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return map;
+    }
+
+    public Collection<FileObject> findAll(String keyName) {
+        try {
+            Collection<FileObject> matchedFiles = new LinkedList<FileObject>();
+            Collection<? extends IndexResult> results = querySupport.query(keyName, "", QuerySupport.Kind.PREFIX, keyName);
+            for (IndexResult result : results) {
+                matchedFiles.add(result.getFile());
+            }
+            return matchedFiles;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return Collections.emptyList();
     }
 
     /**
