@@ -425,6 +425,7 @@ public final class DefaultProjectOperationsImplementation {
             for (MoveOperationImplementation o : operations) {
                 o.notifyMoved(project, projectDirectoryFile, nueName);
             }
+            ProjectManager.getDefault().saveProject(project);
             ProjectManager.getDefault().saveProject(nue);
             open(nue, wasMain);
             handle.progress(++currentWorkDone);
