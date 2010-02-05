@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.wizards;
+package org.netbeans.modules.cnd.makeproject.api;
 
 import java.util.List;
 import org.netbeans.api.project.Project;
@@ -47,34 +47,34 @@ import org.openide.util.Lookup;
  *
  * @author Alexander Simon
  */
-public abstract class ValidateInstrumentationProvider {
+public abstract class ValidateStepProvider {
 
     private static Default DEFAULT = new Default();
 
-    public interface ValidateInstrumentation {
+    public interface ValidateStep {
         public abstract String getID();
         public abstract List<String> validate(Project makeProject, String step, List<String> tailSteps);
     }
 
-    public abstract ValidateInstrumentation getValidator();
+    public abstract ValidateStep getValidator();
 
-    public static ValidateInstrumentation getValidator(String id) {
+    public static ValidateStep getValidator(String id) {
         return DEFAULT.getValidator(id);
     }
 
-    protected ValidateInstrumentationProvider() {
+    protected ValidateStepProvider() {
     }
 
     private static final class Default {
-        private final Lookup.Result<ValidateInstrumentationProvider> res;
+        private final Lookup.Result<ValidateStepProvider> res;
 
         private Default() {
-            res = Lookup.getDefault().lookupResult(ValidateInstrumentationProvider.class);
+            res = Lookup.getDefault().lookupResult(ValidateStepProvider.class);
         }
 
-        public ValidateInstrumentation getValidator(String id) {
-            for (ValidateInstrumentationProvider provider : res.allInstances()) {
-                ValidateInstrumentation validator = provider.getValidator();
+        public ValidateStep getValidator(String id) {
+            for (ValidateStepProvider provider : res.allInstances()) {
+                ValidateStep validator = provider.getValidator();
                 if (id.equals(validator.getID())) {
                     return validator;
                 }

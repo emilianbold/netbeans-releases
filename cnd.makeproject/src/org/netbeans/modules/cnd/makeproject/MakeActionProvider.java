@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
-import org.netbeans.modules.cnd.makeproject.api.wizards.ValidateInstrumentationProvider.ValidateInstrumentation;
+import org.netbeans.modules.cnd.makeproject.api.ValidateStepProvider.ValidateStep;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import java.awt.Dialog;
 import java.awt.Frame;
@@ -102,7 +102,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerCo
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
-import org.netbeans.modules.cnd.makeproject.api.wizards.ValidateInstrumentationProvider;
+import org.netbeans.modules.cnd.makeproject.api.ValidateStepProvider;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
@@ -401,7 +401,7 @@ public final class MakeActionProvider implements ActionProvider {
             for (int j = i + 1; j < targetNames.length; j++) {
                 tail.add(targetNames[j]);
             }
-            List<String> delegate = validateInstrumentation(targetName, tail);
+            List<String> delegate = validateStep(targetName, tail);
             if (delegate != null) {
                 for(String target : delegate) {
                     if (!addTarget(target, actionEvents, pd, conf, context, cancelled, validated)) {
@@ -959,8 +959,8 @@ public final class MakeActionProvider implements ActionProvider {
         return cmd;
     }
 
-    private List<String> validateInstrumentation(String id, List<String> tailSteps){
-        ValidateInstrumentation validator = ValidateInstrumentationProvider.getValidator(id);
+    private List<String> validateStep(String id, List<String> tailSteps){
+        ValidateStep validator = ValidateStepProvider.getValidator(id);
         if (validator == null) {
             return null;
         }
