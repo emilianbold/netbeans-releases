@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.discovery.projectimport;
 
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PrefefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
@@ -55,41 +56,48 @@ import org.openide.windows.InputOutput;
 @ServiceProvider(service=ProjectActionHandlerFactory.class, position=3000)
 public class ReconfigureActionHandlerFactory implements ProjectActionHandlerFactory {
 
+    @Override
     public boolean canHandle(Type type, Configuration configuration) {
-        switch (type) {
-            case CONFIGURE: 
-                return true;
-            default:
-                return false;
+        if (type == PrefefinedType.CONFIGURE) {
+            return true;
+        } else {
+            return false;
         }
     }
 
+    @Override
     public ProjectActionHandler createHandler() {
         return new ProjectActionHandler() {
             private ProjectActionEvent pae;
             private ReconfigureProject reconfigure;
 
+            @Override
             public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
                 this.pae = pae;
                 reconfigure = new ReconfigureProject(pae.getProject());
             }
 
+            @Override
             public void execute(InputOutput io) {
                 reconfigure.reconfigure("-g", "-g", "", io); // NOI18N
             }
 
+            @Override
             public boolean canCancel() {
                 return true;
             }
 
+            @Override
             public void cancel() {
                 reconfigure.cancel();
             }
 
+            @Override
             public void addExecutionListener(ExecutionListener l) {
                 reconfigure.addExecutionListener(l);
             }
 
+            @Override
             public void removeExecutionListener(ExecutionListener l) {
                 reconfigure.removeExecutionListener(l);
             }

@@ -109,7 +109,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         this.executable = testapp_dir + '/' + executable;
         project_dir = new File(testapp_dir, testproj).getAbsolutePath();
         conf = new TestConfiguration(args);
-        pae = new ProjectActionEvent(project, ProjectActionEvent.Type.DEBUG_STEPINTO, testapp, executable, conf, null, false);
+        pae = new ProjectActionEvent(project, ProjectActionEvent.PrefefinedType.DEBUG_STEPINTO, executable, conf, null, false);
         Tool tool = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets().get(0).getTool(PredefinedToolKind.DebuggerTool);
         ToolchainProxy.setToolPath(tool, "/opt/csw/bin/gdb");
         dm.startDebugging(DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID,
@@ -288,16 +288,18 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
 	}
     }
 
+    @Override
     public <T> List<? extends T> lookup(String folder, Class<T> service) {
         return dm.lookup(folder, service);
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public <T> T lookupFirst(String folder, Class<T> service) {
         if (service == ProjectActionEvent.class) {
             if (pae == null) {
                 conf = new TestConfiguration("");
-                pae = new ProjectActionEvent(project, ProjectActionEvent.Type.DEBUG_STEPINTO, testapp, executable, null, null, false);
+                pae = new ProjectActionEvent(project, ProjectActionEvent.PrefefinedType.DEBUG_STEPINTO, executable, null, null, false);
             }
             return (T) pae;
         } else {
@@ -305,7 +307,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         }
     }
 
-    class TestConfiguration extends MakeConfiguration {
+    private class TestConfiguration extends MakeConfiguration {
         public TestConfiguration(String args) {
             super(project_dir, testproj, MakeConfiguration.TYPE_APPLICATION, HostInfoUtils.LOCALHOST);
             RunProfile profile = getProfile();
@@ -321,6 +323,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
             this.lock = lock;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             synchronized (lock) {
                 lock.notifyAll();
@@ -329,6 +332,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
     }
 
     private class StackListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             synchronized (BP_WAIT_LOCK) {
                 BP_WAIT_LOCK.notifyAll();

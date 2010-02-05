@@ -37,9 +37,8 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.wizards;
+package org.netbeans.modules.cnd.makeproject.api;
 
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.openide.util.Lookup;
@@ -48,40 +47,39 @@ import org.openide.util.Lookup;
  *
  * @author Alexander Simon
  */
-public abstract class ValidateInstrumentationProvider {
+public abstract class StepControllerProvider {
 
-    private static ValidateInstrumentationProvider DEFAULT = new Default();
+    private static final Manager MANAGER = new Manager();
 
-    public abstract List<String> validate(Project makeProject);
-
-    protected ValidateInstrumentationProvider() {
+    public interface StepController {
+        public abstract String getID();
+        public abstract List<String> validate(Project makeProject, String step, List<String> tailSteps);
     }
 
-    public static ValidateInstrumentationProvider getDefault() {
-        return DEFAULT;
+    public abstract StepController getController();
+
+    public static StepController getController(String id) {
+        return MANAGER.getValidator(id);
     }
 
-    private static final class Default extends ValidateInstrumentationProvider {
-        private final Lookup.Result<ValidateInstrumentationProvider> res;
+    protected StepControllerProvider() {
+    }
 
-        private Default() {
-            res = Lookup.getDefault().lookupResult(ValidateInstrumentationProvider.class);
+    private static final class Manager {
+        private final Lookup.Result<StepControllerProvider> res;
+
+        private Manager() {
+            res = Lookup.getDefault().lookupResult(StepControllerProvider.class);
         }
 
-        private ValidateInstrumentationProvider getService(){
-            for (ValidateInstrumentationProvider validator : res.allInstances()) {
-                return validator;
+        public StepController getValidator(String id) {
+            for (StepControllerProvider provider : res.allInstances()) {
+                StepController validator = provider.getController();
+                if (id.equals(validator.getID())) {
+                    return validator;
+                }
             }
             return null;
-        }
-
-        @Override
-        public List<String> validate(Project makeProject) {
-            ValidateInstrumentationProvider validator = getService();
-            if (validator != null) {
-                return validator.validate(makeProject);
-            }
-            return Collections.<String>emptyList();
         }
     }
 }

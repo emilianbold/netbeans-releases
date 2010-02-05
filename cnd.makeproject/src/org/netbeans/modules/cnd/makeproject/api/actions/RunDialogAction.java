@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PrefefinedType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDescriptor;
@@ -77,10 +78,12 @@ public class RunDialogAction extends NodeAction {
         }
     }
 
+    @Override
     public String getName() {
         return getString("RUN_COMMAND"); // NOI18N
     }
 
+    @Override
     protected void performAction(final Node[] activatedNodes) {
         String path = null;
         if (activatedNodes != null && activatedNodes.length == 1) {
@@ -105,6 +108,7 @@ public class RunDialogAction extends NodeAction {
         return mime;
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes == null || activatedNodes.length != 1) {
             return false;
@@ -148,8 +152,7 @@ public class RunDialogAction extends NodeAction {
                 path = IpeUtils.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                         project,
-                        ProjectActionEvent.Type.RUN,
-                        IpeUtils.getBaseName(path) + " (run)", // NOI18N
+                        PrefefinedType.RUN,
                         path, conf,
                         profile,
                         false);
@@ -158,6 +161,7 @@ public class RunDialogAction extends NodeAction {
         }
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(RunDialogAction.class); // FIXUP ???
     }
