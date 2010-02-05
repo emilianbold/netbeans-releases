@@ -38,13 +38,19 @@
  */
 package org.netbeans.modules.nativeexecution.api;
 
-import org.netbeans.modules.nativeexecution.spi.ProcessInfoProvider;
 
 /**
  *
  * @author ak119685
  */
-public interface ProcessInfoProviderFactory {
-
-    public ProcessInfoProvider getProvider(ExecutionEnvironment env, int pid);
+public interface ProcessInfoProvider {
+    /**
+     * Returns information about the process (see ProcessInfo);
+     * This method may *block* current thread for some time
+     *
+     * May return null
+     * 
+     * @return ProcessInfo or null if no info is available.
+     */
+    public ProcessInfo getProcessInfo();
 }
