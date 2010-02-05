@@ -112,8 +112,9 @@ public abstract class PhpUnit extends PhpProgram {
 
     // suite file
     public static final File SUITE;
+    public static final String SUITE_NAME = "NetBeansSuite"; // NOI18N
     public static final String SUITE_RUN = "run=%s"; // NOI18N
-    private static final String SUITE_REL_PATH = "phpunit/NetBeansSuite.php"; // NOI18N
+    private static final String SUITE_REL_PATH = "phpunit/" + SUITE_NAME + ".php"; // NOI18N
 
     // php props
     public static final char DIRECTORY_SEPARATOR = '/'; // NOI18N
