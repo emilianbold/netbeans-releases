@@ -63,7 +63,7 @@ public class DefaultProjectActionHandlerFactory implements ProjectActionHandlerF
             type == PrefefinedType.DEBUG_STEPINTO) {
             return false;
         } else {
-            return true;
+            return type instanceof PrefefinedType;
         }
     }
 

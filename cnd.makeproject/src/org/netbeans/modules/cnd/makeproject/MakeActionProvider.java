@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
-import org.netbeans.modules.cnd.makeproject.api.ValidateStepProvider.ValidateStep;
+import org.netbeans.modules.cnd.makeproject.api.StepControllerProvider.StepController;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import java.awt.Dialog;
 import java.awt.Frame;
@@ -102,7 +102,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerCo
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
-import org.netbeans.modules.cnd.makeproject.api.ValidateStepProvider;
+import org.netbeans.modules.cnd.makeproject.api.StepControllerProvider;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
@@ -960,7 +960,7 @@ public final class MakeActionProvider implements ActionProvider {
     }
 
     private List<String> validateStep(String id, List<String> tailSteps){
-        ValidateStep validator = ValidateStepProvider.getValidator(id);
+        StepController validator = StepControllerProvider.getController(id);
         if (validator == null) {
             return null;
         }

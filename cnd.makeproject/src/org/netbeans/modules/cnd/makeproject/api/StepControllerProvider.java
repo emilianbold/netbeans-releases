@@ -47,34 +47,34 @@ import org.openide.util.Lookup;
  *
  * @author Alexander Simon
  */
-public abstract class ValidateStepProvider {
+public abstract class StepControllerProvider {
 
-    private static Default DEFAULT = new Default();
+    private static final Manager MANAGER = new Manager();
 
-    public interface ValidateStep {
+    public interface StepController {
         public abstract String getID();
         public abstract List<String> validate(Project makeProject, String step, List<String> tailSteps);
     }
 
-    public abstract ValidateStep getValidator();
+    public abstract StepController getController();
 
-    public static ValidateStep getValidator(String id) {
-        return DEFAULT.getValidator(id);
+    public static StepController getController(String id) {
+        return MANAGER.getValidator(id);
     }
 
-    protected ValidateStepProvider() {
+    protected StepControllerProvider() {
     }
 
-    private static final class Default {
-        private final Lookup.Result<ValidateStepProvider> res;
+    private static final class Manager {
+        private final Lookup.Result<StepControllerProvider> res;
 
-        private Default() {
-            res = Lookup.getDefault().lookupResult(ValidateStepProvider.class);
+        private Manager() {
+            res = Lookup.getDefault().lookupResult(StepControllerProvider.class);
         }
 
-        public ValidateStep getValidator(String id) {
-            for (ValidateStepProvider provider : res.allInstances()) {
-                ValidateStep validator = provider.getValidator();
+        public StepController getValidator(String id) {
+            for (StepControllerProvider provider : res.allInstances()) {
+                StepController validator = provider.getController();
                 if (id.equals(validator.getID())) {
                     return validator;
                 }
