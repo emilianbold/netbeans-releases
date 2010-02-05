@@ -131,10 +131,6 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
                 DependenciesGraph deps = index.getDependencies(context.getFileObject());
 
-                //TODO: correct the dependecies graph if any of the involved files
-                //is opened in editor and marked as modified. There could be
-                //an unsaved change modifying the dependencies
-
                 //filter out those files which have no relation with the current file.
                 //note: the list of involved files also contains the currently edited file.
                 List<FileObject> involvedFiles = new LinkedList<FileObject>(files);

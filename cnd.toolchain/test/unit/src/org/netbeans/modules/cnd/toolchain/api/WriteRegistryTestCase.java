@@ -49,7 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 
 
 /**

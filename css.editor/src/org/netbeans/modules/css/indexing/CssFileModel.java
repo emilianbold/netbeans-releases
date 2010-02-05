@@ -73,35 +73,37 @@ public class CssFileModel {
     //private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*[\\u0022]?([^\\u0022]*)[\\u0022]?\\s*\\)"); //NOI18N
     private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)");
     private Collection<Entry> classes, ids, htmlElements, imports;
-    private boolean isParserBased;
-    private FileObject fileObject;
-    private Snapshot snapshot;
+    private CssParserResult parserResult;
 
     public CssFileModel(Source source) throws ParseException {
-        this.fileObject = source.getFileObject();
-        isParserBased = true;
         ParserManager.parse(Collections.singletonList(source), new UserTask() {
 
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 ResultIterator cssRi = Css.getResultIterator(resultIterator, Css.CSS_MIME_TYPE);
                 if (cssRi != null) {
-                    snapshot = cssRi.getSnapshot();
-                    init((CssParserResult) cssRi.getParserResult());
+                    parserResult = (CssParserResult)cssRi.getParserResult();
+                    init();
                 }
             }
         });
     }
 
     public CssFileModel(CssParserResult parserResult) {
-        fileObject = parserResult.getSnapshot().getSource().getFileObject();
-        snapshot = parserResult.getSnapshot();
-        isParserBased = true;
-        init(parserResult);
+        this.parserResult = parserResult;
+        init();
     }
 
-    public boolean isParserBased() {
-        return isParserBased;
+    public CssParserResult getParserResult() {
+        return parserResult;
+    }
+
+    public Snapshot getSnapshot() {
+        return parserResult.getSnapshot();
+    }
+
+    public FileObject getFileObject() {
+        return getSnapshot().getSource().getFileObject();
     }
 
     public Collection<Entry> getClasses() {
@@ -157,7 +159,7 @@ public class CssFileModel {
         return imports;
     }
 
-    private void init(CssParserResult parserResult) {
+    private void init() {
         SimpleNode root = parserResult.root();
         if(root != null) {
             SimpleNodeUtil.visitChildren(root, new AstVisitor());
@@ -265,16 +267,16 @@ public class CssFileModel {
     }
 
     public Entry createEntry(String name, OffsetRange range) {
-        int documentFrom = snapshot.getOriginalOffset(range.getStart());
-        int documentTo = snapshot.getOriginalOffset(range.getEnd());
+        int documentFrom = getSnapshot().getOriginalOffset(range.getStart());
+        int documentTo = getSnapshot().getOriginalOffset(range.getEnd());
 
         OffsetRange documentRange = null;
         if (documentFrom == -1 || documentTo == -1) {
             LOGGER.info("Ast offset range " + range.toString() +
-                    ", text='" + snapshot.getText().subSequence(range.getStart(), range.getEnd())+ "', "
+                    ", text='" + getSnapshot().getText().subSequence(range.getStart(), range.getEnd())+ "', "
                     + " cannot be properly mapped to source offset range: ["
                     + documentFrom + "," + documentTo + "] in file "
-                    + CssFileModel.this.fileObject.getPath()); //NOI18N
+                    + getFileObject().getPath()); //NOI18N
         } else {
             documentRange = new OffsetRange(documentFrom, documentTo);
         }
@@ -291,6 +293,10 @@ public class CssFileModel {
             this.name = name;
             this.astRange = astRange;
             this.documentRange = documentRange;
+        }
+
+        public CssFileModel getModel() {
+            return CssFileModel.this;
         }
 
         public boolean isValidInSourceDocument() {
