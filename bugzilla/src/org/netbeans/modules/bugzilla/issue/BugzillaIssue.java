@@ -40,6 +40,7 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -562,6 +563,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
             public void run() {
                 ((BugzillaIssueNode)getNode()).fireDataChanged();
                 fireDataChanged();
+                refreshViewData(false);
             }
         });
     }
@@ -795,7 +797,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                             attachmentSource,
                             attAttribute,
                             new NullProgressMonitor());
-                refresh(); // XXX to much refresh - is there no other way?
+                refresh(getID(), true); // XXX to much refresh - is there no other way?
             }
         };
         repository.getExecutor().execute(cmd);
@@ -927,7 +929,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         return refresh(getID(), false);
     }
 
-    public boolean refresh(String id, boolean cacheThisIssue) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+    private boolean refresh(String id, boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
             TaskData td = BugzillaUtil.getTaskData(repository, id);
@@ -935,13 +937,18 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                 return false;
             }
             getBugzillaRepository().getIssueCache().setIssueData(this, td); // XXX
-            if (controller != null) {
-                controller.refreshViewData();
-            }
+            refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }
         return true;
+    }
+
+    private void refreshViewData(boolean force) {
+        if (controller != null) {
+            // view might not exist yet and we won't unnecessarily create it
+            controller.refreshViewData(force);
+        }
     }
 
     /**

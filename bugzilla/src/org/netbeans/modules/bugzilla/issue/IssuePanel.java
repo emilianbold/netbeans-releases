@@ -218,15 +218,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     public void setIssue(BugzillaIssue issue) {
         if (this.issue == null) {
-            issue.addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
-                        reloadFormInAWT(false);
-                    }
-                }
-            });
-
             IssueCacheUtils.removeCacheListener(issue, cacheListener);
             IssueCacheUtils.addCacheListener(issue, cacheListener);
 
