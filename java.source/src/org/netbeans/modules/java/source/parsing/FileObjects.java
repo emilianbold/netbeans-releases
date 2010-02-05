@@ -233,10 +233,12 @@ public class FileObjects {
                     try {
                         if (write) {
                             //Create the file
-                            FileUtil.createData(root,getRelativePath());
+                            file = FileUtil.createData(root,getRelativePath());
+                        } else {
+                            //Resolve file
+                            file = URLMapper.findFileObject(path);
                         }
-                        file = URLMapper.findFileObject(path);
-                        res = super.resolveFileObject(write);
+                        res = file;
                     } catch (IOException e) {
                         //pass, return null
                     }
@@ -507,12 +509,15 @@ public class FileObjects {
         }
         
     }
-    
+
     public static String convertPackage2Folder( String packageName ) {
-        return packageName.replace( '.', '/' );
-    }    
-    
-    
+        return convertPackage2Folder(packageName, '/' );
+    }
+
+    public static String convertPackage2Folder(final String packageName, final char separatorChar) {
+        return packageName.replace( '.',separatorChar);
+    }
+
     public static String convertFolder2Package (String packageName) {
         return convertFolder2Package (packageName, '/');    //NOI18N
     }
@@ -729,15 +734,19 @@ public class FileObjects {
 
         @Override
 	public OutputStream openOutputStream() throws IOException {
+            final File parent = f.getParentFile();
+            if (!parent.exists()) {
+                parent.mkdirs();
+            }
 	    return new FileOutputStream(f);
 	}
 
         @Override
 	public Writer openWriter() throws IOException {
             if (encoding != null) {
-                return new OutputStreamWriter(new FileOutputStream(f), encoding);
+                return new OutputStreamWriter(openOutputStream(), encoding);
             } else {
-                return new OutputStreamWriter(new FileOutputStream(f));
+                return new OutputStreamWriter(openOutputStream());
             }
 	}
 
