@@ -269,6 +269,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
             public void run() {
                 ((JiraIssueNode)getNode()).fireDataChanged();
                 fireDataChanged();
+                refreshViewData(false);
             }
         });
     }
@@ -501,7 +502,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      * @param key key of the issue
      * @return true if successfully refreshed
      */
-    public boolean refresh(String key, boolean cacheThisIssue) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+    private boolean refresh(String key, boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
             TaskData td = JiraUtils.getTaskDataByKey(repository, key);
@@ -509,9 +510,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                 return false;
             }
             getRepository().getIssueCache().setIssueData(this, td); // XXX
-            if (controller != null) {
-                controller.refreshViewData();
-            }
+            refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);
         }
@@ -523,7 +522,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      * @param id id of the issue
      * @return true if successfully refreshed
      */
-    public boolean refreshById(String id) {
+    private boolean refreshById(String id, boolean afterSubmitRefresh) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
             TaskData td = JiraUtils.getTaskDataById(repository, id);
@@ -531,9 +530,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                 return false;
             }
             getRepository().getIssueCache().setIssueData(this, td);
-            if (controller != null) {
-                controller.refreshViewData();
-            }
+            refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);
         }
@@ -849,7 +846,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                 }
                 Jira.getInstance().getRepositoryConnector().getTaskAttachmentHandler().postContent(repository.getTaskRepository(),
                         task, attachmentSource, comment, attAttribute, new NullProgressMonitor());
-                refresh(); // XXX to much refresh - is there no other way?
+                refresh(getID(), true); // XXX to much refresh - is there no other way?
             }
         };
         repository.getExecutor().execute(cmd);
@@ -1306,7 +1303,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                 if (!wasNew) {
                     refresh();
                 } else {
-                    refreshById(rr[0].getTaskId());
+                    refreshById(rr[0].getTaskId(), true);
                 }
             }
         };
@@ -1390,6 +1387,13 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         return availableOperations;
     }
 
+    private void refreshViewData(boolean force) {
+        if (controller != null) {
+            // view might not exist yet and we won't unnecessarily create it
+            controller.refreshViewData(force);
+        }
+    }
+
     private class Controller extends BugtrackingController {
         private JComponent component;
         private IssuePanel issuePanel;
@@ -1409,8 +1413,6 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
             BugtrackingUtil.keepFocusedComponentVisible(scrollPane);
             issuePanel = panel;
             component = scrollPane;
-
-            refreshViewData();
         }
 
         @Override
@@ -1445,8 +1447,8 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         public void applyChanges() {
         }
 
-        private void refreshViewData() {
-            // PENDING
+        private void refreshViewData(boolean force) {
+            issuePanel.reloadFormInAWT(force);
         }
 
         @Override
