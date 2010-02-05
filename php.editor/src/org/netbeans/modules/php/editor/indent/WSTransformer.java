@@ -133,8 +133,11 @@ class WSTransformer extends DefaultTreePathVisitor {
 	    }
 	    else {
 		String text = token.text().toString();
-		if (ASSIGN_OPERATORS.contains(text)) {
-			    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundAssignOps());
+		if (".".equals(text)) {
+		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundStringConcatOps());
+		}
+		else if (ASSIGN_OPERATORS.contains(text)) {
+		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundAssignOps());
 		}
 		else if (BINARY_OPERATORS.contains(text)) {
 		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundBinaryOps());

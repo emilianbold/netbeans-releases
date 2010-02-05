@@ -566,6 +566,14 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeSwitchParen02.php", options);
     }
 
+    public void testSpacesAroundStringConcat01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceBeforeSwitchParen, true);
+	options.put(FmtOptions.spaceAroundStringConcatOps, false);
+        options.put(FmtOptions.openingBraceStyle, FmtOptions.OBRACE_SAMELINE);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundStringConcat01.php", options);
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
