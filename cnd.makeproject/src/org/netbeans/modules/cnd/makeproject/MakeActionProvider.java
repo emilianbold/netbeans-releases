@@ -53,6 +53,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -185,32 +186,27 @@ public class MakeActionProvider implements ActionProvider {
     private static final String CONFIGURE_STEP = "configure"; // NOI18N
 
     public MakeActionProvider(MakeProject project) {
-
-        commands = new HashMap<String, String[]>();
-        commands.put(COMMAND_BUILD, new String[]{SAVE_STEP, BUILD_STEP});
-        commands.put(COMMAND_BUILD_PACKAGE, new String[]{SAVE_STEP, BUILD_STEP, BUILD_PACKAGE_STEP});
-        commands.put(COMMAND_CLEAN, new String[]{SAVE_STEP, CLEAN_STEP});
-        commands.put(COMMAND_REBUILD, new String[]{SAVE_STEP, CLEAN_STEP, BUILD_STEP});
-        commands.put(COMMAND_RUN, new String[]{SAVE_STEP, REMOVE_INSTRUMENTATION_STEP, BUILD_STEP, RUN_STEP});
-        commands.put(COMMAND_DEBUG, new String[]{SAVE_STEP, REMOVE_INSTRUMENTATION_STEP, BUILD_STEP, DEBUG_STEP});
-        commands.put(COMMAND_DEBUG_STEP_INTO, new String[]{SAVE_STEP, REMOVE_INSTRUMENTATION_STEP, BUILD_STEP, DEBUG_STEPINTO_STEP});
-        commands.put(COMMAND_DEBUG_LOAD_ONLY, new String[]{SAVE_STEP, BUILD_STEP, DEBUG_LOAD_ONLY_STEP});
-        commands.put(COMMAND_RUN_SINGLE, new String[]{RUN_SINGLE_STEP});
-        commands.put(COMMAND_DEBUG_SINGLE, new String[]{DEBUG_SINGLE_STEP});
-        commands.put(COMMAND_COMPILE_SINGLE, new String[]{SAVE_STEP, COMPILE_SINGLE_STEP});
-        commands.put(COMMAND_CUSTOM_ACTION, new String[]{SAVE_STEP, BUILD_STEP, CUSTOM_ACTION_STEP});
-        commandsNoBuild = new HashMap<String, String[]>();
-        commandsNoBuild.put(COMMAND_BUILD, new String[]{SAVE_STEP, BUILD_PACKAGE_STEP});
-        commandsNoBuild.put(COMMAND_BUILD_PACKAGE, new String[]{SAVE_STEP, BUILD_STEP});
-        commandsNoBuild.put(COMMAND_CLEAN, new String[]{SAVE_STEP, CLEAN_STEP});
-        commandsNoBuild.put(COMMAND_REBUILD, new String[]{SAVE_STEP, CLEAN_STEP, BUILD_STEP});
-        commandsNoBuild.put(COMMAND_RUN, new String[]{REMOVE_INSTRUMENTATION_STEP, RUN_STEP});
-        commandsNoBuild.put(COMMAND_DEBUG, new String[]{REMOVE_INSTRUMENTATION_STEP, DEBUG_STEP});
-        commandsNoBuild.put(COMMAND_DEBUG_STEP_INTO, new String[]{REMOVE_INSTRUMENTATION_STEP, DEBUG_STEPINTO_STEP});
-        commandsNoBuild.put(COMMAND_DEBUG_LOAD_ONLY, new String[]{DEBUG_LOAD_ONLY_STEP});
-        commandsNoBuild.put(COMMAND_CUSTOM_ACTION, new String[]{SAVE_STEP, CUSTOM_ACTION_STEP});
-
         this.project = project;
+        commands = loadAcrionSteps("CND/BuildAction"); // NOI18N
+        commandsNoBuild = loadAcrionSteps("CND/NoBuildAction"); // NOI18N
+    }
+
+    private Map<String, String[]> loadAcrionSteps(String root) {
+        Map<String, String[]> res = new HashMap<String, String[]>();
+        FileObject folder = FileUtil.getConfigFile(root);
+        if (folder != null && folder.isFolder()) {
+            for (FileObject subFolder : folder.getChildren()) {
+                if (subFolder.isFolder()) {
+                    TreeMap<Integer,String> map = new TreeMap<Integer, String>();
+                    for(FileObject file : subFolder.getChildren()) {
+                        Integer position = (Integer) file.getAttribute("position"); // NOI18N
+                        map.put(position, file.getNameExt());
+                    }
+                    res.put(subFolder.getNameExt(), map.values().toArray(new String[map.size()]));
+                }
+            }
+        }
+        return res;
     }
 
     private FileObject findBuildXml() {
