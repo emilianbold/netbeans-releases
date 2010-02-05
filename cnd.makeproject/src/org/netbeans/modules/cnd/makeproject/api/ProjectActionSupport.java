@@ -157,16 +157,16 @@ public class ProjectActionSupport {
     private final class HandleEvents implements ExecutionListener {
 
         private InputOutput ioTab = null;
-        private ProjectActionEvent[] paes;
+        private final ProjectActionEvent[] paes;
         private String tabName;
         private String tabNameSeq;
-        int currentAction = 0;
+        private int currentAction = 0;
         private StopAction sa = null;
         private RerunAction ra = null;
-        List<BuildAction> additional;
+        private List<BuildAction> additional;
         private ProgressHandle progressHandle = null;
         private final Object lock = new Object();
-        private ProjectActionHandler customHandler = null;
+        private final ProjectActionHandler customHandler;
         private ProjectActionHandler currentHandler = null;
 
         public HandleEvents(ProjectActionEvent[] paes, ProjectActionHandler customHandler) {
@@ -574,7 +574,7 @@ public class ProjectActionSupport {
 
     private static final class StopAction extends AbstractAction {
 
-        HandleEvents handleEvents;
+        private HandleEvents handleEvents;
 
         public StopAction(HandleEvents handleEvents) {
             this.handleEvents = handleEvents;
@@ -598,7 +598,7 @@ public class ProjectActionSupport {
 
     private static final class RerunAction extends AbstractAction {
 
-        HandleEvents handleEvents;
+        private HandleEvents handleEvents;
 
         public RerunAction(HandleEvents handleEvents) {
             this.handleEvents = handleEvents;
