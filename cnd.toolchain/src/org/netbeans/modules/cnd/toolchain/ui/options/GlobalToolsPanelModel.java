@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
-import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelModel;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 
 /** Manage the data for the ToolsPanel */
 /*package-local*/ final class GlobalToolsPanelModel extends ToolsPanelModel {

@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.cnd.toolchain.api;
 
-import org.netbeans.modules.cnd.toolchain.spi.ToolchainScriptGenerator;
+import org.netbeans.modules.cnd.spi.toolchain.ToolchainScriptGenerator;
 import org.netbeans.junit.NbTestCase;
 
 /**

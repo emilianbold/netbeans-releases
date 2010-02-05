@@ -1508,9 +1508,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             entryFound = false;
             // put into copy array all except ourself
             for (PreprocessorStatePair pair : entryStatePairs) {
-                if (pair.pcState == FilePreprocessorConditionState.PARSING) {
+                if ((pair.pcState == FilePreprocessorConditionState.PARSING) && pair.state.equals(ppState)) {
                     assert !entryFound;
-                    assert pair.state.equals(ppState);
                     entryFound = true;
                 } else {
                     copy.add(pair);

@@ -41,6 +41,10 @@
 
 package org.netbeans.performance.languages;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
+
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
@@ -51,14 +55,27 @@ import org.netbeans.performance.languages.actions.*;
  * @author mkhramov@netbeans.org, mrkam@netbeans.org
  */
 public class ScriptingMeasureActionsTest2 {
-    public static NbTestSuite suite() {
+    public static NbTestSuite suite() throws URISyntaxException {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Actions suite");
         System.setProperty("suitename", ScriptingMeasureActionsTest2.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness Scripting Actions suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenScriptingFilesTest.class)
+        URL u = ScriptingMeasureActionsTest2.class.getProtectionDomain().getCodeSource().getLocation();
+        File f = new File(u.toURI());
+        while (f != null) {
+            File hg = new File(f, ".hg");
+            if (hg.isDirectory()) {
+                System.setProperty("versioning.unversionedFolders", f.getPath());
+                System.err.println("ignoring Hg folder: " + f);
+                break;
+            }
+            f = f.getParentFile();
+        }
+
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.emptyConfiguration().honorAutoloadEager(true)
+                .addTest(OpenScriptingFilesTest.class)
                 .addTest(TypingInScriptingEditorTest.class)
                 .addTest(ScriptingCodeCompletionInEditorTest.class)
                 .addTest(PageUpPageDownScriptingEditorTest.class)
@@ -66,7 +83,7 @@ public class ScriptingMeasureActionsTest2 {
                 .addTest(CreatePHPProjectTest.class)
                 .addTest(CreatePHPSampleProjectTest.class)     
 //      TB fixed          .addTest(CreateRubyProjectTest.class)
-                .enableModules(".*").clusters("websvccommon[0-9]|php[0-9]|ruby[0-9]|webcommon[0-9]|enterprise[0-9]").reuseUserDir(true)));
+                .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;        
     }

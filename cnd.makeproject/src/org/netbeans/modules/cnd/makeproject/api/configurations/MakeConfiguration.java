@@ -49,13 +49,13 @@ import java.util.Set;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PrefefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
@@ -833,7 +833,7 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean hasDebugger() {
-        return ProjectActionSupport.getInstance().canHandle(this, ProjectActionEvent.Type.DEBUG);
+        return ProjectActionSupport.getInstance().canHandle(this, PrefefinedType.DEBUG);
     }
 
     public String expandMacros(String val) {
