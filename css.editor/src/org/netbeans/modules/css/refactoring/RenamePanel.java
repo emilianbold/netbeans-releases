@@ -107,6 +107,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         warningLabel = new javax.swing.JLabel();
         textCheckBox = new javax.swing.JCheckBox();
         updateReferencesCheckBox = new javax.swing.JCheckBox();
+        refactorAllCheckBox = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setLayout(new java.awt.GridBagLayout());
@@ -135,7 +136,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -174,10 +175,19 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(updateReferencesCheckBox, gridBagConstraints);
+
+        refactorAllCheckBox.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(refactorAllCheckBox, org.openide.util.NbBundle.getMessage(RenamePanel.class, "refactorAllCheckBoxText")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(refactorAllCheckBox, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void updateReferencesCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateReferencesCheckBoxActionPerformed
@@ -199,6 +209,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel label;
     private javax.swing.JTextField nameField;
+    private javax.swing.JCheckBox refactorAllCheckBox;
     private javax.swing.JCheckBox textCheckBox;
     private javax.swing.JCheckBox updateReferencesCheckBox;
     private javax.swing.JLabel warningLabel;
@@ -206,6 +217,10 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
     public String getNameValue() {
         return nameField.getText();
+    }
+
+    public boolean isRefactorAllOccurances() {
+        return refactorAllCheckBox.isSelected();
     }
     
     public boolean searchJavadoc() {

@@ -113,12 +113,24 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
                         ? ElementKind.CLASS
                         : ElementKind.ATTRIBUTE;
 
-                DependenciesGraph deps = index.getDependencies(context.getFileObject());
-
-                //filter out those files which have no relation with the current file.
-                //note: the list of involved files also contains the currently edited file.
                 List<FileObject> involvedFiles = new LinkedList<FileObject>(files);
-                involvedFiles.retainAll(deps.getAllRelatedFiles());
+                DependenciesGraph deps = index.getDependencies(context.getFileObject());
+                Collection<FileObject> relatedFiles = deps.getAllRelatedFiles();
+
+                //refactor all occurances support
+                CssRefactoringExtraInfo extraInfo =
+                    lookup.lookup(CssRefactoringExtraInfo.class);
+
+                if(extraInfo == null || !extraInfo.isRefactorAll()) {
+                    //if the "refactor all occurances" checkbox hasn't been
+                    //selected the occurances must be searched only in the related files
+
+                    //filter out those files which have no relation with the current file.
+                    //note: the list of involved files also contains the currently edited file.
+                    involvedFiles.retainAll(relatedFiles);
+                    //now we have a list of files which contain the given class or id and are
+                    //related to the base file
+                }
 
                 for (FileObject file : involvedFiles) {
                     try {
@@ -137,9 +149,10 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
                         Collection<Entry> entries = element.kind() == CssParserTreeConstants.JJT_CLASS
                                 ? model.getClasses() : model.getIds();
 
+                        boolean related = relatedFiles.contains(file);
                         for (Entry entry : entries) {
                             if (entry.isValidInSourceDocument() && elementImage.equals(entry.getName())) {
-                                WhereUsedElement elem = WhereUsedElement.create(entry, kind);
+                                WhereUsedElement elem = WhereUsedElement.create(entry, kind, related);
                                 elements.add(refactoring, elem);
                             }
                         }
