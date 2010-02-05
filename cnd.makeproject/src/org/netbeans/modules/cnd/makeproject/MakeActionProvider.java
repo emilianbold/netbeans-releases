@@ -594,8 +594,9 @@ public class MakeActionProvider implements ActionProvider {
                 if (cancelled.get()) {
                     return false; // getEnv() might be costly for remote host
                 }
-                if (conf.getDevelopmentHost().getExecutionEnvironment().isLocal() && HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) {
-                    // NOI18N
+                if (conf.getDevelopmentHost().getExecutionEnvironment().isLocal() &&
+                    HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DISPLAY") == null && // NOI18N
+                    conf.getProfile().getEnvironment().getenv("DISPLAY") == null) {// NOI18N
                     // DISPLAY hasn't been set
                     if (runProfile == null) {
                         runProfile = conf.getProfile().clone(conf);
