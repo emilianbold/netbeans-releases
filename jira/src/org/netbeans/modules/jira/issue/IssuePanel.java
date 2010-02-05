@@ -974,17 +974,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     };
 
     private void attachIssueListener(final NbJiraIssue issue) {
-        issue.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getSource() != issue) {
-                    return;
-                }
-                if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
-                    reloadFormInAWT(false);
-                } 
-            }
-        });
         IssueCacheUtils.removeCacheListener(issue, cacheListener);
         IssueCacheUtils.addCacheListener(issue, cacheListener);
     }
