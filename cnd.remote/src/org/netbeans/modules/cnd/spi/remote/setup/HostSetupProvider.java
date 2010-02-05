@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.cnd.spi.remote.setup;
 
-import org.netbeans.modules.cnd.toolchain.ui.api.ToolsCacheManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**

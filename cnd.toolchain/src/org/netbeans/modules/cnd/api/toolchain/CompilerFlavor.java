@@ -37,16 +37,66 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.api;
+package org.netbeans.modules.cnd.api.toolchain;
+
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerFlavorImpl;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface ToolKind {
-    int ordinal();
+public abstract class CompilerFlavor {
 
-    String name();
+    public static CompilerFlavor getUnknown(int platform) {
+        return CompilerFlavorImpl.getUnknown(platform);
+    }
+
+    public static CompilerFlavor toFlavor(String name, int platform) {
+        return CompilerFlavorImpl.toFlavor(name, platform);
+    }
+
+    /**
+     *
+     * @param platform The Platform kind.
+     * @return The path to folder where unix-like commands are located. Defined for Windows platform.
+     */
+    public abstract String getCommandFolder(int platform);
+
+    /**
+     *
+     * @return The tool collection descriptor that loaded from xml file from folder CND/ToolChain/ in file system
+     */
+    public abstract ToolchainDescriptor getToolchainDescriptor();
+
+    /**
+     *
+     * @return True if tool chain like to GNU compilers
+     */
+    public abstract boolean isGnuCompiler();
+
+    /**
+     *
+     * @return True if tool chain like to SunStudio compilers
+     */
+    public abstract boolean isSunStudioCompiler();
+
+    /**
+     *
+     * @return True if tool chain like to Windows Cygwin compilers
+     */
+    public abstract boolean isCygwinCompiler();
+
+    /**
+     *
+     * @return True if tool chain like to Windows MinGW compilers
+     */
+    public abstract boolean isMinGWCompiler();
+
     
-    String getDisplayName();
+    protected CompilerFlavor() {
+        if (!getClass().equals(CompilerFlavorImpl.class)) {
+            throw new UnsupportedOperationException("this class can not be overriden by clients"); // NOI18N
+        }
+    }
 }

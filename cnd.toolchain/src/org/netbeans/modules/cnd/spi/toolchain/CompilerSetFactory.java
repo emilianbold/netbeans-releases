@@ -37,16 +37,16 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.spi;
+package org.netbeans.modules.cnd.spi.toolchain;
 
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetImpl;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerFlavorImpl;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolchainManagerImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;

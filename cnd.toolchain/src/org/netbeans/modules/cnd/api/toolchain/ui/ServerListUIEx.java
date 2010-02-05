@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.ui.api;
+package org.netbeans.modules.cnd.api.toolchain.ui;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;

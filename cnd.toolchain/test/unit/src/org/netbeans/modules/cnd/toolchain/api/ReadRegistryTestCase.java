@@ -40,13 +40,15 @@
  */
 package org.netbeans.modules.cnd.toolchain.api;
 
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.BaseFolder;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.BaseFolder;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolchainManagerImpl;
 
 /**

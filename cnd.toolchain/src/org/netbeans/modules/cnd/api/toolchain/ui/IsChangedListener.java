@@ -39,54 +39,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.toolchain.spi;
+package org.netbeans.modules.cnd.api.toolchain.ui;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.APIAccessor;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Lookup;
-
-/**
- *
- * @author gordonp
- */
-public abstract class CompilerProvider {
-    private static final CompilerProvider INSTANCE = new Default();
-    
-    public abstract Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path);
-
-    protected CompilerProvider() {
-    }
-
+public interface IsChangedListener {
     /**
-     * Static method to obtain the provider.
-     * @return the provider
+     * Returns true if something has changed
      */
-    public static CompilerProvider getInstance() {
-        return INSTANCE;
-    }
-
-    //
-    // Implementation of the default provider
-    //
-    private static final class Default extends CompilerProvider {
-        private final Lookup.Result<CompilerProvider> res;
-
-        private Default() {
-            res = Lookup.getDefault().lookupResult(CompilerProvider.class);
-        }
-
-        @Override
-        public Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
-            for (CompilerProvider resolver : res.allInstances()) {
-                Tool out = resolver.createCompiler(env, flavor, kind, name, displayName, path);
-                if (out != null) {
-                    return out;
-                }
-            }
-            return APIAccessor.get().createTool(env, flavor, kind, name, displayName, path);
-        }
-    }
+    public boolean isChanged();
 }

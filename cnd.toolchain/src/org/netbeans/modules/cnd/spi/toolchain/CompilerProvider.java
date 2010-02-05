@@ -38,43 +38,55 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.toolchain.api;
 
-import org.openide.util.NbBundle;
+package org.netbeans.modules.cnd.spi.toolchain;
 
-public enum PredefinedToolKind implements ToolKind {
-    CCompiler, //0
-    CCCompiler, //1
-    FortranCompiler, //2
-    CustomTool, //3
-    Assembler, //4
-    MakeTool, //5
-    DebuggerTool, //6
-    QMakeTool, //7
-    CMakeTool, //8
-    UnknownTool; //9
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.APIAccessor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.Lookup;
+
+/**
+ *
+ * @author gordonp
+ */
+public abstract class CompilerProvider {
+    private static final CompilerProvider INSTANCE = new Default();
     
-    @Override
-    public String getDisplayName(){
-        return NbBundle.getBundle(PredefinedToolKind.class).getString(name());
+    public abstract Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path);
+
+    protected CompilerProvider() {
     }
 
-    public static PredefinedToolKind getTool(int ordinal){
-        for (PredefinedToolKind tool : PredefinedToolKind.values()){
-            if (tool.ordinal() == ordinal) {
-                return tool;
-            }
+    /**
+     * Static method to obtain the provider.
+     * @return the provider
+     */
+    public static CompilerProvider getInstance() {
+        return INSTANCE;
+    }
+
+    //
+    // Implementation of the default provider
+    //
+    private static final class Default extends CompilerProvider {
+        private final Lookup.Result<CompilerProvider> res;
+
+        private Default() {
+            res = Lookup.getDefault().lookupResult(CompilerProvider.class);
         }
-        return UnknownTool;
-    }
 
-    public static PredefinedToolKind getTool(String name){
-        for (PredefinedToolKind tool : PredefinedToolKind.values()){
-            if (tool.getDisplayName().equals(name)) {
-                return tool;
+        @Override
+        public Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+            for (CompilerProvider resolver : res.allInstances()) {
+                Tool out = resolver.createCompiler(env, flavor, kind, name, displayName, path);
+                if (out != null) {
+                    return out;
+                }
             }
+            return APIAccessor.get().createTool(env, flavor, kind, name, displayName, path);
         }
-        return UnknownTool;
     }
-
 }

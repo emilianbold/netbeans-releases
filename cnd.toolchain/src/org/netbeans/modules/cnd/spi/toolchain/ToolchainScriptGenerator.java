@@ -37,14 +37,14 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.spi;
+package org.netbeans.modules.cnd.spi.toolchain;
 
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolchainManagerImpl;
 import org.openide.util.NbBundle;

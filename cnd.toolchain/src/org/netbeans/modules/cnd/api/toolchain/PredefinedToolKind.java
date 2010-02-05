@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,45 +37,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.toolchain.ui.api;
+package org.netbeans.modules.cnd.api.toolchain;
 
-import java.util.Collection;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManagerImpl;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.NbBundle;
 
-/**
- *
- * @author Sergey Grinev
- */
-public abstract class ToolsCacheManager {
-
-    public abstract ServerUpdateCache getServerUpdateCache();
-
-    public abstract void setHosts(Collection<? extends ServerRecord> list);
-
-    public abstract CompilerSetManager getCompilerSetManagerCopy(ExecutionEnvironment env, boolean initialize);
-
-    public abstract void addCompilerSetManager(CompilerSetManager newCsm);
-
-    public abstract void setDefaultRecord(ServerRecord defaultRecord);
-
-    public abstract void applyChanges();
-
-    public static ToolsCacheManager get(){
-        return new ToolsCacheManagerImpl();
+public enum PredefinedToolKind implements ToolKind {
+    CCompiler, //0
+    CCCompiler, //1
+    FortranCompiler, //2
+    CustomTool, //3
+    Assembler, //4
+    MakeTool, //5
+    DebuggerTool, //6
+    QMakeTool, //7
+    CMakeTool, //8
+    UnknownTool; //9
+    
+    @Override
+    public String getDisplayName(){
+        return NbBundle.getBundle(PredefinedToolKind.class).getString(name());
     }
 
-    protected ToolsCacheManager() {
-        if (!getClass().equals(ToolsCacheManagerImpl.class)) {
-            throw new UnsupportedOperationException("this class can not be overriden by clients"); // NOI18N
+    public static PredefinedToolKind getTool(int ordinal){
+        for (PredefinedToolKind tool : PredefinedToolKind.values()){
+            if (tool.ordinal() == ordinal) {
+                return tool;
+            }
         }
+        return UnknownTool;
     }
+
+    public static PredefinedToolKind getTool(String name){
+        for (PredefinedToolKind tool : PredefinedToolKind.values()){
+            if (tool.getDisplayName().equals(name)) {
+                return tool;
+            }
+        }
+        return UnknownTool;
+    }
+
 }
