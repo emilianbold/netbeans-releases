@@ -209,14 +209,17 @@ public class SourcesPanel extends JPanel {
             super (name, new String[0]);
         }
     
+        @Override
         public boolean contains(Charset c) {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public CharsetDecoder newDecoder() {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public CharsetEncoder newEncoder() {
             throw new UnsupportedOperationException();
         }
