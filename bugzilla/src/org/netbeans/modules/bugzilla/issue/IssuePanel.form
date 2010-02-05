@@ -62,7 +62,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="headerLabel" max="32767" attributes="0"/>
+                      <Component id="headerField" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="tasklistButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -231,7 +231,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="headerLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="headerField" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="separatorLabel2" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="tasklistButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="separatorLabel" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -808,7 +808,15 @@
     </Container>
     <Component class="javax.swing.JSeparator" name="separator">
     </Component>
-    <Component class="javax.swing.JLabel" name="headerLabel">
+    <Component class="javax.swing.JTextField" name="headerField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+          </Border>
+        </Property>
+      </Properties>
     </Component>
     <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="refreshButton">
       <Properties>
