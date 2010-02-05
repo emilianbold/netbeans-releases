@@ -1522,9 +1522,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 switch (comparisonResult) {
                     case BETTER:
                         CndUtils.assertTrueInConsole(statesToKeep.isEmpty(), "states to keep must be empty 3"); // NOI18N
-                        entry.setState(ppState, pcState);
+                        entry.setStates(statesToKeep, new PreprocessorStatePair(ppState, pcState));
                         break;
                     case SAME:
+                        assert !statesToKeep.isEmpty();
+                        entry.setStates(statesToKeep, new PreprocessorStatePair(ppState, pcState));
+                        break;
                     case WORSE:
                         assert !copy.isEmpty();
                         entry.setStates(copy, null);
@@ -1535,8 +1538,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             } else {
                 // we already were removed, because our ppState was worse
-                // no reason to check pcState
-                entryFound = false;
+                // or
+                // header was parsed with correct context =>
+                // no reason to check pcState and replace FilePreprocessorConditionState.PARSING
+                // which is not present
             }
         }
         if (entryFound) {

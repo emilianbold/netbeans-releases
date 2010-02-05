@@ -76,7 +76,7 @@ public class NewTestAction extends NodeAction {
         }
 
         NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(getString("TestName"), getString("NewTest"));
-        dlg.setInputText(folder.suggestedTestFolderName());
+        dlg.setInputText(folder.suggestedNewTestFolderName());
         String newname = null;
 
         if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dlg))) {
@@ -86,7 +86,7 @@ public class NewTestAction extends NodeAction {
             return;
         }
 
-	Folder newFolder = folder.addNewFolder(true, Folder.Kind.TEST);
+	Folder newFolder = folder.addNewFolder(false, Folder.Kind.TEST);
         newFolder.setDisplayName(newname);
 	MakeLogicalViewProvider.setVisible(project, newFolder);
     }
