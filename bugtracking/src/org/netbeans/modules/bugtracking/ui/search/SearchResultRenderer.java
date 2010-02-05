@@ -48,6 +48,7 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ui.search.PopupItem.IssueItem;
+import org.netbeans.modules.bugtracking.util.TextUtils;
 
 /**
  * ListCellRenderer for SearchResults
@@ -59,7 +60,7 @@ class SearchResultRenderer extends JLabel implements ListCellRenderer {
     private QuickSearchComboBar combo;
     private JPanel rendererComponent;
     private JPanel dividerLine;
-    private JLabel resultLabel; 
+    private JLabel resultLabel;
 
     private JPanel itemPanel;
 
@@ -124,6 +125,4 @@ class SearchResultRenderer extends JLabel implements ListCellRenderer {
         dividerLine.setBackground(QuickSearchComboBar.getPopupBorderColor());
         dividerLine.setPreferredSize(new Dimension(dividerLine.getPreferredSize().width, 1));
     }
-
-
 }
