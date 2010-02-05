@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
  */
 public class CndUtils {
 
-    private static Logger LOG = Logger.getLogger("cnd.logger"); // NOI18N
+    private static final Logger LOG = Logger.getLogger("cnd.logger"); // NOI18N
 
     private static boolean releaseMode;
 
@@ -130,18 +130,17 @@ public class CndUtils {
         return getNumberCndWorkerThreads();
     }
 
-    private final static String includeFileNamePrefix;
-    static {
+    private static final class FileNamePrefixAccessor {
         // use always Unix path, because java.io.File on windows understands it well
-        includeFileNamePrefix = System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
+        private static final String path = System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
     }
 
     public static String getIncludeFileBase() {
-        return includeFileNamePrefix;
+        return FileNamePrefixAccessor.path;
     }
 
     public static String getIncludeFilePrefix(String hostid) {
-        return includeFileNamePrefix + hostid + "/"; //NOI18N
+        return getIncludeFileBase() + hostid + "/"; //NOI18N
     }
     
     public static void assertFalse(boolean value) {
@@ -166,11 +165,11 @@ public class CndUtils {
         }
     }
 
-    public static final void assertNonUiThread() {
+    public static void assertNonUiThread() {
         assertFalse(SwingUtilities.isEventDispatchThread(), "Should not be called from UI thread"); //NOI18N
     }
 
-    public static final void assertUiThread() {
+    public static void assertUiThread() {
         assertTrue(SwingUtilities.isEventDispatchThread(), "Should be called only from UI thread"); //NOI18N
     }
 

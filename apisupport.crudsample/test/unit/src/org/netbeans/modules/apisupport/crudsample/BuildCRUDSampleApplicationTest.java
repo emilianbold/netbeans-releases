@@ -57,7 +57,6 @@ import org.openide.DialogDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 
 /**
  * Tests crudsample sample.
@@ -134,16 +133,12 @@ public class BuildCRUDSampleApplicationTest extends TestBase {
         ExecutorTask et = ActionUtils.runTarget(buildScript, targets, props);
         et.waitFinished();
         System.out.println("-----------------------------------------");
-        // ant task executor returns 0 on win and jdk 1.5.0_xxx
-        boolean win15 = Utilities.isWindows() && System.getProperty("java.version").startsWith("1.5.0_");
-
-        return (win15) ? 0 : et.result();
+        return et.result();
     }
 
     /**
      * Invokes build-jnlp target on crudsample
      */
-    /* XXX jrechtacek's changes broke this again:
     public void testBuildJNLP() throws Exception {
         int ret = runAntTargetsOncrudsample(new String[] {"build-jnlp"});
         assertEquals("build-jnlp ant target should return zero - build successful", 0 , ret);
@@ -151,7 +146,6 @@ public class BuildCRUDSampleApplicationTest extends TestBase {
         File warFile = new File(dist,"crud_sample_application.war");
         assertTrue("crud_sample_application.war file should be in dist folder", warFile.exists());
     }
-     */
 
     /**
      * Invokes build-zip target on crudsample

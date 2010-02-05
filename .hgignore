@@ -26,8 +26,6 @@ derby\.log
 ^cnd.apt/src/org/netbeans/modules/cnd/apt/impl/support/generated$
 ^cnd.apt/src/org/netbeans/modules/cnd/apt/support/APTTokenTypes\.java$
 ^asm/src/org/netbeans/modules/asm/base/generated$
-^apisupport.crudsample/crud-sample-application/toplink-essentials-library/modules$
-^apisupport.crudsample/crud-sample-application/toplink-essentials-library/release$
 ^cnd.asm/src/org/netbeans/modules/cnd/asm/base/generated$
 ^cnd.modelimpl/src/org/netbeans/modules/cnd/modelimpl/parser/generated$
 ^cnd.modelimpl/src/org/netbeans/modules/cnd/modelimpl/impl/services/evaluator/parser/generated$

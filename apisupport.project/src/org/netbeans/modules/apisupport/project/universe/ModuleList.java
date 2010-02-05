@@ -451,6 +451,10 @@ public final class ModuleList {
             logCacheIgnored(MSG_FAILURE, root, null);
             LOG.log(Level.FINE, "Caught exception: ", x);
             return null;
+        } catch (LinkageError x) {
+            logCacheIgnored(MSG_FAILURE, root, null);
+            LOG.log(Level.FINE, "Caught exception: ", x);
+            return null;
         }
     }
 
