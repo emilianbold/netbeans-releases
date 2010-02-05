@@ -565,11 +565,11 @@ public class Folder implements FileChangeListener, ChangeListener {
         return folderConfiguration;
     }
 
-    public String suggestedTestFolderName() {
+    public String suggestedNewTestFolderName() {
         return suggestedName(DEFAULT_TEST_FOLDER_DISPLAY_NAME);
     }
 
-    public String suggestedFolderName() {
+    public String suggestedNewFolderName() {
         return suggestedName(DEFAULT_FOLDER_DISPLAY_NAME);
     }
     
