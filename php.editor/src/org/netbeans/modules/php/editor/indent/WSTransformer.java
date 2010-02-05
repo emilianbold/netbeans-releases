@@ -121,11 +121,11 @@ class WSTransformer extends DefaultTreePathVisitor {
             return;
         }
         
-
+	
         if (node.isCurly()){
             String openingBraceStyle = CodeStyle.get(context.document()).getOpeningBraceStyle();
             newLineReplacement = FmtOptions.OBRACE_NEWLINE.equals(openingBraceStyle)? "\n" : " "; //NOI18N
-            if (FmtOptions.OBRACE_SAMELINE.equals(openingBraceStyle) && getPath().size() > 0) {
+            if (!FmtOptions.OBRACE_NEWLINE.equals(openingBraceStyle) && getPath().size() > 0) {
                 ASTNode parent = getPath().get(0);
                 if (parent instanceof ClassDeclaration) {
                     newLineReplacement = CodeStyle.get(context.document()).spaceBeforeClassDeclLeftBrace() ? " " : ""; //NOI18N
@@ -169,10 +169,13 @@ class WSTransformer extends DefaultTreePathVisitor {
                     && tokenSequence.token().id() == PHPTokenId.PHP_CURLY_OPEN){
                 int start = tokenSequence.offset();
                 int length = 0;
-
                 if (tokenSequence.movePrevious()
                         && tokenSequence.token().id() == PHPTokenId.WHITESPACE){
                     length = tokenSequence.token().length();
+		    if (FmtOptions.OBRACE_PRESERVE.equals(openingBraceStyle)
+			    && countOfNewLines(tokenSequence.token().text()) > 0) {
+			    newLineReplacement = "\n";
+		    }
                 }
 
                 boolean precededByOpenTag = tokenSequence.token().id() == PHPTokenId.PHP_OPENTAG;
@@ -228,7 +231,6 @@ class WSTransformer extends DefaultTreePathVisitor {
                                 && TokenUtilities.equals(tokenSequence.token().text(), ","))){
                             Replacement postClose = new Replacement(tokenSequence.offset() +
                                     tokenSequence.token().length(), 0, "\n"); //NOI18N
-
                             replacements.add(postClose);
                         }
                     }
@@ -524,7 +526,7 @@ class WSTransformer extends DefaultTreePathVisitor {
             if ((afterTokens.contains(token.id())
                     || token.id() == PHPTokenId.PHP_COMMENT_END) && space) {
                 replacements.add(new Replacement(ts.offset() + token.length(), 0, " ")); //NOI18N
-            } else if (token.id() == PHPTokenId.WHITESPACE && !hasNewLine(token.text())) {
+            } else if (token.id() == PHPTokenId.WHITESPACE && countOfNewLines(token.text()) == 0) {
                 if (space) {
                     if (token.text().length() > 1) {
                         replacements.add(new Replacement(ts.offset() + token.length(), token.length(), " ")); //NOI18N
@@ -889,13 +891,19 @@ class WSTransformer extends DefaultTreePathVisitor {
         return LexUtilities.getPHPTokenSequence(context.document(), offset);
     }
 
-    private boolean hasNewLine(CharSequence chs) {
+    /**
+     *
+     * @param chs
+     * @return number of new lines in the input
+     */
+    private int countOfNewLines(CharSequence chs) {
+	int count = 0;
         for (int i = 0; i < chs.length(); i++) {
             if (chs.charAt(i) == '\n') { // NOI18N
-                return true;
+                count ++;
             }
         }
-        return false;
+        return count;
     }
 
     static class Replacement implements Comparable<Replacement>{

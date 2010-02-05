@@ -246,8 +246,18 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/blankLines/Class01.php", options);
     }
 
+    public void testBLClass02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+	options.put(FmtOptions.openingBraceStyle, FmtOptions.OBRACE_PRESERVE);
+	options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, false);
+        reformatFileContents("testfiles/formatting/blankLines/Class02.php", options);
+    }
+
     public void testBLFields01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
+	options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, true);
+	options.put(FmtOptions.openingBraceStyle, FmtOptions.OBRACE_SAMELINE);
         options.put(FmtOptions.initialIndent, 0);
         reformatFileContents("testfiles/formatting/blankLines/Fields01.php", options);
     }
@@ -460,6 +470,7 @@ public class PHPFormatterTest extends PHPTestBase {
     public void testSpacesBeforeMethodCallParen01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.spaceBeforeMethodCallParen, true);
+	options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, true);
         options.put(FmtOptions.openingBraceStyle, FmtOptions.OBRACE_PRESERVE);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeMethodCallParen01.php", options);
     }
