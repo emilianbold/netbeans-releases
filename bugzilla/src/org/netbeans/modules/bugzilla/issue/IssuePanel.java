@@ -151,11 +151,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         updateReadOnlyField(modifiedField);
         updateReadOnlyField(resolutionField);
         updateReadOnlyField(productField);
+        updateReadOnlyField(headerField);
         messagePanel.setBackground(getBackground());
         customFieldsPanelLeft.setBackground(getBackground());
         customFieldsPanelRight.setBackground(getBackground());
-        Font font = headerLabel.getFont();
-        headerLabel.setFont(font.deriveFont((float)(font.getSize()*1.7)));
+        Font font = reportedLabel.getFont();
+        headerField.setFont(font.deriveFont((float)(font.getSize()*1.7)));
         duplicateLabel.setVisible(false);
         duplicateField.setVisible(false);
         duplicateButton.setVisible(false);
@@ -222,15 +223,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     public void setIssue(BugzillaIssue issue) {
         if (this.issue == null) {
-            issue.addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
-                        reloadFormInAWT(false);
-                    }
-                }
-            });
-
             IssueCacheUtils.removeCacheListener(issue, cacheListener);
             IssueCacheUtils.addCacheListener(issue, cacheListener);
 
@@ -381,7 +373,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
         productLabel.setLabelFor(isNew ? productCombo : productField);
-        headerLabel.setVisible(!isNew);
+        headerField.setVisible(!isNew);
         statusCombo.setEnabled(!isNew);
         org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
         reportedLabel.setVisible(!isNew);
@@ -410,10 +402,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         } else {
             String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
             String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
-            headerLabel.setText(headerTxt);
-            Dimension dim = headerLabel.getPreferredSize();
-            headerLabel.setMinimumSize(new Dimension(0, dim.height));
-            headerLabel.setPreferredSize(new Dimension(0, dim.height));
+            headerField.setText(headerTxt);
+            Dimension dim = headerField.getPreferredSize();
+            headerField.setMinimumSize(new Dimension(0, dim.height));
+            headerField.setPreferredSize(new Dimension(0, dim.height));
             reloadField(force, summaryField, IssueField.SUMMARY, summaryWarning, summaryLabel);
             reloadField(force, productCombo, IssueField.PRODUCT, productWarning, productLabel);
             reloadField(force, productField, IssueField.PRODUCT, null, null);
@@ -1304,7 +1296,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         productCombo = new javax.swing.JComboBox();
         dummyCommentsPanel = new javax.swing.JPanel();
         separator = new javax.swing.JSeparator();
-        headerLabel = new javax.swing.JLabel();
+        headerField = new javax.swing.JTextField();
         refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         reloadButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         showInBrowserButton = new org.netbeans.modules.bugtracking.util.LinkButton();
@@ -1460,6 +1452,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         productCombo.addActionListener(formListener);
 
+        headerField.setEditable(false);
+        headerField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
         org.openide.awt.Mnemonics.setLocalizedText(refreshButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.text")); // NOI18N
         refreshButton.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.toolTipText")); // NOI18N
         refreshButton.addActionListener(formListener);
@@ -1539,7 +1534,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(headerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(headerField)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(tasklistButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -1686,7 +1681,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(headerLabel)
+                    .add(headerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(separatorLabel2)
                     .add(tasklistButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(separatorLabel)
@@ -1892,6 +1887,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             else if (evt.getSource() == reloadButton) {
                 IssuePanel.this.reloadButtonActionPerformed(evt);
             }
+            else if (evt.getSource() == showInBrowserButton) {
+                IssuePanel.this.showInBrowserButtonActionPerformed(evt);
+            }
             else if (evt.getSource() == tasklistButton) {
                 IssuePanel.this.tasklistButtonActionPerformed(evt);
             }
@@ -1918,9 +1916,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
             else if (evt.getSource() == assignedCombo) {
                 IssuePanel.this.assignedComboActionPerformed(evt);
-            }
-            else if (evt.getSource() == showInBrowserButton) {
-                IssuePanel.this.showInBrowserButtonActionPerformed(evt);
             }
         }
     }// </editor-fold>//GEN-END:initComponents
@@ -2404,7 +2399,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JButton duplicateButton;
     private javax.swing.JTextField duplicateField;
     private javax.swing.JLabel duplicateLabel;
-    private javax.swing.JLabel headerLabel;
+    private javax.swing.JTextField headerField;
     private javax.swing.JComboBox issueTypeCombo;
     private javax.swing.JLabel issueTypeLabel;
     private javax.swing.JLabel issueTypeWarning;

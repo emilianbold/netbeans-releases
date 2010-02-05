@@ -49,11 +49,11 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.compilers.impl.CCCCompiler.Pair;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 

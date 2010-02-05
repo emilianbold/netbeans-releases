@@ -333,5 +333,186 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
+
+    <folder name="CND">
+        <folder name="BuildAction">
+            <folder name="build">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="build_packages">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build-package">
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
+            <folder name="clean">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="clean">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="compile.single">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="compile-single">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="custom.action">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="custom-action">
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
+            <folder name="debug">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="300"/>
+                </file>
+                <file name="debug">
+                    <attr name="position" intvalue="400"/>
+                </file>
+            </folder>
+            <folder name="debug.load.only">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="debug-load-only">
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
+            <folder name="debug.single">
+                <file name="debug-single">
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
+            <folder name="debug.stepinto">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="300"/>
+                </file>
+                <file name="debug-stepinto">
+                    <attr name="position" intvalue="400"/>
+                </file>
+            </folder>
+            <folder name="rebuild">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="clean">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
+            <folder name="run">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="300"/>
+                </file>
+                <file name="run">
+                    <attr name="position" intvalue="400"/>
+                </file>
+            </folder>
+            <folder name="run.single">
+                <file name="run-single">
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
+        </folder>        <!-- BuildAction -->
+        <folder name="NoBuildAction">
+            <folder name="build">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="build_packages">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="build-package">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="clean">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="clean">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="custom.action">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="custom-action">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="debug">
+                <file name="debug">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="debug.load.only">
+                <file name="debug-load-only">
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
+            <folder name="debug.stepinto">
+                <file name="debug-stepinto">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+            <folder name="rebuild">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="clean">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
+            <folder name="run">
+                <file name="run">
+                    <attr name="position" intvalue="200"/>
+                </file>
+            </folder>
+        </folder>        <!-- NoBuildAction -->
+    </folder>       <!-- CND -->
+
 </filesystem>

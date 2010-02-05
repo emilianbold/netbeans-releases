@@ -39,11 +39,11 @@
 
 package org.netbeans.modules.cnd.toolchain.compilers.impl;
 
-import org.netbeans.modules.cnd.toolchain.spi.ToolchainScriptGenerator;
+import org.netbeans.modules.cnd.spi.toolchain.ToolchainScriptGenerator;
 import java.util.Collection;
 import java.util.HashMap;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

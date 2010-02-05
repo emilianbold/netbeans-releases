@@ -78,7 +78,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelSupport;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;

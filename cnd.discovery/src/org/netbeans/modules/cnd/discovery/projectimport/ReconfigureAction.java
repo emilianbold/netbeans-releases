@@ -43,7 +43,7 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProject.CompilerOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;

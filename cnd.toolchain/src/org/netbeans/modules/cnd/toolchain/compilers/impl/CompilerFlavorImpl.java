@@ -43,8 +43,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 
 /**
  * Recognized (and prioritized) types of compiler sets

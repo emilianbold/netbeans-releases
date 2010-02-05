@@ -39,8 +39,8 @@
 
 package org.netbeans.modules.cnd.toolchain.compilers.impl;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.spi.CompilerSetManagerEvents;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerSetManagerEvents;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**

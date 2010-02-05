@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.remote.support.RemoteConnectionSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.toolchain.spi.ToolchainScriptGenerator;
+import org.netbeans.modules.cnd.spi.toolchain.ToolchainScriptGenerator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;

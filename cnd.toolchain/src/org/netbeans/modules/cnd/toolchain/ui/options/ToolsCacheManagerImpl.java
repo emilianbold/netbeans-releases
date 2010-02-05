@@ -42,14 +42,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetImpl;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerAccessorImpl;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
-import org.netbeans.modules.cnd.toolchain.ui.api.ToolsCacheManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
