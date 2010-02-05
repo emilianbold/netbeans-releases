@@ -179,7 +179,7 @@ public class HostUpdates {
         return null;
     }
 
-    public void register(Collection<File> localFiles) {
+    private void register(Collection<File> localFiles) {
         synchronized (lock) {
             for (File file : localFiles) {
                 FileInfo info = getFileInfo(file);
