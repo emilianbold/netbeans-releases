@@ -71,9 +71,11 @@ import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramExcept
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
 import org.netbeans.modules.php.symfony.SymfonyScript;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -249,7 +251,11 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
 
     @Override
     protected File getPluginsDirectory() {
-        return new File(FileUtil.toFile(phpModule.getSourceDirectory()), "plugins"); // NOI18N
+        FileObject plugins = SymfonyPhpFrameworkProvider.locate(phpModule, "plugins", true);
+        if (plugins != null && plugins.isFolder()) {
+            return FileUtil.toFile(plugins);
+        }
+        return null;
     }
 
     private static class RedirectOutputProcessor implements InputProcessor {
