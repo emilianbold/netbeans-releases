@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.toolchain.api;
 
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -47,9 +48,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ScannerDescriptor;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ScannerPattern;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerPattern;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolchainManagerImpl;
 
 /**
