@@ -180,8 +180,11 @@ public class HtmlHintsProvider implements HintsProvider {
                     AstNode node = HtmlParserResult.getBoundAstNode(e);
                     Collection<String> missingAttrs = (Collection<String>)node.getProperty(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES);
                     assert missingAttrs != null;
-                    int insertOffset = node.startOffset() + 1 + node.name().length();
-
+                    int astOffset = node.startOffset() + 1 + node.name().length();
+                    int insertOffset = context.parserResult.getSnapshot().getOriginalOffset(astOffset);
+                    if(insertOffset == -1) {
+                        return ;
+                    }
                     StringBuffer templateText = new StringBuffer();
                     templateText.append(' ');
 
