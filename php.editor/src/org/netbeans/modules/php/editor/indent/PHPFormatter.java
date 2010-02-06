@@ -237,7 +237,7 @@ public class PHPFormatter implements Formatter {
 
     private void prettyPrint(final Context context, final ParserResult info) {
         final BaseDocument doc = (BaseDocument) context.document();
-        final String openingBraceStyle = CodeStyle.get(doc).getOpeningBraceStyle();
+//        final String openingBraceStyle = CodeStyle.get(doc).getOpeningBraceStyle();
 
 //        if (FmtOptions.OBRACE_PRESERVE.equals(openingBraceStyle)){
 //            return;
