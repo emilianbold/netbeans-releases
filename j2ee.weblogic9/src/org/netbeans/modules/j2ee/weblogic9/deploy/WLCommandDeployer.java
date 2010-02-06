@@ -95,7 +95,7 @@ public final class WLCommandDeployer {
 
     private static final String WEBLOGIC_JAR_PATH = "server/lib/weblogic.jar";
 
-    private static final int TIMEOUT = 60000;
+    private static final int TIMEOUT = 300000;
 
     private static final Pattern LIST_APPS_PATTERN = Pattern.compile("\\s+(.*)");
 
@@ -111,7 +111,19 @@ public final class WLCommandDeployer {
     }
 
     public ProgressObject deploy(Target[] target, final File file, final File plan, String host, String port) {
-        final TargetModuleID moduleId = createModuleId(target[0], file, host, port);
+        final TargetModuleID moduleId = createModuleId(new Target() {
+
+            @Override
+            public String getName() {
+                return "default";
+            }
+
+            @Override
+            public String getDescription() {
+                return "server";
+            }
+        }, file, host, port);
+
         final WLProgressObject progress = new WLProgressObject(moduleId);
 
         progress.fireProgressEvent(null, new WLDeploymentStatus(
@@ -120,6 +132,7 @@ public final class WLCommandDeployer {
 
         factory.getExecutorService().submit(new Runnable() {
 
+            @Override
             public void run() {
                 ExecutionService service = createService("-deploy", null, file.getAbsolutePath()); // NOI18N
                 Future<Integer> result = service.run();
