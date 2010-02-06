@@ -69,6 +69,7 @@ import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -204,7 +205,14 @@ public final class ClassPath {
      * @since org.netbeans.api.java/1 1.13
      */
     public static final String PROP_INCLUDES = "includes";
-    
+
+    /**
+     * The empty ClassPath.
+     * Contains no entries and never fires events.
+     * @since 1.24
+     */
+    public static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
+
     private static final Logger LOG = Logger.getLogger(ClassPath.class.getName());
     
     private static final Lookup.Result<? extends ClassPathProvider> implementations =
