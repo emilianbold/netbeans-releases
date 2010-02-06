@@ -381,13 +381,22 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      */
     public void notifyLibrariesChanged() {
         initLibraries();
-        firePropertyChange(PROP_LIBRARIES, null, libraries.clone());
     }
+
+    private static RequestProcessor libInitThread =
+            new RequestProcessor("init libs -- Hk2JavaEEPlatformImpl");
     
     private void initLibraries() {
-        lib.setName(pf.getLibraryName());
-        lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, dm.getProperties().getClasses());
-        lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, dm.getProperties().getJavadocs());
+        libInitThread.post(new Runnable() {
+
+            @Override
+            public void run() {
+                lib.setName(pf.getLibraryName());
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, dm.getProperties().getClasses());
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, dm.getProperties().getJavadocs());
+                firePropertyChange(PROP_LIBRARIES, null, libraries.clone());
+            }
+        });
     }
     
     @Override

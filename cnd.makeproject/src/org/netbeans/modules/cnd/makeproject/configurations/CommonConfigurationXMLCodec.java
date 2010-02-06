@@ -74,6 +74,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V64 - NB 6.9
+ *   Test folders: KIND_ATTR
  * V63 - NB 6.7
  *   REMOVE_INSTRUMENTATION_ELEMENT
  * V62 - NB 6.7
@@ -181,7 +183,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 62;
+    public final static int CURRENT_VERSION = 64;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -302,6 +304,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String ARCHIVERTOOL_SUPRESS_ELEMENT = "archiverSupress"; // NOI18N
     protected final static String VERSION_ATTR = "version"; // NOI18N
     protected final static String TYPE_ATTR = "type"; // NOI18N
+    protected final static String KIND_ATTR = "kind"; // NOI18N
     protected final static String NAME_ATTR = "name"; // NOI18N
     protected final static String ROOT_ATTR = "root"; // NOI18N
     protected final static String SET_ATTR = "set"; // NOI18N
@@ -518,12 +521,23 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     private void writeLogicalFolder(XMLEncoderStream xes, Folder folder) {
-        xes.elementOpen(LOGICAL_FOLDER_ELEMENT,
-                new AttrValuePair[]{
-                    new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
-                    new AttrValuePair(DISPLAY_NAME_ATTR, "" + folder.getDisplayName()), // NOI18N
-                    new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles()), // NOI18N
-                });
+        if (folder.getKind() != null) {
+            xes.elementOpen(LOGICAL_FOLDER_ELEMENT,
+                    new AttrValuePair[]{
+                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
+                        new AttrValuePair(DISPLAY_NAME_ATTR, "" + folder.getDisplayName()), // NOI18N
+                        new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles()), // NOI18N
+                        new AttrValuePair(KIND_ATTR, "" + folder.getKind()), // NOI18N
+                    });
+        }
+        else {
+            xes.elementOpen(LOGICAL_FOLDER_ELEMENT,
+                    new AttrValuePair[]{
+                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
+                        new AttrValuePair(DISPLAY_NAME_ATTR, "" + folder.getDisplayName()), // NOI18N
+                        new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles()), // NOI18N
+                    });
+        }
         // write out subfolders
         Folder[] subfolders = folder.getFoldersAsArray();
         for (int i = 0; i < subfolders.length; i++) {

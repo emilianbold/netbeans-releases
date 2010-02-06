@@ -44,6 +44,7 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ContinueTree;
@@ -1845,8 +1846,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         }
 
                         for (MethodDuplicateDescription mdd : CopyFinder.computeDuplicatesAndRemap(copy, statementsPaths, new TreePath(copy.getCompilationUnit()), parameters, new AtomicBoolean())) {
-                            int startOff = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), mdd.block.getStatements().get(mdd.dupeStart));
-                            int endOff = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), mdd.block.getStatements().get(mdd.dupeEnd));
+                            List<? extends StatementTree> parentStatements = CopyFinder.getStatements(mdd.firstLeaf);
+                            int startOff = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), parentStatements.get(mdd.dupeStart));
+                            int endOff = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), parentStatements.get(mdd.dupeEnd));
 
                             introduceBag(doc).clear();
                             introduceBag(doc).addHighlight(startOff, endOff, DUPE);
@@ -1862,7 +1864,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                             List<StatementTree> newStatements = new LinkedList<StatementTree>();
 
-                            newStatements.addAll(mdd.block.getStatements().subList(0, mdd.dupeStart));
+                            newStatements.addAll(parentStatements.subList(0, mdd.dupeStart));
 
                             //XXX:
                             List<Union2<VariableElement, TreePath>> dupeParameters = new LinkedList<Union2<VariableElement, TreePath>>();
@@ -1898,9 +1900,27 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             if (dupeInvocation != null)
                                 newStatements.add(make.ExpressionStatement(dupeInvocation));
 
-                            newStatements.addAll(mdd.block.getStatements().subList(mdd.dupeEnd + 1, mdd.block.getStatements().size()));
+                            newStatements.addAll(parentStatements.subList(mdd.dupeEnd + 1, parentStatements.size()));
 
-                            copy.rewrite(mdd.block, make.Block(newStatements, false));
+                            Tree toReplace = mdd.firstLeaf.getParentPath().getLeaf();
+                            Tree nueTree;
+
+                            switch (toReplace.getKind()) {
+                                case BLOCK:
+                                    nueTree = make.Block(newStatements, false);
+                                    break;
+                                case CASE:
+                                    nueTree = make.Case(((CaseTree) mdd.firstLeaf.getParentPath().getLeaf()).getExpression(), newStatements);
+                                    break;
+                                default:
+                                    assert parentStatements.size() == 1 : parentStatements.toString();
+                                    assert newStatements.size() == 1 : newStatements.toString();
+                                    toReplace = parentStatements.get(0);
+                                    nueTree = newStatements.get(0);
+                                    break;
+                            }
+
+                            copy.rewrite(toReplace, nueTree);
                         }
 
                         introduceBag(doc).clear();

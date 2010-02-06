@@ -87,59 +87,60 @@ public class JDBCDriverDeployHelper {
         List<URL> drivers = new ArrayList<URL>();
         for (Datasource datasource : datasources) {
             String className = datasource.getDriverClassName();
-            boolean exists = false;
-            for (int j = 0; j < driverLocs.length; j++) {
-                File driverLoc = driverLocs[j];
-                if (driverLoc != null && driverLoc.exists()) {
-                    Collection<File> driversLocation = Arrays.asList(driverLoc.listFiles(new Utils.JarFileFilter()));
-                    try {
-                        exists = Util.containsClass(driversLocation, className);
-                    } catch (IOException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    }
-                    if (exists) {
-                        break;
-                    }
-                } else {
-                    Logger.getLogger("glassfish-eecommon").finer("Invalid directory for driver deployment");
-                }
-            }
-            if (!exists) {
-                for (DatabaseConnection databaseConnection : DatasourceHelper.findDatabaseConnections(datasource)) {
-                    JDBCDriver[] jdbcDrivers;
-                    JDBCDriver connDriver = databaseConnection.getJDBCDriver();
-                    if (connDriver != null) {
-                        jdbcDrivers = new JDBCDriver[] {connDriver};
-                    } else {
-                        // old fashioned way - fallback
-                        String driverClass = databaseConnection.getDriverClass();
-                        jdbcDrivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
-                    }
-                    for (JDBCDriver jdbcDriver : jdbcDrivers) {
-                        URL[] allUrls = jdbcDriver.getURLs();
-                        for (int i = 0; i < allUrls.length; i++) {
-                            URL driverUrl = allUrls[i];
-                            String strUrl = driverUrl.toString();
-                            if (strUrl.contains("nbinst:/")) { // NOI18N
-                                FileObject fo = URLMapper.findFileObject(driverUrl);
-                                if (fo != null) {
-                                    URL localURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
-                                    if (localURL != null) {
-                                        drivers.add(localURL);
-                                    }
-                                }
-                            } else {
-                                drivers.add(driverUrl);
-                            }
+            if (null != className) {
+                boolean exists = false;
+                for (int j = 0; j < driverLocs.length; j++) {
+                    File driverLoc = driverLocs[j];
+                    if (driverLoc != null && driverLoc.exists()) {
+                        Collection<File> driversLocation = Arrays.asList(driverLoc.listFiles(new Utils.JarFileFilter()));
+                        try {
+                            exists = Util.containsClass(driversLocation, className);
+                        } catch (IOException e) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                         }
-                    } //JDBCDriver
+                        if (exists) {
+                            break;
+                        }
+                    } else {
+                        Logger.getLogger("glassfish-eecommon").finer("Invalid directory for driver deployment");
+                    }
                 }
-            } //If
-            
+                if (!exists) {
+                    for (DatabaseConnection databaseConnection : DatasourceHelper.findDatabaseConnections(datasource)) {
+                        JDBCDriver[] jdbcDrivers;
+                        JDBCDriver connDriver = databaseConnection.getJDBCDriver();
+                        if (connDriver != null) {
+                            jdbcDrivers = new JDBCDriver[]{connDriver};
+                        } else {
+                            // old fashioned way - fallback
+                            String driverClass = databaseConnection.getDriverClass();
+                            jdbcDrivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
+                        }
+                        for (JDBCDriver jdbcDriver : jdbcDrivers) {
+                            URL[] allUrls = jdbcDriver.getURLs();
+                            for (int i = 0; i < allUrls.length; i++) {
+                                URL driverUrl = allUrls[i];
+                                String strUrl = driverUrl.toString();
+                                if (strUrl.contains("nbinst:/")) { // NOI18N
+                                    FileObject fo = URLMapper.findFileObject(driverUrl);
+                                    if (fo != null) {
+                                        URL localURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+                                        if (localURL != null) {
+                                            drivers.add(localURL);
+                                        }
+                                    }
+                                } else {
+                                    drivers.add(driverUrl);
+                                }
+                            }
+                        } //JDBCDriver
+                    }
+                } //If
+            }
         }
         return drivers;
     }
-    
+
     static private class JDBCDriversProgressObject implements ProgressObject, Runnable {
 
         private final ProgressEventSupport eventSupport;

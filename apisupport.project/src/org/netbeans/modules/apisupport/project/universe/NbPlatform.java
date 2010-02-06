@@ -61,6 +61,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ManifestManager;
@@ -497,7 +499,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                     NbBundle.getMessage(NbPlatform.class, "MSG_InvalidPlatform",  // NOI18N
                         getDestDir().getAbsolutePath());
             } catch (IOException e) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger(NbPlatform.class.getName()).log(Level.FINE, "could not get label for " + nbdestdir, e);
                 label = nbdestdir.getAbsolutePath();
             }
         }

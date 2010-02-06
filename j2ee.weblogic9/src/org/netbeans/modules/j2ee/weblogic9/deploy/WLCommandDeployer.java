@@ -166,11 +166,12 @@ public final class WLCommandDeployer {
 
         factory.getExecutorService().submit(new Runnable() {
 
+            @Override
             public void run() {
                 boolean failed = false;
                 for (TargetModuleID module : targetModuleID) {
                     String name = module.getModuleID();
-                    ExecutionService service = createService("-undeploy", null, name);
+                    ExecutionService service = createService("-undeploy", null, "-name", name);
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING,
                             NbBundle.getMessage(WLCommandDeployer.class, "MSG_Undeploying", name)));

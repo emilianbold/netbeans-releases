@@ -116,17 +116,16 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
 
         TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, node.getStartOffset());
         ts.move(node.getStartOffset());
-        ts.moveNext();
-        ts.moveNext();
-        int start = ts.offset();
-        ts = LexUtilities.getPHPTokenSequence(doc, node.getEndOffset());
-        ts.move(node.getEndOffset());
-        ts.movePrevious();
-        ts.movePrevious();
-        
-        int end = ts.offset() + ts.token().length();
-        addIndentLevel(start, indentSize);
-        addIndentLevel(end, -1 * indentSize);  
+        if (ts.moveNext() && ts.moveNext()) {
+	    int start = ts.offset();
+	    ts = LexUtilities.getPHPTokenSequence(doc, node.getEndOffset());
+	    ts.move(node.getEndOffset());
+	    ts.movePrevious();
+	    ts.movePrevious();
+	    int end = ts.offset() + ts.token().length();
+	    addIndentLevel(start, indentSize);
+	    addIndentLevel(end, -1 * indentSize);
+	}
     }
 
     @Override
@@ -170,7 +169,10 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
             ArrayElement lastElem = node.getElements().get(node.getElements().size() - 1);
             int end = lastElem.getEndOffset();
 
-            if (!PARENTS_WITHOUT_CONT_INDENT.contains(parentClass)){
+            if ((parentClass == FunctionInvocation.class
+		    && ((FunctionInvocation)getPath().get(0)).getParameters().size() > 1)
+		    || !PARENTS_WITHOUT_CONT_INDENT.contains(parentClass)){
+//	    if (!PARENTS_WITHOUT_CONT_INDENT.contains(parentClass)){
                 addIndentLevel(start, itemsInArrayDeclarationSize);
                 addIndentLevel(end, -1 * itemsInArrayDeclarationSize);
             }
@@ -186,6 +188,17 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     @Override
     public void visit(InfixExpression node) {
         Class parentClass = getPath().get(0).getClass();
+
+        if (!PARENTS_WITHOUT_CONT_INDENT.contains(parentClass)){
+            indentContinuationWithinStatement(node);
+        }
+
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(FunctionInvocation node) {
+	Class parentClass = getPath().get(0).getClass();
 
         if (!PARENTS_WITHOUT_CONT_INDENT.contains(parentClass)){
             indentContinuationWithinStatement(node);

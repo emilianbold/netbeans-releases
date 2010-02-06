@@ -98,6 +98,7 @@ import org.w3c.dom.NodeList;
 public class MakeConfigurationDescriptor extends ConfigurationDescriptor implements ChangeListener {
 
     public static final String EXTERNAL_FILES_FOLDER = "ExternalFiles"; // NOI18N
+    public static final String TEST_FILES_FOLDER = "TestFiles"; // NOI18N
     public static final String SOURCE_FILES_FOLDER = "SourceFiles"; // NOI18N
     public static final String HEADER_FILES_FOLDER = "HeaderFiles"; // NOI18N
     public static final String RESOURCE_FILES_FOLDER = "ResourceFiles"; // NOI18N
@@ -110,6 +111,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private String baseDir;
     private boolean modified = false;
     private Folder externalFileItems = null;
+    private Folder testItems = null;
     private Folder rootFolder = null;
     private HashMap<String, Item> projectItems = null;
     private final List<String> sourceRoots = new ArrayList<String>();
@@ -249,11 +251,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders, Iterator<String> importantItems, String mainFilePath) {
         if (createLogicalFolders) {
-            rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true);
-            rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true);
-            rootFolder.addNewFolder(RESOURCE_FILES_FOLDER, getString("ResourceFilesTxt"), true);
+            rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+            rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+            rootFolder.addNewFolder(RESOURCE_FILES_FOLDER, getString("ResourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
         }
-        externalFileItems = rootFolder.addNewFolder(EXTERNAL_FILES_FOLDER, getString("ImportantFilesTxt"), false);
+        testItems = rootFolder.addNewFolder(TEST_FILES_FOLDER, "Tests", true, Folder.Kind.TEST_LOGICAL_FOLDER); // NOI18N
+        externalFileItems = rootFolder.addNewFolder(EXTERNAL_FILES_FOLDER, getString("ImportantFilesTxt"), false, Folder.Kind.IMPORTANT_FILES_FOLDER);
 //        if (sourceFileFolders != null)
 //            setExternalFileItems(sourceFileFolders); // From makefile wrapper wizard
         externalFileItems.addItem(new Item(getProjectMakefileName())); // NOI18N
@@ -1171,7 +1174,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 Folder dirfolder = folder;
                 dirfolder = folder.findFolderByName(files[i].getName());
                 if (dirfolder == null) {
-                    dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true);
+                    dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
                 }
                 addFiles(dirfolder, files[i], handle, filesAdded, notify, setModified);
             } else {

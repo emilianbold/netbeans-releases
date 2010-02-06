@@ -42,7 +42,6 @@
 package org.netbeans.modules.apisupport.project.ui;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -74,7 +73,6 @@ public class ModuleLogicalViewTest extends TestBase {
         assertNotNull("found FreeformProject.java", find(lvp, "ant.freeform/src/org/netbeans/modules/ant/freeform/FreeformProject.java"));
         assertNotNull("found freeform-project-general.xsd", find(lvp, "ant.freeform/src/org/netbeans/modules/ant/freeform/resources/freeform-project-general.xsd"));
         assertNotNull("found FreeformProjectTest.java", find(lvp, "ant.freeform/test/unit/src/org/netbeans/modules/ant/freeform/FreeformProjectTest.java"));
-        assertNull("did not find test/cfg-unit.xml", find(lvp, "ant.freeform/test/cfg-unit.xml"));
         Node layer = find(lvp, "ant.freeform/src/org/netbeans/modules/ant/freeform/resources/layer.xml");
         assertNotNull("Found layer", layer);
         assertEquals("Sources is parent parent of the layer", "${src.dir}", layer.getParentNode().getParentNode().getName());
@@ -85,7 +83,6 @@ public class ModuleLogicalViewTest extends TestBase {
         assertFalse("Also has children", origLayer.isLeaf());
     }
     
-    
     public void testImportantFilesListening() throws Exception {
         Project p = generateStandaloneModule("module");
         LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
@@ -93,11 +90,13 @@ public class ModuleLogicalViewTest extends TestBase {
         Node root = lvp.createLogicalView();
         Node iFiles = root.getChildren().findChild(ImportantFilesNodeFactory.IMPORTANT_FILES_NAME);
         assertNotNull("have the Important Files node", iFiles);
+        /* XXX inherently unreliable:
         FileObject propsFO = p.getProjectDirectory().getFileObject("nbproject/project.properties");
         propsFO = FileUtil.moveFile(propsFO, p.getProjectDirectory().getFileObject("nbproject"), "project-bck");
         TestBase.assertAsynchronouslyUpdatedChildrenNodes(iFiles, 5);
         FileUtil.moveFile(propsFO, p.getProjectDirectory().getFileObject("nbproject"), "project");
         TestBase.assertAsynchronouslyUpdatedChildrenNodes(iFiles, 6);
+         */
     }
     
     private Node find(LogicalViewProvider lvp, String path) throws Exception {

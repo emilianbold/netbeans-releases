@@ -77,9 +77,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
-import org.netbeans.junit.RandomlyFails;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
 import org.openide.util.Mutex.ExceptionAction;
 
 // XXX mkrauskopf: don't use libs/xerces for testing purposes of apisupport
@@ -213,7 +210,7 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("number of selected public packages", 1, pptm.getSelectedPackages().size());
     }
 
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    // cannot be run in binary dist, requires sources; test against fake platform
     public void testGetPublicPackagesForNBOrg() throws Exception {
         // libs.xerces properties
         NbModuleProject libP = (NbModuleProject) ProjectManager.getDefault().findProject(nbRoot().getFileObject("libs.xerces"));
@@ -376,7 +373,7 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("There are two available friends for component2.", 2, props.getAvailableFriends().length);
     }
 
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    // XXX cannot be run in binary dist, requires sources; test against fake platform
     public void testGetAvailableFriendsForNBOrg() throws Exception {
         // netbeans.org
         Project javaProject = ProjectManager.getDefault().findProject(nbRoot().getFileObject("java.project"));
