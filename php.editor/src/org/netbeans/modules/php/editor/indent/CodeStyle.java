@@ -207,13 +207,16 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceBeforeSwitchParen, getDefaultAsBoolean(spaceBeforeSwitchParen));
     }
 
-
     public boolean spaceAroundUnaryOps() {
         return preferences.getBoolean(spaceAroundUnaryOps, getDefaultAsBoolean(spaceAroundUnaryOps));
     }
 
     public boolean spaceAroundBinaryOps() {
         return preferences.getBoolean(spaceAroundBinaryOps, getDefaultAsBoolean(spaceAroundBinaryOps));
+    }
+
+    public boolean spaceAroundStringConcatOps() {
+        return preferences.getBoolean(spaceAroundStringConcatOps, getDefaultAsBoolean(spaceAroundStringConcatOps));
     }
 
     public boolean spaceAroundTernaryOps() {
