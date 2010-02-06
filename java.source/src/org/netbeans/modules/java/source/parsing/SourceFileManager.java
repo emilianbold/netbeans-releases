@@ -202,8 +202,8 @@ public class SourceFileManager implements JavaFileManager {
 
     public String inferBinaryName (final Location l, final JavaFileObject jfo) {
         try {
-            if (jfo instanceof FileObjects.InferableJavaFileObject) {
-                final String result = ((FileObjects.InferableJavaFileObject)jfo).inferBinaryName();
+            if (jfo instanceof InferableJavaFileObject) {
+                final String result = ((InferableJavaFileObject)jfo).inferBinaryName();
                 if (result != null) {
                     return result;
                 }

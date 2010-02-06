@@ -38,15 +38,12 @@
  */
 package org.netbeans.modules.css.refactoring;
 
-import java.io.IOException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
-import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -57,22 +54,25 @@ import org.openide.util.lookup.Lookups;
  */
 public class WhereUsedUI implements RefactoringUI {
 
+    private WhereUsedPanel panel;
     private final WhereUsedQuery query;
     private CssElementContext context;
+    private CssRefactoringExtraInfo info;
 
     public WhereUsedUI(CssElementContext context) {
 	this.context = context;
-	this.query = new WhereUsedQuery(Lookups.singleton(context));
+        this.info = new CssRefactoringExtraInfo();
+	this.query = new WhereUsedQuery(Lookups.fixed(context, info));
     }
 
     @Override
     public String getName() {
-	return NbBundle.getMessage(WhereUsedUI.class, "LBL_FindUsages");
+	return NbBundle.getMessage(WhereUsedUI.class, "LBL_FindUsages"); //NOI18N
     }
 
     @Override
     public String getDescription() {
-	return NbBundle.getMessage(WhereUsedUI.class, "LBL_FindUsages");
+	return NbBundle.getMessage(WhereUsedUI.class, "LBL_FindUsages"); //NOI18N
     }
 
     @Override
@@ -82,11 +82,16 @@ public class WhereUsedUI implements RefactoringUI {
 
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
-       return null;
+       if(panel == null) {
+           panel = new WhereUsedPanel();
+       }
+        return panel;
     }
 
     @Override
     public Problem setParameters() {
+        this.info.setRefactorAll(panel.isFindAllOccurances());
+
 	return query.checkParameters();
     }
 

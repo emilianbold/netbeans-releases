@@ -51,7 +51,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodePro
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
-import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -465,10 +466,10 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         return sheet;
     }
 
-    private class ToolNodeProp extends Node.Property<Integer> {
+    private class ToolNodeProp extends Node.Property<PredefinedToolKind> {
 
         public ToolNodeProp() {
-            super(Integer.class);
+            super(PredefinedToolKind.class);
         }
 
         @Override
@@ -477,15 +478,13 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         }
 
         @Override
-        public Integer getValue() {
-            return Integer.valueOf(getTool().ordinal());
+        public PredefinedToolKind getValue() {
+            return getTool();
         }
 
         @Override
-        public void setValue(Integer v) {
-//            String newTool = (String) v;
-//            setTool(newTool);
-            setTool(PredefinedToolKind.getTool(v));
+        public void setValue(PredefinedToolKind v) {
+            setTool(v);
         }
 
         @Override
@@ -513,8 +512,8 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 
         @Override
         public String getAsText() {
-            int val = ((Integer) getValue()).intValue();
-            return PredefinedToolKind.getTool(val).getDisplayName();
+            ToolKind val = (ToolKind) getValue();
+            return val.getDisplayName();
 //            CompilerSet set = CompilerSetManager.getDefault(((MakeConfiguration)configuration).getDevelopmentHost().getName()).getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
 //            return set.getTool(val).getGenericName();
         }

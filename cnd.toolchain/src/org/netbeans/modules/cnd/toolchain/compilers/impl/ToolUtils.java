@@ -42,8 +42,8 @@ package org.netbeans.modules.cnd.toolchain.compilers.impl;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.openide.util.Utilities;
 

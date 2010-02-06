@@ -47,7 +47,7 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
 import java.util.List;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
@@ -77,7 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
-import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
@@ -215,7 +215,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     displayName = name;
                 }
                 boolean projectFiles = atts.getValue(PROJECT_FILES_ATTR).equals(TRUE_VALUE);
-                currentFolder = currentFolder.addNewFolder(name, displayName, projectFiles);
+                String kindAttr = atts.getValue(KIND_ATTR);
+                currentFolder = currentFolder.addNewFolder(name, displayName, projectFiles, kindAttr);
                 currentFolderStack.push(currentFolder);
                 if (!projectFiles) {
                     projectDescriptor.setExternalFileItems(currentFolder);
@@ -228,7 +229,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             } else {
                 String name = getString(atts.getValue(NAME_ATTR));
                 String root = getString(atts.getValue(ROOT_ATTR));
-                currentFolder = currentFolder.addNewFolder(name, name, true);
+                currentFolder = currentFolder.addNewFolder(name, name, true, Folder.Kind.SOURCE_DISK_FOLDER);
                 currentFolder.setRoot(root);
                 currentFolderStack.push(currentFolder);
             }

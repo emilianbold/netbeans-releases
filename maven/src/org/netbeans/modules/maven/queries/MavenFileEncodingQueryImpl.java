@@ -42,6 +42,10 @@ package org.netbeans.modules.maven.queries;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -66,86 +70,93 @@ public class MavenFileEncodingQueryImpl extends  FileEncodingQueryImplementation
         project = proj;
     }
 
+    @Override
     public Charset getEncoding(FileObject file) {
         MavenProject mp = project.getOriginalMavenProject();
         if (mp == null) {
             return Charset.defaultCharset();
         }
-        String defEnc = mp.getProperties().getProperty(Constants.ENCODING_PROP);
-        //TODO instead of SD
-        FileObject src = FileUtilities.convertStringToFileObject(mp.getBuild().getSourceDirectory());
-        if (src != null &&  (src.equals(file) || FileUtil.isParentOf(src, file))) {
-            String compileEnc = PluginPropertyUtils.getPluginProperty(project, 
-                  Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER,ENCODING_PARAM, "compile"); //NOI18N;
-            if (compileEnc != null && compileEnc.indexOf("${") == -1) { //NOI18N - guard against unresolved values.
-                return Charset.forName(compileEnc);
+        try {
+            String defEnc = mp.getProperties().getProperty(Constants.ENCODING_PROP);
+            //TODO instead of SD
+            FileObject src = FileUtilities.convertStringToFileObject(mp.getBuild().getSourceDirectory());
+            if (src != null && (src.equals(file) || FileUtil.isParentOf(src, file))) {
+                String compileEnc = PluginPropertyUtils.getPluginProperty(project,
+                        Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, ENCODING_PARAM, "compile"); //NOI18N;
+                if (compileEnc != null && compileEnc.indexOf("${") == -1) { //NOI18N - guard against unresolved values.
+                    return Charset.forName(compileEnc);
+                }
+                if (defEnc != null) {
+                    return Charset.forName(defEnc);
+                }
             }
-            if (defEnc != null) {
-                return Charset.forName(defEnc);
+            FileObject testsrc = FileUtilities.convertStringToFileObject(mp.getBuild().getTestSourceDirectory());
+            if (testsrc != null && (testsrc.equals(file) || FileUtil.isParentOf(testsrc, file))) {
+                String testcompileEnc = PluginPropertyUtils.getPluginProperty(project,
+                        Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, ENCODING_PARAM, "testCompile"); //NOI18N
+                if (testcompileEnc != null && testcompileEnc.indexOf("${") == -1) {//NOI18N - guard against unresolved values.
+                    return Charset.forName(testcompileEnc);
+                }
+                if (defEnc != null) {
+                    return Charset.forName(defEnc);
+                }
             }
-        }
-        FileObject testsrc = FileUtilities.convertStringToFileObject(mp.getBuild().getTestSourceDirectory());
-        if (testsrc != null && (testsrc.equals(file) || FileUtil.isParentOf(testsrc, file))) {
-            String testcompileEnc = PluginPropertyUtils.getPluginProperty(project, 
-                    Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, ENCODING_PARAM, "testCompile"); //NOI18N
-            if (testcompileEnc != null && testcompileEnc.indexOf("${") == -1) {//NOI18N - guard against unresolved values.
-                return Charset.forName(testcompileEnc);
-            }
-            if (defEnc != null) {
-                return Charset.forName(defEnc);
-            }
-        }
 
-        //possibly more complicated with resources, one can have explicit declarations in the
-        // pom plugin configuration.
-        try {
-            if (isWithin(project.getResources(false), file)) {
-                String resourceEnc = PluginPropertyUtils.getPluginProperty(project,
-                        Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_RESOURCES, ENCODING_PARAM, "resources"); //NOI18N
-                if (resourceEnc != null && resourceEnc.indexOf("${") == -1) {//NOI18N - guard against unresolved values.
-                    return Charset.forName(resourceEnc);
+            //possibly more complicated with resources, one can have explicit declarations in the
+            // pom plugin configuration.
+            try {
+                if (isWithin(project.getResources(false), file)) {
+                    String resourceEnc = PluginPropertyUtils.getPluginProperty(project,
+                            Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_RESOURCES, ENCODING_PARAM, "resources"); //NOI18N
+                    if (resourceEnc != null && resourceEnc.indexOf("${") == -1) {//NOI18N - guard against unresolved values.
+                        return Charset.forName(resourceEnc);
+                    }
+                    if (defEnc != null) {
+                        return Charset.forName(defEnc);
+                    }
                 }
-                if (defEnc != null) {
-                    return Charset.forName(defEnc);
-                }
+
+            } catch (MalformedURLException x) {
+                Exceptions.printStackTrace(x);
             }
-            
-        } catch (MalformedURLException x) {
-            Exceptions.printStackTrace(x);
-        }
-        
-        try {
-            if (isWithin(project.getResources(true), file)) {
-                String testresourceEnc = PluginPropertyUtils.getPluginProperty(project, 
-                        Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_RESOURCES, ENCODING_PARAM, "testResources"); //NOI18N
-                if (testresourceEnc != null&& testresourceEnc.indexOf("${") == -1) {//NOI18N - guard against unresolved values.
-                    return Charset.forName(testresourceEnc);
+
+            try {
+                if (isWithin(project.getResources(true), file)) {
+                    String testresourceEnc = PluginPropertyUtils.getPluginProperty(project,
+                            Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_RESOURCES, ENCODING_PARAM, "testResources"); //NOI18N
+                    if (testresourceEnc != null && testresourceEnc.indexOf("${") == -1) {//NOI18N - guard against unresolved values.
+                        return Charset.forName(testresourceEnc);
+                    }
+                    if (defEnc != null) {
+                        return Charset.forName(defEnc);
+                    }
                 }
-                if (defEnc != null) {
-                    return Charset.forName(defEnc);
-                }
+            } catch (MalformedURLException malformedURLException) {
+                Exceptions.printStackTrace(malformedURLException);
             }
-        } catch (MalformedURLException malformedURLException) {
-            Exceptions.printStackTrace(malformedURLException);
-        }
-        
-        try {
-            if (isWithin(new URI[] { project.getSiteDirectory() }, file)) {
-                String siteEnc = PluginPropertyUtils.getPluginProperty(project, 
-                        Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SITE, "inputEncoding", "site"); //NOI18N
-                if (siteEnc != null&& siteEnc.indexOf("${") == -1) {//NOI18N - guard against unresolved values.
-                    return Charset.forName(siteEnc);
+
+            try {
+                if (isWithin(new URI[]{project.getSiteDirectory()}, file)) {
+                    String siteEnc = PluginPropertyUtils.getPluginProperty(project,
+                            Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SITE, "inputEncoding", "site"); //NOI18N
+                    if (siteEnc != null && siteEnc.indexOf("${") == -1) {//NOI18N - guard against unresolved values.
+                        return Charset.forName(siteEnc);
+                    }
+                    if (defEnc != null) {
+                        return Charset.forName(defEnc);
+                    }
                 }
-                if (defEnc != null) {
-                    return Charset.forName(defEnc);
-                }
+            } catch (MalformedURLException malformedURLException) {
+                Exceptions.printStackTrace(malformedURLException);
             }
-        } catch (MalformedURLException malformedURLException) {
-            Exceptions.printStackTrace(malformedURLException);
-        }
-        
-        if (defEnc != null) {
-            return Charset.forName(defEnc);
+
+            if (defEnc != null) {
+                return Charset.forName(defEnc);
+            }
+        } catch (UnsupportedCharsetException uce) {
+            Logger.getLogger(MavenFileEncodingQueryImpl.class.getName()).log(Level.FINE, uce.getMessage(), uce);
+        } catch (IllegalCharsetNameException icne) {
+            Logger.getLogger(MavenFileEncodingQueryImpl.class.getName()).log(Level.FINE, icne.getMessage(), icne);
         }
         return Charset.defaultCharset();
     }

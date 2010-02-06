@@ -1499,12 +1499,55 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             entryNotFoundMessage(file.getAbsolutePath());
             return false;
         }
-        boolean entryChanged = entry.setParsedPCState(ppState, pcState);
-        if (entryChanged) {
+        boolean entryFound;
+        // IZ#179861: unstable test RepositoryValidation
+        synchronized (entry.getLock()) {
+            List<PreprocessorStatePair> statesToKeep = new ArrayList<PreprocessorStatePair>(4);
+            Collection<PreprocessorStatePair> entryStatePairs = entry.getStatePairs();
+            List<PreprocessorStatePair> copy = new ArrayList<PreprocessorStatePair>();
+            entryFound = false;
+            // put into copy array all except ourself
+            for (PreprocessorStatePair pair : entryStatePairs) {
+                if ((pair.pcState == FilePreprocessorConditionState.PARSING) && pair.state.equals(ppState)) {
+                    assert !entryFound;
+                    entryFound = true;
+                } else {
+                    copy.add(pair);
+                }
+            }
+            if (entryFound) {
+                // Phase 2: check preproc conditional states of entry comparing to current conditional state
+                ComparisonResult comparisonResult = fillStatesToKeepBasedOnPCState(pcState, copy, statesToKeep);
+                switch (comparisonResult) {
+                    case BETTER:
+                        CndUtils.assertTrueInConsole(statesToKeep.isEmpty(), "states to keep must be empty 3"); // NOI18N
+                        entry.setStates(statesToKeep, new PreprocessorStatePair(ppState, pcState));
+                        break;
+                    case SAME:
+                        assert !statesToKeep.isEmpty();
+                        entry.setStates(statesToKeep, new PreprocessorStatePair(ppState, pcState));
+                        break;
+                    case WORSE:
+                        assert !copy.isEmpty();
+                        entry.setStates(copy, null);
+                        break;
+                    default:
+                        assert false : "unexpected comparison result: " + comparisonResult; //NOI18N
+                        break;
+                }
+            } else {
+                // we already were removed, because our ppState was worse
+                // or
+                // header was parsed with correct context =>
+                // no reason to check pcState and replace FilePreprocessorConditionState.PARSING
+                // which is not present
+            }
+        }
+        if (entryFound) {
             FileContainer fileContainer = getFileContainer();
             fileContainer.put();
         }
-        return entryChanged;
+        return entryFound;
     }
 
     void notifyOnWaitParseLock() {

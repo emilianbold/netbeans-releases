@@ -46,20 +46,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.spi.CompilerProvider;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.BaseFolder;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CMakeDescriptor;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.DebuggerDescriptor;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.LinkerDescriptor;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.MakeDescriptor;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.QMakeDescriptor;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ScannerDescriptor;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerProvider;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.BaseFolder;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CMakeDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.LinkerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.MakeDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.QMakeDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -183,7 +183,7 @@ public final class CompilerSetImpl extends CompilerSet {
 
     @Override
     public String getDirectory() {
-        return directory.toString();
+        return directory;
     }
 
     @Override

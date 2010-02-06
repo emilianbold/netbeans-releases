@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -82,16 +83,94 @@ public class CssIndex {
         this.querySupport = QuerySupport.forRoots(CssIndexer.Factory.NAME, CssIndexer.Factory.VERSION, sourceRoots.toArray(new FileObject[]{}));
     }
 
+    /**
+     *
+     * @param id
+     * @return collection of files defining exactly the given element
+     */
     public Collection<FileObject> findIds(String id) {
         return find(CssIndexer.IDS_KEY, id);
     }
 
+    /**
+     *
+     * @param id
+     * @return collection of files defining exactly the given element
+     */
     public Collection<FileObject> findClasses(String clazz) {
         return find(CssIndexer.CLASSES_KEY, clazz);
     }
 
+    /**
+     *
+     * @param id
+     * @return collection of files defining exactly the given element
+     */
     public Collection<FileObject> findHtmlElement(String htmlElement) {
         return find(CssIndexer.HTML_ELEMENTS_KEY, htmlElement);
+    }
+
+    /**
+     *
+     * @param prefix
+     * @return map of fileobject to collection of classes defined in the file starting with prefix
+     */
+    public Map<FileObject, Collection<String>> findClassesByPrefix(String prefix) {
+        return findByPrefix(CssIndexer.CLASSES_KEY, prefix);
+    }
+
+    /**
+     *
+     * @param prefix
+     * @return map of fileobject to collection of ids defined in the file starting with prefix
+     */
+    public Map<FileObject, Collection<String>> findIdsByPrefix(String prefix) {
+        return findByPrefix(CssIndexer.IDS_KEY, prefix);
+    }
+    
+    public Map<FileObject, Collection<String>> findByPrefix(String keyName, String prefix) {
+        Map<FileObject, Collection<String>> map = new HashMap<FileObject, Collection<String>>();
+        try {
+            Collection<? extends IndexResult> results;
+            if(prefix.length() == 0) {
+                results = results = querySupport.query(keyName, "", QuerySupport.Kind.PREFIX, keyName);
+            } else {
+                String searchExpression = ".*("+prefix+").*"; //NOI18N
+                results = querySupport.query(keyName, searchExpression, QuerySupport.Kind.REGEXP, keyName);
+            }
+            for (IndexResult result : results) {
+                Collection<String> elements = decodeListValue(result.getValue(keyName));
+                for(String e : elements) {
+                    if(e.startsWith(prefix)) {
+                        Collection<String> col = map.get(result.getFile());
+                        if(col == null) {
+                            col = new LinkedList<String>();
+                            map.put(result.getFile(), col);
+                        }
+                        col.add(e);
+                    }
+                }
+
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return map;
+    }
+
+    public Collection<FileObject> findAll(String keyName) {
+        try {
+            Collection<FileObject> matchedFiles = new LinkedList<FileObject>();
+            Collection<? extends IndexResult> results = querySupport.query(keyName, "", QuerySupport.Kind.PREFIX, keyName);
+            for (IndexResult result : results) {
+                matchedFiles.add(result.getFile());
+            }
+            return matchedFiles;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return Collections.emptyList();
     }
 
     /**
@@ -103,7 +182,7 @@ public class CssIndex {
      */
     public Collection<FileObject> find(String keyName, String value) {
         try {
-            String searchExpression = ".*(" + value + ")[,;].*";
+            String searchExpression = ".*(" + value + ")[,;].*"; //NOI18N
             Collection<FileObject> matchedFiles = new LinkedList<FileObject>();
             Collection<? extends IndexResult> results = querySupport.query(keyName, searchExpression, QuerySupport.Kind.REGEXP, keyName);
             for (IndexResult result : results) {
@@ -129,28 +208,33 @@ public class CssIndex {
             DependenciesGraph deps = new DependenciesGraph(cssFile);
             Collection<? extends IndexResult> results = querySupport.query(CssIndexer.IMPORTS_KEY, "", QuerySupport.Kind.PREFIX, CssIndexer.IMPORTS_KEY);
 
-            //create the refering part of the graph (imported files)
-            //map of FileObject to list of imported files
-            Map<FileObject, Collection<String>> files2imports = new HashMap<FileObject, Collection<String>>();
+            //todo: performance - cache and incrementally update the maps?!?!
+            //create map of refering files to the peers and second map vice versa
+            Map<FileObject, Collection<FileObject>> source2dests = new HashMap<FileObject, Collection<FileObject>>();
+            Map<FileObject, Collection<FileObject>> dest2sources = new HashMap<FileObject, Collection<FileObject>>();
             for (IndexResult result : results) {
                 String importsValue = result.getValue(CssIndexer.IMPORTS_KEY);
                 FileObject file = result.getFile();
-                files2imports.put(file, decodeListValue(importsValue));
-            }
-            resolveImports(deps.getSourceNode(), files2imports);
-
-            //resolve importing files
-            //TODO the recursive algrithm uses linear search - this deserves
-            //fixing even if the number of css files is typically quite small
-
-            //reversed map of imports to files
-            Map<String, FileObject> imports2files = new HashMap<String, FileObject>();
-            for (FileObject file : files2imports.keySet()) {
-                for (String imp : files2imports.get(file)) {
-                    imports2files.put(imp, file);
+                Collection<String> imports = decodeListValue(importsValue);
+                Collection<FileObject> imported = new HashSet<FileObject>();
+                for (String importedFileName : imports) {
+                    //resolve the file
+                    FileObject resolvedFileObject = resolve(file, importedFileName);
+                    if (resolvedFileObject != null) {
+                        imported.add(resolvedFileObject);
+                        //add reverse dependency
+                        Collection<FileObject> sources = dest2sources.get(resolvedFileObject);
+                        if(sources == null) {
+                            sources = new HashSet<FileObject>();
+                            dest2sources.put(resolvedFileObject, sources);
+                        }
+                        sources.add(file);
+                    }
                 }
+                source2dests.put(file, imported);
             }
-            resolveImporting(deps.getSourceNode(), imports2files);
+
+            resolveDependencies(deps.getSourceNode(), source2dests, dest2sources);
 
             return deps;
 
@@ -160,47 +244,30 @@ public class CssIndex {
 
         return null;
     }
+    
 
-    private void resolveImporting(Node sourceNode, Map<String, FileObject> imports2files) {
-        FileObject source = sourceNode.getFile();
-        //a. find all entries which may possibly be references to our base file
-        String baseFileName = source.getNameExt();
-        //hmm, linear search :-(, wouldn't it be faster to uset the index instead?
-        Collection<String> possiblyValidImports = new LinkedList<String>();
-        for (String imp : imports2files.keySet()) {
-            if (imp.indexOf(baseFileName) != -1) {
-                //might possibly import the base file
-                possiblyValidImports.add(imp);
+    private void resolveDependencies(Node base, Map<FileObject, Collection<FileObject>> source2dests, Map<FileObject, Collection<FileObject>> dest2sources) {
+        FileObject baseFile = base.getFile();
+        Collection<FileObject> destinations = source2dests.get(baseFile);
+        if (destinations != null) {
+            //process destinations (file this one refers to)
+            for(FileObject destination : destinations) {
+                Node node = base.getDependencyGraph().getNode(destination);
+                if(base.addReferedNode(node)) {
+                    //recurse only if we haven't been there yet
+                    resolveDependencies(node, source2dests, dest2sources);
+                }
             }
         }
-
-        //b.now check if the possible imports do really import our base file
-        for (String possibleImport : possiblyValidImports) {
-            FileObject base = imports2files.get(possibleImport);
-            FileObject resolved = resolve(base, possibleImport);
-            if (resolved != null && resolved.equals(source)) {
-                //gotcha!
-                Node node = sourceNode.getDependencyGraph().getNode(base);
-                sourceNode.addReferingNode(node);
-                resolveImporting(node, imports2files);
-            }
-        }
-    }
-
-    private void resolveImports(Node base, Map<FileObject, Collection<String>> file2imports) {
-        FileObject source = base.getFile();
-        Collection<String> imports = file2imports.get(source);
-        if (imports == null) {
-            return;
-        }
-
-        for (String importedFileName : imports) {
-            //resolve the file
-            FileObject resolvedFileObject = resolve(source, importedFileName);
-            if (resolvedFileObject != null) {
-                Node node = base.getDependencyGraph().getNode(resolvedFileObject);
-                base.addReferedNode(node);
-                resolveImports(node, file2imports);
+        Collection<FileObject> sources = dest2sources.get(baseFile);
+        if(sources != null) {
+            //process sources (file this one is refered by)
+            for(FileObject source : sources) {
+                Node node = base.getDependencyGraph().getNode(source);
+                if(base.addReferingNode(node)) {
+                    //recurse only if we haven't been there yet
+                    resolveDependencies(node, source2dests, dest2sources);
+                }
             }
         }
 
@@ -251,4 +318,5 @@ public class CssIndex {
         }
         return list;
     }
+
 }

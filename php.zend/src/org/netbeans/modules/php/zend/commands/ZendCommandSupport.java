@@ -199,6 +199,7 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
 
     class CommandsLineProcessor implements LineProcessor {
         private final StringBuffer error = new StringBuffer();
+        private final String newLine = System.getProperty("line.separator"); // NOI18N
 
         // @GuardedBy(commands)
         private final List<FrameworkCommand> commands = new LinkedList<FrameworkCommand>();
@@ -211,7 +212,7 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
             if (!line.contains(SEPARATOR)) {
                 // error occured
                 error.append(line);
-                error.append("\n"); // NOI18N
+                error.append(newLine);
                 return;
             }
             String trimmed = line.trim();

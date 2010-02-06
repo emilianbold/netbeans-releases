@@ -81,9 +81,14 @@ import org.netbeans.modules.websvc.rest.model.api.SubResourceLocator;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
+import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -115,49 +120,77 @@ public class ClientJavaSourceHelper {
                         targetFo,
                         ClassPath.COMPILE);
             } catch (java.io.IOException ex) {
+                // the libraries are likely not available
                 Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(Level.INFO, "Cannot add Jersey libraries" , ex);
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                            NbBundle.getMessage(ClientJavaSourceHelper.class, "MSG_CannotAddJerseyLib"),
+                            NotifyDescriptor.WARNING_MESSAGE));
+                return;
             }
         }
 
-        RestServiceDescription desc = resourceNode.getLookup().lookup(RestServiceDescription.class);
-        List<RestMethodDescription> methods =  desc.getMethods();
-        String uriTemplate = desc.getUriTemplate();
-        PathFormat pf = null;
-        if (uriTemplate.length() == 0) { // subresource locator
-            // find recursively the root resource
-            RootResourcePath rootResourcePath = getRootResourcePath(resourceNode, desc.getClassName(), "");
-            uriTemplate = rootResourcePath.getRootPath();
-            pf = rootResourcePath.getPathFormat();
-        }
-        if (!uriTemplate.startsWith("/")) {
-            uriTemplate = "/"+uriTemplate;
-        }
-        if (uriTemplate.endsWith("/")) {
-            uriTemplate = uriTemplate.substring(0, uriTemplate.length()-1);
-        }
-        // subresource locator is detected by string constant
-        if (pf != null && pf.getArguments().length == 0 && pf.getPattern().length() > 0) {
-            uriTemplate = uriTemplate+"/"+pf.getPattern();
-        }
-        Project prj = resourceNode.getLookup().lookup(Project.class);
-        String resourceUri =
-                (prj == null ? uriTemplate : ClientJavaSourceHelper.getResourceURL(prj, uriTemplate));
+        RestServiceDescription restServiceDesc = resourceNode.getLookup().lookup(RestServiceDescription.class);
+        if (restServiceDesc != null) {
+            List<RestMethodDescription> methods =  restServiceDesc.getMethods();
+            String uriTemplate = restServiceDesc.getUriTemplate();
+            PathFormat pf = null;
+            if (uriTemplate.length() == 0) { // subresource locator
+                // find recursively the root resource
+                ResourcePath rootResourcePath = getResourcePath(resourceNode, restServiceDesc.getClassName(), "");
+                uriTemplate = rootResourcePath.getPath();
+                pf = rootResourcePath.getPathFormat();
+            }
+            if (!uriTemplate.startsWith("/")) {
+                uriTemplate = "/"+uriTemplate;
+            }
+            if (uriTemplate.endsWith("/")) {
+                uriTemplate = uriTemplate.substring(0, uriTemplate.length()-1);
+            }
+            // subresource locator is detected by string constant
+            if (pf != null && pf.getArguments().length == 0 && pf.getPattern().length() > 0) {
+                uriTemplate = uriTemplate+"/"+pf.getPattern();
+            }
+            Project prj = resourceNode.getLookup().lookup(Project.class);
+            String resourceUri =
+                    (prj == null ? uriTemplate : getResourceURL(prj, uriTemplate));
 
-        // add inner Jersey Client class
-        addJerseyClientClass(
-                JavaSource.forFileObject(targetFo),
-                desc.getName(),
-                resourceUri,
-                methods,
-                pf);
+            String className = restServiceDesc.getName()+"_JerseyClient"; //NOI18N
+            // add inner Jersey Client class
+            addJerseyClient(
+                    JavaSource.forFileObject(targetFo),
+                    className,
+                    resourceUri,
+                    methods,
+                    null,
+                    pf);
+        } else {
+            WadlSaasResource saasResource = resourceNode.getLookup().lookup(WadlSaasResource.class);
+            if (saasResource != null) {
+                String baseUrl = saasResource.getSaas().getBaseURL();
+                if (baseUrl.endsWith("/")) {
+                    baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+                }
+                ResourcePath resourcePath = getResourcePath(saasResource);
+                PathFormat pf = resourcePath.getPathFormat();
+                String resourceUri = baseUrl+"/"+resourcePath.getPath();
+                addJerseyClient(
+                        JavaSource.forFileObject(targetFo),
+                        getClientClassName(saasResource),
+                        resourceUri,
+                        null,
+                        saasResource.getMethods(),
+                        pf);
+            }
+        }
     }
 
-
-    private static void addJerseyClientClass(
+    private static void addJerseyClient (
             JavaSource source,
-            final String resourceName,
+            final String className,
             final String resourceUri,
-            final List<RestMethodDescription> restMethodDesc,
+            final List<RestMethodDescription> annotatedMethods,
+            final List<WadlSaasMethod> saasMethods,
             final PathFormat pf) {
         try {
             ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
@@ -167,8 +200,8 @@ public class ClientJavaSourceHelper {
                     copy.toPhase(JavaSource.Phase.RESOLVED);
 
                     ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
-                    String className = resourceName+"_JerseyClient"; //NOI18N
-                    ClassTree modifiedTree = ClientJavaSourceHelper.addJerseyClientClass(copy, tree, className, resourceUri, restMethodDesc, pf);
+                    //String className = resourceName+"_JerseyClient"; //NOI18N
+                    ClassTree modifiedTree = addJerseyClientClass(copy, tree, className, resourceUri, annotatedMethods, saasMethods, pf);
 
                     copy.rewrite(tree, modifiedTree);
                 }
@@ -182,9 +215,11 @@ public class ClientJavaSourceHelper {
 
     private static ClassTree addJerseyClientClass (
             WorkingCopy copy,
-            ClassTree tree, String className,
+            ClassTree tree,
+            String className,
             String resourceURI,
-            List<RestMethodDescription> restMethodDesc,
+            List<RestMethodDescription> annotatedMethods,
+            List<WadlSaasMethod> saasMethods,
             PathFormat pf) {
 
         TreeMaker maker = copy.getTreeMaker();
@@ -251,13 +286,6 @@ public class ClientJavaSourceHelper {
         // add setSubresourcaPath() method for SubresourceLocators
         if (isSubresource) {
             ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
-//            paramList = new ArrayList<VariableTree>();
-//            for (String arg : pf.getArguments()) {
-//                Tree argTypeTree = maker.Identifier("String"); //NOI18N
-//                ModifiersTree fieldModifier = maker.Modifiers(Collections.<Modifier>emptySet());
-//                VariableTree argFieldTree = maker.Variable(fieldModifier, arg, argTypeTree, null); //NOI18N
-//                paramList.add(argFieldTree);
-//            }
             body =
                 "{"+ //NOI18N
                 "   String subresourcePath = "+getPathExpression(pf)+";"+ //NOI18N
@@ -276,13 +304,17 @@ public class ClientJavaSourceHelper {
         }
 
         // add wrappers for http methods (GET/POST/PUT/DELETE)
-        for (RestMethodDescription methodDesc : restMethodDesc) {
-            if (methodDesc instanceof HttpMethod) {
-                List<MethodTree> httpMethods = createHttpMethods(copy, (HttpMethod)methodDesc);
-                for (MethodTree httpMethod : httpMethods) {
-                    modifiedInnerClass = maker.addClassMember(modifiedInnerClass, httpMethod);
+        if (annotatedMethods != null) {
+            for (RestMethodDescription methodDesc : annotatedMethods) {
+                if (methodDesc instanceof HttpMethod) {
+                    List<MethodTree> httpMethods = createHttpMethods(copy, (HttpMethod)methodDesc);
+                    for (MethodTree httpMethod : httpMethods) {
+                        modifiedInnerClass = maker.addClassMember(modifiedInnerClass, httpMethod);
+                    }
                 }
             }
+        } else if (saasMethods != null) {
+            // PENDING: need to implement
         }
 
         // add close()
@@ -420,150 +452,6 @@ public class ClientJavaSourceHelper {
         }
     }
 
-    private static String getPathExpression(PathFormat pf) {
-        String[] arguments = pf.getArguments();
-        if (arguments.length == 0) {
-            return pf.getPattern();
-        } else {
-            return "java.text.MessageFormat.format(\""+pf.getPattern()+"\", new Object[] {"+getArgumentList(arguments)+"})"; //NOI18N
-        }
-    }
-
-    private static String getArgumentList(String[] arguments) {
-        if (arguments.length == 0) {
-            return "";
-        } else {
-            StringBuffer buf = new StringBuffer(arguments[0]);
-            for (int i=1 ; i<arguments.length ; i++) {
-                buf.append(","+arguments[i]);
-            }
-            return buf.toString();
-        }
-    }
-
-    static enum HttpMimeType {
-        XML("application/xml", "javax.ws.rs.core.MediaType.APPLICATION_XML"), //NOI18N
-        JSON("application/json", "javax.ws.rs.core.MediaType.APPLICATION_JSON"), //NOI18N
-        TEXT("text/plain", "javax.ws.rs.core.MediaType.TEXT_PLAIN"), //NOI18N
-        HTML("text/html", "javax.ws.rs.core.MediaType.TEXT_HTML"); //NOI18N
-
-        private String mimeType;
-        private String mediaType;
-
-        HttpMimeType(String mimeType, String mediaType) {
-            this.mimeType = mimeType;
-            this.mediaType = mediaType;
-        }
-
-        public String getMimeType() {
-            return mimeType;
-        }
-
-        public String getMediaType() {
-            return mediaType;
-        }
-    }
-
-    private static PathFormat getPathFormat(String path) {
-        String p = (path.startsWith("/") ? path.substring(1) : path); //NOI18N
-        PathFormat pathFormat = new PathFormat();
-        StringBuffer buf = new StringBuffer();
-        List<String> arguments = new ArrayList<String>();
-        for (int i=0 ; i<p.length() ; i++) {
-            char ch = p.charAt(i);
-            if (ch == '{') { //NOI18N
-                int j=i+1;
-                while (j<p.length() &&  p.charAt(j) != '}') { //NOI18N
-                    j++;
-                }
-                String arg = p.substring(i+1,j);
-                buf.append("{"+arguments.size()+"}"); //NOI18N
-                arguments.add(arg);
-                i = j;
-            } else {
-                buf.append(ch);
-            }
-        }
-
-        pathFormat.setPattern(buf.toString());
-        pathFormat.setArguments(arguments.toArray(new String[arguments.size()]));
-        return pathFormat;
-    }
-
-    static class PathFormat {
-        private String pattern;
-        private String[] arguments;
-
-        public String[] getArguments() {
-            return arguments;
-        }
-
-        public void setArguments(String[] arguments) {
-            this.arguments = arguments;
-        }
-
-        public String getPattern() {
-            return pattern;
-        }
-
-        public void setPattern(String pattern) {
-            this.pattern = pattern;
-        }
-    }
-
-    public static String getResourceURL(Project project, String uri) {
-        
-        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        String serverInstanceID = provider.getServerInstanceID();
-        if (serverInstanceID == null) {
-            Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(Level.INFO, "Can not detect target J2EE server"); //NOI18N
-            return "";
-        }
-        // getting port and host name
-        ServerInstance serverInstance = Deployment.getDefault().getServerInstance(serverInstanceID);
-        String portNumber = "8080"; //NOI18N
-        String hostName = "localhost"; //NOI18N
-        try {
-            ServerInstance.Descriptor instanceDescriptor = serverInstance.getDescriptor();
-            if (instanceDescriptor != null) {
-                int port = instanceDescriptor.getHttpPort();
-                portNumber = port == 0 ? "8080" : String.valueOf(port); //NOI18N
-                String hstName = instanceDescriptor.getHostname();
-                if (hstName != null) {
-                    hostName = hstName;
-                }
-            }
-        } catch (InstanceRemovedException ex) {
-            Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(Level.INFO, "Removed ServerInstance", ex); //NOI18N
-        }
-
-        String contextRoot = null;
-        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
-
-        if (J2eeModule.Type.WAR.equals(moduleType)) {
-            J2eeModuleProvider.ConfigSupport configSupport = provider.getConfigSupport();
-            try {
-                contextRoot = configSupport.getWebContextRoot();
-            } catch (ConfigurationException e) {
-                // TODO the context root value could not be read, let the user know about it
-            }
-            if (contextRoot != null && contextRoot.startsWith("/")) { //NOI18N
-                //NOI18N
-                contextRoot = contextRoot.substring(1);
-            }
-        }
-        String applicationPath = "resources"; //NOI18N
-        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        if (restSupport != null) {
-            try {
-                applicationPath = restSupport.getApplicationPath();
-            } catch (IOException ex) {}
-        }
-        return "http://" + hostName + ":" + portNumber + "/" + //NOI18N
-                (contextRoot != null && !contextRoot.equals("") ? contextRoot : "") + //NOI18N
-                "/"+applicationPath + uri; //NOI18N
-    }
-
     private static MethodTree createHttpPOSTMethod(WorkingCopy copy, HttpMethod httpMethod, HttpMimeType requestMimeType, boolean multipleMimeTypes) {
         String methodPrefix = httpMethod.getType().toLowerCase();
         String responseType = httpMethod.getReturnType();
@@ -603,7 +491,7 @@ public class ClientJavaSourceHelper {
         }
 
         // create param list
-        
+
         List<VariableTree> paramList = new ArrayList<VariableTree>();
         if (classParam != null) {
             paramList.add(classParam);
@@ -663,36 +551,104 @@ public class ClientJavaSourceHelper {
         }
     }
 
-    static class RootResourcePath {
-        private PathFormat pathFormat;
-        private String rootPath;
-
-        public RootResourcePath() {
-        }
-
-        public RootResourcePath(PathFormat pathFormat, String rootPath) {
-            this.pathFormat = pathFormat;
-            this.rootPath = rootPath;
-        }
-
-        public PathFormat getPathFormat() {
-            return pathFormat;
-        }
-
-        public void setPathFormat(PathFormat pathFormat) {
-            this.pathFormat = pathFormat;
-        }
-
-        public String getRootPath() {
-            return rootPath;
-        }
-
-        public void setRootPath(String rootPath) {
-            this.rootPath = rootPath;
+    private static String getPathExpression(PathFormat pf) {
+        String[] arguments = pf.getArguments();
+        if (arguments.length == 0) {
+            return "\""+pf.getPattern()+"\"";
+        } else {
+            return "java.text.MessageFormat.format(\""+pf.getPattern()+"\", new Object[] {"+getArgumentList(arguments)+"})"; //NOI18N
         }
     }
 
-    private static RootResourcePath getRootResourcePath(Node resourceNode, String resourceClass, String uriTemplate) {
+    private static String getArgumentList(String[] arguments) {
+        if (arguments.length == 0) {
+            return "";
+        } else {
+            StringBuffer buf = new StringBuffer(arguments[0]);
+            for (int i=1 ; i<arguments.length ; i++) {
+                buf.append(","+arguments[i]);
+            }
+            return buf.toString();
+        }
+    }
+
+    private static PathFormat getPathFormat(String path) {
+        String p = (path.startsWith("/") ? path.substring(1) : path); //NOI18N
+        PathFormat pathFormat = new PathFormat();
+        StringBuffer buf = new StringBuffer();
+        List<String> arguments = new ArrayList<String>();
+        for (int i=0 ; i<p.length() ; i++) {
+            char ch = p.charAt(i);
+            if (ch == '{') { //NOI18N
+                int j=i+1;
+                while (j<p.length() &&  p.charAt(j) != '}') { //NOI18N
+                    j++;
+                }
+                String arg = p.substring(i+1,j);
+                buf.append("{"+arguments.size()+"}"); //NOI18N
+                arguments.add(arg);
+                i = j;
+            } else {
+                buf.append(ch);
+            }
+        }
+
+        pathFormat.setPattern(buf.toString());
+        pathFormat.setArguments(arguments.toArray(new String[arguments.size()]));
+        return pathFormat;
+    }
+
+    private static ResourcePath getResourcePath(WadlSaasResource saasResource) {
+        String path = normalizePath(saasResource.getResource().getPath());
+        WadlSaasResource parent = saasResource.getParent();
+        while(parent != null) {
+            String pathToken = normalizePath(parent.getResource().getPath());
+            if (pathToken.length()>0) {
+                path = pathToken+"/"+path; //NOI18N
+            }
+            parent = parent.getParent();
+        }
+        return new ResourcePath(getPathFormat(path), path);
+    }
+
+    private static String normalizePath(String path) {
+        String s = path;
+        while (s.startsWith("/")) { //NOI18N
+            s = s.substring(1);
+        }
+        while (s.endsWith("/")) { //NOI18N
+            s = s.substring(0, s.length()-1);
+        }
+        return s;
+    }
+
+    private static String getClientClassName(WadlSaasResource saasResource) {
+        String path = saasResource.getResource().getPath();
+        path = path.replace("{", "");
+        path = path.replace("}", "");
+        path = path.replace("/", "_");
+        path = path.replace(".", "_");
+        while (path.startsWith("_")) {
+            path = path.substring(1);
+        }
+        while (path.endsWith("_")) {
+            path = path.substring(0, path.length()-1);
+        }
+        String saasName = saasResource.getSaas().getDisplayName();
+        saasName = saasName.replace(" ", "_");
+
+        if (saasName.length() == 0) {
+            saasName = "Resource"; //NOI18N
+        } else if (!Character.isJavaIdentifierStart(saasName.charAt(0))) {
+            saasName= "Resource_"+saasName; //NOI18N
+        } else if (Character.isLowerCase(saasName.charAt(0))) {
+            saasName = saasName.substring(0,1).toUpperCase()+saasName.substring(1);
+        }
+
+        return saasName+(path.length() == 0 ? "" : "_"+path)+"_JerseyClient";
+    }
+
+    private static ResourcePath getResourcePath(Node resourceNode, String resourceClass, String uriTemplate) {
         String resourceUri = uriTemplate.startsWith("/") ? uriTemplate.substring(1) : uriTemplate; //NOI18N
         if (resourceUri.endsWith("/")) { //NOI18N
             resourceUri = resourceUri.substring(0, resourceUri.length()-1);
@@ -730,10 +686,10 @@ public class ClientJavaSourceHelper {
                                             subresourceUri = resourceUri;
                                         }
                                         PathFormat pf = getPathFormat(subresourceUri);
-                                        return new RootResourcePath(pf, parentResourceUri);
+                                        return new ResourcePath(pf, parentResourceUri);
                                     } else {
                                         // searching recursively for
-                                        return getRootResourcePath(sibling, desc.getClassName(), resourceLocatorUri+"/"+uriTemplate); //NOI8N
+                                        return getResourcePath(sibling, desc.getClassName(), resourceLocatorUri+"/"+uriTemplate); //NOI8N
                                     }
                                 }
                             }
@@ -742,6 +698,132 @@ public class ClientJavaSourceHelper {
                 }
             }
         }
-        return new RootResourcePath(getPathFormat(uriTemplate), uriTemplate);
+        return new ResourcePath(getPathFormat(uriTemplate), uriTemplate);
+    }
+
+    public static String getResourceURL(Project project, String uri) {
+        
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        String serverInstanceID = provider.getServerInstanceID();
+        if (serverInstanceID == null) {
+            Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(Level.INFO, "Can not detect target J2EE server"); //NOI18N
+            return "";
+        }
+        // getting port and host name
+        ServerInstance serverInstance = Deployment.getDefault().getServerInstance(serverInstanceID);
+        String portNumber = "8080"; //NOI18N
+        String hostName = "localhost"; //NOI18N
+        try {
+            ServerInstance.Descriptor instanceDescriptor = serverInstance.getDescriptor();
+            if (instanceDescriptor != null) {
+                int port = instanceDescriptor.getHttpPort();
+                portNumber = port == 0 ? "8080" : String.valueOf(port); //NOI18N
+                String hstName = instanceDescriptor.getHostname();
+                if (hstName != null) {
+                    hostName = hstName;
+                }
+            }
+        } catch (InstanceRemovedException ex) {
+            Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(Level.INFO, "Removed ServerInstance", ex); //NOI18N
+        }
+
+        String contextRoot = null;
+        J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
+
+        if (J2eeModule.Type.WAR.equals(moduleType)) {
+            J2eeModuleProvider.ConfigSupport configSupport = provider.getConfigSupport();
+            try {
+                contextRoot = configSupport.getWebContextRoot();
+            } catch (ConfigurationException e) {
+                // TODO the context root value could not be read, let the user know about it
+            }
+            if (contextRoot != null && contextRoot.startsWith("/")) { //NOI18N
+                //NOI18N
+                contextRoot = contextRoot.substring(1);
+            }
+        }
+        String applicationPath = "resources"; //NOI18N
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        if (restSupport != null) {
+            try {
+                applicationPath = restSupport.getApplicationPath();
+            } catch (IOException ex) {}
+        }
+        return "http://" + hostName + ":" + portNumber + "/" + //NOI18N
+                (contextRoot != null && !contextRoot.equals("") ? contextRoot : "") + //NOI18N
+                "/"+applicationPath + uri; //NOI18N
+    }
+
+    static class PathFormat {
+        private String pattern;
+        private String[] arguments;
+
+        public String[] getArguments() {
+            return arguments;
+        }
+
+        public void setArguments(String[] arguments) {
+            this.arguments = arguments;
+        }
+
+        public String getPattern() {
+            return pattern;
+        }
+
+        public void setPattern(String pattern) {
+            this.pattern = pattern;
+        }
+    }
+
+    static class ResourcePath {
+        private PathFormat pathFormat;
+        private String path;
+
+        public ResourcePath() {
+        }
+
+        public ResourcePath(PathFormat pathFormat, String path) {
+            this.pathFormat = pathFormat;
+            this.path = path;
+        }
+
+        public PathFormat getPathFormat() {
+            return pathFormat;
+        }
+
+        public void setPathFormat(PathFormat pathFormat) {
+            this.pathFormat = pathFormat;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
+        }
+    }
+
+    static enum HttpMimeType {
+        XML("application/xml", "javax.ws.rs.core.MediaType.APPLICATION_XML"), //NOI18N
+        JSON("application/json", "javax.ws.rs.core.MediaType.APPLICATION_JSON"), //NOI18N
+        TEXT("text/plain", "javax.ws.rs.core.MediaType.TEXT_PLAIN"), //NOI18N
+        HTML("text/html", "javax.ws.rs.core.MediaType.TEXT_HTML"); //NOI18N
+
+        private String mimeType;
+        private String mediaType;
+
+        HttpMimeType(String mimeType, String mediaType) {
+            this.mimeType = mimeType;
+            this.mediaType = mediaType;
+        }
+
+        public String getMimeType() {
+            return mimeType;
+        }
+
+        public String getMediaType() {
+            return mediaType;
+        }
     }
 }

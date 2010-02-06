@@ -40,8 +40,8 @@
  */
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
-import org.netbeans.modules.cnd.toolchain.ui.api.ServerListUIEx;
-import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelModel;
+import org.netbeans.modules.cnd.api.toolchain.ui.ServerListUIEx;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Font;
@@ -66,15 +66,15 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetImpl;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerAccessorImpl;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelSupport;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;

@@ -43,8 +43,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -59,8 +59,8 @@ import org.openide.filesystems.FileObject;
  */
 public class DependenciesGraph {
     
-    private static final String INDENT = "    "; //NOI18N
-    
+    private static final Logger LOGGER = Logger.getLogger(DependenciesGraph.class.getSimpleName());
+
     private Map<FileObject, Node> file2node = new HashMap<FileObject, Node>();
     private Node sourceNode;
 
@@ -72,6 +72,7 @@ public class DependenciesGraph {
         Node node = file2node.get(source);
         if(node == null) {
             node = new Node(source);
+            file2node.put(source, node);
         }
         return node;
     }
@@ -87,54 +88,42 @@ public class DependenciesGraph {
      */
     public Collection<FileObject> getAllRelatedFiles() {
         Collection<FileObject> files = new HashSet<FileObject>();
-        addReferingFiles(files, sourceNode);
-        addReferedFiles(files, sourceNode);
-
+        walk(files, getSourceNode(), true, true);
         return files;
     }
 
-    private void addReferingFiles(Collection<FileObject> files, Node base) {
-        files.add(base.getFile());
-        for(Node node : base.refering) {
-            addReferingFiles(files, node);
-        }
+    public Collection<FileObject> getAllReferedFiles() {
+        Collection<FileObject> files = new HashSet<FileObject>();
+        walk(files, getSourceNode(), true, false);
+        return files;
     }
 
-    private void addReferedFiles(Collection<FileObject> files, Node base) {
-        files.add(base.getFile());
-        for(Node node : base.refered) {
-            addReferedFiles(files, node);
-        }
+    public Collection<FileObject> getAllReferingFiles() {
+        Collection<FileObject> files = new HashSet<FileObject>();
+        walk(files, getSourceNode(), false, true);
+        return files;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        dumpNodes(builder, 0, sourceNode, false); //refering
-        dumpNodes(builder, 0, sourceNode, true); //refered
-        return builder.toString();
-    }
-
-    private void dumpNodes(StringBuilder b, int level, Node node, boolean refered) {
-        for(int i = 0; i < level; i++) {
-            b.append(INDENT);
+    private void walk(Collection<FileObject> files, Node node, boolean refered, boolean refering) {
+        if(files.add(node.getFile())) {
+            if(refered) {
+                for(Node n : node.refered) {
+                    walk(files, n, refered, refering);
+                }
+            }
+            if(refering) {
+                for(Node n : node.refering) {
+                    walk(files, n, refered, refering);
+                }
+            }
         }
-        b.append(refered ? "->" : "<-");
-        b.append(node);
-        b.append('\n');
-        for(Node n : refered ? node.getReferedNodes() : node.getReferingNodes()) {
-            dumpNodes(b, level + 1, n, refered);
-        }
-
     }
-
-
 
     public class Node {
 
         private FileObject source;
-        private Collection<Node> refering = new LinkedList<Node>();
-        private Collection<Node> refered = new LinkedList<Node>();
+        private Collection<Node> refering = new HashSet<Node>();
+        private Collection<Node> refered = new HashSet<Node>();
 
         private Node(FileObject source) {
             this.source = source;
@@ -148,28 +137,34 @@ public class DependenciesGraph {
             return source;
         }
 
-        public void addReferedNode(Node node) {
+        public boolean addReferedNode(Node node) {
             if(refered.add(node)) {
-                node.refering.add(this);
+                boolean added = node.refering.add(this);
+                if(!added) {
+                    //cycle in the graph!
+                    LOGGER.info(String.format("A graph cycle detected when adding refered node %s to node %s",
+                            node.toString(), this.toString())); //NOI18N
+                    return false;
+                } else {
+                    return true;
+                }
             }
+            return false;
         }
 
-        public void removeReferedNode(Node node) {
-            if(refered.remove(node)) {
-                node.refering.remove(this);
-            }
-        }
-
-        public void addReferingNode(Node node) {
+        public boolean addReferingNode(Node node) {
             if(refering.add(node)) {
-                node.refered.add(this);
+                boolean added = node.refered.add(this);
+                 if(!added) {
+                    //cycle in the graph!
+                     LOGGER.info(String.format("A graph cycle detected when adding refering node %s to node %s",
+                            node.toString(), this.toString())); //NOI18N
+                    return false;
+                } else {
+                    return true;
+                }
             }
-        }
-
-        public void removeReferingNode(Node node) {
-            if(refering.remove(node)) {
-                node.refered.remove(this);
-            }
+            return false;
         }
 
         /**
