@@ -177,14 +177,17 @@ made subject to such option by the copyright holder.
                 </folder>
 
                 <folder name="Popup">
-
-                    <file name="SeparatorAfterView.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1166"/>
-                    </file>
                     <file name="ViewAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ViewAction.instance"/>
                         <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="SeparatorAfterView.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1166"/>
                     </file>
                     <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
 			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
@@ -287,14 +290,17 @@ made subject to such option by the copyright holder.
                 </folder>
 
                 <folder name="Popup">
-
-                    <file name="SeparatorAfterView.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1166"/>
-                    </file>
                     <file name="ViewAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ViewAction.instance"/>
                         <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="SeparatorAfterView.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1166"/>
                     </file>
                     <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
 			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>

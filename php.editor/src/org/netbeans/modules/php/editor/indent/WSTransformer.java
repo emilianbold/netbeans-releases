@@ -44,16 +44,13 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
-import org.netbeans.api.editor.EditorUtilities;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
@@ -90,7 +87,7 @@ class WSTransformer extends DefaultTreePathVisitor {
     private Collection<CodeRange> unbreakableRanges = new TreeSet<CodeRange>();
     private Collection<Integer> breakPins = new LinkedList<Integer>();
 
-    private final Collection<PHPTokenId> WS_AND_COMMENT_TOKENS = Arrays.asList(PHPTokenId.PHPDOC_COMMENT_START,
+    private final List<PHPTokenId> WS_AND_COMMENT_TOKENS = Arrays.asList(PHPTokenId.PHPDOC_COMMENT_START,
             PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.WHITESPACE,
             PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT,
             PHPTokenId.PHP_LINE_COMMENT);
@@ -103,7 +100,17 @@ class WSTransformer extends DefaultTreePathVisitor {
     private final Collection<PHPTokenId> NO_BREAK_B4_TKNS = Arrays.asList(PHPTokenId.PHP_CLOSETAG,
             PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_CATCH,
             PHPTokenId.PHP_WHILE);
-    
+
+    private final List<String> ASSIGN_OPERATORS =  Arrays.asList(
+	    "=", ".=", "=.", "+=", "=+", "=-", "-=" //NOI18N
+	    );
+    private final List<String> BINARY_OPERATORS =  Arrays.asList(
+	    "+", "-", "*", "/", "<", ">", "<>", "<=", ">=", "==", "===", //NOI18N
+	    "%", "&", "|", "^", "~", "<<", ">>", "!=", "!==", ".", "&&", "||"
+	    );
+    private final List<String> UNARY_OPERATOS = Arrays.asList(
+	    "++", "--", "!" //NOI8N
+	    );
     // keep information, whether the function declaration is visited directly or from method declaration
     private boolean isMethod;
 
@@ -111,6 +118,37 @@ class WSTransformer extends DefaultTreePathVisitor {
         this.context = context;
         isMethod = false;
     }
+
+    @Override
+    public void visit(Program node) {
+	super.visit(node);
+	TokenSequence<PHPTokenId> ts = tokenSequence(node.getStartOffset());
+        Token<? extends PHPTokenId> token;
+
+	while (ts.moveNext()) {
+	    token = LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_OPERATOR, 
+		    PHPTokenId.PHP_OBJECT_OPERATOR));
+	    if (token.id() == PHPTokenId.PHP_OBJECT_OPERATOR) {
+		checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundObjectOps());
+	    }
+	    else {
+		String text = token.text().toString();
+		if (".".equals(text)) {
+		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundStringConcatOps());
+		}
+		else if (ASSIGN_OPERATORS.contains(text)) {
+		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundAssignOps());
+		}
+		else if (BINARY_OPERATORS.contains(text)) {
+		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundBinaryOps());
+		}
+		else if (UNARY_OPERATOS.contains(text)) {
+		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundUnaryOps());
+		}
+	    }
+	}
+    }
+
 
     @Override
     public void visit(Block node) {
@@ -121,11 +159,11 @@ class WSTransformer extends DefaultTreePathVisitor {
             return;
         }
         
-
+	
         if (node.isCurly()){
             String openingBraceStyle = CodeStyle.get(context.document()).getOpeningBraceStyle();
             newLineReplacement = FmtOptions.OBRACE_NEWLINE.equals(openingBraceStyle)? "\n" : " "; //NOI18N
-            if (FmtOptions.OBRACE_SAMELINE.equals(openingBraceStyle) && getPath().size() > 0) {
+            if (!FmtOptions.OBRACE_NEWLINE.equals(openingBraceStyle) && getPath().size() > 0) {
                 ASTNode parent = getPath().get(0);
                 if (parent instanceof ClassDeclaration) {
                     newLineReplacement = CodeStyle.get(context.document()).spaceBeforeClassDeclLeftBrace() ? " " : ""; //NOI18N
@@ -169,10 +207,13 @@ class WSTransformer extends DefaultTreePathVisitor {
                     && tokenSequence.token().id() == PHPTokenId.PHP_CURLY_OPEN){
                 int start = tokenSequence.offset();
                 int length = 0;
-
                 if (tokenSequence.movePrevious()
                         && tokenSequence.token().id() == PHPTokenId.WHITESPACE){
                     length = tokenSequence.token().length();
+		    if (FmtOptions.OBRACE_PRESERVE.equals(openingBraceStyle)
+			    && countOfNewLines(tokenSequence.token().text()) > 0) {
+			    newLineReplacement = "\n";
+		    }
                 }
 
                 boolean precededByOpenTag = tokenSequence.token().id() == PHPTokenId.PHP_OPENTAG;
@@ -228,7 +269,6 @@ class WSTransformer extends DefaultTreePathVisitor {
                                 && TokenUtilities.equals(tokenSequence.token().text(), ","))){
                             Replacement postClose = new Replacement(tokenSequence.offset() +
                                     tokenSequence.token().length(), 0, "\n"); //NOI18N
-
                             replacements.add(postClose);
                         }
                     }
@@ -490,8 +530,6 @@ class WSTransformer extends DefaultTreePathVisitor {
         super.visit(node);
     }
 
-
-
     private void checkSpaceBetweenCurlyCloseAndToken(int offset, boolean insertSpace,
              final List<PHPTokenId> beforeTokens) {
         TokenSequence<PHPTokenId> ts = tokenSequence(offset);
@@ -517,14 +555,29 @@ class WSTransformer extends DefaultTreePathVisitor {
         }
     }
 
+    private void checkSpaceAroundToken(TokenSequence<PHPTokenId>ts, boolean insertSpace) {
+	int offset = ts.offset();
+	replaceSpaceBeforeToken(ts, insertSpace, null);
+	ts.move(offset);
+	ts.moveNext();
+
+	if (ts.moveNext()) {
+	    LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
+	    replaceSpaceBeforeToken(ts, insertSpace, null);
+	    ts.move(offset);
+	    ts.moveNext();
+	}
+    }
+
     private void replaceSpaceBeforeToken(TokenSequence<PHPTokenId> ts, boolean space,
             final List<PHPTokenId> afterTokens) {
         if (ts.movePrevious()) {
             Token<? extends PHPTokenId> token = ts.token();
-            if ((afterTokens.contains(token.id())
+            if (((afterTokens == null && token.id() != PHPTokenId.WHITESPACE)
+		    || (afterTokens != null && afterTokens.contains(token.id()))
                     || token.id() == PHPTokenId.PHP_COMMENT_END) && space) {
                 replacements.add(new Replacement(ts.offset() + token.length(), 0, " ")); //NOI18N
-            } else if (token.id() == PHPTokenId.WHITESPACE && !hasNewLine(token.text())) {
+            } else if (token.id() == PHPTokenId.WHITESPACE && countOfNewLines(token.text()) == 0) {
                 if (space) {
                     if (token.text().length() > 1) {
                         replacements.add(new Replacement(ts.offset() + token.length(), token.length(), " ")); //NOI18N
@@ -889,13 +942,19 @@ class WSTransformer extends DefaultTreePathVisitor {
         return LexUtilities.getPHPTokenSequence(context.document(), offset);
     }
 
-    private boolean hasNewLine(CharSequence chs) {
+    /**
+     *
+     * @param chs
+     * @return number of new lines in the input
+     */
+    private int countOfNewLines(CharSequence chs) {
+	int count = 0;
         for (int i = 0; i < chs.length(); i++) {
             if (chs.charAt(i) == '\n') { // NOI18N
-                return true;
+                count ++;
             }
         }
-        return false;
+        return count;
     }
 
     static class Replacement implements Comparable<Replacement>{
@@ -966,4 +1025,5 @@ class WSTransformer extends DefaultTreePathVisitor {
         FIELD,
         UNKNOWN;
     }
+    
 }

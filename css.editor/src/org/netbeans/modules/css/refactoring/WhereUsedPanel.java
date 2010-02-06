@@ -70,11 +70,15 @@ public class WhereUsedPanel extends javax.swing.JPanel implements CustomRefactor
     private void initComponents() {
 
         searchInCommentsCheckBox = new javax.swing.JCheckBox();
+        findAllCheckBox = new javax.swing.JCheckBox();
 
-        setPreferredSize(new java.awt.Dimension(200, 40));
+        setPreferredSize(new java.awt.Dimension(200, 100));
 
         searchInCommentsCheckBox.setText(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.searchInCommentsCheckBox.text")); // NOI18N
         searchInCommentsCheckBox.setEnabled(false);
+
+        findAllCheckBox.setSelected(true);
+        findAllCheckBox.setText(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.findAllCheckBox.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -82,20 +86,25 @@ public class WhereUsedPanel extends javax.swing.JPanel implements CustomRefactor
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(searchInCommentsCheckBox)
-                .addContainerGap(224, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(searchInCommentsCheckBox)
+                    .addComponent(findAllCheckBox))
+                .addContainerGap(24, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(searchInCommentsCheckBox)
-                .addContainerGap(260, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(findAllCheckBox)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox findAllCheckBox;
     private javax.swing.JCheckBox searchInCommentsCheckBox;
     // End of variables declaration//GEN-END:variables
 
@@ -107,6 +116,10 @@ public class WhereUsedPanel extends javax.swing.JPanel implements CustomRefactor
     @Override
     public Component getComponent() {
         return this;
+    }
+
+    public boolean isFindAllOccurances() {
+        return findAllCheckBox.isSelected();
     }
 
 }

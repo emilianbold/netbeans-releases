@@ -120,7 +120,6 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             }
             CssIndex index = sup.getIndex();
             ModificationResult modificationResult = new ModificationResult();
-
             if (element.kind() == CssParserTreeConstants.JJT_CLASS
                     || element.kind() == CssParserTreeConstants.JJTHASH) {
                 //class or id refactoring
@@ -129,20 +128,27 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                         ? index.findClasses(elementImage)
                         : index.findIds(elementImage);
 
-                DependenciesGraph deps = index.getDependencies(context.getFileObject());
-
-                //filter out those files which have no relation with the current file.
-                //note: the list of involved files also contains the currently edited file.
                 List<FileObject> involvedFiles = new LinkedList<FileObject>(files);
-                involvedFiles.retainAll(deps.getAllRelatedFiles());
+                DependenciesGraph deps = index.getDependencies(context.getFileObject());
+                Collection<FileObject> relatedFiles = deps.getAllRelatedFiles();
 
-                //now we have a list of files which contain the given class or id and are
-                //related to the base file
+                //refactor all occurances support
+                CssRefactoringExtraInfo extraInfo =
+                    lookup.lookup(CssRefactoringExtraInfo.class);
+
+                if(extraInfo == null || !extraInfo.isRefactorAll()) {
+                    //if the "refactor all occurances" checkbox hasn't been
+                    //selected the occurances must be searched only in the related files
+
+                    //filter out those files which have no relation with the current file.
+                    //note: the list of involved files also contains the currently edited file.
+                    involvedFiles.retainAll(relatedFiles);
+                    //now we have a list of files which contain the given class or id and are
+                    //related to the base file
+                }
+                
                 if (LOG) {
                     LOGGER.fine("Refactoring element " + element.image() + " in file " + context.getFileObject().getPath()); //NOI18N
-                    LOGGER.fine("Dependencies graph:\n"); //NOI18N
-                    LOGGER.fine(deps.toString() + "\n"); //NOI18N
-
                     LOGGER.fine("Involved files declaring the element " + element.image() + ":"); //NOI18N
                     for (FileObject fo : involvedFiles) {
                         LOGGER.fine(fo.getPath() + "\n"); //NOI18N
@@ -169,6 +175,8 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                         Collection<Entry> entries = element.kind() == CssParserTreeConstants.JJT_CLASS
                                 ? model.getClasses() : model.getIds();
 
+                        boolean related = relatedFiles.contains(file);
+
                         List<Difference> diffs = new ArrayList<Difference>();
                         for (Entry entry : entries) {
                             if (entry.isValidInSourceDocument() && elementImage.equals(entry.getName())) {
@@ -177,7 +185,10 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                                         editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),
                                         entry.getName(),
                                         newName,
-                                        NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Selector"))); //NOI18N
+                                        related ? 
+                                            NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Selector") :
+                                            NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Unrelated_Selector")
+                                            )); //NOI18N
                             }
                         }
                         modificationResult.addDifferences(file, diffs);
