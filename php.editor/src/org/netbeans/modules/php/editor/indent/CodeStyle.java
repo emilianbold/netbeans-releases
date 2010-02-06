@@ -82,10 +82,6 @@ public final class CodeStyle {
         return preferences.getInt(indentSize, getDefaultAsInt(indentSize));
     }
 
-    public String getOpeningBraceStyle(){
-        return preferences.get(openingBraceStyle, getDefaultAsString(openingBraceStyle));
-    }
-
     public int getContinuationIndentSize() {
         return preferences.getInt(continuationIndentSize, getDefaultAsInt(continuationIndentSize));
     }
@@ -108,6 +104,23 @@ public final class CodeStyle {
     
     public int getRightMargin() {
         return preferences.getInt(rightMargin, getDefaultAsInt(rightMargin));
+    }
+
+    // Brace placement --------------------------------------------------------
+
+    public BracePlacement getClassDeclBracePlacement() {
+        String placement = preferences.get(classDeclBracePlacement, getDefaultAsString(classDeclBracePlacement));
+        return BracePlacement.valueOf(placement);
+    }
+
+    public BracePlacement getMethodDeclBracePlacement() {
+        String placement = preferences.get(methodDeclBracePlacement, getDefaultAsString(methodDeclBracePlacement));
+        return BracePlacement.valueOf(placement);
+    }
+
+    public BracePlacement getOtherBracePlacement() {
+        String placement = preferences.get(otherBracePlacement, getDefaultAsString(otherBracePlacement));
+        return BracePlacement.valueOf(placement);
     }
 
     // Blank lines -------------------------------------------------------------
@@ -370,6 +383,11 @@ public final class CodeStyle {
         public CodeStyle create(Preferences preferences) {
             return new CodeStyle(preferences);
         }
+    }
 
+    public enum BracePlacement {
+        SAME_LINE,
+        NEW_LINE,
+        PRESERVE_EXISTING
     }
 }
