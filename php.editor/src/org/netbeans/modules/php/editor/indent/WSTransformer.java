@@ -154,17 +154,27 @@ class WSTransformer extends DefaultTreePathVisitor {
     public void visit(Block node) {
         // TODO: check formatting boundaries here
 
-        if (getPath().get(0) instanceof NamespaceDeclaration){
+	ASTNode parent = getPath().get(0);
+
+        if (parent instanceof NamespaceDeclaration){
             super.visit(node);
             return;
         }
         
-	
         if (node.isCurly()){
-            String openingBraceStyle = CodeStyle.get(context.document()).getOpeningBraceStyle();
-            newLineReplacement = FmtOptions.OBRACE_NEWLINE.equals(openingBraceStyle)? "\n" : " "; //NOI18N
-            if (!FmtOptions.OBRACE_NEWLINE.equals(openingBraceStyle) && getPath().size() > 0) {
-                ASTNode parent = getPath().get(0);
+	    CodeStyle.BracePlacement openingBraceStyle;
+	    if (parent instanceof ClassDeclaration) {
+		openingBraceStyle = CodeStyle.get(context.document()).getClassDeclBracePlacement();
+	    }
+	    else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
+		openingBraceStyle = CodeStyle.get(context.document()).getMethodDeclBracePlacement();
+	    }
+	    else {
+		openingBraceStyle = CodeStyle.get(context.document()).getOtherBracePlacement();
+	    }
+
+            newLineReplacement = CodeStyle.BracePlacement.NEW_LINE == openingBraceStyle ? "\n" : " "; //NOI18N
+            if (CodeStyle.BracePlacement.NEW_LINE != openingBraceStyle && getPath().size() > 0) {
                 if (parent instanceof ClassDeclaration) {
                     newLineReplacement = CodeStyle.get(context.document()).spaceBeforeClassDeclLeftBrace() ? " " : ""; //NOI18N
                 }
@@ -210,7 +220,7 @@ class WSTransformer extends DefaultTreePathVisitor {
                 if (tokenSequence.movePrevious()
                         && tokenSequence.token().id() == PHPTokenId.WHITESPACE){
                     length = tokenSequence.token().length();
-		    if (FmtOptions.OBRACE_PRESERVE.equals(openingBraceStyle)
+		    if (CodeStyle.BracePlacement.PRESERVE_EXISTING == openingBraceStyle
 			    && countOfNewLines(tokenSequence.token().text()) > 0) {
 			    newLineReplacement = "\n";
 		    }
