@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.glassfish.eecommon.api.config;
@@ -49,7 +49,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.deploy.shared.ModuleType;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
@@ -132,21 +131,20 @@ public abstract class GlassfishConfiguration implements
         this.deferredAppServerChange = false;
 
         try {
-            Object mt = module.getType();
-            ModuleType moduleType = mt instanceof ModuleType ? (ModuleType) mt : null;
+            J2eeModule.Type mt = module.getType();
             String moduleVersion = module.getModuleVersion();
 
             minASVersion = computeMinASVersion(moduleVersion);
             maxASVersion = computeMaxASVersion();
             appServerVersion = maxASVersion;
 
-            J2EEBaseVersion j2eeVersion = J2EEBaseVersion.getVersion(moduleType, moduleVersion);
+            J2EEBaseVersion j2eeVersion = J2EEBaseVersion.getVersion(mt, moduleVersion);
             boolean isPreJavaEE5 = (j2eeVersion != null) ?
                     (J2EEVersion.J2EE_1_4.compareSpecification(j2eeVersion) >= 0) : false;
             if (!primarySunDD.exists()) {
                 // If module is J2EE 1.4 (or 1.3), or this is a web app (where we have
                 // a default property even for JavaEE5), then copy the default template.
-                if (J2eeModule.WAR.equals(moduleType) || isPreJavaEE5) {
+                if (J2eeModule.Type.WAR.equals(mt) || isPreJavaEE5) {
                     try {
                         createDefaultSunDD(primarySunDD);
                     } catch (IOException ex) {
@@ -166,7 +164,7 @@ public abstract class GlassfishConfiguration implements
                 File configDir = primarySunDD.getParentFile();
                 FileObject configFolder = FileUtil.toFileObject(configDir);
                 if(configFolder != null) {
-                    FolderListener.createListener(primarySunDD, configFolder, moduleType);
+                    FolderListener.createListener(primarySunDD, configFolder, mt);
                 }
 
                 // Attach listeners to the standard descriptors to handle automatic
@@ -363,10 +361,7 @@ public abstract class GlassfishConfiguration implements
     // ------------------------------------------------------------------------
 
     protected void createDefaultSunDD(File sunDDFile) throws IOException {
-        boolean isPreAS90 = false; // FIXME (ASDDVersion.SUN_APPSERVER_9_0.compareTo(appServerVersion) > 0);
-        String resource = "org-netbeans-modules-j2ee-sun-ddui" + // NOI18N
-                (isPreAS90 ? "-version-8_2/" : "/") + sunDDFile.getName(); // NOI18N
-        FileObject sunDDTemplate = FileUtil.getConfigFile(resource);
+        FileObject sunDDTemplate = Utils.getSunDDFromProjectsModuleVersion(module, sunDDFile.getName()); //FileUtil.getConfigFile(resource);
         if (sunDDTemplate != null) {
             FileObject configFolder = FileUtil.createFolder(sunDDFile.getParentFile());
             FileSystem fs = configFolder.getFileSystem();
