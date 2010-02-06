@@ -41,10 +41,10 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.LinkerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.LinkerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.LibrariesNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
@@ -260,7 +260,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
             // FIXUP: should be move to Platform...
             if (cs != null) {
                 options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibraryBasicFlag();
-                if (cs.isGnuCompiler() && getMakeConfiguration().getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
+                if (cs.getCompilerFlavor().isGnuCompiler() && getMakeConfiguration().getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
                     options += libName + " "; // NOI18N
                 }
             }
@@ -277,7 +277,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
                 if (getPICOption().getValue()) {
                     options += getPICOption(cs);
                 }
-                if (cs.isSunCompiler()) {
+                if (cs.getCompilerFlavor().isSunStudioCompiler()) {
                     options += getNorunpathOption().getOption() + " "; // NOI18N
                     options += getNameassignOption(getNameassignOption().getValue()) + " "; // NOI18N
                 }
@@ -330,10 +330,10 @@ public class LinkerConfiguration implements AllOptionsProvider {
         if (compilerSet != null) {
             linker = compilerSet == null ? null : compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker();
             if (conf.hasCPPFiles(configurationDescriptor)) {
-                BasicCompiler ccCompiler = (BasicCompiler) compilerSet.getTool(Tool.CCCompiler);
+                BasicCompiler ccCompiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
                 linkDriver = ccCompiler.getName();
             } else {
-                BasicCompiler cCompiler = (BasicCompiler) compilerSet.getTool(Tool.CCompiler);
+                BasicCompiler cCompiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.CCompiler);
                 linkDriver = cCompiler.getName();
             }
         }
@@ -358,7 +358,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
             set2.put(new BooleanNodeProp(getStripOption(), true, "StripSymbols", getString("StripSymbolsTxt"), getString("StripSymbolsHint"))); // NOI18N
             if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
                 set2.put(new BooleanNodeProp(getPICOption(), true, "PositionIndependantCode", getString("PositionIndependantCodeTxt"), getString("PositionIndependantCodeHint"))); // NOI18N
-                if (compilerSet != null && compilerSet.isSunCompiler()) {
+                if (compilerSet != null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
                     set2.put(new BooleanNodeProp(getNorunpathOption(), true, "NoRunPath", getString("NoRunPathTxt"), getString("NoRunPathHint"))); // NOI18N
                     set2.put(new BooleanNodeProp(getNameassignOption(), true, "AssignName", getString("AssignNameTxt"), getString("AssignNameHint"))); // NOI18N
                 }
@@ -402,7 +402,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
         return sheet;
     }
 
-    class AdditionalDependenciesOptions implements AllOptionsProvider {
+    private final class AdditionalDependenciesOptions implements AllOptionsProvider {
 
         @Override
         public String getAllOptions(BasicCompiler compiler) {

@@ -349,6 +349,7 @@ class ConnectionCustomEditor extends javax.swing.JPanel {
         final DialogDescriptor dd = new DialogDescriptor(picker, title);
         dd.setValid(picker.isPickerValid());
         picker.addPropertyChangeListener("pickerValid", new PropertyChangeListener() { // NOI18N
+            @Override
             public void propertyChange(PropertyChangeEvent evt2) {
                 dd.setValid(((Boolean)evt2.getNewValue()).booleanValue());
             }
@@ -391,6 +392,7 @@ class ConnectionCustomEditor extends javax.swing.JPanel {
         final DialogDescriptor dd = new DialogDescriptor(propertyPicker, title);
         dd.setValid(propertyPicker.isPickerValid());
         propertyPicker.addPropertyChangeListener("pickerValid", new PropertyChangeListener() { // NOI18N
+            @Override
             public void propertyChange(PropertyChangeEvent evt2) {
                 dd.setValid(((Boolean)evt2.getNewValue()).booleanValue());
             }

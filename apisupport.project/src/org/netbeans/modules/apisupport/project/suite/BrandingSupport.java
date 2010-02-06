@@ -126,7 +126,7 @@ public final class BrandingSupport {
     /**
      * @return the file representing localizing bundle for NetBeans module
      */
-    public  File getLocalizingBundle(final ModuleEntry mEntry) {
+    private File getLocalizingBundle(final ModuleEntry mEntry) {
         ManifestManager mfm = ManifestManager.getInstanceFromJAR(mEntry.getJarLocation());
         File bundle = null;
         if (mfm != null) {
@@ -546,7 +546,7 @@ public final class BrandingSupport {
             return modified;
         }
         
-        public File getBrandingBundle() {
+        private File getBrandingBundle() {
             return brandingBundle;
         }
 

@@ -49,7 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 
 
 /**
@@ -72,11 +72,16 @@ public class WriteRegistryTestCase extends NbTestCase {
         super.tearDown();
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testWrtiteDescriptor() throws Exception {
-        List<ToolchainDescriptor> original = ToolchainManager.getImpl().getAllToolchains();
-        ToolchainManager.getImpl().writeToolchains();
-        ToolchainManager.getImpl().reinitToolchainManager();
-        List<ToolchainDescriptor> restored = ToolchainManager.getImpl().getAllToolchains();
+        List<ToolchainDescriptor> original = ToolchainManagerImpl.getImpl().getAllToolchains();
+        ToolchainManagerImpl.getImpl().writeToolchains();
+        ToolchainManagerImpl.getImpl().reinitToolchainManager();
+        List<ToolchainDescriptor> restored = ToolchainManagerImpl.getImpl().getAllToolchains();
         for(int i = 0; i < original.size(); i++) {
            assertTrue("Tool chain "+original.get(i)+" not equals "+restored.get(i), deepObjectComparing(original.get(i),restored.get(i)));
         }

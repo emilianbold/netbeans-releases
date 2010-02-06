@@ -84,7 +84,7 @@ public class CompletionContext {
     private char lastTypedChar;
     private XMLSyntaxSupport support;
     private FileObject fileObject;
-    private BaseDocument internalDoc = new BaseDocument(XMLKit.class, false);
+    private BaseDocument internalDoc = new BaseDocument(true, XMLKit.MIME_TYPE);
     private int queryType;
 
     public CompletionContext(Document doc, int caretOffset, int queryType) {
@@ -253,23 +253,29 @@ public class CompletionContext {
         }
     }
     
-    private boolean copyDocument(BaseDocument src, BaseDocument dest) {
-        boolean retVal = true;
-        
+    private boolean copyDocument(final BaseDocument src, final BaseDocument dest) {
+        final boolean[] retVal = new boolean[]{true};
+
         src.readLock();
-        dest.atomicLock();
-        try {
-            String docText = src.getText(0, src.getLength());
-            dest.insertString(0, docText, null);
-        } catch(BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
-            retVal = false;
+        try{
+            dest.runAtomic(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        String docText = src.getText(0, src.getLength());
+                        dest.insertString(0, docText, null);
+                    } catch(BadLocationException ble) {
+                        Exceptions.printStackTrace(ble);
+                        retVal[0] = false;
+                    }
+                }
+            });
         } finally {
-            dest.atomicUnlock();
             src.readUnlock();
         }
         
-        return retVal;
+        return retVal[0];
     }
 
     public CompletionType getCompletionType() {

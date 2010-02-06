@@ -70,7 +70,7 @@ abstract class PopupItem {
 
         public String highlite(String text, String displayText) {
             if(text == null || text.trim().equals("")) return displayText;      // NOI18N
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
 
             text = TextUtils.escapeForHTMLLabel(text);
             displayText = TextUtils.escapeForHTMLLabel(displayText);
@@ -79,10 +79,10 @@ abstract class PopupItem {
             String textLower = text.toLowerCase();
             int idx = displayTextLower.indexOf(textLower);
             if(idx < 0) {
-                return displayTextLower;
+                return displayText;
             }
             int lastIdx = 0;
-            sb.append("<html>");                                                // NOI18N
+            sb.append("<html><table width=10000>");                             // NOI18N
             while(idx > -1) {
                 sb.append(displayText.substring(lastIdx, idx));
                 lastIdx = idx + textLower.length();
@@ -94,10 +94,10 @@ abstract class PopupItem {
                 lastIdx = idx + textLower.length();
                 idx = displayTextLower.indexOf(displayTextLower, lastIdx);
             }
-            if(lastIdx < displayTextLower.length()) {
-                sb.append(displayTextLower.substring(lastIdx, displayTextLower.length()));
+            if(lastIdx < displayText.length()) {
+                sb.append(displayText.substring(lastIdx, displayText.length()));
             } 
-            sb.append("</html>");                                               // NOI18N
+            sb.append("</table></html>");                                       // NOI18N
             return sb.toString();
         }
 

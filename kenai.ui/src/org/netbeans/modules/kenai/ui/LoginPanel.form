@@ -4,7 +4,7 @@
   <Properties>
     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+        <EmptyBorder bottom="11" left="0" right="0" top="11"/>
       </Border>
     </Property>
   </Properties>
@@ -34,9 +34,7 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="error" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="progressBar" alignment="0" pref="418" max="32767" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="lblUserName" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="lblPassword" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -50,12 +48,18 @@
                               <Component id="signUp" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="chkRememberMe" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="password" alignment="0" pref="292" max="32767" attributes="0"/>
-                          <Component id="username" alignment="0" pref="292" max="32767" attributes="0"/>
+                          <Component id="password" alignment="0" pref="273" max="32767" attributes="0"/>
+                          <Component id="username" alignment="0" pref="273" max="32767" attributes="0"/>
                           <Component id="forgotPassword" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="chkIsOnline" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="kenaiCombo" alignment="0" pref="292" max="32767" attributes="0"/>
+                          <Component id="kenaiCombo" alignment="0" pref="273" max="32767" attributes="0"/>
                       </Group>
+                  </Group>
+                  <Component id="progressBar" alignment="1" pref="399" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="error" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="moreButton" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -65,7 +69,6 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="kenaiLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="kenaiCombo" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -81,19 +84,24 @@
                   <Component id="password" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="chkRememberMe" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="chkIsOnline" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="forgotPassword" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="lblNoAccount" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="signUp" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Component id="chkRememberMe" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="chkIsOnline" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="forgotPassword" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="lblNoAccount" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="signUp" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="error" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="moreButton" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
-              <Component id="error" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="progressBar" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -180,8 +188,8 @@
     </Component>
     <Component class="javax.swing.JLabel" name="error">
       <Properties>
-        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="0" green="0" id="red" palette="1" red="ff" type="palette"/>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="UIManager.getColor(&quot;nb.warningForeground&quot;)" type="code"/>
         </Property>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/org/netbeans/modules/kenai/ui/resources/error.png"/>
@@ -213,6 +221,11 @@
       </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new KenaiCombo(Kenai.Status.OFFLINE, true)"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JButton" name="moreButton">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new LinkButton(NbBundle.getMessage(KenaiClosingPanel.class, &quot;CTL_LearnMore&quot;), new URLDisplayerAction(&quot;&quot;, KenaiClosingPanel.getKenaiClosingUrl()))"/>
       </AuxValues>
     </Component>
   </SubComponents>

@@ -51,10 +51,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Utilities;
 
@@ -195,13 +196,13 @@ public class ProjectBridge {
             MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
             ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
             switch(itemConfiguration.getTool()) {
-                case Tool.CCCompiler:
+                case CCCompiler:
                     itemConfiguration.setCCCompilerConfiguration(conf.getCCCompilerConfiguration());
                     break;
-                case Tool.CCompiler:
+                case CCompiler:
                     itemConfiguration.setCCompilerConfiguration(conf.getCCompilerConfiguration());
                     break;
-                case Tool.CustomTool:
+                case CustomTool:
                     itemConfiguration.setCustomToolConfiguration(conf.getCustomToolConfiguration());
                     break;
             }
@@ -376,8 +377,8 @@ public class ProjectBridge {
         if (itemConfiguration == null) {
             return;
         }
-        if (itemConfiguration.getTool() == Tool.CCCompiler || itemConfiguration.getTool() == Tool.CCompiler) {
-            itemConfiguration.setTool(Tool.CustomTool);
+        if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler || itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
+            itemConfiguration.setTool(PredefinedToolKind.CustomTool);
         }
     }
 
@@ -388,12 +389,12 @@ public class ProjectBridge {
             return;
         }
         if (isCPP) {
-            if (itemConfiguration.getTool() != Tool.CCCompiler) {
-                itemConfiguration.setTool(Tool.CCCompiler);
+            if (itemConfiguration.getTool() != PredefinedToolKind.CCCompiler) {
+                itemConfiguration.setTool(PredefinedToolKind.CCCompiler);
             }
         } else {
-            if (itemConfiguration.getTool() != Tool.CCompiler) {
-                itemConfiguration.setTool(Tool.CCompiler);
+            if (itemConfiguration.getTool() != PredefinedToolKind.CCompiler) {
+                itemConfiguration.setTool(PredefinedToolKind.CCompiler);
             }
         }
     }
@@ -489,7 +490,8 @@ public class ProjectBridge {
     
     private CompilerSet getCompilerSet(){
         MakeConfiguration makeConfiguration = makeConfigurationDescriptor.getActiveConfiguration();
-        return CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+        final ExecutionEnvironment env = makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
+        return CompilerSetManager.get(env).getCompilerSets().get(makeConfiguration.getCompilerSet().getValue());
     }
 
     public String getCygwinDrive(){
@@ -522,9 +524,9 @@ public class ProjectBridge {
             CompilerSet compilerSet = getCompilerSet();
             BasicCompiler compiler;
             if (isCPP) {
-                compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
+                compiler = (BasicCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
             } else {
-                compiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
+                compiler = (BasicCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
             }
             for(Object o :compiler.getSystemIncludeDirectories()){
                 String path = (String)o;
@@ -568,9 +570,9 @@ public class ProjectBridge {
             CompilerSet compilerSet = getCompilerSet();
             BasicCompiler compiler;
             if (isCPP) {
-                compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
+                compiler = (BasicCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
             } else {
-                compiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
+                compiler = (BasicCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
             }
             for(Object o :compiler.getSystemPreprocessorSymbols()){
                 String macro = (String)o;

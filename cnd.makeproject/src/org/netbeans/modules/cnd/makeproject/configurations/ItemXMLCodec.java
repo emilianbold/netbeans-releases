@@ -46,7 +46,7 @@ import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.xml.sax.Attributes;
 
 public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
@@ -69,11 +69,13 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public String tag() {
         return item.getId();
     }
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) throws VersionException {
         String what = "item"; // NOI18N
         int maxVersion = 1;
@@ -81,18 +83,22 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
     }
 
     // interface XMLDecoder
+    @Override
     public void startElement(String element, Attributes atts) {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String element, String currentText) {
     }
 
     // interface XMLEncoder
+    @Override
     public void encode(XMLEncoderStream xes) {
         if (item.isDefaultConfiguration()) {
             return;
@@ -101,19 +107,19 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
         xes.elementOpen(ITEM_ELEMENT, new AttrValuePair[]{
             new AttrValuePair(PATH_ATTR, item.getItem().getPath()),
             new AttrValuePair(EXCLUDED_ATTR, "" + item.getExcluded().getValue()),
-            new AttrValuePair(TOOL_ATTR, "" + item.getTool()),
+            new AttrValuePair(TOOL_ATTR, "" + item.getTool().ordinal()),
         });
 //        if (item.getExcluded().getModified()) {
 //            xes.element(ITEM_EXCLUDED_ELEMENT, "" + item.getExcluded().getValue()); // NOI18N
 //        }
 //        xes.element(ITEM_TOOL_ELEMENT, "" + item.getTool()); // NOI18N
-        if (item.getTool() == Tool.CCompiler) {
+        if (item.getTool() == PredefinedToolKind.CCompiler) {
             CommonConfigurationXMLCodec.writeCCompilerConfiguration(xes, item.getCCompilerConfiguration());
-        } else if (item.getTool() == Tool.CCCompiler) {
+        } else if (item.getTool() == PredefinedToolKind.CCCompiler) {
             CommonConfigurationXMLCodec.writeCCCompilerConfiguration(xes, item.getCCCompilerConfiguration());
-        } else if (item.getTool() == Tool.FortranCompiler) {
+        } else if (item.getTool() == PredefinedToolKind.FortranCompiler) {
             CommonConfigurationXMLCodec.writeFortranCompilerConfiguration(xes, item.getFortranCompilerConfiguration());
-        } else if (item.getTool() == Tool.CustomTool) {
+        } else if (item.getTool() == PredefinedToolKind.CustomTool) {
             CommonConfigurationXMLCodec.writeCustomToolConfiguration(xes, item.getCustomToolConfiguration());
         }
         xes.elementClose(ITEM_ELEMENT);

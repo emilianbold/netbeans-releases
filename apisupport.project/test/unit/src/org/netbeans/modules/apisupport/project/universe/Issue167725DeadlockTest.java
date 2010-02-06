@@ -43,7 +43,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.Log;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -68,7 +67,7 @@ public class Issue167725DeadlockTest extends TestBase {
         return 20000;
     }
     
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    // XXX cannot be run in binary dist, requires sources; test against fake platform
     public void testConcurrentScanDeadlock() throws Exception {
         final Logger LOG = Logger.getLogger("org.netbeans.modules.apisupport.project.universe.ModuleList");
         Logger observer = Logger.getLogger("observer");

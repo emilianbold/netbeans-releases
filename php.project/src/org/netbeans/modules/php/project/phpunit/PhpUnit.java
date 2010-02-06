@@ -112,8 +112,9 @@ public abstract class PhpUnit extends PhpProgram {
 
     // suite file
     public static final File SUITE;
+    public static final String SUITE_NAME = "NetBeansSuite"; // NOI18N
     public static final String SUITE_RUN = "run=%s"; // NOI18N
-    private static final String SUITE_REL_PATH = "phpunit/NetBeansSuite.php"; // NOI18N
+    private static final String SUITE_REL_PATH = "phpunit/" + SUITE_NAME + ".php"; // NOI18N
 
     // php props
     public static final char DIRECTORY_SEPARATOR = '/'; // NOI18N
@@ -359,7 +360,7 @@ public abstract class PhpUnit extends PhpProgram {
             }
         }
         warnAboutMissingFiles(missingFiles);
-        return new ConfigFiles(bootstrap, configuration, suite);
+        return new ConfigFiles(bootstrap, ProjectPropertiesSupport.usePhpUnitBootstrapForCreateTests(project), configuration, suite);
     }
 
     public static File getCustomSuite(PhpProject project) {
@@ -591,11 +592,13 @@ public abstract class PhpUnit extends PhpProgram {
 
     public static final class ConfigFiles {
         public final File bootstrap;
+        public final boolean useBootstrapForCreateTests;
         public final File configuration;
         public final File suite;
 
-        public ConfigFiles(File bootstrap, File configuration, File suite) {
+        public ConfigFiles(File bootstrap, boolean useBootstrapForCreateTests, File configuration, File suite) {
             this.bootstrap = bootstrap;
+            this.useBootstrapForCreateTests = useBootstrapForCreateTests;
             this.configuration = configuration;
             this.suite = suite;
         }

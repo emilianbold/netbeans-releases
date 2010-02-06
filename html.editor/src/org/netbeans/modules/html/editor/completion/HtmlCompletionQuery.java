@@ -55,6 +55,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -298,6 +299,9 @@ public class HtmlCompletionQuery extends UserTask {
             if (queryHtmlContent) {
                 Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
                 result.addAll(translateTags(offset - 1, openTags, dtd.getElementList(null)));
+                if(HtmlPreferences.completionOffersEndTagAfterLt()) {
+                    result.addAll(getPossibleEndTags(node, offset, ""));
+                }
             }
 
             //extensions

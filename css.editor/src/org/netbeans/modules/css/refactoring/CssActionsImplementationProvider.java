@@ -66,6 +66,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -136,7 +137,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
     @Override
     public void doRename(Lookup selectedNodes) {
 	EditorCookie ec = selectedNodes.lookup(EditorCookie.class);
-	if (representsOpenedFile(ec)) {
+	if (isFromEditor(ec)) {
 	    //editor refactoring
 	    new TextComponentTask(ec) {
 
@@ -160,6 +161,51 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	}
     }
 
+    @Override
+    public boolean canFindUsages(Lookup lookup) {
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+	//we are able to rename only one node selection [at least for now ;-) ]
+	if (nodes.size() != 1) {
+	    return false;
+	}
+
+	//check if the file is a file with .css extension or represents
+	//an opened file which code embeds a css content on the caret position
+	Node node = nodes.iterator().next();
+	if (isCssContext(node)) {
+	    return true;
+	}
+        return false;
+    }
+
+    @Override
+    public void doFindUsages(Lookup lookup) {
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+	if (isFromEditor(ec)) {
+	    new TextComponentTask(ec) {
+                //editor element context
+		@Override
+		protected RefactoringUI createRefactoringUI(CssElementContext context) {
+		    return new WhereUsedUI(context);
+		}
+	    }.run();
+	} else {
+	    //file context
+	    Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+	    assert nodes.size() == 1;
+	    Node currentNode = nodes.iterator().next();
+	    new NodeToFileTask(currentNode) {
+
+		@Override
+		protected RefactoringUI createRefactoringUI(CssElementContext context) {
+		    return new WhereUsedUI(context);
+		}
+	    }.run();
+	}
+    }
+
+
+
     private static boolean isCssContext(Node node) {
 	//for the one thing check if the node represents a css file itself
 	FileObject fo = getFileObjectFromNode(node);
@@ -172,13 +218,14 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 
 	//for the second check if the node represents a top level or embedded css element in the editor
 	EditorCookie ec = getEditorCookie(node);
-	if (representsOpenedFile(ec)) {
+	if (isFromEditor(ec)) {
 	    final Document doc = ec.getDocument();
 	    JEditorPane pane = ec.getOpenedPanes()[0];
 	    final int offset = pane.getCaretPosition();
 	    final AtomicBoolean ref = new AtomicBoolean(false);
 	    doc.render(new Runnable() {
 
+                @Override
 		public void run() {
 		    ref.set(null != LexerUtils.getJoinedTokenSequence(doc, offset));
 		}
@@ -193,6 +240,16 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
     private static FileObject getFileObjectFromNode(Node node) {
 	DataObject dobj = node.getLookup().lookup(DataObject.class);
 	return dobj != null ? dobj.getPrimaryFile() : null;
+    }
+
+    private static boolean isFromEditor(EditorCookie ec) {
+        if (ec != null && ec.getOpenedPanes() != null) {
+            TopComponent activetc = TopComponent.getRegistry().getActivated();
+            if (activetc instanceof CloneableEditorSupport.Pane) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean representsOpenedFile(EditorCookie ec) {
@@ -230,6 +287,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	    }
 	}
 
+        @Override
 	public void run() {
 	    DataObject dobj = node.getLookup().lookup(DataObject.class);
 	    if (dobj != null) {
@@ -271,6 +329,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	    this.selectionEnd = textC.getSelectionEnd();
 	}
 
+        @Override
 	public void run(ResultIterator ri) throws ParseException {
 	    ResultIterator cssri = Css.getResultIterator(ri, Css.CSS_MIME_TYPE);
 	    if (cssri != null) {
@@ -280,6 +339,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	    }
 	}
 
+        @Override
 	public final void run() {
 	    try {
 		Source source = Source.create(document);
@@ -294,7 +354,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	    if (ui != null) {
 		UI.openRefactoringUI(ui, activetc);
 	    } else {
-		JOptionPane.showMessageDialog(null, NbBundle.getMessage(CssActionsImplementationProvider.class, "ERR_CannotRenameLoc"));
+		JOptionPane.showMessageDialog(null, NbBundle.getMessage(CssActionsImplementationProvider.class, "ERR_CannotRefactorLoc"));//NOI18N
 	    }
 	}
 

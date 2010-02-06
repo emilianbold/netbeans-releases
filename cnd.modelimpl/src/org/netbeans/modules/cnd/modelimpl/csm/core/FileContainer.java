@@ -638,7 +638,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
 
         //@Deprecated
-        private final synchronized APTPreprocHandler.State getState() {
+        private synchronized APTPreprocHandler.State getState() {
             return getStatePairs().iterator().next().state;
         }
 
@@ -708,65 +708,27 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
             
             data = new PreprocessorStatePair(state, pcState);
-        }
-        
-        /**
-         * Sets (replaces) new conditions state for the existent pair
-         * @return true in the case of success, otherwise (if no ppState found) false
-         */
-        public boolean setParsedPCState(APTPreprocHandler.State state, FilePreprocessorConditionState pcState) {
-            assert state != null : "state should not be null"; //NOI18N
-            if (state == null) {
-                return false;
-            }
-            assert pcState != null && pcState != FilePreprocessorConditionState.PARSING;
-            if (data instanceof PreprocessorStatePair) {
-                PreprocessorStatePair pair = (PreprocessorStatePair) data;
-                if (state.equals(pair.state)) {
-                    data = new PreprocessorStatePair(pair.state, pcState);
-                    incrementModCount();
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                @SuppressWarnings("unchecked")
-                List<PreprocessorStatePair> list = (List<PreprocessorStatePair>) data;
-                for (int i = 0; i < list.size(); i++) {
-                    PreprocessorStatePair pair = list.get(i);
-                    if (state.equals(pair.state)) {
-                        list.set(i, new PreprocessorStatePair(pair.state, pcState));
-                        incrementModCount();
-                        return true;
-                    }
-                }
-                return false;
-            }
-        }
-        
-//        public synchronized void setStates(Collection<StatePair> pairs) {
-//            incrementModCount();
-//            if (pairs.size() == 1) {
-//                data = pairs.iterator().next();
-//            } else {
-//                data = new ArrayList<StatePair>(pairs);
-//            }
-//            if (CndUtils.isDebugMode()) {
-//                checkConsistency();
-//            }
-//        }
+        }        
 
         public synchronized void setStates(Collection<PreprocessorStatePair> pairs, PreprocessorStatePair yetOneMore) {
             incrementModCount();
             if (yetOneMore != null && yetOneMore.state != null && !yetOneMore.state.isCleaned()) {
                 yetOneMore = new PreprocessorStatePair(APTHandlersSupport.createCleanPreprocState(yetOneMore.state), yetOneMore.pcState);
             }
-            if (pairs.size() == 0) {
+            // to save memory consumption
+            if (yetOneMore == null && pairs.size() == 1) {
+                yetOneMore = pairs.iterator().next();
+                pairs = Collections.<PreprocessorStatePair>emptyList();
+            }
+            if (pairs.isEmpty()) {
+                assert yetOneMore != null;
                 data = yetOneMore;
             } else {
                 ArrayList<PreprocessorStatePair> newData = new ArrayList<PreprocessorStatePair>(pairs.size()+1);
                 newData.addAll(pairs);
-                newData.add(yetOneMore);
+                if (yetOneMore != null) {
+                    newData.add(yetOneMore);
+                }
                 data = newData;
             }
             if (CndUtils.isDebugMode()) {
@@ -893,7 +855,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
     }
     
-    private static final CharSequence getCanonicalKey(CharSequence fileKey) {
+    private static CharSequence getCanonicalKey(CharSequence fileKey) {
         try {
             CharSequence res = new File(fileKey.toString()).getCanonicalPath();
             res = FilePathCache.getManager().getString(res);

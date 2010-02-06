@@ -787,6 +787,7 @@ public class AstRenderer {
                                 break;
                             case CPPTokenTypes.LSQUARE:
                                 arrayDepth++;
+                                break;
                             case CPPTokenTypes.COMMA:
                             case CPPTokenTypes.SEMICOLON:
                                 TypeImpl typeImpl = TypeFactory.createType(cls, ptrOperator, arrayDepth, ast, file);

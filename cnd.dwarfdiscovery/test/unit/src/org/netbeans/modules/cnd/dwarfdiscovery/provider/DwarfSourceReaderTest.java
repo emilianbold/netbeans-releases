@@ -72,6 +72,11 @@ public class DwarfSourceReaderTest extends NbTestCase {
         Logger.getLogger("cnd.logger").setLevel(Level.SEVERE);
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testSunStudioCompiler(){
         TreeMap<String, String> golden = new TreeMap<String, String>();
         golden.put("TEXT_DOMAIN", "\"SUNW_OST_OSCMD\"");

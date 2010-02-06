@@ -146,7 +146,10 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                     try {
                         FileObject layer = handle.getLayerFile();
                         p = FileOwnerQuery.getOwner(layer);
-                        assert p != null : layer;
+                        if (p == null) { // #175861: inside JAR etc.
+                            setKeys(Collections.<LayerChildren.KeyType>emptySet());
+                            return;
+                        }
                         try {
                             cp = createClasspath(p);
                         } catch (IOException e) {

@@ -77,8 +77,8 @@ made subject to such option by the copyright holder.
         <tool name="make"/>
         <alternative_path>
             <path directory="$MSYS"/>
-            <path toolchain_name="*"/>
             <path directory="$PATH"/>
+            <path toolchain_name="*"/>
         </alternative_path>
         <version flags="--version" />
         <dependency_support code="include $(wildcard $(addsuffix .d, ${OBJECTFILES}))\n" />
@@ -86,8 +86,8 @@ made subject to such option by the copyright holder.
     <debugger>
         <tool name="avr-gdb"/>
         <alternative_path>
-            <path toolchain_family="GNU"/>
             <path directory="$PATH"/>
+            <path toolchain_family="GNU"/>
         </alternative_path>
         <version flags="--version" />
     </debugger>

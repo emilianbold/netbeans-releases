@@ -127,7 +127,7 @@ public class ClasspathInfoTest extends NbTestCase {
     
     public void testGetTypeDeclaration() throws Exception {
         ClasspathInfo ci = ClasspathInfo.create( bootPath, classPath, null);
-	JavacElements elements = (JavacElements) JavacParser.createJavacTask(ci,  (DiagnosticListener) null, (String) null, null, null).getElements();
+	JavacElements elements = (JavacElements) JavacParser.createJavacTask(ci,  (DiagnosticListener) null, (String) null, null, null, null).getElements();
 	
         List<String> notFound = new LinkedList<String>();
         JarFile jf = new JarFile( rtJar );       
@@ -163,7 +163,7 @@ public class ClasspathInfoTest extends NbTestCase {
                     // empty package
                     continue;
                 }
-                PackageElement pd = JavacParser.createJavacTask(ci,  (DiagnosticListener) null, (String) null, null, null).getElements().getPackageElement( packageName );
+                PackageElement pd = JavacParser.createJavacTask(ci,  (DiagnosticListener) null, (String) null, null, null, null).getElements().getPackageElement( packageName );
                 assertNotNull( "Declaration for " + packageName + " should not be null.", pd );
             }
         }

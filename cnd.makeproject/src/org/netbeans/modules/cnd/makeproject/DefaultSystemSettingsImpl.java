@@ -41,12 +41,14 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.project.DefaultSystemSettings;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  * This is an implementation of DefaultSystemSetting.
@@ -56,18 +58,18 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.project.DefaultSystemSettings.class)
 public class DefaultSystemSettingsImpl extends DefaultSystemSettings {    
     private static BasicCompiler getDefaultCompiler(NativeFileItem.Language language) {
-        int kind;        
+        PredefinedToolKind kind;
         switch (language) {
             case C:
-                kind = Tool.CCompiler;
+                kind = PredefinedToolKind.CCompiler;
                 break;
             case CPP:
-                kind = Tool.CCCompiler;
+                kind = PredefinedToolKind.CCCompiler;
                 break;
             default:
                 return null;
         }
-        CompilerSet compilerSet = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        CompilerSet compilerSet = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
         Tool compiler = compilerSet.getTool(kind);
         if (compiler instanceof BasicCompiler) {
             return (BasicCompiler)compiler;
@@ -75,6 +77,7 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings {
         return null;
     }
 
+    @Override
     public List<String> getSystemIncludes(NativeFileItem.Language language) {
         BasicCompiler compiler = getDefaultCompiler(language);
         if (compiler != null) {            
@@ -84,6 +87,7 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings {
         }
     }
 
+    @Override
     public List<String> getSystemMacros(NativeFileItem.Language language) {
         BasicCompiler compiler = getDefaultCompiler(language);
         if (compiler != null) {            

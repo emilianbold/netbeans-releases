@@ -92,6 +92,7 @@ public class FormDataObject extends MultiDataObject {
         super(jfo, loader);
         formEntry = (FileEntry)registerEntry(ffo);
         getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
+            @Override
             public void saveAs(FileObject folder, String fileName) throws IOException {
                 getFormEditorSupport().saveAs( folder, fileName );
             }
@@ -123,10 +124,12 @@ public class FormDataObject extends MultiDataObject {
     }
 
     private class OpenEdit implements OpenCookie, EditCookie {
+        @Override
         public void open() {
             // open form editor with form designer selected
             getFormEditorSupport().openFormEditor(true);
         }
+        @Override
         public void edit() {
             // open form editor with java editor selected (form not loaded)
             getFormEditorSupport().open();

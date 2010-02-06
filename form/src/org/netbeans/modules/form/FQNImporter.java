@@ -132,6 +132,7 @@ public class FQNImporter {
         try {
             JavaSource source = JavaSource.forFileObject(javaFile);
             CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+                @Override
                 public void run(WorkingCopy wc) throws Exception {
                     wc.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationUnitTree cu = wc.getCompilationUnit();
@@ -222,6 +223,7 @@ public class FQNImporter {
                         }
                     }
                 }
+                @Override
                 public void cancel() {
                 }
             };

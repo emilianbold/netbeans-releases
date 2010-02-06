@@ -40,35 +40,110 @@
  */
 package org.netbeans.modules.cnd.makefile.lexer;
 
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 
 /**
+ * Makefile language tokens.
+ *
+ * @see org.netbeans.modules.cnd.script.lexer.ShTokenId
  *
  * @author Jan Jancura
+ * @author Alexey Vladykin
  */
 public enum MakefileTokenId implements TokenId {
 
-    WHITESPACE("whitespace"),// NOI18N
-    NEW_LINE("newline"),// NOI18N
-    TAB("tab"),// NOI18N
-    LINE_COMMENT("line_comment"),// NOI18N
-    MACRO("macro"),// NOI18N
-    MACRO_OPERATOR("macro_operator"),// NOI18N
-    RULE_OPERATOR("rule_operator"),// NOI18N
-    SEPARATOR("separator"),// NOI18N
-    KEYWORD("keyword"),// NOI18N
-    SPECIAL_TARGET("special_target"),// NOI18N
-    STRING_LITERAL("string_literal"),// NOI18N
-    IDENTIFIER("identifier"),// NOI18N
-    ERROR("error");// NOI18N
-    private String name;
+    /**
+     * Space or tab that does not have any special meaning.
+     */
+    WHITESPACE("whitespace"), // NOI18N
 
-    MakefileTokenId(
-            String name) {
-        this.name = name;
+    /**
+     * New line character.
+     */
+    NEW_LINE("whitespace"), // NOI18N
+
+    /**
+     * New line character escaped by backslash.
+     */
+    ESCAPED_NEW_LINE("whitespace"), // NOI18N
+
+    /**
+     * Tab character at line start. Means that the rest of the line is a shell command.
+     */
+    TAB("tab"), // NOI18N
+
+    /**
+     * Shell command, unlexed.
+     */
+    SHELL("shell"), // NOI18N
+
+    /**
+     * Comment: starts with <code>#</code> and ends at line end.
+     */
+    COMMENT("comment"), // NOI18N
+
+    /**
+     * Macro expansion: something starting with <code>$</code>
+     */
+    MACRO("macro"), // NOI18N
+
+    /**
+     * Equals character: <code>=</code>
+     */
+    EQUALS("separator"), // NOI18N
+
+    /**
+     * Colon character followed by equals character: <code>:=</code>
+     */
+    COLON_EQUALS("separator"), // NOI18N
+
+    /**
+     * Plus character followed by equals character: <code>+=</code>
+     */
+    PLUS_EQUALS("separator"), // NOI18N
+
+    /**
+     * Colon character: <code>:</code>
+     */
+    COLON("separator"), // NOI18N
+
+    /**
+     * Semicolon character: <code>;</code>
+     */
+    SEMICOLON("separator"), // NOI18N
+
+    /**
+     * Keyword: <code>include</code>, <code>ifdef</code>, <code>endif</code>
+     */
+    KEYWORD("keyword"), // NOI18N
+
+    /**
+     * Special target: <code>.PHONY</code>, <code>.KEEP_STATE</code>, etc.
+     */
+    SPECIAL_TARGET("special_target"), // NOI18N
+
+    /**
+     * String of characters not having any special meaning, such
+     * as variable or target name.
+     */
+    BARE("bare"); // NOI18N
+
+    private final String category;
+
+    private MakefileTokenId(String category) {
+        this.category = category;
     }
 
+    @Override
     public String primaryCategory() {
-        return name;
+        return category;
+    }
+
+    private static final Language<MakefileTokenId> LANGUAGE =
+            new MakefileLanguageHierarchy().language();
+
+    public static final Language<MakefileTokenId> language() {
+        return LANGUAGE;
     }
 }

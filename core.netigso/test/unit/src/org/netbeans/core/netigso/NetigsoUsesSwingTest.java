@@ -78,7 +78,6 @@ public class NetigsoUsesSwingTest extends SetupHid {
     protected @Override void setUp() throws Exception {
         Locale.setDefault(Locale.US);
         clearWorkDir();
-        NetigsoModuleFactory.clear();
 
         
         data = new File(getDataDir(), "jars");

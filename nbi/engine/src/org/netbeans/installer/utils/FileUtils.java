@@ -58,6 +58,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Pack200;
@@ -540,15 +541,28 @@ public final class FileUtils {
     public static boolean isSigned(
             final File file) throws IOException {
         JarFile jar = new JarFile(file);
-        
+
         try {
-            if (jar.getEntry(SUN_MICR_RSA) == null) {
-                return false;
+            Enumeration<JarEntry> entries = jar.entries();
+            boolean signatureInfoPresent = false;
+            boolean signatureFilePresent = false;
+            while (entries.hasMoreElements()) {
+                String entryName = entries.nextElement().getName();
+                if (entryName.startsWith("META-INF/")) {
+                    if (entryName.endsWith(".RSA") || entryName.endsWith(".DSA")) {
+                        signatureFilePresent = true;
+                        if(signatureInfoPresent) {
+                            break;
+                        }
+                    } else if (entryName.endsWith(".SF")) {
+                        signatureInfoPresent = true;
+                        if(signatureFilePresent) {
+                            break;
+                        }
+                    }
+                }
             }
-            if (jar.getEntry(SUN_MICR_SF) == null) {
-                return false;
-            }
-            return true;
+            return signatureFilePresent && signatureInfoPresent;
         } finally {
             jar.close();
         }

@@ -46,6 +46,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -70,8 +72,20 @@ public class NewFolderAction extends NodeAction {
         if (!makeConfigurationDescriptor.okToChange()) {
             return;
         }
+
+        NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(getString("FolderNameTxt"), getString("NewFolderName"));
+        dlg.setInputText(folder.suggestedNewFolderName());
+        String newname = null;
+
+        if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dlg))) {
+            newname = dlg.getInputText();
+        }
+        else {
+            return;
+        }
         
 	Folder newFolder = folder.addNewFolder(true);
+        newFolder.setDisplayName(newname);
 	MakeLogicalViewProvider.setVisible(project, newFolder); 
     }
 
@@ -81,8 +95,8 @@ public class NewFolderAction extends NodeAction {
 	Folder folder = (Folder)activatedNodes[0].getValue("Folder"); // NOI18N
 	if (folder == null)
 	    return false;
-	if (!folder.isProjectFiles())
-	    return false;
+//	if (!folder.isProjectFiles())
+//	    return false;
 	return true;
     }
 
@@ -93,5 +107,9 @@ public class NewFolderAction extends NodeAction {
     @Override
     protected boolean asynchronous() {
 	return false;
+    }
+
+    private String getString(String s) {
+        return NbBundle.getBundle(getClass()).getString(s);
     }
 }

@@ -843,6 +843,7 @@ public class GridBagControlCenter extends javax.swing.JPanel {
     }
 
     private class ActionL implements java.awt.event.ActionListener {
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             Object src = evt.getSource();
 	    if (nwButton.equals (src)

@@ -138,7 +138,7 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                         query,
                         label,
                         tooltip,
-                        Filter.getNotSeenFilter(),
+                        Filter.getNotSeenFilter(query),
                         ResultType.NAMED_RESULT);
 
             case IssueCache.ISSUE_STATUS_NEW:
@@ -175,7 +175,7 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
                 query,
                 Integer.toString(notIssues),
                 getUnseenTooltip(notIssues),
-                Filter.getNotSeenFilter(),
+                Filter.getNotSeenFilter(query),
                 ResultType.ALL_CHANGES_RESULT);
     }
 

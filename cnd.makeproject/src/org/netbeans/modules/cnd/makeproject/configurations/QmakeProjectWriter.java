@@ -45,8 +45,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -186,9 +186,9 @@ public class QmakeProjectWriter {
                 expandAndQuote(configuration.getQmakeConfiguration().getUiDir().getValue()));
 
         write(bw, Variable.QMAKE_CC, Operation.SET,
-                ConfigurationMakefileWriter.getCompilerName(configuration, Tool.CCompiler));
+                ConfigurationMakefileWriter.getCompilerName(configuration, PredefinedToolKind.CCompiler));
         write(bw, Variable.QMAKE_CXX, Operation.SET,
-                ConfigurationMakefileWriter.getCompilerName(configuration, Tool.CCCompiler));
+                ConfigurationMakefileWriter.getCompilerName(configuration, PredefinedToolKind.CCCompiler));
 
         CompilerSet compilerSet = configuration.getCompilerSet().getCompilerSet();
         OptionToString defineVisitor = new OptionToString(compilerSet, null);
@@ -282,7 +282,8 @@ public class QmakeProjectWriter {
             if (0 < buf.length()) {
                 buf.append(' '); // NOI18N
             }
-            OptionToString dynamicSearchVisitor = new OptionToString(compilerSet, compilerSet.getDynamicLibrarySearchOption());
+            OptionToString dynamicSearchVisitor = new OptionToString(compilerSet, 
+                    compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag());
             buf.append(configuration.getLinkerConfiguration().getDynamicSearch().toString(dynamicSearchVisitor));
         }
         return buf.toString();
@@ -300,6 +301,7 @@ public class QmakeProjectWriter {
             this.compilerSet = compilerSet;
         }
 
+        @Override
         public String toString(LibraryItem item) {
             switch (item.getType()) {
                 case LibraryItem.PROJECT_ITEM:
@@ -317,7 +319,7 @@ public class QmakeProjectWriter {
         private String libFileToOptionsString(String path) {
             StringBuilder buf = new StringBuilder();
             if (compilerSet != null && isDynamicLib(path)) {
-                String searchOption = compilerSet.getDynamicLibrarySearchOption();
+                String searchOption = compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag();
                 if (searchOption.length() == 0) {
                     // According to code in PlatformWindows and PlatformMacOSX,
                     // on Windows and MacOS the "-L" option is used
@@ -325,7 +327,7 @@ public class QmakeProjectWriter {
                     // Let's be consistent with that behavior. Detect this
                     // special case by empty dynamic_library_search
                     // and use the library_search option instead.
-                    searchOption = compilerSet.getLibrarySearchOption();
+                    searchOption = compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag();
                 }
 
                 buf.append(searchOption);
@@ -350,10 +352,11 @@ public class QmakeProjectWriter {
             this.compilerSet = compilerSet;
         }
 
+        @Override
         public String toString(String item) {
             if (0 < item.length()) {
                 if (compilerSet != null) {
-                    item = compilerSet.normalizeDriveLetter(item);
+                    item = CppUtils.normalizeDriveLetter(compilerSet, item);
                 }
                 return IpeUtils.quoteIfNecessary(item);
             } else {
