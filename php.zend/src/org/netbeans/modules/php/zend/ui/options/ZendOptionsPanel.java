@@ -417,9 +417,7 @@ public final class ZendOptionsPanel extends JPanel {
             NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
                     NbBundle.getMessage(ZendOptionsPanel.class, "MSG_RegisterUsingUnsavedZendScript", zendScript),
                     NotifyDescriptor.YES_NO_OPTION);
-            if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION) {
-                register = true;
-            }
+            register = DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION;
         }
         if (register) {
             ZendScript.registerNetBeansProvider(zendScript);
