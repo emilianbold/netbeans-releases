@@ -69,7 +69,7 @@ class SourceClassPathImpl extends AbstractProjectClassPathImpl {
         //TODO temporary solution
         col.addAll(Arrays.asList(getMavenProject().getGeneratedSourceRoots()));
         //#180020 remote items from resources that are either duplicate or child roots of source roots.
-        List<URI> resources = Arrays.asList(getMavenProject().getResources(false));
+        List<URI> resources = new ArrayList<URI>(Arrays.asList(getMavenProject().getResources(false)));
         Iterator<URI> it = resources.iterator();
         while (it.hasNext()) {
             URI res = it.next();
