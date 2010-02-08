@@ -783,7 +783,7 @@ class LuceneIndex extends Index implements Evictable {
                 }
                 out.deleteDocuments (DocumentUtil.rootDocumentTerm());
             }
-            storeData(out, refs, timeStamp);
+            storeData(out, refs, timeStamp, false);
         } finally {
             try {
                 out.close();
@@ -822,7 +822,7 @@ class LuceneIndex extends Index implements Evictable {
                 }
                 out.deleteDocuments (DocumentUtil.rootDocumentTerm());
             }
-            storeData(out, refs, timeStamp);
+            storeData(out, refs, timeStamp, true);
         } finally {
             try {
                 out.close();
@@ -832,7 +832,10 @@ class LuceneIndex extends Index implements Evictable {
         }
     }
 
-    private void storeData (final IndexWriter out, final Map<Pair<String,String>, Object[]> refs, final long timeStamp) throws IOException {
+    private void storeData (final IndexWriter out,
+            final Map<Pair<String,String>, Object[]> refs,
+            final long timeStamp,
+            final boolean optimize) throws IOException {
         if (debugIndexMerging) {
             out.setInfoStream (System.err);
         }
@@ -850,7 +853,7 @@ class LuceneIndex extends Index implements Evictable {
         }
         else {
             memDir = new RAMDirectory ();
-            activeOut = new IndexWriter (memDir, analyzer, true);
+            activeOut = new IndexWriter (memDir, analyzer, true, IndexWriter.MaxFieldLength.LIMITED);
         }
         activeOut.addDocument (DocumentUtil.createRootTimeStampDocument (timeStamp));
         for (Iterator<Map.Entry<Pair<String,String>,Object[]>> it = refs.entrySet().iterator(); it.hasNext();) {
@@ -867,16 +870,19 @@ class LuceneIndex extends Index implements Evictable {
             activeOut.addDocument(newDoc);
             if (memDir != null && lmListener.isLowMemory()) {
                 activeOut.close();
-                out.addIndexes(new Directory[] {memDir});
+                out.addIndexesNoOptimize(new Directory[] {memDir});
                 memDir = new RAMDirectory ();
-                activeOut = new IndexWriter (memDir, analyzer, true);
+                activeOut = new IndexWriter (memDir, analyzer, true, IndexWriter.MaxFieldLength.LIMITED);
             }
         }
         if (memDir != null) {
             activeOut.close();
-            out.addIndexes(new Directory[] {memDir});
+            out.addIndexesNoOptimize(new Directory[] {memDir});
             activeOut = null;
             memDir = null;
+        }
+        if (optimize) {
+            out.optimize(false);
         }
         synchronized (this) {
             this.rootTimeStamp = new Long (timeStamp);
@@ -1040,7 +1046,7 @@ class LuceneIndex extends Index implements Evictable {
         _hit();
         //Issue #149757 - logging
         try {
-            IndexWriter writer = new IndexWriter (this.directory, analyzer, create);
+            IndexWriter writer = new IndexWriter (this.directory, analyzer, create, IndexWriter.MaxFieldLength.LIMITED);
             return writer;
         } catch (IOException ioe) {
             throw annotateException (ioe);
