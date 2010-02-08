@@ -41,11 +41,11 @@ package org.netbeans.modules.cnd.discovery.projectimport;
 
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PrefefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.InputOutput;
 
@@ -58,7 +58,8 @@ public class ReconfigureActionHandlerFactory implements ProjectActionHandlerFact
 
     @Override
     public boolean canHandle(Type type, Configuration configuration) {
-        if (type == PrefefinedType.CONFIGURE) {
+        if ("configure".equals(type.name())) {
+            type.setLocalizedName(NbBundle.getMessage(getClass(), "ConfigureActionName")); // NOI18N
             return true;
         } else {
             return false;

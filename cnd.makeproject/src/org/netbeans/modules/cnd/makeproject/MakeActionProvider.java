@@ -109,6 +109,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg.LongWorker;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
@@ -182,7 +183,7 @@ public final class MakeActionProvider implements ActionProvider {
     private static final String DEBUG_SINGLE_STEP = "debug-single"; // NOI18N
     private static final String COMPILE_SINGLE_STEP = "compile-single"; // NOI18N
     private static final String CUSTOM_ACTION_STEP = "custom-action"; // NOI18N
-    private static final String CONFIGURE_STEP = "configure"; // NOI18N
+    private static final String VALIDATE_TOOLCHAIN = "validate-toolchain"; // NOI18N
 
     public MakeActionProvider(MakeProject project) {
         this.project = project;
@@ -285,14 +286,16 @@ public final class MakeActionProvider implements ActionProvider {
         }
         final String finalCommand = command;
 
-
         CancellableTask actionWorker = new CancellableTask() {
             @Override
-            protected void runImpl() {
-                ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
+            public void doWorkImpl() {
                 for (MakeConfiguration conf : confs) {
                     addAction(actionEvents, pd, conf, finalCommand, context, cancelled);
                 }
+            }
+
+            @Override
+            public void doPostRunInEDT() {
                 // Execute actions
                 if (actionEvents.size() > 0 && ! cancelled.get()) {
                     ProjectActionSupport.getInstance().fireActionPerformed(actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
@@ -311,9 +314,12 @@ public final class MakeActionProvider implements ActionProvider {
     public void invokeCustomAction(final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final ProjectActionHandler customProjectActionHandler) {
         CancellableTask actionWorker = new CancellableTask() {
             @Override
-            protected void runImpl() {
-                ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
+            public void doWorkImpl() {
                 addAction(actionEvents, pd, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null, cancelled);
+            }
+
+            @Override
+            public void doPostRunInEDT() {
                 ProjectActionSupport.getInstance().fireActionPerformed(
                         actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]),
                         customProjectActionHandler);
@@ -343,8 +349,9 @@ public final class MakeActionProvider implements ActionProvider {
                 public boolean cancel() {
                     return actionWorker.cancel();
                 }
+
                 @Override
-                public void runImpl() {
+                public void doWorkImpl() {
                     try {
                         if (!ConnectionManager.getInstance().isConnectedTo(record.getExecutionEnvironment())) {
                             ConnectionManager.getInstance().connectTo(record.getExecutionEnvironment());
@@ -368,15 +375,21 @@ public final class MakeActionProvider implements ActionProvider {
                         });
                     }
                     if (record.isOnline()) {
-                        actionWorker.run();
+                        actionWorker.doWork();
                     }
+                }
+
+                @Override
+                public void doPostRunInEDT() {
+                    actionWorker.doPostRunInEDT();
                 }
             };
         }
         Frame mainWindow = WindowManager.getDefault().getMainWindow();
         String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Validate_Host", record.getDisplayName());
         String title = NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Validate_Host");
-        ModalMessageDlg.runLongTask(mainWindow, wrapper, null, wrapper, title, msg);
+        ModalMessageDlg.runLongTask(mainWindow, title, msg, wrapper, wrapper);
+        //ModalMessageDlg.runLongTask(mainWindow, wrapper, null, wrapper, title, msg);
     }
 
     private void addAction(ArrayList<ProjectActionEvent> actionEvents,
@@ -424,14 +437,16 @@ public final class MakeActionProvider implements ActionProvider {
 
         if (targetName.equals(SAVE_STEP)) {
             return onSaveStep();
+        } else if (targetName.equals(VALIDATE_TOOLCHAIN)) {
+            return onValidateToolchainStep(pd, conf, cancelled, validated);
         } else if (targetName.equals(BUILD_STEP)) {
-            return onBuildStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PrefefinedType.BUILD);
+            return onBuildStep(actionEvents, pd, conf, ProjectActionEvent.PrefefinedType.BUILD);
         } else if (targetName.equals(BUILD_PACKAGE_STEP)) {
             return onBuildPackageStep(actionEvents, conf, ProjectActionEvent.PrefefinedType.BUILD);
         } else if (targetName.equals(CLEAN_STEP)) {
-            return onCleanStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PrefefinedType.CLEAN);
+            return onCleanStep(actionEvents, pd, conf, ProjectActionEvent.PrefefinedType.CLEAN);
         } else if (targetName.equals(COMPILE_SINGLE_STEP)) {
-            return onCompileSingleStep(actionEvents, pd, conf, context, cancelled, validated, ProjectActionEvent.PrefefinedType.BUILD);
+            return onCompileSingleStep(actionEvents, pd, conf, context, ProjectActionEvent.PrefefinedType.BUILD);
         } else if (targetName.equals(RUN_STEP)) {
             return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PrefefinedType.RUN);
         } else if (targetName.equals(RUN_SINGLE_STEP) || targetName.equals(DEBUG_SINGLE_STEP)) {
@@ -444,13 +459,8 @@ public final class MakeActionProvider implements ActionProvider {
             return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PrefefinedType.DEBUG_LOAD_ONLY);
         } else if (targetName.equals(CUSTOM_ACTION_STEP)) {
             return onCustomActionStep(actionEvents, conf, context, ProjectActionEvent.PrefefinedType.CUSTOM_ACTION);
-        } else if (targetName.equals(CONFIGURE_STEP)) {
-            return onConfigureStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PrefefinedType.CONFIGURE);
-        } else {
-            // TODO: process user step
-            //actionEvent = ProjectActionEvent.Type.RUN;
         }
-        return true;
+        return onExtendedStep(actionEvents, conf, context, targetName);
     }
 
     private boolean onSaveStep() {
@@ -638,27 +648,22 @@ public final class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private boolean onBuildStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated, Type actionEvent) {
+    private boolean onBuildStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Type actionEvent) {
         if (conf.isCompileConfiguration() && !validateProject(conf)) {
             return true;
         }
-        if (validateBuildSystem(pd, conf, validated.get(), cancelled)) {
-            MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-            String buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf), "");
-            String args = "";
-            int index = buildCommand.indexOf(' ');
-            if (index > 0) {
-                args = buildCommand.substring(index + 1);
-                buildCommand = buildCommand.substring(0, index);
-            }
-            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
-            profile.setArgs(args);
-            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
-            actionEvents.add(projectActionEvent);
-        } else {
-            return false; // Stop here
+        MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+        String buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf), "");
+        String args = "";
+        int index = buildCommand.indexOf(' ');
+        if (index > 0) {
+            args = buildCommand.substring(index + 1);
+            buildCommand = buildCommand.substring(0, index);
         }
-        validated.set(true);
+        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+        profile.setArgs(args);
+        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
+        actionEvents.add(projectActionEvent);
         return true;
     }
 
@@ -687,107 +692,93 @@ public final class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private boolean onCleanStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated, Type actionEvent) {
-        if (validateBuildSystem(pd, conf, validated.get(), cancelled)) {
+    private boolean onCleanStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Type actionEvent) {
+        MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+        String buildCommand = makeArtifact.getCleanCommand(getMakeCommand(pd, conf), ""); // NOI18N
+        String args = ""; // NOI18N
+        int index = buildCommand.indexOf(' '); // NOI18N
+        if (index > 0) {
+            args = buildCommand.substring(index + 1);
+            buildCommand = buildCommand.substring(0, index);
+        }
+        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+        profile.setArgs(args);
+        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
+        actionEvents.add(projectActionEvent);
+        return true;
+    }
+
+    private boolean onExtendedStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfiguration conf, Lookup context, final String extendedStep) {
+        Type actionEvent = new MyType(extendedStep);
+        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, null, conf, null, true, context);
+        actionEvents.add(projectActionEvent);
+        return true;
+    }
+
+    private boolean onCompileSingleStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, Type actionEvent) {
+        Iterator<? extends Node> it = context.lookupAll(Node.class).iterator();
+        while (it.hasNext()) {
+            Node node = it.next();
+            Item item = getNoteItem(node); // NOI18N
+            if (item == null) {
+                return false;
+            }
+            ItemConfiguration itemConfiguration = item.getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
+            if (itemConfiguration == null) {
+                return false;
+            }
+            if (itemConfiguration.getExcluded().getValue()) {
+                return false;
+            }
+            if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
+                return false;
+            }
             MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-            String buildCommand = makeArtifact.getCleanCommand(getMakeCommand(pd, conf), ""); // NOI18N
-            String args = ""; // NOI18N
-            int index = buildCommand.indexOf(' '); // NOI18N
-            if (index > 0) {
-                args = buildCommand.substring(index + 1);
-                buildCommand = buildCommand.substring(0, index);
+            String outputFile = null;
+            if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
+                CCompilerConfiguration cCompilerConfiguration = itemConfiguration.getCCompilerConfiguration();
+                outputFile = cCompilerConfiguration.getOutputFile(item, conf, true);
+            } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                CCCompilerConfiguration ccCompilerConfiguration = itemConfiguration.getCCCompilerConfiguration();
+                outputFile = ccCompilerConfiguration.getOutputFile(item, conf, true);
+            } else if (itemConfiguration.getTool() == PredefinedToolKind.FortranCompiler) {
+                FortranCompilerConfiguration fortranCompilerConfiguration = itemConfiguration.getFortranCompilerConfiguration();
+                outputFile = fortranCompilerConfiguration.getOutputFile(item, conf, true);
+            } else if (itemConfiguration.getTool() == PredefinedToolKind.Assembler) {
+                AssemblerConfiguration assemblerConfiguration = itemConfiguration.getAssemblerConfiguration();
+                outputFile = assemblerConfiguration.getOutputFile(item, conf, true);
+            } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
+                CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
+                outputFile = customToolConfiguration.getOutputs().getValue();
+            }
+            outputFile = conf.expandMacros(outputFile);
+            // Clean command
+            String commandLine;
+            String args;
+            if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
+                commandLine = "cmd.exe"; // NOI18N
+                args = "/c rm -rf " + outputFile; // NOI18N
+            } else {
+                commandLine = "rm"; // NOI18N
+                args = "-rf " + outputFile; // NOI18N
             }
             RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
             profile.setArgs(args);
-            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, ProjectActionEvent.PrefefinedType.CLEAN, commandLine, conf, profile, true);
             actionEvents.add(projectActionEvent);
-        } else {
-            return false; // Stop here
-        }
-        validated.set(true);
-        return true;
-    }
-
-    private boolean onConfigureStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated, Type actionEvent) {
-        if (validateBuildSystem(pd, conf, validated.get(), cancelled)) {
-            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, null, conf, null, true);
-            actionEvents.add(projectActionEvent);
-        } else {
-            return false; // Stop here
-        }
-        validated.set(true);
-        return true;
-    }
-
-    private boolean onCompileSingleStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, AtomicBoolean cancelled, AtomicBoolean validated, Type actionEvent) {
-        if (validateBuildSystem(pd, conf, validated.get(), cancelled)) {
-            Iterator<? extends Node> it = context.lookupAll(Node.class).iterator();
-            while (it.hasNext()) {
-                Node node = it.next();
-                Item item = getNoteItem(node); // NOI18N
-                if (item == null) {
-                    return false;
-                }
-                ItemConfiguration itemConfiguration = item.getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
-                if (itemConfiguration == null) {
-                    return false;
-                }
-                if (itemConfiguration.getExcluded().getValue()) {
-                    return false;
-                }
-                if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
-                    return false;
-                }
-                MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-                String outputFile = null;
-                if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
-                    CCompilerConfiguration cCompilerConfiguration = itemConfiguration.getCCompilerConfiguration();
-                    outputFile = cCompilerConfiguration.getOutputFile(item, conf, true);
-                } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                    CCCompilerConfiguration ccCompilerConfiguration = itemConfiguration.getCCCompilerConfiguration();
-                    outputFile = ccCompilerConfiguration.getOutputFile(item, conf, true);
-                } else if (itemConfiguration.getTool() == PredefinedToolKind.FortranCompiler) {
-                    FortranCompilerConfiguration fortranCompilerConfiguration = itemConfiguration.getFortranCompilerConfiguration();
-                    outputFile = fortranCompilerConfiguration.getOutputFile(item, conf, true);
-                } else if (itemConfiguration.getTool() == PredefinedToolKind.Assembler) {
-                    AssemblerConfiguration assemblerConfiguration = itemConfiguration.getAssemblerConfiguration();
-                    outputFile = assemblerConfiguration.getOutputFile(item, conf, true);
-                } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
-                    CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
-                    outputFile = customToolConfiguration.getOutputs().getValue();
-                }
-                outputFile = conf.expandMacros(outputFile);
-                // Clean command
-                String commandLine;
-                String args;
-                if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-                    commandLine = "cmd.exe"; // NOI18N
-                    args = "/c rm -rf " + outputFile; // NOI18N
-                } else {
-                    commandLine = "rm"; // NOI18N
-                    args = "-rf " + outputFile; // NOI18N
-                }
-                RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
-                profile.setArgs(args);
-                ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, ProjectActionEvent.PrefefinedType.CLEAN, commandLine, conf, profile, true);
-                actionEvents.add(projectActionEvent);
-                // Build commandLine
-                commandLine = getMakeCommand(pd, conf) + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
-                args = ""; // NOI18N
-                int index = commandLine.indexOf(' '); // NOI18N
-                if (index > 0) {
-                    args = commandLine.substring(index + 1);
-                    commandLine = commandLine.substring(0, index);
-                }
-                profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
-                profile.setArgs(args);
-                projectActionEvent = new ProjectActionEvent(project, actionEvent, commandLine, conf, profile, true);
-                actionEvents.add(projectActionEvent);
+            // Build commandLine
+            commandLine = getMakeCommand(pd, conf) + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
+            args = ""; // NOI18N
+            int index = commandLine.indexOf(' '); // NOI18N
+            if (index > 0) {
+                args = commandLine.substring(index + 1);
+                commandLine = commandLine.substring(0, index);
             }
-        } else {
-            return false; // Stop here
+            profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+            profile.setArgs(args);
+            projectActionEvent = new ProjectActionEvent(project, actionEvent, commandLine, conf, profile, true);
+            actionEvents.add(projectActionEvent);
         }
-        validated.set(true);
         return true;
     }
 
@@ -795,6 +786,14 @@ public final class MakeActionProvider implements ActionProvider {
         String exe = conf.getAbsoluteOutputValue();
         ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, exe, conf, null, true, context);
         actionEvents.add(projectActionEvent);
+        return true;
+    }
+
+    private boolean onValidateToolchainStep(MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated) {
+        if (!validateBuildSystem(pd, conf, validated.get(), cancelled)) {
+            return false; // Stop here
+        }
+        validated.set(true);
         return true;
     }
 
@@ -1277,15 +1276,15 @@ public final class MakeActionProvider implements ActionProvider {
         return NbBundle.getMessage(MakeActionProvider.class, s, arg1, arg2);
     }
 
-    private abstract static class CancellableTask implements Runnable, Cancellable {
+    private abstract static class CancellableTask implements LongWorker, Cancellable {
 
-        protected abstract void runImpl();
+        protected abstract void doWorkImpl();
 
         @Override
-        public final void run() {
+        public final void doWork() {
             thread = Thread.currentThread();
             if (!cancelled.get()) {
-                runImpl();
+                doWorkImpl();
             }
         }
 
@@ -1300,6 +1299,7 @@ public final class MakeActionProvider implements ActionProvider {
 
         private volatile Thread thread;
         protected final AtomicBoolean cancelled = new AtomicBoolean(false);
+        protected ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
     }
 
     private static class BatchConfigurationSelector implements ActionListener {
@@ -1359,4 +1359,34 @@ public final class MakeActionProvider implements ActionProvider {
         }
     }
 
+    private static final class MyType implements Type {
+
+        private final String extendedStep;
+        private String locName;
+
+        private MyType(String extendedStep) {
+            this.extendedStep = extendedStep;
+            locName = extendedStep;
+        }
+
+        @Override
+        public int ordinal() {
+            return extendedStep.hashCode();
+        }
+
+        @Override
+        public String name() {
+            return extendedStep;
+        }
+
+        @Override
+        public String getLocalizedName() {
+            return locName;
+        }
+
+        @Override
+        public void setLocalizedName(String name) {
+            locName = name;
+        }
+    }
 }

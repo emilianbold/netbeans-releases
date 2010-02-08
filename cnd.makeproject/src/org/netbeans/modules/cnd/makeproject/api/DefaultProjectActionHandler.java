@@ -238,7 +238,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 // TODO: fix me
                 // return null;
             }
-
             ProcessChangeListener processChangeListener = new ProcessChangeListener(this, null/*Writer outputListener*/, converter, io,
                     pae.getActionName(), rcfile);
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)

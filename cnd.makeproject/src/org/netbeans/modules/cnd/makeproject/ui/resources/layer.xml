@@ -340,68 +340,89 @@ made subject to such option by the copyright holder.
                 <file name="save">
                     <attr name="position" intvalue="100"/>
                 </file>
-                <file name="build">
+                <file name="validate-toolchain">
                     <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="300"/>
                 </file>
             </folder>
             <folder name="build_packages">
                 <file name="save">
                     <attr name="position" intvalue="100"/>
                 </file>
-                <file name="build">
+                <file name="validate-toolchain">
                     <attr name="position" intvalue="200"/>
                 </file>
-                <file name="build-package">
+                <file name="build">
                     <attr name="position" intvalue="300"/>
+                </file>
+                <file name="build-package">
+                    <attr name="position" intvalue="400"/>
                 </file>
             </folder>
             <folder name="clean">
                 <file name="save">
                     <attr name="position" intvalue="100"/>
                 </file>
-                <file name="clean">
+                <file name="validate-toolchain">
                     <attr name="position" intvalue="200"/>
+                </file>
+                <file name="clean">
+                    <attr name="position" intvalue="300"/>
                 </file>
             </folder>
             <folder name="compile.single">
                 <file name="save">
                     <attr name="position" intvalue="100"/>
                 </file>
-                <file name="compile-single">
+                <file name="validate-toolchain">
                     <attr name="position" intvalue="200"/>
+                </file>
+                <file name="compile-single">
+                    <attr name="position" intvalue="300"/>
                 </file>
             </folder>
             <folder name="custom.action">
                 <file name="save">
                     <attr name="position" intvalue="100"/>
                 </file>
-                <file name="build">
+                <file name="validate-toolchain">
                     <attr name="position" intvalue="200"/>
                 </file>
-                <file name="custom-action">
+                <file name="build">
                     <attr name="position" intvalue="300"/>
+                </file>
+                <file name="custom-action">
+                    <attr name="position" intvalue="400"/>
                 </file>
             </folder>
             <folder name="debug">
                 <file name="save">
                     <attr name="position" intvalue="100"/>
                 </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
                 <file name="build">
-                    <attr name="position" intvalue="300"/>
+                    <attr name="position" intvalue="400"/>
                 </file>
                 <file name="debug">
-                    <attr name="position" intvalue="400"/>
+                    <attr name="position" intvalue="500"/>
                 </file>
             </folder>
             <folder name="debug.load.only">
                 <file name="save">
                     <attr name="position" intvalue="100"/>
                 </file>
-                <file name="build">
+                <file name="validate-toolchain">
                     <attr name="position" intvalue="200"/>
                 </file>
-                <file name="debug-load-only">
+                <file name="build">
                     <attr name="position" intvalue="300"/>
+                </file>
+                <file name="debug-load-only">
+                    <attr name="position" intvalue="400"/>
                 </file>
             </folder>
             <folder name="debug.single">
@@ -413,33 +434,42 @@ made subject to such option by the copyright holder.
                 <file name="save">
                     <attr name="position" intvalue="100"/>
                 </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
                 <file name="build">
-                    <attr name="position" intvalue="300"/>
+                    <attr name="position" intvalue="400"/>
                 </file>
                 <file name="debug-stepinto">
-                    <attr name="position" intvalue="400"/>
+                    <attr name="position" intvalue="500"/>
                 </file>
             </folder>
             <folder name="rebuild">
                 <file name="save">
                     <attr name="position" intvalue="100"/>
                 </file>
-                <file name="clean">
+                <file name="validate-toolchain">
                     <attr name="position" intvalue="200"/>
                 </file>
-                <file name="build">
+                <file name="clean">
                     <attr name="position" intvalue="300"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="400"/>
                 </file>
             </folder>
             <folder name="run">
                 <file name="save">
                     <attr name="position" intvalue="100"/>
                 </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
                 <file name="build">
-                    <attr name="position" intvalue="300"/>
+                    <attr name="position" intvalue="400"/>
                 </file>
                 <file name="run">
-                    <attr name="position" intvalue="400"/>
+                    <attr name="position" intvalue="500"/>
                 </file>
             </folder>
             <folder name="run.single">
@@ -453,8 +483,11 @@ made subject to such option by the copyright holder.
                 <file name="save">
                     <attr name="position" intvalue="100"/>
                 </file>
-                <file name="build">
+                <file name="validate-toolchain">
                     <attr name="position" intvalue="200"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="300"/>
                 </file>
             </folder>
             <folder name="build_packages">
@@ -469,8 +502,11 @@ made subject to such option by the copyright holder.
                 <file name="save">
                     <attr name="position" intvalue="100"/>
                 </file>
-                <file name="clean">
+                <file name="validate-toolchain">
                     <attr name="position" intvalue="200"/>
+                </file>
+                <file name="clean">
+                    <attr name="position" intvalue="300"/>
                 </file>
             </folder>
             <folder name="custom.action">
@@ -500,11 +536,14 @@ made subject to such option by the copyright holder.
                 <file name="save">
                     <attr name="position" intvalue="100"/>
                 </file>
-                <file name="clean">
+                <file name="validate-toolchain">
                     <attr name="position" intvalue="200"/>
                 </file>
-                <file name="build">
+                <file name="clean">
                     <attr name="position" intvalue="300"/>
+                </file>
+                <file name="build">
+                    <attr name="position" intvalue="400"/>
                 </file>
             </folder>
             <folder name="run">
