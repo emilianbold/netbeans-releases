@@ -398,6 +398,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         cancelButton.setVisible(!isNew);
         separatorLabel3.setVisible(!isNew);
         showInBrowserButton.setVisible(!isNew);
+        Border sep2Border = BorderFactory.createLineBorder(Color.BLACK);
+        if (isNew) {
+            int gap = LayoutStyle.getInstance().getPreferredGap(separatorLabel2, reloadButton, LayoutStyle.ComponentPlacement.RELATED, SwingConstants.WEST, null);
+            sep2Border = BorderFactory.createCompoundBorder(
+                    BorderFactory.createEmptyBorder(0,0,0,gap),
+                    sep2Border);
+        }
+        separatorLabel2.setBorder(sep2Border); // Issue 180431
         assignedField.setEditable(issue.isNew() || issue.canReassign());
         assignedCombo.setEnabled(assignedField.isEditable());
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
