@@ -38,59 +38,60 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.api.platforms;
 
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformMacOSX;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformNone;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformLinux;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformWindows;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformSolarisIntel;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformGeneric;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformSolarisSparc;
-import java.util.ArrayList;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+package org.netbeans.modules.cnd.makeproject.platforms.impl;
 
-public final class Platforms {
-    private static final ArrayList<Platform> platforms = new ArrayList<Platform>();
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
-    static {
-        platforms.add(new PlatformSolarisSparc());
-        platforms.add(new PlatformSolarisIntel());
-        platforms.add(new PlatformLinux());
-        platforms.add(new PlatformWindows());
-        platforms.add(new PlatformMacOSX());
-        platforms.add(new PlatformGeneric());
-        platforms.add(new PlatformNone());
-        platforms.trimToSize();
+public abstract class Platform {
+    
+    private String name;
+    private String displayName;
+    private int id;
+    
+    public Platform(String name, String displayName, int id) {
+        this.name = name;
+        this.displayName = displayName;
+        this.id = id;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public String getDisplayName() {
+        return displayName;
+    }
+    
+    public int getId() {
+        return id;
+    }
+    
+    public abstract LibraryItem.StdLibItem[] getStandardLibraries();
+    
+    public abstract String getLibraryName(String baseName);
+
+    /**
+     * File name that qmake would generate on current platform
+     * given <code>TARGET=baseName</code> and <code>VERSION=version</code>.
+     *
+     * @param baseName
+     * @param version
+     * @return
+     */
+    public String getQtLibraryName(String baseName, String version) {
+        return getLibraryName(baseName) + "." + version; // NOI18N
     }
 
-    public static Platform getPlatform(int id) {
-        for (Platform pl : getPlatforms()) {
-            if (pl.getId() == id) {
-                return pl;
+    public abstract String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet);
+    
+    public LibraryItem.StdLibItem getStandardLibrarie(String name) {
+        for (int i = 0; i < getStandardLibraries().length; i++) {
+            if (getStandardLibraries()[i].getName().equals(name)) {
+                return getStandardLibraries()[i];
             }
         }
         return null;
-    }
-
-    /*
-     * Returns platforms names up to but not included Generic.
-     */
-    public static String[] getPlatformDisplayNames() {
-        ArrayList<String> ret = new ArrayList<String>();
-        for (Platform pl : getPlatforms()) {
-            if (pl.getId() == PlatformTypes.PLATFORM_GENERIC || pl.getId() == PlatformTypes.PLATFORM_NONE) {
-                continue;
-            }
-            ret.add(pl.getDisplayName());
-        }
-        return ret.toArray(new String[ret.size()]);
-    }
-
-    private static ArrayList<Platform> getPlatforms() {
-        return platforms;
-    }
-
-    private Platforms() {
     }
 }

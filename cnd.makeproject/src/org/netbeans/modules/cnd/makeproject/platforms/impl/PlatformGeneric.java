@@ -45,7 +45,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.util.NbBundle;
 
 public class PlatformGeneric extends Platform {

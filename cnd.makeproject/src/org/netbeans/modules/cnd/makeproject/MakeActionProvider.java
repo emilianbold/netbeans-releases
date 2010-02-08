@@ -100,8 +100,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfigur
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.platforms.impl.Platform;
+import org.netbeans.modules.cnd.makeproject.platforms.impl.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.StepControllerProvider;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
