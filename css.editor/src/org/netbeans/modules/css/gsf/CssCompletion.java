@@ -104,6 +104,10 @@ public class CssCompletion implements CodeCompletionHandler {
     private static final Collection<String> AT_RULES = Arrays.asList(new String[]{"@media", "@page", "@import", "@charset", "@font-face"}); //NOI18N
     private static char firstPrefixChar; //read getPrefix() comment!
 
+    private static final String RELATED_SELECTOR_COLOR = "007c00"; //NOI18N
+    private static String GRAY_COLOR_CODE = Integer.toHexString(Color.GRAY.getRGB()).substring(2);
+
+
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
         CssParserResult info = (CssParserResult) context.getParserResult();
@@ -205,22 +209,25 @@ public class CssCompletion implements CodeCompletionHandler {
                 }
                 //get map of all fileobject declaring classes with the prefix
                 Map<FileObject, Collection<String>> search = index.findClassesByPrefix(prefix); 
-                Collection<String> classes = new HashSet<String>();
+                Collection<String> refclasses = new HashSet<String>();
+                Collection<String> allclasses = new HashSet<String>();
                 for(FileObject fo : search.keySet()) {
+                    allclasses.addAll(search.get(fo));
                     //is the file refered by the current file?
                     if(refered.contains(fo)) {
                         //yes - add its classes
-                        classes.addAll(search.get(fo));
+                        refclasses.addAll(search.get(fo));
                     }
                 }
  
                 //lets create the completion items
-                List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(classes.size());
-                for(String clazz : classes) {
+                List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(refclasses.size());
+                for(String clazz : allclasses) {
                    proposals.add(new SelectorCompletionItem(new CssElement(clazz),
                         clazz,
                         CompletionItemKind.VALUE,
-                        offset));
+                        offset,
+                        refclasses.contains(clazz)));
                 }
                 if (proposals.size() > 0) {
                     return new DefaultCompletionResult(proposals, false);
@@ -248,22 +255,25 @@ public class CssCompletion implements CodeCompletionHandler {
                 
                 //get map of all fileobject declaring classes with the prefix
                 Map<FileObject, Collection<String>> search = index.findIdsByPrefix(prefix); //cut off the dot (.)
-                Collection<String> ids = new HashSet<String>();
+                Collection<String> allids = new HashSet<String>();
+                Collection<String> refids = new HashSet<String>();
                 for (FileObject fo : search.keySet()) {
+                    allids.addAll(search.get(fo));
                     //is the file refered by the current file?
                     if (refered.contains(fo)) {
                         //yes - add its classes
-                        ids.addAll(search.get(fo));
+                        refids.addAll(search.get(fo));
                     }
                 }
 
                 //lets create the completion items
-                List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(ids.size());
-                for (String id : ids) {
+                List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(allids.size());
+                for (String id : allids) {
                     proposals.add(new SelectorCompletionItem(new CssElement(id),
                             id,
                             CompletionItemKind.VALUE,
-                            offset));
+                            offset,
+                            refids.contains(id)));
                 }
                 if (proposals.size() > 0) {
                     return new DefaultCompletionResult(proposals, false);
@@ -984,16 +994,42 @@ public class CssCompletion implements CodeCompletionHandler {
 
     private class SelectorCompletionItem extends CssCompletionItem {
 
+        private boolean related;
+
         private SelectorCompletionItem(CssElement element,
                 String value,
                 CompletionItemKind kind,
                 int anchorOffset) {
+            this(element, value, kind, anchorOffset, true);
+        }
+
+        private SelectorCompletionItem(CssElement element,
+                String value,
+                CompletionItemKind kind,
+                int anchorOffset,
+                boolean related) {
             super(element, value, kind, anchorOffset, false);
+            this.related = related;
         }
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            formatter.appendHtml("<b><font color=#007c00>" + getName() + "</font></b>");
+            StringBuilder buf = new StringBuilder();
+            if(related) {
+                buf.append("<b><font color=#");
+                buf.append(RELATED_SELECTOR_COLOR);
+            } else {
+                buf.append("<font color=#");
+                buf.append(GRAY_COLOR_CODE);
+            }
+            buf.append(">");
+            buf.append(getName());
+            buf.append("</font>");
+            if(related) {
+                buf.append("</b>");
+            }
+
+            formatter.appendHtml(buf.toString());
             return formatter.getText();
         }
 
@@ -1001,6 +1037,14 @@ public class CssCompletion implements CodeCompletionHandler {
         public ImageIcon getIcon() {
             return null;
         }
+
+        @Override
+        public int getSortPrioOverride() {
+            return super.getSortPrioOverride() + (related ? 1 : 0);
+        }
+
+
+
     }
 
     /**
