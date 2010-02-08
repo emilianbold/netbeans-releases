@@ -39,53 +39,56 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.platforms.impl;
+package org.netbeans.modules.cnd.makeproject.actions;
 
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
-public class PlatformGeneric extends Platform {
-    public static final String NAME = "Generic"; // NOI18N
+public class TestAction extends NodeAction {
+    public String getName() {
+	return getString("TestActionName");
+    }
 
-    public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
-        // empty
-    };
+    public void performAction(Node[] activatedNodes) {
+	Node n = activatedNodes[0];
+	Folder folder = (Folder)n.getValue("Folder"); // NOI18N
+	assert folder != null;
+	Node thisNode = (Node)n.getValue("This"); // NOI18N
+	assert thisNode != null;
+	Project project = (Project)n.getValue("Project"); // NOI18N
+	assert project != null;
+        
+//        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+//        MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+//        if (!makeConfigurationDescriptor.okToChange()) {
+//            return;
+//        }
+//
+//	Folder newFolder = folder.addNewFolder(true);
+//	MakeLogicalViewProvider.setVisible(project, newFolder);
+    }
 
-    public PlatformGeneric() {
-        super(NAME, NbBundle.getBundle(PlatformGeneric.class).getString("GenericName"), PlatformTypes.PLATFORM_GENERIC); // NOI18N
+    public boolean enable(Node[] activatedNodes) {
+        return true;
+    }
+
+    public HelpCtx getHelpCtx() {
+	return null;
     }
 
     @Override
-    public LibraryItem.StdLibItem[] getStandardLibraries() {
-        return standardLibrariesLinux;
+    protected boolean asynchronous() {
+	return false;
     }
-    
-    @Override
-    public String getLibraryName(String baseName) {
-        // Use Linux style
-        return "lib" + baseName + ".so"; // NOI18N
-    }
-    
-    @Override
-    public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
-        if (libName.endsWith(".so")) { // NOI18N
-            int i = libName.indexOf(".so"); // NOI18N
-            if (i > 0) {
-                libName = libName.substring(0, i);
-            }
-            if (libName.startsWith("lib")) { // NOI18N
-                libName = libName.substring(3);
-            }
-            return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag()
-                    + IpeUtils.escapeOddCharacters(libDir)
-                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() // NOI18N
-                    + IpeUtils.escapeOddCharacters(libName);
-        } else {
-            return IpeUtils.escapeOddCharacters(libPath);
-        }
+
+    private String getString(String s) {
+        return NbBundle.getBundle(getClass()).getString(s);
     }
 }

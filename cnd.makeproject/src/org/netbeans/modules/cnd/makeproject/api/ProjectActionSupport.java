@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteFile;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PrefefinedType;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
@@ -333,19 +333,19 @@ public class ProjectActionSupport {
             }
 
             // Validate executable
-            if (pae.getType() == PrefefinedType.RUN ||
-                pae.getType() == PrefefinedType.DEBUG ||
-                pae.getType() == PrefefinedType.DEBUG_LOAD_ONLY ||
-                pae.getType() == PrefefinedType.DEBUG_STEPINTO ||
-                pae.getType() == PrefefinedType.CHECK_EXECUTABLE ||
-                pae.getType() == PrefefinedType.CUSTOM_ACTION) {
-                if (!checkExecutable(pae) || pae.getType() == PrefefinedType.CHECK_EXECUTABLE) {
+            if (pae.getType() == PredefinedType.RUN ||
+                pae.getType() == PredefinedType.DEBUG ||
+                pae.getType() == PredefinedType.DEBUG_LOAD_ONLY ||
+                pae.getType() == PredefinedType.DEBUG_STEPINTO ||
+                pae.getType() == PredefinedType.CHECK_EXECUTABLE ||
+                pae.getType() == PredefinedType.CUSTOM_ACTION) {
+                if (!checkExecutable(pae) || pae.getType() == PredefinedType.CHECK_EXECUTABLE) {
                     progressHandle.finish();
                     return;
                 }
             }
 
-            if (pae.getType() == PrefefinedType.CUSTOM_ACTION && customHandler != null) {
+            if (pae.getType() == PredefinedType.CUSTOM_ACTION && customHandler != null) {
                 initHandler(customHandler, pae, paes);
                 customHandler.execute(ioTab);
             } else {
@@ -402,7 +402,7 @@ public class ProjectActionSupport {
                     ((ExecutionListener) action).executionFinished(rc);
                 }
             }
-            if (paes[currentAction].getType() == PrefefinedType.BUILD || paes[currentAction].getType() == PrefefinedType.CLEAN) {
+            if (paes[currentAction].getType() == PredefinedType.BUILD || paes[currentAction].getType() == PredefinedType.CLEAN) {
                 // Refresh all files
                 try {
                     FileObject projectFileObject = paes[currentAction].getProject().getProjectDirectory();
@@ -483,7 +483,7 @@ public class ProjectActionSupport {
                         pdp.getConfigurationDescriptor().setModified();
                     }
                     // Set executable in pae
-                    if (pae.getType() == PrefefinedType.RUN) {
+                    if (pae.getType() == PredefinedType.RUN) {
                         // Next block is commented out due to IZ120794
                         /*CompilerSet compilerSet = CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getName()).getCompilerSet(makeConfiguration.getCompilerSet().getValue());
                         if (compilerSet != null && compilerSet.getCompilerFlavor() != CompilerFlavor.MinGW) {

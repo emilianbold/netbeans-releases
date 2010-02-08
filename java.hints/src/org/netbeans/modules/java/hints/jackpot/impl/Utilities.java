@@ -144,6 +144,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbCollections;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -547,6 +548,16 @@ public class Utilities {
     }
 
     public static Scope constructScope(CompilationInfo info, Map<String, TypeMirror> constraints, Iterable<? extends String> auxiliaryImports) {
+        return Lookup.getDefault().lookup(SPI.class).constructScope(info, constraints, auxiliaryImports);
+    }
+
+    public interface SPI {
+        public Scope constructScope(CompilationInfo info, Map<String, TypeMirror> constraints, Iterable<? extends String> auxiliaryImports);
+    }
+
+    @ServiceProvider(service=SPI.class, position=1000)
+    public static final class SPIImpl implements SPI {
+        public Scope constructScope(CompilationInfo info, Map<String, TypeMirror> constraints, Iterable<? extends String> auxiliaryImports) {
         StringBuilder clazz = new StringBuilder();
 
         clazz.append("package $;");
@@ -592,6 +603,7 @@ public class Utilities {
             Exceptions.printStackTrace(ex);
             return null;
         }
+    }
     }
 
     private static final class ScannerImpl extends TreePathScanner<Scope, CompilationInfo> {

@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.actions;
+package org.netbeans.modules.cnd.makeproject.actions;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -53,11 +53,13 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
-public class NewFolderAction extends NodeAction {
+public class NewTestAction extends NodeAction {
+    @Override
     public String getName() {
-	return NbBundle.getBundle(getClass()).getString("CTL_NewFolderAction"); // NOI18N
+	return getString("NewTestActionName");
     }
 
+    @Override
     public void performAction(Node[] activatedNodes) {
 	Node n = activatedNodes[0];
 	Folder folder = (Folder)n.getValue("Folder"); // NOI18N
@@ -66,15 +68,15 @@ public class NewFolderAction extends NodeAction {
 	assert thisNode != null;
 	Project project = (Project)n.getValue("Project"); // NOI18N
 	assert project != null;
-        
+
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
         MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
         if (!makeConfigurationDescriptor.okToChange()) {
             return;
         }
 
-        NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(getString("FolderNameTxt"), getString("NewFolderName"));
-        dlg.setInputText(folder.suggestedNewFolderName());
+        NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(getString("TestName"), getString("NewTest"));
+        dlg.setInputText(folder.suggestedNewTestFolderName());
         String newname = null;
 
         if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dlg))) {
@@ -83,21 +85,14 @@ public class NewFolderAction extends NodeAction {
         else {
             return;
         }
-        
-	Folder newFolder = folder.addNewFolder(true);
+
+	Folder newFolder = folder.addNewFolder(false, Folder.Kind.TEST);
         newFolder.setDisplayName(newname);
-	MakeLogicalViewProvider.setVisible(project, newFolder); 
+	MakeLogicalViewProvider.setVisible(project, newFolder);
     }
 
     public boolean enable(Node[] activatedNodes) {
-	if (activatedNodes.length != 1)
-	    return false;
-	Folder folder = (Folder)activatedNodes[0].getValue("Folder"); // NOI18N
-	if (folder == null)
-	    return false;
-//	if (!folder.isProjectFiles())
-//	    return false;
-	return true;
+        return true;
     }
 
     public HelpCtx getHelpCtx() {

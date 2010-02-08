@@ -349,11 +349,9 @@
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <package>org.netbeans.modules.cnd.makeproject.api</package>
-                <package>org.netbeans.modules.cnd.makeproject.api.actions</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.compilers</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.configurations</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.configurations.ui</package>
-                <package>org.netbeans.modules.cnd.makeproject.api.platforms</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.remote</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.runprofiles</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.ui</package>
