@@ -90,7 +90,7 @@ public class StackGetResponse extends DbgpResponse {
         annotateStackTrace(session , stacks);
         
         DebugSession currentSession = SessionManager.getInstance().
-            getCurrentSession(session.getSessionId());
+            getSession(session.getSessionId());
         // perform views update only if response appears in current session
         if ( currentSession != session ){
             return;

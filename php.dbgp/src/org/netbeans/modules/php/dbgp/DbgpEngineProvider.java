@@ -50,14 +50,11 @@ import org.netbeans.spi.debugger.DebuggerEngineProvider;
  *
  */
 public class DbgpEngineProvider extends DebuggerEngineProvider {
-
     private static final String PHP = "php";            // NOI18N
+    private Destructor myDestructor;
+
     
-    public DbgpEngineProvider (ContextProvider contextProvider) {
-        myContext = contextProvider;
-        myProvider = SessionManager.getInstance();
-        myServices = new Object[ ] { myProvider };
-    }
+    public DbgpEngineProvider (ContextProvider contextProvider) {}
 
     /* (non-Javadoc)
      * @see org.netbeans.spi.debugger.DebuggerEngineProvider#getEngineTypeID()
@@ -82,7 +79,7 @@ public class DbgpEngineProvider extends DebuggerEngineProvider {
     @Override
     public Object[] getServices()
     {
-        return myServices;
+        return new Object[ ] { SessionManager.getInstance() };
     }
 
     /* (non-Javadoc)
@@ -96,18 +93,5 @@ public class DbgpEngineProvider extends DebuggerEngineProvider {
     
     public Destructor getDestructor() {
         return myDestructor;
-    }
-    
-    private ContextProvider getContext() {
-        return myContext;
-    }
-    
-    private Destructor myDestructor;
-    
-    private ContextProvider myContext;
-    
-    private SessionManager myProvider;
-    
-    private Object[] myServices;
-
+    }    
 }
