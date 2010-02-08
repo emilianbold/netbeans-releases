@@ -689,17 +689,22 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         }
 
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        
-        WizardDescriptor.Panel secondPanel = new ValidationPanel(
-                new PersistenceClientEntitySelection(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
-                        new HelpCtx("framework_jsf_fromentity"), wizard)); // NOI18N
-        PersistenceClientSetupPanel thirdPanel = new PersistenceClientSetupPanel(project, wizard);
+        HelpCtx helpCtx;
          
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
 
         if (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL)) {    //NOI18N
             wizard.putProperty(JSF2_GENERATOR_PROPERTY, "true");
+            helpCtx = new HelpCtx("persistence_entity_selection_javaee6");  //NOI18N
+        } else {
+            helpCtx = new HelpCtx("persistence_entity_selection_javaee5");  //NOI18N
         }
+
+        WizardDescriptor.Panel secondPanel = new ValidationPanel(
+                new PersistenceClientEntitySelection(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
+                        helpCtx, wizard)); // NOI18N
+        PersistenceClientSetupPanel thirdPanel = new PersistenceClientSetupPanel(project, wizard);
+
 
         JSFFrameworkProvider fp = new JSFFrameworkProvider();
         String[] names;
