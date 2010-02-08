@@ -452,11 +452,20 @@ public class Reformatter implements ReformatTask {
                 pretty.scan(path, null);
             }
             if (path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+                CompilationUnitTree cut = (CompilationUnitTree) path.getLeaf();
+                List<? extends Tree> typeDecls = cut.getTypeDecls();
+                int size = typeDecls.size();
+                int cnt = size > 0 && typeDecls.get(size - 1).getKind() == Tree.Kind.CLASS ? cs.getBlankLinesAfterClass() : 1;
+                if (cnt < 1)
+                    cnt = 1;
+                String s = pretty.getNewlines(cnt);
                 pretty.tokens.moveEnd();
                 pretty.tokens.movePrevious();
-                if (pretty.tokens.token().id() != WHITESPACE || pretty.tokens.token().text().toString().indexOf('\n') < 0) {
+                if (pretty.tokens.token().id() != WHITESPACE) {
                     String text = info.getText();
-                    pretty.diffs.addFirst(new Diff(text.length(), text.length(), NEWLINE));
+                    pretty.diffs.addFirst(new Diff(text.length(), text.length(), s));
+                } else if (!s.contentEquals(pretty.tokens.token().text())) {
+                    pretty.diffs.addFirst(new Diff(pretty.tokens.offset(), pretty.tokens.offset() + pretty.tokens.token().length(), s));
                 }
             }
             return pretty.diffs;
@@ -465,10 +474,19 @@ public class Reformatter implements ReformatTask {
         public static LinkedList<Diff> reformat(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs, int rightMargin) {
             Pretty pretty = new Pretty(text, tokens, path, sp, cs, 0, text.length(), rightMargin);
             pretty.scan(path, null);
+            CompilationUnitTree cut = (CompilationUnitTree) path.getLeaf();
+            List<? extends Tree> typeDecls = cut.getTypeDecls();
+            int size = typeDecls.size();
+            int cnt = size > 0 && typeDecls.get(size - 1).getKind() == Tree.Kind.CLASS ? cs.getBlankLinesAfterClass() : 1;
+            if (cnt < 1)
+                cnt = 1;
+            String s = pretty.getNewlines(cnt);
             tokens.moveEnd();
             tokens.movePrevious();
-            if (tokens.token().id() != WHITESPACE || tokens.token().text().toString().indexOf('\n') < 0)
-                pretty.diffs.addFirst(new Diff(text.length(), text.length(), NEWLINE));
+            if (tokens.token().id() != WHITESPACE)
+                pretty.diffs.addFirst(new Diff(text.length(), text.length(), s));
+            else if (!s.contentEquals(tokens.token().text()))
+                pretty.diffs.addFirst(new Diff(tokens.offset(), tokens.offset() + tokens.token().length(), s));
             return pretty.diffs;
         }
 
