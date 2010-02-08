@@ -126,7 +126,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         return retval;
     }
 
-    private static Set<String> recursionDetection = new HashSet<String>();//#168868
+    private static List<String> recursionDetection = new ArrayList<String>();//#168868
 
     public Collection<? extends TypeScope> getReturnTypes(boolean resolve) {
         Collection<TypeScope> retval = Collections.<TypeScope>emptyList();
@@ -141,8 +141,9 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                 if (typeName.trim().length() > 0) {
                     if (resolve && typeName.contains("@")) {//NOI18N
                         try {
-                            if (recursionDetection.add(typeName) && recursionDetection.size() < 30) {
-                            retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
+                            recursionDetection.add(typeName);
+                            if (recursionDetection.size() < 30) {
+                                retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
                             }
                         } finally {
                             recursionDetection.remove(typeName);
