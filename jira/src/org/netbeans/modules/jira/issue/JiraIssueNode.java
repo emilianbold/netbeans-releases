@@ -84,8 +84,6 @@ public class JiraIssueNode extends IssueNode {
             new MultiValueFieldProperty(NbJiraIssue.LABEL_NAME_COMPONENTS, IssueField.COMPONENT, "CTL_Issue_Components_Title", "CTL_Issue_Components_Desc"),
             new MultiValueFieldProperty(NbJiraIssue.LABEL_NAME_AFFECTS_VERSION, IssueField.AFFECTSVERSIONS, "CTL_Issue_Affects_Version_Title", "CTL_Issue_Affects_Version_Desc"),
             new MultiValueFieldProperty(NbJiraIssue.LABEL_NAME_FIX_VERSION, IssueField.FIXVERSIONS, "CTL_Issue_Fix_Version_Title", "CTL_Issue_Fix_Version_Desc"),
-            new RecentChangesProperty(), // XXX move to issue node
-            new SeenProperty() // XXX move to issue node
         };
     };
 
