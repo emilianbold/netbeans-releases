@@ -39,19 +39,18 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.platforms.impl;
+package org.netbeans.modules.cnd.makeproject.platform;
 
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
-public class PlatformMacOSX extends Platform {
-    public static final String NAME = "MacOSX"; // NOI18N
-    public static final String LIBRARY_SUFFIX = "dylib"; // NOI18N
+public class PlatformLinux extends Platform {
+    public static final String NAME = "Linux-x86"; // NOI18N
 
-    public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
-//        StdLibraries.getStandardLibary("Motif"), // NOI18N
+    private static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
+        StdLibraries.getStandardLibary("Motif"), // NOI18N
         StdLibraries.getStandardLibary("Mathematics"), // NOI18N
         StdLibraries.getStandardLibary("DataCompression"), // NOI18N
         StdLibraries.getStandardLibary("PosixThreads"), // NOI18N
@@ -59,8 +58,8 @@ public class PlatformMacOSX extends Platform {
         StdLibraries.getStandardLibary("DynamicLinking"), // NOI18N
     };
     
-    public PlatformMacOSX() {
-        super(NAME, "Mac OS X", PlatformTypes.PLATFORM_MACOSX); // NOI18N
+    public PlatformLinux() {
+        super(NAME, "Linux x86", PlatformTypes.PLATFORM_LINUX); // NOI18N
     }
     
     @Override
@@ -70,20 +69,23 @@ public class PlatformMacOSX extends Platform {
     
     @Override
     public String getLibraryName(String baseName) {
-        return "lib" + baseName + "." + LIBRARY_SUFFIX; // NOI18N
+        return "lib" + baseName + ".so"; // NOI18N // NOI18N
     }
     
     @Override
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
-        if (libName.endsWith("." + LIBRARY_SUFFIX)) { // NOI18N
-            int i = libName.indexOf("." + LIBRARY_SUFFIX); // NOI18N
+        if (libName.endsWith(".so")) { // NOI18N
+            int i = libName.indexOf(".so"); // NOI18N
             if (i > 0) {
                 libName = libName.substring(0, i);
             }
             if (libName.startsWith("lib")) { // NOI18N
                 libName = libName.substring(3);
             }
-            return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag()
+
+            return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag()
+                    + IpeUtils.escapeOddCharacters(libDir)
+                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag() // NOI18N
                     + IpeUtils.escapeOddCharacters(libDir)
                     + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() // NOI18N
                     + IpeUtils.escapeOddCharacters(libName);

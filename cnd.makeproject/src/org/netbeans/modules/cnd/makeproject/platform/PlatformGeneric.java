@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.platforms.impl;
+package org.netbeans.modules.cnd.makeproject.platform;
 
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
@@ -47,15 +47,15 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.openide.util.NbBundle;
 
-public class PlatformNone extends Platform {
-    public static final String NAME = "None"; // NOI18N
+public class PlatformGeneric extends Platform {
+    public static final String NAME = "Generic"; // NOI18N
 
     public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
         // empty
     };
 
-    public PlatformNone() {
-        super(NAME, NbBundle.getBundle(PlatformNone.class).getString("NoPlatform"), PlatformTypes.PLATFORM_NONE);
+    public PlatformGeneric() {
+        super(NAME, NbBundle.getBundle(PlatformGeneric.class).getString("GenericName"), PlatformTypes.PLATFORM_GENERIC); // NOI18N
     }
 
     @Override
@@ -80,7 +80,7 @@ public class PlatformNone extends Platform {
                 libName = libName.substring(3);
             }
             return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag()
-                    +  IpeUtils.escapeOddCharacters(libDir)
+                    + IpeUtils.escapeOddCharacters(libDir)
                     + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() // NOI18N
                     + IpeUtils.escapeOddCharacters(libName);
         } else {

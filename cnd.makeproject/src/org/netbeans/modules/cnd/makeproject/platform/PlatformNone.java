@@ -38,59 +38,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.platforms.impl;
 
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformMacOSX;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformNone;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformLinux;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformWindows;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformSolarisIntel;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformGeneric;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformSolarisSparc;
-import java.util.ArrayList;
+package org.netbeans.modules.cnd.makeproject.platform;
+
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import org.openide.util.NbBundle;
 
-public final class Platforms {
-    private static final ArrayList<Platform> platforms = new ArrayList<Platform>();
+public class PlatformNone extends Platform {
+    public static final String NAME = "None"; // NOI18N
 
-    static {
-        platforms.add(new PlatformSolarisSparc());
-        platforms.add(new PlatformSolarisIntel());
-        platforms.add(new PlatformLinux());
-        platforms.add(new PlatformWindows());
-        platforms.add(new PlatformMacOSX());
-        platforms.add(new PlatformGeneric());
-        platforms.add(new PlatformNone());
-        platforms.trimToSize();
+    public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
+        // empty
+    };
+
+    public PlatformNone() {
+        super(NAME, NbBundle.getBundle(PlatformNone.class).getString("NoPlatform"), PlatformTypes.PLATFORM_NONE);
     }
 
-    public static Platform getPlatform(int id) {
-        for (Platform pl : getPlatforms()) {
-            if (pl.getId() == id) {
-                return pl;
+    @Override
+    public LibraryItem.StdLibItem[] getStandardLibraries() {
+        return standardLibrariesLinux;
+    }
+    
+    @Override
+    public String getLibraryName(String baseName) {
+        // Use Linux style
+        return "lib" + baseName + ".so"; // NOI18N
+    }
+    
+    @Override
+    public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
+        if (libName.endsWith(".so")) { // NOI18N
+            int i = libName.indexOf(".so"); // NOI18N
+            if (i > 0) {
+                libName = libName.substring(0, i);
             }
-        }
-        return null;
-    }
-
-    /*
-     * Returns platforms names up to but not included Generic.
-     */
-    public static String[] getPlatformDisplayNames() {
-        ArrayList<String> ret = new ArrayList<String>();
-        for (Platform pl : getPlatforms()) {
-            if (pl.getId() == PlatformTypes.PLATFORM_GENERIC || pl.getId() == PlatformTypes.PLATFORM_NONE) {
-                continue;
+            if (libName.startsWith("lib")) { // NOI18N
+                libName = libName.substring(3);
             }
-            ret.add(pl.getDisplayName());
+            return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag()
+                    +  IpeUtils.escapeOddCharacters(libDir)
+                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() // NOI18N
+                    + IpeUtils.escapeOddCharacters(libName);
+        } else {
+            return IpeUtils.escapeOddCharacters(libPath);
         }
-        return ret.toArray(new String[ret.size()]);
-    }
-
-    private static ArrayList<Platform> getPlatforms() {
-        return platforms;
-    }
-
-    private Platforms() {
     }
 }

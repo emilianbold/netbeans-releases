@@ -38,14 +38,59 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.makeproject.platform;
 
-package org.netbeans.modules.cnd.makeproject.platforms.impl;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformMacOSX;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformNone;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformLinux;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformWindows;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformSolarisIntel;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformGeneric;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformSolarisSparc;
+import java.util.ArrayList;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 
-public class PlatformSolarisIntel extends PlatformSolaris {
-    public static final String NAME = "Solaris-x86"; // NOI18N
+public final class Platforms {
+    private static final ArrayList<Platform> platforms = new ArrayList<Platform>();
 
-    public PlatformSolarisIntel() {
-        super(NAME, "Solaris x86", PlatformTypes.PLATFORM_SOLARIS_INTEL); // NOI18N
+    static {
+        platforms.add(new PlatformSolarisSparc());
+        platforms.add(new PlatformSolarisIntel());
+        platforms.add(new PlatformLinux());
+        platforms.add(new PlatformWindows());
+        platforms.add(new PlatformMacOSX());
+        platforms.add(new PlatformGeneric());
+        platforms.add(new PlatformNone());
+        platforms.trimToSize();
+    }
+
+    public static Platform getPlatform(int id) {
+        for (Platform pl : getPlatforms()) {
+            if (pl.getId() == id) {
+                return pl;
+            }
+        }
+        return null;
+    }
+
+    /*
+     * Returns platforms names up to but not included Generic.
+     */
+    public static String[] getPlatformDisplayNames() {
+        ArrayList<String> ret = new ArrayList<String>();
+        for (Platform pl : getPlatforms()) {
+            if (pl.getId() == PlatformTypes.PLATFORM_GENERIC || pl.getId() == PlatformTypes.PLATFORM_NONE) {
+                continue;
+            }
+            ret.add(pl.getDisplayName());
+        }
+        return ret.toArray(new String[ret.size()]);
+    }
+
+    private static ArrayList<Platform> getPlatforms() {
+        return platforms;
+    }
+
+    private Platforms() {
     }
 }
