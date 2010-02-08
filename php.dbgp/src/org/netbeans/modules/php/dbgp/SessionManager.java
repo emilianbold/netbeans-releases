@@ -41,12 +41,14 @@ package org.netbeans.modules.php.dbgp;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.api.PhpProjectUtils;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.util.Cancellable;
 
 /**
@@ -120,7 +122,19 @@ public class SessionManager  {
         DebugSession debSess = getSession(id);
         if (debSess != null) {
             debSess.stopSession();
+        } else {
+            stopEngines(session);
         }
+    }
+
+    public static void stopEngines(Session session) {
+        String[] languages = session.getSupportedLanguages();
+        for (String language : languages) {
+            DebuggerEngine engine = session.getEngineForLanguage(language);
+            ((DbgpEngineProvider) engine.lookupFirst(null,
+                    DebuggerEngineProvider.class)).getDestructor().killEngine();
+        }
+        SessionManager.closeServerThread(session);
     }
 
     public static SessionId getSessionId(Project project) {

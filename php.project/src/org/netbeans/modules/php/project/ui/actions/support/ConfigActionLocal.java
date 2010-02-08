@@ -164,7 +164,7 @@ class ConfigActionLocal extends ConfigAction {
         Cancellable cancellable = new Cancellable() {
             public boolean cancel() {
                 if (urlToShow[1] != null) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(urlToShow[0]);
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(urlToShow[1]);
                 }
                 return true;
             }

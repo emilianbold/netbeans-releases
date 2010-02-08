@@ -88,7 +88,8 @@ public class DebugSession extends SingleThread {
     private final AtomicReference<Status> status;
     private Session session;
     private Socket sessionSocket;
-    private final AtomicBoolean isStopped;
+    private final AtomicBoolean detachRequest;
+    private final AtomicBoolean stopRequest;
     private Thread sessionThread;
     private final List<DbgpCommand> commands;
     private AtomicReference<SessionId> sessionId;
@@ -100,7 +101,8 @@ public class DebugSession extends SingleThread {
 
     DebugSession(DebuggerOptions options, BackendLauncher backendLauncher) {
         commands = new LinkedList<DbgpCommand>();
-        this.isStopped = new AtomicBoolean(false);
+        this.detachRequest = new AtomicBoolean(false);
+        this.stopRequest = new AtomicBoolean(false);
         this.sessionId = new AtomicReference<SessionId>();
         this.backendLauncher = backendLauncher;
         this.status = new AtomicReference<Status>();
@@ -132,24 +134,24 @@ public class DebugSession extends SingleThread {
     public void run() {
         preprocess();
         try {
-            while (!isStopped.get()) {
+            while (!detachRequest.get()) {
                 try {
                     sendCommands();
                     receiveData();
                     sleepTillNewCommand();
                 } catch (SocketException exc) {
-                    log(exc);                    
+                    log(exc);
                 } catch (IOException e) {
                     log(e);
-                }
+                } 
             }
         } finally {
             postprocess();
         }
     }
-
     private void preprocess() {
-        isStopped.set(false);
+        detachRequest.set(false);
+        stopRequest.set(false);
         commands.clear();
         sessionId.set(null);
         myBridge = new IDESessionBridge();
@@ -198,12 +200,11 @@ public class DebugSession extends SingleThread {
             commands.clear();
         }
         for (DbgpCommand command : list) {
-            command.send(getSocket().getOutputStream());
-            if (command.wantAcknowledgment()) {
-                receiveData(command);
-            }
-            if (command.getCommand().equals(StopCommand.COMMAND)) {
-                return;
+            if (!detachRequest.get()) {
+                command.send(getSocket().getOutputStream());
+                if (command.wantAcknowledgment()) {
+                    receiveData(command);
+                }
             }
         }
     }
@@ -250,6 +251,9 @@ public class DebugSession extends SingleThread {
     }
 
     private DbgpMessage receiveData(DbgpCommand command) throws IOException {
+        if (command != null && command.getCommand().equals(StopCommand.COMMAND)) {
+            detachRequest.set(true);
+        }
         if (command != null || getSocket().getInputStream().available() > 0) {
             DbgpMessage message = DbgpMessage.create(
                     getSocket().getInputStream());
@@ -321,7 +325,6 @@ public class DebugSession extends SingleThread {
 
     @Override
     public boolean cancel() {
-        sendStopCommand();
         return true;
     }
 
@@ -338,8 +341,15 @@ public class DebugSession extends SingleThread {
 
     public void stopSession() {
         sendStopCommand();
-        stopEngines();
-        stopBackend();
+        stop();
+    }
+
+    private void stop() {
+        if (!stopRequest.get()) {
+            stopRequest.set(true);
+            stopEngines();
+            stopBackend();
+        }
     }
 
     private void processBreakStatus() {
@@ -360,9 +370,8 @@ public class DebugSession extends SingleThread {
 
     private void processStoppedStatus() {
         if (getOptions().isDebugForFirstPageOnly()) {
-            stopEngines();
+            stop();
         }
-        isStopped.set(true);
     }
 
     private void sendStopCommand() {
@@ -375,14 +384,8 @@ public class DebugSession extends SingleThread {
         }
     }
 
-    public void stopEngines() {
-        String[] languages = session.getSupportedLanguages();
-        for (String language : languages) {
-            DebuggerEngine engine = session.getEngineForLanguage(language);
-            ((DbgpEngineProvider) engine.lookupFirst(null,
-                    DebuggerEngineProvider.class)).getDestructor().killEngine();
-        }
-        SessionManager.closeServerThread(session);
+    private void stopEngines() {
+        SessionManager.stopEngines(session);
     }
 
     public String getTransactionId() {
