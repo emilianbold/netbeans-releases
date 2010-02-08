@@ -127,7 +127,11 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-apisupport-project/Nodes"), 
                   Lookups.fixed(new Object[] {project}));
             this.project = project;
-            setIconBaseWithExtension(NbModuleProject.NB_PROJECT_ICON_PATH);
+            boolean osgi = project.getManifest().getMainAttributes().getValue("Bundle-SymbolicName") != null; // NOI18N
+            setIconBaseWithExtension(
+                osgi ? NbModuleProject.NB_PROJECT_OSGI_ICON_PATH :
+                NbModuleProject.NB_PROJECT_ICON_PATH
+            );
             ProjectInformation pi = ProjectUtils.getInformation(project);
             setDisplayName(pi.getDisplayName());
             setShortDescription(NbBundle.getMessage(ModuleLogicalView.class, "HINT_project_root_node", FileUtil.getFileDisplayName(project.getProjectDirectory())));

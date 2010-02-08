@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,60 +34,63 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.classpath;
+package org.netbeans.modules.java.hints;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
+import org.junit.Test;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author  Milos Kleint 
+ * @author Jan Jancura
  */
-class TestSourceClassPathImpl extends AbstractProjectClassPathImpl {
-    
-    /**
-     * Creates a new instance of TestSourceClassPathImpl
-     */
-    public TestSourceClassPathImpl(NbMavenProjectImpl proj) {
-        super(proj);
+public class PrintStackTraceTest extends TestBase {
+
+    public PrintStackTraceTest (String name) {
+        super (name, PrintStackTrace.class);
+    }
+
+    @Test
+    public void test1 () throws Exception {
+        performFixTest (
+            "test/Test.java",
+            "package test;\n" +
+            "class Test {\n" +
+            "    void test () {\n" +
+            "        new Exception ().printStackTrace ();\n" +
+            "    }\n" +
+            "}",
+            "3:25-3:40:verifier:Print Stack Trace",
+            "FixImpl",
+            (
+                "package test;\n" +
+                "class Test {\n" +
+                "    void test () {\n" +
+                "    }\n" +
+                "}"
+            ).replaceAll ("[ \t\n]+", " ")
+        );
+    }
+
+    @Test
+    public void test2 () throws Exception {
+        performAnalysisTest (
+            "test/Test.java",
+            "package test;\n" +
+            "class Test {\n" +
+            "    void test () {\n" +
+            "        new Test ().printStackTrace ();\n" +
+            "    }\n" +
+            "    void printStackTrace () {\n" +
+            "    }\n" +
+            "}"
+        );
     }
     
-    @Override
-    URI[] createPath() {
-        Collection<URI> col = new ArrayList<URI>();
-        col.addAll(Arrays.asList(getMavenProject().getSourceRoots(true)));
-        //#180020 remote items from resources that are either duplicate or child roots of source roots.
-        List<URI> resources = new ArrayList<URI>(Arrays.asList(getMavenProject().getResources(false)));
-        Iterator<URI> it = resources.iterator();
-        while (it.hasNext()) {
-            URI res = it.next();
-            for (URI srcs : col) {
-                if (res.toString().startsWith(srcs.toString())) {
-                    it.remove();
-                }
-            }
-        }
-        col.addAll(resources);
-        
-        URI[] uris = new URI[col.size()];
-        uris = col.toArray(uris);
-        return uris;        
+    static {
+        NbBundle.setBranding ("test");
     }
-    
-    @Override
-    protected FilteringPathResourceImplementation getFilteringResources() {
-        return null;
-//        return new ExcludingResourceImpl(getMavenProject(), true);
-    }
-    
-    
 }

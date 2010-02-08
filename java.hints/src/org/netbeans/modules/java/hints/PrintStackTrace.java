@@ -44,8 +44,11 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 
+import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -67,24 +70,30 @@ import org.openide.util.NbBundle;
  * @author Jan Jancura
  */
 @Hint(category="code_maturity")
-public class ThreadDumpStack {
+public class PrintStackTrace {
 
-    @TriggerPattern (value="Thread.dumpStack ()")
-    public static ErrorDescription checkThreadDumpStack (HintContext ctx) {
-        TreePath treePath = ctx.getPath ();
-        CompilationInfo compilationInfo = ctx.getInfo ();
-        return ErrorDescriptionFactory.forName (
-            ctx,
-            treePath,
-            NbBundle.getMessage (ThreadDumpStack.class, "MSG_ThreadDumpStack"),
-            new FixImpl (
-                NbBundle.getMessage (
-                    LoggerNotStaticFinal.class,
-                    "MSG_ThreadDumpStack_fix"
-                ),
-                TreePathHandle.create (treePath, compilationInfo)
-            )
-        );
+    @TriggerPattern (value="$t.printStackTrace ()")
+    public static ErrorDescription checkPrintStackTrace (HintContext ctx) {
+        TreePath                treePath = ctx.getPath ();
+        CompilationInfo         compilationInfo = ctx.getInfo ();
+        Map<String,TreePath>    variables = ctx.getVariables ();
+        Trees                   trees = compilationInfo.getTrees ();
+        TypeMirror              tType = trees.getTypeMirror (variables.get ("$t"));
+        TypeMirror              throwableType = compilationInfo.getElements ().getTypeElement ("java.lang.Throwable").asType ();
+        if (compilationInfo.getTypes ().isSubtype (tType, throwableType))
+            return ErrorDescriptionFactory.forName (
+                ctx,
+                treePath,
+                NbBundle.getMessage (PrintStackTrace.class, "MSG_PrintStackTrace"),
+                new FixImpl (
+                    NbBundle.getMessage (
+                        LoggerNotStaticFinal.class,
+                        "MSG_PrintStackTrace_fix"
+                    ),
+                    TreePathHandle.create (treePath, compilationInfo)
+                )
+            );
+        return null;
     }
 
     private static final class FixImpl implements Fix {
@@ -102,7 +111,7 @@ public class ThreadDumpStack {
         }
 
         @Override
-        public String getText() {
+        public String getText () {
             return text;
         }
 
