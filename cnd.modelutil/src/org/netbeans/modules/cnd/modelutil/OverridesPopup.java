@@ -225,8 +225,7 @@ public class OverridesPopup extends JPanel implements FocusListener {
             }
         }
     }
-
-    private JLabel title;
+    
     private JList list;
     private JScrollPane scrollPane;
     private final List<Item> elements;
@@ -250,10 +249,12 @@ public class OverridesPopup extends JPanel implements FocusListener {
         
         this.elements = new ArrayList<Item>();
 
-        title = new JLabel(caption);
-        title.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        title.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 6));
-        add(title, BorderLayout.NORTH);
+        if (caption != null) {
+            JLabel title = new JLabel(caption);
+            title.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+            title.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 6));
+            add(title, BorderLayout.NORTH);
+        }
 
         list = new JList();
         //list.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
