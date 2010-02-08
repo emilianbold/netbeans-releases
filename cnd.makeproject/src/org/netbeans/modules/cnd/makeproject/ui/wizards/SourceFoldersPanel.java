@@ -79,21 +79,24 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
             String workingdir = (String)settings.getProperty("buildCommandWorkingDirTextField"); // NOI18N
             //sourceFilesPanel.setSeed(workingdir, workingdir);
             File wd = new File(workingdir);
-            sourceFilesPanel.getListData().add(new FolderEntry(wd, wd.getPath()));
+            sourceFilesPanel.getSourceListData().add(new FolderEntry(wd, wd.getPath()));
+            sourceFilesPanel.getTestListData().add(new FolderEntry(wd, wd.getPath() + "/tests")); // FIXUP: scan for actual 'test' or 'tests' folders...
             sourceFilesPanel.setFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN);
             firstTime = false;
         }
     }
 
     void store(WizardDescriptor wizardDescriptor) {
-        wizardDescriptor.putProperty("sourceFolders", sourceFilesPanel.getListData().iterator()); // NOI18N
-        wizardDescriptor.putProperty("sourceFoldersList", new ArrayList<FolderEntry>(sourceFilesPanel.getListData())); // NOI18N
+        wizardDescriptor.putProperty("sourceFolders", sourceFilesPanel.getSourceListData().iterator()); // NOI18N
+        wizardDescriptor.putProperty("sourceFoldersList", new ArrayList<FolderEntry>(sourceFilesPanel.getSourceListData())); // NOI18N
         if (sourceFilesPanel.getFoldersFilter().trim().length()==0) {
             // change empty pattern on "no ignore folder pattern"
             wizardDescriptor.putProperty("sourceFoldersFilter", MakeConfigurationDescriptor.DEFAULT_NO_IGNORE_FOLDERS_PATTERN); // NOI18N
         } else {
             wizardDescriptor.putProperty("sourceFoldersFilter", sourceFilesPanel.getFoldersFilter()); // NOI18N
         }
+        wizardDescriptor.putProperty("testFolders", sourceFilesPanel.getSourceListData().iterator()); // NOI18N
+        wizardDescriptor.putProperty("testFoldersList", new ArrayList<FolderEntry>(sourceFilesPanel.getTestListData())); // NOI18N
     }
     
     boolean valid(WizardDescriptor settings) {

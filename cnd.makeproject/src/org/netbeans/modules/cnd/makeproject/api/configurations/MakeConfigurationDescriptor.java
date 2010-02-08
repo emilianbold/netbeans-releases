@@ -78,7 +78,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelSupport;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;
@@ -105,7 +105,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public static final String ICONBASE = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject"; // NOI18N
     public static final String ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"; // NOI18N
     public static final Icon MAKEFILE_ICON = ImageUtilities.loadImageIcon(ICON, false); // NOI18N
-    public static final String DEFAULT_IGNORE_FOLDERS_PATTERN = "^(nbproject|build|test)$"; // NOI18N
+    public static final String DEFAULT_IGNORE_FOLDERS_PATTERN = "^(nbproject|build|test|tests)$"; // NOI18N
     public static final String DEFAULT_NO_IGNORE_FOLDERS_PATTERN = "^$"; // NOI18N
     private Project project = null;
     private String baseDir;
@@ -115,6 +115,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private Folder rootFolder = null;
     private HashMap<String, Item> projectItems = null;
     private final List<String> sourceRoots = new ArrayList<String>();
+    private final List<String> testRoots = new ArrayList<String>();
     private final Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
     private volatile NativeProject nativeProject = null;
     public static final String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
@@ -254,8 +255,8 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
             rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
             rootFolder.addNewFolder(RESOURCE_FILES_FOLDER, getString("ResourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+            testItems = rootFolder.addNewFolder(TEST_FILES_FOLDER, getString("TestsFilesTxt"), false, Folder.Kind.TEST_LOGICAL_FOLDER);
         }
-        testItems = rootFolder.addNewFolder(TEST_FILES_FOLDER, getString("TestsFilesTxt"), false, Folder.Kind.TEST_LOGICAL_FOLDER);
         externalFileItems = rootFolder.addNewFolder(EXTERNAL_FILES_FOLDER, getString("ImportantFilesTxt"), false, Folder.Kind.IMPORTANT_FILES_FOLDER);
 //        if (sourceFileFolders != null)
 //            setExternalFileItems(sourceFileFolders); // From makefile wrapper wizard
@@ -545,6 +546,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setProjectItemsMap(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsChangeListeners());
         setSourceRoots(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getSourceRootsRaw());
+        setTestRoots(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getTestRootsRaw());
         setFolderVisibilityQuery(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getFolderVisibilityQuery().getRegEx());
     }
 
@@ -558,6 +560,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         clone.setProjectItemsMap(getProjectItemsMap());
         clone.setProjectItemsChangeListeners(getProjectItemsChangeListeners());
         clone.setSourceRoots(getSourceRootsRaw());
+        clone.setTestRoots(getTestRootsRaw());
         clone.setFolderVisibilityQuery(getFolderVisibilityQuery().getRegEx());
         return clone;
     }
@@ -935,10 +938,21 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         return sourceRoots;
     }
 
+    private List<String> getTestRootsRaw() {
+        return testRoots;
+    }
+
     public void setSourceRoots(List<String> list) {
         synchronized (sourceRoots) {
             sourceRoots.clear();
             sourceRoots.addAll(list);
+        }
+    }
+
+    public void setTestRoots(List<String> list) {
+        synchronized (testRoots) {
+            testRoots.clear();
+            testRoots.addAll(list);
         }
     }
 
@@ -1035,6 +1049,17 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         List<String> copy;
         synchronized (sourceRoots) {
             copy = new ArrayList<String>(sourceRoots);
+        }
+        return copy;
+    }
+
+    /*
+     * return copy
+     */
+    public List<String> getTestRoots() {
+        List<String> copy;
+        synchronized (testRoots) {
+            copy = new ArrayList<String>(testRoots);
         }
         return copy;
     }

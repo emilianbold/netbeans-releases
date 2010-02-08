@@ -69,7 +69,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -79,7 +79,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
-import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -89,7 +89,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.DebuggerCustom
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DebuggerChooserNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

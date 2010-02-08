@@ -101,8 +101,11 @@ public class FmtOptions {
     public static final String reformatComments = "reformatComments"; //NOI18N
     public static final String indentHtml = "indentHtml"; //NOI18N
     public static final String rightMargin = SimpleValueNames.TEXT_LIMIT_WIDTH;
-    public static final String openingBraceStyle = "openingBraceStyle"; //NOI18N
     public static final String initialIndent = "init.indent"; //NOI18N
+
+    public static final String classDeclBracePlacement = "classDeclBracePlacement"; //NOI18N
+    public static final String methodDeclBracePlacement = "methodDeclBracePlacement"; //NOI18N
+    public static final String otherBracePlacement = "otherBracePlacement"; //NOI18N
 
     public static final String blankLinesBeforeNamespace = "blankLinesBeforeNamespace"; //NOI18N
     public static final String blankLinesAfterNamespace = "blankLinesAfterNamespace"; //NOI18N
@@ -128,10 +131,12 @@ public class FmtOptions {
     public static final String spaceBeforeWhileParen = "spaceBeforeWhileParen"; //NOI18N
     public static final String spaceBeforeCatchParen = "spaceBeforeCatchParen"; //NOI18N
     public static final String spaceBeforeSwitchParen = "spaceBeforeSwitchParen"; //NOI18N
-//    public static final String spaceAroundUnaryOps = "spaceAroundUnaryOps"; //NOI18N
-//    public static final String spaceAroundBinaryOps = "spaceAroundBinaryOps"; //NOI18N
-//    public static final String spaceAroundTernaryOps = "spaceAroundTernaryOps"; //NOI18N
-//    public static final String spaceAroundAssignOps = "spaceAroundAssignOps"; //NOI18N
+    public static final String spaceAroundUnaryOps = "spaceAroundUnaryOps"; //NOI18N
+    public static final String spaceAroundBinaryOps = "spaceAroundBinaryOps"; //NOI18N
+    public static final String spaceAroundTernaryOps = "spaceAroundTernaryOps"; //NOI18N
+    public static final String spaceAroundStringConcatOps = "spaceAroundStringConcatOps"; //NOI18N
+    public static final String spaceAroundAssignOps = "spaceAroundAssignOps"; //NOI18N
+    public static final String spaceAroundObjectOps = "spaceAroundObjectOps"; //NOI18N
     public static final String spaceBeforeClassDeclLeftBrace = "spaceBeforeClassDeclLeftBrace"; //NOI18N
     public static final String spaceBeforeMethodDeclLeftBrace = "spaceBeforeMethodDeclLeftBrace"; //NOI18N
     public static final String spaceBeforeIfLeftBrace = "spaceBeforeIfLeftBrace"; //NOI18N
@@ -188,9 +193,9 @@ public class FmtOptions {
     private static final String FALSE = "false";    // NOI18N
 
     //opening brace styles
-    public static final String OBRACE_NEWLINE = "ob.new_line"; //NOI18N
-    public static final String OBRACE_SAMELINE = "ob.sameline_line"; //NOI18N
-    public static final String OBRACE_PRESERVE = "ob.preserve"; //NOI18N
+    public static final String OBRACE_NEWLINE = CodeStyle.BracePlacement.NEW_LINE.name();
+    public static final String OBRACE_SAMELINE = CodeStyle.BracePlacement.SAME_LINE.name();
+    public static final String OBRACE_PRESERVE = CodeStyle.BracePlacement.PRESERVE_EXISTING.name();
     
     private static Map<String,String> defaults;
     
@@ -208,8 +213,11 @@ public class FmtOptions {
             { reformatComments, FALSE }, //NOI18N
             { indentHtml, TRUE }, //NOI18N
             { rightMargin, "80"}, //NOI18N
-            { openingBraceStyle, OBRACE_SAMELINE},
             { initialIndent, "0"}, //NOI18N
+
+	    { classDeclBracePlacement, OBRACE_SAMELINE },
+	    { methodDeclBracePlacement, OBRACE_SAMELINE },
+	    { otherBracePlacement, OBRACE_SAMELINE },
 
             { blankLinesBeforeNamespace, "1"}, //NOI18N
             { blankLinesAfterNamespace, "1"}, //NOI18N
@@ -235,10 +243,12 @@ public class FmtOptions {
             { spaceBeforeWhileParen, TRUE},
             { spaceBeforeCatchParen, TRUE},
             { spaceBeforeSwitchParen, TRUE},
-//            { spaceAroundUnaryOps, FALSE},
-//            { spaceAroundBinaryOps, TRUE},
-//            { spaceAroundTernaryOps, TRUE},
-//            { spaceAroundAssignOps, TRUE},
+            { spaceAroundUnaryOps, FALSE},
+            { spaceAroundBinaryOps, TRUE},
+            { spaceAroundTernaryOps, TRUE},
+	    { spaceAroundStringConcatOps, TRUE},
+            { spaceAroundAssignOps, TRUE},
+	    { spaceAroundObjectOps, FALSE},
             { spaceBeforeClassDeclLeftBrace, TRUE},
             { spaceBeforeMethodDeclLeftBrace, TRUE},
             { spaceBeforeIfLeftBrace, TRUE},

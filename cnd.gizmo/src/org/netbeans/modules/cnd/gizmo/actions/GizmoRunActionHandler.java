@@ -47,7 +47,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;

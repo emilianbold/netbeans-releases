@@ -266,7 +266,7 @@ class RfsLocalController implements Runnable {
                     newState = FileState.INITIAL;
                     break;
                 case UNCONTROLLED:
-                    return;
+                    newState = info.state;
                 default:
                     CndUtils.assertTrue(false, "Unexpected state: " + info.state); //NOI18N
                     return;

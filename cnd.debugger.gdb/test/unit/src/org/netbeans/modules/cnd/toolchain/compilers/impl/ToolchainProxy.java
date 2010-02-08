@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.cnd.toolchain.compilers.impl;
 
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 
 
 /**
