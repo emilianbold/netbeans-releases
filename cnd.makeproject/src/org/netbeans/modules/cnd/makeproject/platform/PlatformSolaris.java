@@ -39,38 +39,39 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.platforms.impl;
+package org.netbeans.modules.cnd.makeproject.platform;
 
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 
-public class PlatformLinux extends Platform {
-    public static final String NAME = "Linux-x86"; // NOI18N
-
-    private static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
+public class PlatformSolaris  extends Platform {
+    private static final LibraryItem.StdLibItem[] standardLibrariesSolaris = {
         StdLibraries.getStandardLibary("Motif"), // NOI18N
         StdLibraries.getStandardLibary("Mathematics"), // NOI18N
-        StdLibraries.getStandardLibary("DataCompression"), // NOI18N
+        StdLibraries.getStandardLibary("Yacc"), // NOI18N
+        StdLibraries.getStandardLibary("Lex"), // NOI18N
+        StdLibraries.getStandardLibary("SocketsNetworkServices"), // NOI18N
+        StdLibraries.getStandardLibary("SolarisThreads"), // NOI18N
         StdLibraries.getStandardLibary("PosixThreads"), // NOI18N
+        StdLibraries.getStandardLibary("Posix4"), // NOI18N
+        StdLibraries.getStandardLibary("Internationalization"), // NOI18N
+        StdLibraries.getStandardLibary("PatternMatching"), // NOI18N
         StdLibraries.getStandardLibary("Curses"), // NOI18N
-        StdLibraries.getStandardLibary("DynamicLinking"), // NOI18N
     };
     
-    public PlatformLinux() {
-        super(NAME, "Linux x86", PlatformTypes.PLATFORM_LINUX); // NOI18N
+    public PlatformSolaris(String name, String displayName, int id) {
+        super(name, displayName, id);
     }
     
     @Override
     public LibraryItem.StdLibItem[] getStandardLibraries() {
-        return standardLibrariesLinux;
+        return standardLibrariesSolaris;
     }
     
     @Override
     public String getLibraryName(String baseName) {
-        return "lib" + baseName + ".so"; // NOI18N // NOI18N
+        return "lib" + baseName + ".so"; // NOI18N
     }
     
     @Override
@@ -83,7 +84,6 @@ public class PlatformLinux extends Platform {
             if (libName.startsWith("lib")) { // NOI18N
                 libName = libName.substring(3);
             }
-
             return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag()
                     + IpeUtils.escapeOddCharacters(libDir)
                     + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag() // NOI18N

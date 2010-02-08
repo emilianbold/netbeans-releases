@@ -84,8 +84,8 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         //return Collections.<Action>emptyList();
         List<BuildAction> res = new ArrayList<BuildAction>();
         if (events != null && events.length == 2) {
-            if (events[0].getType() == ProjectActionEvent.PrefefinedType.CLEAN &&
-                events[1].getType() == ProjectActionEvent.PrefefinedType.BUILD &&
+            if (events[0].getType() == ProjectActionEvent.PredefinedType.CLEAN &&
+                events[1].getType() == ProjectActionEvent.PredefinedType.BUILD &&
                 (events[1].getConfiguration() instanceof MakeConfiguration)&&
                  events[1].getConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
                 res.add(new ConfigureAction(ioTabName, events));

@@ -38,15 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.api.platforms;
+package org.netbeans.modules.cnd.makeproject.platform;
 
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformMacOSX;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformNone;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformLinux;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformWindows;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformSolarisIntel;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformGeneric;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformSolarisSparc;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformMacOSX;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformNone;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformLinux;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformWindows;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformSolarisIntel;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformGeneric;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformSolarisSparc;
 import java.util.ArrayList;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 

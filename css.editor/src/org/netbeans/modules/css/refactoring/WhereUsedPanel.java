@@ -46,6 +46,7 @@
 package org.netbeans.modules.css.refactoring;
 
 import java.awt.Component;
+import org.netbeans.modules.css.editor.CssPreferences;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 
 /**
@@ -77,8 +78,13 @@ public class WhereUsedPanel extends javax.swing.JPanel implements CustomRefactor
         searchInCommentsCheckBox.setText(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.searchInCommentsCheckBox.text")); // NOI18N
         searchInCommentsCheckBox.setEnabled(false);
 
-        findAllCheckBox.setSelected(true);
+        findAllCheckBox.setSelected(CssPreferences.findInUnrelatedFiles());
         findAllCheckBox.setText(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "WhereUsedPanel.findAllCheckBox.text")); // NOI18N
+        findAllCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                findAllCheckBoxActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -89,7 +95,7 @@ public class WhereUsedPanel extends javax.swing.JPanel implements CustomRefactor
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(searchInCommentsCheckBox)
                     .addComponent(findAllCheckBox))
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -98,9 +104,13 @@ public class WhereUsedPanel extends javax.swing.JPanel implements CustomRefactor
                 .addComponent(searchInCommentsCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(findAllCheckBox)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(37, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void findAllCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findAllCheckBoxActionPerformed
+        CssPreferences.setFindInUnrelatedFiles(findAllCheckBox.isSelected());
+    }//GEN-LAST:event_findAllCheckBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

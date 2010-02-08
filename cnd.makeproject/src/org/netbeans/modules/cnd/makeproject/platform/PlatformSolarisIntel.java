@@ -39,56 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.actions;
+package org.netbeans.modules.cnd.makeproject.platform;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+public class PlatformSolarisIntel extends PlatformSolaris {
+    public static final String NAME = "Solaris-x86"; // NOI18N
 
-public class TestAction extends NodeAction {
-    public String getName() {
-	return getString("TestActionName");
-    }
-
-    public void performAction(Node[] activatedNodes) {
-	Node n = activatedNodes[0];
-	Folder folder = (Folder)n.getValue("Folder"); // NOI18N
-	assert folder != null;
-	Node thisNode = (Node)n.getValue("This"); // NOI18N
-	assert thisNode != null;
-	Project project = (Project)n.getValue("Project"); // NOI18N
-	assert project != null;
-        
-//        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
-//        MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-//        if (!makeConfigurationDescriptor.okToChange()) {
-//            return;
-//        }
-//
-//	Folder newFolder = folder.addNewFolder(true);
-//	MakeLogicalViewProvider.setVisible(project, newFolder);
-    }
-
-    public boolean enable(Node[] activatedNodes) {
-        return true;
-    }
-
-    public HelpCtx getHelpCtx() {
-	return null;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-	return false;
-    }
-
-    private String getString(String s) {
-        return NbBundle.getBundle(getClass()).getString(s);
+    public PlatformSolarisIntel() {
+        super(NAME, "Solaris x86", PlatformTypes.PLATFORM_SOLARIS_INTEL); // NOI18N
     }
 }

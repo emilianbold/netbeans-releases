@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.platforms.impl;
+package org.netbeans.modules.cnd.makeproject.platform;
 
 import java.util.HashMap;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;

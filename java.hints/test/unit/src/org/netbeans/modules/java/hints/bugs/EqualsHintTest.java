@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,112 +34,82 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007-2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints;
+package org.netbeans.modules.java.hints.bugs;
 
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.TreePath;
-import java.util.List;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
-import org.netbeans.modules.java.hints.options.HintsSettings;
-import org.netbeans.modules.java.hints.EqualsHint.ReplaceFixImpl;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class EqualsHintTest extends TreeRuleTestBase {
+public class EqualsHintTest extends TestBase {
     
     public EqualsHintTest(String testName) {
-        super(testName);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        
-        HintsSettings.setEnabled(EqualsHint.getArrayEquals().getPreferences(HintsSettings.getCurrentProfileId()), true);
-        HintsSettings.setEnabled(EqualsHint.getIncompatibleEquals().getPreferences(HintsSettings.getCurrentProfileId()), true);
+        super(testName, EqualsHint.class);
     }
 
     public void testSimpleAnalysis1() throws Exception {
         performAnalysisTest("test/Test.java",
-                            "package test; public class Test{ public void test() {int[] a = null; boolean b = a.equals(|a);}}",
+                            "package test; public class Test{ public void test() {int[] a = null; boolean b = a.equals(a);}}",
                             "0:83-0:89:verifier:AE");
     }
     
     public void testSimpleAnalysis2() throws Exception {
         performAnalysisTest("test/Test.java",
-                            "package test; public class Test{ public void test() {Class c = null; String s = null; boolean b = c.equals(|s);}}",
+                            "package test; public class Test{ public void test() {Class c = null; String s = null; boolean b = c.equals(s);}}",
                             "0:100-0:106:verifier:IE");
     }
     
     public void testSimpleAnalysis3() throws Exception {
         performAnalysisTest("test/Test.java",
-                            "package test; public class Test{ public void test() {Class c = null; String s = null; boolean b = s.equals(|c);}}",
+                            "package test; public class Test{ public void test() {Class c = null; String s = null; boolean b = s.equals(c);}}",
                             "0:100-0:106:verifier:IE");
     }
     
     public void testSimpleAnalysis4() throws Exception {
         performAnalysisTest("test/Test.java",
-                            "package test; public class Test{ public void test() {Class c = null; Object o = null; boolean b = o.equals(|c);}}");
+                            "package test; public class Test{ public void test() {Class c = null; Object o = null; boolean b = o.equals(c);}}");
     }
     
     public void testSimpleAnalysis5() throws Exception {
         performAnalysisTest("test/Test.java",
-                            "package test; public class Test{ public void test() {Class c = null; Object o = null; boolean b = c.equals(|o);}}");
+                            "package test; public class Test{ public void test() {Class c = null; Object o = null; boolean b = c.equals(o);}}");
     }
     
     public void testFix1() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test{ public void test() {int[] a = null; boolean b = a.equals(|a);}}",
+                       "package test; public class Test{ public void test() {int[] a = null; boolean b = a.equals(a);}}",
                        "0:83-0:89:verifier:AE",
-                       "Arrays.equals",
+                       "FIX_ReplaceWithArraysEquals",
                        "package test; import java.util.Arrays; public class Test{ public void test() {int[] a = null; boolean b = Arrays.equals(a, a);}}");
     }
     
     public void testFix2() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test{ public void test() {int[] a = null; boolean b = a.equals(|a);}}",
+                       "package test; public class Test{ public void test() {int[] a = null; boolean b = a.equals(a);}}",
                        "0:83-0:89:verifier:AE",
-                       "==",
+                       "FIX_ReplaceWithInstanceEquals",
                        "package test; public class Test{ public void test() {int[] a = null; boolean b = a == a;}}");
     }
     
     public void testAnalysis132853() throws Exception {
         performAnalysisTest("test/Test.java",
-                            "package test; public class Test{ public void test() {Class c = null; Object o = null; boolean b = this.equal|s(c, o);} private boolean equals(Object o1, Object o2) { return false; } }");
+                            "package test; public class Test{ public void test() {Class c = null; Object o = null; boolean b = this.equals(c, o);} private boolean equals(Object o1, Object o2) { return false; } }");
     }
     
-    @Override
-    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
-        while (path != null && path.getLeaf().getKind() != Kind.METHOD_INVOCATION) {
-            path = path.getParentPath();
-        }
-        
-        if (path == null) return null;
-        
-        return new EqualsHint(EqualsHint.KEY_DELEGATE).run(info, path);
+    public void testUnresolved1() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Test{ public void test() {int[] a = null; boolean b = a.equals(aa);}}");
     }
 
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
-        if (f instanceof ReplaceFixImpl) {
-            return ((ReplaceFixImpl) f).isArraysEquals() ? "Arrays.equals" : "==";
-        }
-        
-        return super.toDebugString(info, f);
+        return f.getText();
     }
 
-    static {
-        NbBundle.setBranding("test");
-    }
-    
-    
 }

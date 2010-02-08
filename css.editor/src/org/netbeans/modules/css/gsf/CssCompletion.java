@@ -56,7 +56,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
@@ -75,7 +74,6 @@ import org.netbeans.modules.css.editor.PropertyModel.Element;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.css.editor.CssHelpResolver;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.editor.CssPropertyValue;
@@ -104,6 +102,11 @@ public class CssCompletion implements CodeCompletionHandler {
 
     private final PropertyModel PROPERTIES = PropertyModel.instance();
     private static final Collection<String> AT_RULES = Arrays.asList(new String[]{"@media", "@page", "@import", "@charset", "@font-face"}); //NOI18N
+    private static char firstPrefixChar; //read getPrefix() comment!
+
+    private static final String RELATED_SELECTOR_COLOR = "007c00"; //NOI18N
+    private static String GRAY_COLOR_CODE = Integer.toHexString(Color.GRAY.getRGB()).substring(2);
+
 
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
@@ -113,6 +116,11 @@ public class CssCompletion implements CodeCompletionHandler {
 
         int caretOffset = context.getCaretOffset();
         String prefix = context.getPrefix() != null ? context.getPrefix() : "";
+
+        //read getPrefix() comment!
+        if(firstPrefixChar != 0) {
+            prefix = firstPrefixChar + prefix;
+        }
 
         TokenHierarchy<?> th = snapshot.getTokenHierarchy();
         TokenSequence<CssTokenId> ts = th.tokenSequence(CssTokenId.language());
@@ -201,31 +209,34 @@ public class CssCompletion implements CodeCompletionHandler {
                 }
                 //get map of all fileobject declaring classes with the prefix
                 Map<FileObject, Collection<String>> search = index.findClassesByPrefix(prefix); 
-                Collection<String> classes = new HashSet<String>();
+                Collection<String> refclasses = new HashSet<String>();
+                Collection<String> allclasses = new HashSet<String>();
                 for(FileObject fo : search.keySet()) {
+                    allclasses.addAll(search.get(fo));
                     //is the file refered by the current file?
                     if(refered.contains(fo)) {
                         //yes - add its classes
-                        classes.addAll(search.get(fo));
+                        refclasses.addAll(search.get(fo));
                     }
                 }
  
                 //lets create the completion items
-                List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(classes.size());
-                for(String clazz : classes) {
+                List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(refclasses.size());
+                for(String clazz : allclasses) {
                    proposals.add(new SelectorCompletionItem(new CssElement(clazz),
                         clazz,
                         CompletionItemKind.VALUE,
-                        offset));
+                        offset,
+                        refclasses.contains(clazz)));
                 }
                 if (proposals.size() > 0) {
                     return new DefaultCompletionResult(proposals, false);
                 }
 
             }
-        } else if (node.kind() == CssParserTreeConstants.JJTHASH
+        } else if (prefix.length() > 0 && (node.kind() == CssParserTreeConstants.JJTHASH
                 || (unmappableClassOrId || originalNodeKind == CssParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE ||
-                originalNodeKind == CssParserTreeConstants.JJTERROR_SKIPBLOCK) && prefix.length() == 1 && prefix.charAt(0) == '#') {
+                originalNodeKind == CssParserTreeConstants.JJTERROR_SKIPBLOCK) && prefix.charAt(0) == '#')) {
             //complete class selectors
             CssProjectSupport sup = CssProjectSupport.findFor(file);
             if (sup != null) {
@@ -241,25 +252,28 @@ public class CssCompletion implements CodeCompletionHandler {
                     prefix = prefix.substring(1); //cut off the #
                 }
                 offset++; //offset point to the hash position, we need to skip it
-
+                
                 //get map of all fileobject declaring classes with the prefix
                 Map<FileObject, Collection<String>> search = index.findIdsByPrefix(prefix); //cut off the dot (.)
-                Collection<String> ids = new HashSet<String>();
+                Collection<String> allids = new HashSet<String>();
+                Collection<String> refids = new HashSet<String>();
                 for (FileObject fo : search.keySet()) {
+                    allids.addAll(search.get(fo));
                     //is the file refered by the current file?
                     if (refered.contains(fo)) {
                         //yes - add its classes
-                        ids.addAll(search.get(fo));
+                        refids.addAll(search.get(fo));
                     }
                 }
 
                 //lets create the completion items
-                List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(ids.size());
-                for (String id : ids) {
+                List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(allids.size());
+                for (String id : allids) {
                     proposals.add(new SelectorCompletionItem(new CssElement(id),
                             id,
                             CompletionItemKind.VALUE,
-                            offset));
+                            offset,
+                            refids.contains(id)));
                 }
                 if (proposals.size() > 0) {
                     return new DefaultCompletionResult(proposals, false);
@@ -310,6 +324,7 @@ public class CssCompletion implements CodeCompletionHandler {
             final SimpleNode[] result = new SimpleNode[2];
             NodeVisitor propertySearch = new NodeVisitor() {
 
+                @Override
                 public void visit(SimpleNode node) {
                     if (node.kind() == CssParserTreeConstants.JJTPROPERTY) {
                         result[0] = node;
@@ -396,6 +411,7 @@ public class CssCompletion implements CodeCompletionHandler {
             final SimpleNode[] result = new SimpleNode[1];
             NodeVisitor declarationSearch = new NodeVisitor() {
 
+                @Override
                 public void visit(SimpleNode node) {
                     if (node.kind() == CssParserTreeConstants.JJTDECLARATION) {
                         result[0] = node;
@@ -409,6 +425,7 @@ public class CssCompletion implements CodeCompletionHandler {
             result[0] = null;
             NodeVisitor propertySearch = new NodeVisitor() {
 
+                @Override
                 public void visit(SimpleNode node) {
                     if (node.kind() == CssParserTreeConstants.JJTPROPERTY) {
                         result[0] = node;
@@ -612,20 +629,33 @@ public class CssCompletion implements CodeCompletionHandler {
     public String getPrefix(ParserResult info, final int caretOffset, boolean upToOffset) {
         Snapshot snapshot = info.getSnapshot();
         TokenHierarchy hi = snapshot.getTokenHierarchy();
-        return getPrefix(hi.tokenSequence(), snapshot.getEmbeddedOffset(caretOffset));
+        String prefix = getPrefix(hi.tokenSequence(), snapshot.getEmbeddedOffset(caretOffset));
 
+        //really ugly handling of class or id selector prefix:
+        //Since the getPrefix() method is parser result based it is supposed
+        //to work on top of the snapshot, while GsfCompletionProvider$Task.canFilter()
+        //should be fast and hence operates on document, there arises a big contradiction -
+        //For the virtually generated class and id selectors, the dot or hash chars
+        //are part of the virtual source and hence becomes a part of the prefix in
+        //this method call, while in the real html document they are invisible and an
+        //attribute quote resides on their place.
+        //So if a GsfCompletionProvider$CompletionEnvironment is created, an anchor
+        //is computed from the caret offset and prefix lenght (prefix returned from
+        //this method). After subsequent user's keystrokes the canFilter() method
+        //gets text from this anchor to the caret from the edited document! So the
+        //prefix contains the attribute quotation and any css items cannot be filtered.
 
-//        final Document document = info.getSnapshot().getSource().getDocument(false);
-//        if (document == null) {
-//            return null;
-//        }
-//        final String[] retval = new String[1];
-//        ((BaseDocument) document).render(new Runnable() {
-//            public void run() {
-//                retval[0] = getPrefix(LexerUtils.getCssTokenSequence(document, caretOffset), caretOffset);
-//            }
-//        });
-//        return retval[0];
+        //this is a poor and hacky solution to this issue, some bug may appear for
+        //non class or id elements starting with dot or hash?!?!?
+
+        if(prefix.length() > 0 && (prefix.charAt(0) == '.' || prefix.charAt(0) == '#')) {
+            firstPrefixChar = prefix.charAt(0);
+            return prefix.substring(1);
+        } else {
+            firstPrefixChar = 0;
+            return prefix;
+        }
+
     }
     
     private String normalizeLink(ElementHandle handle , String link){
@@ -740,6 +770,8 @@ public class CssCompletion implements CodeCompletionHandler {
             case ';': {
                 return QueryType.STOP;
             }
+            case '.':
+            case '#':
             case ':':
             case ',': {
                 return QueryType.COMPLETION;
@@ -962,16 +994,42 @@ public class CssCompletion implements CodeCompletionHandler {
 
     private class SelectorCompletionItem extends CssCompletionItem {
 
+        private boolean related;
+
         private SelectorCompletionItem(CssElement element,
                 String value,
                 CompletionItemKind kind,
                 int anchorOffset) {
+            this(element, value, kind, anchorOffset, true);
+        }
+
+        private SelectorCompletionItem(CssElement element,
+                String value,
+                CompletionItemKind kind,
+                int anchorOffset,
+                boolean related) {
             super(element, value, kind, anchorOffset, false);
+            this.related = related;
         }
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            formatter.appendHtml("<b><font color=#007c00>" + getName() + "</font></b>");
+            StringBuilder buf = new StringBuilder();
+            if(related) {
+                buf.append("<b><font color=#");
+                buf.append(RELATED_SELECTOR_COLOR);
+            } else {
+                buf.append("<font color=#");
+                buf.append(GRAY_COLOR_CODE);
+            }
+            buf.append(">");
+            buf.append(getName());
+            buf.append("</font>");
+            if(related) {
+                buf.append("</b>");
+            }
+
+            formatter.appendHtml(buf.toString());
             return formatter.getText();
         }
 
@@ -979,6 +1037,14 @@ public class CssCompletion implements CodeCompletionHandler {
         public ImageIcon getIcon() {
             return null;
         }
+
+        @Override
+        public int getSortPrioOverride() {
+            return super.getSortPrioOverride() + (related ? 1 : 0);
+        }
+
+
+
     }
 
     /**
@@ -1008,6 +1074,7 @@ public class CssCompletion implements CodeCompletionHandler {
             this.addSemicolon = addSemicolon;
         }
 
+        @Override
         public int getAnchorOffset() {
             return anchorOffset;
         }
@@ -1069,6 +1136,7 @@ public class CssCompletion implements CodeCompletionHandler {
             return getName();
         }
 
+        @Override
         public boolean isSmart() {
             return false;
         }
@@ -1083,6 +1151,7 @@ public class CssCompletion implements CodeCompletionHandler {
             return element;
         }
 
+        @Override
         public int getSortPrioOverride() {
             return 0;
         }

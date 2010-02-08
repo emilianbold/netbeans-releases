@@ -44,8 +44,11 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 
+import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -54,6 +57,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -67,20 +71,23 @@ import org.openide.util.NbBundle;
  * @author Jan Jancura
  */
 @Hint(category="code_maturity")
-public class ThreadDumpStack {
+public class SystemOut {
 
-    @TriggerPattern (value="Thread.dumpStack ()")
-    public static ErrorDescription checkThreadDumpStack (HintContext ctx) {
-        TreePath treePath = ctx.getPath ();
-        CompilationInfo compilationInfo = ctx.getInfo ();
+    @TriggerPatterns ({
+        @TriggerPattern (value="System.out"),
+        @TriggerPattern (value="System.err")
+    })
+    public static ErrorDescription checkSystemOut (HintContext ctx) {
+        TreePath                treePath = ctx.getPath ();
+        CompilationInfo         compilationInfo = ctx.getInfo ();
         return ErrorDescriptionFactory.forName (
             ctx,
             treePath,
-            NbBundle.getMessage (ThreadDumpStack.class, "MSG_ThreadDumpStack"),
+            NbBundle.getMessage (SystemOut.class, "MSG_SystemOut"),
             new FixImpl (
                 NbBundle.getMessage (
                     LoggerNotStaticFinal.class,
-                    "MSG_ThreadDumpStack_fix"
+                    "MSG_SystemOut_fix"
                 ),
                 TreePathHandle.create (treePath, compilationInfo)
             )
@@ -102,7 +109,7 @@ public class ThreadDumpStack {
         }
 
         @Override
-        public String getText() {
+        public String getText () {
             return text;
         }
 
@@ -113,16 +120,19 @@ public class ThreadDumpStack {
                 @Override
                 public void run (WorkingCopy wc) throws Exception {
                     wc.toPhase (Phase.RESOLVED);
-                    TreePath tp = treePathHandle.resolve (wc);
-                    if (tp == null) return;
-                    Tree expressionStatementTree = tp.getParentPath ().getLeaf ();
-                    Tree parent2 = tp.getParentPath ().getParentPath ().getLeaf ();
-                    if (!(parent2 instanceof BlockTree)) return;
-                    BlockTree blockTree = (BlockTree) parent2;
+                    TreePath statementPath = treePathHandle.resolve (wc);
+                    if (statementPath == null) return;
+                    TreePath blockPath = statementPath.getParentPath ();
+                    while (!(blockPath.getLeaf () instanceof BlockTree)) {
+                        statementPath = blockPath;
+                        blockPath = blockPath.getParentPath ();
+                        if (blockPath == null) return;
+                    }
+                    BlockTree blockTree = (BlockTree) blockPath.getLeaf ();
                     List<? extends StatementTree> statements = blockTree.getStatements ();
                     List<StatementTree> newStatements = new ArrayList<StatementTree> ();
                     for (StatementTree statement : statements)
-                        if (statement != expressionStatementTree)
+                        if (statement != statementPath.getLeaf ())
                             newStatements.add (statement);
                     BlockTree newBlockTree = wc.getTreeMaker ().Block (newStatements, true);
                     wc.rewrite (blockTree, newBlockTree);
