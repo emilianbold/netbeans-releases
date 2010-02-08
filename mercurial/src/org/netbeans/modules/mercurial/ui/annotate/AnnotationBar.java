@@ -398,15 +398,15 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         return doc;
     }
 
+    private MouseListener mouseListener;
     /**
      * Registers "close" popup menu, tooltip manager // NOI18N
      * and repaint on documet change manager.
      */
+    @Override
     public void addNotify() {
         super.addNotify();
-
-
-        this.addMouseListener(new MouseAdapter() {
+        this.addMouseListener(mouseListener = new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 maybeShowPopup(e);
             }
@@ -430,6 +430,15 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         // register with tooltip manager
         setToolTipText(""); // NOI18N
 
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        if (mouseListener != null) {
+            this.removeMouseListener(mouseListener);
+            mouseListener = null;
+        }
     }
 
     /**
@@ -562,7 +571,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             if (previousRevision != null || getPreviousRevision(revisionPerLine) != null) {
                 if (!getPreviousRevisions().containsKey(key)) {
                     // get revision in a bg thread and cache the value
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+                        @Override
                         public void run() {
                             getParentRevision(originalFile, revisionPerLine);
                         }
@@ -615,7 +625,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                             }
                         }
                     }
-                }.start(RequestProcessor.getDefault(), repositoryRoot,
+                }.start(Mercurial.getInstance().getRequestProcessor(), repositoryRoot,
                         NbBundle.getMessage(AnnotationBar.class, "MSG_GettingPreviousRevision")); //NOI18N
             }
         }
