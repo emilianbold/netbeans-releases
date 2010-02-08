@@ -89,6 +89,8 @@ import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.basic.BasicTextFieldUI;
+import javax.swing.text.Caret;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -190,6 +192,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             field.setUI(new BasicTextFieldUI());
         }
         field.setBackground(getBackground());
+        Caret caret = field.getCaret();
+        if (caret instanceof DefaultCaret) {
+            ((DefaultCaret)caret).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+        }
     }
 
     void reloadFormInAWT(final boolean force) {
