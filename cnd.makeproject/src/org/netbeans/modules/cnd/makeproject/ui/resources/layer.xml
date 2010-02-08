@@ -271,35 +271,34 @@ made subject to such option by the copyright holder.
     <folder name="Actions">
         <folder name="Project">
             <!-- Project operations -->
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction"/>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-AddExistingItemAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.AddExistingItemAction"/>
             </file>
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-AddExistingFolderItemsAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.AddExistingFolderItemsAction"/>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-AddExistingFolderItemsAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction"/>
             </file>
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-NewFolderAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction"/>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-NewFolderAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.NewFolderAction"/>
             </file>
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-NewTestAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.NewTestAction"/>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-NewTestAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.NewTestAction"/>
             </file>
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-TestAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.TestAction"/>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-TestAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.TestAction"/>
             </file>
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-BatchBuildAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.api.actions.BatchBuildAction.MainBatchBuildAction"/>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-BatchBuildAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.actions.BatchBuildAction.MainBatchBuildAction"/>
             </file>
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-ConfigurationManagerAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.ConfigurationManagerAction"/>
-            </file>
-            
+            <file name="org-netbeans-modules-cnd-makeproject-actions-ConfigurationManagerAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.ConfigurationManagerAction"/>
+            </file>            
         </folder>
     </folder>
     
     <folder name="Menu"> <!-- Hacking menus -->
         <folder name="BuildProject">
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-BatchBuildAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-api-actions-BatchBuildAction.instance"/>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-BatchBuildAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-actions-BatchBuildAction.instance"/>
                 <attr name="position" intvalue="210"/>
             </file>
             
@@ -308,8 +307,8 @@ made subject to such option by the copyright holder.
         </folder>
         <!--
         <folder name="File">
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.instance"/>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-AddExistingItemAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-actions-AddExistingItemAction.instance"/>
                 <attr name="position" intvalue="300"/>
             </file>
         </folder>
@@ -321,7 +320,7 @@ made subject to such option by the copyright holder.
             <folder name="x-executable+elf">
                 <folder name="Actions">
                     <file name="RunDialogAction.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.RunDialogAction"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.RunDialogAction"/>
                         <attr name="position" intvalue="100"/>
                         <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>

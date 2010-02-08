@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.actions;
+package org.netbeans.modules.cnd.makeproject.actions;
 
 import java.util.ResourceBundle;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;

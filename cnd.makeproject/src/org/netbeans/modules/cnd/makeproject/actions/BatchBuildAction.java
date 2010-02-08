@@ -38,57 +38,45 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.makeproject.actions;
 
-package org.netbeans.modules.cnd.makeproject.api.actions;
-
+import javax.swing.Action;
+import javax.swing.JButton;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
+import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
+import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
-public class TestAction extends NodeAction {
-    public String getName() {
-	return getString("TestActionName");
+public final class BatchBuildAction {
+
+    private static final String actionName = NbBundle.getBundle(BatchBuildAction.class).getString("BatchBuildActionName");
+
+    private BatchBuildAction() {
     }
 
-    public void performAction(Node[] activatedNodes) {
-	Node n = activatedNodes[0];
-	Folder folder = (Folder)n.getValue("Folder"); // NOI18N
-	assert folder != null;
-	Node thisNode = (Node)n.getValue("This"); // NOI18N
-	assert thisNode != null;
-	Project project = (Project)n.getValue("Project"); // NOI18N
-	assert project != null;
-        
-//        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
-//        MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-//        if (!makeConfigurationDescriptor.okToChange()) {
-//            return;
-//        }
-//
-//	Folder newFolder = folder.addNewFolder(true);
-//	MakeLogicalViewProvider.setVisible(project, newFolder);
+    public static Action MainBatchBuildAction() {
+        return MainProjectSensitiveActions.mainProjectSensitiveAction(new BatchBuildActionPerformer(), actionName, null);
     }
 
-    public boolean enable(Node[] activatedNodes) {
-        return true;
+    private static class BatchBuildActionPerformer implements ProjectActionPerformer {
+
+        @Override
+        public boolean enable(Project project) {
+            boolean ret = false;
+            if (project != null) {
+                ret = project.getLookup().lookup(ConfigurationDescriptorProvider.class) != null;
+            }
+            return ret;
+        }
+
+        @Override
+        public void perform(Project project) {
+            Action action = MainProjectSensitiveActions.mainProjectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, BatchBuildAction.actionName, null);
+            JButton jButton = new JButton(action);
+            jButton.doClick();
+        }
     }
 
-    public HelpCtx getHelpCtx() {
-	return null;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-	return false;
-    }
-
-    private String getString(String s) {
-        return NbBundle.getBundle(getClass()).getString(s);
-    }
 }
