@@ -58,7 +58,7 @@ public class ReconfigureActionHandlerFactory implements ProjectActionHandlerFact
 
     @Override
     public boolean canHandle(Type type, Configuration configuration) {
-        if ("configure".equals(type.name())) {
+        if ("configure".equals(type.name())) { // NOI18N
             type.setLocalizedName(NbBundle.getMessage(getClass(), "ConfigureActionName")); // NOI18N
             return true;
         } else {
