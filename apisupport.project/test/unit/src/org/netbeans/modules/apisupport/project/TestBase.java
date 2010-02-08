@@ -418,7 +418,10 @@ import org.openide.util.Lookup;
      * Do not forget to first call {@link #initializeBuildProperties} if you are not a TestBase subclass!
      */
     public static NbModuleProject generateStandaloneModule(File workDir, String prjDir) throws IOException {
-        FileObject prjDirFO = generateStandaloneModuleDirectory(workDir, prjDir);
+        return generateStandaloneModule(workDir, prjDir, false);
+    }
+    public static NbModuleProject generateStandaloneModule(File workDir, String prjDir, boolean osgi) throws IOException {
+        FileObject prjDirFO = generateStandaloneModuleDirectory(workDir, prjDir, osgi);
         return (NbModuleProject) ProjectManager.getDefault().findProject(prjDirFO);
     }
     
@@ -427,6 +430,9 @@ import org.openide.util.Lookup;
      * <em>opening</em> a generated project.
      */
     public static FileObject generateStandaloneModuleDirectory(File workDir, String prjDir) throws IOException {
+        return generateStandaloneModuleDirectory(workDir, prjDir, false);
+    }
+    public static FileObject generateStandaloneModuleDirectory(File workDir, String prjDir, boolean osgi) throws IOException {
         String prjDirDotted = prjDir.replace('/', '.');
         File prjDirF = file(workDir, prjDir);
         NbModuleProjectGenerator.createStandAloneModule(
@@ -435,7 +441,7 @@ import org.openide.util.Lookup;
                 "Testing Module", // display name
                 "org/example/" + prjDir + "/resources/Bundle.properties",
                 "org/example/" + prjDir + "/resources/layer.xml",
-                NbPlatform.PLATFORM_ID_DEFAULT, false); // platform id
+                NbPlatform.PLATFORM_ID_DEFAULT, osgi); // platform id
         return FileUtil.toFileObject(prjDirF);
     }
     
