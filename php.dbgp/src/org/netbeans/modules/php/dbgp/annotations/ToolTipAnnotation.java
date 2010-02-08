@@ -307,7 +307,7 @@ public class ToolTipAnnotation extends Annotation
             return null;
         }
         DebugSession session = SessionManager.getInstance()
-                .getCurrentSession(id);
+                .getSession(id);
         return session; 
     }
 

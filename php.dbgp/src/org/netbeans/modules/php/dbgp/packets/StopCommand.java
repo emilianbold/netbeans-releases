@@ -46,11 +46,10 @@ package org.netbeans.modules.php.dbgp.packets;
  *
  */
 public class StopCommand extends DbgpCommand {
-
-    static final String STOP = "stop";      // NOI18N
+    public static final String COMMAND = "stop";      // NOI18N
 
     public StopCommand( String transactionId ) {
-        super( STOP, transactionId);
+        super( COMMAND, transactionId);
     }
 
     /* (non-Javadoc)

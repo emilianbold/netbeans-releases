@@ -70,7 +70,7 @@ public class PropertyValueResponse extends DbgpResponse {
     public void process( DebugSession session, DbgpCommand command )
     {
         DebugSession currentSession = SessionManager.getInstance().
-        getCurrentSession( session.getSessionId() );
+        getSession( session.getSessionId() );
         if ( currentSession == session ){
             // perform update local view only if response appears in current session
             Property property = getProperty();
