@@ -73,7 +73,7 @@ public class PropertyGetResponse extends DbgpResponse {
             return;
         }
         DebugSession currentSession = SessionManager.getInstance().
-            getCurrentSession( session.getSessionId() );
+            getSession( session.getSessionId() );
         if ( currentSession == session ){
          // perform update local view only if response appears in current session
             Property property = getProperty();

@@ -52,14 +52,14 @@ import sun.misc.BASE64Encoder;
  *
  */
 public abstract class DbgpCommand {
-
     private static final String DATA_SEPARATOR = " -- ";        // NOI18N
-
     private static final String TRANSACTION_OPT = " -i ";       // NOI18N
+    private String command;
+    private String transactionId;
 
     DbgpCommand( String command , String transactionId ){
-        myCommand = command;
-        myTransaction = transactionId;
+        this.command = command;
+        this.transactionId = transactionId;
     }
     
     public void send(OutputStream out) throws IOException {
@@ -69,7 +69,7 @@ public abstract class DbgpCommand {
             encodedData = encoder.encode( getData().getBytes( 
                     DbgpMessage.ISO_CHARSET) );
         }
-        StringBuilder dataToSend = new StringBuilder( myCommand );
+        StringBuilder dataToSend = new StringBuilder( getCommand());
         dataToSend.append( getArgumentString() );
         if ( encodedData != null ){
             dataToSend.append( DATA_SEPARATOR );
@@ -86,7 +86,7 @@ public abstract class DbgpCommand {
     }
     
     public String getTransactionId() {
-        return myTransaction;
+        return transactionId;
     }
     
     public abstract boolean wantAcknowledgment();
@@ -95,6 +95,9 @@ public abstract class DbgpCommand {
         return null;
     }
     
+    public String getCommand() {
+        return command;
+    }
     
     protected String getArguments() {
         return "";
@@ -102,15 +105,10 @@ public abstract class DbgpCommand {
     
     private String getArgumentString(){
         if ( getArguments() != null && getArguments().length() >0 ) {
-            return TRANSACTION_OPT + myTransaction+ " " +getArguments();
+            return TRANSACTION_OPT + transactionId+ " " +getArguments();
         }
         else {
-            return TRANSACTION_OPT + myTransaction;
+            return TRANSACTION_OPT + transactionId;
         }
-    }
-    
-    private String myCommand;
-    
-    private String myTransaction;
-    
+    }       
 }
