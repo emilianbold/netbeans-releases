@@ -339,7 +339,10 @@ public class PHPFormatter implements Formatter {
 
                             if (lineDelta != null) {
                                 currentIndent += lineDelta;
-                                assert currentIndent >= 0 : "currentIndent < 0";
+                                if (currentIndent < 0 ) {
+				    LOG.warning("currentIndent was < 0 in PHPFormatter.astReformat(). It shouldn't happen."); //I18N
+				    currentIndent = 0;
+				}
                             }
 
                             if (!lineUnformattable(doc, lineStart)) {

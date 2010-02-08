@@ -54,12 +54,12 @@ public final class ProjectActionEvent {
         int ordinal();
         String name();
         String getLocalizedName();
+        void setLocalizedName(String name);
     }
 
-    public static enum PrefefinedType implements Type {
+    public static enum PredefinedType implements Type {
         BUILD("Build"), // NOI18N
         CLEAN("Clean"), // NOI18N
-        CONFIGURE("Configure"), // NOI18N
         RUN("Run"), // NOI18N
         DEBUG("Debug"), // NOI18N
         DEBUG_STEPINTO("Debug"), // NOI18N
@@ -69,7 +69,7 @@ public final class ProjectActionEvent {
 
         private final String localizedName;
 
-        private PrefefinedType(String resourceNamePrefix) {
+        private PredefinedType(String resourceNamePrefix) {
             localizedName = getString(resourceNamePrefix + "ActionName"); // NOI18N
         }
 
@@ -78,6 +78,11 @@ public final class ProjectActionEvent {
             return localizedName;
         }
 
+        @Override
+        public void setLocalizedName(String name) {
+            // predefined events already have localized name
+            throw new UnsupportedOperationException();
+        }
     }
 
     private final Project project;
@@ -115,6 +120,7 @@ public final class ProjectActionEvent {
         return type;
     }
 
+    // TODO: move method to ProjectActionHandlerFactory or ProjectActionHandler
     public String getActionName() {
         return type.getLocalizedName();
     }

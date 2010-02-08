@@ -38,45 +38,60 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.api.actions;
 
-import javax.swing.Action;
-import javax.swing.JButton;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
-import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.cnd.makeproject.platform;
 
-public final class BatchBuildAction {
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
-    private static final String actionName = NbBundle.getBundle(BatchBuildAction.class).getString("BatchBuildActionName");
+public abstract class Platform {
+    
+    private String name;
+    private String displayName;
+    private int id;
+    
+    public Platform(String name, String displayName, int id) {
+        this.name = name;
+        this.displayName = displayName;
+        this.id = id;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public String getDisplayName() {
+        return displayName;
+    }
+    
+    public int getId() {
+        return id;
+    }
+    
+    public abstract LibraryItem.StdLibItem[] getStandardLibraries();
+    
+    public abstract String getLibraryName(String baseName);
 
-    private BatchBuildAction() {
+    /**
+     * File name that qmake would generate on current platform
+     * given <code>TARGET=baseName</code> and <code>VERSION=version</code>.
+     *
+     * @param baseName
+     * @param version
+     * @return
+     */
+    public String getQtLibraryName(String baseName, String version) {
+        return getLibraryName(baseName) + "." + version; // NOI18N
     }
 
-    public static Action MainBatchBuildAction() {
-        return MainProjectSensitiveActions.mainProjectSensitiveAction(new BatchBuildActionPerformer(), actionName, null);
-    }
-
-    private static class BatchBuildActionPerformer implements ProjectActionPerformer {
-
-        @Override
-        public boolean enable(Project project) {
-            boolean ret = false;
-            if (project != null) {
-                ret = project.getLookup().lookup(ConfigurationDescriptorProvider.class) != null;
+    public abstract String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet);
+    
+    public LibraryItem.StdLibItem getStandardLibrarie(String name) {
+        for (int i = 0; i < getStandardLibraries().length; i++) {
+            if (getStandardLibraries()[i].getName().equals(name)) {
+                return getStandardLibraries()[i];
             }
-            return ret;
         }
-
-        @Override
-        public void perform(Project project) {
-            Action action = MainProjectSensitiveActions.mainProjectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, BatchBuildAction.actionName, null);
-            JButton jButton = new JButton(action);
-            jButton.doClick();
-        }
+        return null;
     }
-
 }

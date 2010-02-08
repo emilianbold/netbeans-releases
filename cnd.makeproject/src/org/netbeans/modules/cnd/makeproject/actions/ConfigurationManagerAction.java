@@ -39,14 +39,41 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.platforms.impl;
+package org.netbeans.modules.cnd.makeproject.actions;
 
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import java.util.ResourceBundle;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 
-public class PlatformSolarisSparc extends PlatformSolaris {
-    public static final String NAME = "Solaris-Sparc"; // NOI18N
-
-    public PlatformSolarisSparc() {
-        super(NAME, "Solaris Sparc", PlatformTypes.PLATFORM_SOLARIS_SPARC); // NOI18N
+/**
+  */
+public class ConfigurationManagerAction extends CallableSystemAction {
+    public void performAction() {
+	CommonProjectActions.customizeProjectAction().actionPerformed(null);
     }
+
+    public String getName() {
+	return getString("ConfigurationManagerAction"); // NOI18N
+    }
+
+    public HelpCtx getHelpCtx() {
+	return null;
+    }
+
+    @Override
+    protected boolean asynchronous() {
+	return true;
+    }
+
+    /** Look up i18n strings here */
+    private static ResourceBundle bundle;
+    private static String getString(String s) {
+	if (bundle == null) {
+	    bundle = NbBundle.getBundle(ConfigurationManagerAction.class);
+	}
+	return bundle.getString(s);
+    }
+
 }

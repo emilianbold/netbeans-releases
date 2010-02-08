@@ -39,13 +39,52 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.platforms.impl;
+package org.netbeans.modules.cnd.makeproject.platform;
+
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import org.openide.util.NbBundle;
 
-public class PlatformSolarisIntel extends PlatformSolaris {
-    public static final String NAME = "Solaris-x86"; // NOI18N
+public class PlatformNone extends Platform {
+    public static final String NAME = "None"; // NOI18N
 
-    public PlatformSolarisIntel() {
-        super(NAME, "Solaris x86", PlatformTypes.PLATFORM_SOLARIS_INTEL); // NOI18N
+    public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
+        // empty
+    };
+
+    public PlatformNone() {
+        super(NAME, NbBundle.getBundle(PlatformNone.class).getString("NoPlatform"), PlatformTypes.PLATFORM_NONE);
+    }
+
+    @Override
+    public LibraryItem.StdLibItem[] getStandardLibraries() {
+        return standardLibrariesLinux;
+    }
+    
+    @Override
+    public String getLibraryName(String baseName) {
+        // Use Linux style
+        return "lib" + baseName + ".so"; // NOI18N
+    }
+    
+    @Override
+    public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
+        if (libName.endsWith(".so")) { // NOI18N
+            int i = libName.indexOf(".so"); // NOI18N
+            if (i > 0) {
+                libName = libName.substring(0, i);
+            }
+            if (libName.startsWith("lib")) { // NOI18N
+                libName = libName.substring(3);
+            }
+            return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag()
+                    +  IpeUtils.escapeOddCharacters(libDir)
+                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() // NOI18N
+                    + IpeUtils.escapeOddCharacters(libName);
+        } else {
+            return IpeUtils.escapeOddCharacters(libPath);
+        }
     }
 }
