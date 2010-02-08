@@ -45,6 +45,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.css.editor.CssPreferences;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 
 /**
@@ -180,8 +181,13 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(updateReferencesCheckBox, gridBagConstraints);
 
-        refactorAllCheckBox.setSelected(true);
+        refactorAllCheckBox.setSelected(CssPreferences.findInUnrelatedFiles());
         org.openide.awt.Mnemonics.setLocalizedText(refactorAllCheckBox, org.openide.util.NbBundle.getMessage(RenamePanel.class, "refactorAllCheckBoxText")); // NOI18N
+        refactorAllCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refactorAllCheckBoxActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -204,6 +210,10 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     private void textCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textCheckBoxActionPerformed
 	// TODO add your handling code here:
     }//GEN-LAST:event_textCheckBoxActionPerformed
+
+    private void refactorAllCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refactorAllCheckBoxActionPerformed
+        CssPreferences.setFindInUnrelatedFiles(refactorAllCheckBox.isSelected());
+    }//GEN-LAST:event_refactorAllCheckBoxActionPerformed
                                                              
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel1;
