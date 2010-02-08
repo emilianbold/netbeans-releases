@@ -1,15 +1,3 @@
-#180264
-org.netbeans.api.debugger.Properties
-org.netbeans.api.debugger.Properties$DelegatingProperties
-org.netbeans.api.debugger.Properties$Initializer
-org.netbeans.api.debugger.Properties$PrimitiveRegister
-org.netbeans.api.debugger.Properties$PropertiesImpl
-org.netbeans.api.debugger.Properties$PropertiesImpl$InitializerHolder
-org.netbeans.api.debugger.Properties$PropertiesImpl$ReaderHolder
-org.netbeans.api.debugger.Properties$PropertiesImpl$ServicesHolder
-org.netbeans.api.debugger.Properties$Reader
-org.netbeans.debugger.registry.ContextAwareServiceHandler
-
 #179838
 org.apache.derby.jdbc.AutoloadedDriver
 org.h2.Driver

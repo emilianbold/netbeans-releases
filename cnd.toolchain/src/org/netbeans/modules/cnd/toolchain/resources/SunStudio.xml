@@ -222,6 +222,8 @@ made subject to such option by the copyright holder.
         <filter_out pattern="^::\(.*\)"/>
         <filter_out pattern="^:\(.*\).*"/>
         <filter_out pattern="^\(.*\).*:"/>
+        <filter_out pattern=".* --> Job errors$"/>
+        <filter_out pattern=".* --> Job output$"/>
     </scanner>
     <linker>
         <library_prefix stringvalue="lib"/>

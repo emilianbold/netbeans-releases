@@ -55,11 +55,11 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PrefefinedType;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
@@ -833,7 +833,7 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean hasDebugger() {
-        return ProjectActionSupport.getInstance().canHandle(this, PrefefinedType.DEBUG);
+        return ProjectActionSupport.getInstance().canHandle(this, PredefinedType.DEBUG);
     }
 
     public String expandMacros(String val) {

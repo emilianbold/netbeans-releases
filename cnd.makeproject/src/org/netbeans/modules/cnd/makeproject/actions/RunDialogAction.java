@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.api.actions;
+package org.netbeans.modules.cnd.makeproject.actions;
 
 import java.io.File;
 import java.util.ResourceBundle;
@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PrefefinedType;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDescriptor;
@@ -152,7 +152,7 @@ public class RunDialogAction extends NodeAction {
                 path = IpeUtils.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                         project,
-                        PrefefinedType.RUN,
+                        PredefinedType.RUN,
                         path, conf,
                         profile,
                         false);

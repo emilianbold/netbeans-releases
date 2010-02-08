@@ -2175,6 +2175,21 @@ public class EditorContextImpl extends EditorContext {
                                 // The constructor name is the class name:
                                 currentElementPtr[0] = el.getEnclosingElement().getSimpleName().toString();
                             }
+                        } else {
+                            TreePath path = ci.getTreeUtilities().pathFor(currentOffset);
+                            Tree tree = path != null ? path.getLeaf() : null;
+                            while (tree != null && !(tree instanceof MethodTree || tree instanceof ClassTree)) {
+                                path = path.getParentPath();
+                                tree = path != null ? path.getLeaf() : null;
+                            }
+                            if (tree instanceof MethodTree) {
+                                String name = ((MethodTree)tree).getName().toString();
+                                if (name.equals("<init>")) {
+                                    el = scope.getEnclosingClass();
+                                    name = el.getSimpleName().toString();
+                                }
+                                currentElementPtr[0] = name;
+                            }
                         }
                     } else if (kind == ElementKind.FIELD) {
                         int offset = currentOffset;

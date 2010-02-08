@@ -267,11 +267,13 @@ class RfsLocalController implements Runnable {
                     break;
                 case UNCONTROLLED:
                     newState = info.state;
+                    break;
                 default:
                     CndUtils.assertTrue(false, "Unexpected state: " + info.state); //NOI18N
                     return;
             }
-            CndUtils.assertTrue(newState == FileState.INITIAL || newState == FileState.COPIED || newState == FileState.TOUCHED,
+            CndUtils.assertTrue(newState == FileState.INITIAL || newState == FileState.COPIED 
+                    || newState == FileState.TOUCHED || newState == FileState.UNCONTROLLED,
                     "State shouldn't be " + newState); //NOI18N
             responseStream.printf("%c %d %s\n", newState.id, file.length(), relPath); // NOI18N
             responseStream.flush(); //TODO: remove?

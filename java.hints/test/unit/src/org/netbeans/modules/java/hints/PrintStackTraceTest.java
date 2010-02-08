@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,43 +31,66 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.actions;
+package org.netbeans.modules.java.hints;
 
-import java.util.ResourceBundle;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.openide.util.HelpCtx;
+import org.junit.Test;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
 
 /**
-  */
-public class ConfigurationManagerAction extends CallableSystemAction {
-    public void performAction() {
-	CommonProjectActions.customizeProjectAction().actionPerformed(null);
+ *
+ * @author Jan Jancura
+ */
+public class PrintStackTraceTest extends TestBase {
+
+    public PrintStackTraceTest (String name) {
+        super (name, PrintStackTrace.class);
     }
 
-    public String getName() {
-	return getString("ConfigurationManagerAction"); // NOI18N
+    @Test
+    public void test1 () throws Exception {
+        performFixTest (
+            "test/Test.java",
+            "package test;\n" +
+            "class Test {\n" +
+            "    void test () {\n" +
+            "        new Exception ().printStackTrace ();\n" +
+            "    }\n" +
+            "}",
+            "3:25-3:40:verifier:Print Stack Trace",
+            "FixImpl",
+            (
+                "package test;\n" +
+                "class Test {\n" +
+                "    void test () {\n" +
+                "    }\n" +
+                "}"
+            ).replaceAll ("[ \t\n]+", " ")
+        );
     }
 
-    public HelpCtx getHelpCtx() {
-	return null;
+    @Test
+    public void test2 () throws Exception {
+        performAnalysisTest (
+            "test/Test.java",
+            "package test;\n" +
+            "class Test {\n" +
+            "    void test () {\n" +
+            "        new Test ().printStackTrace ();\n" +
+            "    }\n" +
+            "    void printStackTrace () {\n" +
+            "    }\n" +
+            "}"
+        );
     }
-
-    @Override
-    protected boolean asynchronous() {
-	return true;
+    
+    static {
+        NbBundle.setBranding ("test");
     }
-
-    /** Look up i18n strings here */
-    private static ResourceBundle bundle;
-    private static String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(ConfigurationManagerAction.class);
-	}
-	return bundle.getString(s);
-    }
-
 }
