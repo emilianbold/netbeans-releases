@@ -51,6 +51,7 @@ import java.lang.ref.WeakReference;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.Action;
@@ -1165,6 +1166,9 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             DataOutputStream dos = new DataOutputStream(snapshot.getOutputStream());
             ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
             dos.close();
+            Logger.getLogger(PerformanceTestCase.this.getClass().getName()).log(
+                Level.WARNING, "Profiling snapshot taken into {0}", snapshot.getPath()
+            );
         }
 
     }
