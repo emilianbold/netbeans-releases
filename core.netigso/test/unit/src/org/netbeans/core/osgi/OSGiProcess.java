@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.core.osgi;
 
 import java.io.File;
@@ -57,11 +56,27 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 
-class OSGiTestUtils {
+class OSGiProcess {
 
-    private OSGiTestUtils() {}
+    private final File workDir;
+    private final Map<String, String> sources = new HashMap<String, String>();
+    private String manifest;
 
-    public static void runOSGi(File workDir, String sourceFilePath, String sourceFileContents, String manifestContents) throws Exception {
+    public OSGiProcess(File workDir) {
+        this.workDir = workDir;
+    }
+
+    public OSGiProcess sourceFile(String path, String... contents) {
+        sources.put(path, join(contents));
+        return this;
+    }
+
+    public OSGiProcess manifest(String... contents) {
+        manifest = join(contents);
+        return this;
+    }
+
+    public void run() throws Exception {
         File platformDir = new File(System.getProperty("platform.dir"));
         assertTrue(platformDir.toString(), platformDir.isDirectory());
         MakeOSGi makeosgi = new MakeOSGi();
@@ -83,8 +98,12 @@ class OSGiTestUtils {
         makeosgi.add(fs);
         File extra = new File(workDir, "extra");
         File srcdir = new File(workDir, "custom");
-        TestFileUtils.writeFile(new File(srcdir, sourceFilePath), sourceFileContents);
-        TestFileUtils.writeFile(new File(workDir, "custom.mf"), manifestContents);
+        for (Map.Entry<String, String> entry : sources.entrySet()) {
+            TestFileUtils.writeFile(new File(srcdir, entry.getKey()), entry.getValue());
+        }
+        if (manifest != null) {
+            TestFileUtils.writeFile(new File(workDir, "custom.mf"), manifest);
+        }
         List<File> cp = new ArrayList<File>();
         for (String entry : System.getProperty("java.class.path").split(File.pathSeparator)) {
             if (!entry.isEmpty()) {
@@ -114,6 +133,14 @@ class OSGiTestUtils {
         }
         f.stop();
         f.waitForStop(0);
+    }
+
+    private static String join(String[] contents) {
+        StringBuilder b = new StringBuilder();
+        for (String line : contents) {
+            b.append(line).append('\n');
+        }
+        return b.toString();
     }
 
 }

@@ -53,17 +53,14 @@ public class ActivatorTest extends NbTestCase {
     }
 
     public void testModuleInstall() throws Exception {
-        String sourceFilePath = "custom/Install.java";
-        String sourceFileContents = "package custom; " +
-                "public class Install extends org.openide.modules.ModuleInstall {" +
-                "public @Override void restored() {System.setProperty(\"my.bundle.ran\", \"true\");}" +
-                "}";
-        String manifestContents = "Manifest-Version: 1.0\n" +
-                "OpenIDE-Module: custom\n" +
-                "OpenIDE-Module-Install: custom.Install\n" +
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules\n" +
-                "OpenIDE-Module-Specification-Version: 1.0\n\n";
-        OSGiTestUtils.runOSGi(getWorkDir(), sourceFilePath, sourceFileContents, manifestContents);
+        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom; ",
+                "public class Install extends org.openide.modules.ModuleInstall {",
+                "public @Override void restored() {System.setProperty(\"my.bundle.ran\", \"true\");}",
+                "}").manifest("Manifest-Version: 1.0",
+                "OpenIDE-Module: custom",
+                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules",
+                "OpenIDE-Module-Specification-Version: 1.0").run();
         assertTrue(Boolean.getBoolean("my.bundle.ran"));
     }
 
