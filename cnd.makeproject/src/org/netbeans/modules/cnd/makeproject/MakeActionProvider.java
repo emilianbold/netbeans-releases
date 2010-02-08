@@ -109,7 +109,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg.LongWorker;
+import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
@@ -129,6 +129,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
 
@@ -288,17 +289,20 @@ public final class MakeActionProvider implements ActionProvider {
 
         CancellableTask actionWorker = new CancellableTask() {
             @Override
-            public void doWorkImpl() {
+            protected void runImpl() {
+                final ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
                 for (MakeConfiguration conf : confs) {
                     addAction(actionEvents, pd, conf, finalCommand, context, cancelled);
                 }
-            }
-
-            @Override
-            public void doPostRunInEDT() {
                 // Execute actions
                 if (actionEvents.size() > 0 && ! cancelled.get()) {
-                    ProjectActionSupport.getInstance().fireActionPerformed(actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
+                    RequestProcessor.getDefault().post(new NamedRunnable("Make Project Action Worker") { //NOI18N
+
+                        @Override
+                        protected void runImpl() {
+                            ProjectActionSupport.getInstance().fireActionPerformed(actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
+                        }
+                    });
                 }
             }
         };
@@ -313,13 +317,10 @@ public final class MakeActionProvider implements ActionProvider {
 
     public void invokeCustomAction(final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final ProjectActionHandler customProjectActionHandler) {
         CancellableTask actionWorker = new CancellableTask() {
-            @Override
-            public void doWorkImpl() {
+           @Override
+            protected void runImpl() {
+                ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
                 addAction(actionEvents, pd, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null, cancelled);
-            }
-
-            @Override
-            public void doPostRunInEDT() {
                 ProjectActionSupport.getInstance().fireActionPerformed(
                         actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]),
                         customProjectActionHandler);
@@ -351,7 +352,7 @@ public final class MakeActionProvider implements ActionProvider {
                 }
 
                 @Override
-                public void doWorkImpl() {
+                public void runImpl() {
                     try {
                         if (!ConnectionManager.getInstance().isConnectedTo(record.getExecutionEnvironment())) {
                             ConnectionManager.getInstance().connectTo(record.getExecutionEnvironment());
@@ -375,21 +376,15 @@ public final class MakeActionProvider implements ActionProvider {
                         });
                     }
                     if (record.isOnline()) {
-                        actionWorker.doWork();
+                        actionWorker.run();
                     }
-                }
-
-                @Override
-                public void doPostRunInEDT() {
-                    actionWorker.doPostRunInEDT();
                 }
             };
         }
         Frame mainWindow = WindowManager.getDefault().getMainWindow();
         String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Validate_Host", record.getDisplayName());
         String title = NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Validate_Host");
-        ModalMessageDlg.runLongTask(mainWindow, title, msg, wrapper, wrapper);
-        //ModalMessageDlg.runLongTask(mainWindow, wrapper, null, wrapper, title, msg);
+        ModalMessageDlg.runLongTask(mainWindow, wrapper, null, wrapper, title, msg);
     }
 
     private void addAction(ArrayList<ProjectActionEvent> actionEvents,
@@ -1276,15 +1271,15 @@ public final class MakeActionProvider implements ActionProvider {
         return NbBundle.getMessage(MakeActionProvider.class, s, arg1, arg2);
     }
 
-    private abstract static class CancellableTask implements LongWorker, Cancellable {
+    private abstract static class CancellableTask implements Runnable, Cancellable {
 
-        protected abstract void doWorkImpl();
+        protected abstract void runImpl();
 
         @Override
-        public final void doWork() {
+        public final void run() {
             thread = Thread.currentThread();
             if (!cancelled.get()) {
-                doWorkImpl();
+                runImpl();
             }
         }
 
@@ -1299,7 +1294,6 @@ public final class MakeActionProvider implements ActionProvider {
 
         private volatile Thread thread;
         protected final AtomicBoolean cancelled = new AtomicBoolean(false);
-        protected ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
     }
 
     private static class BatchConfigurationSelector implements ActionListener {
