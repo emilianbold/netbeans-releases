@@ -61,7 +61,7 @@ public class GdbActionHandler extends CndDebuggerActionHandler {
             String gdb = profile.getGdbPath(pae.getConfiguration(), true);
             if (gdb != null) {
                 executionStarted();
-                if (pae.getType() == ProjectActionEvent.PrefefinedType.DEBUG || pae.getType() == ProjectActionEvent.PrefefinedType.DEBUG_STEPINTO) {
+                if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG || pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO) {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {

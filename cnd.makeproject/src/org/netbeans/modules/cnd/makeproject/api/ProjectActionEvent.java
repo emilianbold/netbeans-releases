@@ -57,7 +57,7 @@ public final class ProjectActionEvent {
         void setLocalizedName(String name);
     }
 
-    public static enum PrefefinedType implements Type {
+    public static enum PredefinedType implements Type {
         BUILD("Build"), // NOI18N
         CLEAN("Clean"), // NOI18N
         RUN("Run"), // NOI18N
@@ -69,7 +69,7 @@ public final class ProjectActionEvent {
 
         private final String localizedName;
 
-        private PrefefinedType(String resourceNamePrefix) {
+        private PredefinedType(String resourceNamePrefix) {
             localizedName = getString(resourceNamePrefix + "ActionName"); // NOI18N
         }
 

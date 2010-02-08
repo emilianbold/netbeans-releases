@@ -440,25 +440,25 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (targetName.equals(VALIDATE_TOOLCHAIN)) {
             return onValidateToolchainStep(pd, conf, cancelled, validated);
         } else if (targetName.equals(BUILD_STEP)) {
-            return onBuildStep(actionEvents, pd, conf, ProjectActionEvent.PrefefinedType.BUILD);
+            return onBuildStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.BUILD);
         } else if (targetName.equals(BUILD_PACKAGE_STEP)) {
-            return onBuildPackageStep(actionEvents, conf, ProjectActionEvent.PrefefinedType.BUILD);
+            return onBuildPackageStep(actionEvents, conf, ProjectActionEvent.PredefinedType.BUILD);
         } else if (targetName.equals(CLEAN_STEP)) {
-            return onCleanStep(actionEvents, pd, conf, ProjectActionEvent.PrefefinedType.CLEAN);
+            return onCleanStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.CLEAN);
         } else if (targetName.equals(COMPILE_SINGLE_STEP)) {
-            return onCompileSingleStep(actionEvents, pd, conf, context, ProjectActionEvent.PrefefinedType.BUILD);
+            return onCompileSingleStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.BUILD);
         } else if (targetName.equals(RUN_STEP)) {
-            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PrefefinedType.RUN);
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PredefinedType.RUN);
         } else if (targetName.equals(RUN_SINGLE_STEP) || targetName.equals(DEBUG_SINGLE_STEP)) {
-            return onRunSingleStep(conf, actionEvents, context, ProjectActionEvent.PrefefinedType.RUN);
+            return onRunSingleStep(conf, actionEvents, context, ProjectActionEvent.PredefinedType.RUN);
         } else if (targetName.equals(DEBUG_STEP)) {
-            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PrefefinedType.DEBUG);
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PredefinedType.DEBUG);
         } else if (targetName.equals(DEBUG_STEPINTO_STEP)) {
-            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PrefefinedType.DEBUG_STEPINTO);
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO);
         } else if (targetName.equals(DEBUG_LOAD_ONLY_STEP)) {
-            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PrefefinedType.DEBUG_LOAD_ONLY);
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PredefinedType.DEBUG_LOAD_ONLY);
         } else if (targetName.equals(CUSTOM_ACTION_STEP)) {
-            return onCustomActionStep(actionEvents, conf, context, ProjectActionEvent.PrefefinedType.CUSTOM_ACTION);
+            return onCustomActionStep(actionEvents, conf, context, ProjectActionEvent.PredefinedType.CUSTOM_ACTION);
         }
         return onExtendedStep(actionEvents, conf, context, targetName);
     }
@@ -479,7 +479,7 @@ public final class MakeActionProvider implements ActionProvider {
         validated.set(true);
         if (conf.isMakefileConfiguration()) {
             String path;
-            if (actionEvent == ProjectActionEvent.PrefefinedType.RUN) {
+            if (actionEvent == ProjectActionEvent.PredefinedType.RUN) {
                 path = conf.getMakefileConfiguration().getOutput().getValue();
                 if (path.length() > 0 && !IpeUtils.isPathAbsolute(path)) {
                     // make path relative to run working directory
@@ -610,7 +610,7 @@ public final class MakeActionProvider implements ActionProvider {
             }
             MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
             String path;
-            if (actionEvent == ProjectActionEvent.PrefefinedType.RUN) {
+            if (actionEvent == ProjectActionEvent.PredefinedType.RUN) {
                 // naturalize if relative
                 path = makeArtifact.getOutput();
                 //TODO: we also need remote aware IpeUtils..........
@@ -764,7 +764,7 @@ public final class MakeActionProvider implements ActionProvider {
             }
             RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
             profile.setArgs(args);
-            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, ProjectActionEvent.PrefefinedType.CLEAN, commandLine, conf, profile, true);
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, ProjectActionEvent.PredefinedType.CLEAN, commandLine, conf, profile, true);
             actionEvents.add(projectActionEvent);
             // Build commandLine
             commandLine = getMakeCommand(pd, conf) + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N

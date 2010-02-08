@@ -109,7 +109,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         this.executable = testapp_dir + '/' + executable;
         project_dir = new File(testapp_dir, testproj).getAbsolutePath();
         conf = new TestConfiguration(args);
-        pae = new ProjectActionEvent(project, ProjectActionEvent.PrefefinedType.DEBUG_STEPINTO, executable, conf, null, false);
+        pae = new ProjectActionEvent(project, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO, executable, conf, null, false);
         Tool tool = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets().get(0).getTool(PredefinedToolKind.DebuggerTool);
         ToolchainProxy.setToolPath(tool, "/opt/csw/bin/gdb");
         dm.startDebugging(DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID,
@@ -299,7 +299,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         if (service == ProjectActionEvent.class) {
             if (pae == null) {
                 conf = new TestConfiguration("");
-                pae = new ProjectActionEvent(project, ProjectActionEvent.PrefefinedType.DEBUG_STEPINTO, executable, null, null, false);
+                pae = new ProjectActionEvent(project, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO, executable, null, null, false);
             }
             return (T) pae;
         } else {

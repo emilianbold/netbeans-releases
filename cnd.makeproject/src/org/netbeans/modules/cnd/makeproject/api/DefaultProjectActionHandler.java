@@ -69,7 +69,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PrefefinedType;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -139,16 +139,16 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
     private void _execute(InputOutput io) {
         String rcfile = null;
-        if (pae.getType() == ProjectActionEvent.PrefefinedType.RUN ||
-                pae.getType() == ProjectActionEvent.PrefefinedType.BUILD ||
-                pae.getType() == ProjectActionEvent.PrefefinedType.CLEAN) {
+        if (pae.getType() == ProjectActionEvent.PredefinedType.RUN ||
+                pae.getType() == ProjectActionEvent.PredefinedType.BUILD ||
+                pae.getType() == ProjectActionEvent.PredefinedType.CLEAN) {
             String exe = pae.getExecutable(); // we don't need quoting - it's execution responsibility
             ArrayList<String> args = new ArrayList<String>();
             for(String arg : pae.getProfile().getArgsArray()){
                 args.add(arg);
             }
             Map<String, String> env = pae.getProfile().getEnvironment().getenvAsMap();
-            boolean showInput = pae.getType() == ProjectActionEvent.PrefefinedType.RUN;
+            boolean showInput = pae.getType() == ProjectActionEvent.PredefinedType.RUN;
             MakeConfiguration conf = pae.getConfiguration();
             ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
 
@@ -156,7 +156,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             PlatformInfo pi = conf.getPlatformInfo();
 
             boolean unbuffer = false;
-            if (pae.getType() == ProjectActionEvent.PrefefinedType.RUN) {
+            if (pae.getType() == ProjectActionEvent.PredefinedType.RUN) {
                 int conType = pae.getProfile().getConsoleType().getValue();
                 if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null) {
                     String errmsg;
@@ -227,7 +227,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
 
             LineConvertor converter = null;
-            if (pae.getType() == ProjectActionEvent.PrefefinedType.BUILD) {
+            if (pae.getType() == ProjectActionEvent.PredefinedType.BUILD) {
                 converter = new CompilerLineConvertor(conf.getCompilerSet().getCompilerSet(), execEnv, FileUtil.toFileObject(new File(runDirectory)));
             }
             // TODO: this is actual only for sun studio compiler
@@ -248,7 +248,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     .addNativeProcessListener(processChangeListener);
             npb.getEnvironment().putAll(env);
 
-            if (pae.getType() == ProjectActionEvent.PrefefinedType.RUN &&
+            if (pae.getType() == ProjectActionEvent.PredefinedType.RUN &&
                     pae.getProfile().getConsoleType().getValue() == RunProfile.CONSOLE_TYPE_EXTERNAL) {
 
                 String termPath = pae.getProfile().getTerminalPath();
@@ -272,7 +272,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     .errConvertorFactory(processChangeListener)
                     .outConvertorFactory(processChangeListener);
 
-            if (pae.getType() == PrefefinedType.RUN || pae.getType() == PrefefinedType.DEBUG) {
+            if (pae.getType() == PredefinedType.RUN || pae.getType() == PredefinedType.DEBUG) {
                 if (ServerList.get(execEnv).getX11Forwarding() && !env.containsKey("DISPLAY")) { //NOI18N if DISPLAY is set, let it do its work
                     npb.setX11Forwarding(true);
                 }
