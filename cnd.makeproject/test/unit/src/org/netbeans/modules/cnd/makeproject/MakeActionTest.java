@@ -123,27 +123,28 @@ public class MakeActionTest {
         private static final String COMPILE_SINGLE_STEP = "compile-single"; // NOI18N
         private static final String CUSTOM_ACTION_STEP = "custom-action"; // NOI18N
         //private static final String REMOVE_INSTRUMENTATION_STEP = "remove-instrumentation"; // NOI18N
+        private static final String VALIDATE_TOOLCHAIN = "validate-toolchain"; // NOI18N
         private static final String CONFIGURE_STEP = "configure"; // NOI18N
 
         private MakeActionProviderImpl() {
             commands = new TreeMap<String, String[]>();
-             commands.put(COMMAND_BUILD, new String[]{SAVE_STEP, BUILD_STEP});
-             commands.put(COMMAND_BUILD_PACKAGE, new String[]{SAVE_STEP, BUILD_STEP, BUILD_PACKAGE_STEP});
-             commands.put(COMMAND_CLEAN, new String[]{SAVE_STEP, CLEAN_STEP});
-            commands.put(COMMAND_REBUILD, new String[]{SAVE_STEP, CLEAN_STEP, BUILD_STEP});
-            commands.put(COMMAND_RUN, new String[]{SAVE_STEP, /*REMOVE_INSTRUMENTATION_STEP,*/ BUILD_STEP, RUN_STEP});
-             commands.put(COMMAND_DEBUG, new String[]{SAVE_STEP, /*REMOVE_INSTRUMENTATION_STEP,*/ BUILD_STEP, DEBUG_STEP});
-            commands.put(COMMAND_DEBUG_STEP_INTO, new String[]{SAVE_STEP, /*REMOVE_INSTRUMENTATION_STEP,*/ BUILD_STEP, DEBUG_STEPINTO_STEP});
-             commands.put(COMMAND_DEBUG_LOAD_ONLY, new String[]{SAVE_STEP, BUILD_STEP, DEBUG_LOAD_ONLY_STEP});
+             commands.put(COMMAND_BUILD, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP});
+             commands.put(COMMAND_BUILD_PACKAGE, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP, BUILD_PACKAGE_STEP});
+             commands.put(COMMAND_CLEAN, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, CLEAN_STEP});
+            commands.put(COMMAND_REBUILD, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, CLEAN_STEP, BUILD_STEP});
+            commands.put(COMMAND_RUN, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, /*REMOVE_INSTRUMENTATION_STEP,*/ BUILD_STEP, RUN_STEP});
+             commands.put(COMMAND_DEBUG, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, /*REMOVE_INSTRUMENTATION_STEP,*/ BUILD_STEP, DEBUG_STEP});
+            commands.put(COMMAND_DEBUG_STEP_INTO, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, /*REMOVE_INSTRUMENTATION_STEP,*/ BUILD_STEP, DEBUG_STEPINTO_STEP});
+             commands.put(COMMAND_DEBUG_LOAD_ONLY, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP, DEBUG_LOAD_ONLY_STEP});
             commands.put(COMMAND_RUN_SINGLE, new String[]{RUN_SINGLE_STEP});
             commands.put(COMMAND_DEBUG_SINGLE, new String[]{DEBUG_SINGLE_STEP});
-             commands.put(COMMAND_COMPILE_SINGLE, new String[]{SAVE_STEP, COMPILE_SINGLE_STEP});
-             commands.put(COMMAND_CUSTOM_ACTION, new String[]{SAVE_STEP, BUILD_STEP, CUSTOM_ACTION_STEP});
+             commands.put(COMMAND_COMPILE_SINGLE, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, COMPILE_SINGLE_STEP});
+             commands.put(COMMAND_CUSTOM_ACTION, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP, CUSTOM_ACTION_STEP});
             commandsNoBuild = new TreeMap<String, String[]>();
-            commandsNoBuild.put(COMMAND_BUILD, new String[]{SAVE_STEP, BUILD_STEP});
+            commandsNoBuild.put(COMMAND_BUILD, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP});
             commandsNoBuild.put(COMMAND_BUILD_PACKAGE, new String[]{SAVE_STEP, BUILD_PACKAGE_STEP});
-            commandsNoBuild.put(COMMAND_CLEAN, new String[]{SAVE_STEP, CLEAN_STEP});
-            commandsNoBuild.put(COMMAND_REBUILD, new String[]{SAVE_STEP, CLEAN_STEP, BUILD_STEP});
+            commandsNoBuild.put(COMMAND_CLEAN, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, CLEAN_STEP});
+            commandsNoBuild.put(COMMAND_REBUILD, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, CLEAN_STEP, BUILD_STEP});
             commandsNoBuild.put(COMMAND_RUN, new String[]{/*REMOVE_INSTRUMENTATION_STEP,*/ RUN_STEP});
             commandsNoBuild.put(COMMAND_DEBUG, new String[]{/*REMOVE_INSTRUMENTATION_STEP,*/ DEBUG_STEP});
             commandsNoBuild.put(COMMAND_DEBUG_STEP_INTO, new String[]{/*REMOVE_INSTRUMENTATION_STEP,*/ DEBUG_STEPINTO_STEP});

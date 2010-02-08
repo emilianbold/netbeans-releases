@@ -162,10 +162,8 @@ public abstract class RemoteFileObjectBase extends FileObject {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
-    // unfortunately warnings supression does not work due to a Java bug
-    // http://bugs.sun.com/view_bug.do?bug_id=6460147
-    @SuppressWarnings("deprecation")
     @Override
+    @Deprecated
     public boolean isReadOnly() {
         return true;
     }
@@ -215,10 +213,8 @@ public abstract class RemoteFileObjectBase extends FileObject {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
-    // unfortunately warnings supression does not work due to a Java bug
-    // http://bugs.sun.com/view_bug.do?bug_id=6460147
-    @SuppressWarnings("deprecation")
     @Override
+    @Deprecated
     public void setImportant(boolean b) {
         // Deprecated. Noithing to do.
     }

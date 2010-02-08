@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.debugger.common.actions;
 
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PrefefinedType;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 
@@ -50,7 +50,7 @@ public abstract class CndDebuggerActionHandlerFactory implements ProjectActionHa
 
     @Override
     public boolean canHandle(ProjectActionEvent.Type type, Configuration conf) {
-        if (type == PrefefinedType.DEBUG || type == PrefefinedType.DEBUG_LOAD_ONLY || type == PrefefinedType.DEBUG_STEPINTO) {
+        if (type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_LOAD_ONLY || type == PredefinedType.DEBUG_STEPINTO) {
             return true;
         } else {
             return false;

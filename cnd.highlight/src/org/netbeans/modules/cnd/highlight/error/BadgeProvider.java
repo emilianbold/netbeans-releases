@@ -139,15 +139,15 @@ public class BadgeProvider {
     }
     
     private void fireBadgeChanged(CsmFile file){
-        (new BrokenProjectService()).stateChanged(null);
+        BrokenProjectService.fireChanges(null);
     }
     
     private void fireBadgeChanged(CsmProject csmProject){
-        (new BrokenProjectService()).stateChanged(null);
+        BrokenProjectService.fireChanges(null);
     }
     
     private void fireBadgeChanged(){
-        (new BrokenProjectService()).stateChanged(null);
+        BrokenProjectService.fireChanges(null);
     }
     
     public void onFileRemoved(CsmFile file) {
@@ -245,7 +245,7 @@ public class BadgeProvider {
         }
         
         public boolean isEmpty(){
-            return nativeProjects.size() == 0;
+            return nativeProjects.isEmpty();
         }
         
         public void clear(){

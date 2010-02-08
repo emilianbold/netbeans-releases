@@ -38,58 +38,59 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.makeproject.platform;
 
-package org.netbeans.modules.cnd.makeproject.platforms.impl;
-
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformMacOSX;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformNone;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformLinux;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformWindows;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformSolarisIntel;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformGeneric;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformSolarisSparc;
+import java.util.ArrayList;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 
-public class PlatformMacOSX extends Platform {
-    public static final String NAME = "MacOSX"; // NOI18N
-    public static final String LIBRARY_SUFFIX = "dylib"; // NOI18N
+public final class Platforms {
+    private static final ArrayList<Platform> platforms = new ArrayList<Platform>();
 
-    public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
-//        StdLibraries.getStandardLibary("Motif"), // NOI18N
-        StdLibraries.getStandardLibary("Mathematics"), // NOI18N
-        StdLibraries.getStandardLibary("DataCompression"), // NOI18N
-        StdLibraries.getStandardLibary("PosixThreads"), // NOI18N
-        StdLibraries.getStandardLibary("Curses"), // NOI18N
-        StdLibraries.getStandardLibary("DynamicLinking"), // NOI18N
-    };
-    
-    public PlatformMacOSX() {
-        super(NAME, "Mac OS X", PlatformTypes.PLATFORM_MACOSX); // NOI18N
+    static {
+        platforms.add(new PlatformSolarisSparc());
+        platforms.add(new PlatformSolarisIntel());
+        platforms.add(new PlatformLinux());
+        platforms.add(new PlatformWindows());
+        platforms.add(new PlatformMacOSX());
+        platforms.add(new PlatformGeneric());
+        platforms.add(new PlatformNone());
+        platforms.trimToSize();
     }
-    
-    @Override
-    public LibraryItem.StdLibItem[] getStandardLibraries() {
-        return standardLibrariesLinux;
-    }
-    
-    @Override
-    public String getLibraryName(String baseName) {
-        return "lib" + baseName + "." + LIBRARY_SUFFIX; // NOI18N
-    }
-    
-    @Override
-    public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
-        if (libName.endsWith("." + LIBRARY_SUFFIX)) { // NOI18N
-            int i = libName.indexOf("." + LIBRARY_SUFFIX); // NOI18N
-            if (i > 0) {
-                libName = libName.substring(0, i);
+
+    public static Platform getPlatform(int id) {
+        for (Platform pl : getPlatforms()) {
+            if (pl.getId() == id) {
+                return pl;
             }
-            if (libName.startsWith("lib")) { // NOI18N
-                libName = libName.substring(3);
-            }
-            return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag()
-                    + IpeUtils.escapeOddCharacters(libDir)
-                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() // NOI18N
-                    + IpeUtils.escapeOddCharacters(libName);
-        } else {
-            return IpeUtils.escapeOddCharacters(libPath);
         }
+        return null;
+    }
+
+    /*
+     * Returns platforms names up to but not included Generic.
+     */
+    public static String[] getPlatformDisplayNames() {
+        ArrayList<String> ret = new ArrayList<String>();
+        for (Platform pl : getPlatforms()) {
+            if (pl.getId() == PlatformTypes.PLATFORM_GENERIC || pl.getId() == PlatformTypes.PLATFORM_NONE) {
+                continue;
+            }
+            ret.add(pl.getDisplayName());
+        }
+        return ret.toArray(new String[ret.size()]);
+    }
+
+    private static ArrayList<Platform> getPlatforms() {
+        return platforms;
+    }
+
+    private Platforms() {
     }
 }

@@ -38,59 +38,57 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.api.platforms;
 
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformMacOSX;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformNone;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformLinux;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformWindows;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformSolarisIntel;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformGeneric;
-import org.netbeans.modules.cnd.makeproject.platforms.impl.PlatformSolarisSparc;
-import java.util.ArrayList;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+package org.netbeans.modules.cnd.makeproject.actions;
 
-public final class Platforms {
-    private static final ArrayList<Platform> platforms = new ArrayList<Platform>();
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
-    static {
-        platforms.add(new PlatformSolarisSparc());
-        platforms.add(new PlatformSolarisIntel());
-        platforms.add(new PlatformLinux());
-        platforms.add(new PlatformWindows());
-        platforms.add(new PlatformMacOSX());
-        platforms.add(new PlatformGeneric());
-        platforms.add(new PlatformNone());
-        platforms.trimToSize();
+public class TestAction extends NodeAction {
+    public String getName() {
+	return getString("TestActionName");
     }
 
-    public static Platform getPlatform(int id) {
-        for (Platform pl : getPlatforms()) {
-            if (pl.getId() == id) {
-                return pl;
-            }
-        }
-        return null;
+    public void performAction(Node[] activatedNodes) {
+	Node n = activatedNodes[0];
+	Folder folder = (Folder)n.getValue("Folder"); // NOI18N
+	assert folder != null;
+	Node thisNode = (Node)n.getValue("This"); // NOI18N
+	assert thisNode != null;
+	Project project = (Project)n.getValue("Project"); // NOI18N
+	assert project != null;
+        
+//        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+//        MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+//        if (!makeConfigurationDescriptor.okToChange()) {
+//            return;
+//        }
+//
+//	Folder newFolder = folder.addNewFolder(true);
+//	MakeLogicalViewProvider.setVisible(project, newFolder);
     }
 
-    /*
-     * Returns platforms names up to but not included Generic.
-     */
-    public static String[] getPlatformDisplayNames() {
-        ArrayList<String> ret = new ArrayList<String>();
-        for (Platform pl : getPlatforms()) {
-            if (pl.getId() == PlatformTypes.PLATFORM_GENERIC || pl.getId() == PlatformTypes.PLATFORM_NONE) {
-                continue;
-            }
-            ret.add(pl.getDisplayName());
-        }
-        return ret.toArray(new String[ret.size()]);
+    public boolean enable(Node[] activatedNodes) {
+        return true;
     }
 
-    private static ArrayList<Platform> getPlatforms() {
-        return platforms;
+    public HelpCtx getHelpCtx() {
+	return null;
     }
 
-    private Platforms() {
+    @Override
+    protected boolean asynchronous() {
+	return false;
+    }
+
+    private String getString(String s) {
+        return NbBundle.getBundle(getClass()).getString(s);
     }
 }
