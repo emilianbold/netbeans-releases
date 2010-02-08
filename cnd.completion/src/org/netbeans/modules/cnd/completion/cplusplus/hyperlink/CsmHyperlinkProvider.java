@@ -74,7 +74,6 @@ import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.OverridesPopup;
 import org.netbeans.modules.cnd.utils.ui.PopupUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  * Implementation of the hyperlink provider for C/C++ language.
@@ -140,14 +139,13 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             baseMethods.remove(meth); // in the case CsmVirtualInfoQuery added function itself (which was previously the case)
             if (!baseMethods.isEmpty() || !overriddenMethods.isEmpty()) {
                 try {
-                    final String caption = NbBundle.getMessage(getClass(), "OverridesMenuTitle", meth.getName());
-                    final OverridesPopup popup = new OverridesPopup(caption, meth, baseMethods, overriddenMethods, true);
+                    final OverridesPopup popup = new OverridesPopup(null, meth, baseMethods, overriddenMethods, true);
                     Rectangle rect = target.modelToView(offset);
-                    final Point point = rect.getLocation();
+                    final Point point = new Point((int) rect.getX(), (int)(rect.getY() + rect.getHeight()));
                     SwingUtilities.convertPointToScreen(point, target);
                     Runnable runner = new Runnable() {
                         public void run() {
-                            PopupUtil.showPopup(popup, caption, point.x, point.y, true, 0);
+                            PopupUtil.showPopup(popup, null, point.x, point.y, true, 0);
                         }
                     };
                     if (SwingUtilities.isEventDispatchThread()) {
