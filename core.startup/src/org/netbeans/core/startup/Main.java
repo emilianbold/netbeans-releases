@@ -304,15 +304,15 @@ public final class Main extends Object {
 
     CoreBridge.getDefault().loadSettings();
     StartLog.logProgress ("IDE settings loaded"); // NOI18N
+
+    org.netbeans.Main.finishInitialization();
+    StartLog.logProgress("Ran any delayed command-line options"); // NOI18N
     
     for (RunLevel level : Lookup.getDefault().lookupAll(RunLevel.class)) {
         level.run();
     }
 
     InstalledFileLocatorImpl.discardCache();
-
-    org.netbeans.Main.finishInitialization();
-    StartLog.logProgress("Ran any delayed command-line options"); // NOI18N
 
     Splash.getInstance().setRunning(false);
     Splash.getInstance().dispose();
