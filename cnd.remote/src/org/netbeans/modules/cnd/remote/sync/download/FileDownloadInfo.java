@@ -143,5 +143,9 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
     public void reject() {
         state = State.CANCELLED; // TODO: what if it was previously copied?
     }
-    
+
+    @Override
+    public String toString() {
+        return localFile.getPath() + ' ' + state + ' ' + env + ' ' + remoteFile;
+    }
 }
