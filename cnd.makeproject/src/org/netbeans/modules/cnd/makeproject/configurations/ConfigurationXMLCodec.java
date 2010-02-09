@@ -229,11 +229,14 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             } else {
                 String name = getString(atts.getValue(NAME_ATTR));
                 String root = getString(atts.getValue(ROOT_ATTR));
-                currentFolder = currentFolder.addNewFolder(name, name, true, Folder.Kind.SOURCE_DISK_FOLDER);
+                String kindAttr = atts.getValue(KIND_ATTR);
+                currentFolder = currentFolder.addNewFolder(name, name, true, kindAttr);
                 currentFolder.setRoot(root);
                 currentFolderStack.push(currentFolder);
             }
         } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
+            currentList = new ArrayList<String>();
+        } else if (element.equals(TEST_ROOT_LIST_ELEMENT)) {
             currentList = new ArrayList<String>();
         } else if (element.equals(ItemXMLCodec.ITEM_ELEMENT)) {
             String path = atts.getValue(ItemXMLCodec.PATH_ATTR);
@@ -572,6 +575,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             while (iter.hasNext()) {
                 String sf = iter.next();
                 projectDescriptor.addSourceRootRaw(sf);
+            }
+            currentList = null;
+        } else if (element.equals(TEST_ROOT_LIST_ELEMENT)) {
+            Iterator<String> iter = currentList.iterator();
+            while (iter.hasNext()) {
+                String sf = iter.next();
+                projectDescriptor.addTestRootRaw(sf);
             }
             currentList = null;
         } else if (element.equals(DIRECTORY_PATH_ELEMENT) || element.equals(PATH_ELEMENT)) {

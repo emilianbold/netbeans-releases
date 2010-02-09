@@ -257,6 +257,8 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
                 List<String> oldSourceRoots = ((MakeConfigurationDescriptor) projectDescriptor).getSourceRoots();
                 List<String> newSourceRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getSourceRoots();
+                List<String> oldTestRoots = ((MakeConfigurationDescriptor) projectDescriptor).getTestRoots();
+                List<String> newTestRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getTestRoots();
                 Configuration oldActive = projectDescriptor.getConfs().getActive();
                 Configuration newActive = clonedProjectdescriptor.getConfs().getActive();
 

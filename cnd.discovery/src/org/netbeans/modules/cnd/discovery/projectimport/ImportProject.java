@@ -150,6 +150,7 @@ public class ImportProject implements PropertyChangeListener {
     private String macros = ""; // NOI18N
     private String consolidationStrategy = ConsolidationStrategyPanel.FILE_LEVEL;
     private Iterator<SourceFolderInfo> sources;
+    private Iterator<SourceFolderInfo> tests;
     private String sourceFoldersFilter = null;
     private File configureFile;
     private File makefileFile;
@@ -231,6 +232,7 @@ public class ImportProject implements PropertyChangeListener {
         @SuppressWarnings("unchecked")
         Iterator<SourceFolderInfo> it = (Iterator<SourceFolderInfo>) wizard.getProperty("sourceFolders"); // NOI18N
         sources = it;
+        tests = (Iterator<SourceFolderInfo>) wizard.getProperty("testFolders"); // NOI18N
         sourceFoldersFilter = (String) wizard.getProperty("sourceFoldersFilter"); // NOI18N
         runConfigure = "true".equals(wizard.getProperty("runConfigure")); // NOI18N
         if (runConfigure) {
@@ -324,7 +326,7 @@ public class ImportProject implements PropertyChangeListener {
         if (!importantItemsIterator.hasNext()) {
             importantItemsIterator = null;
         }
-        makeProject = ProjectGenerator.createProject(projectFolder, projectName, makefileName, new MakeConfiguration[]{extConf}, sources, sourceFoldersFilter, importantItemsIterator);
+        makeProject = ProjectGenerator.createProject(projectFolder, projectName, makefileName, new MakeConfiguration[]{extConf}, sources, sourceFoldersFilter, tests, importantItemsIterator);
         FileObject dir = FileUtil.toFileObject(projectFolder);
         importResult.put(Step.Project, State.Successful);
         switchModel(false);

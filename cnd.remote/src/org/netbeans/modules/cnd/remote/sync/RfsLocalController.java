@@ -32,6 +32,7 @@ class RfsLocalController implements Runnable {
     private final FileData fileData;
     private final RemotePathMap mapper;
     private final Set<File> remoteUpdates;
+    protected final File privProjectStorageDir;
     
     private static enum RequestKind {
         REQUEST,
@@ -40,16 +41,17 @@ class RfsLocalController implements Runnable {
 
     public RfsLocalController(ExecutionEnvironment executionEnvironment, File[] files,
             BufferedReader requestStreamReader, PrintWriter responseStreamWriter, PrintWriter err,
-            FileData fileData) {
+            File privProjectStorageDir) {
         super();
         this.execEnv = executionEnvironment;
         this.files = files;
         this.requestReader = requestStreamReader;
         this.responseStream = responseStreamWriter;
         this.err = err;
-        this.fileData = fileData;
         this.mapper = RemotePathMap.getPathMap(execEnv);
         this.remoteUpdates = new HashSet<File>();
+        this.privProjectStorageDir = privProjectStorageDir;
+        this.fileData = new FileData(privProjectStorageDir, executionEnvironment);
     }
 
     private void respond_ok() {
@@ -148,10 +150,8 @@ class RfsLocalController implements Runnable {
 
     void shutdown() {
         fileData.store();
-        if (CndUtils.getBoolean("cnd.remote.upload.updates", false)) {
-            if (!remoteUpdates.isEmpty()) {
-                HostUpdates.register(remoteUpdates, execEnv);
-            }
+        if (!remoteUpdates.isEmpty()) {
+            HostUpdates.register(remoteUpdates, execEnv, privProjectStorageDir);
         }
     }
 
