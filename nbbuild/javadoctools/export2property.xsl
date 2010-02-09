@@ -89,7 +89,7 @@ made subject to such option by the copyright holder.
                         <a>
                             <xsl:attribute name="href">
                                 <xsl:value-of select="ancestor::module/@target"/>
-                                <xsl:text>#group-layer</xsl:text>
+                                <xsl:text>#group-property</xsl:text>
                             </xsl:attribute>
                             <xsl:value-of select="ancestor::module/@name"/>
                         </a>
