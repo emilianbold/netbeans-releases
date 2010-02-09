@@ -61,7 +61,6 @@ import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.remote.sync.download.HostUpdates.FileDownloadInfo;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -79,7 +78,7 @@ public class HostUpdatesRequestPanel extends JPanel {
     private JCheckBox cbRememberChoice;
     private JTable fileTable;
 
-    public static Set<HostUpdates.FileDownloadInfo> request(Collection<HostUpdates.FileDownloadInfo> infos, ExecutionEnvironment env, File privProjectStorageDir) {
+    public static Set<FileDownloadInfo> request(Collection<FileDownloadInfo> infos, ExecutionEnvironment env, File privProjectStorageDir) {
         HostUpdatesRequestPanel panel = new HostUpdatesRequestPanel(infos, privProjectStorageDir);
         String envString = RemoteUtil.getDisplayName(env);
         String caption = NbBundle.getMessage(HostUpdatesRequestPanel.class, "HostUpdatesRequestPanel.TITLE", envString);
@@ -93,7 +92,7 @@ public class HostUpdatesRequestPanel extends JPanel {
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             return panel.getConfirmed();
         } else {
-            return Collections.<HostUpdates.FileDownloadInfo>emptySet();
+            return Collections.<FileDownloadInfo>emptySet();
         }
 
     }
@@ -156,8 +155,8 @@ public class HostUpdatesRequestPanel extends JPanel {
         return height;
     }
 
-    private Set<HostUpdates.FileDownloadInfo> getConfirmed() {
-        Set<HostUpdates.FileDownloadInfo> result = new HashSet<HostUpdates.FileDownloadInfo>();
+    private Set<FileDownloadInfo> getConfirmed() {
+        Set<FileDownloadInfo> result = new HashSet<FileDownloadInfo>();
         for (RowData data : model) {
             if (data.selected) {
                 result.add(data.fileInfo);
@@ -168,9 +167,9 @@ public class HostUpdatesRequestPanel extends JPanel {
 
 
     private static class RowData {
-        public final HostUpdates.FileDownloadInfo fileInfo;
+        public final FileDownloadInfo fileInfo;
         public boolean selected;
-        public RowData(HostUpdates.FileDownloadInfo fileInfo, boolean selected) {
+        public RowData(FileDownloadInfo fileInfo, boolean selected) {
             this.fileInfo = fileInfo;
             this.selected = selected;
         }
@@ -193,8 +192,8 @@ public class HostUpdatesRequestPanel extends JPanel {
             RowData data = (rowIndex < model.size()) ? model.get(rowIndex) : null;
             switch (columnIndex) {
                 case 0: return (data == null) ? false : data.selected;
-                case 1: return data.fileInfo.file.getName();
-                case 2: return data.fileInfo.file.getParent();
+                case 1: return data.fileInfo.getLocalFile().getName();
+                case 2: return data.fileInfo.getLocalFile().getParent();
                 default: throw new IllegalArgumentException("Illegal column index: " + columnIndex); //NOI18N
             }
         }
