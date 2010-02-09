@@ -53,7 +53,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
-import org.netbeans.modules.cnd.api.toolchain.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -65,7 +65,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
-/*package*/ abstract class CCCCompiler extends BasicCompiler {
+/*package*/ abstract class CCCCompiler extends AbstractCompiler {
 
     private static final String DEV_NULL = "/dev/null"; // NOI18N
 

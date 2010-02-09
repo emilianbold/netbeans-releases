@@ -63,7 +63,7 @@ import javax.swing.table.TableCellRenderer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
-import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
+import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;

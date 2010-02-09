@@ -40,13 +40,13 @@
  */
 package org.netbeans.modules.cnd.toolchain.compilers;
 
-import org.netbeans.modules.cnd.api.toolchain.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-/*package*/ final class Assembler extends BasicCompiler {
+/*package*/ final class Assembler extends AbstractCompiler {
 
     /** Creates a new instance of GNUCCompiler */
     private Assembler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
