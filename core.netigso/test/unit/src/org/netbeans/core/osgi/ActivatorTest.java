@@ -92,4 +92,22 @@ public class ActivatorTest extends NbTestCase {
         assertEquals("whatever", System.getProperty("my.file"));
     }
 
+    public void testURLStreamHandler() throws Exception {
+        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom;",
+                "public class Install extends org.openide.modules.ModuleInstall {",
+                "public @Override void restored() {try {",
+                "System.setProperty(\"my.url.length\", ",
+                "Integer.toString(new java.net.URL(\"nbres:/custom/stuff\").openConnection().getContentLength()));",
+                "} catch (Exception x) {x.printStackTrace();}",
+                "}",
+                "}").sourceFile("custom/stuff", "some text").manifest(
+                "OpenIDE-Module: custom",
+                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules",
+                "OpenIDE-Module-Specification-Version: 1.0").
+                backwards(). // XXX will not pass otherwise
+                run();
+        assertEquals("10", System.getProperty("my.url.length"));
+    }
+
 }
