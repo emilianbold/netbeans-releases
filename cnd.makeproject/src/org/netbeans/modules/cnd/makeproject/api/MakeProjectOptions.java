@@ -48,55 +48,6 @@ public final class MakeProjectOptions {
     private MakeProjectOptions() {
     }
 
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public static void setDefaultMakeCommand(String defaultMakeCommand) {
-        //CppSettings.getDefault().setMakeName(defaultMakeCommand);
-    }
-
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public static String getDefaultMakeCommand() {
-        return null; //CppSettings.getDefault().getMakeName();
-    }
-    
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public static void setDefaultMakeOptions(String defaultMakeOptions) {
-        MakeOptions.setDefaultMakeOptions(defaultMakeOptions);
-    }
-
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public static String getDefaultMakeOptions() {
-        return MakeOptions.getDefaultMakeOptions();
-    }
-
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public static void setFortranSupport(boolean fortran) {
-        //CppSettings.getDefault().setFortranEnabled(fortran);
-    }
-
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public static boolean getFortranSupport() {
-        return true;
-        //return CppSettings.getDefault().isFortranEnabled();
-    }
-    
     public static void setDepencyChecking(boolean val) {
         MakeOptions.getInstance().setDepencyChecking(val);
     }
