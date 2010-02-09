@@ -2,9 +2,13 @@
 package org.netbeans.modules.jira.query;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,6 +24,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.Timer;
+import javax.swing.border.LineBorder;
 import javax.swing.table.TableCellRenderer;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
@@ -113,7 +118,11 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             QueryTableCellRenderer.setRowColors(style, label);
             QueryTableCellRenderer.setRowColors(style, panel);
             label.setAlignmentX(Component.LEFT_ALIGNMENT);
-            panel.add(label);
+            GridBagConstraints c = new GridBagConstraints();
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 1;
+            c.gridy = i;
+            panel.add(label, c);
         }
         adjustRowHeightIfNeeded(panel, table, row, false);
         return panel;
@@ -263,7 +272,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
 
     private class MultiLabelPanel extends JPanel {
         public MultiLabelPanel() {
-            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+            setLayout(new GridBagLayout());
         }
     }
 
