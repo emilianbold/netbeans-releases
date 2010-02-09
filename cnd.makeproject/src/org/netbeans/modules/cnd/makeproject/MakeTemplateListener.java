@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -66,21 +65,27 @@ public class MakeTemplateListener implements OperationListener {
 
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(MakeTemplateListener.class.getName());
 
+    @Override
     public void operationPostCreate(OperationEvent operationEvent) {
     }
 
+    @Override
     public void operationCopy(OperationEvent.Copy copy) {
     }
 
+    @Override
     public void operationMove(OperationEvent.Move move) {
     }
 
+    @Override
     public void operationDelete(OperationEvent operationEvent) {
     }
 
+    @Override
     public void operationRename(OperationEvent.Rename rename) {
     }
 
+    @Override
     public void operationCreateShadow(OperationEvent.Copy copy) {
     }
 
@@ -94,6 +99,7 @@ public class MakeTemplateListener implements OperationListener {
         return pdp.getConfigurationDescriptor();
     }
 
+    @Override
     public void operationCreateFromTemplate(OperationEvent.Copy copy) {
         Folder folder = Utilities.actionsGlobalContext().lookup(Folder.class);
         Project p = Utilities.actionsGlobalContext().lookup(Project.class);
@@ -175,7 +181,7 @@ public class MakeTemplateListener implements OperationListener {
             } else {
                 itemPath = ioFile.getPath();
             }
-            itemPath = FilePathAdaptor.normalize(itemPath);
+            itemPath = IpeUtils.normalize(itemPath);
             Item item = new Item(itemPath);
 
             folder.addItemAction(item);

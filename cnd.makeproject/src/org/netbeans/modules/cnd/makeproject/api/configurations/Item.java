@@ -51,7 +51,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.toolchain.BasicCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -169,7 +168,6 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         String retPath = null;
         if (IpeUtils.isPathAbsolute(getPath())) {// UNIX path
             retPath = getPath();
-            retPath = FilePathAdaptor.mapToLocal(retPath);
         } else if (getFolder() != null) {
             retPath = getFolder().getConfigurationDescriptor().getBaseDir() + '/' + getPath(); // UNIX path
         }
@@ -230,7 +228,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 if (!IpeUtils.isPathAbsolute(getPath())) {
                     newPath = IpeUtils.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDir(), newPath);
                 }
-                newPath = FilePathAdaptor.normalize(newPath);
+                newPath = IpeUtils.normalize(newPath);
                 renameTo(newPath);
             }
         }
