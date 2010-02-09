@@ -43,6 +43,7 @@ package org.netbeans.core.netigso;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.Module;
@@ -111,5 +112,26 @@ public class IntegrationTest extends NbTestCase {
         if (!w.getClass().getName().contains("felix")) {
             fail("By default the OSGi framework is felix: " + w.getClass());
         }
+
+
+        ClassLoader fwloader = w.getClass().getClassLoader();
+        Method addURLMethod = howEclipseFindsMethodToSupportFrameworks(fwloader.getClass());
+
+        assertNotNull("addURL method found", addURLMethod);
+    }
+
+    private static Method howEclipseFindsMethodToSupportFrameworks(Class clazz) {
+
+        if (clazz == null) {
+            return null;
+        }
+        try {
+            Method result = clazz.getDeclaredMethod("addURL", new Class[]{URL.class});
+            result.setAccessible(true);
+            return result;
+        } catch (NoSuchMethodException ex) {
+        } catch (SecurityException ex) {
+        }
+        return howEclipseFindsMethodToSupportFrameworks(clazz.getSuperclass());
     }
 }
