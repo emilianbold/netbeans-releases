@@ -241,7 +241,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             return;
         }
         LOGGER.log(Level.FINE, "Processing event FOLDER CREATED for project {0}", project.getName());
-        prepareOperation(proxyOperationFactory.createCopyHandler(source));
+        prepareOperation(proxyOperationFactory.createCopyHandler(source, fe));
     }
 
     @Override
@@ -251,7 +251,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             return;
         }
         LOGGER.log(Level.FINE, "Processing event DATA CREATED for project {0}", project.getName());
-        prepareOperation(proxyOperationFactory.createCopyHandler(source));
+        prepareOperation(proxyOperationFactory.createCopyHandler(source, fe));
     }
 
     @Override
@@ -261,7 +261,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             return;
         }
         LOGGER.log(Level.FINE, "Processing event FILE CHANGED for project {0}", project.getName());
-        prepareOperation(proxyOperationFactory.createCopyHandler(source));
+        prepareOperation(proxyOperationFactory.createCopyHandler(source, fe));
     }
 
     @Override
@@ -271,7 +271,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             return;
         }
         LOGGER.log(Level.FINE, "Processing event FILE DELETED for project {0}", project.getName());
-        prepareOperation(proxyOperationFactory.createDeleteHandler(source));
+        prepareOperation(proxyOperationFactory.createDeleteHandler(source, fe));
     }
 
     @Override
@@ -286,7 +286,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         if (StringUtils.hasText(ext)) {
             originalName += "." + ext; // NOI18N
         }
-        prepareOperation(proxyOperationFactory.createRenameHandler(source, originalName));
+        prepareOperation(proxyOperationFactory.createRenameHandler(source, originalName, fe));
     }
 
     public void propertyChange(final PropertyChangeEvent propertyChangeEvent) {
@@ -356,18 +356,18 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         }
 
         @Override
-        protected Callable<Boolean> createCopyHandlerInternal(FileObject source) {
-            return createHandler(localFactory.createCopyHandler(source), remoteFactory.createCopyHandler(source));
+        protected Callable<Boolean> createCopyHandlerInternal(FileObject source, FileEvent fileEvent) {
+            return createHandler(localFactory.createCopyHandler(source, fileEvent), remoteFactory.createCopyHandler(source, fileEvent));
         }
 
         @Override
-        protected Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName) {
-            return createHandler(localFactory.createRenameHandler(source, oldName), remoteFactory.createRenameHandler(source, oldName));
+        protected Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName, FileRenameEvent fileRenameEvent) {
+            return createHandler(localFactory.createRenameHandler(source, oldName, fileRenameEvent), remoteFactory.createRenameHandler(source, oldName, fileRenameEvent));
         }
 
         @Override
-        protected Callable<Boolean> createDeleteHandlerInternal(FileObject source) {
-            return createHandler(localFactory.createDeleteHandler(source), remoteFactory.createDeleteHandler(source));
+        protected Callable<Boolean> createDeleteHandlerInternal(FileObject source, FileEvent fileEvent) {
+            return createHandler(localFactory.createDeleteHandler(source, fileEvent), remoteFactory.createDeleteHandler(source, fileEvent));
         }
 
         private Callable<Boolean> createHandler(Callable<Boolean> localHandler, Callable<Boolean> remoteHandler) {
@@ -376,6 +376,11 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                 return null;
             }
             return new ProxyHandler(localHandler, remoteHandler);
+        }
+
+        @Override
+        protected boolean isValid(FileEvent fileEvent) {
+            return true;
         }
 
         private final class ProxyHandler implements Callable<Boolean> {
