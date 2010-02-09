@@ -168,7 +168,8 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     public void resetDefaultRowHeight() {
         resetRowHeight = true;
     }
-    
+
+    private Map<Integer, Integer> exoti = new HashMap<Integer, Integer>();
     private void adjustRowHeightIfNeeded(JPanel panel, JTable table, int row) {
 
         if(defaultRowHeight == -1) {
@@ -177,8 +178,15 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
 
         int h = (int) panel.getPreferredSize().getHeight();
         h = h + table.getRowMargin();
+        if(h > 2 * defaultRowHeight) {
+            table.setRowHeight(row, h);
+            exoti.put(row, h);
+        }
         if (table.getRowHeight(row) < h) {
             table.setRowHeight(h);
+            for (Map.Entry<Integer, Integer> e : exoti.entrySet()) {
+                table.setRowHeight(e.getKey(), e.getValue());
+            }
         } 
     }
 
