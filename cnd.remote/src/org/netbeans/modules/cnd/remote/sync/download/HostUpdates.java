@@ -90,18 +90,17 @@ public class HostUpdates {
     }
 
     private final ExecutionEnvironment env;
-    private final List<FileDownloadInfo> infos = new ArrayList<FileDownloadInfo>();
     private final RemotePathMap mapper;
     private Notification notification;
     private final File privStorageDir;
 
-    /**
-     * Guards everything.
-     * We don't need that much of concurrency here
-     * (since downloading is much, much longer than all the rest), 
-     * just correct behavior 
+    /*
+     * FileDownloadInfo.LOCK guards everything.
+     * We don't need that much of concurrency here - just correct behavior
+     * (since downloading is much, much longer than all the rest,
+     * the only thing to do is to ensure we don't hold lock when downloading)
      */
-    private final Object lock = new Object();
+    private final List<FileDownloadInfo> infos = new ArrayList<FileDownloadInfo>();
 
     private HostUpdates(ExecutionEnvironment env, File privStorageDir) {
         this.env = env;
@@ -110,7 +109,7 @@ public class HostUpdates {
     }
 
     private FileDownloadInfo getFileInfo(File file) {
-        synchronized (lock) {
+        synchronized (FileDownloadInfo.LOCK) {
             for (FileDownloadInfo info : infos) {
                 if (file.equals(info.getLocalFile())) {
                     return info;
@@ -121,7 +120,7 @@ public class HostUpdates {
     }
 
     private void register(Collection<File> localFiles) {
-        synchronized (lock) {
+        synchronized (FileDownloadInfo.LOCK) {
             for (File file : localFiles) {
                 FileDownloadInfo info = getFileInfo(file);
                 if (info == null) {
@@ -143,7 +142,7 @@ public class HostUpdates {
         };
         String envString = RemoteUtil.getDisplayName(env);
         try {
-            synchronized (lock) {
+            synchronized (FileDownloadInfo.LOCK) {
                 if (notification != null) {
                     notification.clear();
                 }
@@ -163,7 +162,7 @@ public class HostUpdates {
 
     private Collection<FileDownloadInfo> getByState(FileDownloadInfo.State state) {
         Collection<FileDownloadInfo> result = new ArrayList<FileDownloadInfo>();
-        synchronized (lock) {
+        synchronized (FileDownloadInfo.LOCK) {
             for (FileDownloadInfo info : infos) {
                 if (info.getState() == state) {
                     result.add(info);
@@ -175,7 +174,7 @@ public class HostUpdates {
 
     private void showConfirmDialog() {
         Collection<FileDownloadInfo> unconfirmed;
-        synchronized (lock) {
+        synchronized (FileDownloadInfo.LOCK) {
             unconfirmed = getByState(FileDownloadInfo.State.UNCONFIRMED);
             if (unconfirmed.isEmpty()) {
                 return;
@@ -187,13 +186,13 @@ public class HostUpdates {
         }
         final Set<FileDownloadInfo> confirmed = HostUpdatesRequestPanel.request(unconfirmed, env, privStorageDir);
         if (confirmed == null) { // null means user pressed cancel - re-show notification
-            synchronized (lock) {
+            synchronized (FileDownloadInfo.LOCK) {
                 if (notification == null) {
                     showNotification();
                 }
             }
         } else {
-            synchronized (lock) {
+            synchronized (FileDownloadInfo.LOCK) {
                 for (FileDownloadInfo info : unconfirmed) {
                     if (confirmed.contains(info)) {
                         info.confirm();
