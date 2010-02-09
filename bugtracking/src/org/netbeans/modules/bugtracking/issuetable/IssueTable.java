@@ -660,7 +660,16 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     private TableColumnModelListener tcml = new TableColumnModelListener() {
         public void columnAdded(TableColumnModelEvent e) {}
         public void columnRemoved(TableColumnModelEvent e) {}
-        public void columnMoved(TableColumnModelEvent e) {}
+        public void columnMoved(TableColumnModelEvent e) {
+            int from = e.getFromIndex();
+            int to = e.getToIndex();
+            if(from == to) {
+                return;
+            }
+            table.getTableHeader().getColumnModel().getColumn(from).setModelIndex(from);
+            table.getTableHeader().getColumnModel().getColumn(to).setModelIndex(to);
+            tableModel.moveColumn(from, to);
+        }
         public void columnSelectionChanged(ListSelectionEvent e) {}
         public void columnMarginChanged(ChangeEvent e) {
             storeColumnsTask.schedule(1000);
