@@ -464,6 +464,10 @@ public class EditorContextBridge {
         public String getMostRecentMethodSignature() {
             return getReflectionMethodValue("getMostRecentMethodSignature");
         }
+
+        public String getCurrentClassDeclaration() {
+            return getReflectionMethodValue("getCurrentClassDeclaration");
+        }
         
         private String getReflectionMethodValue(String methodName) {
             String s = null;

@@ -58,7 +58,6 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ImplementationProvider;
 import org.netbeans.editor.Utilities;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
@@ -86,7 +85,7 @@ public class OverrideAnnotationAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         if (!invokeDefaultAction((JTextComponent) e.getSource())) {
             // sorry, don't know how to do without deprecated ImplementationProvider
-            Action actions[] = ImplementationProvider.getDefault().getGlyphGutterActions((JTextComponent) e.getSource());
+            Action actions[] = org.netbeans.editor.ImplementationProvider.getDefault().getGlyphGutterActions((JTextComponent) e.getSource());
             if (actions == null) {
                 return ;
             }
