@@ -1970,6 +1970,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             BugzillaRepositoryConnector connector = Bugzilla.getInstance().getRepositoryConnector();
             try {
                 connector.getTaskDataHandler().initializeTaskData(issue.getBugzillaRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
+                if (BugzillaUtil.isNbRepository(repository)) { // Issue 180467
+                    List<String> milestones = repository.getConfiguration().getTargetMilestones(product);
+                    String defaultMilestone = "TBD"; // NOI18N
+                    if (milestones.contains(defaultMilestone)) {
+                        issue.setFieldValue(IssueField.MILESTONE, defaultMilestone);
+                    }
+                }
+                initialValues.remove(IssueField.COMPONENT.getKey());
+                initialValues.remove(IssueField.VERSION.getKey());
+                initialValues.remove(IssueField.MILESTONE.getKey());
                 reloadForm(false);
             } catch (CoreException cex) {
                 cex.printStackTrace();
