@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
@@ -270,7 +269,7 @@ public class MakeConfiguration extends Configuration {
         return getConfigurationType().getValue() == TYPE_APPLICATION || getConfigurationType().getValue() == TYPE_DYNAMIC_LIB;
     }
 
-    public boolean isMakefileConfiguration() {
+    public final boolean isMakefileConfiguration() {
         return getConfigurationType().getValue() == TYPE_MAKEFILE;
     }
 
@@ -827,7 +826,7 @@ public class MakeConfiguration extends Configuration {
         }
         if (!IpeUtils.isPathAbsolute(output)) {
             output = getBaseDir() + "/" + output; // NOI18N
-            output = FilePathAdaptor.normalize(output);
+            output = IpeUtils.normalize(output);
         }
         return expandMacros(output);
     }

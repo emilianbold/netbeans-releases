@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -108,7 +107,7 @@ public class AddExternalItemAction extends AbstractAction {
             } else {
                 itemPath = files[i].getPath();
             }
-	    itemPath = FilePathAdaptor.normalize(itemPath);
+	    itemPath = IpeUtils.normalize(itemPath);
             Item item = makeProjectDescriptor.getExternalItemFolder().findItemByPath(itemPath);
 	    if (item != null) {
                 items.add(item);

@@ -71,7 +71,6 @@ import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement.FileType;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
@@ -210,7 +209,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                 } else {
                     itemPath = files[i].getPath();
                 }
-                itemPath = FilePathAdaptor.normalize(itemPath);
+                itemPath = IpeUtils.normalize(itemPath);
                 String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
                 if (files[i].isDirectory()) {
                     addObjectAction(new PackagerFileElement(
@@ -338,9 +337,9 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                     } else {
                         path = files[i].getPath();
                     }
-                    path = FilePathAdaptor.normalize(path);
+                    path = IpeUtils.normalize(path);
                     String toFile = IpeUtils.toRelativePath(origDir.getParentFile().getAbsolutePath(), files[i].getPath());
-                    toFile = FilePathAdaptor.normalize(toFile);
+                    toFile = IpeUtils.normalize(toFile);
                     String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
                     String perm;
                     if (files[i].getName().endsWith(".exe") || files[i].isDirectory() || IpeUtils.isExecutable(files[i])) { //NOI18N

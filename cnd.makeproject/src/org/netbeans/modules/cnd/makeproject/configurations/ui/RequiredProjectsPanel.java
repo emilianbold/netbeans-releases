@@ -52,7 +52,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -116,12 +115,14 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
         return new ArrayList<LibraryItem>(getListData());
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
             editor.setValue(getPropertyValue());
         }
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("RequiredProjects"); // NOI18N
     }
@@ -190,8 +191,9 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
         }
     }
 
-    class AddProjectButtonAction implements java.awt.event.ActionListener {
+    private class AddProjectButtonAction implements java.awt.event.ActionListener {
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             MakeArtifact[] artifacts = MakeArtifactChooser.showDialog(MakeArtifactChooser.ArtifactType.PROJECT, project, myListEditorPanel);
             if (artifacts != null) {
@@ -208,8 +210,8 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
                         location = artifacts[i].getProjectLocation();
                         workingdir = artifacts[i].getWorkingDirectory();
                     }
-                    location = FilePathAdaptor.normalize(location);
-                    workingdir = FilePathAdaptor.normalize(workingdir);
+                    location = IpeUtils.normalize(location);
+                    workingdir = IpeUtils.normalize(workingdir);
                     artifacts[i].setProjectLocation(location);
                     artifacts[i].setWorkingDirectory(workingdir);
                     artifacts[i].setBuild(false);

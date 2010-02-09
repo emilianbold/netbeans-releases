@@ -54,7 +54,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
@@ -249,8 +248,8 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
                         location = artifacts[i].getProjectLocation();
                         workingdir = artifacts[i].getWorkingDirectory();
                     }
-                    location = FilePathAdaptor.normalize(location);
-                    workingdir = FilePathAdaptor.normalize(workingdir);
+                    location = IpeUtils.normalize(location);
+                    workingdir = IpeUtils.normalize(workingdir);
                     artifacts[i].setProjectLocation(location);
                     artifacts[i].setWorkingDirectory(workingdir);
                     myListEditorPanel.addObjectAction(new LibraryItem.ProjectItem(artifacts[i]));
@@ -364,7 +363,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             } else {
                 // path = path;
             }
-            path = FilePathAdaptor.normalize(path);
+            path = IpeUtils.normalize(path);
             myListEditorPanel.addObjectAction(new LibraryItem.LibFileItem(path));
         }
     }

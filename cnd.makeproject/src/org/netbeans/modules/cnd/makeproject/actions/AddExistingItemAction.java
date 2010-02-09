@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.FortranSourceFileFilter;
@@ -183,7 +182,7 @@ public class AddExistingItemAction extends NodeAction {
                     } else {
                         itemPath = files[i].getPath();
                     }
-                    itemPath = FilePathAdaptor.normalize(itemPath);
+                    itemPath = IpeUtils.normalize(itemPath);
                     if (((MakeConfigurationDescriptor) projectDescriptor).findProjectItemByPath(itemPath) != null) {
                         String errormsg = getString("AlreadyInProjectError", itemPath); // NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
