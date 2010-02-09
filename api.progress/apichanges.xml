@@ -105,6 +105,33 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+    <change id="modalRunMethods">
+        <api name="progress_api"/>
+        <summary>SPI added</summary>
+        <version major="1" minor="19"/>
+        <date day="8" month="2" year="2010"/>
+        <author login="tboudreau"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added methods to ProgressUtils for invoking a runnable or
+                similar with
+                a modal dialog blocking the UI and showing progress:
+                </p>
+                <ul>
+                    <li><code>public static void showProgressDialogAndRun(Runnable operation, String displayName)</code></li>
+                    <li><code>public static &lt;T&gt; T showProgressDialogAndRun(final ProgressRunnable&lt;T&gt; operation, final String displayName, boolean includeDetailLabel)</code></li>
+                    <li><code>public static void showProgressDialogAndRun(Runnable operation, ProgressHandle progress, boolean includeDetailLabel)</code></li>
+                    <li><code>public static RequestProcessor.Task showProgressDialogAndRunLater(Runnable operation, ProgressHandle progress, boolean includeDetailLabel)</code></li>
+                </ul>
+                <p>
+                Added interface ProgressRunnable for performing background
+                work, and an SPI class ProgressRunOffEdtProvider which is
+                implemented by the Progress UI module.
+            </p>
+        </description>
+        <issue number="165005"/>
+    </change>
     <change id="spi">
         <api name="progress_api"/>
         <summary>SPI added</summary>
