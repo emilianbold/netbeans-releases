@@ -133,7 +133,7 @@ public class MakeOSGi extends Task {
             if (cnb.equals("org.netbeans.core.netigso")) {
                 // special handling...
                 osgi.getMainAttributes().putValue("Bundle-Activator", "org.netbeans.core.osgi.Activator");
-                osgi.getMainAttributes().putValue("Import-Package", "org.osgi.framework, org.osgi.framework.launch, org.osgi.service.url");
+                osgi.getMainAttributes().putValue("Import-Package", "org.osgi.framework, org.osgi.framework.launch, org.osgi.service.url, org.xml.sax");
             }
             osgi.getMainAttributes().putValue("Bundle-SymbolicName", cnb);
             String spec = netbeans.getMainAttributes().getValue("OpenIDE-Module-Specification-Version");
