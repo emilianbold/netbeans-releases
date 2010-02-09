@@ -1,52 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
-
-
-The contents of this file are subject to the terms of either the GNU
-General Public License Version 2 only ("GPL") or the Common
-Development and Distribution License("CDDL") (collectively, the
-"License"). You may not use this file except in compliance with the
-License. You can obtain a copy of the License at
-http://www.netbeans.org/cddl-gplv2.html
-or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
-specific language governing permissions and limitations under the
-License.  When distributing the software, include this License Header
-Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
-particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
-accompanied this code. If applicable, add the following below the
-License Header, with the fields enclosed by brackets [] replaced by
-your own identifying information:
-"Portions Copyrighted [year] [name of copyright owner]"
-
-Contributor(s):
-
-The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
-Microsystems, Inc. All Rights Reserved.
-
-If you wish your version of this file to be governed by only the CDDL
-or only the GPL Version 2, indicate your decision by adding
-"[Contributor] elects to include this software in this distribution
-under the [CDDL or GPL Version 2] license." If you do not indicate a
-single choice of license, a recipient has the option to distribute
-your version of this file under either the CDDL, the GPL Version 2 or
-to extend the choice of license to its licensees as provided above.
-However, if you add GPL Version 2 code and therefore, elected the GPL
-Version 2 license, then the option applies only if the new code is
-made subject to such option by the copyright holder.
--->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
   <!ENTITY api-questions SYSTEM "../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
 ]>
 
 <api-answers
-  question-version="1.25"
-  author="mkleint@netbeans.org"
+  question-version="1.29"
+  author="tboudreau@netbeans.org"
 >
 
   &api-questions;
@@ -54,26 +13,76 @@ made subject to such option by the copyright holder.
 
 <!--
         <question id="arch-overall" when="init">
-            Describe the overall architecture.
+            Describe the overall architecture. 
             <hint>
-            What will be API for
+            What will be API for 
             <a href="http://openide.netbeans.org/tutorial/api-design.html#design.apiandspi">
                 clients and what support API</a>? 
             What parts will be pluggable?
             How will plug-ins be registered? Please use <code>&lt;api type="export"/&gt;</code>
-            to describe your general APIs.
-            If possible please provide 
-            simple diagrams. 
+            to describe your general APIs and specify their
+            <a href="http://openide.netbeans.org/tutorial/api-design.html#category-private">
+            stability categories</a>.
+            If possible please provide simple diagrams.
             </hint>
         </question>
 -->
  <answer id="arch-overall">
   <p>
-  The module will be autoload.
-   There is an api module and a pluggable implementation.
-<api name="Progress" group="java" type="export" category="official" 
-     url="@org-netbeans-api-progress@/index.html"/>   
-  </p>
+   This is a simple API for performing background tasks by chaining together
+   transactions, with multiple kinds of progress notification.
+   </p>
+   <p>
+   A transaction has an argument type and a return type.  It
+   is able to publish interim work to the event thread from within its run
+   method, which is passed a <code>TransactionController</code> which has
+   synchronous and asynchronous <code>publish()</code> methods.
+   </p>
+   <p>
+   Multiple transactions can be chained together using <code>Transaction.add()</code>.
+   Each one will make up one step of progress, as represented in a progress
+   bar.
+   </p>
+   <p>
+   Transactions can be rolled back or cancelled.  Failure during run can be
+   indicated to the user by throwing a TransactionException with a localized
+   message and a NotificationStyle hint describing how the user should be
+   notifed.  Cancellation or failure of a compound transaction results in
+   rollback of all transactions in the chain which have already been run.
+   </p>
+   <p>
+   This module is meant to address several issues:
+   </p>
+   <ol>
+       <li>The Progress API provides a UI for performing long-running
+       background tasks, but code using it must manage the set of steps
+       on its own, and this code can be complicated and fragile.  By breaking
+       up work into discrete objects, the code can remain manageable, adding
+       steps is easy.
+       </li>
+       <li>Many long-running operations can and do fail occasionally, either
+       due to bugs, disk problems, network problems, etc.  This can result
+       in side-effects such as leaving a half-created project on the user's
+       disk.  By building the concept of rollback into the API, it is easier
+       to write rollback code - easy enough that people will do it.
+       </li>
+       <li>There are some specialized requirements for platform users using
+       Jini, where a security context and classloader need to be set on
+       any thread accessing certain objects.  The SPI is designed to allow
+       code that needs this (perhaps indicating cases where it is needed by
+       a specialized Transaction subclass) to intercept access to transaction
+       run, rollback and publish events on all threads they run on, perform
+       any setup needed and any teardown afterwards.
+       </li>
+       <li>Cancellation logic is often hard to implement, and therefore often
+       is neglected.  This library handles all cancellation logic internally,
+       so that application code does not have to write and explicit cancellation
+       code.  This encourages more cancellable tasks.
+       </li>
+       <li>Provide an alternative to SwingWorker, which has some popularity
+       in NetBeans and some serious design problems.
+       </li>
+   </ol>
  </answer>
 
 
@@ -86,13 +95,14 @@ made subject to such option by the copyright holder.
             <hint>
             What kind of testing do
             you want to use? How much functionality, in which areas,
-            should be covered by the tests? 
+            should be covered by the tests? How you find out that your
+            project was successful?
             </hint>
         </question>
 -->
  <answer id="arch-quality">
   <p>
-   There are unit tests of API methods and assertions for proper use of the API.
+   It is heavily covered by unit tests
   </p>
  </answer>
 
@@ -111,7 +121,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-time">
   <p>
-   1-1.5 man/month 
+   It is beta-ready.
   </p>
  </answer>
 
@@ -134,94 +144,11 @@ made subject to such option by the copyright holder.
         </question>
 -->
  <answer id="arch-usecases">
-    <usecase id="basic" name="Basic usage" >
-<p>There are 3 types of progress indication:</p>
-<ul>
-<li>1. indefinite when it's not known how much time will be needed to complete</li>
-<li>2. definite with time estimate for completion (UI shows time that remains)</li>
-<li>3. definite without time estimate where the UI shows percentage completed.</li>
-</ul>
-<p>
-The default location of the progress indication is the status bar which aggregates all
-tasks running in the IDE that show progress. However it's possible to exclude the task from the default location 
-and show the progress in one's custom dialog component. In such a case the same task should not appear in the status line component as well.
-</p>
-<p>
-It's possible to request cancelling the task from status line progress aggregator if the task allows cancelling.
-</p> 
-
-<p>
-Progress tasks that get started as a result of explicit user action takes precedence in the status line
-docked component over tasks that are triggered by the system. (say filesystem refresh for example)
-</p>
-  <p> The most common usecase of the API looks like this: </p>
-  <pre>
-ProgressHandle handle = ProgressHandleFactory.creatHandle("My custom task");
-...
-// we have 100 workunits
-// at this point the task appears in status bar.
-handle.start(100);
-...
-handle.progress(10);
-...
-handle.progress("half way through", 50);
-...
-handle.progress(99);
-// at this point the task is finished and removed from status bar
-// it's not realy necessary to count all the way to the limit, finish can be called earlier.
-// however it has to be called at the end of the processing.
-handle.finish();
-</pre>
-</usecase>
-   <usecase id="advanced" name="Advanced Usage" >
-<p>In case your usage of the API </p>
-<ul>
-<li>spans across multiple independent modules, </li>
-<li>requires adjusting of number of workunits or </li>
-<li>triggers additional action based on the current progress</li>
-</ul>
-<p>
-then you should consider using the aggregating version of APIs which is similar to the 
-simple APIs but has distinctive differences and additions that allow for more complex scenarios.
-</p>
-<p>
-It allows to compose the progress bar from 1+ independent sources, all sharing proportional piece
-of the progress bar. Additionally you can monitor the task's overall progress from one central place and possibly
-add more contributing sources of the progress during processing.
-</p>
-<pre>
-        // let's have a factory for client code that performs some part of the job to be done..
-        Lookup.Result res = Lookup.getDefault().lookup(new LookupTemplate(MyWorkerFactory.class));
-        Iterator it = res.allInstances().iterator();
-        ProgressContributor[] contribs = new ProgressContributor[res.allInstances().size()];
-        int i = 0;
-        while (it.hasNext()) {
-            MyWorkerFactory prov = (MyWorkerFactory)it.next();
-            contribs[i] = AggregateProgressFactory.createProgressContributor("Module X contribution");
-            MyWorker worker = prov.createWorker(contribs[i]);
-            //... snip ... do something with the worker..
-            i = i + 1;
-        }
-        AggregateProgressHandle handle = AggregateProgressFactory.createHandle("My Task", contribs, null, null);
-        // non-cancellable and with out output link.
-        
-        // calling start() at the time when the actual long running task starts processing
-        handle.start("here we go");
-        // ...snip...
-        // now the individual MyWorker instances log their progress.
-        // possibly in other threads too..
-        // ... snip...
-        // 
-        if (myConditionThatSpawnsAnotherContributor()) {
-            ProgressContributor cont = AggregateProgressFactory.createProgressContributor("Additional exceptional contribution");
-            handle.addContributor(cont);
-            // ... snip ...
-        }
-        
-        // the task is finished when all the ProgressContributors finish..
-</pre>
-
-   </usecase>
+  <p>
+   Any situation where you need to run background tasks and show progress,
+   or where it is convenient to chain together a bunch of work to run as a set
+   of sequential tasks.
+  </p>
  </answer>
 
 
@@ -238,8 +165,46 @@ add more contributing sources of the progress during processing.
 -->
  <answer id="arch-what">
   <p>
-The progress API is good for tracking progress of long lasting tasks in the IDE.
+   Breaking sequential work up into manageable pieces and getting progress
+   notification for free.
+  </p>
+ </answer>
 
+
+
+<!--
+        <question id="arch-where" when="impl">
+            Where one can find sources for your module?
+            <hint>
+                Please provide link to the Hg web client at
+                http://hg.netbeans.org/
+                or just use tag defaultanswer generate='here'
+            </hint>
+        </question>
+-->
+ <answer id="arch-where">
+  <defaultanswer generate='here' />
+ </answer>
+
+
+
+<!--
+        <question id="compat-deprecation" when="init">
+            How the introduction of your project influences functionality
+            provided by previous version of the product?
+            <hint>
+            If you are planning to deprecate/remove/change any existing APIs,
+            list them here accompanied with the reason explaining why you
+            are doing so.
+            </hint>
+        </question>
+-->
+ <answer id="compat-deprecation">
+  <p>
+   It uses the Progress API as an implementation detail (in the service provider
+   module that injects the default TransactionHandler).  It does not seek to
+   replace it, but may be useful in some situations where the user would otherwise
+   write more, or more complex, code to accomplish the same thing.
   </p>
  </answer>
 
@@ -257,7 +222,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="compat-i18n">
   <p>
-  yes
+   Yes
   </p>
  </answer>
 
@@ -271,7 +236,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="compat-standards">
   <p>
-   Not to my knowledge.
+   No
   </p>
  </answer>
 
@@ -293,7 +258,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="compat-version">
   <p>
-   There are no settings currently. The API should be backward compatible.
+   It has no settings.
   </p>
  </answer>
 
@@ -311,7 +276,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="dep-jre">
   <p>
-   1.4+
+   1.6 or greater.
   </p>
  </answer>
 
@@ -324,7 +289,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="dep-jrejdk">
   <p>
-   JRE should be enough.
+   JRE
   </p>
  </answer>
 
@@ -334,16 +299,25 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
         <question id="dep-nb" when="init">
             What other NetBeans projects and modules does this one depend on?
             <hint>
-            If you want, describe such projects as imported APIs using
-            the <code>&lt;api name="identification" type="import or export" category="stable" url="where is the description" /&gt;</code>
+            Depending on other NetBeans projects influnces the ability of
+            users of your work to customize their own branded version of
+            NetBeans by enabling and disabling some modules. Too
+            much dependencies restrict this kind of customization. If that
+            is your case, then you may want to split your functionality into
+            pieces of autoload, eager and regular modules which can be
+            enabled independently. Usually the answer to this question
+            is generated from your <code>project.xml</code> file, but
+            if it is not guessed correctly, you can suppress it by
+            specifying &lt;defaultanswer generate="none"/&gt; and
+            write here your own. Please describe such projects as imported APIs using
+            the <code>&lt;api name="identification" type="import or export" category="stable" url="where is the description" /&gt;</code>.
+            By doing this information gets listed in the summary page of your
+            javadoc.
             </hint>
         </question>
 -->
  <answer id="dep-nb">
-  <p>
-   Currently just openide, will also be dependent on module which will provide API for Status Line content. 
-   (not in current codebase yet)
-  </p>
+  <defaultanswer generate='here' />
  </answer>
 
 
@@ -353,16 +327,22 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
             What other projects outside NetBeans does this one depend on?
             
             <hint>
-            Some non-NetBeans projects are packaged as NetBeans modules
+            Depending on 3rd party libraries is always problematic,
+            especially if they are not open source, as that complicates
+            the licensing scheme of NetBeans. Please enumerate your
+            external dependencies here, so it is correctly understood since
+            the begining what are the legal implications of your project.
+            Also please note that
+            some non-NetBeans projects are packaged as NetBeans modules
             (see <a href="http://libs.netbeans.org/">libraries</a>) and
             it is preferred to use this approach when more modules may
-            depend on such third-party library.
+            depend and share such third-party libraries.
             </hint>
         </question>
 -->
  <answer id="dep-non-nb">
   <p>
-   No external dependencies.
+   None
   </p>
  </answer>
 
@@ -373,22 +353,58 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
             On which platforms does your module run? Does it run in the same
             way on each?
             <hint>
-            If your module is using JNI or deals with special differences of
-            OSes like filesystems, etc. please describe here what they are.
+            If you plan any dependency on OS or any usage of native code,
+            please describe why you are doing so and describe how you envision
+            to enforce the portability of your code.
+            Please note that there is a support for <a href="http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/api.html#how-os-specific">OS conditionally
+            enabled modules</a> which together with autoload/eager modules
+            can allow you to enable to provide the best OS aware support
+            on certain OSes while providing compatibility bridge on the not
+            supported ones.
+            Also please list the supported
+            OSes/HW platforms and mentioned the lovest version of JDK required
+            for your project to run on. Also state whether JRE is enough or
+            you really need JDK.
             </hint>
         </question>
 -->
  <answer id="dep-platform">
   <p>
-   Should run everywhere the same. There might be different LookAndFeel for each platform.
+   Any platform.  Exact threading behavior may vary according to the threading
+   behavior of Java on that platform (for example, some versions of Java on
+   Linux ignore thread priority).
   </p>
  </answer>
 
 
 
+<!--
+        <question id="deploy-dependencies" when="final">
+            What do other modules need to do to declare a dependency on this one,
+            in addition to or instead of the normal module dependency declaration
+            (e.g. tokens to require)?
+            <hint>
+                Provide a sample of the actual lines you would add to a module manifest
+                to declare a dependency, for example OpenIDE-Module-Requires: some.token.
+                If other modules should not depend on this module, or should just use a
+                simple regular module dependency, you can just answer "nothing". If you
+                intentionally expose a semistable API to clients using implementation
+                dependencies, you should mention that here (but there is no need to give
+                an example of usage).
+            </hint>
+        </question>
+-->
  <answer id="deploy-dependencies">
   <p>
-   Nothing.
+   Declare a dependency.  This module does contain
+   </p>
+   <pre>
+OpenIDE-Module-Recommends: org.netbeans.progress.api.transactional.TransactionHandler
+   </pre>
+   <p>
+   and will warn if no implementation of TransactionHandler is in the default
+   lookup, but provides a basic implementation which simply uses the JDK logger
+   to log progress.
   </p>
  </answer>
 
@@ -416,7 +432,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="deploy-jar">
   <p>
-   Just the module jar.
+   Just the JAR
   </p>
  </answer>
 
@@ -432,7 +448,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="deploy-nbm">
   <p>
-  Yes.
+   Yes
   </p>
  </answer>
 
@@ -444,21 +460,17 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
             public?
             
             <hint>
-            NetBeans module system allows restriction of access rights to
-            public classes of your module from other modules. This prevents
-            unwanted dependencies of others on your code and should be used
-            whenever possible (<a href="http://www.netbeans.org/download/javadoc/OpenAPIs/org/openide/doc-files/upgrade.html#3.4-public-packages">
-            public packages
-            </a>). If you do not restrict access to your classes you are
-            making it too easy for other people to misuse your implementation
-            details, that is why you should have good reason for not 
-            restricting package access.
+            By default NetBeans build harness treats all packages are private.
+            If you export some of them - either as public or friend packages,
+            you should have a reason. If the reason is described elsewhere
+            in this document, you can ignore this question.
             </hint>
         </question>
 -->
  <answer id="deploy-packages">
   <p>
-   Yes.
+      Yes, there is an implementation package, and API and SPI are cleanly
+      separated.
   </p>
  </answer>
 
@@ -476,7 +488,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="deploy-shared">
   <p>
-   Anywhere.
+   Any
   </p>
  </answer>
 
@@ -496,7 +508,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="exec-ant-tasks">
   <p>
-   No.
+   No
   </p>
  </answer>
 
@@ -535,10 +547,8 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="exec-component">
   <p>
-   The API is not.  The implementation provided in the progress.ui module
-   allows the look and feel to set the color used to gray out the main window
-   during blocking progress operations, using <code>UIManager.getColor("progress.windowMaskColor")</code>.
-   </p>
+   No.
+  </p>
  </answer>
 
 
@@ -603,7 +613,9 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
         <question id="exec-property" when="impl">
             Is execution of your code influenced by any environment or
             Java system (<code>System.getProperty</code>) property?
-            
+            On a similar note, is there something interesting that you
+            pass to <code>java.util.logging.Logger</code>? Or do you observe
+            what others log?
             <hint>
             If there is a property that can change the behavior of your 
             code, somebody will likely use it. You should describe what it does 
@@ -644,10 +656,14 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 
 
 <!--
-        <question id="exec-threading" when="impl">
-            What threading models, if any, does your module adhere to?
+        <question id="exec-threading" when="init">
+            What threading models, if any, does your module adhere to? How the
+            project behaves with respect to threading?
             <hint>
-                If your module calls foreign APIs which have a specific threading model,
+                Is your API threadsafe? Can it be accessed from any threads or
+                just from some dedicated ones? Any special relation to AWT and
+                its Event Dispatch thread? Also
+                if your module calls foreign APIs which have a specific threading model,
                 indicate how you comply with the requirements for multithreaded access
                 (synchronization, mutexes, etc.) applicable to those APIs.
                 If your module defines any APIs, or has complex internal structures
@@ -665,8 +681,15 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="exec-threading">
   <p>
-   The API can be called from any thread. However it is assumed that that the Progress indication starts, then progresses and then at last finishes.
-   
+   The API is thread-safe except where documented.  The library will start its
+   own threads to run background work.  Transactions are designed to be
+   stateless so that one transaction can be run concurrently by different
+   threads (presumably with different arguments).  The javadoc warns that if
+   a Transaction subclass employs internal state, this should be handled
+   carefully and such transactions should not be reused.  The SPI callback
+   class TransactionUI is noted to be called by multiple threads, and a
+   wrapper implementation that replans all calls to the event thread is
+   provided.
   </p>
  </answer>
 
@@ -685,7 +708,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="format-clipboard">
   <p>
-   Not applicable.
+   N/A
   </p>
  </answer>
 
@@ -703,7 +726,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="format-dnd">
   <p>
-   No DND.
+   N/A
   </p>
  </answer>
 
@@ -734,7 +757,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="format-types">
   <p>
-   Nothing.
+   N/A
   </p>
  </answer>
 
@@ -746,16 +769,28 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
             or any similar technology to find any components to communicate with? Which ones?
             
             <hint>
-            Please describe the interfaces you are searching for, where 
+            NetBeans is build around a generic registry of services called
+            lookup. It is preferable to use it for registration and discovery
+            if possible. See
+            <a href="http://www.netbeans.org/download/dev/javadoc/org-openide-util/org/openide/util/lookup/doc-files/index.html">
+            The Solution to Comunication Between Components
+            </a>. If you do not plan to use lookup and insist usage
+            of other solution, then please describe why it is not working for
+            you.
+            <br/>
+            When filling the final version of your arch document, please
+            describe the interfaces you are searching for, where 
             are defined, whether you are searching for just one or more of them,
             if the order is important, etc. Also classify the stability of such
-            API contract. For that use &lt;api group=&amp;lookup&amp; /&gt; tag.
+            API contract. Use &lt;api group=&amp;lookup&amp; /&gt; tag, so
+            your information gets listed in the summary page of your javadoc.
             </hint>
         </question>
 -->
  <answer id="lookup-lookup">
   <p>
-  yes, it finds the progress implementation that way..
+   The default TransactionHandler and the default FailureHandler are found
+   in the default lookup.
   </p>
  </answer>
 
@@ -765,14 +800,14 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
         <question id="lookup-register" when="final">
             Do you register anything into lookup for other code to find?
             <hint>
-            Do you register using layer file or using <code>META-INF/services</code>?
+            Do you register using layer file or using a declarative annotation such as <code>@ServiceProvider</code>?
             Who is supposed to find your component?
             </hint>
         </question>
 -->
  <answer id="lookup-register">
   <p>
-   it is be registered as part of the StatusLine.
+   No.
   </p>
  </answer>
 
@@ -826,11 +861,25 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
         <question id="perf-limit" when="init">
             Are there any hard-coded or practical limits in the number or size of
             elements your code can handle?
+            <hint>
+                Most of algorithms have increasing memory and speed complexity
+                with respect to size of data they operate on. What is the critical
+                part of your project that can be seen as a bottleneck with
+                respect to speed or required memory? What are the practical
+                sizes of data you tested your project with? What is your estimate
+                of potential size of data that would cause visible performance
+                problems? Is there some kind of check to detect such situation
+                and prevent "hard" crashes - for example the CloneableEditorSupport
+                checks for size of a file to be opened in editor
+                and if it is larger than 1Mb it shows a dialog giving the
+                user the right to decide - e.g. to cancel or commit suicide.
+            </hint>
         </question>
 -->
  <answer id="perf-limit">
   <p>
-   No.
+   Theoretically, if one ran an enormous number of transactions in parallel,
+   it could exhaust the available pool of native threads.
   </p>
  </answer>
 
@@ -844,7 +893,10 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="perf-mem">
   <p>
-   XXX no answer for perf-mem
+   Very little.  However, a TransactionLauncher retains the input and output
+   arguments from all transactions it has run after a run, so that rollback
+   can be done if requested.  Such instances should be discarded if they
+   will never be rolled back.
   </p>
  </answer>
 
@@ -866,7 +918,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="perf-menus">
   <p>
-   No.
+   No
   </p>
  </answer>
 
@@ -890,7 +942,8 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="perf-progress">
   <p>
-   No.
+   Yes, it is a module for executing long-running tasks correctly on
+   background threads.  Clients of the API provide these tasks.
   </p>
  </answer>
 
@@ -909,7 +962,9 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="perf-scale">
   <p>
-   XXX no answer for perf-scale
+   Should scale well;  of course, implementations of Transaction are free
+   to be memory-inefficient, and as noted, TransactionLaunchers should not
+   be held longer than they are needed.
   </p>
  </answer>
 
@@ -927,7 +982,8 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="perf-spi">
   <p>
-   Events for the visual component will be collected and related events will be merged upon display.
+   It is up to the implementation.  Since this is a library specifically for
+   long-running tasks, it probably should not judge how long is too long.
   </p>
  </answer>
 
@@ -940,7 +996,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="perf-startup">
   <p>
-   No.
+   No
   </p>
  </answer>
 
@@ -954,7 +1010,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="perf-wakeup">
   <p>
-   No.
+   No
   </p>
  </answer>
 
@@ -975,7 +1031,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="resources-file">
   <p>
-   No.
+   No
   </p>
  </answer>
 
@@ -998,7 +1054,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="resources-layer">
   <p>
-   No.
+   No
   </p>
  </answer>
 
@@ -1019,7 +1075,32 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="resources-mask">
   <p>
-   No.
+   No
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="resources-preferences" when="final">
+            Does your module uses preferences via Preferences API? Does your module use NbPreferences or
+            or regular JDK Preferences ? Does it read, write or both ? 
+            Does it share preferences with other modules ? If so, then why ?
+            <hint>
+                You may use
+                    &lt;api type="export" group="preferences"
+                    name="preference node name" category="private"&gt;
+                    description of individual keys, where it is used, what it
+                    influences, whether the module reads/write it, etc.
+                    &lt;/api&gt;
+                Due to XML ID restrictions, rather than /org/netbeans/modules/foo give the "name" as org.netbeans.modules.foo.
+                Note that if you use NbPreferences this name will then be the same as the code name base of the module.
+            </hint>
+        </question>
+-->
+ <answer id="resources-preferences">
+  <p>
+   No
   </p>
  </answer>
 
@@ -1039,7 +1120,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="resources-read">
   <p>
-   No.
+   No
   </p>
  </answer>
 
@@ -1057,7 +1138,7 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="security-grant">
   <p>
-   No.
+   No
   </p>
  </answer>
 
@@ -1074,7 +1155,8 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="security-policy">
   <p>
-   No.
+   No.  However, it is designed to make it possible for a TransactionUI implementation
+   to do this sort of thing if necessary.
   </p>
  </answer>
 
