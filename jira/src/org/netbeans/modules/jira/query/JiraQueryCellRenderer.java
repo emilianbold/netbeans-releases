@@ -22,6 +22,7 @@ import javax.swing.JTable;
 import javax.swing.Timer;
 import javax.swing.table.TableCellRenderer;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
@@ -53,6 +54,8 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     private final IssueTable issueTable;
     private boolean resetRowHeight;
 
+    private Map<Integer, Integer> tooLargeRows = new HashMap<Integer, Integer>();
+
     public JiraQueryCellRenderer(JiraQuery query, IssueTable issueTable, QueryTableCellRenderer defaultIssueRenderer) {
         this.query = query;
         this.defaultIssueRenderer = defaultIssueRenderer;
@@ -67,101 +70,96 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         if(!(value instanceof SummaryProperty) && !(value instanceof MultiValueFieldProperty)) {
             JLabel renderer = (JLabel) defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             if(value instanceof PriorityProperty) {
-                PriorityProperty property = (PriorityProperty) value;
-                Priority priority = property.getPriority();
-                Icon icon = JiraConfig.getInstance().getPriorityIcon(priority.getId());
-                renderer.setIcon(icon);
-                return renderer;
+                return getPriorityRenderer(value, renderer);
             }
             return renderer;
         }
 
         if(value instanceof MultiValueFieldProperty) {
-            MultiValueFieldProperty p = (MultiValueFieldProperty) value;
-            MultiLabelPanel panel = getMultiLabelPanel();
-            String stringValue = p.getValue();
-            String[] values = stringValue.split(",");                           // NOI18N
-            if(values.length < 2) {
-                return (JLabel) defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            }
-
-            TableCellStyle style = null;
-            if(query.isSaved()) {
-                style = QueryTableCellRenderer.getCellStyle(table, query, p, isSelected, row);
-            } else {
-                style = QueryTableCellRenderer.getDefaultCellStyle(table, isSelected, row);
-            }
-            for (int i = 0; i < values.length; i++) {
-                RendererLabel label = new RendererLabel();
-                String s = values[i];
-                label.setFont(defaultIssueRenderer.getFont());
-                label.setText(s);
-                QueryTableCellRenderer.setRowColors(style, label);
-                QueryTableCellRenderer.setRowColors(style, panel);
-                label.setAlignmentX(Component.LEFT_ALIGNMENT);
-                panel.add(label);
-            }
-            adjustRowHeightIfNeeded(panel, table, row);
-            return panel;
+            return getMultivalueRenderer(value, table, isSelected, hasFocus, row, column);
         }
 
         SummaryProperty summaryProperty = (SummaryProperty) value;
         NbJiraIssue issue = (NbJiraIssue) summaryProperty.getIssue();
-        String summary = summaryProperty.getValue();
 
-        TableCellStyle style = null;
-        if(issue.hasSubtasks()) {
-            TwoLabelPanel panel = getTwoLabelPanel();
-            panel.setFontSize(table.getFont(), panel.north);
-            if(query.isSaved()) {
-                style = QueryTableCellRenderer.getCellStyle(table, query, summaryProperty, isSelected, row);
-            } else {
-                style = QueryTableCellRenderer.getDefaultCellStyle(table, isSelected, row);
-            }
-
-            panel.north.setText(summary);
-            panel.north.putClientProperty("format", style != null ? style.getFormat() : null);// NOI18N
-
-            List<String> keys = issue.getSubtaskKeys();
-            StringBuffer keysBuffer = new StringBuffer();
-            Iterator<String> it = keys.iterator();
-            while(it.hasNext()) {
-                keysBuffer.append(it.next());
-                if(it.hasNext()) keysBuffer.append(", "); // NOI18N
-            }
-
-            panel.south.setText(keysBuffer.toString()); 
-            panel.south.putClientProperty("format", isSelected ? null : subtasksFormat); // NOI18N
-
-            panel.setToolTipText(summary);
-            setRowColors(style, panel);
-            adjustRowHeightIfNeeded(panel, table, row);
-            
-            return panel;
-        } else if(issue.isSubtask() ) {
-            TwoLabelPanel panel = getTwoLabelPanel();
-            panel.setFontSize(table.getFont(), panel.south);
-
-            if(query.isSaved()) {
-                style = QueryTableCellRenderer.getCellStyle(table, query, summaryProperty, isSelected, row);
-            } else {
-                style = QueryTableCellRenderer.getDefaultCellStyle(table, isSelected, row);
-            }
-            
-            panel.north.setText(issue.getParentKey());
-            panel.north.putClientProperty("format", isSelected ? null : parentFormat); // NOI18N
-
-            panel.south.setText(summary); 
-            panel.south.putClientProperty("format", style != null ? style.getFormat() : null); // NOI18N
-
-            panel.setToolTipText(summary);
-            setRowColors(style, panel);
-            adjustRowHeightIfNeeded(panel, table, row);
-
-            return panel;
+        if(issue.hasSubtasks() || issue.isSubtask()) {
+            return getSubtaskRenderer(issue, summaryProperty, table, isSelected, row);
         }
-
         return defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+    }
+
+    private Component getPriorityRenderer(Object value, JLabel renderer) {
+        PriorityProperty property = (PriorityProperty) value;
+        Priority priority = property.getPriority();
+        Icon icon = JiraConfig.getInstance().getPriorityIcon(priority.getId());
+        renderer.setIcon(icon);
+        return renderer;
+    }
+
+    private Component getMultivalueRenderer(Object value, JTable table, boolean isSelected, boolean hasFocus, int row, int column) {
+        MultiValueFieldProperty p = (MultiValueFieldProperty) value;
+        MultiLabelPanel panel = getMultiLabelPanel();
+        String stringValue = p.getValue();
+        String[] values = stringValue.split(","); // NOI18N
+        if (values.length < 2) {
+            return (JLabel) defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        }
+        TableCellStyle style = getStyle(table, p, isSelected, row);
+        for (int i = 0; i < values.length; i++) {
+            RendererLabel label = new RendererLabel();
+            String s = values[i];
+            label.setFont(defaultIssueRenderer.getFont());
+            label.setText(s);
+            QueryTableCellRenderer.setRowColors(style, label);
+            QueryTableCellRenderer.setRowColors(style, panel);
+            label.setAlignmentX(Component.LEFT_ALIGNMENT);
+            panel.add(label);
+        }
+        adjustRowHeightIfNeeded(panel, table, row, false);
+        return panel;
+    }
+
+    private Component getSubtaskRenderer(NbJiraIssue issue, SummaryProperty summaryProperty, JTable table, boolean isSelected, int row) {
+        TwoLabelPanel panel = getTwoLabelPanel();
+        RendererLabel label = issue.hasSubtasks() ? panel.north : panel.south;
+        String summary = summaryProperty.getValue();
+        TableCellStyle style = getStyle(table, summaryProperty, isSelected, row);
+        MessageFormat northformat = issue.hasSubtasks() ? (style != null ? style.getFormat() : null) : (isSelected ? null : parentFormat);
+        MessageFormat southformat = issue.hasSubtasks() ? (isSelected ? null : subtasksFormat) : (style != null ? style.getFormat() : null);
+        String northtext = issue.hasSubtasks() ? summary : issue.getParentKey();
+        String southtext = issue.hasSubtasks() ? getSubtaskKeys(issue) : summary;
+        panel.setFontSize(table.getFont(), label);
+        panel.north.setText(northtext);
+        panel.north.putClientProperty("format", northformat); // NOI18N
+        panel.south.setText(southtext);
+        panel.south.putClientProperty("format", southformat); // NOI18N
+        panel.setToolTipText(summary);
+        setRowColors(style, panel);
+        adjustRowHeightIfNeeded(panel, table, row, true);
+        return panel;
+    }
+
+    private TableCellStyle getStyle(JTable table, IssueProperty p, boolean isSelected, int row) {
+        TableCellStyle style = null;
+        if (query.isSaved()) {
+            style = QueryTableCellRenderer.getCellStyle(table, query, p, isSelected, row);
+        } else {
+            style = QueryTableCellRenderer.getDefaultCellStyle(table, isSelected, row);
+        }
+        return style;
+    }
+
+    private String getSubtaskKeys(NbJiraIssue issue) {
+        List<String> keys = issue.getSubtaskKeys();
+        StringBuilder keysBuffer = new StringBuilder();
+        Iterator<String> it = keys.iterator();
+        while (it.hasNext()) {
+            keysBuffer.append(it.next());
+            if (it.hasNext()) {
+                keysBuffer.append(", "); // NOI18N
+            }
+        }
+        return keysBuffer.toString();
     }
 
     private int defaultRowHeight = -1;
@@ -169,8 +167,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         resetRowHeight = true;
     }
 
-    private Map<Integer, Integer> exoti = new HashMap<Integer, Integer>();
-    private void adjustRowHeightIfNeeded(JPanel panel, JTable table, int row) {
+    private void adjustRowHeightIfNeeded(JPanel panel, JTable table, int row, boolean subtask) {
 
         if(defaultRowHeight == -1) {
             defaultRowHeight = table.getRowHeight();
@@ -178,13 +175,14 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
 
         int h = (int) panel.getPreferredSize().getHeight();
         h = h + table.getRowMargin();
-        if(h > 2 * defaultRowHeight) {
+        if(!subtask) {
             table.setRowHeight(row, h);
-            exoti.put(row, h);
-        }
-        if (table.getRowHeight(row) < h) {
+            if(h > 2 * defaultRowHeight) {
+                tooLargeRows.put(row, h);
+            }
+        } else if (table.getRowHeight(row) < h) {
             table.setRowHeight(h);
-            for (Map.Entry<Integer, Integer> e : exoti.entrySet()) {
+            for (Map.Entry<Integer, Integer> e : tooLargeRows.entrySet()) {
                 table.setRowHeight(e.getKey(), e.getValue());
             }
         } 
