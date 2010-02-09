@@ -40,9 +40,7 @@
 package org.netbeans.core.osgi;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 
-@RandomlyFails // XXX failing on NB-Core-Build; non-java.* JRE packages not accessible
 public class ActivatorTest extends NbTestCase {
 
     public ActivatorTest(String n) {

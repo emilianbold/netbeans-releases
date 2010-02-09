@@ -155,7 +155,7 @@ public class VerifyClassLinkage extends Task {
             // Map from class name (foo/Bar format) to true (found), false (not found), null (as yet unknown):
             Map<String,Boolean> loadable = new HashMap<String,Boolean>();
             Map<String,byte[]> classfiles = new TreeMap<String,byte[]>();
-            read(jar, classfiles, new HashSet<File>());
+            read(jar, classfiles, new HashSet<File>(), this, ignores);
             for (String clazz: classfiles.keySet()) {
                 // All classes we define are obviously loadable:
                 loadable.put(clazz, Boolean.TRUE);
@@ -170,7 +170,7 @@ public class VerifyClassLinkage extends Task {
             for (Map.Entry<String, byte[]> entry: classfiles.entrySet()) {
                 String clazz = entry.getKey();
                 byte[] data = entry.getValue();
-                verify(clazz, data, loadable, loader, max);
+                verify(clazz, data, loadable, loader, max, this, failOnError);
                 if (max.get() < 0) {
                     break;
                 }
@@ -180,12 +180,12 @@ public class VerifyClassLinkage extends Task {
         }
     }
 
-    private void read(File jar, Map<String,byte[]> classfiles, Set<File> alreadyRead) throws IOException {
+    static void read(File jar, Map<String, byte[]> classfiles, Set<File> alreadyRead, Task task, String ignores) throws IOException {
         if (!alreadyRead.add(jar)) {
-            log("Already read " + jar, Project.MSG_VERBOSE);
+            task.log("Already read " + jar, Project.MSG_VERBOSE);
             return;
         }
-        log("Reading " + jar, Project.MSG_VERBOSE);
+        task.log("Reading " + jar, Project.MSG_VERBOSE);
         JarFile jf = new JarFile(jar);
         Pattern p = (ignores != null)? Pattern.compile(ignores): null;
         try {
@@ -221,7 +221,7 @@ public class VerifyClassLinkage extends Task {
                     for (int i = 0; i < uris.length; i++) {
                         File otherJar = new File(jar.toURI().resolve(uris[i]));
                         if (otherJar.isFile()) {
-                            read(otherJar, classfiles, alreadyRead);
+                            read(otherJar, classfiles, alreadyRead, task, ignores);
                         }
                     }
                 }
@@ -237,7 +237,8 @@ public class VerifyClassLinkage extends Task {
             throw new IOException("Truncated class file");
         }
     }
-    private void verify(String clazz, byte[] data, Map<String,Boolean> loadable, ClassLoader loader, AtomicInteger maxWarn) throws IOException, BuildException {
+    static void verify(String clazz, byte[] data, Map<String,Boolean> loadable, ClassLoader loader, AtomicInteger maxWarn, Task task, boolean failOnError)
+            throws IOException, BuildException {
         //log("Verifying linkage of " + clazz.replace('/', '.'), Project.MSG_DEBUG);
         DataInput input = new DataInputStream(new ByteArrayInputStream(data));
         skip(input, 8); // magic, minor_version, major_version
@@ -275,10 +276,11 @@ public class VerifyClassLinkage extends Task {
                     i++; // weirdness in spec
                     break;
                 default:
-                    throw new IOException("Unrecognized constant pool tag " + tag + " at index " + i + "; running UTF-8 strings: " + Arrays.asList(utf8Strings));
+                    throw new IOException("Unrecognized constant pool tag " + tag + " at index " + i +
+                            "; running UTF-8 strings: " + Arrays.asList(utf8Strings));
             }
         }
-        log("UTF-8 strings: " + Arrays.asList(utf8Strings), Project.MSG_DEBUG);
+        task.log("UTF-8 strings: " + Arrays.asList(utf8Strings), Project.MSG_DEBUG);
         for (int i = 0; i < size; i++) {
             if (!isClassName[i]) {
                 continue;
@@ -307,11 +309,11 @@ public class VerifyClassLinkage extends Task {
             if (!exists) {
                 String message = clazz + " cannot access " + clazz2.replace('/', '.');
                 if (failOnError) {
-                    throw new BuildException(message, getLocation());
+                    throw new BuildException(message, task.getLocation());
                 } else if (maxWarn.getAndDecrement() > 0) {
-                    log("Warning: " + message, Project.MSG_WARN);
+                    task.log("Warning: " + message, Project.MSG_WARN);
                 } else {
-                    log("(additional warnings not reported)", Project.MSG_WARN);
+                    task.log("(additional warnings not reported)", Project.MSG_WARN);
                     return;
                 }
             } else {
