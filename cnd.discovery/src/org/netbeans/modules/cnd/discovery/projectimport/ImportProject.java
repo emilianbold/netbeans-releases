@@ -50,6 +50,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -154,7 +155,7 @@ public class ImportProject implements PropertyChangeListener {
     private String sourceFoldersFilter = null;
     private File configureFile;
     private File makefileFile;
-    private Map<Step, State> importResult = new HashMap<Step, State>();
+    private Map<Step, State> importResult = new EnumMap<Step, State>(Step.class);
 
     public ImportProject(WizardDescriptor wizard) {
         if (TRACE) {
@@ -232,7 +233,9 @@ public class ImportProject implements PropertyChangeListener {
         @SuppressWarnings("unchecked")
         Iterator<SourceFolderInfo> it = (Iterator<SourceFolderInfo>) wizard.getProperty("sourceFolders"); // NOI18N
         sources = it;
-        tests = (Iterator<SourceFolderInfo>) wizard.getProperty("testFolders"); // NOI18N
+        @SuppressWarnings("unchecked")
+        Iterator<SourceFolderInfo> it2 = (Iterator<SourceFolderInfo>) wizard.getProperty("testFolders"); // NOI18N
+        tests = it2;
         sourceFoldersFilter = (String) wizard.getProperty("sourceFoldersFilter"); // NOI18N
         runConfigure = "true".equals(wizard.getProperty("runConfigure")); // NOI18N
         if (runConfigure) {
@@ -947,7 +950,7 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     public Map<Step, State> getState(){
-        return new HashMap<Step, State>(importResult);
+        return new EnumMap<Step, State>(importResult);
     }
 
     public Project getProject(){
