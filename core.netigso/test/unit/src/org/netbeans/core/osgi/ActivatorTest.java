@@ -53,10 +53,10 @@ public class ActivatorTest extends NbTestCase {
     }
 
     public void testModuleInstall() throws Exception {
-        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom; ",
+        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom;",
                 "public class Install extends org.openide.modules.ModuleInstall {",
                 "public @Override void restored() {System.setProperty(\"my.bundle.ran\", \"true\");}",
-                "}").manifest("Manifest-Version: 1.0",
+                "}").manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: custom.Install",
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules",
@@ -65,10 +65,10 @@ public class ActivatorTest extends NbTestCase {
     }
 
     public void testModuleInstallBackwards() throws Exception {
-        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom; ",
+        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom;",
                 "public class Install extends org.openide.modules.ModuleInstall {",
                 "public @Override void restored() {System.setProperty(\"my.bundle.ran.again\", \"true\");}",
-                "}").manifest("Manifest-Version: 1.0",
+                "}").manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: custom.Install",
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules",
@@ -77,13 +77,13 @@ public class ActivatorTest extends NbTestCase {
     }
 
     public void testLayers() throws Exception {
-        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom; ",
+        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom;",
                 "public class Install extends org.openide.modules.ModuleInstall {",
                 "public @Override void restored() {System.setProperty(\"my.file\", ",
                 "org.openide.filesystems.FileUtil.getConfigFile(\"whatever\").getPath());}",
                 "}").sourceFile("custom/layer.xml", "<filesystem>",
                 "<file name='whatever'/>",
-                "</filesystem>").manifest("Manifest-Version: 1.0",
+                "</filesystem>").manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: custom.Install",
                 "OpenIDE-Module-Layer: custom/layer.xml",

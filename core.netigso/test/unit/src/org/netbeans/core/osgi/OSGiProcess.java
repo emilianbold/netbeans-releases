@@ -75,7 +75,7 @@ class OSGiProcess {
     }
 
     public OSGiProcess manifest(String... contents) {
-        manifest = join(contents);
+        manifest = "Manifest-Version: 1.0\n" + join(contents) + "\n";
         return this;
     }
 
