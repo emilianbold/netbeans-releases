@@ -38,45 +38,42 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.api.actions;
 
-import javax.swing.Action;
-import javax.swing.JButton;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
-import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
+package org.netbeans.modules.cnd.makeproject.actions;
+
+import java.util.ResourceBundle;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 
-public final class BatchBuildAction {
-
-    private static final String actionName = NbBundle.getBundle(BatchBuildAction.class).getString("BatchBuildActionName");
-
-    private BatchBuildAction() {
+/**
+  */
+public class ConfigurationManagerAction extends CallableSystemAction {
+    public void performAction() {
+	CommonProjectActions.customizeProjectAction().actionPerformed(null);
     }
 
-    public static Action MainBatchBuildAction() {
-        return MainProjectSensitiveActions.mainProjectSensitiveAction(new BatchBuildActionPerformer(), actionName, null);
+    public String getName() {
+	return getString("ConfigurationManagerAction"); // NOI18N
     }
 
-    private static class BatchBuildActionPerformer implements ProjectActionPerformer {
+    public HelpCtx getHelpCtx() {
+	return null;
+    }
 
-        @Override
-        public boolean enable(Project project) {
-            boolean ret = false;
-            if (project != null) {
-                ret = project.getLookup().lookup(ConfigurationDescriptorProvider.class) != null;
-            }
-            return ret;
-        }
+    @Override
+    protected boolean asynchronous() {
+	return true;
+    }
 
-        @Override
-        public void perform(Project project) {
-            Action action = MainProjectSensitiveActions.mainProjectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, BatchBuildAction.actionName, null);
-            JButton jButton = new JButton(action);
-            jButton.doClick();
-        }
+    /** Look up i18n strings here */
+    private static ResourceBundle bundle;
+    private static String getString(String s) {
+	if (bundle == null) {
+	    bundle = NbBundle.getBundle(ConfigurationManagerAction.class);
+	}
+	return bundle.getString(s);
     }
 
 }

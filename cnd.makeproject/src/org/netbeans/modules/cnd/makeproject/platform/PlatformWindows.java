@@ -39,55 +39,54 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.platforms.impl;
+package org.netbeans.modules.cnd.makeproject.platform;
 
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 
-public class PlatformSolaris  extends Platform {
-    private static final LibraryItem.StdLibItem[] standardLibrariesSolaris = {
-        StdLibraries.getStandardLibary("Motif"), // NOI18N
+public class PlatformWindows extends Platform {
+    public static final String NAME = "Windows"; // NOI18N
+
+    private static final LibraryItem.StdLibItem[] standardLibrariesWindows = {
         StdLibraries.getStandardLibary("Mathematics"), // NOI18N
-        StdLibraries.getStandardLibary("Yacc"), // NOI18N
-        StdLibraries.getStandardLibary("Lex"), // NOI18N
-        StdLibraries.getStandardLibary("SocketsNetworkServices"), // NOI18N
-        StdLibraries.getStandardLibary("SolarisThreads"), // NOI18N
+        StdLibraries.getStandardLibary("DataCompression"), // NOI18N
         StdLibraries.getStandardLibary("PosixThreads"), // NOI18N
-        StdLibraries.getStandardLibary("Posix4"), // NOI18N
-        StdLibraries.getStandardLibary("Internationalization"), // NOI18N
-        StdLibraries.getStandardLibary("PatternMatching"), // NOI18N
-        StdLibraries.getStandardLibary("Curses"), // NOI18N
     };
     
-    public PlatformSolaris(String name, String displayName, int id) {
-        super(name, displayName, id);
+    public PlatformWindows() {
+        super(NAME, "Windows", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
     }
     
     @Override
     public LibraryItem.StdLibItem[] getStandardLibraries() {
-        return standardLibrariesSolaris;
+        return standardLibrariesWindows;
     }
     
     @Override
     public String getLibraryName(String baseName) {
-        return "lib" + baseName + ".so"; // NOI18N
+        return "lib" + baseName + ".dll"; // NOI18N
     }
-    
+
+    @Override
+    public String getQtLibraryName(String baseName, String version) {
+        int dot = version.indexOf('.'); // NOI18N
+        String majorVersion = 0 <= dot? version.substring(0, dot) : version;
+        return baseName + majorVersion + ".dll"; // NOI18N
+    }
+
     @Override
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
-        if (libName.endsWith(".so")) { // NOI18N
-            int i = libName.indexOf(".so"); // NOI18N
+        if (libName.endsWith(".dll")) { // NOI18N
+            int i = libName.indexOf(".dll"); // NOI18N
             if (i > 0) {
                 libName = libName.substring(0, i);
             }
-            if (libName.startsWith("lib")) { // NOI18N
+            if (libName.startsWith("lib") || libName.startsWith("cyg")) { // NOI18N
                 libName = libName.substring(3);
             }
-            return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag()
-                    + IpeUtils.escapeOddCharacters(libDir)
-                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag() // NOI18N
+            return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag()
                     + IpeUtils.escapeOddCharacters(libDir)
                     + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() // NOI18N
                     + IpeUtils.escapeOddCharacters(libName);

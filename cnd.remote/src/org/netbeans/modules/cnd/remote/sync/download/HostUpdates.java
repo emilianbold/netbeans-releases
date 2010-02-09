@@ -47,10 +47,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.JOptionPane;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
@@ -77,15 +77,15 @@ public class HostUpdates {
 
     private static final Map<ExecutionEnvironment, HostUpdates> map = new HashMap<ExecutionEnvironment, HostUpdates>();
 
-    public static void register(Collection<File> localFiles, ExecutionEnvironment env) {
-        HostUpdates.get(env).register(localFiles);
+    public static void register(Collection<File> localFiles, ExecutionEnvironment env, File privStorageDir) {
+        HostUpdates.get(env, privStorageDir).register(localFiles);
     }
 
-    private static HostUpdates get(ExecutionEnvironment env) {
+    private static HostUpdates get(ExecutionEnvironment env, File privStorageDir) {
         synchronized (map) {
             HostUpdates updates = map.get(env);
             if (updates == null) {
-                updates = new HostUpdates(env);
+                updates = new HostUpdates(env, privStorageDir);
                 map.put(env, updates);
             }
             return updates;
@@ -98,23 +98,24 @@ public class HostUpdates {
 
     private static enum FileState {
         UNCONFIRMED,
+        CONFIRMED,
         PENDING,
         COPYING,
         CANCELLED,
         DONE,
         ERROR}
 
-    // UNCONFIRMED ---> PENDING ---------> COPYING ---> DONE
-    //       |           |                   |  |
-    //       +---------->+--->CANCELLED <----+  +-----> ERROR
+    // UNCONFIRMED-->CONFIRMED------------>PENDING-->COPYING-->DONE
+    //       |           |                   |        |   |
+    //       +-----------+->+-->CANCELLED<---+<-------+   +--->ERROR
 
-    private class FileInfo {
+    /*package*/ class FileDownloadInfo {
 
         public final File file;
-        public FileState state;
-        public Future<Integer> copyTask;
+        private FileState state;
+        private Future<Integer> copyTask;
 
-        public FileInfo(File file) {
+        public FileDownloadInfo(File file) {
             this.file = file;
             this.state = FileState.UNCONFIRMED;
         }
@@ -151,9 +152,10 @@ public class HostUpdates {
     }
 
     private final ExecutionEnvironment env;
-    private final List<FileInfo> infos = new ArrayList<FileInfo>();
+    private final List<FileDownloadInfo> infos = new ArrayList<FileDownloadInfo>();
     private final RemotePathMap mapper;
     private Notification notification;
+    private final File privStorageDir;
 
     /**
      * Guards everything.
@@ -163,14 +165,15 @@ public class HostUpdates {
      */
     private final Object lock = new Object();
 
-    private HostUpdates(ExecutionEnvironment env) {
+    private HostUpdates(ExecutionEnvironment env, File privStorageDir) {
         this.env = env;
         this.mapper = RemotePathMap.getPathMap(env);
+        this.privStorageDir = privStorageDir;
     }
 
-    private FileInfo getFileInfo(File file) {
+    private FileDownloadInfo getFileInfo(File file) {
         synchronized (lock) {
-            for (FileInfo info : infos) {
+            for (FileDownloadInfo info : infos) {
                 if (file.equals(info.file)) {
                     return info;
                 }
@@ -182,9 +185,9 @@ public class HostUpdates {
     private void register(Collection<File> localFiles) {
         synchronized (lock) {
             for (File file : localFiles) {
-                FileInfo info = getFileInfo(file);
+                FileDownloadInfo info = getFileInfo(file);
                 if (info == null) {
-                    infos.add(new FileInfo(file));
+                    infos.add(new FileDownloadInfo(file));
                 } else {
                     Future<Integer> copyTask = info.copyTask;
                     if (copyTask != null) {
@@ -219,10 +222,10 @@ public class HostUpdates {
         }
     }
 
-    private Collection<FileInfo> getByState(FileState state) {
-        Collection<FileInfo> result = new ArrayList<FileInfo>();
+    private Collection<FileDownloadInfo> getByState(FileState state) {
+        Collection<FileDownloadInfo> result = new ArrayList<FileDownloadInfo>();
         synchronized (lock) {
-            for (FileInfo info : infos) {
+            for (FileDownloadInfo info : infos) {
                 if (info.state == state) {
                     result.add(info);
                 }
@@ -232,39 +235,38 @@ public class HostUpdates {
     }
 
     private void showConfirmDialog() {
-        final Collection<FileInfo> unconfirmed = getByState(FileState.UNCONFIRMED);
-        if (JOptionPane.showConfirmDialog(null, "Download?", "Download", // NOI18N
-                JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
-            synchronized (lock) {
-                for (FileInfo info : unconfirmed) {
+        final Collection<FileDownloadInfo> unconfirmed = getByState(FileState.UNCONFIRMED);
+        final Set<FileDownloadInfo> confirmed = HostUpdatesRequestPanel.request(unconfirmed, env, privStorageDir);
+        synchronized (lock) {
+            for (FileDownloadInfo info : unconfirmed) {
+                if (confirmed.contains(info)) {
                     info.state = FileState.PENDING;
-                }
-                NamedRunnable r = new NamedRunnable("Remote updates synchronizer for " + env.getDisplayName()) { //NOI18N
-                    @Override
-                    protected void runImpl() {
-                        download(unconfirmed);
-                    }
-                };
-                RequestProcessor.getDefault().post(r);
-            }
-        } else {
-            synchronized (lock) {
-                for (FileInfo info : unconfirmed) {
+                } else {
                     info.state = FileState.CANCELLED;
                 }
-                infos.removeAll(unconfirmed);
             }
+            unconfirmed.removeAll(confirmed);
+            infos.removeAll(unconfirmed);
+        }
+        if (!confirmed.isEmpty()) {
+            NamedRunnable r = new NamedRunnable("Remote updates synchronizer for " + env.getDisplayName()) { //NOI18N
+                @Override
+                protected void runImpl() {
+                    download(confirmed);
+                }
+            };
+            RequestProcessor.getDefault().post(r);
         }
         notification.clear();
     }
 
-    private void download(Collection<FileInfo> infos) {
+    private void download(Collection<FileDownloadInfo> infos) {
         ProgressHandle handle = ProgressHandleFactory.createHandle(
                 NbBundle.getMessage(getClass(), "RemoteUpdatesProgress_Title", RemoteUtil.getDisplayName(env)));
         handle.start();
         handle.switchToDeterminate(infos.size());
         int cnt = 0;
-        for (FileInfo info : infos) {
+        for (FileDownloadInfo info : infos) {
             handle.progress(NbBundle.getMessage(getClass(), "RemoteUpdatesProgress_Message", info.file.getName()), cnt++);
             info.copy();
         }
@@ -285,7 +287,7 @@ public class HostUpdates {
         String iconString = "org/netbeans/modules/cnd/remote/sync/download/check.png"; //NOI18N
         String title = NbBundle.getMessage(getClass(), "RemoteUpdatesOK.TITLE", envString, infos.size());
         String detailsText = NbBundle.getMessage(getClass(), "RemoteUpdatesOK.DETAILS", envString, infos.size());
-        for (FileInfo info : infos) {
+        for (FileDownloadInfo info : infos) {
             if (info.state != FileState.DONE) {
                 iconString = "org/netbeans/modules/cnd/remote/sync/download/error.png"; //NOI18N
                 title = NbBundle.getMessage(getClass(), "RemoteUpdatesERR.TITLE", envString, infos.size());

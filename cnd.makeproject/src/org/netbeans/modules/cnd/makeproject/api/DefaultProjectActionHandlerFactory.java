@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api;
 
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PrefefinedType;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -58,12 +58,12 @@ public class DefaultProjectActionHandlerFactory implements ProjectActionHandlerF
      */
     @Override
     public boolean canHandle(ProjectActionEvent.Type type, Configuration configuration) {
-        if (type == PrefefinedType.DEBUG ||
-            type == PrefefinedType.DEBUG_LOAD_ONLY ||
-            type == PrefefinedType.DEBUG_STEPINTO) {
+        if (type == PredefinedType.DEBUG ||
+            type == PredefinedType.DEBUG_LOAD_ONLY ||
+            type == PredefinedType.DEBUG_STEPINTO) {
             return false;
         } else {
-            return type instanceof PrefefinedType;
+            return type instanceof PredefinedType;
         }
     }
 

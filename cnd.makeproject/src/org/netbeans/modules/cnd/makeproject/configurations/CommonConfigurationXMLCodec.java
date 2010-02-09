@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
@@ -74,6 +75,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V65 - NB 6.9
+ *   Test folders: TEST_ROOT_LIST_ELEMENT
  * V64 - NB 6.9
  *   Test folders: KIND_ATTR
  * V63 - NB 6.7
@@ -183,7 +186,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 64;
+    public final static int CURRENT_VERSION = 65;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -204,6 +207,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String PROJECT_MAKEFILE_ELEMENT = "projectmakefile"; // NOI18N
     protected final static String REQUIRED_PROJECTS_ELEMENT = "requiredProjects"; // NOI18N
     protected final static String SOURCE_ROOT_LIST_ELEMENT = "sourceRootList"; // NOI18N
+    protected final static String TEST_ROOT_LIST_ELEMENT = "testRootList"; // NOI18N
     protected final static String SOURCE_FOLDERS_FILTER_ELEMENT = "sourceFolderFilter"; // NOI18N
     protected final static String SOURCE_ENCODING_ELEMENT = "sourceEncoding"; // NOI18N
     // Tools Set (Compiler set and platform)
@@ -556,18 +560,28 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     private void writeDiskFolder(XMLEncoderStream xes, Folder folder) {
+        List<AttrValuePair> attrList = new ArrayList<AttrValuePair>();
+        attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getName())); // NOI18N
         if (folder.getRoot() != null) {
-            xes.elementOpen(DISK_FOLDER_ELEMENT,
-                    new AttrValuePair[]{
-                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
-                        new AttrValuePair(ROOT_ATTR, "" + folder.getRoot()), // NOI18N
-                    });
-        } else {
-            xes.elementOpen(DISK_FOLDER_ELEMENT,
-                    new AttrValuePair[]{
-                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
-                    });
+            attrList.add(new AttrValuePair(ROOT_ATTR, "" + folder.getRoot())); // NOI18N
         }
+        if (folder.getKind() != null) {
+            attrList.add(new AttrValuePair(KIND_ATTR, "" + folder.getKind())); // NOI18N
+        }
+        xes.elementOpen(DISK_FOLDER_ELEMENT, attrList.toArray(new AttrValuePair[attrList.size()]));
+
+//        if (folder.getRoot() != null) {
+//            xes.elementOpen(DISK_FOLDER_ELEMENT,
+//                    new AttrValuePair[]{
+//                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
+//                        new AttrValuePair(ROOT_ATTR, "" + folder.getRoot()), // NOI18N
+//                    });
+//        } else {
+//            xes.elementOpen(DISK_FOLDER_ELEMENT,
+//                    new AttrValuePair[]{
+//                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
+//                    });
+//        }
         // write out subfolders
         Folder[] subfolders = folder.getFoldersAsArray();
         for (int i = 0; i < subfolders.length; i++) {
@@ -596,6 +610,16 @@ public abstract class CommonConfigurationXMLCodec
                 xes.element(LIST_ELEMENT, l);
             }
             xes.elementClose(SOURCE_ROOT_LIST_ELEMENT);
+        }
+
+        list = makeProjectDescriptor.getTestRoots();
+        if (list.size() > 0) {
+            // Test Root
+            xes.elementOpen(TEST_ROOT_LIST_ELEMENT);
+            for (String l : list) {
+                xes.element(LIST_ELEMENT, l);
+            }
+            xes.elementClose(TEST_ROOT_LIST_ELEMENT);
         }
     }
 

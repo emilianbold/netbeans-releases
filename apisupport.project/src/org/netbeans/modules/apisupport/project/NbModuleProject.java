@@ -151,6 +151,8 @@ public final class NbModuleProject implements Project {
     public static final String NAMESPACE_SHARED_2 = "http://www.netbeans.org/ns/nb-module-project/2"; // NOI18N
     public static final String NB_PROJECT_ICON_PATH =
             "org/netbeans/modules/apisupport/project/resources/module.png"; // NOI18N
+    public static final String NB_PROJECT_OSGI_ICON_PATH =
+            "org/netbeans/modules/apisupport/project/resources/bundle.png"; // NOI18N
     
     private static final Icon NB_PROJECT_ICON = ImageUtilities.loadImageIcon(NB_PROJECT_ICON_PATH, false);
     

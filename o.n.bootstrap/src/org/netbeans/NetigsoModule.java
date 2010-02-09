@@ -94,12 +94,12 @@ final class NetigsoModule extends Module {
 
     @Override
     public void setReloadable(boolean r) {
-        throw new UnsupportedOperationException();
+        reloadable = true;
     }
 
     @Override
     public void reload() throws IOException {
-        throw new UnsupportedOperationException();
+        NetigsoFramework.getDefault().reload(this);
     }
 
     final void start() throws IOException {

@@ -195,7 +195,7 @@ import org.openide.util.RequestProcessor;
         final PrintWriter rcOutputStreamWriter = getWriter(rcOutputStream);
         localController = new RfsLocalController(
                 executionEnvironment, files, rcInputStreamReader,
-                rcOutputStreamWriter, err, new FileData(privProjectStorageDir, executionEnvironment));
+                rcOutputStreamWriter, err, privProjectStorageDir);
 
         localController.feedFiles(new SharabilityFilter());
 

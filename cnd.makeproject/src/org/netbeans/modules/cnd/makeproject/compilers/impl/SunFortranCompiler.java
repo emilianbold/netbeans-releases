@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-public final class SunFortranCompiler extends BasicCompiler {
+/*package*/ final class SunFortranCompiler extends BasicCompiler {
     
     /** Creates a new instance of SunCCompiler */
     private SunFortranCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {

@@ -143,7 +143,7 @@ public final class WLCommandDeployer {
                                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
                                 NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Failed")));
                     } else {
-                        waitForUrlReady(factory, moduleId, progress);
+                        //waitForUrlReady(factory, moduleId, progress);
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
                                 NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Completed")));
@@ -244,6 +244,7 @@ public final class WLCommandDeployer {
 
         factory.getExecutorService().submit(new Runnable() {
 
+            @Override
             public void run() {
                 boolean failed = false;
                 for (TargetModuleID module : targetModuleID) {
@@ -263,6 +264,7 @@ public final class WLCommandDeployer {
                                     NbBundle.getMessage(WLCommandDeployer.class, "MSG_Start_Failed")));
                             break;
                         } else {
+                            waitForUrlReady(factory, module, progress);
                             continue;
                         }
                     } catch (InterruptedException ex) {
@@ -466,6 +468,12 @@ public final class WLCommandDeployer {
             }
 
         }
+        waitForUrlReady(factory, webUrl, progressObject);
+    }
+
+    private static void waitForUrlReady(WLDeploymentFactory factory,
+            String webUrl, WLProgressObject progressObject) throws InterruptedException, TimeoutException {
+
         if (webUrl != null) {
             try {
                 URL url = new URL(webUrl);

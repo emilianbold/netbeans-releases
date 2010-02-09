@@ -48,14 +48,15 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 
 /**
  * @author Radek Matous
  */
-public abstract class SingleThread extends ThreadPoolExecutor implements Runnable {
-    private final Object sync = new Object();
-    private FutureTask task;
+public abstract class SingleThread extends ThreadPoolExecutor implements Runnable, Cancellable {
+    final Object sync = new Object();
+    FutureTask task;
 
     public SingleThread() {
         super(1, 1, 1000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
@@ -92,7 +93,7 @@ public abstract class SingleThread extends ThreadPoolExecutor implements Runnabl
         }
     }
 
-    public final  void invokeAneWait() throws InterruptedException, ExecutionException {
+    public final  void invokeAndWait() throws InterruptedException, ExecutionException {
         synchronized(sync) {
             task = new FutureTask(this, null);
             execute(task);
@@ -102,8 +103,7 @@ public abstract class SingleThread extends ThreadPoolExecutor implements Runnabl
 
     protected final  void waitFinished() {
         synchronized(sync) {
-            if (task != null) {
-                cancel();
+            if (task != null) {                
                 try {
                     task.get(5000, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException ex) {
@@ -118,5 +118,6 @@ public abstract class SingleThread extends ThreadPoolExecutor implements Runnabl
         }
     }
 
-    public abstract void cancel();
+    @Override
+    public abstract boolean cancel();
 }
