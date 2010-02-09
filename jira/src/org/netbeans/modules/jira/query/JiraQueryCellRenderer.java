@@ -2,9 +2,7 @@
 package org.netbeans.modules.jira.query;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
@@ -17,14 +15,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.Timer;
-import javax.swing.border.LineBorder;
 import javax.swing.table.TableCellRenderer;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
@@ -115,6 +111,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             String s = values[i];
             label.setFont(defaultIssueRenderer.getFont());
             label.setText(s);
+            label.putClientProperty("format", style.getFormat()); // NOI18N
             QueryTableCellRenderer.setRowColors(style, label);
             QueryTableCellRenderer.setRowColors(style, panel);
             label.setAlignmentX(Component.LEFT_ALIGNMENT);
