@@ -64,6 +64,18 @@ public class ActivatorTest extends NbTestCase {
         assertTrue(Boolean.getBoolean("my.bundle.ran"));
     }
 
+    public void testModuleInstallBackwards() throws Exception {
+        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom; ",
+                "public class Install extends org.openide.modules.ModuleInstall {",
+                "public @Override void restored() {System.setProperty(\"my.bundle.ran\", \"true\");}",
+                "}").manifest("Manifest-Version: 1.0",
+                "OpenIDE-Module: custom",
+                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules",
+                "OpenIDE-Module-Specification-Version: 1.0").backwards().run();
+        assertTrue(Boolean.getBoolean("my.bundle.ran"));
+    }
+
     public void testLayers() throws Exception {
         new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom; ",
                 "public class Install extends org.openide.modules.ModuleInstall {",

@@ -63,6 +63,7 @@ class OSGiProcess {
     private final File workDir;
     private final Map<String, String> sources = new HashMap<String, String>();
     private String manifest;
+    private int backwards = 1;
 
     public OSGiProcess(File workDir) {
         this.workDir = workDir;
@@ -75,6 +76,12 @@ class OSGiProcess {
 
     public OSGiProcess manifest(String... contents) {
         manifest = join(contents);
+        return this;
+    }
+
+    /** If true, start bundles in reverse lexicographic order, just to shake things up. */
+    public OSGiProcess backwards() {
+        backwards = -1;
         return this;
     }
 
@@ -132,7 +139,7 @@ class OSGiProcess {
         }
         Collections.sort(installed, new Comparator<Bundle>() {
             public @Override int compare(Bundle b1, Bundle b2) {
-                return b1.getSymbolicName().compareTo(b2.getSymbolicName());
+                return b1.getSymbolicName().compareTo(b2.getSymbolicName()) * backwards;
             }
         });
         for (Bundle bundle : installed) {
