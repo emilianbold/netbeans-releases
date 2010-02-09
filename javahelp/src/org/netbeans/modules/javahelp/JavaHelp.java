@@ -867,6 +867,8 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         if (jh == null) throw new NullPointerException();
         if (jh.getModel() == null) throw new IllegalArgumentException();
         Installer.log.fine("displayInJHelp: " + helpID + " " + url);
+        assert SwingUtilities.isEventDispatchThread() :
+                "Please, re-open Bug #168973"; // NOI18N
         try {
             if (helpID != null && ! helpID.equals(MASTER_ID)) {
                 HelpSet hs = jh.getModel().getHelpSet();
@@ -906,6 +908,8 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         String title = null; // for debugging purposes
         try {
             title = hs.getTitle();
+            assert SwingUtilities.isEventDispatchThread() :
+                "Please, re-open Bug #168973"; // NOI18N
             jh = new JHelp(hs);
             adjust(jh);
         } catch (RuntimeException e) {
