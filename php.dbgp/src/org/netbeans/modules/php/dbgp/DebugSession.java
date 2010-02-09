@@ -143,7 +143,9 @@ public class DebugSession extends SingleThread {
                     log(exc);
                 } catch (IOException e) {
                     log(e);
-                } 
+                } catch (Throwable e) {
+                    log(e, Level.SEVERE);
+                }
             }
         } finally {
             postprocess();
@@ -449,12 +451,14 @@ public class DebugSession extends SingleThread {
     }
 
     private void log(IOException e) {
+        log(e, Level.SEVERE);
+    }
+    private void log(Throwable e, Level level) {
         Logger.getLogger(DebugSession.class.getName()).log(
-                Level.SEVERE, null, e);
+                level, null, e);
     }
     private void log(SocketException e) {
-        Logger.getLogger(DebugSession.class.getName()).log(
-                Level.INFO, null, e);
+        log(e, Level.INFO);
         warnUserInCaseOfSocketException();
     }
 
