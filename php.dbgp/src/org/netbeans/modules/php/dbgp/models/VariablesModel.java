@@ -432,7 +432,7 @@ public class VariablesModel extends ViewModelSupport
         if ( id == null ){
             return null;
         }
-        return SessionManager.getInstance().getCurrentSession(id);
+        return SessionManager.getInstance().getSession(id);
     }
     
     private ContextProvider getContextProvider() {

@@ -1317,12 +1317,12 @@ public final class VeryPretty extends JCTree.Visitor {
 	    break;
 	  case CHAR:
 	    print("\'" +
-		  Convert.quote(
-		  String.valueOf((char) ((Number) tree.value).intValue())) +
+		  quote(
+		  String.valueOf((char) ((Number) tree.value).intValue()), '"') +
 		  "\'");
 	    break;
 	   case CLASS:
-	    print("\"" + Convert.quote((String) tree.value) + "\"");
+	    print("\"" + quote((String) tree.value, '\'') + "\"");
 	    break;
           case BOOLEAN:
             print(tree.getValue().toString());
@@ -1333,6 +1333,19 @@ public final class VeryPretty extends JCTree.Visitor {
 	  default:
 	    print(tree.value.toString());
 	}
+    }
+
+    private static String quote(String val, char keep) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < val.length(); i++) {
+            char c = val.charAt(i);
+            if (c != keep) {
+                sb.append(Convert.quote(c));
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     @Override

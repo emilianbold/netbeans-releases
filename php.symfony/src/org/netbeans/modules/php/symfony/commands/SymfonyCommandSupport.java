@@ -197,16 +197,18 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         try {
             if (task.get().intValue() == 0) {
                 freshCommands = lineProcessor.getCommands();
-            } else {
-                NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
-                        NbBundle.getMessage(SymfonyCommandSupport.class, "MSG_NoCommands"),
-                        NotifyDescriptor.YES_NO_OPTION);
-                if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(lineProcessor.getError()));
-                }
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    String error = lineProcessor.getError();
-                    if (StringUtils.hasText(error)) {
+            }
+            // #180425
+            if (freshCommands.isEmpty()) {
+                String error = lineProcessor.getError();
+                if (StringUtils.hasText(error)) {
+                    NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
+                            NbBundle.getMessage(SymfonyCommandSupport.class, "MSG_NoCommands"),
+                            NotifyDescriptor.YES_NO_OPTION);
+                    if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION) {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(error));
+                    }
+                    if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(error);
                     }
                 }

@@ -97,7 +97,10 @@ public class NetigsoHid extends SetupHid {
 
     
     protected final File changeManifest(File orig, String manifest) throws IOException {
-        File f = new File(getWorkDir(), orig.getName());
+        return changeManifest(getWorkDir(), orig, manifest);
+    }
+    static final File changeManifest(File wd, File orig, String manifest) throws IOException {
+        File f = new File(wd, orig.getName());
         int i = 0;
         while (f.exists()) {
             f = new File(f.getParentFile(), f.getName() + i++);

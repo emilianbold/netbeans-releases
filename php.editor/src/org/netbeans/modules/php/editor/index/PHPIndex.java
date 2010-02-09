@@ -643,7 +643,7 @@ public class PHPIndex {
 
 
     public Collection<IndexedClassMember<IndexedConstant>> getTypeConstants(PHPParseResult context, IndexedType type, String name, QuerySupport.Kind kind) {
-        Collection<IndexedClassMember<IndexedConstant>> retval = new ArrayList<IndexedClassMember<IndexedConstant>>();
+        Collection<IndexedClassMember<IndexedConstant>> retval = new HashSet<IndexedClassMember<IndexedConstant>>();
         Collection<IndexedConstant> constants = getTypeConstants(context, type.getName(), name, kind);
         for (IndexedConstant indexedConstant : constants) {
             String name1 = type.getName();
@@ -662,7 +662,7 @@ public class PHPIndex {
     }
     /** returns local constnats of a class. */
     public Collection<IndexedConstant> getTypeConstants(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind) {
-        Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
+        Collection<IndexedConstant> constants = new HashSet<IndexedConstant>();
         List<Pair<String, IndexResult>> signaturesPairs = null;
         if (typeName != null) {
             signaturesPairs = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_CLASS_CONST, name, kind);
@@ -706,7 +706,7 @@ public class PHPIndex {
 
     public Collection<IndexedFunction> getConstructors(PHPParseResult result, String typeName) {
         QuerySupport.Kind kind = QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
-        Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
+        Collection<IndexedFunction> methods = new HashSet<IndexedFunction>();
         String name = typeName;//NOI18N
         int attrMask = PHPIndex.ANY_ATTR;
         List<Pair<String, IndexResult>>  signaturePairs = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_CONSTRUCTOR, name, kind, true);
@@ -740,7 +740,7 @@ public class PHPIndex {
         return methods;
     }
     public Collection<IndexedClassMember<IndexedFunction>> getConstructors(PHPParseResult result, IndexedType type) {
-        Collection<IndexedClassMember<IndexedFunction>> retval = new ArrayList<IndexedClassMember<IndexedFunction>>();
+        Collection<IndexedClassMember<IndexedFunction>> retval = new HashSet<IndexedClassMember<IndexedFunction>>();
         Collection<IndexedFunction> methods = getConstructors(result, type.getName());
         for (IndexedFunction indexedFunction : methods) {
             String name1 = type.getName();
@@ -757,7 +757,7 @@ public class PHPIndex {
         return retval;
     }
     public Collection<IndexedClassMember<IndexedFunction>> getMethods(PHPParseResult context, IndexedType type, String name, QuerySupport.Kind kind, int attrMask) {
-        Collection<IndexedClassMember<IndexedFunction>> retval = new ArrayList<IndexedClassMember<IndexedFunction>>();
+        Collection<IndexedClassMember<IndexedFunction>> retval = new HashSet<IndexedClassMember<IndexedFunction>>();
         Collection<IndexedFunction> methods = getMethods(context, type.getName(), name, kind, attrMask);
         for (IndexedFunction indexedFunction : methods) {
             String name1 = type.getName();
@@ -776,7 +776,7 @@ public class PHPIndex {
 
     /** returns methods of a class. */
     public Collection<IndexedFunction> getMethods(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
-        Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
+        Collection<IndexedFunction> methods = new HashSet<IndexedFunction>();
         List<Pair<String, IndexResult>> signaturesMap = null;
         if (typeName != null) {
             signaturesMap = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_METHOD, name, kind);
@@ -831,7 +831,7 @@ public class PHPIndex {
     }
 
     public Collection<IndexedClassMember<IndexedConstant>> getFields(PHPParseResult context, IndexedType type, String name, QuerySupport.Kind kind, int attrMask) {
-        Collection<IndexedClassMember<IndexedConstant>> retval = new ArrayList<IndexedClassMember<IndexedConstant>>();
+        Collection<IndexedClassMember<IndexedConstant>> retval = new HashSet<IndexedClassMember<IndexedConstant>>();
         Collection<IndexedConstant> constants = getFields(context, type.getName(), name, kind, attrMask);
         for (IndexedConstant indexedConstant : constants) {
             String name1 = type.getName();
@@ -849,7 +849,7 @@ public class PHPIndex {
     }
     /** returns fields of a class. */
     public Collection<IndexedConstant> getFields(PHPParseResult context, String typeName, String name, QuerySupport.Kind kind, int attrMask) {
-        Collection<IndexedConstant> fields = new ArrayList<IndexedConstant>();
+        Collection<IndexedConstant> fields = new HashSet<IndexedConstant>();
         List<Pair<String, IndexResult>> signaturePairs = null;
         if (typeName != null) {
             signaturePairs = getTypeSpecificSignatures(typeName, PHPIndexer.FIELD_FIELD, name, kind);
@@ -990,7 +990,7 @@ public class PHPIndex {
     /** returns GLOBAL functions. */
     public Collection<IndexedFunction> getFunctions(PHPParseResult context, String name, QuerySupport.Kind kind) {
         
-        Collection<IndexedFunction> functions = new ArrayList<IndexedFunction>();
+        Collection<IndexedFunction> functions = new HashSet<IndexedFunction>();
         Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_BASE, name.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_BASE);
 
         findFunctions(result, kind, name, functions);
@@ -998,7 +998,7 @@ public class PHPIndex {
     }
     
     public Collection<IndexedVariable> getTopLevelVariables(PHPParseResult context, String name, QuerySupport.Kind kind) {
-        Collection<IndexedVariable> vars = new ArrayList<IndexedVariable>();
+        Collection<IndexedVariable> vars = new HashSet<IndexedVariable>();
         Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_VAR, name.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_VAR);
         findTopVariables(result, kind, name, vars);
         return vars;
@@ -1006,7 +1006,7 @@ public class PHPIndex {
 
     /** returns GLOBAL constants. */
     public Collection<IndexedConstant> getConstants(PHPParseResult context, String name, QuerySupport.Kind kind) {
-        Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
+        Collection<IndexedConstant> constants = new HashSet<IndexedConstant>();
         Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_CONST, name.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_CONST);
         findConstants(result, kind, name, constants);
         return constants;
@@ -1043,7 +1043,7 @@ public class PHPIndex {
         return retval;
     }
     public Collection<IndexedNamespace> getNamespacesImpl(PHPParseResult context, String name, QuerySupport.Kind kind) {
-        Collection<IndexedNamespace> namespaces = new ArrayList<IndexedNamespace>();
+        Collection<IndexedNamespace> namespaces = new HashSet<IndexedNamespace>();
         Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_NAMESPACE, name.toLowerCase(), QuerySupport.Kind.PREFIX, PHPIndexer.FIELD_NAMESPACE);
 
         for (IndexResult map : result) {
@@ -1096,7 +1096,7 @@ public class PHPIndex {
     }
 
     public Collection<IndexedClass> getClasses(PHPParseResult context, String name, QuerySupport.Kind kind) {
-        Collection<IndexedClass> classes = new ArrayList<IndexedClass>();
+        Collection<IndexedClass> classes = new HashSet<IndexedClass>();
         final Collection<? extends IndexResult> result = search(PHPIndexer.FIELD_CLASS, name.toLowerCase(), QuerySupport.Kind.PREFIX);
         findClasses(result, kind, name, classes);
 
@@ -1105,7 +1105,7 @@ public class PHPIndex {
 
     public Collection<IndexedInterface> getInterfaces(PHPParseResult context, String name, QuerySupport.Kind kind) {
         Collection<? extends IndexResult> result = null;
-        Collection<IndexedInterface> ifaces = new ArrayList<IndexedInterface>();
+        Collection<IndexedInterface> ifaces = new HashSet<IndexedInterface>();
         if (name != null && name.trim().length() > 0) {
             result = search(PHPIndexer.FIELD_IFACE, name.toLowerCase(), QuerySupport.Kind.PREFIX);
         } else {

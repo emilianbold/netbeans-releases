@@ -42,7 +42,6 @@ package org.netbeans.modules.php.zend;
 import java.io.File;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
@@ -99,12 +98,20 @@ public class ZendScript extends PhpProgram {
      * @throws InvalidPhpProgramException if Zend script is not valid.
      */
     public static ZendScript getDefault() throws InvalidPhpProgramException {
-        String zend = ZendOptions.getInstance().getZend();
-        String error = validate(zend);
+        return getCustom(ZendOptions.getInstance().getZend());
+    }
+
+    /**
+     * Get the default, <b>valid only</b> Zend script.
+     * @return the default, <b>valid only</b> Zend script.
+     * @throws InvalidPhpProgramException if Zend script is not valid.
+     */
+    private static ZendScript getCustom(String command) throws InvalidPhpProgramException {
+        String error = validate(command);
         if (error != null) {
             throw new InvalidPhpProgramException(error);
         }
-        return new ZendScript(zend);
+        return new ZendScript(command);
     }
 
     /**
@@ -166,8 +173,12 @@ public class ZendScript extends PhpProgram {
 
     // 180184, needed for ZF 1.10+
     public static void registerNetBeansProvider() {
+        registerNetBeansProvider(null);
+    }
+
+    public static void registerNetBeansProvider(String command) {
         try {
-            ZendScript zendScript = getDefault();
+            ZendScript zendScript = command != null ? getCustom(command) : getDefault();
 
             ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
                     .outProcessorFactory(ANSI_STRIPPING_FACTORY)
@@ -192,11 +203,11 @@ public class ZendScript extends PhpProgram {
                 NbBundle.getMessage(ZendScript.class, "MSG_ProviderRegistrationInfo"),
                 NotifyDescriptor.INFORMATION_MESSAGE));
         } catch (ExecutionException ex) {
-            LOGGER.log(Level.INFO, null, ex);
+            UiUtils.processExecutionException(ex, getOptionsSubPath());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (InvalidPhpProgramException ex) {
-            LOGGER.log(Level.INFO, null, ex);
+            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), getOptionsSubPath());
         }
     }
 
