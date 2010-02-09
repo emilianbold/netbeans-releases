@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.spi.toolchain;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.APIAccessor;
+import org.netbeans.modules.cnd.toolchain.compilerset.APIAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 

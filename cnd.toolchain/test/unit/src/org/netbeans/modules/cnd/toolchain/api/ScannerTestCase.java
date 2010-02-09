@@ -51,7 +51,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerPattern;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolchainManagerImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainManagerImpl;
 
 /**
  * @author Alexey Vladykin

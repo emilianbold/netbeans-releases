@@ -39,16 +39,16 @@
 
 package org.netbeans.modules.cnd.spi.toolchain;
 
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetImpl;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerFlavorImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolchainManagerImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainManagerImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**

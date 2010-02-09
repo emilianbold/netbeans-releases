@@ -40,7 +40,7 @@
 package org.netbeans.modules.cnd.spi.toolchain;
 
 import java.util.concurrent.CancellationException;
-import org.netbeans.modules.cnd.toolchain.execution.impl.ErrorAnnotation;
+import org.netbeans.modules.cnd.toolchain.execution.ErrorAnnotation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerDescriptor;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerFlavorImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.ErrorParser;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;

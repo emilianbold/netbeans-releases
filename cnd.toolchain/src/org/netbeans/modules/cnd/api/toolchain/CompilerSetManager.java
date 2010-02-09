@@ -41,8 +41,8 @@ package org.netbeans.modules.cnd.api.toolchain;
 
 import java.io.Writer;
 import java.util.List;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerAccessorImpl;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerAccessorImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**

@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.BasicCompiler;
 
 public interface AllOptionsProvider extends Cloneable {
     public String getAllOptions(BasicCompiler compiler);

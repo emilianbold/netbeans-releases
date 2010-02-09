@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -473,9 +472,9 @@ public class ProjectActionSupport {
                     // Set executable in configuration
                     MakeConfiguration makeConfiguration = pae.getConfiguration();
                     executable = panel.getExecutable();
-                    executable = FilePathAdaptor.naturalize(executable);
+                    executable = IpeUtils.naturalize(executable);
                     executable = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), executable);
-                    executable = FilePathAdaptor.normalize(executable);
+                    executable = IpeUtils.normalize(executable);
                     makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
                     // Mark the project 'modified'
                     ConfigurationDescriptorProvider pdp = pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
@@ -508,7 +507,7 @@ public class ProjectActionSupport {
                     runDir = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), runDir);
                     executable = IpeUtils.toAbsolutePath(runDir, executable);
                 }
-                executable = FilePathAdaptor.normalize(executable);
+                executable = IpeUtils.normalize(executable);
             }
             if (IpeUtils.isPathAbsolute(executable)) {
                 Configuration conf = pae.getConfiguration();

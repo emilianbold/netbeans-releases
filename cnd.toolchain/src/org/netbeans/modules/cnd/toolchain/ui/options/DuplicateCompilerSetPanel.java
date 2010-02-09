@@ -47,9 +47,9 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerFlavorImpl;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 

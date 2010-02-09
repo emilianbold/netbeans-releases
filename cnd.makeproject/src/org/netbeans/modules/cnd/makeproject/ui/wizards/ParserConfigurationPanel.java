@@ -50,8 +50,8 @@ import java.util.Vector;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -417,7 +417,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                 return null;
             }
             String itemPath = fileChooser.getSelectedFile().getPath();
-            itemPath = FilePathAdaptor.normalize(itemPath);
+            itemPath = IpeUtils.normalize(itemPath);
             return itemPath;
         }
 
