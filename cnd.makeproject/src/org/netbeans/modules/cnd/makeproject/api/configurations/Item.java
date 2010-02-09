@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.toolchain.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
@@ -439,7 +439,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (compilerSet == null) {
             return vec;
         }
-        BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(itemConfiguration.getTool());
+        AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from compiler
@@ -463,7 +463,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (compilerSet == null) {
             return vec;
         }
-        BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(itemConfiguration.getTool());
+        AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from project/file
@@ -504,7 +504,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (compilerSet == null) {
             return vec;
         }
-        BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(itemConfiguration.getTool());
+        AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             if (compiler != null && compiler.getPath() != null && compiler.getPath().length() > 0) {
@@ -528,7 +528,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (compilerSet == null) {
             return vec;
         }
-        BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(itemConfiguration.getTool());
+        AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
@@ -630,7 +630,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         private SpiAccessor() {
         }
 
-        private List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, BasicCompiler compiler, MakeConfiguration makeConfiguration) {
+        private List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
             if (getProvider() != null) {
                 return getProvider().getItemUserIncludePaths(includes, compilerOptions, compiler, makeConfiguration);
             } else {
@@ -638,7 +638,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             }
         }
 
-        private List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, BasicCompiler compiler, MakeConfiguration makeConfiguration) {
+        private List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
             if (getProvider() != null) {
                 return getProvider().getItemUserMacros(macros, compilerOptions, compiler, makeConfiguration);
             } else {

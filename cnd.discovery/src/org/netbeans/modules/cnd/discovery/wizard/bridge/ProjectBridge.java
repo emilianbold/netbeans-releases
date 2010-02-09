@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
-import org.netbeans.modules.cnd.api.toolchain.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
@@ -521,11 +521,11 @@ public class ProjectBridge {
         if (systemIncludePaths == null) {
             systemIncludePaths = new ArrayList<String>();
             CompilerSet compilerSet = getCompilerSet();
-            BasicCompiler compiler;
+            AbstractCompiler compiler;
             if (isCPP) {
-                compiler = (BasicCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
             } else {
-                compiler = (BasicCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
             }
             for(Object o :compiler.getSystemIncludeDirectories()){
                 String path = (String)o;
@@ -567,11 +567,11 @@ public class ProjectBridge {
         if (systemMacroDefinitions == null) {
             systemMacroDefinitions = new HashMap<String,String>();
             CompilerSet compilerSet = getCompilerSet();
-            BasicCompiler compiler;
+            AbstractCompiler compiler;
             if (isCPP) {
-                compiler = (BasicCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
             } else {
-                compiler = (BasicCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
             }
             for(Object o :compiler.getSystemPreprocessorSymbols()){
                 String macro = (String)o;
