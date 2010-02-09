@@ -42,7 +42,7 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManagerImpl;
 import org.openide.util.WeakSet;
 

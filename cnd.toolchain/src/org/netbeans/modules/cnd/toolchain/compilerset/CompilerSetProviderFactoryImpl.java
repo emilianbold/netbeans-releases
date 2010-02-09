@@ -37,55 +37,32 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.compilers.impl;
+package org.netbeans.modules.cnd.toolchain.compilerset;
 
-import java.io.IOException;
-import java.io.Writer;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerSetProvider;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerSetProviderFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.Lookup;
 
 /**
- * Sometimes we need to make process of setting up compiler set verbose.
- * This class allows to plug in a writer to report the process of
- * compiler set setup to
+ * An factory for creation CompilerSetProvider instances
  * @author Vladimir Kvashin
  */
-public class CompilerSetReporter {
-
-    private static Writer writer;
-
-    private CompilerSetReporter() {
-    }
-
+public class CompilerSetProviderFactoryImpl {
     /**
-     * Sets a writer to report the process of compiler set setup to
-     * @param writer if null, no reporting occurs
+     * Creates a new instance of CompilerSetProvider
+     * for the given execution environment
+     * @param execEnv execution environment to create CompilerSetProvider for
+     * @return new CompilerSetProvider instance
      */
-    public static synchronized void setWriter(Writer writer) {
-        CompilerSetReporter.writer = writer;
-    }
-
-    /* package-local */
-    public static void report(String msgKey) {
-        report(msgKey, true);
-    }
-
-    /* package-local */
-    public static synchronized void report(String msgKey, boolean addLineFeed, Object... params) {
-        if (writer != null) {
-            try {
-                writer.write(NbBundle.getMessage(CompilerSetReporter.class, msgKey, params));
-                if (addLineFeed) {
-                    writer.write('\n');
-                }
-                writer.flush();
-            } catch (IOException ex) {
-            }
+    public static CompilerSetProvider createNew(ExecutionEnvironment execEnv) {
+        CompilerSetProviderFactory factory = Lookup.getDefault().lookup(CompilerSetProviderFactory.class);
+        if (factory == null) {
+            throw new IllegalStateException(CompilerSetProviderFactory.class.getName() +" not found in lookup"); //NOI18N
         }
+        return factory.createNew(execEnv);
     }
 
-    /* package-local */
-    public static boolean canReport() {
-        return writer != null;
+    private CompilerSetProviderFactoryImpl() {
     }
-
 }

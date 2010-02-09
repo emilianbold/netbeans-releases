@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerPattern;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Results;

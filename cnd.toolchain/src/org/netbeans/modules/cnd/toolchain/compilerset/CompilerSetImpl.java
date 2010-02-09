@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.toolchain.compilers.impl;
+package org.netbeans.modules.cnd.toolchain.compilerset;
 
 import java.util.ArrayList;
 import java.util.Collections;

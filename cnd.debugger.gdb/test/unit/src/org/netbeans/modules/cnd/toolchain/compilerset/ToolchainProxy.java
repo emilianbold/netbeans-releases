@@ -37,53 +37,22 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.compilers.impl;
+package org.netbeans.modules.cnd.toolchain.compilerset;
 
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.spi.toolchain.CompilerSetManagerEvents;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+
 
 /**
  *
  * @author Alexander Simon
  */
-public abstract class SPIAccessor {
+public final class ToolchainProxy {
 
-    private static SPIAccessor INSTANCE;
-
-    public static synchronized SPIAccessor get() {
-        if (INSTANCE == null) {
-            Class<?> c = CompilerSetManagerEvents.class;
-            try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-            } catch (ClassNotFoundException e) {
-                // ignore
-            }
-        }
-
-        assert INSTANCE != null : "There is no SPI package accessor available!"; //NOI18N
-        return INSTANCE;
+    private ToolchainProxy() {
     }
 
-    /**
-     * Register the accessor. The method can only be called once
-     * - othewise it throws IllegalStateException.
-     *
-     * @param accessor instance.
-     */
-    public static void register(SPIAccessor accessor) {
-        if (INSTANCE != null) {
-            throw new IllegalStateException("Already registered"); // NOI18N
-        }
-        INSTANCE = accessor;
+    public static void setToolPath(Tool tool, String p) {
+        APIAccessor.get().setToolPath(tool, p);
     }
-
-    public abstract void runTasks(CompilerSetManagerEvents event);
-
-    public abstract CompilerSetManagerEvents createEvent(ExecutionEnvironment env);
-
-    public abstract void add(ExecutionEnvironment env, CompilerSet cs);
-
-    public abstract void remove(ExecutionEnvironment env, CompilerSet cs);
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,35 +34,55 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.toolchain.compilerset;
 
-package org.netbeans.modules.cnd.toolchain.compilers.impl;
-
-import org.netbeans.modules.cnd.spi.toolchain.CompilerSetProvider;
-import org.netbeans.modules.cnd.spi.toolchain.CompilerSetProviderFactory;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Lookup;
 
 /**
- * An factory for creation CompilerSetProvider instances
- * @author Vladimir Kvashin
+ *
+ * @author as204739
  */
-public class CompilerSetProviderFactoryImpl {
-    /**
-     * Creates a new instance of CompilerSetProvider
-     * for the given execution environment
-     * @param execEnv execution environment to create CompilerSetProvider for
-     * @return new CompilerSetProvider instance
-     */
-    public static CompilerSetProvider createNew(ExecutionEnvironment execEnv) {
-        CompilerSetProviderFactory factory = Lookup.getDefault().lookup(CompilerSetProviderFactory.class);
-        if (factory == null) {
-            throw new IllegalStateException(CompilerSetProviderFactory.class.getName() +" not found in lookup"); //NOI18N
+public abstract class APIAccessor {
+
+    private static APIAccessor INSTANCE;
+
+    public static synchronized APIAccessor get() {
+        if (INSTANCE == null) {
+            Class<?> c = Tool.class;
+            try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                // ignore
+            }
         }
-        return factory.createNew(execEnv);
+
+        assert INSTANCE != null : "There is no API package accessor available!"; //NOI18N
+        return INSTANCE;
     }
 
-    private CompilerSetProviderFactoryImpl() {
+    /**
+     * Register the accessor. The method can only be called once
+     * - othewise it throws IllegalStateException.
+     *
+     * @param accessor instance.
+     */
+    public static void register(APIAccessor accessor) {
+        if (INSTANCE != null) {
+            throw new IllegalStateException("Already registered"); // NOI18N
+        }
+        INSTANCE = accessor;
     }
+
+    public abstract Tool createTool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path);
+
+    public abstract void setCompilerSet(Tool tool, CompilerSet cs);
+
+    public abstract void setToolPath(Tool tool, String p);
+
 }

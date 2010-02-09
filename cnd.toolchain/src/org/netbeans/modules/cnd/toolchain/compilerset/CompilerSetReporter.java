@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,25 +34,58 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.compilers.impl;
+package org.netbeans.modules.cnd.toolchain.compilerset;
 
-import org.netbeans.modules.cnd.api.toolchain.Tool;
-
+import java.io.IOException;
+import java.io.Writer;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author Alexander Simon
+ * Sometimes we need to make process of setting up compiler set verbose.
+ * This class allows to plug in a writer to report the process of
+ * compiler set setup to
+ * @author Vladimir Kvashin
  */
-public final class ToolchainProxy {
+public class CompilerSetReporter {
 
-    private ToolchainProxy() {
+    private static Writer writer;
+
+    private CompilerSetReporter() {
     }
 
-    public static void setToolPath(Tool tool, String p) {
-        APIAccessor.get().setToolPath(tool, p);
+    /**
+     * Sets a writer to report the process of compiler set setup to
+     * @param writer if null, no reporting occurs
+     */
+    public static synchronized void setWriter(Writer writer) {
+        CompilerSetReporter.writer = writer;
+    }
+
+    /* package-local */
+    public static void report(String msgKey) {
+        report(msgKey, true);
+    }
+
+    /* package-local */
+    public static synchronized void report(String msgKey, boolean addLineFeed, Object... params) {
+        if (writer != null) {
+            try {
+                writer.write(NbBundle.getMessage(CompilerSetReporter.class, msgKey, params));
+                if (addLineFeed) {
+                    writer.write('\n');
+                }
+                writer.flush();
+            } catch (IOException ex) {
+            }
+        }
+    }
+
+    /* package-local */
+    public static boolean canReport() {
+        return writer != null;
     }
 
 }

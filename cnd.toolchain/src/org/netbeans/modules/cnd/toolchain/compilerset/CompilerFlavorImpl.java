@@ -37,7 +37,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.compilers.impl;
+package org.netbeans.modules.cnd.toolchain.compilerset;
 
 import java.util.ArrayList;
 import java.util.HashMap;

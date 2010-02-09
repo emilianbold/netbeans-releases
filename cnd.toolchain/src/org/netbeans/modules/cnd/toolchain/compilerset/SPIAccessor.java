@@ -36,25 +36,24 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.toolchain.compilers.impl;
 
-import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+package org.netbeans.modules.cnd.toolchain.compilerset;
+
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerSetManagerEvents;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author as204739
+ * @author Alexander Simon
  */
-public abstract class APIAccessor {
+public abstract class SPIAccessor {
 
-    private static APIAccessor INSTANCE;
+    private static SPIAccessor INSTANCE;
 
-    public static synchronized APIAccessor get() {
+    public static synchronized SPIAccessor get() {
         if (INSTANCE == null) {
-            Class<?> c = Tool.class;
+            Class<?> c = CompilerSetManagerEvents.class;
             try {
             Class.forName(c.getName(), true, c.getClassLoader());
             } catch (ClassNotFoundException e) {
@@ -62,7 +61,7 @@ public abstract class APIAccessor {
             }
         }
 
-        assert INSTANCE != null : "There is no API package accessor available!"; //NOI18N
+        assert INSTANCE != null : "There is no SPI package accessor available!"; //NOI18N
         return INSTANCE;
     }
 
@@ -72,17 +71,19 @@ public abstract class APIAccessor {
      *
      * @param accessor instance.
      */
-    public static void register(APIAccessor accessor) {
+    public static void register(SPIAccessor accessor) {
         if (INSTANCE != null) {
             throw new IllegalStateException("Already registered"); // NOI18N
         }
         INSTANCE = accessor;
     }
 
-    public abstract Tool createTool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path);
+    public abstract void runTasks(CompilerSetManagerEvents event);
 
-    public abstract void setCompilerSet(Tool tool, CompilerSet cs);
+    public abstract CompilerSetManagerEvents createEvent(ExecutionEnvironment env);
 
-    public abstract void setToolPath(Tool tool, String p);
+    public abstract void add(ExecutionEnvironment env, CompilerSet cs);
+
+    public abstract void remove(ExecutionEnvironment env, CompilerSet cs);
 
 }
