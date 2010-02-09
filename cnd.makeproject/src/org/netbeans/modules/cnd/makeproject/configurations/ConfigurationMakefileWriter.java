@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.BasicCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;

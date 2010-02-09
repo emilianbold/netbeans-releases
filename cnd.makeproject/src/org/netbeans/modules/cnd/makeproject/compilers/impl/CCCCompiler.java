@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescripto
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.BasicCompiler;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;

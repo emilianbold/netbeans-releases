@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.BasicCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;

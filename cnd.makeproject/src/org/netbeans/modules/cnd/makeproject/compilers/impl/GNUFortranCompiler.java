@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.makeproject.compilers.impl;
 
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.BasicCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
