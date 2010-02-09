@@ -558,9 +558,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private String reloadField(boolean force, JComponent component, IssueField field, JLabel warningLabel, JLabel fieldLabel) {
         String currentValue = null;
-        if (issue.getTaskData().isNew()) {
-            force = true;
-        }
+        boolean isNew = issue.getTaskData().isNew();
         if (!force) {
             if (component instanceof JComboBox) {
                 Object value = ((JComboBox)component).getSelectedItem();
@@ -618,20 +616,18 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     warningLabel.setIcon(null);
                 }
             } else {
-                if (valueModifiedByServer) {
-                    if (warningLabel != null) {
-                        warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/warning.gif", true)); // NOI18N
-                        String fieldName = fieldName(fieldLabel);
-                        String messageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.fieldModifiedWarning"); // NOI18N
-                        String message = MessageFormat.format(messageFormat, fieldName, currentValue, newValue);
-                        fieldWarnings.add(message);
-                        warningLabel.setToolTipText(message);
-                    }
+                if (!isNew && valueModifiedByServer && (warningLabel != null)) {
+                    warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/warning.gif", true)); // NOI18N
+                    String fieldName = fieldName(fieldLabel);
+                    String messageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.fieldModifiedWarning"); // NOI18N
+                    String message = MessageFormat.format(messageFormat, fieldName, currentValue, newValue);
+                    fieldWarnings.add(message);
+                    warningLabel.setToolTipText(message);
                 }
             }
             currentValue = newValue;
         } else {
-            if (valueModifiedByServer && (warningLabel != null)) {
+            if (!isNew && valueModifiedByServer && (warningLabel != null)) {
                 warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/error.gif", true)); // NOI18N
                 String fieldName = fieldName(fieldLabel);
                 String messageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.fieldModifiedError"); // NOI18N
@@ -1970,7 +1966,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         milestoneWarning.setVisible(usingTargetMilestones);
         TaskData data = issue.getTaskData();
         if (data.isNew()) {
-            String summary = summaryField.getText();
             issue.setFieldValue(IssueField.PRODUCT, product);
             BugzillaRepositoryConnector connector = Bugzilla.getInstance().getRepositoryConnector();
             try {
@@ -1979,7 +1974,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             } catch (CoreException cex) {
                 cex.printStackTrace();
             }
-            summaryField.setText(summary); // Issue 165107
         }
     }//GEN-LAST:event_productComboActionPerformed
 
