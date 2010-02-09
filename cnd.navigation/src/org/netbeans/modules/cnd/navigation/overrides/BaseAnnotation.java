@@ -187,7 +187,8 @@ import org.openide.text.NbDocument;
     }
 
     void mouseClicked(JTextComponent c, Point p) {
-        Point position = new Point(p);        
+        Point position = new Point(p);
+        position.y += c.getFontMetrics(c.getFont()).getHeight();
         SwingUtilities.convertPointToScreen(position, c);        
         performGoToAction(position);
     }
