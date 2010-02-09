@@ -194,9 +194,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         assert project != null;
         SuiteProject thisPrj = getProperties().getProject();
 
-        if (project == null)
-            return ;
-
         if (thisPrj.getProjectDirectory().equals(project.getProjectDirectory())) {
             if (showMessages)
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
