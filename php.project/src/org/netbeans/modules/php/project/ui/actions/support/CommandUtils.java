@@ -56,6 +56,7 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.XDebugUrlArguments;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.openide.DialogDisplayer;
@@ -325,10 +326,20 @@ public final class CommandUtils {
      * @throws MalformedURLException if any error occurs.
      */
     public static URL urlForDebugProject(PhpProject project) throws MalformedURLException {
+        return urlForDebugProject(project, XDebugUrlArguments.XDEBUG_SESSION_START);
+    }
+    /**
+     * Get {@link URL} for debugging a project.
+     * @param project a project to get {@link URL} for.
+     * @param xDebugArgument xdebug specific argument for starting or stopping debugging
+     * @return {@link URL} for debugging a project.
+     * @throws MalformedURLException if any error occurs.
+     */
+    public static URL urlForDebugProject(PhpProject project, XDebugUrlArguments xDebugArgument) throws MalformedURLException {
         DebugInfo debugInfo = getDebugInfo(project);
         URL debugUrl = urlForProject(project);
         if (debugInfo.debugServer) {
-            debugUrl = appendQuery(debugUrl, getDebugArguments());
+            debugUrl = appendQuery(debugUrl, getDebugArguments(xDebugArgument));
         }
         return debugUrl;
     }
@@ -340,7 +351,7 @@ public final class CommandUtils {
      * @throws MalformedURLException if any error occurs
      */
     public static URL createDebugUrl(URL url) throws MalformedURLException {
-        return appendQuery(url, getDebugArguments());
+        return appendQuery(url, getDebugArguments(XDebugUrlArguments.XDEBUG_SESSION_START));
     }
 
     /**
@@ -364,10 +375,23 @@ public final class CommandUtils {
      * @throws MalformedURLException if any error occurs.
      */
     public static URL urlForDebugContext(PhpProject project, Lookup context) throws MalformedURLException {
+        return urlForDebugContext(project, context, XDebugUrlArguments.XDEBUG_SESSION_START);
+    }
+    /**
+     *
+     * Get {@link URL} for debugging a project context (specific file).
+     * @param project a project to get {@link URL} for.
+     * @param context a context to get {@link URL} for.
+     * @param xDebugArgument xdebug specific argument for starting or stopping debugging
+     * @return {@link URL} for debugging a project context (specific file).
+     * @throws MalformedURLException if any error occurs.
+     */
+    public static URL urlForDebugContext(PhpProject project, Lookup context, XDebugUrlArguments xDebugArgument) throws MalformedURLException {
         DebugInfo debugInfo = getDebugInfo(project);
         URL debugUrl = urlForContext(project, context);
         if (debugInfo.debugServer) {
-            debugUrl = appendQuery(debugUrl, getDebugArguments());
+            debugUrl = appendQuery(debugUrl, 
+                    getDebugArguments(xDebugArgument));
         }
         return debugUrl;
     }
@@ -465,8 +489,8 @@ public final class CommandUtils {
         return new URL(urlExternalForm);
     }
 
-    private static String getDebugArguments() {
-        return "XDEBUG_SESSION_START=" + PhpOptions.getInstance().getDebuggerSessionId(); // NOI18N
+    private static String getDebugArguments(XDebugUrlArguments xDebugArgument) {
+        return xDebugArgument.toString() + "=" + PhpOptions.getInstance().getDebuggerSessionId(); // NOI18N                
     }
 
     private static FileObject[] filterValidFiles(FileObject[] files, FileObject dir) {

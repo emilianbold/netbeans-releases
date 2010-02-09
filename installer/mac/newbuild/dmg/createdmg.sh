@@ -31,6 +31,6 @@ rsync -a ./dist_dmg/ --exclude .DS_Store ./dist/mountpoint/
 diskutil rename ./dist/mountpoint "$volname"
 hdiutil detach -verbose ./dist/mountpoint
 
-hdiutil create -verbose -srcdevice ./dist/template.sparseimage ./dist/"$dmgname"
+hdiutil create -verbose -srcdevice `pwd`/dist/template.sparseimage ./dist/"$dmgname"
 rm -f ./dist/template.sparseimage
 rmdir ./dist/mountpoint

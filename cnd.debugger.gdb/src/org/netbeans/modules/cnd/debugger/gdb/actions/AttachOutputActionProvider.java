@@ -61,7 +61,7 @@ public class AttachOutputActionProvider extends BuildActionsProvider {
 
     @Override
     public List<BuildAction> getActions(String ioTabName, ProjectActionEvent[] events) {
-        if (events != null && events.length > 0 && events[events.length - 1].getType() == ProjectActionEvent.Type.RUN) {
+        if (events != null && events.length > 0 && events[events.length - 1].getType() == ProjectActionEvent.PredefinedType.RUN) {
             return Collections.<BuildAction>singletonList(new AttachAction(events));
         }
         return Collections.emptyList();

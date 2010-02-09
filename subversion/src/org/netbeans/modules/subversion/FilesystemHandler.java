@@ -42,7 +42,7 @@
 package org.netbeans.modules.subversion;
 
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.client.SvnClient;
 import java.io.File;

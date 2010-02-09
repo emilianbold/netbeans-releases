@@ -39,8 +39,8 @@
 
 package org.netbeans.modules.cnd.toolchain.execution.impl;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.spi.ErrorParserProvider;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 
@@ -48,7 +48,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.toolchain.spi.ErrorParserProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.class)
 public class GCCErrorParserProvider extends ErrorParserProvider {
 
     @Override

@@ -1068,6 +1068,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
 
         public void notifyData(final Issue issue) {
+            if(!query.contains(issue)) {
+                // XXX this is quite ugly - the query notifies an archoived issue
+                // but it doesn't "contain" it!
+                return;
+            }
             setIssueCount(++counter);
             if(counter == 1) {
                 panel.showNoContentPanel(false);

@@ -73,16 +73,18 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingFolderItemsAction;
-import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction;
-import org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction;
+import org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction;
+import org.netbeans.modules.cnd.makeproject.actions.AddExistingItemAction;
+import org.netbeans.modules.cnd.makeproject.actions.NewFolderAction;
+import org.netbeans.modules.cnd.makeproject.actions.NewTestAction;
+import org.netbeans.modules.cnd.makeproject.actions.TestAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
@@ -855,7 +857,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 node = (Node) key;
             } else if (key instanceof Folder) {
                 Folder folder = (Folder) key;
-                if (folder.isProjectFiles()) {
+                if (folder.isProjectFiles() || folder.isTestLogicalFolder() || folder.isTest()) {
                     //FileObject srcFileObject = project.getProjectDirectory().getFileObject("src");
                     FileObject srcFileObject = project.getProjectDirectory();
                     DataObject srcDataObject = null;
@@ -875,8 +877,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         //node = new BrokenViewFolderNode(this, getFolder(), folder);
                     }
                 } else {
-                    node = new ExternalFilesNode(folder);
-                }
+                        node = new ExternalFilesNode(folder);
+                    }
             } else if (key instanceof Item) {
                 Item item = (Item) key;
                 DataObject fileDO = item.getDataObject();
@@ -918,8 +920,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                                 continue;
                             }
 
-                            if (!MakeOptions.getInstance().getViewBinaryFiles() && CndFileVisibilityQuery.getDefault().isIgnored(child)) {
-                                continue;
+                            if (!getFolder().isTestLogicalFolder()) {
+                                if (!MakeOptions.getInstance().getViewBinaryFiles() && CndFileVisibilityQuery.getDefault().isIgnored(child)) {
+                                    continue;
+                                }
                             }
 
                             // Add file to the view
@@ -1050,7 +1054,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Image getIcon(int type) {
-            if (folder.isDiskFolder()) {
+            if (folder.isTest()) {
+                return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testContainer.gif"), type); // NOI18N
+            } else if (folder.isTestRootFolder()) {
+                return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testFolder.gif"), type); // NOI18N
+            } else if (folder.isDiskFolder() && folder.isTestLogicalFolder()) {
+                return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testFolder.gif"), type); // NOI18N
+            } else if (folder.isDiskFolder()) {
                 return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/tree_folder.gif"), type); // NOI18N
             } else {
                 return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolder.gif"), type); // NOI18N
@@ -1059,7 +1069,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Image getOpenedIcon(int type) {
-            if (folder.isDiskFolder()) {
+            if (folder.isTest()) {
+                return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testContainer.gif"), type); // NOI18N
+            } else if (folder.isTestRootFolder()) {
+                return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testFolderOpened.gif"), type); // NOI18N
+            } else if (folder.isDiskFolder() && folder.isTestLogicalFolder()) {
+                return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/testFolder.gif"), type); // NOI18N
+            } else if (folder.isDiskFolder()) {
                 return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/tree_folder.gif"), type); // NOI18N
             } else {
                 return annotateIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolderOpened.gif"), type); // NOI18N
@@ -1174,7 +1190,59 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         @Override
         public Action[] getActions(boolean context) {
             Action[] result;
-            if (folder.isDiskFolder()) {
+            if (folder.isTestRootFolder()) {
+                result = new Action[]{ //
+                            SystemAction.get(NewTestAction.class),
+                            SystemAction.get(TestAction.class),
+                            null,
+                            SystemAction.get(NewFolderAction.class),
+                            SystemAction.get(org.openide.actions.FindAction.class),
+                            null,
+                            SystemAction.get(PropertiesFolderAction.class),};
+            }
+            else if (folder.isTestLogicalFolder() && !folder.isDiskFolder()) {
+                result = new Action[]{ //
+                            SystemAction.get(NewTestAction.class),
+                            SystemAction.get(TestAction.class),
+                            null,
+                            SystemAction.get(NewFolderAction.class),
+                            SystemAction.get(org.openide.actions.FindAction.class),
+                            null,
+                            SystemAction.get(CutAction.class),
+                            SystemAction.get(CopyAction.class),
+                            SystemAction.get(PasteAction.class),
+                            null,
+                            SystemAction.get(RemoveFolderAction.class),
+                            createRenameAction(),
+                            null,
+                            SystemAction.get(PropertiesFolderAction.class),};
+            }
+            else if (folder.isTest()) {
+                ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
+                result = new Action[]{ //
+                            CommonProjectActions.newFileAction(), //
+                            SystemAction.get(AddExistingItemAction.class),
+                            null,
+                            SystemAction.get(TestAction.class),
+                            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null),
+                            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG_STEP_INTO, bundle.getString("LBL_DebugAction_Step_Name"), null),
+                            null,
+                            SystemAction.get(org.openide.actions.FindAction.class), //
+                            null, //
+                            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null), // NOI18N
+                            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N
+                            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), //
+                            null,
+                            SystemAction.get(CutAction.class),
+                            SystemAction.get(CopyAction.class),
+                            SystemAction.get(PasteAction.class),
+                            null,
+                            SystemAction.get(RemoveFolderAction.class),
+                            createRenameAction(),
+                            null,
+                            SystemAction.get(PropertiesFolderAction.class),};
+            }
+            else if (folder.isDiskFolder()) {
                 result = new Action[]{
                             CommonProjectActions.newFileAction(),
                             SystemAction.get(org.openide.actions.FindAction.class),
@@ -1819,12 +1887,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             //Image original = Utilities.loadImage("org/openide/loaders/instanceObject.gif"); // NOI18N
             //Image original = Utilities.loadImage("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"); // NOI18N
             Image original;
-            int tool = item.getDefaultTool();
-            if (tool == Tool.CCompiler) {
+            PredefinedToolKind tool = item.getDefaultTool();
+            if (tool == PredefinedToolKind.CCompiler) {
                 original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/CSrcIcon.gif"); // NOI18N
-            } else if (tool == Tool.CCCompiler) {
+            } else if (tool == PredefinedToolKind.CCCompiler) {
                 original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"); // NOI18N
-            } else if (tool == Tool.FortranCompiler) {
+            } else if (tool == PredefinedToolKind.FortranCompiler) {
                 original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/FortranSrcIcon.gif"); // NOI18N
             } else {
                 original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/unknown.gif"); // NOI18N
@@ -2055,4 +2123,4 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
 
-}
+        }

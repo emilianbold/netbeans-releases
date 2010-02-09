@@ -41,6 +41,7 @@ package org.netbeans.modules.java.source.indexing;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.util.CancelAbort;
@@ -49,11 +50,16 @@ import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -61,9 +67,9 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
-import org.netbeans.modules.java.source.parsing.OutputFileObject;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
@@ -83,9 +89,11 @@ final class MultiPassCompileWorker extends CompileWorker {
 
     ParsingOutput compile(ParsingOutput previous, final Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
         final LinkedList<CompileTuple> toProcess = new LinkedList<CompileTuple>();
+        final HashMap<JavaFileObject, CompileTuple> jfo2tuples = new HashMap<JavaFileObject, CompileTuple>();
         for (CompileTuple i : files) {
             if (!previous.finishedFiles.contains(i.indexable)) {
                 toProcess.add(i);
+                jfo2tuples.put(i.jfo, i);
             }
         }
         if (toProcess.isEmpty()) {
@@ -125,7 +133,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                 if (active == null) {
                     if (!toProcess.isEmpty()) {
                         active = toProcess.removeFirst();
-                        if (active == null)
+                        if (active == null || previous.finishedFiles.contains(active.indexable))
                             continue;
                         isBigFile = false;
                     } else {
@@ -138,12 +146,12 @@ final class MultiPassCompileWorker extends CompileWorker {
                         public @Override boolean isCanceled() {
                             return context.isCancelled();
                         }
-                    });
+                    }, APTUtils.get(context.getRoot()));
                     if (JavaIndex.LOG.isLoggable(Level.FINER)) {
                         JavaIndex.LOG.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(context.getRoot()) + " " + javaContext.cpInfo.toString()); //NOI18N
                     }
                 }
-                Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active.jfo});
+                Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[]{active.jfo});
                 if (mem.isLowMemory()) {
                     dumpSymFiles(fileManager, jt);
                     mem.isLowMemory();
@@ -164,7 +172,36 @@ final class MultiPassCompileWorker extends CompileWorker {
                     System.gc();
                     continue;
                 }
-                Iterable<? extends TypeElement> types = jt.enterTrees(trees);
+                Iterable<? extends TypeElement> types;
+                fileManager.handleOption("apt-origin", Collections.singletonList(active.indexable.getURL().toString()).iterator()); //NOI18N
+                try {
+                    types = jt.enterTrees(trees);
+                    boolean yield = false;
+                    for (TypeElement te : types) {
+                        ClassSymbol cSym = (ClassSymbol)te;
+                        TypeMirror sup = null;
+                        while((sup = cSym.getSuperclass()) != null && sup.getKind() == TypeKind.DECLARED) {
+                            cSym = (ClassSymbol) ((DeclaredType) sup).asElement();
+                            CompileTuple u = jfo2tuples.get(cSym.sourcefile);
+                            if (u != null && !previous.finishedFiles.contains(u.indexable) && !u.indexable.equals(active.indexable)) {
+                                if (!yield) {
+                                    toProcess.addFirst(active);
+                                }
+                                toProcess.addFirst(u);
+                                yield = true;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                    if (yield) {
+                        active = null;
+                        continue;
+                    }
+                } finally {
+                    fileManager.handleOption("apt-origin", Collections.singletonList("").iterator()); //NOI18N
+                }
+                JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), previous.aptGenerated);
                 if (mem.isLowMemory()) {
                     dumpSymFiles(fileManager, jt);
                     mem.isLowMemory();
@@ -219,8 +256,8 @@ final class MultiPassCompileWorker extends CompileWorker {
                 }
                 ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
                 for (JavaFileObject generated : jt.generate(types)) {
-                    if (generated instanceof OutputFileObject) {
-                        previous.createdFiles.add(((OutputFileObject) generated).getFile());
+                    if (generated instanceof FileObjects.FileBase) {
+                        previous.createdFiles.add(((FileObjects.FileBase) generated).getFile());
                     } else {
                         // presumably should not happen
                     }
@@ -262,7 +299,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                                 );
                     JavaIndex.LOG.log(Level.FINEST, message, isp);
                 }
-                return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes);
+                return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
             } catch (MissingPlatformError mpe) {
                 //No platform - log & ignore
                 if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
@@ -278,7 +315,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                                 );
                     JavaIndex.LOG.log(Level.FINEST, message, mpe);
                 }
-                return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes);
+                return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
             } catch (CancelAbort ca) {
                 if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                     JavaIndex.LOG.log(Level.FINEST, "OnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
@@ -319,7 +356,7 @@ final class MultiPassCompileWorker extends CompileWorker {
         if ((state & MEMORY_LOW) != 0) {
             JavaIndex.LOG.warning("Not enough memory to compile folder: " + FileUtil.getFileDisplayName(context.getRoot())); // NOI18N
         }
-        return new ParsingOutput(true, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes);
+        return new ParsingOutput(true, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
     }
 
     private void dumpSymFiles(JavaFileManager jfm, JavacTaskImpl jti) throws IOException {

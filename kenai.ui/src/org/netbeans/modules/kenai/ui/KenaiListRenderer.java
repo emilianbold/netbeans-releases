@@ -73,7 +73,7 @@ public class KenaiListRenderer extends JLabel
             final Kenai kenai = (Kenai) value;
             setText("<html><b>" + kenai.getName() + "</b> (" +  kenai.getUrl().getProtocol() + "://" + kenai.getUrl().getHost() + ")</html>");
             //setIcon(((Kenai)value).getIcon());
-            setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/kenai-small.png", true));
+            setIcon(kenai.getIcon());
         } else {
             setIcon(null);
             setText(value==null?null:value.toString());

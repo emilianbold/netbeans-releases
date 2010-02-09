@@ -71,8 +71,30 @@ made subject to such option by the copyright holder.
                 <xsl:attribute name="description">Build and profile the project.</xsl:attribute>
             </target>
 
-            <xsl:comment>
+	<xsl:comment>
+    ======================
+    INITIALIZATION SECTION
+    ======================
+    </xsl:comment>
 
+            <target name="profile-init" depends="-profile-pre-init, init, -profile-post-init, -profile-init-check"/>
+
+            <target name="-profile-pre-init">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="-profile-post-init">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+            <target name="-profile-init-check">
+                <xsl:attribute name="depends">-profile-pre-init, init, -profile-post-init</xsl:attribute>
+                <fail unless="profiler.info.jvm">Must set JVM to use for profiling in profiler.info.jvm</fail>
+                <fail unless="profiler.info.jvmargs.agent">Must set profiler agent JVM arguments in profiler.info.jvmargs.agent</fail>
+            </target>
+
+	<xsl:comment>
     =================
     PROFILING SECTION
     =================
@@ -135,6 +157,40 @@ made subject to such option by the copyright holder.
                         <xsl:attribute name="path">${profiler.loadgen.path}</xsl:attribute>
                     </loadgenstart>
             </target>
+            
+    <xsl:comment>
+    =========================
+    TESTS PROFILING  SECTION
+    =========================
+    </xsl:comment>
+
+          <target name="profile-test-single">
+              <xsl:attribute name="if">netbeans.home</xsl:attribute>
+              <xsl:attribute name="depends">profile-init,compile-test-single</xsl:attribute>
+              <nbprofiledirect>
+                  <classpath>
+                      <path path="${{run.test.classpath}}"/>
+                      <path path="${{j2ee.platform.classpath}}"/>
+                  </classpath>
+              </nbprofiledirect>
+
+              <junit showoutput="true" fork="true" dir="${{profiler.info.dir}}"  jvm="${{profiler.info.jvm}}" failureproperty="tests.failed" errorproperty="tests.failed">
+                  <env key="${{profiler.info.pathvar}}" path="${{profiler.info.agentpath}}:${{profiler.current.path}}"/>
+                  <jvmarg value="${{profiler.info.jvmargs.agent}}" />
+                  <jvmarg line="${{profiler.info.jvmargs}}"/>
+                  <test name="${{profile.class}}"/>
+                  <classpath>
+                      <path path="${{run.test.classpath}}"/>
+                      <path path="${{j2ee.platform.classpath}}"/>
+                  </classpath>
+                  <syspropertyset>
+                      <propertyref prefix="test-sys-prop."/>
+                      <mapper type="glob" from="test-sys-prop.*" to="*"/>
+                  </syspropertyset>
+                  <formatter type="brief" usefile="false"/>
+                  <formatter type="xml"/>
+              </junit>
+          </target>
 
   </project>
   </xsl:template>

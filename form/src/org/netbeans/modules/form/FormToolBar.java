@@ -270,6 +270,7 @@ class FormToolBar extends JToolBar {
                 FormUtils.getBundleString("CTL_PaletteButton_MenuItem")); // NOI18N
         item.setSelected(FormLoaderSettings.getInstance().isPaletteInToolBar());
         item.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 FormLoaderSettings.getInstance().setPaletteInToolBar(
                                                          item.isSelected());
@@ -299,6 +300,7 @@ class FormToolBar extends JToolBar {
         private boolean showMenu;
         
         /** Action to switch to selection, connection or add mode. */
+        @Override
         public void actionPerformed(ActionEvent ev) {
             if (ev.getSource() == selectionButton)
                 formDesigner.toggleSelectionMode();
@@ -316,6 +318,7 @@ class FormToolBar extends JToolBar {
         }
 
         /** Acceptor for nodes in PaletteMenuView */
+        @Override
         public boolean acceptNodes(Node[] nodes) {
             if (nodes.length == 0)
                 return false;
@@ -326,12 +329,15 @@ class FormToolBar extends JToolBar {
         }
 
         /** Handles closing of PaletteMenuView popup */
+        @Override
         public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
             if( PaletteUtils.getSelectedItem() == null )
                 formDesigner.toggleSelectionMode();
         }
+        @Override
         public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
         }
+        @Override
         public void popupMenuCanceled(PopupMenuEvent e) {
         }
         

@@ -77,6 +77,11 @@ public class ValidateRegistryTestCase extends NbTestCase {
         super.tearDown();
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testSchema() throws Exception {
         FileObject folder = FileUtil.getConfigFile(ToolchainManagerImpl.CONFIG_FOLDER);
         if (folder != null && folder.isFolder()) {

@@ -78,7 +78,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelSupport;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;
@@ -98,6 +98,7 @@ import org.w3c.dom.NodeList;
 public class MakeConfigurationDescriptor extends ConfigurationDescriptor implements ChangeListener {
 
     public static final String EXTERNAL_FILES_FOLDER = "ExternalFiles"; // NOI18N
+    public static final String TEST_FILES_FOLDER = "TestFiles"; // NOI18N
     public static final String SOURCE_FILES_FOLDER = "SourceFiles"; // NOI18N
     public static final String HEADER_FILES_FOLDER = "HeaderFiles"; // NOI18N
     public static final String RESOURCE_FILES_FOLDER = "ResourceFiles"; // NOI18N
@@ -110,9 +111,11 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private String baseDir;
     private boolean modified = false;
     private Folder externalFileItems = null;
+    private Folder testItems = null;
     private Folder rootFolder = null;
     private HashMap<String, Item> projectItems = null;
     private final List<String> sourceRoots = new ArrayList<String>();
+    private final List<String> testRoots = new ArrayList<String>();
     private final Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
     private volatile NativeProject nativeProject = null;
     public static final String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
@@ -247,13 +250,14 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         initTask = null;
     }
 
-    public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders, Iterator<String> importantItems, String mainFilePath) {
+    public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders, Iterator<SourceFolderInfo> testFileFolders, Iterator<String> importantItems, String mainFilePath) {
         if (createLogicalFolders) {
-            rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true);
-            rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true);
-            rootFolder.addNewFolder(RESOURCE_FILES_FOLDER, getString("ResourceFilesTxt"), true);
+            rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+            rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+            rootFolder.addNewFolder(RESOURCE_FILES_FOLDER, getString("ResourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+            testItems = rootFolder.addNewFolder(TEST_FILES_FOLDER, getString("TestsFilesTxt"), false, Folder.Kind.TEST_LOGICAL_FOLDER);
         }
-        externalFileItems = rootFolder.addNewFolder(EXTERNAL_FILES_FOLDER, getString("ImportantFilesTxt"), false);
+        externalFileItems = rootFolder.addNewFolder(EXTERNAL_FILES_FOLDER, getString("ImportantFilesTxt"), false, Folder.Kind.IMPORTANT_FILES_FOLDER);
 //        if (sourceFileFolders != null)
 //            setExternalFileItems(sourceFileFolders); // From makefile wrapper wizard
         externalFileItems.addItem(new Item(getProjectMakefileName())); // NOI18N
@@ -268,6 +272,13 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             Folder srcFolder = rootFolder.findFolderByName(MakeConfigurationDescriptor.SOURCE_FILES_FOLDER);
             if (srcFolder != null) {
                 srcFolder.addItem(new Item(mainFilePath));
+            }
+        }
+        // Handle test folders
+        if (testFileFolders != null) {
+            while (testFileFolders.hasNext()) {
+                SourceFolderInfo sourceFolderInfo = testFileFolders.next();
+                addTestRoot(sourceFolderInfo.getFolderName());
             }
         }
         // Handle source root folders
@@ -542,6 +553,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setProjectItemsMap(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsChangeListeners());
         setSourceRoots(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getSourceRootsRaw());
+        setTestRoots(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getTestRootsRaw());
         setFolderVisibilityQuery(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getFolderVisibilityQuery().getRegEx());
     }
 
@@ -555,6 +567,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         clone.setProjectItemsMap(getProjectItemsMap());
         clone.setProjectItemsChangeListeners(getProjectItemsChangeListeners());
         clone.setSourceRoots(getSourceRootsRaw());
+        clone.setTestRoots(getTestRootsRaw());
         clone.setFolderVisibilityQuery(getFolderVisibilityQuery().getRegEx());
         return clone;
     }
@@ -854,8 +867,37 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
     }
 
+    public void addTestRootRaw(String path) {
+        synchronized (testRoots) {
+            testRoots.add(path);
+        }
+    }
+
+    private void addTestRoot(String path) {
+        String absPath = IpeUtils.toAbsolutePath(getBaseDir(), path);
+        String relPath = FilePathAdaptor.normalize(IpeUtils.toRelativePath(getBaseDir(), path));
+        boolean addPath = true;
+
+        //if (IpeUtils.isPathAbsolute(relPath) || relPath.startsWith("..") || relPath.startsWith(".")) { // NOI18N
+        synchronized (testRoots) {
+            if (addPath) {
+                String usePath;
+                if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                    usePath = FilePathAdaptor.normalize(IpeUtils.toAbsoluteOrRelativePath(getBaseDir(), path));
+                } else if (PathPanel.getMode() == PathPanel.REL) {
+                    usePath = relPath;
+                } else {
+                    usePath = absPath;
+                }
+
+                testRoots.add(usePath);
+                setModified();
+            }
+        }
+    }
+
     /*
-     * Add a new root.
+     * Add a source new root.
      * Don't add if root inside project
      * Don't add if root is subdir of existing root
      */
@@ -932,10 +974,21 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         return sourceRoots;
     }
 
+    private List<String> getTestRootsRaw() {
+        return testRoots;
+    }
+
     public void setSourceRoots(List<String> list) {
         synchronized (sourceRoots) {
             sourceRoots.clear();
             sourceRoots.addAll(list);
+        }
+    }
+
+    public void setTestRoots(List<String> list) {
+        synchronized (testRoots) {
+            testRoots.clear();
+            testRoots.addAll(list);
         }
     }
 
@@ -961,7 +1014,6 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     public void checkForChangedSourceRoots(List<String> oldList, List<String> newList) {
-
         synchronized (sourceRoots) {
             sourceRoots.clear();
             for (String l : newList) {
@@ -990,6 +1042,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 }
             }
 
+            // Add new source root folders
             if (toBeAdded.size() > 0) {
                 for (String root : toBeAdded) {
                     String absSourceRoot = IpeUtils.toAbsolutePath(getBaseDir(), root);
@@ -999,7 +1052,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 setModified();
             }
 
-
+            // Remove old source root folders
             if (toBeRemoved.size() > 0) {
                 for (String rootToBeRemoved : toBeRemoved) {
                     Vector<Folder> rootFolders = getLogicalFolders().getAllFolders(modified); // FIXUP: should probably alays be 'true'
@@ -1012,6 +1065,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 setModified();
             }
 
+            // Notify source root notifiers
             if (toBeAdded.size() > 0 || toBeRemoved.size() > 0) {
                 MakeSources makeSources = getProject().getLookup().lookup(MakeSources.class);
                 if (makeSources != null) {
@@ -1037,6 +1091,17 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     /*
+     * return copy
+     */
+    public List<String> getTestRoots() {
+        List<String> copy;
+        synchronized (testRoots) {
+            copy = new ArrayList<String>(testRoots);
+        }
+        return copy;
+    }
+
+    /*
      * return copy and convert to absolute
      */
     public List<String> getAbsoluteSourceRoots() {
@@ -1048,19 +1113,18 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
         return copy;
     }
+
     /*
      * return copy and convert to absolute
      */
-
-    public String[] getSourceRootsAsArray() {
-        synchronized (sourceRoots) {
-            String[] copy = new String[sourceRoots.size()];
-            int index = 0;
-            for (String sr : sourceRoots) {
-                copy[index++] = sr;
+    public List<String> getAbsoluteTestRoots() {
+        List<String> copy = new ArrayList<String>();
+        synchronized (testRoots) {
+            for (String s : testRoots) {
+                copy.add(IpeUtils.toAbsolutePath(baseDir, s));
             }
-            return copy;
         }
+        return copy;
     }
 
     private final NativeProjectProvider getNativeProject() {
@@ -1153,6 +1217,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     private void addFiles(Folder folder, File dir, ProgressHandle handle, ArrayList<NativeFileItem> filesAdded, boolean notify, boolean setModified) {
+        List<String> absTestRootsList = getAbsoluteTestRoots();
         File[] files = dir.listFiles();
         if (files == null) {
             return;
@@ -1171,7 +1236,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 Folder dirfolder = folder;
                 dirfolder = folder.findFolderByName(files[i].getName());
                 if (dirfolder == null) {
-                    dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true);
+                    if (inList(absTestRootsList, files[i].getAbsolutePath()) || folder.isTestLogicalFolder()) {
+                        dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true, Folder.Kind.TEST_LOGICAL_FOLDER);
+                    }
+                    else {
+                        dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+                    }
                 }
                 addFiles(dirfolder, files[i], handle, filesAdded, notify, setModified);
             } else {

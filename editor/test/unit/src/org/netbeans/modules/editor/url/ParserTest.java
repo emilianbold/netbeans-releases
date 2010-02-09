@@ -68,6 +68,7 @@ public class ParserTest {
         performTest("    ftp://www.test-test.test/a.jsp?tt\\&t$=$\n", 4, 43);
         performTest("    f t p://www.test-test.test/a.jsp?tt\\&t$=$\n", null);
         performTest("    ftp://www.test-test.test/a.jsp?tt\\&t$=$", 4, 43);
+        performTest("    \"http://www.netbeans.org/\"", 5, 29);
     }
 
     @Test

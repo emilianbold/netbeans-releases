@@ -440,6 +440,9 @@ public abstract class CLIHandler extends Object {
     private static InetAddress localHostAddress () throws IOException {
         java.net.NetworkInterface net = java.net.NetworkInterface.getByName ("lo");
         if (net == null || !net.getInetAddresses().hasMoreElements()) {
+            net = java.net.NetworkInterface.getByInetAddress(InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 }));
+        }
+        if (net == null || !net.getInetAddresses().hasMoreElements()) {
             return InetAddress.getLocalHost();
         }
         else {

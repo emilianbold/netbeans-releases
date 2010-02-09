@@ -50,7 +50,16 @@ enum file_state {
     INITIAL = 'i',
     TOUCHED = 't',
     COPIED = 'c',
+
+    /** 
+     * Local host already knows that it's owned by remote one;
+     * the file has not been modified remotely during the last build
+     */
     UNCONTROLLED = 'u',
+
+    /** The file has been modified remotely during the last build */
+    MODIFIED = 'm',
+
     ERROR = 'e',
     DIRECTORY = 'D',
     PENDING = 'p'

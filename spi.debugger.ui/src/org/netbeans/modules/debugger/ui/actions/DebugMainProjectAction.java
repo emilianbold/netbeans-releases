@@ -49,10 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -60,6 +57,8 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.project.Project;
@@ -85,7 +84,7 @@ import org.openide.util.actions.Presenter;
  *
  * @author Martin Entlicher
  */
-public class DebugMainProjectAction implements Action, Presenter.Toolbar {
+public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupMenuListener {
 
     private static WeakSet<AttachHistorySupport> ahs = null;
     
@@ -167,7 +166,7 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar {
             Exceptions.printStackTrace(nsee);
         }
 
-        attachHistorySupport.init(menu);
+        menu.addPopupMenuListener(this);
 
         Actions.connect(button, this);
         return button;
@@ -185,6 +184,20 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar {
             ahs = new WeakSet<AttachHistorySupport>();
         }
         ahs.add(support);
+    }
+
+    // PopupMenuListener ........................................................
+
+    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+        JPopupMenu menu = (JPopupMenu)e.getSource();
+        attachHistorySupport.init(menu);
+        menu.removePopupMenuListener(this);
+    }
+
+    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+    }
+
+    public void popupMenuCanceled(PopupMenuEvent e) {
     }
 
     // AttachHistorySupport .....................................................

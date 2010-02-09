@@ -162,6 +162,7 @@ public class MBeanWizardTestCase extends JMXTestCase {
         } else {
             System.out.println("Create new wrapper java class " + className);
             createWrapperJavaClass(className);
+            waitNoEvent(3000);
         }
     }
     

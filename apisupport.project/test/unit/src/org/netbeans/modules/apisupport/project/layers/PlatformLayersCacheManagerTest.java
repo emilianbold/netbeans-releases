@@ -42,25 +42,17 @@ package org.netbeans.modules.apisupport.project.layers;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.Log;
-import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
-import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 
 /**
  *
@@ -141,7 +133,7 @@ public class PlatformLayersCacheManagerTest extends TestBase {
     }
 
 
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    // XXX cannot be run in binary dist, requires sources; test against fake platform
     public void testNextQueryDoesntStoreAnything() throws Exception {
         final Logger LOG = Logger.getLogger(PlatformLayersCacheManager.class.getName());
         CharSequence logsCS = Log.enable(LOG.getName(), Level.FINE);
@@ -166,7 +158,7 @@ public class PlatformLayersCacheManagerTest extends TestBase {
         }
     }
 
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    // XXX cannot be run in binary dist, requires sources; test against fake platform
     public void testLoadCacheFromDisk() throws Exception {
         testGetCache(); // to create cache on disk in current work dir
         PlatformLayersCacheManager.reset();
@@ -217,7 +209,7 @@ public class PlatformLayersCacheManagerTest extends TestBase {
 //        return 2000000;
 //    }
 //
-//    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+//  // XXX cannot be run in binary dist, requires sources; test against fake platform
 //  XXX cancellation of storing of caches not implemented (yet): public void testStoringCacheDoesntBlockQueries() throws Exception {
 //        final Logger LOG = Logger.getLogger(PlatformLayersCacheManager.class.getName());
 //        Logger observer = Logger.getLogger("observer");

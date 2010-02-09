@@ -238,6 +238,9 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
             checkBundle(rb, "DESC_" + id, hint);
         } catch (IOException ex) {
             LOG.log(Level.FINE, null, ex);
+        } catch (IllegalArgumentException ex) {
+            //#179942: the SOURCE_PATH location may be unsupported, skip the check for bundle.
+            LOG.log(Level.FINE, null, ex);
         }
 
         return true;

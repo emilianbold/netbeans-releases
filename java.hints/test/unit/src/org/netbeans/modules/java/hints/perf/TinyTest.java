@@ -222,8 +222,7 @@ public class TinyTest extends TestBase {
                        ("package test;\n" +
                         "public class Test {\n" +
                         "     private boolean test(String aa) {\n" +
-//                       "         return aa.indexOf(\'\"\', 2) != 0;\n" +
-                        "         return aa.indexOf(\'\\\"\', 2) != 0;\n" + //TODO: bug in code generator
+                        "         return aa.indexOf(\'\"\', 2) != 0;\n" +
                         "     }\n" +
                         "}\n").replaceAll("[\t\n ]+", " "));
     }
@@ -340,6 +339,16 @@ public class TinyTest extends TestBase {
                             "     }\n" +
                             "}\n",
                             "3:16-3:86:verifier:ERR_Tiny_enumMap");
+    }
+
+    public void testEnumMap2() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     private java.util.Map<java.lang.annotation.RetentionPolicy, Boolean> test() {\n" +
+                            "         return new java.util.EnumMap<java.lang.annotation.RetentionPolicy, Boolean>(java.lang.annotation.RetentionPolicy.class);\n" +
+                            "     }\n" +
+                            "}\n");
     }
 
     @Override

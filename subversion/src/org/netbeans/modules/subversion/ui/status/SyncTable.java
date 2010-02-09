@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.subversion.ui.status;
 
+import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.ui.blame.BlameAction;
 import org.netbeans.modules.subversion.ui.commit.*;
@@ -79,7 +80,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.Component;
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.Point;
+import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.io.File;
 import java.util.logging.Level;
@@ -93,7 +96,7 @@ import org.netbeans.modules.versioning.util.SystemActionBridge;
  * 
  * @author Maros Sandor
  */
-class SyncTable implements MouseListener, ListSelectionListener, AncestorListener {
+class SyncTable implements MouseListener, ListSelectionListener, AncestorListener, PropertyChangeListener {
 
     private NodeTableModel  tableModel;
     private JTable          table;
@@ -226,6 +229,13 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         return component;
     }
     
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (Subversion.PROP_ANNOTATIONS_CHANGED.equals(evt.getPropertyName())) {
+            refreshNodes();
+        }
+    }
+
     /**
      * Sets visible columns in the Versioning table.
      * 
@@ -257,12 +267,35 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     }
 
     void setTableModel(SyncFileNode [] nodes) {
+        assert EventQueue.isDispatchThread();
         this.nodes = nodes;
         tableModel.setNodes(nodes);
+        Subversion.getInstance().getRequestProcessor().post(new Runnable () {
+            @Override
+            public void run() {
+                refreshNodes();
+            }
+        });
     }
 
     void focus() {
         table.requestFocus();
+    }
+
+    private void refreshNodes () {
+        SyncFileNode[] toRefreshNodes = nodes;
+        for (SyncFileNode node : toRefreshNodes) {
+            node.refresh();
+        }
+        if (toRefreshNodes.length > 0) {
+            EventQueue.invokeLater(new Runnable () {
+                @Override
+                public void run() {
+                    table.revalidate();
+                    table.repaint();
+                }
+            });
+        }
     }
 
     private static class ColumnDescriptor extends ReadOnly {

@@ -41,6 +41,10 @@
 
 package org.netbeans.performance.languages;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
+
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
@@ -51,17 +55,30 @@ import org.netbeans.performance.languages.menus.*;
  * @author mkhramov@netbeans.org
  */
 public class ScriptingMeasureMenusTest {
-    public static NbTestSuite suite() {
+    public static NbTestSuite suite() throws URISyntaxException {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Menus suite");
         System.setProperty("suitename", ScriptingMeasureMenusTest.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness Scripting Menus suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingProjectNodePopupTest.class)
+        URL u = ScriptingMeasureMenusTest.class.getProtectionDomain().getCodeSource().getLocation();
+        File f = new File(u.toURI());
+        while (f != null) {
+            File hg = new File(f, ".hg");
+            if (hg.isDirectory()) {
+                System.setProperty("versioning.unversionedFolders", f.getPath());
+                System.err.println("ignoring Hg folder: " + f);
+                break;
+            }
+            f = f.getParentFile();
+        }
+
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.emptyConfiguration().honorAutoloadEager(true)
+        .addTest(ScriptingProjectNodePopupTest.class)
         .addTest(ScriptingNodePopupTest.class)
         .addTest(EditorMenuPopupTest.class)
-        .enableModules(".*").clusters("websvccommon[0-9]|php[0-9]|ruby[0-9]|webcommon[0-9]|gsf[0-9]|enterprise[0-9]").reuseUserDir(true)));
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
         
         return suite;
     }

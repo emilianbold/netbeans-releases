@@ -599,7 +599,7 @@ public class FileStatusCache {
             fireFileStatusChanged(file, current, fi);    
         } else {
             // scan also children if there's no information about them yet (not yet explored folder)
-            if (fi.isDirectory() && !"false".equals(System.getProperty("org.netbeans.modules.subversion.FileStatusCache.recursiveScan", "true")) //NOI18N
+            if (fi.isDirectory() && "true".equals(System.getProperty("org.netbeans.modules.subversion.FileStatusCache.recursiveScan", "false")) //NOI18N
                     && (fi.getStatus() & (FileInformation.STATUS_NOTVERSIONED_NOTMANAGED | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) == 0 // do not scan notmanaged or ignored folders
                     && turbo.readEntry(file, FILE_STATUS_MAP) == null) {    // scan only those which have not yet been scanned, no information is available for them
                 refreshAsync(file.listFiles());
@@ -1331,8 +1331,8 @@ public class FileStatusCache {
                                     LABELS_CACHE_LOG.log(Level.WARNING, "LabelInfoRefreshTask: failed getting info and info for {0}", file.getAbsolutePath());
                                     LABELS_CACHE_LOG.log(Level.INFO, null, ex);
                                 }
-                                labels.put(file, FAKE_LABEL_INFO);
                             }
+                            labels.put(file, FAKE_LABEL_INFO);
                         }
                     }
                     synchronized (fileLabels) {

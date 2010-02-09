@@ -132,8 +132,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         panel = pnl;
         initComponents();
 
-        panel.setKenai((Kenai) kenaiCombo.getModel().getSelectedItem());
-
+        kenaiCombo.setSelectedItem(panel.getKenai());
         kenaiCombo.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -634,6 +633,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
     // - not all errors are checked!
     private String checkForErrors() {
+        if ("kenai.com".equals(panel.getKenai().getUrl().getHost())) {
+            return NbBundle.getMessage(NewKenaiProjectAction.class, "LBL_KenaiClosed");
+        }
         String prjName = getProjectName();
 
         if (prjName.length()>20) {

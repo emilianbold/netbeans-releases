@@ -48,6 +48,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 public interface BugzillaConstants {
     public static final String URL_ADVANCED_BUG_LIST = IBugzillaConstants.URL_BUGLIST + "?query_format=advanced"; //NOI18N
     public static final String URL_BUG_IDS = IBugzillaConstants.URL_BUGLIST + "?bug_id="; //NOI18N
+    public static final String URL_SHOW_BUG = IBugzillaConstants.URL_GET_SHOW_BUG;
     public static final String QUERY_COLUMN_LIST = "&columnlist=bug_severity%2Cpriority%2Cbug_status%2Cresolution%2Cshort_desc%2Cchangeddate"; //NOI18N
 
     public static final String MY_ISSUES_PARAMETERS_FORMAT =

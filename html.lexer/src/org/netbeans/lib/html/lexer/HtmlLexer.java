@@ -52,6 +52,7 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
+import org.netbeans.spi.lexer.TokenPropertyProvider;
 
 /**
  * Lexical analyzer for HTML. Based on original HTML lexer from html/editor module.
@@ -99,6 +100,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         }
     }
 
+    @Override
     public Object state() {
         if (jsAttributeName != null || cssAttributeName != null) {
             return new CompoundState(lexerState, lexerSubState, lexerEmbeddingState, jsAttributeName, cssAttributeName);
@@ -111,7 +113,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     private static final String SCRIPT = "script";
     private static final String STYLE = "style";
 
-    private static final String STYLE_ATTR = "style";
+    private static final String[] STYLE_ATTRS = new String[]{"style", "id", "class"};
 
     /** Internal state of the lexical analyzer before entering subanalyzer of
      * character references. It is initially set to INIT, but before first usage,
@@ -284,13 +286,15 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     }
 
     private boolean isStyleAttributeName(CharSequence chs) {
-        if(chs.length() == STYLE_ATTR.length()) {
-            for(int i = 0; i < chs.length(); i++) {
-                if(Character.toLowerCase(chs.charAt(i)) != Character.toLowerCase(STYLE_ATTR.charAt(i))) {
-                    return false;
+        outer: for (int j = 0; j < STYLE_ATTRS.length; j++) {
+            if (chs.length() == STYLE_ATTRS[j].length()) {
+                for (int i = 0; i < chs.length(); i++) {
+                    if (Character.toLowerCase(chs.charAt(i)) != Character.toLowerCase(STYLE_ATTRS[j].charAt(i))) {
+                        continue outer;
+                    }
                 }
+                return true;
             }
-            return true;
         }
         return false;
     }
@@ -327,6 +331,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     }
 
 
+    @Override
     public Token<HTMLTokenId> nextToken() {
         int actChar;
 
@@ -688,8 +693,10 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         }
                         jsAttributeName = null;
                          if (cssAttributeName != null) {
-                            cssAttributeName = null;
-                            return token(HTMLTokenId.VALUE_CSS);
+                             Token token = createCssValueToken();
+                             cssAttributeName = null;
+                             return token;
+                             
                         }
                         cssAttributeName = null;
                         return token(HTMLTokenId.VALUE);
@@ -706,8 +713,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             }
                             jsAttributeName = null;
                             if (cssAttributeName != null) {
+                                Token token = createCssValueToken();
                                 cssAttributeName = null;
-                                return token(HTMLTokenId.VALUE_CSS);
+                                return token;
                             }
                             cssAttributeName = null;
                             return token(HTMLTokenId.VALUE);
@@ -740,8 +748,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             }
                             jsAttributeName = null;
                             if (cssAttributeName != null) {
+                                Token token = createCssValueToken();
                                 cssAttributeName = null;
-                                return token(HTMLTokenId.VALUE_CSS);
+                                return token;
                             }
                             cssAttributeName = null;
                             return token(HTMLTokenId.VALUE);
@@ -1047,7 +1056,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     return token(HTMLTokenId.VALUE_JAVASCRIPT);
                 }
                 if (cssAttributeName != null) {
-                    return token(HTMLTokenId.VALUE_CSS);
+                    return createCssValueToken();
                 }
                 return token(HTMLTokenId.VALUE);
 
@@ -1086,16 +1095,40 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         return null;
     }
 
-    private Token<HTMLTokenId> token(HTMLTokenId tokenId) {
-        if(LOG) {
-            if(input.readLength() == 0) {
-                LOGGER.log(Level.INFO, "Found zero length token: ");
-            }
-            LOGGER.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + tokenId + "; state=" + state() + ")\n");
+    private static final String CLASS_ATTR_NAME = "class"; //NOI18N
+    private static final String ID_ATTR_NAME = "id"; //NOI18N
+
+    private Token<HTMLTokenId> createCssValueToken() {
+        String cssTokenType;
+        if(CLASS_ATTR_NAME.equalsIgnoreCase(cssAttributeName)) {
+            cssTokenType = HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS;
+        } else if(ID_ATTR_NAME.equalsIgnoreCase(cssAttributeName)) {
+            cssTokenType = HTMLTokenId.VALUE_CSS_TOKEN_TYPE_ID;
+        } else {
+            cssTokenType = null;
         }
-        return tokenFactory.createToken(tokenId);
+
+        return token(HTMLTokenId.VALUE_CSS, HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY, cssTokenType);
     }
 
+    private Token<HTMLTokenId> token(HTMLTokenId tokenId) {
+        return token(tokenId, null, null);
+    }
+
+    private Token<HTMLTokenId> token(HTMLTokenId tokenId, String propertyKey, String propertyValue) {
+        if(LOG) {
+            if(input.readLength() == 0) {
+                LOGGER.log(Level.INFO, "Found zero length token: "); //NOI18N
+            }
+            LOGGER.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + tokenId + "; state=" + state() + ")\n"); //NOI18N
+        }
+        Token token = propertyKey == null || propertyValue == null ?
+            tokenFactory.createToken(tokenId) :
+            tokenFactory.createPropertyToken(tokenId, input.readLength(), new HtmlTokenPropertyProvider(propertyKey, propertyValue));
+        return token;
+    }
+
+    @Override
     public void release() {
     }
 
@@ -1116,4 +1149,23 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         }
     }
 
+    private static class HtmlTokenPropertyProvider implements TokenPropertyProvider {
+
+        private final String key, value;
+
+        HtmlTokenPropertyProvider(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        @Override
+        public Object getValue(Token token, Object key) {
+            if (this.key.equals(key)) {
+                return value;
+            } else {
+                return null;
+            }
+        }
+
+    }
 }

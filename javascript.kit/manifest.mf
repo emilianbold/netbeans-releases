@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.javascript.kit/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javascript/kit/Bundle.properties
-OpenIDE-Module-Specification-Version: 0.109
+OpenIDE-Module-Specification-Version: 0.110
 AutoUpdate-Show-In-Client: false
 
