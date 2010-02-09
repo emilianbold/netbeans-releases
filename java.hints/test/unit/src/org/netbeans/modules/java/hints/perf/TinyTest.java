@@ -222,8 +222,7 @@ public class TinyTest extends TestBase {
                        ("package test;\n" +
                         "public class Test {\n" +
                         "     private boolean test(String aa) {\n" +
-//                       "         return aa.indexOf(\'\"\', 2) != 0;\n" +
-                        "         return aa.indexOf(\'\\\"\', 2) != 0;\n" + //TODO: bug in code generator
+                        "         return aa.indexOf(\'\"\', 2) != 0;\n" +
                         "     }\n" +
                         "}\n").replaceAll("[\t\n ]+", " "));
     }

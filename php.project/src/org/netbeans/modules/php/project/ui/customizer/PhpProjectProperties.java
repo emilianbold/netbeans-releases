@@ -166,6 +166,12 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         DO_NOT_OPEN_BROWSER
     }
 
+    public static enum XDebugUrlArguments {
+        XDEBUG_SESSION_START,
+        XDEBUG_SESSION_STOP,
+        XDEBUG_SESSION_STOP_NO_EXEC
+    }
+
     static final String CONFIG_PRIVATE_PROPERTIES_PATH = "nbproject/private/config.properties"; // NOI18N
 
     private final PhpProject project;

@@ -175,7 +175,7 @@ public class LoggerStringConcat {
 
         for (List<TreePath> element : sorted) {
             if (element.size() == 1 && element.get(0).getLeaf().getKind() == Kind.STRING_LITERAL) {
-                workingLiteral.append((String) ((LiteralTree) element.get(0).getLeaf()).getValue());
+                workingLiteral.append(((String) ((LiteralTree) element.get(0).getLeaf()).getValue()).replaceAll("'", "''"));
             } else {
                 if (element.size() == 1 && !Utilities.isConstantString(wc, element.get(0))) {
                     workingLiteral.append("{");

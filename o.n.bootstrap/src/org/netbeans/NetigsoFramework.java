@@ -86,6 +86,11 @@ public abstract class NetigsoFramework {
         ModuleInfo m, ProxyClassLoader pcl, File jar
     ) throws IOException;
 
+    /** Reloads one module
+     * @since 2.27
+     */
+    protected abstract void reload(Module m) throws IOException;
+
     /** Deinitializes a classloader for given module */
     protected abstract void stopLoader(ModuleInfo m, ClassLoader loader);
 

@@ -46,11 +46,16 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.JarURLConnection;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.Action;
@@ -67,6 +72,7 @@ import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -165,17 +171,37 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
     private static LoggingRepaintManager rm;
 
-    private Logger Warmup=null;
+    private static final Logger LOG = Logger.getLogger(PerformanceTestCase.class.getName());
 
     //private static LoggingEventQueue leq;
 
     static {
-        if(repeat_memory == -1) {
+        if (repeat_memory == -1) {
             tr = ActionTracker.getInstance();
             rm = new LoggingRepaintManager(tr);
             rm.setEnabled(true);
-       }
-       System.setProperty("org.netbeans.core.TimeableEventQueue.quantum", "100000"); // disable slowness detector
+        }
+        System.setProperty("org.netbeans.core.TimeableEventQueue.quantum", "100000"); // disable slowness detector
+
+        URL u = PerformanceTestCase.class.getProtectionDomain().getCodeSource().getLocation();
+        try {
+            // disable Mercurial if running from NetBeans source tree
+            if ("jar".equals(u.getProtocol())) { // NOI18N
+                u = ((JarURLConnection)u.openConnection()).getJarFileURL();
+            }
+            File f = new File(u.toURI());
+            while (f != null) {
+                File hg = new File(f, ".hg");
+                if (hg.isDirectory()) {
+                    System.setProperty("versioning.unversionedFolders", f.getPath());
+                    LOG.log(Level.INFO, "ignoring Hg folder: {0}", f);
+                    break;
+                }
+                f = f.getParentFile();
+            }
+        } catch (Exception ex) {
+            LOG.log(Level.WARNING, "Problem looking up " + u, ex);
+        }
     }
 
     /** Tested component operator. */
@@ -1165,6 +1191,9 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             DataOutputStream dos = new DataOutputStream(snapshot.getOutputStream());
             ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
             dos.close();
+            LOG.log(
+                Level.WARNING, "Profiling snapshot taken into {0}", snapshot.getPath()
+            );
         }
 
     }

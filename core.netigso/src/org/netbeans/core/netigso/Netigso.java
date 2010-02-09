@@ -117,7 +117,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         activator.register(preregister);
         for (Module mi : preregister) {
             try {
-                fakeOneModule(mi);
+                fakeOneModule(mi, null);
             } catch (IOException ex) {
                 LOG.log(Level.WARNING, "Cannot fake " + mi.getCodeName(), ex);
             }
@@ -153,15 +153,8 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     @Override
     protected Set<String> createLoader(ModuleInfo m, ProxyClassLoader pcl, File jar) throws IOException {
         try {
-            Bundle b = null;
             assert registered.contains(m.getCodeNameBase()) : m.getCodeNameBase();
-            for (Bundle bb : framework.getBundleContext().getBundles()) {
-                final String bbName = bb.getSymbolicName().replace('-', '_');
-                if (bbName.equals(m.getCodeNameBase())) {
-                    b = bb;
-                    break;
-                }
-            }
+            Bundle b = findBundle(m.getCodeNameBase());
             if (b == null) {
                 throw new IOException("Not found bundle:" + m.getCodeNameBase());
             }
@@ -198,6 +191,17 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         }
     }
 
+    @Override
+    protected void reload(Module m) throws IOException {
+        try {
+            Bundle b = findBundle(m.getCodeNameBase());
+            b.stop();
+            fakeOneModule(m, b);
+        } catch (BundleException ex) {
+            throw new IOException(ex);
+        }
+    }
+
     //
     // take care about the registered bundles
     //
@@ -223,21 +227,35 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         dir.delete();
     }
 
-    private void fakeOneModule(Module m) throws IOException {
-        if (!registered.add(m.getCodeNameBase())) {
+    private void fakeOneModule(Module m, Bundle original) throws IOException {
+        final boolean alreadyPresent = registered.add(m.getCodeNameBase());
+        if (!alreadyPresent && original == null) {
             return;
         }
         Bundle b;
         try {
             if (m.getAttribute("Bundle-SymbolicName") != null) { // NOI18N
-                BundleContext bc = framework.getBundleContext();
-                File jar = m.getJarFile();
-                LOG.log(Level.FINE, "Installing bundle {0}", jar);
-                b = bc.installBundle(jar.toURI().toURL().toExternalForm());
+                if (original != null) {
+                    LOG.log(Level.FINE, "Updating bundle {0}", original.getLocation());
+                    original.update();
+                    b = original;
+                } else {
+                    BundleContext bc = framework.getBundleContext();
+                    File jar = m.getJarFile();
+                    LOG.log(Level.FINE, "Installing bundle {0}", jar);
+                    b = bc.installBundle(jar.toURI().toURL().toExternalForm());
+                }
             } else {
                 InputStream is = fakeBundle(m);
                 if (is != null) {
-                    framework.getBundleContext().installBundle("netigso://" + m.getCodeNameBase(), is);
+                    if (original != null) {
+                        original.update(is);
+                        b = original;
+                    } else {
+                        b = framework.getBundleContext().installBundle(
+                            "netigso://" + m.getCodeNameBase(), is
+                        );
+                    }
                     is.close();
                 }
             }
@@ -329,5 +347,15 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
 
     @Override
     public void cacheReady() {
+    }
+
+    private Bundle findBundle(String codeNameBase) {
+        for (Bundle bb : framework.getBundleContext().getBundles()) {
+            final String bbName = bb.getSymbolicName().replace('-', '_');
+            if (bbName.equals(codeNameBase)) {
+                return bb;
+            }
+        }
+        return null;
     }
 }
