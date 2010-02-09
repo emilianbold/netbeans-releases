@@ -143,12 +143,17 @@ public class HostUpdates {
         };
         String envString = RemoteUtil.getDisplayName(env);
         try {
-            notification = NotificationDisplayer.getDefault().notify(
-                    NbBundle.getMessage(getClass(), "RemoteUpdatesNotifier.TITLE", envString),
-                    ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/sync/download/remote-updates.png", false), // NOI18N
-                    NbBundle.getMessage(getClass(), "RemoteUpdatesNotifier.DETAILS", envString),
-                    onClickAction,
-                    NotificationDisplayer.Priority.NORMAL);
+            synchronized (lock) {
+                if (notification != null) {
+                    notification.clear();
+                }
+                notification = NotificationDisplayer.getDefault().notify(
+                        NbBundle.getMessage(getClass(), "RemoteUpdatesNotifier.TITLE", envString),
+                        ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/sync/download/remote-updates.png", false), // NOI18N
+                        NbBundle.getMessage(getClass(), "RemoteUpdatesNotifier.DETAILS", envString),
+                        onClickAction,
+                        NotificationDisplayer.Priority.NORMAL);
+            }
         } catch (RuntimeException e) {
             // FIXUP: for some reasons exceptions aren't printed
             e.printStackTrace();
@@ -169,29 +174,46 @@ public class HostUpdates {
     }
 
     private void showConfirmDialog() {
-        final Collection<FileDownloadInfo> unconfirmed = getByState(FileDownloadInfo.State.UNCONFIRMED);
-        final Set<FileDownloadInfo> confirmed = HostUpdatesRequestPanel.request(unconfirmed, env, privStorageDir);
+        Collection<FileDownloadInfo> unconfirmed;
         synchronized (lock) {
-            for (FileDownloadInfo info : unconfirmed) {
-                if (confirmed.contains(info)) {
-                    info.confirm();
-                } else {
-                    info.reject();
+            unconfirmed = getByState(FileDownloadInfo.State.UNCONFIRMED);
+            if (unconfirmed.isEmpty()) {
+                return;
+            }
+            if (notification != null) {
+                notification.clear();
+                notification = null;
+            }
+        }
+        final Set<FileDownloadInfo> confirmed = HostUpdatesRequestPanel.request(unconfirmed, env, privStorageDir);
+        if (confirmed == null) { // null means user pressed cancel - re-show notification
+            synchronized (lock) {
+                if (notification == null) {
+                    showNotification();
                 }
             }
-            unconfirmed.removeAll(confirmed);
-            infos.removeAll(unconfirmed);
-        }
-        if (!confirmed.isEmpty()) {
-            NamedRunnable r = new NamedRunnable("Remote updates synchronizer for " + env.getDisplayName()) { //NOI18N
-                @Override
-                protected void runImpl() {
-                    download(confirmed);
+        } else {
+            synchronized (lock) {
+                for (FileDownloadInfo info : unconfirmed) {
+                    if (confirmed.contains(info)) {
+                        info.confirm();
+                    } else {
+                        info.reject();
+                    }
                 }
-            };
-            RequestProcessor.getDefault().post(r);
+                unconfirmed.removeAll(confirmed);
+                infos.removeAll(unconfirmed);
+            }
+            if (!confirmed.isEmpty()) {
+                NamedRunnable r = new NamedRunnable("Remote updates synchronizer for " + env.getDisplayName()) { //NOI18N
+                    @Override
+                    protected void runImpl() {
+                        download(confirmed);
+                    }
+                };
+                RequestProcessor.getDefault().post(r);
+            }
         }
-        notification.clear();
     }
 
     private void download(Collection<FileDownloadInfo> infos) {

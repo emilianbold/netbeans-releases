@@ -92,7 +92,7 @@ public class HostUpdatesRequestPanel extends JPanel {
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             return panel.getConfirmed();
         } else {
-            return Collections.<FileDownloadInfo>emptySet();
+            return null;
         }
 
     }
