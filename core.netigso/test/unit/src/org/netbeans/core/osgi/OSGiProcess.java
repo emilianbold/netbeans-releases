@@ -40,6 +40,8 @@ package org.netbeans.core.osgi;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,6 +130,11 @@ class OSGiProcess {
         for (File bundle : bundles.listFiles()) {
             installed.add(f.getBundleContext().installBundle(bundle.toURI().toString()));
         }
+        Collections.sort(installed, new Comparator<Bundle>() {
+            public @Override int compare(Bundle b1, Bundle b2) {
+                return b1.getSymbolicName().compareTo(b2.getSymbolicName());
+            }
+        });
         for (Bundle bundle : installed) {
             bundle.start();
         }
