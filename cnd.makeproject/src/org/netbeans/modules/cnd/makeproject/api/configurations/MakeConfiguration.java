@@ -55,6 +55,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
@@ -144,7 +145,7 @@ public class MakeConfiguration extends Configuration {
         fortranRequired = new LanguageBooleanConfiguration();
         assemblerRequired = new LanguageBooleanConfiguration();
         makefileConfiguration = new MakefileConfiguration(this);
-        dependencyChecking = new BooleanConfiguration(null, isMakefileConfiguration() ? false : MakeOptions.getInstance().getDepencyChecking());
+        dependencyChecking = new BooleanConfiguration(null, isMakefileConfiguration() ? false : MakeProjectOptions.getDepencyChecking());
         cCompilerConfiguration = new CCompilerConfiguration(baseDir, null);
         ccCompilerConfiguration = new CCCompilerConfiguration(baseDir, null);
         fortranCompilerConfiguration = new FortranCompilerConfiguration(baseDir, null);

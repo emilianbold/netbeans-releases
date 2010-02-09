@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -200,10 +201,10 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
                 for (int i = 0; i < artifacts.length; i++) {
                     String location;
                     String workingdir;
-                    if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
                         location = IpeUtils.toAbsoluteOrRelativePath(baseDir, artifacts[i].getProjectLocation());
                         workingdir = IpeUtils.toAbsoluteOrRelativePath(baseDir, artifacts[i].getWorkingDirectory());
-                    } else if (PathPanel.getMode() == PathPanel.REL) {
+                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                         location = IpeUtils.toRelativePath(baseDir, artifacts[i].getProjectLocation());
                         workingdir = IpeUtils.toRelativePath(baseDir, artifacts[i].getWorkingDirectory());
                     } else {

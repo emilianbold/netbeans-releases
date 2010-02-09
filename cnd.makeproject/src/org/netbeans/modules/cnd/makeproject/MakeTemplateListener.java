@@ -44,11 +44,11 @@ import java.io.File;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -174,9 +174,9 @@ public class MakeTemplateListener implements OperationListener {
                 return;
             }
             String itemPath;
-            if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
                 itemPath = IpeUtils.toAbsoluteOrRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
-            } else if (PathPanel.getMode() == PathPanel.REL) {
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                 itemPath = IpeUtils.toRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
             } else {
                 itemPath = ioFile.getPath();

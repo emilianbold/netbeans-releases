@@ -71,6 +71,7 @@ import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement.FileType;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
@@ -202,9 +203,9 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
             File[] files = fileChooser.getSelectedFiles();
             for (int i = 0; i < files.length; i++) {
                 String itemPath;
-                if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
                     itemPath = IpeUtils.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
-                } else if (PathPanel.getMode() == PathPanel.REL) {
+                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                     itemPath = IpeUtils.toRelativePath(baseDir, files[i].getPath());
                 } else {
                     itemPath = files[i].getPath();
@@ -330,9 +331,9 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                     addFilesFromDirectory(listToAdd, origDir, files[i], progressPanel);
                 } else {
                     String path;
-                    if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
                         path = IpeUtils.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
-                    } else if (PathPanel.getMode() == PathPanel.REL) {
+                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                         path = IpeUtils.toRelativePath(baseDir, files[i].getPath());
                     } else {
                         path = files[i].getPath();

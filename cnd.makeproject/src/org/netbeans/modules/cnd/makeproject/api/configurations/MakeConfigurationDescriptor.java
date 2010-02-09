@@ -76,8 +76,8 @@ import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
-import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;
@@ -881,9 +881,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         synchronized (testRoots) {
             if (addPath) {
                 String usePath;
-                if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
                     usePath = IpeUtils.normalize(IpeUtils.toAbsoluteOrRelativePath(getBaseDir(), path));
-                } else if (PathPanel.getMode() == PathPanel.REL) {
+                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                     usePath = relPath;
                 } else {
                     usePath = absPath;
@@ -951,9 +951,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
             if (addPath) {
                 String usePath;
-                if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
                     usePath = IpeUtils.normalize(IpeUtils.toAbsoluteOrRelativePath(getBaseDir(), path));
-                } else if (PathPanel.getMode() == PathPanel.REL) {
+                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                     usePath = relPath;
                 } else {
                     usePath = absPath;
@@ -1174,9 +1174,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
         if (asDiskFolder) {
             String rootPath;
-            if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
                 rootPath = IpeUtils.toAbsoluteOrRelativePath(baseDir, dir.getPath());
-            } else if (PathPanel.getMode() == PathPanel.REL) {
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                 rootPath = IpeUtils.toRelativePath(baseDir, dir.getPath());
             } else {
                 rootPath = IpeUtils.toAbsolutePath(baseDir, dir.getPath());
@@ -1245,9 +1245,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 addFiles(dirfolder, files[i], handle, filesAdded, notify, setModified);
             } else {
                 String filePath;
-                if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
                     filePath = IpeUtils.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
-                } else if (PathPanel.getMode() == PathPanel.REL) {
+                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                     filePath = IpeUtils.toRelativePath(baseDir, files[i].getPath());
                 } else {
                     filePath = IpeUtils.toAbsolutePath(baseDir, files[i].getPath());

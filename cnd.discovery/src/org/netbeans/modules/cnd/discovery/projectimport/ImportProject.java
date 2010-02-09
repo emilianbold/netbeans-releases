@@ -96,6 +96,7 @@ import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerato
 import org.netbeans.modules.cnd.discovery.wizard.bridge.ProjectBridge;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -103,7 +104,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
-import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -251,9 +251,9 @@ public class ImportProject implements PropertyChangeListener {
         projectFolder = CndFileUtils.normalizeFile(projectFolder);
         MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE); // NOI18N
         String workingDirRel;
-        if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+        if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
             workingDirRel = IpeUtils.toAbsoluteOrRelativePath(projectFolder.getPath(), IpeUtils.naturalize(workingDir));
-        } else if (PathPanel.getMode() == PathPanel.REL) {
+        } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
             workingDirRel = IpeUtils.toRelativePath(projectFolder.getPath(), IpeUtils.naturalize(workingDir));
         } else {
             workingDirRel = IpeUtils.toAbsolutePath(projectFolder.getPath(), IpeUtils.naturalize(workingDir));
@@ -264,9 +264,9 @@ public class ImportProject implements PropertyChangeListener {
         extConf.getMakefileConfiguration().getCleanCommand().setValue(cleanCommand);
         // Build result
         if (buildResult != null && buildResult.length() > 0) {
-            if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
                 buildResult = IpeUtils.toAbsoluteOrRelativePath(projectFolder.getPath(), IpeUtils.naturalize(buildResult));
-            } else if (PathPanel.getMode() == PathPanel.REL) {
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                 buildResult = IpeUtils.toRelativePath(projectFolder.getPath(), IpeUtils.naturalize(buildResult));
             } else {
                 buildResult = IpeUtils.toAbsolutePath(projectFolder.getPath(), IpeUtils.naturalize(buildResult));
@@ -302,9 +302,9 @@ public class ImportProject implements PropertyChangeListener {
         ArrayList<String> importantItems = new ArrayList<String>();
         if (makefilePath != null && makefilePath.length() > 0) {
             makefileFile = CndFileUtils.normalizeFile(new File(makefilePath));
-            if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
                 makefilePath = IpeUtils.toAbsoluteOrRelativePath(projectFolder.getPath(), IpeUtils.naturalize(makefilePath));
-            } else if (PathPanel.getMode() == PathPanel.REL) {
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                 makefilePath = IpeUtils.toRelativePath(projectFolder.getPath(), IpeUtils.naturalize(makefilePath));
             } else {
                 makefilePath = IpeUtils.toAbsolutePath(projectFolder.getPath(), IpeUtils.naturalize(makefilePath));
@@ -314,9 +314,9 @@ public class ImportProject implements PropertyChangeListener {
         }
         if (configurePath != null && configurePath.length() > 0) {
             configureFile = CndFileUtils.normalizeFile(new File(configurePath));
-            if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
                 configurePath = IpeUtils.toAbsoluteOrRelativePath(projectFolder.getPath(), IpeUtils.naturalize(configurePath));
-            } else if (PathPanel.getMode() == PathPanel.REL) {
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                 configurePath = IpeUtils.toRelativePath(projectFolder.getPath(), IpeUtils.naturalize(configurePath));
             } else {
                 configurePath = IpeUtils.toAbsolutePath(projectFolder.getPath(), IpeUtils.naturalize(configurePath));

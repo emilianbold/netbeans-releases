@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -100,9 +101,9 @@ public class AddExternalItemAction extends AbstractAction {
                 continue;
             }
 	    String itemPath;
-	    if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+	    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
                 itemPath = IpeUtils.toAbsoluteOrRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
-            } else if (PathPanel.getMode() == PathPanel.REL) {
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                 itemPath = IpeUtils.toRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
             } else {
                 itemPath = files[i].getPath();
