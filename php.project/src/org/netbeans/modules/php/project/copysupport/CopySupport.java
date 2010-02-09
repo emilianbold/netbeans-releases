@@ -56,6 +56,8 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -229,9 +231,22 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         }
     }
 
-    public void waitFinished() {
-        COPY_TASK.schedule(0);
-        COPY_TASK.waitFinished();
+    /**
+     * @return {@code true} if copying finished or user wants to continue
+     */
+    public boolean waitFinished() {
+        try {
+            if (COPY_TASK.waitFinished(200)) {
+                return true;
+            }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return true;
+        }
+        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(CopySupport.class, "MSG_CopySupportRunning", project.getName()),
+                NotifyDescriptor.YES_NO_OPTION);
+        return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION;
     }
 
     @Override
