@@ -75,6 +75,10 @@ public class ProgressTransactionHandler extends TransactionHandler<UiImpl> {
         super(UiImpl.class);
     }
 
+    public ProgressTransactionHandler(RequestProcessor threadPool) {
+        super(UiImpl.class, threadPool);
+    }
+
     @Override
     protected UiImpl newUI(String name, UIMode uiMode, boolean canCancel) {
         return new UiImpl(name, uiMode, canCancel);
@@ -88,7 +92,7 @@ public class ProgressTransactionHandler extends TransactionHandler<UiImpl> {
             Callable<ResultType> c = impl.canCancel() ? new CancellablePlainProgressRunner<ResultType, ArgType>(impl, controller, xaction, argument)
                     : new PlainProgressRunner<ResultType, ArgType>(impl, controller, xaction, argument);
             RpFutureTask<ResultType> f = new RpFutureTask<ResultType>(c);
-            f.task = RequestProcessor.getDefault().create(f);
+            f.task = threadPool.create(f);
             Future<ResultType> result = createCancellableFuture(f, controller, xaction);
             f.task.schedule(0);
             return result;
@@ -128,9 +132,14 @@ public class ProgressTransactionHandler extends TransactionHandler<UiImpl> {
             }
         };
         RpFutureTask<Boolean> f = new RpFutureTask<Boolean>(c);
-        f.task = RequestProcessor.getDefault().create(f);
+        f.task = threadPool.create(f);
         f.task.schedule(0);
         return f;
+    }
+
+    @Override
+    protected TransactionHandler copyWithThreadPool(RequestProcessor p) {
+        return new ProgressTransactionHandler(p);
     }
 
     static class UiImpl extends TransactionUI implements Cancellable {
