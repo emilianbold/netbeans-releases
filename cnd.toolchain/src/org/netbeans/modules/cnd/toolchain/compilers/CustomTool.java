@@ -39,32 +39,22 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.compilers.impl;
+package org.netbeans.modules.cnd.toolchain.compilers;
 
-import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.NbBundle;
 
-/*package*/ final class SunDebuggerTool extends Tool {
-    
-    private SunDebuggerTool(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
-        super(env, flavor, PredefinedToolKind.DebuggerTool, name, displayName, path); // NOI18N
-    }
-    
-    @Override
-    public SunDebuggerTool createCopy() {
-        return new SunDebuggerTool(getExecutionEnvironment(), getFlavor(), getName(), getDisplayName(), getPath());
+/*package*/final class CustomTool extends Tool {
+
+    private CustomTool(ExecutionEnvironment env) {
+        super(env, CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), PredefinedToolKind.CustomTool, "", NbBundle.getMessage(CustomTool.class, "LBL_CustomTool"), null); // NOI18N
     }
 
-    public static SunDebuggerTool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {
-        return new SunDebuggerTool(env, flavor, name, displayName, path);
+    public static CustomTool create(ExecutionEnvironment env) {
+        return new CustomTool(env);
     }
-
-    @Override
-    public DebuggerDescriptor getDescriptor() {
-        return getFlavor().getToolchainDescriptor().getDebugger();
-    }
-
 }

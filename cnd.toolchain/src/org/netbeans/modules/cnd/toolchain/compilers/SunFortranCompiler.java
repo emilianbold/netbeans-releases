@@ -39,22 +39,32 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.compilers.impl;
+package org.netbeans.modules.cnd.toolchain.compilers;
 
+import org.netbeans.modules.cnd.api.toolchain.BasicCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
-import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.NbBundle;
 
-/*package*/final class CustomTool extends Tool {
-
-    private CustomTool(ExecutionEnvironment env) {
-        super(env, CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), PredefinedToolKind.CustomTool, "", NbBundle.getMessage(CustomTool.class, "LBL_CustomTool"), null); // NOI18N
+/*package*/ final class SunFortranCompiler extends BasicCompiler {
+    
+    /** Creates a new instance of SunCCompiler */
+    private SunFortranCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+        super(env, flavor, kind, name, displayName, path);
+    }
+    
+    @Override
+    public SunFortranCompiler createCopy() {
+        return new SunFortranCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
     }
 
-    public static CustomTool create(ExecutionEnvironment env) {
-        return new CustomTool(env);
+    public static SunFortranCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+        return new SunFortranCompiler(env, flavor, kind, name, displayName, path);
+    }
+
+    @Override
+    public CompilerDescriptor getDescriptor() {
+        return getFlavor().getToolchainDescriptor().getFortran();
     }
 }

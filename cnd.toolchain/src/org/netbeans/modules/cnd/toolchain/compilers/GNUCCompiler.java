@@ -39,32 +39,36 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.compilers.impl;
+package org.netbeans.modules.cnd.toolchain.compilers;
 
-import org.netbeans.modules.cnd.api.toolchain.BasicCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-/*package*/ final class SunFortranCompiler extends BasicCompiler {
+/*package*/ class GNUCCompiler extends GNUCCCCompiler {
     
-    /** Creates a new instance of SunCCompiler */
-    private SunFortranCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+    /** Creates a new instance of GNUCCompiler */
+    protected GNUCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
     }
+
+    public static GNUCCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+        return new GNUCCompiler(env, flavor, kind, name, displayName, path);
+    }
+
+    @Override
+    public GNUCCompiler createCopy() {
+        GNUCCompiler copy = new GNUCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
+        if (isReady()) {
+            copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
+            copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());
+        }
+        return copy;
+    }
     
     @Override
-    public SunFortranCompiler createCopy() {
-        return new SunFortranCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
-    }
-
-    public static SunFortranCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
-        return new SunFortranCompiler(env, flavor, kind, name, displayName, path);
-    }
-
-    @Override
     public CompilerDescriptor getDescriptor() {
-        return getFlavor().getToolchainDescriptor().getFortran();
+        return getFlavor().getToolchainDescriptor().getC();
     }
 }

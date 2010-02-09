@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.compilers.impl;
+package org.netbeans.modules.cnd.toolchain.compilers;
 
 import java.io.BufferedReader;
 import java.io.IOException;

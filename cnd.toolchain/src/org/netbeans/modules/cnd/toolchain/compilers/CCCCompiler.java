@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.compilers.impl;
+package org.netbeans.modules.cnd.toolchain.compilers;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -53,10 +53,9 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.api.toolchain.BasicCompiler;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -192,11 +191,10 @@ import org.openide.util.Utilities;
         argsList.addAll(Arrays.asList(arguments.trim().split(" +"))); // NOI18N
         argsList.add(getEmptyFile(execEnv));
 
-        PlatformInfo pi = PlatformInfo.getDefault(execEnv);
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
         npb.setExecutable(compilerPath);
         npb.setArguments(argsList.toArray(new String[argsList.size()]));
-        npb.getEnvironment().prependPathVariable(pi.getPathName(), IpeUtils.getDirName(compilerPath));
+        npb.getEnvironment().prependPathVariable("PATH", ToolUtils.getDirName(compilerPath)); // NOI18N
 
         try {
             NativeProcess process = npb.call();

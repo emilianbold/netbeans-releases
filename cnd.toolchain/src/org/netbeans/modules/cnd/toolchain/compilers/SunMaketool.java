@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.compilers.impl;
+package org.netbeans.modules.cnd.toolchain.compilers;
 
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
@@ -47,19 +47,19 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.MakeDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-/*package*/ final class GNUMaketool extends Tool {
-    
-    private GNUMaketool(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
+/*package*/ final class SunMaketool extends Tool {
+
+    private SunMaketool(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
         super(env, flavor, PredefinedToolKind.MakeTool, name, displayName, path); // NOI18N
     }
-    
+
     @Override
-    public GNUMaketool createCopy() {
-        return new GNUMaketool(getExecutionEnvironment(), getFlavor(), getName(), getDisplayName(), getPath());
+    public SunMaketool createCopy() {
+        return new SunMaketool(getExecutionEnvironment(), getFlavor(), getName(), getDisplayName(), getPath());
     }
 
-    public static GNUMaketool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {
-        return new GNUMaketool(env, flavor, name, displayName, path);
+    public static SunMaketool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {
+        return new SunMaketool(env, flavor, name, displayName, path);
     }
 
     @Override

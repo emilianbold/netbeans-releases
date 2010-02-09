@@ -39,32 +39,32 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.compilers.impl;
+package org.netbeans.modules.cnd.toolchain.compilers;
 
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.MakeDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-/*package*/ final class SunMaketool extends Tool {
+/*package*/ final class SunDebuggerTool extends Tool {
+    
+    private SunDebuggerTool(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
+        super(env, flavor, PredefinedToolKind.DebuggerTool, name, displayName, path); // NOI18N
+    }
+    
+    @Override
+    public SunDebuggerTool createCopy() {
+        return new SunDebuggerTool(getExecutionEnvironment(), getFlavor(), getName(), getDisplayName(), getPath());
+    }
 
-    private SunMaketool(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
-        super(env, flavor, PredefinedToolKind.MakeTool, name, displayName, path); // NOI18N
+    public static SunDebuggerTool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {
+        return new SunDebuggerTool(env, flavor, name, displayName, path);
     }
 
     @Override
-    public SunMaketool createCopy() {
-        return new SunMaketool(getExecutionEnvironment(), getFlavor(), getName(), getDisplayName(), getPath());
-    }
-
-    public static SunMaketool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {
-        return new SunMaketool(env, flavor, name, displayName, path);
-    }
-
-    @Override
-    public MakeDescriptor getDescriptor() {
-        return getFlavor().getToolchainDescriptor().getMake();
+    public DebuggerDescriptor getDescriptor() {
+        return getFlavor().getToolchainDescriptor().getDebugger();
     }
 
 }

@@ -39,32 +39,58 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.compilers.impl;
+package org.netbeans.modules.cnd.toolchain.compilers;
 
-import org.netbeans.modules.cnd.api.toolchain.Tool;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
-/*package*/ final class GNUDebuggerTool extends Tool {
-
-    private GNUDebuggerTool(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
-        super(env, flavor, PredefinedToolKind.DebuggerTool, name, displayName, path); // NOI18N
+/*package*/ abstract class SunCCCCompiler extends CCCCompiler {
+    
+    protected SunCCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+        super(env, flavor, kind, name, displayName, path);
     }
 
+    protected String getCompilerStderrCommand() {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null) {
+            return " " + compiler.getIncludeFlags(); // NOI18N
+        }
+        return null;
+    }
+
+    protected String getCompilerStderrCommand2() {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null) {
+            return " " + compiler.getMacroFlags(); // NOI18N
+        }
+        return null;
+    }
+    
     @Override
-    public GNUDebuggerTool createCopy() {
-        return new GNUDebuggerTool(getExecutionEnvironment(), getFlavor(), getName(), getDisplayName(), getPath());
+    protected Pair getFreshSystemIncludesAndDefines() {
+        Pair res = new Pair();
+        try {
+            getSystemIncludesAndDefines(getCompilerStderrCommand(), false, res);
+            if (getCompilerStderrCommand2() != null) {
+                getSystemIncludesAndDefines(getCompilerStderrCommand2(), false, res);
+            }
+            res.systemIncludeDirectoriesList.addUnique(applyPathPrefix("/usr/include")); // NOI18N
+        } catch (IOException ioe) {
+            System.err.println("IOException " + ioe);
+            String errormsg;
+            if (getExecutionEnvironment().isLocal()) {
+                errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getPath()); // NOI18N
+            } else {
+                errormsg = NbBundle.getMessage(getClass(), "CANT_FIND_REMOTE_COMPILER", getPath(), getExecutionEnvironment().getDisplayName()); // NOI18N
+            }
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+        }
+        return res;
     }
-
-    public static GNUDebuggerTool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {
-        return new GNUDebuggerTool(env, flavor, name, displayName, path);
-    }
-
-    @Override
-    public DebuggerDescriptor getDescriptor() {
-        return getFlavor().getToolchainDescriptor().getDebugger();
-    }
-
 }

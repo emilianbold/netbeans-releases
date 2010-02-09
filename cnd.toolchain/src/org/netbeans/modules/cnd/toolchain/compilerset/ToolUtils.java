@@ -42,8 +42,10 @@ package org.netbeans.modules.cnd.toolchain.compilerset;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.openide.util.Utilities;
 
@@ -262,5 +264,38 @@ public final class ToolUtils {
             }
         }
         return ret.toString();
+    }
+
+    /**
+     * Same as the C library dirname function: given a path, return
+     * its directory name. Unlike dirname, however, return null if
+     * the file is in the current directory rather than ".".
+     */
+    public static String getDirName(String path) {
+        int sep = path.lastIndexOf('/');
+        if (sep == -1) {
+            sep = path.lastIndexOf('\\');
+        }
+        if (sep != -1) {
+            return path.substring(0, sep);
+        }
+        return null;
+    }
+
+    /**
+     * This utility method makes it easier (on Windows) to replace PATH with one with
+     * the same case. IZ 103016 updated PATH but it wasn't foud because Path wasn't
+     * replaced. This will let us add a path using the exact same name.
+     */
+    public String getPathName(ExecutionEnvironment executionEnvironment) {
+        if (executionEnvironment.isLocal() && Utilities.isWindows()) {
+            HostInfoProvider.getEnv(executionEnvironment);
+            for (String key : HostInfoProvider.getEnv(executionEnvironment).keySet()) {
+                if (key.toLowerCase().equals("path")) { // NOI18N
+                    return key.substring(0, 4);
+                }
+            }
+        }
+        return "PATH"; // NOI18N
     }
 }

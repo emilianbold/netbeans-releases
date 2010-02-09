@@ -39,23 +39,28 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.compilers.impl;
+package org.netbeans.modules.cnd.toolchain.compilers;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.ErrorManager;
 
-/*package*/ class GNUCCCompiler extends GNUCCCCompiler {
-    
-    /** Creates a new instance of GNUCCompiler */
-    protected GNUCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+/*package*/ final class SunCCompiler extends SunCCCCompiler {
+    /**
+     * Creates a new instance of SunCCompiler
+     * private: use factory methods instead
+     */
+    private SunCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
     }
     
     @Override
-    public GNUCCCompiler createCopy() {
-        GNUCCCompiler copy = new GNUCCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
+    public SunCCompiler createCopy() {
+        SunCCompiler copy = new SunCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
         if (isReady()) {
             copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
             copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());
@@ -63,12 +68,48 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
         return copy;
     }
 
-    public static GNUCCCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
-        return new GNUCCCompiler(env, flavor, kind, name, displayName, path);
+    public static SunCCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+        return new SunCCompiler(env, flavor, kind, name, displayName, path);
     }
 
     @Override
     public CompilerDescriptor getDescriptor() {
-        return getFlavor().getToolchainDescriptor().getCpp();
+        return getFlavor().getToolchainDescriptor().getC();
+    }
+    
+    @Override
+    protected void parseCompilerOutput(BufferedReader reader, Pair pair) {
+        try {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                //System.out.println(line);
+                int includeIndex = line.indexOf("-I"); // NOI18N
+                while (includeIndex > 0) {
+                    String token;
+                    int spaceIndex = line.indexOf(' ', includeIndex + 1); // NOI18N
+                    if (spaceIndex > 0) {
+                        token = line.substring(includeIndex+2, spaceIndex);
+                        pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
+                        includeIndex = line.indexOf("-I", spaceIndex); // NOI18N
+                    } else {
+                        token = line.substring(includeIndex+2);
+                        pair.systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
+                        break;
+                    }
+                }
+                parseUserMacros(line, pair.systemPreprocessorSymbolsList);
+            }
+            // Adding "__STDC__=0". It's missing from dryrun output
+            pair.systemPreprocessorSymbolsList.addUnique("__STDC__=0"); // NOI18N
+            
+            reader.close();
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
+        }
+    }
+
+    @Override
+    protected String getCompilerStderrCommand2() {
+        return null;
     }
 }

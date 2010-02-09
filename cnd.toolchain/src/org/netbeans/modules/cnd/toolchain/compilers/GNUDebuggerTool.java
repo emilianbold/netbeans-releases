@@ -38,32 +38,33 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.compilers.impl;
 
-import org.netbeans.modules.cnd.api.toolchain.BasicCompiler;
+package org.netbeans.modules.cnd.toolchain.compilers;
+
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
-import org.netbeans.modules.cnd.api.toolchain.ToolKind;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-/*package*/ final class Assembler extends BasicCompiler {
+/*package*/ final class GNUDebuggerTool extends Tool {
 
-    /** Creates a new instance of GNUCCompiler */
-    private Assembler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
-        super(env, flavor, kind, name, displayName, path); // NOI18N
+    private GNUDebuggerTool(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
+        super(env, flavor, PredefinedToolKind.DebuggerTool, name, displayName, path); // NOI18N
     }
 
     @Override
-    public Assembler createCopy() {
-        return new Assembler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
+    public GNUDebuggerTool createCopy() {
+        return new GNUDebuggerTool(getExecutionEnvironment(), getFlavor(), getName(), getDisplayName(), getPath());
     }
 
-    public static Assembler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
-        return new Assembler(env, flavor, kind, name, displayName, path);
+    public static GNUDebuggerTool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {
+        return new GNUDebuggerTool(env, flavor, name, displayName, path);
     }
 
     @Override
-    public CompilerDescriptor getDescriptor() {
-        return getFlavor().getToolchainDescriptor().getAssembler();
+    public DebuggerDescriptor getDescriptor() {
+        return getFlavor().getToolchainDescriptor().getDebugger();
     }
+
 }

@@ -39,31 +39,36 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.compilers.impl;
+package org.netbeans.modules.cnd.toolchain.compilers;
 
-import org.netbeans.modules.cnd.api.toolchain.BasicCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-/*package*/ final class GNUFortranCompiler extends BasicCompiler {
+/*package*/ class GNUCCCompiler extends GNUCCCCompiler {
+    
     /** Creates a new instance of GNUCCompiler */
-    private GNUFortranCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
-        super(env, flavor, kind, name, displayName, path); // NOI18N
+    protected GNUCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+        super(env, flavor, kind, name, displayName, path);
     }
     
     @Override
-    public GNUFortranCompiler createCopy() {
-        return new GNUFortranCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
+    public GNUCCCompiler createCopy() {
+        GNUCCCompiler copy = new GNUCCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
+        if (isReady()) {
+            copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
+            copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());
+        }
+        return copy;
     }
 
-    public static GNUFortranCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
-        return new GNUFortranCompiler(env, flavor, kind, name, displayName, path);
+    public static GNUCCCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+        return new GNUCCCompiler(env, flavor, kind, name, displayName, path);
     }
-    
+
     @Override
     public CompilerDescriptor getDescriptor() {
-        return getFlavor().getToolchainDescriptor().getFortran();
+        return getFlavor().getToolchainDescriptor().getCpp();
     }
 }
