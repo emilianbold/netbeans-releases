@@ -71,6 +71,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
+import sun.security.jca.GetInstance;
 
 /**
  * This class calculates all white-space tranformations other than
@@ -143,7 +144,19 @@ class WSTransformer extends DefaultTreePathVisitor {
 		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundBinaryOps());
 		}
 		else if (UNARY_OPERATOS.contains(text)) {
-		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundUnaryOps());
+		    boolean check = false;
+		    if (ts.moveNext()) {
+			LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
+			if (ts.token().id() != PHPTokenId.PHP_TOKEN) {
+			    check = true;
+			}
+		    }
+		    else {
+			check = true;
+		    }
+		    if (check) {
+			checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundUnaryOps());
+		    }
 		}
 	    }
 	}
@@ -478,6 +491,11 @@ class WSTransformer extends DefaultTreePathVisitor {
             checkSpaceBetweenTokenAndOpenParen(offset, CodeStyle.get(context.document()).spaceBeforeWhileParen(),
                      Arrays.asList(PHPTokenId.PHP_WHILE));
         }
+	// spaces within
+	checkSpacesWithinParents(
+		node.getCondition().getStartOffset(),
+		node.getCondition().getEndOffset(),
+		CodeStyle.get(context.document()).spaceWithinWhileParens());
     }
 
     @Override
@@ -492,6 +510,11 @@ class WSTransformer extends DefaultTreePathVisitor {
                     CodeStyle.get(context.document()).spaceBeforeElse(),
                     Arrays.asList(PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF));
         }
+	// spaces within
+	checkSpacesWithinParents(
+		node.getCondition().getStartOffset(),
+		node.getCondition().getEndOffset(),
+		CodeStyle.get(context.document()).spaceWithinIfParens());
     }
 
     @Override
@@ -500,6 +523,11 @@ class WSTransformer extends DefaultTreePathVisitor {
         // space between WHILE and (
         checkSpaceBetweenTokenAndOpenParen(node.getStartOffset(), CodeStyle.get(context.document()).spaceBeforeWhileParen(),
                  Arrays.asList(PHPTokenId.PHP_WHILE));
+	// spaces within
+	checkSpacesWithinParents(
+		node.getCondition().getStartOffset(),
+		node.getCondition().getEndOffset(),
+		CodeStyle.get(context.document()).spaceWithinWhileParens());
     }
 
     @Override
@@ -508,6 +536,11 @@ class WSTransformer extends DefaultTreePathVisitor {
         // space between SWITCH and (
         checkSpaceBetweenTokenAndOpenParen(node.getStartOffset(), CodeStyle.get(context.document()).spaceBeforeSwitchParen(),
                  Arrays.asList(PHPTokenId.PHP_SWITCH));
+	// spaces within
+	checkSpacesWithinParents(
+		node.getExpression().getStartOffset(),
+		node.getExpression().getEndOffset(),
+		CodeStyle.get(context.document()).spaceWithinSwitchParens());
     }
 
     @Override
@@ -519,6 +552,11 @@ class WSTransformer extends DefaultTreePathVisitor {
         // space between CATCH and (
         checkSpaceBetweenTokenAndOpenParen(node.getStartOffset(), CodeStyle.get(context.document()).spaceBeforeCatchParen(),
                  Arrays.asList(PHPTokenId.PHP_CATCH));
+	// spaces within
+	checkSpacesWithinParents(
+		node.getClassName().getStartOffset(),
+		node.getVariable().getEndOffset(),
+		CodeStyle.get(context.document()).spaceWithinCatchParens());
     }
 
     @Override
@@ -529,7 +567,15 @@ class WSTransformer extends DefaultTreePathVisitor {
         // space between FOR and (
         checkSpaceBetweenTokenAndOpenParen(node.getStartOffset(), CodeStyle.get(context.document()).spaceBeforeForParen(),
                  Arrays.asList(PHPTokenId.PHP_FOR));
+	// spaces within
+	if (node.getInitializers().size() > 0 && node.getUpdaters().size() > 0) {
+	    checkSpacesWithinParents(
+		    node.getInitializers().get(0).getStartOffset(),
+		    node.getUpdaters().get(node.getUpdaters().size()-1).getEndOffset(),
+		    CodeStyle.get(context.document()).spaceWithinForParens());
+	}
         super.visit(node);
+
     }
 
     @Override
@@ -537,6 +583,11 @@ class WSTransformer extends DefaultTreePathVisitor {
         // space between FOREACH and (
         checkSpaceBetweenTokenAndOpenParen(node.getStartOffset(), CodeStyle.get(context.document()).spaceBeforeForParen(),
                  Arrays.asList(PHPTokenId.PHP_FOREACH));
+	// spaces within
+	checkSpacesWithinParents(
+		node.getExpression().getStartOffset(),
+		node.getValue().getEndOffset(),
+		CodeStyle.get(context.document()).spaceWithinForParens());
         super.visit(node);
     }
 
@@ -576,6 +627,25 @@ class WSTransformer extends DefaultTreePathVisitor {
 	    replaceSpaceBeforeToken(ts, insertSpace, null);
 	    ts.move(offset);
 	    ts.moveNext();
+	}
+    }
+
+    private void checkSpacesWithinParents(int start, int end, boolean space) {
+	TokenSequence<PHPTokenId> ts = tokenSequence(start);
+	ts.move(start);
+	if (ts.moveNext() && ts.movePrevious()) {
+	    if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
+		ts.moveNext();
+	    }
+	    LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
+	    replaceSpaceBeforeToken(ts, space, Arrays.asList(PHPTokenId.PHP_TOKEN));
+	}
+	ts.move(end);
+	if (ts.moveNext() && ts.movePrevious()) {
+	    PHPTokenId tokenid = ts.token().id();
+	    ts.moveNext();
+	    LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_TOKEN));
+	    replaceSpaceBeforeToken(ts, space, Arrays.asList(tokenid));
 	}
     }
 
