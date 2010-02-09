@@ -80,7 +80,9 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
             //sourceFilesPanel.setSeed(workingdir, workingdir);
             File wd = new File(workingdir);
             sourceFilesPanel.getSourceListData().add(new FolderEntry(wd, wd.getPath()));
-            sourceFilesPanel.getTestListData().add(new FolderEntry(wd, wd.getPath() + "/tests")); // FIXUP: scan for actual 'test' or 'tests' folders...
+            if (new File(wd.getPath() + "/tests").exists()) {
+                sourceFilesPanel.getTestListData().add(new FolderEntry(wd, wd.getPath() + "/tests")); // FIXUP: scan for actual 'test' or 'tests' folders...
+            }
             sourceFilesPanel.setFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN);
             firstTime = false;
         }
@@ -95,7 +97,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
         } else {
             wizardDescriptor.putProperty("sourceFoldersFilter", sourceFilesPanel.getFoldersFilter()); // NOI18N
         }
-        wizardDescriptor.putProperty("testFolders", sourceFilesPanel.getSourceListData().iterator()); // NOI18N
+        wizardDescriptor.putProperty("testFolders", sourceFilesPanel.getTestListData().iterator()); // NOI18N
         wizardDescriptor.putProperty("testFoldersList", new ArrayList<FolderEntry>(sourceFilesPanel.getTestListData())); // NOI18N
     }
     

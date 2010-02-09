@@ -45,15 +45,9 @@ import org.netbeans.core.startup.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
-import junit.extensions.TestDecorator;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 
-/**
- * How does OSGi integration deals with dependency on swing?
- *
- * @author Jaroslav Tulach
- */
 public class NetigsoReloadTest extends NetigsoHid {
     private static Module m1;
     private static ModuleManager mgr;

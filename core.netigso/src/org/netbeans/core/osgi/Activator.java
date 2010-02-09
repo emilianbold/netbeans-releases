@@ -60,10 +60,10 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
-import org.osgi.framework.BundleListener;
 import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.SynchronousBundleListener;
 import org.osgi.service.url.AbstractURLStreamHandlerService;
 import org.osgi.service.url.URLConstants;
 import org.osgi.service.url.URLStreamHandlerService;
@@ -71,7 +71,7 @@ import org.osgi.service.url.URLStreamHandlerService;
 /**
  * Initializes critical NetBeans infrastructure inside an OSGi container.
  */
-public class Activator implements BundleActivator, BundleListener, FrameworkListener {
+public class Activator implements BundleActivator, SynchronousBundleListener, FrameworkListener {
 
     private static final Logger LOG = Logger.getLogger(Activator.class.getName());
 

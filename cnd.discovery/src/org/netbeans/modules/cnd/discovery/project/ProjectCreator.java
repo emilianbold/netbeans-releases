@@ -300,7 +300,7 @@ public class ProjectCreator {
         projectDescriptor.setProjectMakefileName(makefileName);
         projectDescriptor.init(confs);
         baseDir = projectDescriptor.getBaseDir();
-        projectDescriptor.initLogicalFolders(null, false, importantItems, null);
+        projectDescriptor.initLogicalFolders(null, false, null, importantItems, null);
         rootFolder = projectDescriptor.getLogicalFolders();
         //projectDescriptor.addSourceRootRaw(workingDir);
         projectDescriptor.addSourceRootRaw(IpeUtils.toRelativePath(baseDir, workingDir));
