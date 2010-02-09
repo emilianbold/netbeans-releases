@@ -80,7 +80,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfigu
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -485,7 +484,7 @@ public final class MakeActionProvider implements ActionProvider {
             } else {
                 // Always absolute
                 path = conf.getMakefileConfiguration().getAbsOutput();
-                path = FilePathAdaptor.normalize(path);
+                path = IpeUtils.normalize(path);
             }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
             actionEvents.add(projectActionEvent);
@@ -505,14 +504,14 @@ public final class MakeActionProvider implements ActionProvider {
                 // Add paths from subprojetcs
                 Iterator<String> iter = subProjectOutputLocations.iterator();
                 while (iter.hasNext()) {
-                    String location = FilePathAdaptor.naturalize(iter.next());
+                    String location = IpeUtils.naturalize(iter.next());
                     path = location + ";" + path; // NOI18N
                 }
                 // Add paths from -L option
                 List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
                 iter = list.iterator();
                 while (iter.hasNext()) {
-                    String location = FilePathAdaptor.naturalize(iter.next());
+                    String location = IpeUtils.naturalize(iter.next());
                     path = location + ";" + path; // NOI18N
                 }
                 String userPath = runProfile.getEnvironment().getenv(pi.getPathName());
@@ -531,7 +530,7 @@ public final class MakeActionProvider implements ActionProvider {
                 // Add paths from subprojetcs
                 Iterator<String> iter = subProjectOutputLocations.iterator();
                 while (iter.hasNext()) {
-                    String location = FilePathAdaptor.naturalize(iter.next());
+                    String location = IpeUtils.naturalize(iter.next());
                     if (path.length() > 0) {
                         path.append(":"); // NOI18N
                     }
@@ -541,7 +540,7 @@ public final class MakeActionProvider implements ActionProvider {
                 List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
                 iter = list.iterator();
                 while (iter.hasNext()) {
-                    String location = FilePathAdaptor.naturalize(iter.next());
+                    String location = IpeUtils.naturalize(iter.next());
                     if (path.length() > 0) {
                         path.append(":"); // NOI18N
                     }
@@ -567,7 +566,7 @@ public final class MakeActionProvider implements ActionProvider {
                 List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
                 Iterator<String> iter = list.iterator();
                 while (iter.hasNext()) {
-                    String location = FilePathAdaptor.naturalize(iter.next());
+                    String location = IpeUtils.naturalize(iter.next());
                     if (path.length() > 0) {
                         path.append(":"); // NOI18N
                     }
@@ -612,9 +611,9 @@ public final class MakeActionProvider implements ActionProvider {
                 if (!IpeUtils.isPathAbsolute(path)) {
                     // make path relative to run working directory
                     path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
-                    path = FilePathAdaptor.naturalize(path);
+                    path = IpeUtils.naturalize(path);
                     path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
-                    path = FilePathAdaptor.naturalize(path);
+                    path = IpeUtils.naturalize(path);
                 }
             } else {
                 // Always absolute

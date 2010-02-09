@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.FortranSourceFileFilter;
@@ -64,6 +63,7 @@ import org.netbeans.modules.cnd.api.utils.HeaderSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.QtFileFilter;
 import org.netbeans.modules.cnd.api.utils.ResourceFileFilter;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -176,14 +176,14 @@ public class AddExistingItemAction extends NodeAction {
                 ArrayList<Item> items = new ArrayList<Item>();
                 for (int i = 0; i < files.length; i++) {
                     String itemPath;
-                    if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
                         itemPath = IpeUtils.toAbsoluteOrRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
-                    } else if (PathPanel.getMode() == PathPanel.REL) {
+                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                         itemPath = IpeUtils.toRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
                     } else {
                         itemPath = files[i].getPath();
                     }
-                    itemPath = FilePathAdaptor.normalize(itemPath);
+                    itemPath = IpeUtils.normalize(itemPath);
                     if (((MakeConfigurationDescriptor) projectDescriptor).findProjectItemByPath(itemPath) != null) {
                         String errormsg = getString("AlreadyInProjectError", itemPath); // NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));

@@ -39,13 +39,13 @@
 package org.netbeans.modules.cnd.spi.toolchain;
 
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.SPIAccessor;
+import org.netbeans.modules.cnd.toolchain.compilerset.SPIAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**

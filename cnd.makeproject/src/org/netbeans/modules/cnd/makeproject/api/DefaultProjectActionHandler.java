@@ -72,7 +72,6 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -176,7 +175,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 }
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                     if (conf.getPlatformInfo().getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-                        exe = FilePathAdaptor.naturalize(pae.getExecutable());
+                        exe = IpeUtils.naturalize(pae.getExecutable());
                     } else if (conf.getDevelopmentHost().isLocalhost()) {
                         exe = IpeUtils.toAbsolutePath(pae.getProfile().getRunDir(), pae.getExecutable());
                     }

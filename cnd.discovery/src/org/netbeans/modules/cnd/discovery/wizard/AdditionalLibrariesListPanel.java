@@ -51,9 +51,9 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
@@ -125,7 +125,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
         StringBuilder buf = new StringBuilder();
         for (File item : fileChooser.getSelectedFiles()){
             String itemPath = item.getPath();
-            itemPath = FilePathAdaptor.normalize(itemPath);
+            itemPath = IpeUtils.normalize(itemPath);
             if (buf.length() > 0) {
                 buf.append(';');
             }
