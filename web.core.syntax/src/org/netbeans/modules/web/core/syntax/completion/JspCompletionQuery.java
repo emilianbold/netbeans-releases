@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.web.core.syntax.completion;
 
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem;
 import java.util.*;
 import javax.swing.text.JTextComponent;
@@ -56,7 +58,11 @@ import org.netbeans.editor.*;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.web.core.syntax.deprecated.JspTagTokenContext;
 import org.netbeans.modules.web.core.syntax.*;
+import org.netbeans.modules.web.core.syntax.tld.TldLibrary;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.JarFileSystem;
 import org.openide.util.Exceptions;
 
 
@@ -519,7 +525,40 @@ public class JspCompletionQuery {
             int semiColonPos = tokenPart.indexOf(':');
 
             if (semiColonPos >= 0){
-                insertTagImportDirective(doc, tokenPart, semiColonPos);
+                int anchor = offset - tokenPart.length();
+                //insertTagImportDirective(doc, tokenPart, semiColonPos);
+                String prefix = tokenPart.substring(0, semiColonPos);
+                String tagNamePrefix = tokenPart.substring(semiColonPos + 1);
+                String uri = StandardTagLibraryPrefixes.get(prefix);
+                Object v = sup.getTagLibraryMappings().get(uri);
+
+                if (v instanceof String[]) {
+                    String[] vals = (String[]) v;
+                    String jarPath = vals[0];
+                    String tldPath = vals[1];
+
+                    String FILE_PREFIX = "file:/"; //NOI18N
+                    
+                    if (jarPath.startsWith(FILE_PREFIX)){
+                        jarPath = '/' + jarPath.substring(FILE_PREFIX.length());
+                    }
+
+                    try {
+                        JarFileSystem jfs = new JarFileSystem(FileUtil.normalizeFile(new File(jarPath)));
+                        FileObject tldFile = jfs.getRoot().getFileObject(tldPath);
+                        TldLibrary tldLib = TldLibrary.create(tldFile);
+                        
+                        for (String tagName : tldLib.getTags().keySet()){
+                            if (tagName.startsWith(tagNamePrefix)){
+                                result.addItem(new JspCompletionItem.UnresolvedPrefixTag(prefix + ":" + tagName,
+                                anchor, uri, prefix));
+                            }
+                        }
+
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
                 
             } else {
                 int anchor = offset - removeLength;

@@ -153,11 +153,11 @@ public class FmtOptions {
 //    public static final String spaceWithinParens = "spaceWithinParens"; //NOI18N
 //    public static final String spaceWithinMethodDeclParens = "spaceWithinMethodDeclParens"; //NOI18N
 //    public static final String spaceWithinMethodCallParens = "spaceWithinMethodCallParens"; //NOI18N
-//    public static final String spaceWithinIfParens = "spaceWithinIfParens"; //NOI18N
-//    public static final String spaceWithinForParens = "spaceWithinForParens"; //NOI18N
-//    public static final String spaceWithinWhileParens = "spaceWithinWhileParens"; //NOI18N
-//    public static final String spaceWithinSwitchParens = "spaceWithinSwitchParens"; //NOI18N
-//    public static final String spaceWithinCatchParens = "spaceWithinCatchParens"; //NOI18N
+    public static final String spaceWithinIfParens = "spaceWithinIfParens"; //NOI18N
+    public static final String spaceWithinForParens = "spaceWithinForParens"; //NOI18N
+    public static final String spaceWithinWhileParens = "spaceWithinWhileParens"; //NOI18N
+    public static final String spaceWithinSwitchParens = "spaceWithinSwitchParens"; //NOI18N
+    public static final String spaceWithinCatchParens = "spaceWithinCatchParens"; //NOI18N
 //    public static final String spaceWithinSynchronizedParens = "spaceWithinSynchronizedParens"; //NOI18N
 //    public static final String spaceWithinTypeCastParens = "spaceWithinTypeCastParens"; //NOI18N
 //    public static final String spaceWithinAnnotationParens = "spaceWithinAnnotationParens"; //NOI18N
@@ -265,11 +265,11 @@ public class FmtOptions {
 //            { spaceWithinParens, FALSE},
 //            { spaceWithinMethodDeclParens, FALSE},
 //            { spaceWithinMethodCallParens, FALSE},
-//            { spaceWithinIfParens, FALSE},
-//            { spaceWithinForParens, FALSE},
-//            { spaceWithinWhileParens, FALSE},
-//            { spaceWithinSwitchParens, FALSE},
-//            { spaceWithinCatchParens, FALSE},
+            { spaceWithinIfParens, FALSE},
+            { spaceWithinForParens, FALSE},
+            { spaceWithinWhileParens, FALSE},
+            { spaceWithinSwitchParens, FALSE},
+            { spaceWithinCatchParens, FALSE},
 //            { spaceWithinSynchronizedParens, FALSE},
 //            { spaceWithinTypeCastParens, FALSE},
 //            { spaceWithinAnnotationParens, FALSE},
@@ -291,6 +291,10 @@ public class FmtOptions {
             defaults.put(strings[0], strings[1]);
         }
 
+    }
+
+    protected static Map<String, String> getDefaults() {
+	return defaults;
     }
 
      // Support section ---------------------------------------------------------

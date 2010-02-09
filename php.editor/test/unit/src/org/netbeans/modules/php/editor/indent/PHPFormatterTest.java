@@ -635,6 +635,41 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceAroundStringConcat01.php", options);
     }
 
+    public void testSpacesWithinIfParens01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinIfParens, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinParens01.php", options);
+    }
+
+    public void testSpacesWithinForParens01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinForParens, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinParens02.php", options);
+    }
+
+    public void testSpacesWithinWhileParens01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinWhileParens, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinParens03.php", options);
+    }
+
+    public void testSpacesWithinSwitchParens01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinSwitchParens, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinParens04.php", options);
+    }
+
+    public void testSpacesWithinCatchParens01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinCatchParens, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinParens05.php", options);
+    }
+
+    public void testSpacesWithinParens01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinParens06.php", options);
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
