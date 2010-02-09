@@ -40,7 +40,7 @@
 package org.netbeans.modules.cnd.api.toolchain;
 
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerFlavorImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
 
 /**
  *

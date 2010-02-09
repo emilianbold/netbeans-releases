@@ -122,7 +122,7 @@ final class ActiveRecordAssociationFinder {
                     if (value instanceof StrNode) {
                         return ((StrNode) value).getValue();
                     } else {
-                        return AstUtilities.getName(value);
+                        return AstUtilities.safeGetName(value);
                     }
                 }
             }

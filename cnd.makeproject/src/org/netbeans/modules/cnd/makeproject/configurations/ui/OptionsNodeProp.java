@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfigurat
 import org.netbeans.modules.cnd.makeproject.api.configurations.OptionsConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.BasicCompiler;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;

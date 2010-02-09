@@ -125,7 +125,7 @@ public class JarClassLoader extends ProxyClassLoader {
     
     private static final Logger LOGGER = Logger.getLogger(JarClassLoader.class.getName());
 
-    private final Source[] sources;
+    private Source[] sources;
     private Module module;
     
     /** Creates new JarClassLoader.
@@ -154,6 +154,21 @@ public class JarClassLoader extends ProxyClassLoader {
             throw new IllegalArgumentException(exc.getMessage());
         }
         sources = l.toArray(new Source[l.size()]);
+        // overlaps with old packages doesn't matter,PCL uses sets.
+        addCoveredPackages(getCoveredPackages(module, sources));
+    }
+
+    final void addURL(URL location) throws IOException, URISyntaxException {
+        File f = new File(location.toURI());
+        assert f.exists() : "URL must be existing local file: " + location;
+
+        List<Source> arr = new ArrayList<Source>(Arrays.asList(sources));
+        arr.add(new JarSource(f));
+
+        synchronized (sources) {
+            sources = arr.toArray(new Source[arr.size()]);
+        }
+
         // overlaps with old packages doesn't matter,PCL uses sets.
         addCoveredPackages(getCoveredPackages(module, sources));
     }

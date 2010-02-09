@@ -48,9 +48,9 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -250,15 +250,15 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
                 return null;
             }
             String itemPath = fileChooser.getSelectedFile().getPath();
-            itemPath = FilePathAdaptor.naturalize(itemPath);
+            itemPath = IpeUtils.naturalize(itemPath);
             String bd = baseDir;
-            bd = FilePathAdaptor.naturalize(bd);
-            if (pathPanel != null && PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+            bd = IpeUtils.naturalize(bd);
+            if (pathPanel != null && MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
                 itemPath = IpeUtils.toAbsoluteOrRelativePath(bd, itemPath);
-            } else if (pathPanel != null && PathPanel.getMode() == PathPanel.REL) {
+            } else if (pathPanel != null && MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                 itemPath = IpeUtils.toRelativePath(bd, itemPath);
             }
-            itemPath = FilePathAdaptor.normalize(itemPath);
+            itemPath = IpeUtils.normalize(itemPath);
             return itemPath;
         }
 

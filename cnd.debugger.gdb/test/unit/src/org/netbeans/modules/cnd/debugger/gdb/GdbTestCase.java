@@ -62,7 +62,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolchainProxy;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainProxy;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 

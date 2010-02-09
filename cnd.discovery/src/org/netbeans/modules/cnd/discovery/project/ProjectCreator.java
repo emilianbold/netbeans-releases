@@ -55,7 +55,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
@@ -73,7 +72,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -194,8 +192,8 @@ public class ProjectCreator {
 
         // TODO: create localhost based project
         MakeConfiguration extConf = new MakeConfiguration(dirF.getPath(), target, MakeConfiguration.TYPE_MAKEFILE, HostInfoUtils.LOCALHOST);
-        String workingDirRel = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(workingDir));
-        workingDirRel = FilePathAdaptor.normalize(workingDirRel);
+        String workingDirRel = IpeUtils.toRelativePath(dirF.getPath(), IpeUtils.naturalize(workingDir));
+        workingDirRel = IpeUtils.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         if (displayName.indexOf(".lib.")>0 || displayName.indexOf(".cmd.")>0) { // NOI18N
             extConf.getMakefileConfiguration().getBuildCommand().setValue("bldenv -d ../../../../"+buildScript+" 'dmake all'"); // NOI18N
@@ -235,8 +233,8 @@ public class ProjectCreator {
         Iterator<String> importantItemsIterator = null;
         if (makefilePath != null && makefilePath.length() > 0) {
             List<String> importantItems = new ArrayList<String>();
-            makefilePath = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(makefilePath));
-            makefilePath = FilePathAdaptor.normalize(makefilePath);
+            makefilePath = IpeUtils.toRelativePath(dirF.getPath(), IpeUtils.naturalize(makefilePath));
+            makefilePath = IpeUtils.normalize(makefilePath);
             importantItems.add(makefilePath);
             importantItemsIterator = importantItems.iterator();
         }
