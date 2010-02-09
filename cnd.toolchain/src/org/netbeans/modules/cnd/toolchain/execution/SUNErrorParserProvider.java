@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.execution.impl;
+package org.netbeans.modules.cnd.toolchain.execution;
 
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
@@ -49,15 +49,15 @@ import org.openide.filesystems.FileObject;
  * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.class)
-public class GCCErrorParserProvider extends ErrorParserProvider {
+public class SUNErrorParserProvider extends ErrorParserProvider {
 
     @Override
     public ErrorParser getErorParser(CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
-	return new GCCErrorParser(flavor, execEnv, relativeTo);
+	return new SUNErrorParser(flavor, execEnv, relativeTo);
     }
 
     @Override
     public String getID() {
-	return "GNU";  // NOI18N
+	return "SunStudio";  // NOI18N
     }
 }

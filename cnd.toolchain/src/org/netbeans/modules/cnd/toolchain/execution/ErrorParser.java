@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.execution.impl;
+package org.netbeans.modules.cnd.toolchain.execution;
 
 import java.io.File;
 import java.util.List;

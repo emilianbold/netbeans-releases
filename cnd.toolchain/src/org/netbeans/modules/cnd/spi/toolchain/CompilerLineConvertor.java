@@ -40,7 +40,7 @@
 package org.netbeans.modules.cnd.spi.toolchain;
 
 import java.util.concurrent.CancellationException;
-import org.netbeans.modules.cnd.toolchain.execution.impl.ErrorAnnotation;
+import org.netbeans.modules.cnd.toolchain.execution.ErrorAnnotation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
