@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -118,7 +117,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public void refreshDiskFolder(boolean setModified) {
         if (log.isLoggable(Level.FINER)) {
-            log.finer("----------refreshDiskFolder " + getPath()); // NOI18N
+            log.log(Level.FINER, "----------refreshDiskFolder {0}", getPath()); // NOI18N
         }
         String rootPath = getRootPath();
         String AbsRootPath = IpeUtils.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
@@ -132,7 +131,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             getConfigurationDescriptor().getFolderVisibilityQuery().isVisible(folderFile)) {
             // Remove it plus all subfolders and items from project
             if (log.isLoggable(Level.FINE)) {
-                log.fine("------------removing folder " + getPath() + " in " + getParent().getPath()); // NOI18N
+                log.log(Level.FINE, "------------removing folder {0} in {1}", new Object[]{getPath(), getParent().getPath()}); // NOI18N
             }
             getParent().removeFolder(this, setModified);
             return;
@@ -145,7 +144,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 !VisibilityQuery.getDefault().isVisible(file) ||
                 !CndFileVisibilityQuery.getDefault().isVisible(file)) {
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine("------------removing item " + item.getPath() + " in " + getPath()); // NOI18N
+                    log.log(Level.FINE, "------------removing item {0} in {1}", new Object[]{item.getPath(), getPath()}); // NOI18N
                 }
                 removeItem(item, setModified);
             }
@@ -172,7 +171,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (file.isDirectory()) {
                 if (findFolderByName(file.getName()) == null) {
                     if (log.isLoggable(Level.FINE)) {
-                        log.fine("------------adding folder " + file.getPath() + " in " + getPath()); // NOI18N
+                        log.log(Level.FINE, "------------adding folder {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
                     }
                     getConfigurationDescriptor().addSourceFilesFromFolder(this, file, true, setModified);
 
@@ -184,7 +183,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 }
                 if (findItemByPath(path) == null) {
                     if (log.isLoggable(Level.FINE)) {
-                        log.fine("------------adding item " + file.getPath() + " in " + getPath()); // NOI18N
+                        log.log(Level.FINE, "------------adding item {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
                     }
                     addItem(new Item(path), true, setModified);
                 }
@@ -212,19 +211,19 @@ public class Folder implements FileChangeListener, ChangeListener {
             CndFileVisibilityQuery.getDefault().addChangeListener(this);
             getConfigurationDescriptor().getFolderVisibilityQuery().addChangeListener(this);
             if (log.isLoggable(Level.FINER)) {
-                log.finer("-----------attachFilterListener " + getPath()); // NOI18N
+                log.log(Level.FINER, "-----------attachFilterListener {0}", getPath()); // NOI18N
             }
         }
 
         try {
             FileUtil.addFileChangeListener(this, folderFile);
             if (log.isLoggable(Level.FINER)) {
-                log.finer("-----------attachFileChangeListener " + getPath()); // NOI18N
+                log.log(Level.FINER, "-----------attachFileChangeListener {0}", getPath()); // NOI18N
             }
         } catch (IllegalArgumentException iae) {
             // Can happen if trying to attach twice...
             if (log.isLoggable(Level.FINER)) {
-                log.finer("-----------attachFileChangeListener duplicate error" + getPath()); // NOI18N
+                log.log(Level.FINER, "-----------attachFileChangeListener duplicate error{0}", getPath()); // NOI18N
             }
         }
 
@@ -237,7 +236,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public void detachListener() {
         if (log.isLoggable(Level.FINER)) {
-           log.finer("-----------detachFileChangeListener " + getPath()); // NOI18N
+           log.log(Level.FINER, "-----------detachFileChangeListener {0}", getPath()); // NOI18N
         }
         FileUtil.removeFileChangeListener(this);
         if (isDiskFolder() && getRoot() != null) {
@@ -245,7 +244,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             CndFileVisibilityQuery.getDefault().removeChangeListener(this);
             getConfigurationDescriptor().getFolderVisibilityQuery().removeChangeListener(this);
             if (log.isLoggable(Level.FINER)) {
-                log.finer("-----------detachFilterListener " + getPath()); // NOI18N
+                log.log(Level.FINER, "-----------detachFilterListener {0}", getPath()); // NOI18N
             }
         }
 
@@ -471,7 +470,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 myNativeFileItemSet.add(item);
             } else {
                 if (log.isLoggable(Level.FINE)) {
-                    log.fine("can not add folder's " + this + " item " + item + " using " + dao); // NOI18N
+                    log.log(Level.FINE, "can not add folder\'s {0} item {1} using {2}", new Object[]{this, item, dao}); // NOI18N
                 }
             }
         }
@@ -956,9 +955,10 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (log.isLoggable(Level.FINER)) {
-            log.fine("------------stateChanged " + getPath()); // NOI18N
+            log.log(Level.FINE, "------------stateChanged {0}", getPath()); // NOI18N
         }
         // Happens when filter has changed
         if (isDiskFolder()) {
@@ -966,17 +966,20 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
     }
 
+    @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
     }
 
+    @Override
     public void fileChanged(FileEvent fe) {
     }
 
+    @Override
     public void fileDataCreated(FileEvent fe) {
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
         if (log.isLoggable(Level.FINE)) {
-            log.fine("------------fileDataCreated " + file + " in " + getPath()); // NOI18N
+            log.log(Level.FINE, "------------fileDataCreated {0} in {1}", new Object[]{file, getPath()}); // NOI18N
         }
         //if (true) return;
         if (!file.exists() || file.isDirectory()) {
@@ -987,16 +990,17 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         String itemPath = file.getPath();
         itemPath = IpeUtils.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
-        itemPath = FilePathAdaptor.normalize(itemPath);
+        itemPath = IpeUtils.normalize(itemPath);
         Item item = new Item(itemPath);
         addItemAction(item, false);
     }
 
+    @Override
     public void fileFolderCreated(FileEvent fe) {
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
         if (log.isLoggable(Level.FINE)) {
-            log.fine("------------fileFolderCreated " + file.getPath() + " in " + getPath()); // NOI18N
+            log.log(Level.FINE, "------------fileFolderCreated {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
         }
         //if (true) return;
         if (!file.exists() || !file.isDirectory()) {
@@ -1006,11 +1010,12 @@ public class Folder implements FileChangeListener, ChangeListener {
         /*Folder top =*/ getConfigurationDescriptor().addSourceFilesFromFolder(this, file, true, false);
     }
 
+    @Override
     public void fileDeleted(FileEvent fe) {
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
         if (log.isLoggable(Level.FINE)) {
-            log.fine("------------fileDeleted " + file.getPath() + " in " + getPath()); // NOI18N
+            log.log(Level.FINE, "------------fileDeleted {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
         }
         //if (true) return;
         String path = getRootPath() + '/' + file.getName();
@@ -1066,11 +1071,12 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
     }
 
+    @Override
     public void fileRenamed(FileRenameEvent fe) {
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
         if (log.isLoggable(Level.FINE)) {
-            log.fine("------------fileRenamed " + file.getPath() + " in " + getPath()); // NOI18N
+            log.log(Level.FINE, "------------fileRenamed {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
         }
         // Try only folders. Items are taken care of in Item.propertyChange takes care of it....
         Folder folder = findFolderByName(fe.getName());

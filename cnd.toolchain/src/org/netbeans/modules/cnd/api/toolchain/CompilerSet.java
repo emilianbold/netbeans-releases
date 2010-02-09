@@ -40,7 +40,7 @@
 package org.netbeans.modules.cnd.api.toolchain;
 
 import java.util.List;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
 
 /**
  *

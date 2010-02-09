@@ -45,8 +45,8 @@ import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolchainManagerImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainManagerImpl;
 import org.openide.util.NbBundle;
 
 /**
