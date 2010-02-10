@@ -94,8 +94,6 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             this.tag = tagName;
         }
 
-        //XXX lets suppose that all the possible implementations of CharSequence
-        //obtained from LexerInput.readXXX() implements the equals() method properly!
         @Override
         public boolean equals(Object obj) {
             if (obj == null) {
