@@ -215,10 +215,9 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
                             //NOI18N
                             try {
                                 startOffset = eTokenSequence.offset();
-                                endOffset = startOffset;
-                                while (eTokenSequence.moveNext()) {
+                                do {
                                     endOffset = eTokenSequence.offset() + eTokenSequence.token().length();
-                                }
+                                } while (eTokenSequence.moveNext());
 
                                 realEndOffset = endOffset > realEndOffset ? endOffset : realEndOffset + 1;
                                 int startLO = Utilities.getLineOffset((BaseDocument) document, startOffset);
