@@ -52,8 +52,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jan Becicka
  */
-//CLOSING-KENAI
-//@ServiceProvider(service=Runnable.class, path="WarmUp")
+@ServiceProvider(service=Runnable.class, path="WarmUp")
 public class KenaiLoginTask implements Runnable {
 
     public static boolean isFinished = false;
