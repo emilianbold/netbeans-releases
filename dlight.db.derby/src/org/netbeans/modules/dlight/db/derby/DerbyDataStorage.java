@@ -262,4 +262,9 @@ public class DerbyDataStorage extends SQLDataStorage {
     public boolean supportsType(DataStorageType storageType) {
         return getStorageTypes().contains(storageType);
     }
+
+    @Override
+    public void loadSchema() {
+        
+    }
 }
