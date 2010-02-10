@@ -77,9 +77,9 @@ public class KWalletProvider implements KeyringProvider{
     public char[] read(String key){
         runCommand("close", runCommand("localWallet"), "true".toCharArray() );
         if (updateHandler()){
-            char[] runCommand = runCommand("readPassword", handler, getApplicationName(), key.toCharArray(), getApplicationName(true));
+            char[] pwd = runCommand("readPassword", handler, getApplicationName(), key.toCharArray(), getApplicationName(true));
             runCommand("close", runCommand("localWallet"), "true".toCharArray() );
-            return runCommand;
+            return pwd.length > 0 ? pwd : null;
         }
         throw new KwalletException("read");
     };
@@ -174,15 +174,15 @@ public class KWalletProvider implements KeyringProvider{
             }
 
         } catch (InterruptedException ex) {
-            logger.log(Level.SEVERE,
+            logger.log(Level.FINE,
                     "exception thrown while invoking the command \""+Arrays.toString(argv)+"\"",
                     ex);
         } catch (IOException ex) {
-            logger.log(Level.SEVERE,
+            logger.log(Level.FINE,
                     "exception thrown while invoking the command \""+Arrays.toString(argv)+"\"",
                     ex);
         }
-        return (!retVal.equals("")) ? retVal.trim().toCharArray() : null;
+        return retVal.trim().toCharArray();
     }
 
     private char[] getApplicationName(){
