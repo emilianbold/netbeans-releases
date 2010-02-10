@@ -42,8 +42,14 @@ package org.netbeans.modules.java.source.indexing;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTags;
+import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.CancelAbort;
 import com.sun.tools.javac.util.CancelService;
 import com.sun.tools.javac.util.CouplingAbort;
@@ -53,6 +59,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.logging.Level;
@@ -76,6 +83,7 @@ import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.modules.java.source.util.LMListener;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -87,7 +95,7 @@ final class MultiPassCompileWorker extends CompileWorker {
     private static final int MEMORY_LOW = 1;
     private static final int ERR = 2;
 
-    ParsingOutput compile(ParsingOutput previous, final Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
+    ParsingOutput compile(final ParsingOutput previous, final Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
         final LinkedList<CompileTuple> toProcess = new LinkedList<CompileTuple>();
         final HashMap<JavaFileObject, CompileTuple> jfo2tuples = new HashMap<JavaFileObject, CompileTuple>();
         for (CompileTuple i : files) {
@@ -176,27 +184,38 @@ final class MultiPassCompileWorker extends CompileWorker {
                 fileManager.handleOption("apt-origin", Collections.singletonList(active.indexable.getURL().toString()).iterator()); //NOI18N
                 try {
                     types = jt.enterTrees(trees);
-                    boolean yield = false;
-                    for (TypeElement te : types) {
-                        ClassSymbol cSym = (ClassSymbol)te;
-                        TypeMirror sup = null;
-                        while((sup = cSym.getSuperclass()) != null && sup.getKind() == TypeKind.DECLARED) {
-                            cSym = (ClassSymbol) ((DeclaredType) sup).asElement();
-                            CompileTuple u = jfo2tuples.get(cSym.sourcefile);
-                            if (u != null && !previous.finishedFiles.contains(u.indexable) && !u.indexable.equals(active.indexable)) {
-                                if (!yield) {
-                                    toProcess.addFirst(active);
+                    if (jfo2tuples.remove(active.jfo) != null) {
+                        final Types ts = Types.instance(jt.getContext());
+                        final Indexable activeIndexable = active.indexable;
+                        class ScanNested extends TreeScanner {
+                            Set<CompileTuple> dependencies = new LinkedHashSet<CompileTuple>();
+                            @Override
+                            public void visitClassDef(JCClassDecl node) {
+                                if (node.sym != null) {
+                                    Type st = ts.supertype(node.sym.type);
+                                    if (st.tag == TypeTags.CLASS) {
+                                        ClassSymbol c = st.tsym.outermostClass();
+                                        CompileTuple u = jfo2tuples.get(c.sourcefile);
+                                        if (u != null && !previous.finishedFiles.contains(u.indexable) && !u.indexable.equals(activeIndexable)) {
+                                            dependencies.add(u);
+                                        }
+                                    }
                                 }
-                                toProcess.addFirst(u);
-                                yield = true;
-                            } else {
-                                break;
+                                super.visitClassDef(node);
                             }
                         }
-                    }
-                    if (yield) {
-                        active = null;
-                        continue;
+                        ScanNested scanner = new ScanNested();
+                        for (CompilationUnitTree cut : trees) {
+                            scanner.scan((JCCompilationUnit)cut);
+                        }
+                        if (!scanner.dependencies.isEmpty()) {
+                            toProcess.addFirst(active);
+                            for (CompileTuple tuple : scanner.dependencies) {
+                                toProcess.addFirst(tuple);
+                            }
+                            active = null;
+                            continue;
+                        }
                     }
                 } finally {
                     fileManager.handleOption("apt-origin", Collections.singletonList("").iterator()); //NOI18N
