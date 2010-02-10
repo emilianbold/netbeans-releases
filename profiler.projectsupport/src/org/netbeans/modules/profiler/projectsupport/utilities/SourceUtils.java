@@ -912,30 +912,6 @@ public final class SourceUtils {
         return signature.getValue();
     }
 
-    /**
-     * Constructs the VM signature for the given executable element (method, constructor ...)
-     * @param ee The executable element to create the VM sginature for (method, constructor ...)
-     * @return Returns the textual representation of a VM signature valid for the given executable element
-     *
-     * @deprecated
-     */
-    public static String getVMSignature(ExecutableElement ee) {
-        String constructedSig = "("; // NOI18N
-        final List<? extends VariableElement> paramsList = ee.getParameters();
-
-        for (VariableElement param : paramsList) {
-            constructedSig += VMUtils.typeToVMSignature(param.asType().toString());
-        }
-
-        if (ee.getKind().equals(ElementKind.CONSTRUCTOR)) {
-            constructedSig += ")V"; // NOI18N
-        } else {
-            constructedSig += (")" + VMUtils.typeToVMSignature(ee.getReturnType().toString())); // NOI18N
-        }
-
-        return constructedSig;
-    }
-
     public static FileObject findFileObjectByClassName(final String className, final Project project) {
         if (className == null) {
             return null;
@@ -1404,7 +1380,7 @@ public final class SourceUtils {
                 // TYPEVAR means "T" or "<T extends String>" or "<T extends List&Runnable>"
                 List<? extends TypeMirror> subTypes = ci.getTypes().directSupertypes(type);
 
-                if (subTypes.size() == 0) {
+                if (subTypes.isEmpty()) {
                     return "java.lang.Object"; // NOI18N // Shouldn't happen
                 }
 
@@ -1460,8 +1436,7 @@ public final class SourceUtils {
     /**
      * Returns the JavaSource repository of a given project or global JavaSource if no project is provided
      */
-    public static JavaSource getSources(
-            Project project) {
+    public static JavaSource getSources(Project project) {
         if (project == null) {
             return getSources((FileObject[]) null);
         } else {
@@ -1535,13 +1510,13 @@ public final class SourceUtils {
      * @param ee The executable element to compare the signature to (method, constructor ...)
      * @return Returns true if the signature of the executable element matches the desired signature
      */
-    private static boolean methodSignatureMatch(final String vmSig,
+    private static boolean methodSignatureMatch(CompilationInfo ci, final String vmSig,
             final ExecutableElement ee) {
         // heuristic: it is hard to distinguish where innerclass starts in CallableFeature params, so let's not deal with
         // this at all
         final String vmSigCheck = vmSig.replaceAll("\\$", "/"); // NOI18N
 
-        return getVMSignature(ee).equals(vmSigCheck);
+        return getVMMethodSignature(ee,ci).equals(vmSigCheck);
     }
 
     /**
@@ -1551,7 +1526,7 @@ public final class SourceUtils {
      * @param signature The VM signature of the method
      * @return Returns an ExecutableElement representing the method or null
      */
-    public static ExecutableElement resolveMethodByName(
+    public static ExecutableElement resolveMethodByName(CompilationInfo ci,
             TypeElement parentClass, String methodName, String signature) {
         // TODO: static initializer
         if ((parentClass == null) || (methodName == null)) {
@@ -1577,20 +1552,13 @@ public final class SourceUtils {
         for (ExecutableElement method : methods) {
             // match the current method against the required method name and signature
             if (methodNameMatch(methodName, method)) {
-                if (signature != null && methodSignatureMatch(signature, method)) {
+                if (signature != null && methodSignatureMatch(ci, signature, method)) {
                     foundMethod = method;
-                    found =
-                            true;
-
+                    found = true;
                     break;
-
                 }
-
-
-
                 foundMethod = method; // keeping the track of the closest match
             }
-
         }
 
         if (!found) {
