@@ -169,29 +169,39 @@ public class ParametersTest extends CommonTestCase {
                     names.add( method.getSimpleName()+ " " +element.getSimpleName());
                     if ( method.getSimpleName().contentEquals("method1")){
                         if ( element.getSimpleName().contentEquals("arg1")){
-                            checkMethod1Arg1( element, provider );
+                            assertFindParameterResultInjectables(element, provider, "foo.One", "foo.Two");
+                            assertFindParameterResultProductions(element, provider);
                         }
                         else if ( element.getSimpleName().contentEquals("arg2")){
-                            checkMethod1Arg2( element, provider );
+                            assertFindParameterResultInjectables(element, provider, "foo.One");
+                            assertFindParameterResultProductions(element, provider);
                         }
                     }
                     else if (method.getSimpleName().contentEquals("method2") ){
-                        checkMethod2( element, provider );
+                        assertFindParameterResultInjectables(element, provider, "foo.Two");
+                        assertFindParameterResultProductions(element, provider);
                     }
                     else if (method.getSimpleName().contentEquals("method3") ){
-                        checkMethod3( element, provider );
+                        assertFindParameterResultInjectables(element, provider, "foo.SuperClass");
+                        assertFindParameterResultProductions(element, provider);
                     }
                     else if (method.getSimpleName().contentEquals("method4") ){
-                        checkMethod4( element, provider );
+                        Result result = provider.findParameterInjectable(element, null);
+                        assertResultInjectables(result);
+                        assertResultProductions(result, true, "productionField");
                     }
                     else if (method.getSimpleName().contentEquals("method5") ){
-                        checkMethod5( element, provider );
+                        assertFindParameterResultInjectables(element, provider);
+                        assertFindParameterResultProductions(element, provider, "productionMethod");
                     }
                     else if (method.getSimpleName().contentEquals("method6") ){
-                        checkMethod6( element, provider );
+                        Result result = provider.findParameterInjectable(element, null);
+                        /* Method has no any special annotation. It's argument is not injection point.*/
+                        assertTrue( result instanceof DefinitionErrorResult );
                     }
                     else if (method.getSimpleName().contentEquals("method7") ){
-                        checkMethod7( element, provider );
+                        assertFindParameterResultInjectables(element, provider, "foo.SuperClass");
+                        assertFindParameterResultProductions(element, provider);
                     }
                 }
                 
@@ -301,20 +311,25 @@ public class ParametersTest extends CommonTestCase {
                     names.add( method.getSimpleName()+ " " +element.getSimpleName());
                     if ( method.getSimpleName().contentEquals("clean")){
                         if ( element.getSimpleName().contentEquals("index")){
-                            checkCleanIndex( element, provider );
+                            assertFindParameterResultInjectables(element, provider);
+                            assertFindParameterResultProductions(element, provider, "getIndex");
                         }
                         else if ( element.getSimpleName().contentEquals("text")){
-                            checkCleanText( element, provider );
+                            assertFindParameterResultInjectables(element, provider);
+                            assertFindParameterResultProductions(element, provider, "get");
                         }
                     }
                     else if (method.getSimpleName().contentEquals("stopped") ){
-                        checkStopped( element, provider );
+                        assertFindParameterResultInjectables(element, provider);
+                        assertFindParameterResultProductions(element, provider, "isNull");
                     }
                     else if (method.getSimpleName().contentEquals("close") ){
-                        checkClose( element, provider );
+                        assertFindParameterResultInjectables(element, provider);
+                        assertFindParameterResultProductions(element, provider);
                     }
                     else if (method.getSimpleName().contentEquals("inform") ){
-                        checkInform( element, provider );
+                        assertFindParameterResultInjectables(element, provider);
+                        assertFindParameterResultProductions(element, provider);
                     }
                 }
                 
@@ -423,13 +438,15 @@ public class ParametersTest extends CommonTestCase {
                     names.add( method.getSimpleName()+ " " +element.getSimpleName());
                     if ( method.getSimpleName().contentEquals("method1")){
                         if ( element.getSimpleName().contentEquals("text")){
-                            checkObservesText( element, provider );
+                            assertFindParameterResultInjectables(element, provider);
+                            assertFindParameterResultProductions(element, provider, "getText");
                             names.add("method1 text");
                         }
                     }
                     else if (method.getSimpleName().contentEquals("method2") ){
                         if ( element.getSimpleName().contentEquals("clazz")){
-                            checkObservesClazz( element, provider );
+                            assertFindParameterResultInjectables(element, provider, "foo.One");
+                            assertFindParameterResultProductions(element, provider);
                             names.add("method2 clazz");
                         }
                     }
@@ -442,312 +459,4 @@ public class ParametersTest extends CommonTestCase {
         });
     }
     
-    protected void checkMethod1Arg1( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("start test arg1 for method1");
-
-        Result result = provider.findParameterInjectable(element, null);
-        assertNotNull(result);
-
-        assertTrue(result instanceof ResultImpl);
-
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(2, typeElements.size());
-        assertEquals(0, productions.size());
-
-        boolean oneFound = false;
-        boolean twoFound = false;
-        for (TypeElement injectable : typeElements) {
-            String name = injectable.getQualifiedName().toString();
-            if (name.equals("foo.One")) {
-                oneFound = true;
-            }
-            else if (name.equals("foo.Two")) {
-                twoFound = true;
-            }
-        }
-
-        assertTrue("foo.One is eligible for injection , but not found",
-                oneFound);
-        assertTrue("foo.Two is eligible for injection , but not found",
-                twoFound);
-    }
-    
-    protected void checkMethod1Arg2( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("start test arg2 for method1");
-
-        Result result = provider.findParameterInjectable(element, null);
-        assertNotNull(result);
-
-        assertTrue(result instanceof ResultImpl);
-
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injectable = typeElements.iterator().next();
-        assertNotNull(injectable);
-
-        assertEquals("foo.One", injectable.getQualifiedName().toString());
-    }
-    
-    protected void checkMethod2( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("start test arg for method2");
-
-        Result result = provider.findParameterInjectable(element, null);
-        assertNotNull(result);
-
-        assertTrue(result instanceof ResultImpl);   
-
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injectable = typeElements.iterator().next();
-        assertNotNull(injectable);
-        assertEquals("foo.Two", injectable.getQualifiedName().toString());
-
-    }
-    
-    protected void checkMethod3( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("start test arg for method3");
-        Result result = provider.findParameterInjectable(element, null);
-        assertNotNull(result);
-
-        assertTrue(result instanceof ResultImpl);
-
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injectable = typeElements.iterator().next();
-        assertNotNull(injectable);
-        assertEquals("foo.SuperClass", injectable.getQualifiedName().toString());
-
-    }
-    
-    protected void checkMethod4( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("start test arg for method4");
-        Result result = provider.findParameterInjectable(element, null);
-        assertNotNull(result);
-
-        assertTrue(result instanceof ResultImpl);
-
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(1, productions.size());
-
-        Element injectable = productions.iterator().next();
-        assertNotNull(injectable);
-        assertTrue("injectable should be a production field," + " but found :"
-                + injectable.getKind(), injectable instanceof VariableElement);
-        assertEquals("productionField", injectable.getSimpleName().toString());
-
-    }
-    
-    protected void checkMethod5( VariableElement element, 
-            TestWebBeansModelProviderImpl provider)
-    {
-        inform("start test arg for method5");
-        Result result = provider.findParameterInjectable(element, null);
-        assertNotNull(result);
-
-        assertTrue(result instanceof ResultImpl);
-
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(1, productions.size());
-
-        Element injectable = productions.iterator().next();
-        assertNotNull(injectable);
-        assertTrue("injectable should be a production method," + " but found :"
-                + injectable.getKind(), injectable instanceof ExecutableElement);
-        assertEquals("productionMethod", injectable.getSimpleName().toString());
-
-    }
-    
-    protected void checkMethod6( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("start test arg for method6");
-        Result result = provider.findParameterInjectable(element, null);
-
-        /*
-         * Method has no any special annotation. It's argument is not injection
-         * point.
-         */
-        assertTrue( result instanceof DefinitionErrorResult );
-    }
-    
-    protected void checkMethod7( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        checkMethod3(element, provider );
-    }
-    
-    protected void checkCleanIndex( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("start test index arg for clean");
-        Result result = provider.findParameterInjectable(element, null);
-        assertNotNull(result);
-
-        assertTrue(result instanceof ResultImpl);
-
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(1, productions.size());
-
-        Element injectable = productions.iterator().next();
-        assertNotNull(injectable);
-        assertTrue("injectable should be a production method," + " but found :"
-                + injectable.getKind(), injectable instanceof ExecutableElement);
-        assertEquals("getIndex", injectable.getSimpleName().toString());
-
-    }
-    
-    protected void checkCleanText( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("start test text arg for clean");
-        Result result = provider.findParameterInjectable(element, null);
-        assertNotNull(result);
-
-        assertTrue(result instanceof ResultImpl);
-
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(1, productions.size());
-
-        Element injectable = productions.iterator().next();
-        assertNotNull(injectable);
-        assertTrue("injectable should be a production method," + " but found :"
-                + injectable.getKind(), injectable instanceof ExecutableElement);
-        assertEquals("get", injectable.getSimpleName().toString());
-
-    }
-    
-    protected void checkStopped( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("start test arg for stopped");
-        Result result = provider.findParameterInjectable(element, null);
-        assertNotNull(result);
-
-        assertTrue(result instanceof ResultImpl);
-
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(1, productions.size());
-
-        Element injectable = productions.iterator().next();
-        assertNotNull(injectable);
-        assertTrue("injectable should be a production method," + " but found :"
-                + injectable.getKind(), injectable instanceof ExecutableElement);
-        assertEquals("isNull", injectable.getSimpleName().toString());
-
-    }
-    
-    protected void checkClose( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform( "start test arg for close");
-        Result result = provider.findParameterInjectable(element, null);
-        assertNotNull(result);
-
-        assertTrue(result instanceof ResultImpl);
-
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(0, productions.size());
-    }
-    
-    protected void checkInform( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform( "start test arg for inform");
-        Result result = provider.findParameterInjectable(element, null);
-        assertNotNull(result);
-
-        assertTrue(result instanceof ResultImpl);
-
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(0, productions.size());
-    }
-    
-
-    private void checkObservesClazz( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("start check 'clazz' parameter in observes method");
-        Result result = provider.findParameterInjectable(element, null);
-        assertNotNull(result);
-
-        assertTrue(result instanceof ResultImpl);
-
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injectable = typeElements.iterator().next();
-        assertNotNull(injectable);
-        assertEquals("foo.One", injectable.getQualifiedName().toString());
-    }
-
-    private void checkObservesText( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("start check 'text' parameter in observes method");
-        Result result = provider.findParameterInjectable(element, null);
-        assertNotNull(result);
-
-        assertTrue(result instanceof ResultImpl);
-
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(1, productions.size());
-
-        Element injectable = productions.iterator().next();
-        assertNotNull(injectable);
-        assertTrue("injectable should be a production method," + " but found :"
-                + injectable.getKind(), injectable instanceof ExecutableElement); 
-        assertEquals("getText", injectable.getSimpleName().toString());
-    }
-
 }

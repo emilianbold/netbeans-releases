@@ -130,16 +130,20 @@ public class CurrentTest extends CommonTestCase {
                 for( VariableElement element : injectionPoints ){
                     names.add( element.getSimpleName().toString() );
                     if ( element.getSimpleName().contentEquals("myField1")){
-                        check1( element , provider);
+                        assertFindVariableResultInjectables(element, provider, "foo.SuperClass", "foo.One", "foo.Two");
+                        assertFindVariableResultProductions(element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myField2")){
-                        check2( element , provider);
+                        assertFindVariableResultInjectables(element, provider);
+                        assertFindVariableResultProductionsVar(element, provider, "productionField");
                     }
                     else if ( element.getSimpleName().contentEquals("myField3")){
-                        check3( element , provider);
+                        assertFindVariableResultInjectables(element, provider);
+                        assertFindVariableResultProductions(element, provider, "productionMethod");
                     }
                     else if ( element.getSimpleName().contentEquals("myField4")){
-                        check4( element , provider);
+                        assertFindVariableResultInjectables(element, provider, "foo.One");
+                        assertFindVariableResultProductions(element, provider);
                     }
                 }
                 assert names.contains("myField1");
@@ -249,16 +253,20 @@ public class CurrentTest extends CommonTestCase {
                 for( VariableElement element : injectionPoints ){
                     names.add( element.getSimpleName().toString() );
                     if ( element.getSimpleName().contentEquals("myField1")){
-                        checkMixed1( element , provider);
+                        assertFindVariableResultInjectables(element, provider, "foo.Three");
+                        assertFindVariableResultProductions(element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myField2")){
-                        checkMixed2( element , provider);
+                        assertFindVariableResultInjectables(element, provider);
+                        assertFindVariableResultProductions(element, provider, "productionMethod");
                     }
                     else if ( element.getSimpleName().contentEquals("myField3")){
-                        checkMixed3( element , provider);
+                        assertFindVariableResultInjectables(element, provider, "foo.Four", "foo.Three", "foo.Two");
+                        assertFindVariableResultProductions(element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myField4")){
-                        checkMixed4( element , provider);
+                        assertFindVariableResultInjectables(element, provider, "foo.Four");
+                        assertFindVariableResultProductions(element, provider);
                     }
                 }
                 assert names.contains("myField1");
@@ -372,13 +380,16 @@ public class CurrentTest extends CommonTestCase {
                 for( VariableElement element : injectionPoints ){
                     names.add( element.getSimpleName().toString() );
                     if ( element.getSimpleName().contentEquals("myField1")){
-                        checkDefault1( element , provider);
+                        assertFindVariableResultInjectables(element, provider);
+                        assertFindVariableResultProductions(element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myField2")){
-                        checkDefault2( element , provider);
+                        assertFindVariableResultInjectables(element, provider, "foo.Two1");
+                        assertFindVariableResultProductions(element, provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myField3")){
-                        checkDefault3( element , provider);
+                        assertFindVariableResultInjectables(element, provider);
+                        assertFindVariableResultProductions(element, provider);
                     }
                 }
                 assert names.contains("myField1");
@@ -389,263 +400,4 @@ public class CurrentTest extends CommonTestCase {
         });
     }
     
-    protected void check1( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test myField1");
-
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(3, typeElements.size());
-        assertEquals(0, productions.size());
-
-        boolean superFound = false;
-        boolean oneFound = false;
-        boolean twoFound = false;
-        for (TypeElement injectable : typeElements) {
-            if (injectable.getQualifiedName().contentEquals("foo.SuperClass")) {
-                superFound = true;
-            }
-            else if (injectable.getQualifiedName().contentEquals("foo.One")) {
-                oneFound = true;
-            }
-            if (injectable.getQualifiedName().contentEquals("foo.Two")) {
-                twoFound = true;
-            }
-        }
-        assertTrue(superFound);
-        assertTrue(oneFound);
-        assertTrue(twoFound);
-    }
-    
-    protected void check2( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test myField2");
-
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(1, productions.size());
-
-        Element injactable = productions.iterator().next();
-        assertNotNull(injactable);
-
-        assertTrue("Expect production field , but found : "
-                + injactable.getKind(), injactable instanceof VariableElement);
-
-        assertEquals("productionField", injactable.getSimpleName().toString());
-    }
-    
-    protected void check3( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test myField3");
-
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(1, productions.size());
-
-        Element injactable = productions.iterator().next();
-        assertNotNull(injactable);
-
-        assertTrue("Expect production method , but found : "
-                + injactable.getKind(), injactable instanceof ExecutableElement);
-
-        assertEquals("productionMethod", injactable.getSimpleName().toString());
-    }
-    
-    protected void check4( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test myField4");
-
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injactable = typeElements.iterator().next();
-
-        assertNotNull(injactable);
-        
-        assertEquals("foo.One", injactable.getQualifiedName().toString());
-    }
-    
-    protected void checkMixed1( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("mixed test myField1");
-
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injactable = typeElements.iterator().next();
-
-        assertNotNull(injactable);
-        assertEquals("foo.Three", ((TypeElement) injactable).getQualifiedName()
-                .toString());
-    }
-    
-    protected void checkMixed2( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("mixed test myField2");
-
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(1, productions.size());
-
-        Element injactable = productions.iterator().next();
-
-        assertNotNull(injactable);
-        assertTrue("Expect production method , but found : "
-                + injactable.getKind(), injactable instanceof ExecutableElement);
-
-        assertEquals("productionMethod", injactable.getSimpleName().toString());
-    }
-    
-    protected void checkMixed3( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("mixed test myField3");
-
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(3, typeElements.size());
-        assertEquals(0, productions.size());
-
-        boolean twoFound = false;
-        boolean threeFound = false;
-        boolean fourFound = false;
-        for (TypeElement injectable : typeElements) {
-            if (injectable.getQualifiedName().contentEquals("foo.Two")) {
-                twoFound = true;
-            }
-            else if (injectable.getQualifiedName().contentEquals("foo.Three"))
-            {
-                threeFound = true;
-            }
-            if (injectable.getQualifiedName().contentEquals("foo.Four")) {
-                fourFound = true;
-            }
-        }
-        assertTrue(twoFound);
-        assertTrue(threeFound);
-        assertTrue(fourFound);
-    }
-    
-    protected void checkMixed4( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("mixed test myField4");
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injactable = typeElements.iterator().next();
-
-        assertNotNull(injactable);
-
-        assertEquals("foo.Four", ((TypeElement) injactable).getQualifiedName()
-                .toString());
-    }
-    
-    protected void checkDefault1( VariableElement element,
-            TestWebBeansModelProviderImpl provider )
-    {
-        inform("test current absence for myField1");
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(0, productions.size());
-    }
-    
-    protected void checkDefault2( VariableElement element, 
-            TestWebBeansModelProviderImpl provider)
-    {
-        inform("test current presence for myField2");
-
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injactable = typeElements.iterator().next();
-        assertNotNull(injactable);
-
-        assertEquals("foo.Two1", injactable.getQualifiedName().toString());
-    }
-    
-    protected void checkDefault3( VariableElement element,
-            TestWebBeansModelProviderImpl provider) 
-    {
-        inform("test current absence for myField3");
-
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(0, productions.size());
-    }
-
 }
