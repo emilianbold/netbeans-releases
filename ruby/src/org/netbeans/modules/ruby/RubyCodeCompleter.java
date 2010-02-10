@@ -1554,8 +1554,11 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 }
                 f = f.getParent();
             }
+            // add in all methods from the associated helper and from ApplicationHelper, which is global
             Set<IndexedMethod> helper = index.getInheritedMethods(controllerName+"Helper", prefix, kind); // NOI18N
+            Set<IndexedMethod> applicationHelper = index.getInheritedMethods("ApplicationHelper", prefix, kind); // NOI18N
             inheritedMethods.addAll(helper);
+            inheritedMethods.addAll(applicationHelper);
             // TODO - pull in the fields (NOT THE METHODS) from the controller
             //Set<IndexedMethod> controller = index.getInheritedMethods(controllerName+"Controller", prefix, kind);
             //inheritedMethods.addAll(controller);
