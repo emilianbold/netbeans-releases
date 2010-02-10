@@ -69,7 +69,7 @@ made subject to such option by the copyright holder.
             </p>
 
             <ul>
-            <xsl:for-each select="//api[@type='export' and @group='property']" >
+            <xsl:for-each select="//api[@type='export' and @group='systemproperty']" >
                 <li>
                     <b>
                         <xsl:choose >
@@ -89,7 +89,7 @@ made subject to such option by the copyright holder.
                         <a>
                             <xsl:attribute name="href">
                                 <xsl:value-of select="ancestor::module/@target"/>
-                                <xsl:text>#group-property</xsl:text>
+                                <xsl:text>#group-systemproperty</xsl:text>
                             </xsl:attribute>
                             <xsl:value-of select="ancestor::module/@name"/>
                         </a>
