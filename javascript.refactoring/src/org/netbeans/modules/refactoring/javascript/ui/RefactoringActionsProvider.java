@@ -407,11 +407,18 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
                         // TODO - try to find the outermost or most "relevant" module/class in the file?
                         // In Java, we look for a class with the name corresponding to the file.
                         // It's not as simple in Ruby.
-                        AstElement element = els.get(0);
-                        org.mozilla.nb.javascript.Node node = element.getNode();
-                        JsElementCtx representedObject = new JsElementCtx(root, node, element, ri.getSnapshot().getSource().getFileObject(), jspr);
-                        representedObject.setNames(element.getFqn(), element.getName());
-                        handles.add(representedObject);
+                        AstElement element = null;
+			for (AstElement astElement : els) {
+			    if (astElement.getName().equals(ri.getSnapshot().getSource().getFileObject().getName())) {
+				element = astElement;
+			    }
+			}
+			if (element != null) {
+			    org.mozilla.nb.javascript.Node node = element.getNode();
+			    JsElementCtx representedObject = new JsElementCtx(root, node, element, ri.getSnapshot().getSource().getFileObject(), jspr);
+			    representedObject.setNames(element.getFqn(), element.getName());
+			    handles.add(representedObject);
+			}
                     }
                 }
 //                cinfo=new WeakReference<CompilationInfo>(info);

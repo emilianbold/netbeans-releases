@@ -43,7 +43,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,7 +60,6 @@ import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.remote.sync.download.HostUpdates.FileDownloadInfo;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -78,9 +76,10 @@ public class HostUpdatesRequestPanel extends JPanel {
     private JPanel bottomPanel;
     private JCheckBox cbRememberChoice;
     private JTable fileTable;
+    private final HostUpdatesPersistence persistence;
 
-    public static Set<HostUpdates.FileDownloadInfo> request(Collection<HostUpdates.FileDownloadInfo> infos, ExecutionEnvironment env, File privProjectStorageDir) {
-        HostUpdatesRequestPanel panel = new HostUpdatesRequestPanel(infos, privProjectStorageDir);
+    public static Set<FileDownloadInfo> request(Collection<FileDownloadInfo> infos, ExecutionEnvironment env, HostUpdatesPersistence persistence) {
+        HostUpdatesRequestPanel panel = new HostUpdatesRequestPanel(infos, env, persistence);
         String envString = RemoteUtil.getDisplayName(env);
         String caption = NbBundle.getMessage(HostUpdatesRequestPanel.class, "HostUpdatesRequestPanel.TITLE", envString);
         panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
@@ -91,26 +90,30 @@ public class HostUpdatesRequestPanel extends JPanel {
         dlg.pack();
         dlg.setVisible(true);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+            panel.apply();
             return panel.getConfirmed();
         } else {
-            return Collections.<HostUpdates.FileDownloadInfo>emptySet();
+            return null;
         }
-
     }
 
-    HostUpdatesRequestPanel(Collection<FileDownloadInfo> fileInfos, File privProjectStorageDir) {
+    HostUpdatesRequestPanel(Collection<FileDownloadInfo> fileInfos, ExecutionEnvironment env, HostUpdatesPersistence persistence) {
         super(new BorderLayout());
+        this.persistence = persistence;
         this.model = new ArrayList<RowData>(fileInfos.size());
         for (FileDownloadInfo info : fileInfos) {
-            model.add(new RowData(info, true));
+            boolean selected = persistence.getFileSelected(info.getLocalFile(), true);
+            model.add(new RowData(info, selected));
         }
+        Collections.sort(model);
 
         fileTable = new JTable(new FileTableModel());
         fileTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         fileTable.getColumnModel().getColumn(0).setPreferredWidth(24);
-        int height = 32;
+        //int height = 32;
         for (int c = 1; c < fileTable.getColumnCount(); c++) {
-            height = packColumnAndCalcHeight(fileTable, c, 2);
+            //height = packColumnAndCalcHeight(fileTable, c, 2);
+            packColumnAndCalcHeight(fileTable, c, 2);
         }
         Dimension pref = fileTable.getPreferredSize();
         pref.width = Math.min(pref.width, fileTable.getPreferredScrollableViewportSize().width);
@@ -123,13 +126,20 @@ public class HostUpdatesRequestPanel extends JPanel {
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(6, 0, 0, 0));
         cbRememberChoice = new JCheckBox(NbBundle.getMessage(getClass(), "HostUpdatesRequestPanel.remember.text"), false);
-        cbRememberChoice.setEnabled(false);
         bottomPanel.add(cbRememberChoice);
         this.add(bottomPanel, BorderLayout.SOUTH);
     }
 
-    private static int packColumnAndCalcHeight(JTable table, int vColIndex, int margin) {
-        int height = 0;
+    private void apply() {
+        persistence.setRememberChoice(cbRememberChoice.isSelected());
+        for (RowData data : model) {
+            persistence.setFileSelected(data.fileInfo.getLocalFile(), data.selected);
+        }
+        persistence.store();
+    }
+
+    private static void packColumnAndCalcHeight(JTable table, int vColIndex, int margin) {
+        //int height = 0;
         DefaultTableColumnModel colModel = (DefaultTableColumnModel) table.getColumnModel();
         TableColumn col = colModel.getColumn(vColIndex);
         int width = 0;
@@ -141,23 +151,23 @@ public class HostUpdatesRequestPanel extends JPanel {
                 table, col.getHeaderValue(), false, false, 0, 0);
         Dimension pref = comp.getPreferredSize();
         width = pref.width;
-        height += pref.height;
+        //height += pref.height;
         for (int r = 0; r < table.getRowCount(); r++) {
             renderer = table.getCellRenderer(r, vColIndex);
             comp = renderer.getTableCellRendererComponent(
                     table, table.getValueAt(r, vColIndex), false, false, r, vColIndex);
             pref = comp.getPreferredSize();
-            height += pref.height;
+            //height += pref.height;
             width = Math.max(width, pref.width);
         }
         width += 2 * margin;
         col.setPreferredWidth(width);
-        height += 2 * margin;
-        return height;
+        //height += 2 * margin;
+        //return height;
     }
 
-    private Set<HostUpdates.FileDownloadInfo> getConfirmed() {
-        Set<HostUpdates.FileDownloadInfo> result = new HashSet<HostUpdates.FileDownloadInfo>();
+    private Set<FileDownloadInfo> getConfirmed() {
+        Set<FileDownloadInfo> result = new HashSet<FileDownloadInfo>();
         for (RowData data : model) {
             if (data.selected) {
                 result.add(data.fileInfo);
@@ -167,12 +177,21 @@ public class HostUpdatesRequestPanel extends JPanel {
     }
 
 
-    private static class RowData {
-        public final HostUpdates.FileDownloadInfo fileInfo;
+    private static class RowData implements Comparable<RowData> {
+        public final FileDownloadInfo fileInfo;
         public boolean selected;
-        public RowData(HostUpdates.FileDownloadInfo fileInfo, boolean selected) {
+        public RowData(FileDownloadInfo fileInfo, boolean selected) {
             this.fileInfo = fileInfo;
             this.selected = selected;
+        }
+
+        @Override
+        public int compareTo(RowData o) {
+            if (o == null) {
+                return -1;
+            } else {
+                return fileInfo.getLocalFile().getAbsolutePath().compareTo(o.fileInfo.getLocalFile().getAbsolutePath());
+            }
         }
     }
 
@@ -193,8 +212,8 @@ public class HostUpdatesRequestPanel extends JPanel {
             RowData data = (rowIndex < model.size()) ? model.get(rowIndex) : null;
             switch (columnIndex) {
                 case 0: return (data == null) ? false : data.selected;
-                case 1: return data.fileInfo.file.getName();
-                case 2: return data.fileInfo.file.getParent();
+                case 1: return data.fileInfo.getLocalFile().getName();
+                case 2: return data.fileInfo.getLocalFile().getParent();
                 default: throw new IllegalArgumentException("Illegal column index: " + columnIndex); //NOI18N
             }
         }
@@ -239,5 +258,5 @@ public class HostUpdatesRequestPanel extends JPanel {
             return columnIndex == 0;
         }
     }
-
 }
+

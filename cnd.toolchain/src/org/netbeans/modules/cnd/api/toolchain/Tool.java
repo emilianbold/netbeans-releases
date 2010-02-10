@@ -40,8 +40,8 @@
 package org.netbeans.modules.cnd.api.toolchain;
 
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolDescriptor;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.APIAccessor;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
+import org.netbeans.modules.cnd.toolchain.compilerset.APIAccessor;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Utilities;
 

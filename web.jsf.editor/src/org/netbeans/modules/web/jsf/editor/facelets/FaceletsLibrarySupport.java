@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.netbeans.modules.web.jsf.editor.facelets.mojarra.ConfigManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -269,8 +270,9 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         //WEB-INF/web.xml <param-name>javax.faces.FACELETS_LIBRARIES</param-name> context param provider
         faceletTaglibProviders.add(new WebFaceletTaglibResourceProvider(getJsfSupport().getWebModule()));
 
-        //searches in classpath jars for .taglib.xml files
-//        faceletTaglibProviders.add(new MetaInfFaceletTaglibraryConfigProvider());
+        //searches source classpath for .taglib.xml files
+        ClassPath sourceClasspath = ClassPath.getClassPath(getJsfSupport().getWebModule().getDocumentBase(), ClassPath.SOURCE);
+        faceletTaglibProviders.add(new FaceletTaglibraryConfigProvider(sourceClasspath));
 
         //2. second add provider which looks for libs in the jars on the project classpath
         //we already identified the library descriptors during indexing, no need

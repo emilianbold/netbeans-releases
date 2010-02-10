@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -90,14 +90,14 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     
     // Interface OptionsProvider
     @Override
-    public String getOptions(BasicCompiler compiler) {
+    public String getOptions(AbstractCompiler compiler) {
         String options = "$(COMPILE.cc) "; // NOI18N
         options += getAllOptions2(compiler) + " "; // NOI18N
         options += getCommandLineConfiguration().getValue() + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
     
-    public String getCCFlagsBasic(BasicCompiler compiler) {
+    public String getCCFlagsBasic(AbstractCompiler compiler) {
         String options = ""; // NOI18N
         options += compiler.getMTLevelOptions(getMTLevel().getValue()) + " "; // NOI18N
         options += compiler.getLibraryLevelOptions(getLibraryLevel().getValue()) + " "; // NOI18N
@@ -111,14 +111,14 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         return CppUtils.reformatWhitespaces(options);
     }
     
-    public String getCCFlags(BasicCompiler compiler) {
+    public String getCCFlags(AbstractCompiler compiler) {
         String options = getCCFlagsBasic(compiler) + " "; // NOI18N
         options += getCommandLineConfiguration().getValue() + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
     
     @Override
-    public String getAllOptions(BasicCompiler compiler) {
+    public String getAllOptions(AbstractCompiler compiler) {
         CCCompilerConfiguration master;
         
         StringBuilder options = new StringBuilder();
@@ -135,7 +135,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         return CppUtils.reformatWhitespaces(options.toString());
     }
     
-    public String getAllOptions2(BasicCompiler compiler) {
+    public String getAllOptions2(AbstractCompiler compiler) {
         CCCompilerConfiguration master;
         
         String options = ""; // NOI18N
@@ -209,7 +209,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     public Sheet getSheet(MakeConfiguration conf, Folder folder) {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        BasicCompiler ccCompiler = compilerSet == null ? null : (BasicCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+        AbstractCompiler ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
         
         sheet.put(getSet());
         if (conf.isCompileConfiguration() && folder == null) {

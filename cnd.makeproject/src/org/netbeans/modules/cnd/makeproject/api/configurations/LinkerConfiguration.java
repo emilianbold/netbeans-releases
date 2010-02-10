@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.openide.DialogDisplayer;
@@ -314,7 +314,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 
     // Interface OptionsProvider
     @Override
-    public String getAllOptions(BasicCompiler compiler) {
+    public String getAllOptions(AbstractCompiler compiler) {
         String options = getBasicOptions() + " "; // NOI18N
         options += getLibraryItems() + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
@@ -330,10 +330,10 @@ public class LinkerConfiguration implements AllOptionsProvider {
         if (compilerSet != null) {
             linker = compilerSet == null ? null : compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker();
             if (conf.hasCPPFiles(configurationDescriptor)) {
-                BasicCompiler ccCompiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                AbstractCompiler ccCompiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
                 linkDriver = ccCompiler.getName();
             } else {
-                BasicCompiler cCompiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.CCompiler);
+                AbstractCompiler cCompiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCompiler);
                 linkDriver = cCompiler.getName();
             }
         }
@@ -405,7 +405,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
     private final class AdditionalDependenciesOptions implements AllOptionsProvider {
 
         @Override
-        public String getAllOptions(BasicCompiler compiler) {
+        public String getAllOptions(AbstractCompiler compiler) {
             String options = ""; // NOI18N
             options += additionalDependencies.getPreDefined();
             return CppUtils.reformatWhitespaces(options);

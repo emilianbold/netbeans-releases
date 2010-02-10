@@ -47,9 +47,9 @@ import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
+import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -62,13 +62,13 @@ public class PredefinedPanel extends javax.swing.JPanel {
 
     private IncludesPanel includesPanel;
     private DefinitionsPanel definitionsPanel;
-    private BasicCompiler compiler;
+    private AbstractCompiler compiler;
     private ParserSettingsPanel parserSettingsPanel;
 
     private boolean settingsReseted = false;
 
     /** Creates new form PredefinedPanel */
-    public PredefinedPanel(BasicCompiler compiler, ParserSettingsPanel parserSettingsPanel) {
+    public PredefinedPanel(AbstractCompiler compiler, ParserSettingsPanel parserSettingsPanel) {
         initComponents();
         this.compiler = compiler;
         this.parserSettingsPanel = parserSettingsPanel;
@@ -141,7 +141,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
         updatePanels(false);
     }
 
-    public void updateCompiler(BasicCompiler compiler) {
+    public void updateCompiler(AbstractCompiler compiler) {
         this.compiler = compiler;
     }
 

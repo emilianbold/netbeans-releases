@@ -93,7 +93,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     boolean waitingForScan;
     boolean waitingForEntities;
     //private PersistenceUnit persistenceUnit;
-    private boolean createPU = true;//right now this panel is used in wizards with required pu
+    private boolean createPU = true;//right now this panel is used in wizards with required pu (but need to handle if pu already created)
 
     private EntityClosure entityClosure;
 
@@ -118,7 +118,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
      * @return if wizard have selected option to create new pu.
      */
     public boolean getCreatePersistenceUnit() {
-        return createPU;
+        return createPU && createPUCheckbox.isVisible();//if checkbox isn't visible, regardless of selection, pu creation is not required
     }
 
     private Set<String> getSelectedEntities(JList list) {

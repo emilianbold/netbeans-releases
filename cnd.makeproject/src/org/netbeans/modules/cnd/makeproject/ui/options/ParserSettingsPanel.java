@@ -66,7 +66,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ui.IsChangedListener;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
@@ -238,11 +238,11 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             String key = ""+tool.getKind()+csp.displayName + tool.getPath(); // display name has collection name and hkey
             PredefinedPanel predefinedPanel = predefinedPanels.get(key);
             if (predefinedPanel == null) {
-                predefinedPanel = new PredefinedPanel((BasicCompiler) tool, this);
+                predefinedPanel = new PredefinedPanel((AbstractCompiler) tool, this);
                 predefinedPanels.put(key, predefinedPanel);
             //modified = true; // See 126368
             } else {
-                predefinedPanel.updateCompiler((BasicCompiler) tool);
+                predefinedPanel.updateCompiler((AbstractCompiler) tool);
             }
             tabbedPane.addTab(tool.getDisplayName(), predefinedPanel);
         }

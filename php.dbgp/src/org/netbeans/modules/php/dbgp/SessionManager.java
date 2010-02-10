@@ -100,7 +100,7 @@ public class SessionManager  {
         }
     }
 
-    private synchronized  Session startSession(SessionId id, DebuggerOptions options, Callable<Cancellable> backendLauncher) {
+    synchronized  Session startSession(SessionId id, DebuggerOptions options, Callable<Cancellable> backendLauncher) {
         DebugSession dbgSession = new DebugSession(options, new BackendLauncher(backendLauncher));
         DebuggerInfo dInfo = DebuggerInfo.create(ID, new Object[]{id, dbgSession});
         DebuggerManager.getDebuggerManager().startDebugging(dInfo);        

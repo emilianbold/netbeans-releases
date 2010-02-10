@@ -48,8 +48,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -58,7 +56,6 @@ import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
@@ -92,89 +89,29 @@ public class HostUpdates {
         }
     }
 
-    //
-    //  Instance stuff
-    //
-
-    private static enum FileState {
-        UNCONFIRMED,
-        CONFIRMED,
-        PENDING,
-        COPYING,
-        CANCELLED,
-        DONE,
-        ERROR}
-
-    // UNCONFIRMED-->CONFIRMED------------>PENDING-->COPYING-->DONE
-    //       |           |                   |        |   |
-    //       +-----------+->+-->CANCELLED<---+<-------+   +--->ERROR
-
-    /*package*/ class FileDownloadInfo {
-
-        public final File file;
-        private FileState state;
-        private Future<Integer> copyTask;
-
-        public FileDownloadInfo(File file) {
-            this.file = file;
-            this.state = FileState.UNCONFIRMED;
-        }
-
-        public void copy() {
-            String remoteFile = mapper.getRemotePath(file.getAbsolutePath(), false);
-            synchronized (lock) {
-                state = FileState.COPYING;
-                if (copyTask != null) {
-                    copyTask.cancel(true);
-                }
-                copyTask = CommonTasksSupport.downloadFile(remoteFile, env, file.getAbsolutePath(), null);
-            }
-            try {
-                int rc = copyTask.get().intValue();
-                synchronized (lock) {
-                    state = (rc == 0) ? FileState.DONE : FileState.ERROR;
-                }
-            } catch (InterruptedException ex) {
-                synchronized (lock) {
-                    state = FileState.CANCELLED;
-                }
-            } catch (ExecutionException ex) {
-                synchronized (lock) {
-                    state = FileState.ERROR;
-                }
-            } finally {
-                synchronized (lock) {
-                    copyTask = null;
-                }
-            }
-        }
-
-    }
-
     private final ExecutionEnvironment env;
-    private final List<FileDownloadInfo> infos = new ArrayList<FileDownloadInfo>();
     private final RemotePathMap mapper;
     private Notification notification;
-    private final File privStorageDir;
+    private final HostUpdatesPersistence persistence;
 
-    /**
-     * Guards everything.
-     * We don't need that much of concurrency here
-     * (since downloading is much, much longer than all the rest), 
-     * just correct behavior 
+    /*
+     * FileDownloadInfo.LOCK guards everything.
+     * We don't need that much of concurrency here - just correct behavior
+     * (since downloading is much, much longer than all the rest,
+     * the only thing to do is to ensure we don't hold lock when downloading)
      */
-    private final Object lock = new Object();
+    private final List<FileDownloadInfo> infos = new ArrayList<FileDownloadInfo>();
 
     private HostUpdates(ExecutionEnvironment env, File privStorageDir) {
         this.env = env;
         this.mapper = RemotePathMap.getPathMap(env);
-        this.privStorageDir = privStorageDir;
+        this.persistence = new HostUpdatesPersistence(privStorageDir, env);
     }
 
     private FileDownloadInfo getFileInfo(File file) {
-        synchronized (lock) {
+        synchronized (FileDownloadInfo.LOCK) {
             for (FileDownloadInfo info : infos) {
-                if (file.equals(info.file)) {
+                if (file.equals(info.getLocalFile())) {
                     return info;
                 }
             }
@@ -183,24 +120,24 @@ public class HostUpdates {
     }
 
     private void register(Collection<File> localFiles) {
-        synchronized (lock) {
+        synchronized (FileDownloadInfo.LOCK) {
             for (File file : localFiles) {
                 FileDownloadInfo info = getFileInfo(file);
                 if (info == null) {
-                    infos.add(new FileDownloadInfo(file));
+                    infos.add(new FileDownloadInfo(file, mapper.getRemotePath(file.getAbsolutePath(), false), env));
                 } else {
-                    Future<Integer> copyTask = info.copyTask;
-                    if (copyTask != null) {
-                        copyTask.cancel(true);
-                    }
-                    info.state = FileState.UNCONFIRMED;
+                    info.reset();
                 }
             }
         }
-        showRemoteUpdatesNotification();
+        showNotification();
     }
 
-    private void showRemoteUpdatesNotification() {
+    private void showNotification() {
+        if (persistence.getRememberChoice()) {
+            download();
+            return;
+        }
         ActionListener onClickAction = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 CndUtils.assertUiThread();
@@ -209,12 +146,17 @@ public class HostUpdates {
         };
         String envString = RemoteUtil.getDisplayName(env);
         try {
-            notification = NotificationDisplayer.getDefault().notify(
-                    NbBundle.getMessage(getClass(), "RemoteUpdatesNotifier.TITLE", envString),
-                    ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/sync/download/remote-updates.png", false), // NOI18N
-                    NbBundle.getMessage(getClass(), "RemoteUpdatesNotifier.DETAILS", envString),
-                    onClickAction,
-                    NotificationDisplayer.Priority.NORMAL);
+            synchronized (FileDownloadInfo.LOCK) {
+                if (notification != null) {
+                    notification.clear();
+                }
+                notification = NotificationDisplayer.getDefault().notify(
+                        NbBundle.getMessage(getClass(), "RemoteUpdatesNotifier.TITLE", envString),
+                        ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/sync/download/remote-updates.png", false), // NOI18N
+                        NbBundle.getMessage(getClass(), "RemoteUpdatesNotifier.DETAILS", envString),
+                        onClickAction,
+                        NotificationDisplayer.Priority.NORMAL);
+            }
         } catch (RuntimeException e) {
             // FIXUP: for some reasons exceptions aren't printed
             e.printStackTrace();
@@ -222,11 +164,11 @@ public class HostUpdates {
         }
     }
 
-    private Collection<FileDownloadInfo> getByState(FileState state) {
+    private Collection<FileDownloadInfo> getByState(FileDownloadInfo.State state) {
         Collection<FileDownloadInfo> result = new ArrayList<FileDownloadInfo>();
-        synchronized (lock) {
+        synchronized (FileDownloadInfo.LOCK) {
             for (FileDownloadInfo info : infos) {
-                if (info.state == state) {
+                if (info.getState() == state) {
                     result.add(info);
                 }
             }
@@ -235,29 +177,72 @@ public class HostUpdates {
     }
 
     private void showConfirmDialog() {
-        final Collection<FileDownloadInfo> unconfirmed = getByState(FileState.UNCONFIRMED);
-        final Set<FileDownloadInfo> confirmed = HostUpdatesRequestPanel.request(unconfirmed, env, privStorageDir);
-        synchronized (lock) {
+        Collection<FileDownloadInfo> unconfirmed;
+        synchronized (FileDownloadInfo.LOCK) {
+            unconfirmed = getByState(FileDownloadInfo.State.UNCONFIRMED);
+            if (unconfirmed.isEmpty()) {
+                return;
+            }
+            if (notification != null) {
+                notification.clear();
+                notification = null;
+            }
+        }
+        final Set<FileDownloadInfo> confirmed = HostUpdatesRequestPanel.request(unconfirmed, env, persistence);
+        if (confirmed == null) { // null means user pressed cancel - re-show notification
+            synchronized (FileDownloadInfo.LOCK) {
+                if (notification == null) {
+                    showNotification();
+                }
+            }
+        } else {
+            synchronized (FileDownloadInfo.LOCK) {
+                for (FileDownloadInfo info : unconfirmed) {
+                    if (confirmed.contains(info)) {
+                        info.confirm();
+                    } else {
+                        info.reject();
+                    }
+                }
+                unconfirmed.removeAll(confirmed);
+                infos.removeAll(unconfirmed);
+            }
+            if (!confirmed.isEmpty()) {
+                NamedRunnable r = new NamedRunnable("Remote updates synchronizer for " + env.getDisplayName()) { //NOI18N
+                    @Override
+                    protected void runImpl() {
+                        download(confirmed);
+                    }
+                };
+                RequestProcessor.getDefault().post(r);
+            }
+        }
+    }
+    
+    /** */
+    private void download() {
+        final Collection<FileDownloadInfo> confirmed = new ArrayList<FileDownloadInfo>();
+        synchronized (FileDownloadInfo.LOCK) {
+            Collection<FileDownloadInfo> unconfirmed = getByState(FileDownloadInfo.State.UNCONFIRMED);
             for (FileDownloadInfo info : unconfirmed) {
-                if (confirmed.contains(info)) {
-                    info.state = FileState.PENDING;
+                if (persistence.getFileSelected(info.getLocalFile(), true)) {
+                    info.confirm();
+                    confirmed.add(info);
                 } else {
-                    info.state = FileState.CANCELLED;
+                    info.reject();
                 }
             }
             unconfirmed.removeAll(confirmed);
             infos.removeAll(unconfirmed);
         }
         if (!confirmed.isEmpty()) {
-            NamedRunnable r = new NamedRunnable("Remote updates synchronizer for " + env.getDisplayName()) { //NOI18N
+            RequestProcessor.getDefault().post(new NamedRunnable("") {
                 @Override
                 protected void runImpl() {
                     download(confirmed);
                 }
-            };
-            RequestProcessor.getDefault().post(r);
+            });
         }
-        notification.clear();
     }
 
     private void download(Collection<FileDownloadInfo> infos) {
@@ -267,8 +252,8 @@ public class HostUpdates {
         handle.switchToDeterminate(infos.size());
         int cnt = 0;
         for (FileDownloadInfo info : infos) {
-            handle.progress(NbBundle.getMessage(getClass(), "RemoteUpdatesProgress_Message", info.file.getName()), cnt++);
-            info.copy();
+            handle.progress(NbBundle.getMessage(getClass(), "RemoteUpdatesProgress_Message", info.getLocalFile().getName()), cnt++);
+            info.download();
         }
         handle.finish();
 
@@ -288,7 +273,7 @@ public class HostUpdates {
         String title = NbBundle.getMessage(getClass(), "RemoteUpdatesOK.TITLE", envString, infos.size());
         String detailsText = NbBundle.getMessage(getClass(), "RemoteUpdatesOK.DETAILS", envString, infos.size());
         for (FileDownloadInfo info : infos) {
-            if (info.state != FileState.DONE) {
+            if (info.getState() != FileDownloadInfo.State.DONE) {
                 iconString = "org/netbeans/modules/cnd/remote/sync/download/error.png"; //NOI18N
                 title = NbBundle.getMessage(getClass(), "RemoteUpdatesERR.TITLE", envString, infos.size());
                 detailsText = NbBundle.getMessage(getClass(), "RemoteUpdatesERR.DETAILS", envString, infos.size());
@@ -301,5 +286,13 @@ public class HostUpdates {
                 detailsText,
                 onClickAction,
                 NotificationDisplayer.Priority.LOW));
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                Notification n = notRef.get();
+                if (n != null) {
+                    n.clear();
+                }
+            }
+        }, 15*1000);
     }
 }

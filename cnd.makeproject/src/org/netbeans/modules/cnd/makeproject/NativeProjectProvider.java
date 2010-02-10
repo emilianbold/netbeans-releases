@@ -70,7 +70,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
@@ -661,7 +661,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             if (compilerSet == null) {
                 return vec;
             }
-            BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
+            AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
             if (compiler != null) {
                 vec.addAll(compiler.getSystemIncludeDirectories());
             }
@@ -712,7 +712,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             if (compilerSet == null) {
                 return vec;
             }
-            BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
+            AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
             if (compiler != null) {
                 vec.addAll(compiler.getSystemPreprocessorSymbols());
             }

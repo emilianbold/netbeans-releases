@@ -40,10 +40,17 @@
  */
 package org.netbeans.api.ruby.platform;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.ruby.platform.RubyPreferences;
+import org.netbeans.modules.ruby.platform.execution.ExecutionUtils;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -51,7 +58,8 @@ import org.openide.util.NbBundle;
 public final class RubyPlatformProvider {
 
     private static final Logger LOGGER = Logger.getLogger(RubyPlatformProvider.class.getName());
-    
+    private static final ExecutorService EXECUTOR =
+            Executors.newSingleThreadExecutor(ExecutionUtils.namedThreadFactory("Ruby Platform AutoDetection"));//NOI18N
     private final PropertyEvaluator evaluator;
 
     public RubyPlatformProvider(final PropertyEvaluator evaluator) {
@@ -81,17 +89,25 @@ public final class RubyPlatformProvider {
         String handleMessage = NbBundle.getMessage(RubyPlatformProvider.class, "RubyPlatformProvider.RubyPlatformAutoDetection");
         ProgressHandle ph = ProgressHandleFactory.createHandle(handleMessage);
         ph.start();
+
+        Future<?> result = EXECUTOR.submit(new Runnable() {
+
+            @Override
+            public void run() {
+                RubyPlatformManager.performPlatformDetection();
+            }
+        });
+
         try {
-            Thread autoDetection = new Thread(new Runnable() {
-                public void run() {
-                    RubyPlatformManager.performPlatformDetection();
-                }
-            }, "Ruby Platform AutoDetection"); // NOI18N
-            autoDetection.start();
-            autoDetection.join();
+            result.get(30, TimeUnit.SECONDS);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
+        } catch (TimeoutException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            ph.finish();
         }
-        ph.finish();
     }
 }

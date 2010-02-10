@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
@@ -81,14 +81,14 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
 
     // Interface OptionsProvider
     @Override
-    public String getOptions(BasicCompiler compiler) {
+    public String getOptions(AbstractCompiler compiler) {
         String options = "$(COMPILE.f) "; // NOI18N
         options += getAllOptions2(compiler) + " "; // NOI18N
         options += getCommandLineConfiguration().getValue() + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
 
-    public String getFFlagsBasic(BasicCompiler compiler) {
+    public String getFFlagsBasic(AbstractCompiler compiler) {
         String options = ""; // NOI18N
         options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
         options += compiler.getMTLevelOptions(getMTLevel().getValue()) + " "; // NOI18N
@@ -99,14 +99,14 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
         return CppUtils.reformatWhitespaces(options);
     }
 
-    public String getFFlags(BasicCompiler compiler) {
+    public String getFFlags(AbstractCompiler compiler) {
         String options = getFFlagsBasic(compiler) + " "; // NOI18N
         options += getCommandLineConfiguration().getValue() + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
 
     @Override
-    public String getAllOptions(BasicCompiler compiler) {
+    public String getAllOptions(AbstractCompiler compiler) {
         CCompilerConfiguration master = (CCompilerConfiguration) getMaster();
 
         String options = ""; // NOI18N
@@ -118,7 +118,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
         return CppUtils.reformatWhitespaces(options);
     }
 
-    public String getAllOptions2(BasicCompiler compiler) {
+    public String getAllOptions2(AbstractCompiler compiler) {
         FortranCompilerConfiguration master = (FortranCompilerConfiguration) getMaster();
 
         String options = ""; // NOI18N
@@ -133,7 +133,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
     public Sheet getGeneralSheet(MakeConfiguration conf) {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        BasicCompiler fortranCompiler = compilerSet == null ? null : (BasicCompiler) compilerSet.getTool(PredefinedToolKind.FortranCompiler);
+        AbstractCompiler fortranCompiler = compilerSet == null ? null : (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.FortranCompiler);
 
         sheet.put(getBasicSet());
         if (getMaster() != null) {

@@ -45,7 +45,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Sheet;
@@ -186,7 +186,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
     }
     
     @Override
-    public String getAllOptions(BasicCompiler compiler) {
+    public String getAllOptions(AbstractCompiler compiler) {
         return getAllOptions(true);
     }
     
@@ -250,7 +250,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         }
         
         @Override
-        public String getAllOptions(BasicCompiler compiler) {
+        public String getAllOptions(AbstractCompiler compiler) {
             String options = ""; // NOI18N
             options += additionalDependencies.getPreDefined();
             return CppUtils.reformatWhitespaces(options);

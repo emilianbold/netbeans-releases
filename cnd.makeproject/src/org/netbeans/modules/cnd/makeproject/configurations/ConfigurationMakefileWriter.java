@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
@@ -80,7 +80,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfigur
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
@@ -366,10 +365,10 @@ public class ConfigurationMakefileWriter {
         if (compilerSet == null) {
             return;
         }
-        BasicCompiler cCompiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.CCompiler);
-        BasicCompiler ccCompiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
-        BasicCompiler fortranCompiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.FortranCompiler);
-        BasicCompiler assemblerCompiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.Assembler);
+        AbstractCompiler cCompiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCompiler);
+        AbstractCompiler ccCompiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
+        AbstractCompiler fortranCompiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.FortranCompiler);
+        AbstractCompiler assemblerCompiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.Assembler);
 
         bw.write("#\n"); // NOI18N
         bw.write("# Generated Makefile - do not edit!\n"); // NOI18N
@@ -590,7 +589,7 @@ public class ConfigurationMakefileWriter {
                 comment = null;
                 additionalDep = null;
                 if (itemConfiguration.isCompilerToolConfiguration()) {
-                    BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(itemConfiguration.getTool());
+                    AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
                     BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
                     target = compilerConfiguration.getOutputFile(items[i], conf, false);
                     if (compiler != null && compiler.getDescriptor() != null) {
@@ -658,7 +657,7 @@ public class ConfigurationMakefileWriter {
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
         //bw.write(target + ":" + "\n"); // NOI18N
-        bw.write("\tcd " + IpeUtils.escapeOddCharacters(FilePathAdaptor.normalize(cwd)) + " && " + command + "\n"); // NOI18N
+        bw.write("\tcd " + IpeUtils.escapeOddCharacters(IpeUtils.normalize(cwd)) + " && " + command + "\n"); // NOI18N
     }
 
     public static void writeSubProjectBuildTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
@@ -677,7 +676,7 @@ public class ConfigurationMakefileWriter {
                     if (!makeArtifact.getBuild()) {
                         continue;
                     }
-                    bw.write("\tcd " + IpeUtils.escapeOddCharacters(FilePathAdaptor.normalize(location)) + " && " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
+                    bw.write("\tcd " + IpeUtils.escapeOddCharacters(IpeUtils.normalize(location)) + " && " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
                 }
             }
         }
@@ -688,7 +687,7 @@ public class ConfigurationMakefileWriter {
             if (!makeArtifact.getBuild()) {
                 continue;
             }
-            bw.write("\tcd " + IpeUtils.escapeOddCharacters(FilePathAdaptor.normalize(location)) + " && " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
+            bw.write("\tcd " + IpeUtils.escapeOddCharacters(IpeUtils.normalize(location)) + " && " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
         }
         bw.write("\n"); // NOI18N
     }
@@ -709,7 +708,7 @@ public class ConfigurationMakefileWriter {
                     if (!makeArtifact.getBuild()) {
                         continue;
                     }
-                    bw.write("\tcd " + IpeUtils.escapeOddCharacters(FilePathAdaptor.normalize(location)) + " && " + makeArtifact.getCleanCommand() + "\n"); // NOI18N
+                    bw.write("\tcd " + IpeUtils.escapeOddCharacters(IpeUtils.normalize(location)) + " && " + makeArtifact.getCleanCommand() + "\n"); // NOI18N
                 }
             }
         }
@@ -720,7 +719,7 @@ public class ConfigurationMakefileWriter {
             if (!makeArtifact.getBuild()) {
                 continue;
             }
-            bw.write("\tcd " + IpeUtils.escapeOddCharacters(FilePathAdaptor.normalize(location)) + " && " + makeArtifact.getCleanCommand() + "\n"); // NOI18N
+            bw.write("\tcd " + IpeUtils.escapeOddCharacters(IpeUtils.normalize(location)) + " && " + makeArtifact.getCleanCommand() + "\n"); // NOI18N
         }
     }
 
@@ -760,7 +759,7 @@ public class ConfigurationMakefileWriter {
             String cwd = makefileConfiguration.getBuildCommandWorkingDirValue();
             String command = makefileConfiguration.getCleanCommand().getValue();
 
-            bw.write("\tcd " + IpeUtils.escapeOddCharacters(FilePathAdaptor.normalize(cwd)) + " && " + command + "\n"); // NOI18N
+            bw.write("\tcd " + IpeUtils.escapeOddCharacters(IpeUtils.normalize(cwd)) + " && " + command + "\n"); // NOI18N
         } else if (conf.isQmakeConfiguration()) {
             bw.write("\t$(MAKE) -f nbproject/qt-" + conf.getName() + ".mk distclean\n"); // NOI18N
         }

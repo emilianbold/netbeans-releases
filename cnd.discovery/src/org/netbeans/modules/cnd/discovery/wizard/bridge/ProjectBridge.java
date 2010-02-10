@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
@@ -69,7 +69,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Utilities;
@@ -104,8 +103,8 @@ public class ProjectBridge {
         // TODO: create localhost based project
         MakeConfiguration extConf = new MakeConfiguration(baseFolder, "Default", MakeConfiguration.TYPE_MAKEFILE, HostInfoUtils.LOCALHOST); // NOI18N
         String workingDir = baseFolder;
-        String workingDirRel = IpeUtils.toRelativePath(baseFolder, FilePathAdaptor.naturalize(workingDir));
-        workingDirRel = FilePathAdaptor.normalize(workingDirRel);
+        String workingDirRel = IpeUtils.toRelativePath(baseFolder, IpeUtils.naturalize(workingDir));
+        workingDirRel = IpeUtils.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         project = ProjectGenerator.createBlankProject("DiscoveryProject", baseFolder, new MakeConfiguration[] {extConf}, true); // NOI18N
         resultSet.add(project);
@@ -221,7 +220,7 @@ public class ProjectBridge {
         }
         path = IpeUtils.toRelativePath(makeConfigurationDescriptor.getBaseDir(), path);
         path = cutLocalRelative(path);
-        path = FilePathAdaptor.normalize(path);
+        path = IpeUtils.normalize(path);
         return path;
     }
     
@@ -522,11 +521,11 @@ public class ProjectBridge {
         if (systemIncludePaths == null) {
             systemIncludePaths = new ArrayList<String>();
             CompilerSet compilerSet = getCompilerSet();
-            BasicCompiler compiler;
+            AbstractCompiler compiler;
             if (isCPP) {
-                compiler = (BasicCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
             } else {
-                compiler = (BasicCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
             }
             for(Object o :compiler.getSystemIncludeDirectories()){
                 String path = (String)o;
@@ -568,11 +567,11 @@ public class ProjectBridge {
         if (systemMacroDefinitions == null) {
             systemMacroDefinitions = new HashMap<String,String>();
             CompilerSet compilerSet = getCompilerSet();
-            BasicCompiler compiler;
+            AbstractCompiler compiler;
             if (isCPP) {
-                compiler = (BasicCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
             } else {
-                compiler = (BasicCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
             }
             for(Object o :compiler.getSystemPreprocessorSymbols()){
                 String macro = (String)o;

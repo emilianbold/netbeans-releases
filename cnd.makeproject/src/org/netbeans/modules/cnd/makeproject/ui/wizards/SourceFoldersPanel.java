@@ -80,8 +80,8 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Pr
             //sourceFilesPanel.setSeed(workingdir, workingdir);
             File wd = new File(workingdir);
             sourceFilesPanel.getSourceListData().add(new FolderEntry(wd, wd.getPath()));
-            if (new File(wd.getPath() + "/tests").exists()) {
-                sourceFilesPanel.getTestListData().add(new FolderEntry(wd, wd.getPath() + "/tests")); // FIXUP: scan for actual 'test' or 'tests' folders...
+            if (new File(wd.getPath() + "/tests").exists()) { // NOI18N
+                sourceFilesPanel.getTestListData().add(new FolderEntry(wd, wd.getPath() + "/tests")); // NOI18N // FIXUP: scan for actual 'test' or 'tests' folders...
             }
             sourceFilesPanel.setFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN);
             firstTime = false;
