@@ -122,6 +122,5 @@ public class NameAndLicenseWizardPanel implements WizardDescriptor.Panel,
 
     void setKenai(Kenai kenai) {
         iter.setKenai(kenai);
-        fireChangeEvent();
     }
 }
