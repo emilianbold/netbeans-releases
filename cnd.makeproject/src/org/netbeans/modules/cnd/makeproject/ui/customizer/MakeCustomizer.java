@@ -86,7 +86,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.DebuggerCustomizerNode;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.DebuggerChooserNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
@@ -1024,27 +1023,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
     }
 
-    private class DebugCustomizerNode extends CustomizerNode {
-
-        public DebugCustomizerNode(String name, String displayName, CustomizerNode[] children) {
-            super(name, displayName, children);
-        }
-
-        @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            Sheet sheet = new Sheet();
-
-            Sheet.Set set = new Sheet.Set();
-            set.setName("DebuggerChooser"); // NOI18N
-            set.setDisplayName(getString("LBL_DebuggerChooser")); // NOI18N
-            set.setShortDescription(getString("HINT_DebuggerChooser")); // NOI18N
-            set.put(new DebuggerChooserNodeProp(((MakeConfiguration) configuration).getDebuggerChooserConfiguration(),
-                    getString("LBL_DebuggerChooser"), getString("HINT_DebuggerChooser"))); // NOI18N
-            sheet.put(set);
-            return sheet;
-        }
-    }
-
     // Make Node
     private CustomizerNode createMakefileDescription(Project project) {
         return new MakefileCustomizerNode(
@@ -1531,9 +1509,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
         @Override
         public void defaultAction(Configuration o) {
-            Vector confs = getListData();
-            for (Enumeration e = confs.elements(); e.hasMoreElements();) {
-                ((Configuration) e.nextElement()).setDefault(false);
+            Vector<Configuration> confs = getListData();
+            for (Enumeration<Configuration> e = confs.elements(); e.hasMoreElements();) {
+                e.nextElement().setDefault(false);
             }
             o.setDefault(true);
         }
