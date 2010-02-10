@@ -45,17 +45,8 @@ import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -63,18 +54,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFriend;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -95,18 +75,16 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
-import org.netbeans.modules.cnd.modelimpl.csm.ClassEnumBase;
-import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
-import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
+import org.netbeans.modules.cnd.modelimpl.platform.*;
+import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.FileEntry;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
-import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
@@ -538,6 +516,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         NativeFileItem.Language language = item.getLanguage();
         return (language == NativeFileItem.Language.C ||
                 language == NativeFileItem.Language.CPP ||
+                language == NativeFileItem.Language.FORTRAN ||
                 language == NativeFileItem.Language.C_HEADER) &&
                 !item.isExcluded();
     }
@@ -548,12 +527,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 projectListener = new NativeProjectListenerImpl(getModel(), (NativeProject) platformProject);
             }
             ((NativeProject) platformProject).addProjectItemsListener(projectListener);
-        }
-    }
-
-    public final synchronized void enableProjectListeners(boolean enable) {
-        if (projectListener != null) {
-            projectListener.enableListening(enable);
         }
     }
 
@@ -679,6 +652,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 switch (item.getLanguage()) {
                     case C:
                     case CPP:
+                    case FORTRAN:
                         sources.add(item);
                         break;
                     case C_HEADER:
@@ -692,6 +666,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     case C:
                     case CPP:
                     case C_HEADER:
+                    case FORTRAN:
                         excluded.add(item);
                         break;
                     default:
@@ -1009,6 +984,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     switch (item.getLanguage()) {
                         case C:
                         case CPP:
+                        case FORTRAN:
                         case C_HEADER:
                             projectFiles.add(item.getFile().getAbsolutePath());
                             //this would be a workaround for #116706 Code assistance do not recognize changes in file
@@ -1106,6 +1082,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 return FileImpl.FileType.SOURCE_C_FILE;
             case CPP:
                 return FileImpl.FileType.SOURCE_CPP_FILE;
+            case FORTRAN:
+                return FileImpl.FileType.SOURCE_FORTRAN_FILE;
             case C_HEADER:
                 return FileImpl.FileType.HEADER_FILE;
             default:

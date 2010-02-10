@@ -588,7 +588,7 @@ public class APTUtils {
     }
     
     public static final APTToken EOF_TOKEN = new APTEOFToken();
-//    public static final APTToken EOF_TOKEN2 = new APTEOFToken2();
+    public static final APTToken EOF_TOKEN2 = new APTEOFToken2();
     
     public static final TokenStream EMPTY_STREAM = new TokenStream() {
         public Token nextToken() throws TokenStreamException {
@@ -684,91 +684,91 @@ public class APTUtils {
     }
 
 
-//    private static final class APTEOFToken2 extends APTTokenAbstact {
-//        public APTEOFToken2() {
-//        }
-//
-//        @Override
-//        public int getOffset() {
-//            throw new UnsupportedOperationException("getOffset must not be used"); // NOI18N
-//        }
-//
-//        @Override
-//        public void setOffset(int o) {
-//            throw new UnsupportedOperationException("setOffset must not be used"); // NOI18N
-//        }
-//
-//        @Override
-//        public int getEndOffset() {
-//            throw new UnsupportedOperationException("getEndOffset must not be used"); // NOI18N
-//        }
-//
-//        @Override
-//        public void setEndOffset(int o) {
-//            throw new UnsupportedOperationException("setEndOffset must not be used"); // NOI18N
-//        }
-//
-//        @Override
-//        public CharSequence getTextID() {
-//            throw new UnsupportedOperationException("getTextID must not be used"); // NOI18N
-//        }
-//
-//        @Override
-//        public void setTextID(CharSequence id) {
-//            throw new UnsupportedOperationException("setTextID must not be used"); // NOI18N
-//        }
-//
-//        @Override
-//        public int getEndColumn() {
-//            throw new UnsupportedOperationException("getEndColumn must not be used"); // NOI18N
-//        }
-//
-//        @Override
-//        public void setEndColumn(int c) {
-//            throw new UnsupportedOperationException("setEndColumn must not be used"); // NOI18N
-//        }
-//
-//        @Override
-//        public int getEndLine() {
-//            throw new UnsupportedOperationException("getEndLine must not be used"); // NOI18N
-//        }
-//
-//        @Override
-//        public void setEndLine(int l) {
-//            throw new UnsupportedOperationException("setEndLine must not be used"); // NOI18N
-//        }
-//
-//        @Override
-//        public int getType() {
-//            return -1;
-//        }
-//
-//        @Override
-//        public String getText() {
-//            return "<EOF>"; // NOI18N
-//        }
-//
-//        @Override
-//        public int getColumn() {
-//            return Integer.MAX_VALUE;
-//        }
-//
-//        @Override
-//        public int getLine() {
-//            return Integer.MAX_VALUE;
-//        }
-//
-//        @Override
-//        public int hashCode() {
-//            return 1;
-//        }
-//
-//        @Override
-//        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-//        public boolean equals(Object obj) {
-//            return this == obj;
-//        }
-//
-//    }
+    private static final class APTEOFToken2 extends APTTokenAbstact {
+        public APTEOFToken2() {
+        }
+
+        @Override
+        public int getOffset() {
+            throw new UnsupportedOperationException("getOffset must not be used"); // NOI18N
+        }
+
+        @Override
+        public void setOffset(int o) {
+            throw new UnsupportedOperationException("setOffset must not be used"); // NOI18N
+        }
+
+        @Override
+        public int getEndOffset() {
+            throw new UnsupportedOperationException("getEndOffset must not be used"); // NOI18N
+        }
+
+        @Override
+        public void setEndOffset(int o) {
+            throw new UnsupportedOperationException("setEndOffset must not be used"); // NOI18N
+        }
+
+        @Override
+        public CharSequence getTextID() {
+            throw new UnsupportedOperationException("getTextID must not be used"); // NOI18N
+        }
+
+        @Override
+        public void setTextID(CharSequence id) {
+            throw new UnsupportedOperationException("setTextID must not be used"); // NOI18N
+        }
+
+        @Override
+        public int getEndColumn() {
+            throw new UnsupportedOperationException("getEndColumn must not be used"); // NOI18N
+        }
+
+        @Override
+        public void setEndColumn(int c) {
+            throw new UnsupportedOperationException("setEndColumn must not be used"); // NOI18N
+        }
+
+        @Override
+        public int getEndLine() {
+            throw new UnsupportedOperationException("getEndLine must not be used"); // NOI18N
+        }
+
+        @Override
+        public void setEndLine(int l) {
+            throw new UnsupportedOperationException("setEndLine must not be used"); // NOI18N
+        }
+
+        @Override
+        public int getType() {
+            return -1;
+        }
+
+        @Override
+        public String getText() {
+            return "<EOF>"; // NOI18N
+        }
+
+        @Override
+        public int getColumn() {
+            return Integer.MAX_VALUE;
+        }
+
+        @Override
+        public int getLine() {
+            return Integer.MAX_VALUE;
+        }
+
+        @Override
+        public int hashCode() {
+            return 1;
+        }
+
+        @Override
+        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+        public boolean equals(Object obj) {
+            return this == obj;
+        }
+
+    }
 
 }

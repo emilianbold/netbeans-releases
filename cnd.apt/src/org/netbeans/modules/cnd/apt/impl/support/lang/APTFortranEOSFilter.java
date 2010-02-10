@@ -155,7 +155,7 @@ public class APTFortranEOSFilter implements APTLanguageFilter {
         }
 
         public void setTextID(CharSequence id) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public int getColumn() {
@@ -179,11 +179,11 @@ public class APTFortranEOSFilter implements APTLanguageFilter {
         }
 
         public void setFilename(String name) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public void setText(String t) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public int getType() {
@@ -191,7 +191,7 @@ public class APTFortranEOSFilter implements APTLanguageFilter {
         }
 
         public void setType(int t) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
     }

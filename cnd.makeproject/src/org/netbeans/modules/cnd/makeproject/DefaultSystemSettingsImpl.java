@@ -64,6 +64,9 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings {
             case CPP:
                 kind = Tool.CCCompiler;
                 break;
+            case FORTRAN:
+                kind = Tool.FortranCompiler;
+                break;
             default:
                 return null;
         }
