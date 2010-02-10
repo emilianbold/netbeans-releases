@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.actions;
 
 import java.util.List;
@@ -52,19 +51,20 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 public class RunTestAction extends NodeAction {
+
     public String getName() {
-	return getString("TestActionName");
+        return getString("TestActionName");
     }
 
     public void performAction(Node[] activatedNodes) {
-	Node n = activatedNodes[0];
-	Folder folder = (Folder)n.getValue("Folder"); // NOI18N
-	assert folder != null;
-	Node thisNode = (Node)n.getValue("This"); // NOI18N
-	assert thisNode != null;
-	Project project = (Project)n.getValue("Project"); // NOI18N
-	assert project != null;
-        
+        Node n = activatedNodes[0];
+        Folder folder = (Folder) n.getValue("Folder"); // NOI18N
+        assert folder != null;
+        Node thisNode = (Node) n.getValue("This"); // NOI18N
+        assert thisNode != null;
+        Project project = (Project) n.getValue("Project"); // NOI18N
+        assert project != null;
+
         List<Folder> list = folder.getAllTests();
         if (folder.isTest()) {
             list.add(folder);
@@ -81,9 +81,9 @@ public class RunTestAction extends NodeAction {
     }
 
     public boolean enable(Node[] activatedNodes) {
-	Node n = activatedNodes[0];
-	Folder folder = (Folder)n.getValue("Folder"); // NOI18N
-	assert folder != null;
+        Node n = activatedNodes[0];
+        Folder folder = (Folder) n.getValue("Folder"); // NOI18N
+        assert folder != null;
         if (folder.isTest()) {
             return true;
         }
@@ -92,12 +92,12 @@ public class RunTestAction extends NodeAction {
     }
 
     public HelpCtx getHelpCtx() {
-	return null;
+        return null;
     }
 
     @Override
     protected boolean asynchronous() {
-	return false;
+        return false;
     }
 
     private String getString(String s) {

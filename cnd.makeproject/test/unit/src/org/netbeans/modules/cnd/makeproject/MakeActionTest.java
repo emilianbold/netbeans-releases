@@ -128,26 +128,26 @@ public class MakeActionTest {
 
         private MakeActionProviderImpl() {
             commands = new TreeMap<String, String[]>();
-             commands.put(COMMAND_BUILD, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP});
-             commands.put(COMMAND_BUILD_PACKAGE, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP, BUILD_PACKAGE_STEP});
-             commands.put(COMMAND_CLEAN, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, CLEAN_STEP});
+            commands.put(COMMAND_BUILD, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP});
+            commands.put(COMMAND_BUILD_PACKAGE, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP, BUILD_PACKAGE_STEP});
+            commands.put(COMMAND_CLEAN, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, CLEAN_STEP});
             commands.put(COMMAND_REBUILD, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, CLEAN_STEP, BUILD_STEP});
             commands.put(COMMAND_RUN, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, /*REMOVE_INSTRUMENTATION_STEP,*/ BUILD_STEP, RUN_STEP});
-             commands.put(COMMAND_DEBUG, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, /*REMOVE_INSTRUMENTATION_STEP,*/ BUILD_STEP, DEBUG_STEP});
+            commands.put(COMMAND_DEBUG, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, /*REMOVE_INSTRUMENTATION_STEP,*/ BUILD_STEP, DEBUG_STEP});
             commands.put(COMMAND_DEBUG_STEP_INTO, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, /*REMOVE_INSTRUMENTATION_STEP,*/ BUILD_STEP, DEBUG_STEPINTO_STEP});
-             commands.put(COMMAND_DEBUG_LOAD_ONLY, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP, DEBUG_LOAD_ONLY_STEP});
+            commands.put(COMMAND_DEBUG_LOAD_ONLY, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP, DEBUG_LOAD_ONLY_STEP});
             commands.put(COMMAND_RUN_SINGLE, new String[]{RUN_SINGLE_STEP});
             commands.put(COMMAND_DEBUG_SINGLE, new String[]{DEBUG_SINGLE_STEP});
-             commands.put(COMMAND_COMPILE_SINGLE, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, COMPILE_SINGLE_STEP});
-             commands.put(COMMAND_CUSTOM_ACTION, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP, CUSTOM_ACTION_STEP});
+            commands.put(COMMAND_COMPILE_SINGLE, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, COMPILE_SINGLE_STEP});
+            commands.put(COMMAND_CUSTOM_ACTION, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP, CUSTOM_ACTION_STEP});
             commandsNoBuild = new TreeMap<String, String[]>();
             commandsNoBuild.put(COMMAND_BUILD, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, BUILD_STEP});
             commandsNoBuild.put(COMMAND_BUILD_PACKAGE, new String[]{SAVE_STEP, BUILD_PACKAGE_STEP});
             commandsNoBuild.put(COMMAND_CLEAN, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, CLEAN_STEP});
             commandsNoBuild.put(COMMAND_REBUILD, new String[]{SAVE_STEP, VALIDATE_TOOLCHAIN, CLEAN_STEP, BUILD_STEP});
-            commandsNoBuild.put(COMMAND_RUN, new String[]{/*REMOVE_INSTRUMENTATION_STEP,*/ RUN_STEP});
-            commandsNoBuild.put(COMMAND_DEBUG, new String[]{/*REMOVE_INSTRUMENTATION_STEP,*/ DEBUG_STEP});
-            commandsNoBuild.put(COMMAND_DEBUG_STEP_INTO, new String[]{/*REMOVE_INSTRUMENTATION_STEP,*/ DEBUG_STEPINTO_STEP});
+            commandsNoBuild.put(COMMAND_RUN, new String[]{/*REMOVE_INSTRUMENTATION_STEP,*/RUN_STEP});
+            commandsNoBuild.put(COMMAND_DEBUG, new String[]{/*REMOVE_INSTRUMENTATION_STEP,*/DEBUG_STEP});
+            commandsNoBuild.put(COMMAND_DEBUG_STEP_INTO, new String[]{/*REMOVE_INSTRUMENTATION_STEP,*/DEBUG_STEPINTO_STEP});
             commandsNoBuild.put(COMMAND_DEBUG_LOAD_ONLY, new String[]{DEBUG_LOAD_ONLY_STEP});
             commandsNoBuild.put(COMMAND_CUSTOM_ACTION, new String[]{SAVE_STEP, CUSTOM_ACTION_STEP});
             boolean res1 = verifyMaps(commands, loadAcrionSteps("CND/BuildAction"), "CND/BuildAction"); // NOI18N
@@ -210,7 +210,7 @@ public class MakeActionTest {
                         for (int i = 0; i < arr1.length; i++) {
                             if (!arr1[i].equals(arr2[i])) {
                                 if (TRACE) {
-                                    System.err.println("No equal value of key " +  root + "/" + entry.getKey() + " " + arr1[i] + "!=" + arr2[i]);
+                                    System.err.println("No equal value of key " + root + "/" + entry.getKey() + " " + arr1[i] + "!=" + arr2[i]);
                                 }
                                 res = false;
                             }
@@ -221,9 +221,9 @@ public class MakeActionTest {
             return res;
         }
 
-        private String getIndent(int level){
+        private String getIndent(int level) {
             StringBuilder buf = new StringBuilder();
-            for(int i = 0; i < level *4; i++) {
+            for (int i = 0; i < level * 4; i++) {
                 buf.append(' ');
             }
             return buf.toString();
@@ -231,20 +231,20 @@ public class MakeActionTest {
 
         private void dumpXML(Map<String, String[]> map1, String subSequence) {
             int level = 1;
-            System.out.println(getIndent(level++)+"<folder name=\"CND\">");
-            System.out.println(getIndent(level++)+"<folder name=\"" + subSequence + "\">");
+            System.out.println(getIndent(level++) + "<folder name=\"CND\">");
+            System.out.println(getIndent(level++) + "<folder name=\"" + subSequence + "\">");
             for (Map.Entry<String, String[]> entry : map1.entrySet()) {
-                System.out.println(getIndent(level++)+"<folder name=\"" + entry.getKey() + "\">");
+                System.out.println(getIndent(level++) + "<folder name=\"" + entry.getKey() + "\">");
                 String[] arr = entry.getValue();
                 for (int i = 0; i < arr.length; i++) {
-                    System.out.println(getIndent(level++)+"<file name=\"" + arr[i] + "\">");
-                    System.out.println(getIndent(level)+"<attr name=\"position\" intvalue=\"" + ((i + 1) * 100) + "\"/>");
-                    System.out.println(getIndent(--level)+"</file>");
+                    System.out.println(getIndent(level++) + "<file name=\"" + arr[i] + "\">");
+                    System.out.println(getIndent(level) + "<attr name=\"position\" intvalue=\"" + ((i + 1) * 100) + "\"/>");
+                    System.out.println(getIndent(--level) + "</file>");
                 }
-                System.out.println(getIndent(--level)+"</folder>");
+                System.out.println(getIndent(--level) + "</folder>");
             }
-            System.out.println(getIndent(--level)+"</folder>	<!-- " + subSequence + " -->");
-            System.out.println(getIndent(--level)+"</folder>       <!-- CND -->");
+            System.out.println(getIndent(--level) + "</folder>	<!-- " + subSequence + " -->");
+            System.out.println(getIndent(--level) + "</folder>       <!-- CND -->");
         }
 
         @Override
