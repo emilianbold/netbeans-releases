@@ -717,7 +717,7 @@ public class MakeNBM extends Task {
                             if(targetFile.exists()) {
                                 targetFile.delete();
                             }
-                            log("Can`t pack file " + sourceFile, e, Project.MSG_WARN);
+                            log("Cannot pack file " + sourceFile, e, Project.MSG_WARN);
                         }
                     }
                 }
