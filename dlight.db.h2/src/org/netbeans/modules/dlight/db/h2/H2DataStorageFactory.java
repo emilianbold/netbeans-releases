@@ -74,11 +74,11 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
 
         String rcFileName = System.getProperty("dlight.h2.rcfile"); // NOI18N
         if (rcFileName == null) {
-            String homePath = System.getProperty("user.home");
+            String homePath = System.getProperty("user.home");// NOI18N
             if (homePath != null) {
                 try {
                     File homeDir = new File(homePath);
-                    rcFile = new RcFile(new File(homeDir, ".h2rc"));
+                    rcFile = new RcFile(new File(homeDir, ".h2rc"));// NOI18N
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (FormatException ex) {
@@ -150,7 +150,7 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
     public H2DataStorage openStorage(String uniqueKey) {
         try {
             //find dburl
-            String dbURL = rcFile.get("h2.storages", uniqueKey);
+            String dbURL = rcFile.get("h2.storages", uniqueKey);// NOI18N
             if (dbURL != null) {
                 H2DataStorage result = new H2DataStorage(dbURL);
                 result.loadSchema();
