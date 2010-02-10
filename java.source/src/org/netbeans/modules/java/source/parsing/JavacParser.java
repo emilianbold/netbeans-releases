@@ -286,13 +286,16 @@ public class JavacParser extends Parser {
                     cpInfo.removeChangeListener(weakCpListener);
                 }
                 cpInfo = ClasspathInfo.create(this.file);
+                final ClassPath cp = cpInfo.getClassPath(PathKind.SOURCE);
+                assert cp != null;
+                this.root = cp.findOwnerRoot(this.file);
                 this.weakCpListener = WeakListeners.change(cpInfoListener, cpInfo);
                 cpInfo.addChangeListener (this.weakCpListener);
-                JavaSourceAccessor.getINSTANCE().invalidateCachedClasspathInfo(this.file);                
+                JavaSourceAccessor.getINSTANCE().invalidateCachedClasspathInfo(this.file);
             }
         }
     }
-    
+
     public void invalidate () {
         this.invalid = true;
     }
