@@ -41,6 +41,7 @@ package org.netbeans.modules.css.parser;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
+import org.netbeans.modules.css.editor.Css;
 
 /**
  *
@@ -48,17 +49,12 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class SimpleNodeUtil {
 
-    public static String unquotedValue(String value) {
-        return isValueQuoted(value) ? value.substring(1, value.length() - 1) : value;
+    public static String unquotedValue(CharSequence value) {
+        return Css.unquotedValue(value);
     }
 
-    public static boolean isValueQuoted(String value) {
-        if (value.length() < 2) {
-            return false;
-        } else {
-            return ((value.charAt(0) == '\'' || value.charAt(0) == '"') &&
-                    (value.charAt(value.length() - 1) == '\'' || value.charAt(value.length() - 1) == '"'));
-        }
+    public static boolean isValueQuoted(CharSequence value) {
+        return Css.isValueQuoted(value);
     }
 
     public static Token getNodeToken(SimpleNode node, int tokenKind) {

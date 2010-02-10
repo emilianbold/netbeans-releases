@@ -39,6 +39,10 @@
 
 package org.netbeans.modules.css.editor;
 
+import java.io.File;
+import java.net.URI;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.openide.filesystems.FileObject;
@@ -91,5 +95,72 @@ public class Css {
 	}
         return null;
     }
+
+    /**
+     * @todo copied from org.netbeans.modules.html.editor.api.Utils - refactor to shared code
+     */
+    public static String unquotedValue(CharSequence value) {
+        CharSequence unquoted = isValueQuoted(value) ? value.subSequence(1, value.length() - 1) : value;
+        return unquoted.toString();
+    }
+
+    /**
+     * @todo copied from org.netbeans.modules.html.editor.api.Utils - refactor to shared code
+     */
+    public static boolean isValueQuoted(CharSequence value) {
+        if (value.length() < 2) {
+            return false;
+        } else {
+            return ((value.charAt(0) == '\'' || value.charAt(0) == '"') &&
+                    (value.charAt(value.length() - 1) == '\'' || value.charAt(value.length() - 1) == '"'));
+        }
+    }
+
+        /**
+     * Resolves the relative or absolute link from the base file
+     *
+     * @todo Copied from CssIndex - refactor to some shared code
+     *
+     * @param source The base file
+     * @param importedFileName the link
+     * @return
+     */
+    public static FileObject resolve(FileObject source, String importedFileName) {
+        try {
+            URI u = URI.create(importedFileName);
+            File file = null;
+
+            if (u.isAbsolute()) {
+                //do refactor only file resources
+                if ("file".equals(u.getScheme())) { //NOI18N
+                    try {
+                        //the IAE is thrown for invalid URIs quite frequently
+                        file = new File(u);
+                    } catch (IllegalArgumentException iae) {
+                        //no-op
+                    }
+                }
+            } else {
+                //no schema specified
+                file = new File(importedFileName);
+            }
+
+            if (file != null && !file.isAbsolute()) {
+                //relative to the current file's folder - let's resolve
+                FileObject resolvedFileObject = source.getParent().getFileObject(importedFileName);
+                if (resolvedFileObject != null && resolvedFileObject.isValid()) {
+                    return resolvedFileObject;
+                }
+            } else {
+                //absolute - TO THE DEPLOYMENT ROOT!!!
+                //todo implement!!!
+            }
+        } catch (IllegalArgumentException e) {
+            Logger.getAnonymousLogger().log(Level.INFO, "Cannot resolve import '" + importedFileName + "' from file " + source.getPath(), e); //NOI18N
+        }
+        return null;
+    }
+
+
 
 }

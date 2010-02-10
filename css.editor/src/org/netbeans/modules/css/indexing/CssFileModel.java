@@ -255,10 +255,10 @@ public class CssFileModel {
                     int groupIndex = 1;
                     String content = m.group(groupIndex);
                     boolean quoted = SimpleNodeUtil.isValueQuoted(content);
-                    int from = m.start(groupIndex);
-                    int to = m.end(groupIndex);
+                    int from = token.offset + m.start(groupIndex) + (quoted ? 1 : 0);
+                    int to = token.offset + m.end(groupIndex) - (quoted ? 1 : 0);
                     return createEntry(SimpleNodeUtil.unquotedValue(content),
-                            new OffsetRange(from + (quoted ? 1 : 0), to - (quoted ? 1 : 0)));
+                            new OffsetRange(from, to));
                 }
             }
 

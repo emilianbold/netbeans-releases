@@ -42,6 +42,7 @@ package org.netbeans.modules.css.gsf;
 
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
@@ -62,6 +63,11 @@ import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 public class CssLanguage extends DefaultLanguageConfig {
     
     public CssLanguage() {
+    }
+
+    @Override
+    public DeclarationFinder getDeclarationFinder() {
+        return new CssDeclarationFinder();
     }
 
     @Override
