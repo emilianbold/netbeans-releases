@@ -279,7 +279,9 @@ public class JavacParser extends Parser {
                 //Revalidate
                 final Project owner = FileOwnerQuery.getOwner(this.file);
                 LOGGER.warning("ClassPath identity changed for " + this.file + ", class path owner: " +       //NOI18N
-                        (owner == null ? "null" : (FileUtil.getFileDisplayName(owner.getProjectDirectory())+" ("+owner.getClass()+")")));       //NOI18N
+                        (owner == null ? "null" : (FileUtil.getFileDisplayName(owner.getProjectDirectory())+" ("+owner.getClass()+")")) +
+                        " original sourcePath: " + cpInfo.getClassPath(PathKind.SOURCE) +
+                        " new sourcePath: " + scp);       //NOI18N
                 if (this.weakCpListener != null) {
                     cpInfo.removeChangeListener(weakCpListener);
                 }
