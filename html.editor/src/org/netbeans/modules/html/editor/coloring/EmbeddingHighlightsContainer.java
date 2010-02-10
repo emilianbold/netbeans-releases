@@ -111,6 +111,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
             ATTR_EXTENDS_EOL, Boolean.TRUE);
     }
 
+    @Override
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         synchronized (this) {
             if (javascriptBackground != null || cssBackground != null) {
@@ -134,6 +135,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
     //  TokenHierarchyListener implementation
     // ----------------------------------------------------------------------
 
+    @Override
     public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
         synchronized (this) {
             version++;
@@ -212,7 +214,6 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
                         }
                         String embeddedMimeType = eTokenSequence.language().mimeType();
                         if (CSS_MIME_TYPE.equals(embeddedMimeType) || (CSS_INLINED_MIME_TYPE).equals(embeddedMimeType) || (JAVASCRIPT_MIME_TYPE).equals(embeddedMimeType)) {
-                            //NOI18N
                             try {
                                 startOffset = eTokenSequence.offset();
                                 do {
@@ -249,6 +250,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
             return false;
         }
         
+        @Override
         public boolean moveNext() {
             synchronized (EmbeddingHighlightsContainer.this) {
                 if (checkVersion()) {
@@ -262,6 +264,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
             return false;
         }
 
+        @Override
         public int getStartOffset() {
             synchronized (EmbeddingHighlightsContainer.this) {
                 if (finished) {
@@ -273,6 +276,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
             }
         }
 
+        @Override
         public int getEndOffset() {
             synchronized (EmbeddingHighlightsContainer.this) {
                 if (finished) {
@@ -284,6 +288,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
             }
         }
 
+        @Override
         public AttributeSet getAttributes() {
             synchronized (EmbeddingHighlightsContainer.this) {
                 if (finished) {
