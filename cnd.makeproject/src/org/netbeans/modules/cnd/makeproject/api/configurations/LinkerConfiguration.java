@@ -82,9 +82,9 @@ public class LinkerConfiguration implements AllOptionsProvider {
         output = new StringConfiguration(null, ""); // NOI18N
         additionalLibs = new VectorConfiguration<String>(null);
         dynamicSearch = new VectorConfiguration<String>(null);
-        stripOption = new LinkerStripConfiguration(null, false); // NOI18N
-        picOption = new BooleanConfiguration(null, true, "", "-Kpic"); // NOI18N
-        norunpathOption = new BooleanConfiguration(null, true, "", "-norunpath"); // NOI18N
+        stripOption = new BooleanConfiguration(null, false); // NOI18N
+        picOption = new BooleanConfiguration(null, true); // NOI18N
+        norunpathOption = new BooleanConfiguration(null, true); // NOI18N
         nameassignOption = new BooleanConfiguration(null, true);
         commandLineConfiguration = new OptionsConfiguration();
         additionalDependencies = new OptionsConfiguration();
@@ -267,10 +267,10 @@ public class LinkerConfiguration implements AllOptionsProvider {
         }
         if (cs != null) {
             options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getOutputFileFlag() + getOutputValue() + " "; // NOI18N
-        } else {
-            options += "-o " + getOutputValue() + " "; // NOI18N
         }
-        options += getStripOption().getOption() + " "; // NOI18N
+        if (cs != null && getStripOption().getValue()) {
+            options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getStripFlag() + " "; // NOI18N
+        }
         if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
             // FIXUP: should move to Platform
             if (cs != null) {
@@ -278,7 +278,9 @@ public class LinkerConfiguration implements AllOptionsProvider {
                     options += getPICOption(cs);
                 }
                 if (cs.getCompilerFlavor().isSunStudioCompiler()) {
-                    options += getNorunpathOption().getOption() + " "; // NOI18N
+                    if (getNorunpathOption().getValue()) {
+                        options += "-norunpath "; // NOI18N
+                    }
                     options += getNameassignOption(getNameassignOption().getValue()) + " "; // NOI18N
                 }
             }
@@ -465,44 +467,6 @@ public class LinkerConfiguration implements AllOptionsProvider {
                 return;
             }
             super.setValue(v);
-        }
-    }
-
-    private class LinkerStripConfiguration extends BooleanConfiguration {
-
-        public LinkerStripConfiguration(BooleanConfiguration master, boolean def) {
-            super(master, def);
-        }
-
-        @Override
-        public String getOption() {
-            if (getValue()) {
-                String option;
-                if (getMakeConfiguration().getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
-                    option = "-Wl,-S "; // NOI18N
-                } else {
-                    option = "-s ";  // NOI18N
-                }
-                return option;
-            } else {
-                return ""; // NOI18N
-            }
-        }
-
-        // Clone and Assign
-        @Override
-        public void assign(BooleanConfiguration conf) {
-            setDirty(getDirty() || getValue() != conf.getValue());
-            setValue(conf.getValue());
-            setModified(conf.getValue());
-        }
-
-        @Override
-        public LinkerStripConfiguration clone() {
-            LinkerStripConfiguration clone = new LinkerStripConfiguration(getMaster(), getDefault());
-            clone.setValue(getValue());
-            clone.setModified(getModified());
-            return clone;
         }
     }
 

@@ -225,6 +225,8 @@ public final class ToolchainManager {
         String getDynamicLibraryBasicFlag();
 
         String getOutputFileFlag();
+
+        String getStripFlag();
     }
 
     public interface ScannerDescriptor {

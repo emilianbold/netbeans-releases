@@ -235,6 +235,7 @@ made subject to such option by the copyright holder.
         <dynamic_library flags="-Bdynamic"/>
         <dynamic_library_basic flags="-G "/>
         <output_file flags="-o "/>
+        <strip_flag flags="-s"/>
     </linker>
     <make>
         <tool name="dmake"/>
