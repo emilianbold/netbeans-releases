@@ -100,7 +100,7 @@ public class KenaiClosingPanel extends javax.swing.JPanel {
         closeButton = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 5, 3, 5));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 5, 0, 5));
         setLayout(new java.awt.GridBagLayout());
 
         warningLabel.setForeground(UIManager.getColor("nb.warningForeground"));
@@ -118,7 +118,6 @@ public class KenaiClosingPanel extends javax.swing.JPanel {
         add(learnMore, gridBagConstraints);
 
         closeButton.setText(org.openide.util.NbBundle.getMessage(KenaiClosingPanel.class, "KenaiClosingPanel.closeButton.text")); // NOI18N
-        closeButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 3, 3, 3));
         closeButton.setBorderPainted(false);
         closeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
