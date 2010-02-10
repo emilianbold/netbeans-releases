@@ -294,72 +294,7 @@ JRE is enough.
         </question>
 -->
 <answer id="dep-nb">
-Module uses following API's:
-<ul>
-<li>
-    <api 
-        name="NodesAPI"
-        type="import"
-        category="official"
-        url="@org-openide-nodes@/org/openide/nodes/doc-files/api.html"
-        group="java" 
-    />
-</li>
-<li>
-    <api 
-        name="ActionsAPI"
-        type="import"
-        category="official"
-        url="@org-openide-actions@/org/openide/actions/doc-files/api.html"
-        group="java" 
-    />
-</li>
-<li>
-    <api 
-        name="ModulesAPI"
-        type="import"
-        category="official"
-        url="@org-openide-modules@/org/openide/modules/doc-files/api.html"
-        group="java" 
-    />
-</li>
-<li>
-    <api 
-        name="FilesystemsAPI"
-        type="import"
-        category="official"
-        url="@org-openide-filesystems@/org/openide/filesystems/doc-files/api.html"
-        group="java" 
-    />
-</li>
-<li>
-    <api 
-        name="LoadersAPI"
-        type="import"
-        category="official"
-        url="@org-openide-loaders@/org/openide/loaders/doc-files/api.html"
-        group="java" 
-    />
-</li>
-<li>
-    <api 
-        name="UtilitiesAPI"
-        type="import"
-        category="official"
-        url="@org-openide-util@/org/openide/util/doc-files/api.html"
-        group="java" 
-    />
-</li>
-<li>
-    <api 
-        name="SettingsAPI"
-        type="import"
-        category="official"
-        url="@org-netbeans-modules-settings@/org/netbeans/spi/settings/doc-files/api.html"
-        group="java" 
-    />
-</li>
-</ul>
+  <defaultanswer generate='here' />
 </answer>
 
 
@@ -1347,8 +1282,6 @@ Module reads its own configuration from its layer and eventualy from other modul
 if provided. Data have following <a href="http://core.netbeans.org/windowsystem/changes.html#3.4.2">folder structure</a>.
 It contains <api group="layer" category="private" type="export" name="ModuleDataStructure" url="http://core.netbeans.org/windowsystem/changes.html#3.4.2">Module folder structure under Windows2 directory </api>
 and <api group="layer" category="private" type="export" name="LocalDataStructure" url="http://core.netbeans.org/windowsystem/changes.html#3.4.2">Local folder structure under Windows2Local directory</api>.
-<!--<a href="http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/windows/doc-files/api.html#xml">directory structure</a>.
--->
 </answer>
 
 </api-answers>
