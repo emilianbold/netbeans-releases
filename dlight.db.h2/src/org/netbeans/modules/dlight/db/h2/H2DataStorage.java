@@ -102,11 +102,11 @@ public final class H2DataStorage extends SQLDataStorage {
         } catch (CancellationException ex) {
         }
 
-        if (tempDir == null || tempDir.trim().equals("")) {
+        if (tempDir == null || tempDir.trim().equals("")) {// NOI18N
             tempDir = System.getProperty("java.io.tmpdir"); // NOI18N
         }
 
-        storagesDir  = System.getProperty("dlight.storages.folder") == null ? tempDir :  System.getProperty("dlight.storages.folder");
+        storagesDir  = System.getProperty("dlight.storages.folder") == null ? tempDir :  System.getProperty("dlight.storages.folder");// NOI18N
         url = "jdbc:h2:" + storagesDir + "/h2_db_dlight"; // NOI18N
         CommonTasksSupport.mkDir(ExecutionEnvironmentFactory.getLocal(), storagesDir, new StringWriter());
         tmpDir = tempDir;
@@ -130,7 +130,7 @@ public final class H2DataStorage extends SQLDataStorage {
                 }
             }
             dbIndex.getAndSet(newValue);
-            if (System.getProperty("dlight.storages.folder") == null){
+            if (System.getProperty("dlight.storages.folder") == null){// NOI18N
                 DLightExecutorService.submit(new Runnable() {
 
                     public void run() {
@@ -274,7 +274,7 @@ public final class H2DataStorage extends SQLDataStorage {
     @Override
     public void loadSchema(){
         try {
-            ResultSet rs = select("INFORMATION_SCHEMA.TABLES", null, "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE LIKE 'TABLE'");
+            ResultSet rs = select("INFORMATION_SCHEMA.TABLES", null, "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE LIKE 'TABLE'");// NOI18N
             if (rs == null) {
                 return;
             }
@@ -289,10 +289,10 @@ public final class H2DataStorage extends SQLDataStorage {
 
     private void loadTable(String tableName){
         try {
-            ResultSet rs = select("INFORMATION_SCHEMA.COLUMNS", null, "SELECT COLUMN_NAME, TYPE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME LIKE '" + tableName + "'");
+            ResultSet rs = select("INFORMATION_SCHEMA.COLUMNS", null, "SELECT COLUMN_NAME, TYPE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME LIKE '" + tableName + "'");// NOI18N
             List<Column> columns = new ArrayList<Column>();
             while (rs.next()) {
-                Column c = new Column(rs.getString("COLUMN_NAME"), getClassByString(rs.getString("TYPE_NAME")));
+                Column c = new Column(rs.getString("COLUMN_NAME"), getClassByString(rs.getString("TYPE_NAME")));// NOI18N
                 columns.add(c);
             }
             DataTableMetadata result = new DataTableMetadata(tableName, columns, null);
