@@ -963,7 +963,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 setModified();
             }
         }
-    //}
+        //}
     }
 
     /*
@@ -1237,8 +1237,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 if (dirfolder == null) {
                     if (inList(absTestRootsList, files[i].getAbsolutePath()) || folder.isTestLogicalFolder()) {
                         dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true, Folder.Kind.TEST_LOGICAL_FOLDER);
-                    }
-                    else {
+                    } else {
                         dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
                     }
                 }
