@@ -230,8 +230,8 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
 
             StringBuilder sb = new StringBuilder(200);
             // dirs
-            sb.append("project directory: "); // NOI18N
-            sb.append(project.getProjectDirectory());
+            sb.append("project directory equals sources: "); // NOI18N
+            sb.append(project.getProjectDirectory().equals(sources));
             sb.append("; sources (not null, valid): "); // NOI18N
             sb.append(sources != null);
             sb.append(", "); // NOI18N
