@@ -46,7 +46,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -56,6 +58,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -119,6 +124,7 @@ public class MakeOSGi extends Task {
     }
 
     private void process(File module) throws Exception {
+        Set<String> importedPackages = findImports(module);
         JarFile jar = new JarFile(module);
         try {
             Manifest netbeans = jar.getManifest();
@@ -133,7 +139,6 @@ public class MakeOSGi extends Task {
             if (cnb.equals("org.netbeans.core.netigso")) {
                 // special handling...
                 osgi.getMainAttributes().putValue("Bundle-Activator", "org.netbeans.core.osgi.Activator");
-                osgi.getMainAttributes().putValue("Import-Package", "org.osgi.framework, org.osgi.framework.launch, org.osgi.service.url");
             }
             osgi.getMainAttributes().putValue("Bundle-SymbolicName", cnb);
             String spec = netbeans.getMainAttributes().getValue("OpenIDE-Module-Specification-Version");
@@ -184,6 +189,17 @@ public class MakeOSGi extends Task {
             }
             if (requireBundles.length() > 0) {
                 osgi.getMainAttributes().putValue("Require-Bundle", requireBundles.toString());
+            }
+            if (!importedPackages.isEmpty()) {
+                StringBuilder b = new StringBuilder();
+                for (String pkg : importedPackages) {
+                    if (b.length() > 0) {
+                        b.append(", ");
+                    }
+                    b.append(pkg);
+                }
+                // Import-Package does not work well since some modules have classes which are simply unlinkable:
+                osgi.getMainAttributes().putValue("DynamicImport-Package", b.toString());
             }
             // XXX OpenIDE-Module-Java-Dependencies => Bundle-RequiredExecutionEnvironment: JavaSE-1.6
             // XXX OpenIDE-Module-Package-Dependencies => Import-Package
@@ -371,6 +387,32 @@ public class MakeOSGi extends Task {
             log("JAR " + module + " not found in expected cluster layout", Project.MSG_WARN);
         }
         return result;
+    }
+
+    private Set<String> findImports(File module) throws Exception {
+        Map<String, Boolean> loadable = new HashMap<String, Boolean>();
+        Map<String, byte[]> classfiles = new TreeMap<String, byte[]>();
+        VerifyClassLinkage.read(module, classfiles, new HashSet<File>(), this, null);
+        final Set<String> imports = new TreeSet<String>();
+        ClassLoader loader = new ClassLoader() {
+            final ClassLoader jre = ClassLoader.getSystemClassLoader().getParent();
+            public @Override URL getResource(String name) {
+                if (!name.startsWith("java/") && (name.startsWith("org/osgi/") || jre.getResource(name) != null)) {
+                    imports.add(name.replaceFirst("/[^/]+[.]class$", "").replace('/', '.'));
+                }
+                try {
+                    return new URL("file:/" + name); // irrelevant
+                } catch (MalformedURLException x) {
+                    throw new RuntimeException(x);
+                }
+            }
+        };
+        for (Map.Entry<String, byte[]> entry : classfiles.entrySet()) {
+            String clazz = entry.getKey();
+            byte[] data = entry.getValue();
+            VerifyClassLinkage.verify(clazz, data, loadable, loader, new AtomicInteger(), this, /* should never fail anyway */true);
+        }
+        return imports;
     }
 
 }

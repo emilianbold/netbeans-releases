@@ -313,7 +313,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="hidden"/>
             </file>
 
-            <file name="cppunitrunner.cc" url="templates/cpp/cppunitrunner-cc.template">
+            <file name="CppUnitRunner.cc" url="templates/cpp/cppunitrunner-cc.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="position" intvalue="650"/>
                 <attr name="template" boolvalue="true"/>

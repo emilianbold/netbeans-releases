@@ -55,7 +55,6 @@ import java.io.Writer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -509,7 +508,7 @@ import org.openide.util.Lookup;
      * @param contents keys are JAR entry paths, values are text contents (will be written in UTF-8)
      * @param manifest a manifest to store (or null for none)
      */
-    public static void createJar(File jar, Map/*<String,String>*/ contents, Manifest manifest) throws IOException {
+    public static void createJar(File jar, Map<String,String> contents, Manifest manifest) throws IOException {
         if (manifest != null) {
             manifest.getMainAttributes().putValue("Manifest-Version", "1.0"); // workaround for JDK bug
         }
@@ -517,11 +516,9 @@ import org.openide.util.Lookup;
         OutputStream os = new FileOutputStream(jar);
         try {
             JarOutputStream jos = manifest != null ? new JarOutputStream(os, manifest) : new JarOutputStream(os);
-            Iterator it = contents.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry) it.next();
-                String path = (String) entry.getKey();
-                byte[] data = ((String) entry.getValue()).getBytes("UTF-8");
+            for (Map.Entry<String,String> entry : contents.entrySet()) {
+                String path = entry.getKey();
+                byte[] data = entry.getValue().getBytes("UTF-8");
                 JarEntry je = new JarEntry(path);
                 je.setSize(data.length);
                 CRC32 crc = new CRC32();
@@ -544,11 +541,11 @@ import org.openide.util.Lookup;
         // To satisfy NbPlatform.defaultPlatformLocation and NbPlatform.isValid, and make at least one module:
         Manifest mani = new Manifest();
         mani.getMainAttributes().putValue("OpenIDE-Module", "core");
-        TestBase.createJar(new File(new File(new File(d, "platform"), "core"), "core.jar"), Collections.EMPTY_MAP, mani);
+        TestBase.createJar(new File(new File(new File(d, "platform"), "core"), "core.jar"), Collections.<String,String>emptyMap(), mani);
         mani = new Manifest();
         mani.getMainAttributes().putValue("OpenIDE-Module", "org.netbeans.modules.apisupport.harness");
         mani.getMainAttributes().putValue("OpenIDE-Module-Specification-Version", harnessSpecVersion);
-        TestBase.createJar(new File(new File(new File(d, "harness"), "modules"), "org-netbeans-modules-apisupport-harness.jar"), Collections.EMPTY_MAP, mani);
+        TestBase.createJar(new File(new File(new File(d, "harness"), "modules"), "org-netbeans-modules-apisupport-harness.jar"), Collections.<String,String>emptyMap(), mani);
         FileUtil.refreshFor(d);
     }
     
