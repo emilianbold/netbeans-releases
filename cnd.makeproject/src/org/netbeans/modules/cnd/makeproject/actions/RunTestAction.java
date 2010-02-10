@@ -52,10 +52,12 @@ import org.openide.util.actions.NodeAction;
 
 public class RunTestAction extends NodeAction {
 
+    @Override
     public String getName() {
-        return getString("TestActionName");
+        return getString("TestActionName"); // NOI18N
     }
 
+    @Override
     public void performAction(Node[] activatedNodes) {
         if (activatedNodes.length == 0) {
             return;
@@ -75,7 +77,7 @@ public class RunTestAction extends NodeAction {
         if (list.size() > 0) {
             StringBuffer message = new StringBuffer("Would run the following test(s):\n"); // NOI18N
             for (Folder f : list) {
-                message.append("  " + f.getDisplayName() + "\n"); // NOI18N
+                message.append("  ").append(f.getDisplayName()).append("\n"); // NOI18N
             }
             NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
@@ -83,6 +85,7 @@ public class RunTestAction extends NodeAction {
 
     }
 
+    @Override
     public boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length == 0) {
             return false;
@@ -97,6 +100,7 @@ public class RunTestAction extends NodeAction {
         return list.size() > 0;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return null;
     }
