@@ -103,7 +103,7 @@ made subject to such option by the copyright holder.
             
             <p>
                 To get your API listed here, use 
-                <code>&lt;api type='export' group='layer' ... /&gt;</code> in
+                <code>&lt;api type='export' group='systemproperty' ... /&gt;</code> in
                 your module arch.xml document.
             </p>
          </body>
