@@ -613,6 +613,9 @@ buildnumber - generated timestamp for use in
 OpenIDE-Module-Implementation-Version (or OpenIDE-Module-Build-Version if
 OpenIDE-Module-Implementation-Version was explicitly defined in the manifest).
 
+catalog.base.url [since 6.9] - distribution base for the suite modules NBMs
+location for which the catalog is generated. Default is ".". 
+
 cluster - cluster directory your module is to be built into. For netbeans.org
 modules, this is a subdirectory of nbbuild/netbeans/; the subdirectory name is
 defined automatically from nbbuild/cluster.properties, with a fallback to
