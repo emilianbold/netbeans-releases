@@ -414,17 +414,17 @@ own PropertyChangeListener. So method addPropertyChangeListener is invoked by re
 <answer id="exec-property">
 <ul>
 <li>
-<api type="export" group="property" name="org.openide.filesystems.DefaultAttributes.ATTR_NAME_EXT_XML" category="private">
+<api type="export" group="systemproperty" name="org.openide.filesystems.DefaultAttributes.ATTR_NAME_EXT_XML" category="private">
  Name of  attribute file can be changed , if .nbattrs can't be used. 
  </api></li>
- <li><api type="import" group="property" name="netbeans.debug.heap" category="private">
+ <li><api type="import" group="systemproperty" name="netbeans.debug.heap" category="private">
 Periodic refresh can be blocked.
  </api></li>
- <li><api type="export" group="property" name="org.openide.filesystems.LocalFileSystem.REFRESH_TIME" category="private">
+ <li><api type="export" group="systemproperty" name="org.openide.filesystems.LocalFileSystem.REFRESH_TIME" category="private">
 Periodic refresh can be set.
  </api></li>
   <li>
-   <api type="export" group="property" name="org.openide.filesystems.annotateUnclosedStreams" category="private">
+   <api type="export" group="systemproperty" name="org.openide.filesystems.annotateUnclosedStreams" category="private">
     <p>
      If <code>true</code>, better diagnostic information will be available as to when file input or
      output streams were opened that prevent a file from being deleted because they were not closed.

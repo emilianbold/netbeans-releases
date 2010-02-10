@@ -610,7 +610,7 @@ List of already solved issues</a>
  <answer id="exec-property">
   <p>
       Yes:
-      <api type="export" group="property" name="standard-file-chooser" category="private">
+      <api type="export" group="systemproperty" name="standard-file-chooser" category="private">
           Directory chooser will not install if Java system property 'standard-file-chooser=true'
           is found. So this property is for disabling directory chooser completely and could be
           used in case of some problems, for example on unsupported OS.
