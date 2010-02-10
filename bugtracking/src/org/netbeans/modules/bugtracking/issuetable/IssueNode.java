@@ -134,7 +134,8 @@ public abstract class IssueNode extends AbstractNode {
         for (Property<?> property : properties) {
             ps.put(property);
         }
-        
+        ps.put(new RecentChangesProperty());
+        ps.put(new SeenProperty());
         sheet.put(ps);
         setSheet(sheet);    
     }
