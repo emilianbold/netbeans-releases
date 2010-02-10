@@ -170,6 +170,7 @@
         <dynamic_library flags=""/>
         <dynamic_library_basic flags="-LD "/>
         <output_file flags="-Fe"/>
+        <strip_flag flags="-s"/>
     </linker>
     <make>
         <tool name="gmake,make" skip="true"/>

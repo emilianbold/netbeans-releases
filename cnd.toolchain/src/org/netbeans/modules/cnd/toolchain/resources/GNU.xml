@@ -193,6 +193,7 @@ made subject to such option by the copyright holder.
         <dynamic_library flags="-dynamic"/>
         <dynamic_library_basic flags="-shared "/>
         <output_file flags="-o "/>
+        <strip_flag flags="-s"/>
     </linker>
     <make>
         <tool name="gmake,make"/>
