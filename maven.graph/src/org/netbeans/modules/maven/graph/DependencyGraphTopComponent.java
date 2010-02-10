@@ -419,6 +419,8 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                             JComponent sceneView = scene.getView();
                             if (sceneView == null) {
                                 sceneView = scene.createView();
+                                // vlv: print
+                                sceneView.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
                             }
                             pane.setViewportView(sceneView);
                             scene.cleanLayout(pane);
