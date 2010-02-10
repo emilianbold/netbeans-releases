@@ -45,7 +45,7 @@ import javax.swing.Icon;
 
 public abstract class ConfigurationDescriptor {
     private Configurations confs = new Configurations();
-    int version = -1;
+    private int version = -1;
     private State state = State.READING;
 
     public ConfigurationDescriptor() {

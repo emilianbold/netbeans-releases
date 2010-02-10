@@ -244,7 +244,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         return sheet;
     }
     
-    class AdditionalDependenciesOptions implements AllOptionsProvider {
+    private class AdditionalDependenciesOptions implements AllOptionsProvider {
         public String getOptions() {
             return null; // Not used
         }

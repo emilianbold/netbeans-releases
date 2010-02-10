@@ -773,9 +773,10 @@ public final class RubyIndex {
     }
 
     /**
-     * Gets the super clases of the given class.
+     * Gets the super clases of the given class; the class itself
+     * is not included.
      * @param fqn
-     * @return
+     * @return an ordered list of the super classes; closest first.
      */
     public List<IndexedClass> getSuperClasses(String fqn) {
         // todo: performance?

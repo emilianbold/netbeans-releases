@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public class AssemblerConfiguration extends BasicCompilerConfiguration implements AllOptionsProvider, ConfigurationBase  {
+public class AssemblerConfiguration extends BasicCompilerConfiguration {
     // Constructors
 
     public AssemblerConfiguration(String baseDir, AssemblerConfiguration master) {
