@@ -39,13 +39,23 @@
 
 package org.netbeans.modules.html.editor.gsf;
 
+import java.util.Collection;
 import javax.swing.text.Document;
-import org.netbeans.editor.BaseDocument;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.ext.html.parser.AstNode;
+import org.netbeans.editor.ext.html.parser.AstNode.Attribute;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.completion.AttrValuesCompletion;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * just CSL to HtmlExtension bridge
@@ -64,9 +74,15 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
      * Return {@link DeclarationLocation#NONE} if the declaration can not be found, otherwise return
      *   a valid DeclarationLocation.
      */
+    @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
+        DeclarationLocation loc = findCoreHtmlDeclaration(info, caretOffset);
+        if(loc != null) {
+            return loc;
+        }
+
         for(HtmlExtension ext : HtmlExtension.getRegisteredExtensions(info.getSnapshot().getSource().getMimeType())) {
-            DeclarationLocation loc = ext.findDeclaration(info, caretOffset);
+            loc = ext.findDeclaration(info, caretOffset);
             if(loc != null) {
                 return loc;
             }
@@ -88,15 +104,102 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
      * @return {@link OffsetRange#NONE} if the caret is not over a valid reference span,
      *   otherwise return the character range for the given hyperlink tokens
      */
+    @Override
     public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
+        OffsetRange range = getCoreHtmlReferenceSpan(doc, caretOffset);
+        if(range != null) {
+            return range;
+        }
+
+        //html extensions
         String mimeType = NbEditorUtilities.getMimeType(doc);
         for(HtmlExtension ext : HtmlExtension.getRegisteredExtensions(mimeType)) {
-            OffsetRange range = ext.getReferenceSpan(doc, caretOffset);
+            range = ext.getReferenceSpan(doc, caretOffset);
             if(range != null) {
                 return range;
             }
         }
         return OffsetRange.NONE;
     }
+
+    private OffsetRange getCoreHtmlReferenceSpan(Document doc, int caretOffset) {
+        TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc, caretOffset);
+        if(ts == null) {
+            return null;
+        }
+
+        //tag attribute value hyperlinking
+        if(ts.token().id() == HTMLTokenId.VALUE) {
+            //find attribute name
+            int quotesDiff = Utils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
+            OffsetRange range = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
+            String attrName = null;
+            String tagName = null;
+            while(ts.movePrevious()) {
+                HTMLTokenId id = ts.token().id();
+                if(id == HTMLTokenId.ARGUMENT && attrName == null) {
+                    attrName = ts.token().text().toString();
+                } else if(id == HTMLTokenId.TAG_OPEN) {
+                    tagName = ts.token().text().toString();
+                    break;
+                } else if(id == HTMLTokenId.TAG_OPEN_SYMBOL || id == HTMLTokenId.TAG_CLOSE_SYMBOL || id == HTMLTokenId.TEXT) {
+                    break;
+                }
+            }
+
+            if(tagName != null && attrName != null) {
+                AttrValuesCompletion support = AttrValuesCompletion.getSupport(tagName, attrName);
+                if(AttrValuesCompletion.FILE_NAME_SUPPORT == support) {
+                    //some file to hyperlink to
+                    return range;
+                }
+
+
+            }
+        }
+
+
+        return null;
+    }
+
+    private DeclarationLocation findCoreHtmlDeclaration(ParserResult info, int caretOffset) {
+        HtmlParserResult result = (HtmlParserResult)info;
+        Snapshot snapshot = result.getSnapshot();
+        final int astCaretOffset = snapshot.getEmbeddedOffset(caretOffset);
+        if(astCaretOffset == -1) {
+            return null; //cannot translate offset!
+        }
+        AstNode node = result.findLeaf(astCaretOffset);
+        if(node == null) {
+            return null; //no node!
+        }
+        if(node.type() == AstNode.NodeType.OPEN_TAG) {
+            Collection<Attribute> attribs = node.getAttributes(new AstNode.AttributeFilter() {
+
+                @Override
+                //find the attribute at the caret position
+                public boolean accepts(Attribute attribute) {
+                    return attribute.valueOffset() <= astCaretOffset &&
+                            (attribute.valueOffset() + attribute.value().length()) >= astCaretOffset;
+                }
+            });
+
+            assert attribs.size() <= 1; //one or zero matches
+            if(attribs.size() == 1) {
+                Attribute attr = attribs.iterator().next();
+                String value = attr.unquotedValue();
+                FileObject resolved = Utils.resolve(info.getSnapshot().getSource().getFileObject(), value);
+                if(resolved != null) {
+                    return new DeclarationLocation(resolved, 0);
+                }
+            }
+
+            
+        }
+        
+        return null;
+    }
+
+
 
 }
