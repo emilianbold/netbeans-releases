@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,50 +34,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.perfan.storage.impl;
 
+package org.netbeans.modules.web.jsf.editor.facelets;
+
+import com.sun.faces.spi.ConfigurationResourceProvider;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory;
-import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory.Mode;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.List;
+import javax.servlet.ServletContext;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.web.jsf.editor.index.JsfBinaryIndexer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
 
 /**
+ * Facelets taglibs provider searching for the descriptors on project's source classpath.
  *
- * @author masha
+ * @author marekfukala
  */
-@ServiceProvider(service = org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class)
-public final class PerfanDataStorageFactory implements PersistentDataStorageFactory<PerfanDataStorage> {
+class FaceletTaglibraryConfigProvider implements ConfigurationResourceProvider {
 
-    static final Collection<DataStorageType> supportedTypes = Collections.singletonList(PerfanDataStorage.storageType);
+    private static final String FACELETS_LIB_SUFFIX = ".taglib.xml"; //NOI18N
 
-    public Collection<DataStorageType> getStorageTypes() {
-        return supportedTypes;
-    }
+    private ClassPath classpath;
 
-    public PerfanDataStorage createStorage() {
-        return new PerfanDataStorage();
-    }
-
-    public PerfanDataStorage openStorage(String uniqueKey) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-    }
-
-    public PerfanDataStorage openStorage(String uniqueKey, Mode mode) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+    public FaceletTaglibraryConfigProvider(ClassPath classpath) {
+        this.classpath = classpath;
     }
 
     @Override
-    public PerfanDataStorage createStorage(String uniqueKey) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Collection<URL> getResources(ServletContext sc) {
+        List<FileObject> metainfs = classpath.findAllResources("META-INF"); //NOI18N
+
+        Collection<URL> urls = new ArrayList<URL>();
+        for(FileObject metainf : metainfs) {
+            Collection<FileObject> descriptors = JsfBinaryIndexer.findLibraryDescriptors(metainf, FACELETS_LIB_SUFFIX);
+            for(FileObject fo : descriptors) {
+                try {
+                    urls.add(fo.getURL());
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        return urls;
     }
 
-    
 
-    public String getUniqueKey(PerfanDataStorage storage) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
-    }
 }
