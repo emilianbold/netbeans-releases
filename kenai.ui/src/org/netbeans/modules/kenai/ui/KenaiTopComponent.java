@@ -90,15 +90,11 @@ public final class KenaiTopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        kenaiClosingPanel1 = new org.netbeans.modules.kenai.ui.KenaiClosingPanel();
-
         setLayout(new java.awt.BorderLayout());
-        add(kenaiClosingPanel1, java.awt.BorderLayout.PAGE_END);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.netbeans.modules.kenai.ui.KenaiClosingPanel kenaiClosingPanel1;
     // End of variables declaration//GEN-END:variables
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
@@ -142,7 +138,6 @@ public final class KenaiTopComponent extends TopComponent {
         dashboardComponent = DashboardImpl.getInstance().getComponent();
         add(dashboardComponent, BorderLayout.CENTER);
         add(getKenaiSwitcher(), BorderLayout.NORTH);
-        add(kenaiClosingPanel1, BorderLayout.SOUTH);
     }
 
     Component getKenaiSwitcher() {
@@ -152,11 +147,9 @@ public final class KenaiTopComponent extends TopComponent {
             public void actionPerformed(ActionEvent e) {
                 if (combo.getSelectedItem() instanceof Kenai) {
                     DashboardImpl.getInstance().setKenai((Kenai) combo.getSelectedItem());
-                    kenaiClosingPanel1.setVisible("kenai.com".equals(((Kenai) combo.getSelectedItem()).getUrl().getHost()));
                 } else {
                     new AddInstanceAction().actionPerformed(e);
                     DashboardImpl.getInstance().setKenai((Kenai) combo.getSelectedItem());
-                    kenaiClosingPanel1.setVisible("kenai.com".equals(((Kenai) combo.getSelectedItem()).getUrl().getHost()));
                 }
             }
         });

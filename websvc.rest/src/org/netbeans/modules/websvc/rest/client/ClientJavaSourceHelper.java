@@ -314,7 +314,12 @@ public class ClientJavaSourceHelper {
                 }
             }
         } else if (saasMethods != null) {
-            // PENDING: need to implement
+            for (WadlSaasMethod saasMethod : saasMethods) {
+                List<MethodTree> httpMethods = Wadl2JavaHelper.createHttpMethods(copy, saasMethod);
+                for (MethodTree httpMethod : httpMethods) {
+                    modifiedInnerClass = maker.addClassMember(modifiedInnerClass, httpMethod);
+                }
+            }
         }
 
         // add close()
@@ -346,7 +351,6 @@ public class ClientJavaSourceHelper {
                 boolean multipleMimeTypes = produces.contains(","); //NOI18N
                 for (HttpMimeType mimeType : HttpMimeType.values()) {
                     if (produces.contains(mimeType.getMimeType())) {
-                        String methodName = httpMethod.getName() + (multipleMimeTypes ? "_"+mimeType.name() : ""); //NOI18N
                         httpMethods.add(createHttpGETMethod(copy, httpMethod, mimeType, multipleMimeTypes));
                         found = true;
                     }
@@ -808,7 +812,9 @@ public class ClientJavaSourceHelper {
         XML("application/xml", "javax.ws.rs.core.MediaType.APPLICATION_XML"), //NOI18N
         JSON("application/json", "javax.ws.rs.core.MediaType.APPLICATION_JSON"), //NOI18N
         TEXT("text/plain", "javax.ws.rs.core.MediaType.TEXT_PLAIN"), //NOI18N
-        HTML("text/html", "javax.ws.rs.core.MediaType.TEXT_HTML"); //NOI18N
+        HTML("text/html", "javax.ws.rs.core.MediaType.TEXT_HTML"), //NOI18N
+        TEXT_XML("text/xml", "javax.ws.rs.core.MediaType.TEXT_XML"), //NOI18N
+        FORM("application/x-www-form-urlencoded", "javax.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED"); //NOI18N
 
         private String mimeType;
         private String mediaType;
