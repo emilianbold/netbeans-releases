@@ -314,7 +314,7 @@ public class MakeProjectGenerator {
             if (!dir.mkdirs()) {
                 throw new IOException("Can not create project folder."); // NOI18N
             }
-        // refreshFileSystem (dir); // See 136445
+            // refreshFileSystem (dir); // See 136445
         }
         dirFO = FileUtil.toFileObject(dir);
         assert dirFO != null : "No such dir on disk: " + dir; // NOI18N

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,59 +34,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.web.jsf.editor.facelets;
 
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiManager;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import com.sun.faces.spi.ConfigurationResourceProvider;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import javax.servlet.ServletContext;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.web.jsf.editor.index.JsfBinaryIndexer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
-import org.openide.util.NbPreferences;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * Facelets taglibs provider searching for the descriptors on project's source classpath.
  *
- * @author Jan Becicka
+ * @author marekfukala
  */
-@ServiceProvider(service=Runnable.class, path="WarmUp")
-public class KenaiLoginTask implements Runnable {
+class FaceletTaglibraryConfigProvider implements ConfigurationResourceProvider {
 
-    public static boolean isFinished = false;
-    public static final Object monitor = new Object();
-    @SuppressWarnings("deprecation")
-    public void run() {
-        synchronized (monitor) {
-            Preferences prefs = NbPreferences.forModule(KenaiLoginTask.class);
-            try {
-                if (prefs.keys().length > 0) {
-                    for (Kenai k: KenaiManager.getDefault().getKenais()) {
-                        //no auto login if kenai is closing
-                        if (!k.getUrl().getHost().equals("kenai.com")) {//NOI!18N
-                            UIUtils.tryLogin(k, false);
-                        }
-                    }
-                }
-            } catch (BackingStoreException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            isFinished = true;
-            monitor.notify();
-        }
+    private static final String FACELETS_LIB_SUFFIX = ".taglib.xml"; //NOI18N
+
+    private ClassPath classpath;
+
+    public FaceletTaglibraryConfigProvider(ClassPath classpath) {
+        this.classpath = classpath;
     }
 
-    public static void waitStartupFinished() {
-        synchronized (monitor) {
-            if (!isFinished) {
+    @Override
+    public Collection<URL> getResources(ServletContext sc) {
+        List<FileObject> metainfs = classpath.findAllResources("META-INF"); //NOI18N
+
+        Collection<URL> urls = new ArrayList<URL>();
+        for(FileObject metainf : metainfs) {
+            Collection<FileObject> descriptors = JsfBinaryIndexer.findLibraryDescriptors(metainf, FACELETS_LIB_SUFFIX);
+            for(FileObject fo : descriptors) {
                 try {
-                    monitor.wait();
-                } catch (InterruptedException ex) {
+                    urls.add(fo.getURL());
+                } catch (FileStateInvalidException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
         }
+
+        return urls;
     }
+
+
 }
