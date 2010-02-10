@@ -63,6 +63,10 @@ public class FSWrapper {
     public static Iterable<? extends ClassWrapper> listClasses() {
         ClassLoader loader = FSWrapper.class.getClassLoader();
 
+        if (loader == null) {
+            loader = ClassLoader.getSystemClassLoader();
+        }
+
         List<ClassWrapper> result = new LinkedList<ClassWrapper>();
         FileObject main = FileUtil.getConfigFile("org-netbeans-modules-java-hints/code-hints/");
 
