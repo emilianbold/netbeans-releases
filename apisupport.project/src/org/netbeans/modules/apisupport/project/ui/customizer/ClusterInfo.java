@@ -106,7 +106,12 @@ public final class ClusterInfo {
 
     @Override
     public String toString() {
-        return clusterDir.getAbsolutePath() + (isEnabled() ? "" : " (DISABLED)");
+        return clusterDir.getAbsolutePath() +
+                (isEnabled() ? "" : " (DISABLED)") +
+                (project != null ? " (from " + project.getProjectDirectory() + ")" : "") +
+                (isPlatformCluster ? " (PLATFORM)" : "") +
+                (sourceRoots != null ? " (src=" + Arrays.toString(sourceRoots) + ")" : "") +
+                (javadocRoots != null ? " (javadoc=" + Arrays.toString(javadocRoots) + ")" : "");
     }
 
     /**

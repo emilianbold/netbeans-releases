@@ -54,7 +54,6 @@ import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.launch.Framework;
 
 /**
@@ -120,13 +119,13 @@ public class IntegrationTest extends NbTestCase {
         assertNotNull("addURL method found", addURLMethod);
     }
 
-    private static Method howEclipseFindsMethodToSupportFrameworks(Class clazz) {
+    private static Method howEclipseFindsMethodToSupportFrameworks(Class<?> clazz) {
 
         if (clazz == null) {
             return null;
         }
         try {
-            Method result = clazz.getDeclaredMethod("addURL", new Class[]{URL.class});
+            Method result = clazz.getDeclaredMethod("addURL", URL.class);
             result.setAccessible(true);
             return result;
         } catch (NoSuchMethodException ex) {

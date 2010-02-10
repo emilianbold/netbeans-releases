@@ -194,9 +194,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         assert project != null;
         SuiteProject thisPrj = getProperties().getProject();
 
-        if (project == null)
-            return ;
-
         if (thisPrj.getProjectDirectory().equals(project.getProjectDirectory())) {
             if (showMessages)
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
@@ -798,7 +795,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         return manager;
     }
     
-    public static final Set<String> DISABLED_PLATFORM_MODULES = new HashSet<String>();
+    public static final Set<String> DISABLED_PLATFORM_MODULES = new TreeSet<String>();
     
     static {
         // Probably not needed for most platform apps, and won't even work under JNLP.

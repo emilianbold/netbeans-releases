@@ -920,6 +920,28 @@ public class Folder implements FileChangeListener, ChangeListener {
         return folders;
     }
 
+    public List<Folder> getAllTests() {
+        List<Folder> list = new ArrayList<Folder>();
+        getTests(list);
+        return list;
+    }
+
+    /*
+     * recursive!
+     */
+    private void getTests(List<Folder> list) {
+        Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
+        while (iter.hasNext()) {
+            Object o = iter.next();
+            if (o instanceof Folder) {
+                if (((Folder)o).isTest()) {
+                    list.add((Folder)o);
+                }
+                ((Folder)o).getTests(list);
+            }
+        }
+    }
+
     public void addChangeListener(ChangeListener cl) {
         synchronized (changeListenerList) {
             changeListenerList.add(cl);
