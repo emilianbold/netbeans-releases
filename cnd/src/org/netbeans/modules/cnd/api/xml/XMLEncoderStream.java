@@ -65,7 +65,7 @@ import org.openide.xml.XMLUtil;
  * </ul>
  */
 
-public class XMLEncoderStream {
+public final class XMLEncoderStream {
 
     private String indentElement = "  ";	// NOI18N
     private int indent;
