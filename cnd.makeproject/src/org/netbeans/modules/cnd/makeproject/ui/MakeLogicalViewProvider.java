@@ -85,7 +85,7 @@ import org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction
 import org.netbeans.modules.cnd.makeproject.actions.AddExistingItemAction;
 import org.netbeans.modules.cnd.makeproject.actions.NewFolderAction;
 import org.netbeans.modules.cnd.makeproject.actions.NewTestAction;
-import org.netbeans.modules.cnd.makeproject.actions.TestAction;
+import org.netbeans.modules.cnd.makeproject.actions.RunTestAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
@@ -731,6 +731,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         //new DebugMenuAction(project, helper),
                         ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null),
                         ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG_STEP_INTO, bundle.getString("LBL_DebugAction_Step_Name"), null),
+                        SystemAction.get(RunTestAction.class),
                         null,
                         CommonProjectActions.setAsMainProjectAction(),
                         CommonProjectActions.openSubprojectsAction(),
@@ -1207,7 +1208,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             if (folder.isTestRootFolder()) {
                 result = new Action[]{ //
                             SystemAction.get(NewTestAction.class),
-                            SystemAction.get(TestAction.class),
+                            SystemAction.get(RunTestAction.class),
                             null,
                             SystemAction.get(NewFolderAction.class),
                             SystemAction.get(org.openide.actions.FindAction.class),
@@ -1217,7 +1218,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             else if (folder.isTestLogicalFolder() && !folder.isDiskFolder()) {
                 result = new Action[]{ //
                             SystemAction.get(NewTestAction.class),
-                            SystemAction.get(TestAction.class),
+                            SystemAction.get(RunTestAction.class),
                             null,
                             SystemAction.get(NewFolderAction.class),
                             SystemAction.get(org.openide.actions.FindAction.class),
@@ -1237,7 +1238,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                             CommonProjectActions.newFileAction(), //
                             SystemAction.get(AddExistingItemAction.class),
                             null,
-                            SystemAction.get(TestAction.class),
+                            SystemAction.get(RunTestAction.class),
                             ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null),
                             ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG_STEP_INTO, bundle.getString("LBL_DebugAction_Step_Name"), null),
                             null,
