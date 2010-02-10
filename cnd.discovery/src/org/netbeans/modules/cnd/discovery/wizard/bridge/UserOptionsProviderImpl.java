@@ -61,6 +61,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     public UserOptionsProviderImpl(){
     }
 
+    @Override
     public List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
         List<String> res =new ArrayList<String>(includes);
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
@@ -74,6 +75,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         return res;
     }
 
+    @Override
     public List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
         List<String> res =new ArrayList<String>(macros);
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
@@ -100,7 +102,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             int i = s.indexOf("`pkg-config "); // NOI18N
             if (i >= 0) {
                 String pkg = s.substring(i+12);
-                int j = pkg.indexOf("`"); // NOI18N
+                int j = pkg.indexOf('`'); // NOI18N
                 if (j > 0) {
                     pkg = pkg.substring(0,j).trim();
                     s = s.substring(i+12+j+1);

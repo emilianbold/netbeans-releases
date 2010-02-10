@@ -52,8 +52,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jan Becicka
  */
-//CLOSING-KENAI
-//@ServiceProvider(service=Runnable.class, path="WarmUp")
+@ServiceProvider(service=Runnable.class, path="WarmUp")
 public class KenaiLoginTask implements Runnable {
 
     public static boolean isFinished = false;
@@ -65,7 +64,10 @@ public class KenaiLoginTask implements Runnable {
             try {
                 if (prefs.keys().length > 0) {
                     for (Kenai k: KenaiManager.getDefault().getKenais()) {
-                        UIUtils.tryLogin(k, false);
+                        //no auto login if kenai is closing
+                        if (!k.getUrl().getHost().equals("kenai.com")) {//NOI!18N
+                            UIUtils.tryLogin(k, false);
+                        }
                     }
                 }
             } catch (BackingStoreException ex) {
