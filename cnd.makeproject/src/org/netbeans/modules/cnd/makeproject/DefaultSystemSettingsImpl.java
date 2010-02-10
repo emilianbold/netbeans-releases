@@ -67,7 +67,7 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings {
                 kind = PredefinedToolKind.CCCompiler;
                 break;
             case FORTRAN:
-                kind = Tool.FortranCompiler;
+                kind = PredefinedToolKind.FortranCompiler;
                 break;
             default:
                 return null;
