@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.ui.utils;
+package org.netbeans.modules.cnd.utils.ui;
 
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
@@ -362,8 +362,8 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         dataPanel.setRequestFocusEnabled(false);
         dataPanel.setLayout(new java.awt.GridBagLayout());
 
-        listLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/utils/Bundle").getString("TARGET_EDITOR_LIST_MNEMONIC").charAt(0));
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/utils/Bundle"); // NOI18N
+        listLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/utils/ui/Bundle").getString("TARGET_EDITOR_LIST_MNEMONIC").charAt(0));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/utils/ui/Bundle"); // NOI18N
         listLabel.setText(bundle.getString("TARGET_EDITOR_LIST_LBL")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -388,7 +388,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         controlsPanel.setRequestFocusEnabled(false);
         controlsPanel.setLayout(new java.awt.GridBagLayout());
 
-        addButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/utils/Bundle").getString("TARGET_EDITOR_ADD_BUTTON_MNEMONIC").charAt(0));
+        addButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/utils/ui/Bundle").getString("TARGET_EDITOR_ADD_BUTTON_MNEMONIC").charAt(0));
         addButton.setText(bundle.getString("TARGET_EDITOR_ADD_BUTTON_LBL")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -403,7 +403,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         controlsPanel.add(addButton, gridBagConstraints);
 
-        copyButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/utils/Bundle").getString("TARGET_EDITOR_COPY_BUTTON_MNEMONIC").charAt(0));
+        copyButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/utils/ui/Bundle").getString("TARGET_EDITOR_COPY_BUTTON_MNEMONIC").charAt(0));
         copyButton.setText(bundle.getString("TARGET_EDITOR_COPY_BUTTON_LBL")); // NOI18N
         copyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -418,7 +418,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         controlsPanel.add(copyButton, gridBagConstraints);
 
-        renameButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/utils/Bundle").getString("TARGET_EDITOR_RENAME_BUTTON_MNEMONIC").charAt(0));
+        renameButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/utils/ui/Bundle").getString("TARGET_EDITOR_RENAME_BUTTON_MNEMONIC").charAt(0));
         renameButton.setText(bundle.getString("TARGET_EDITOR_RENAME_BUTTON_LBL")); // NOI18N
         renameButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -432,7 +432,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         controlsPanel.add(renameButton, gridBagConstraints);
 
-        removeButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/utils/Bundle").getString("TARGET_EDITOR_REMOVE_BUTTON_MNEMONIC").charAt(0));
+        removeButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/utils/ui/Bundle").getString("TARGET_EDITOR_REMOVE_BUTTON_MNEMONIC").charAt(0));
         removeButton.setText(bundle.getString("TARGET_EDITOR_REMOVE_BUTTON_LBL")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -446,7 +446,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         controlsPanel.add(removeButton, gridBagConstraints);
 
-        upButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/utils/Bundle").getString("TARGET_EDITOR_UP_BUTTON_MNEMONIC").charAt(0));
+        upButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/utils/ui/Bundle").getString("TARGET_EDITOR_UP_BUTTON_MNEMONIC").charAt(0));
         upButton.setText(bundle.getString("TARGET_EDITOR_UP_BUTTON_LBL")); // NOI18N
         upButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -460,7 +460,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         controlsPanel.add(upButton, gridBagConstraints);
 
-        downButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/utils/Bundle").getString("TARGET_EDITOR_DOWN_BUTTON_MNEMONIC").charAt(0));
+        downButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/utils/ui/Bundle").getString("TARGET_EDITOR_DOWN_BUTTON_MNEMONIC").charAt(0));
         downButton.setText(bundle.getString("TARGET_EDITOR_DOWN_BUTTON_LBL")); // NOI18N
         downButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -473,7 +473,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         controlsPanel.add(downButton, gridBagConstraints);
 
-        defaultButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/utils/Bundle").getString("TARGET_EDITOR_DEFAULT_BUTTON_MNEMONIC").charAt(0));
+        defaultButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/utils/ui/Bundle").getString("TARGET_EDITOR_DEFAULT_BUTTON_MNEMONIC").charAt(0));
         defaultButton.setText(bundle.getString("TARGET_EDITOR_DEFAULT_BUTTON_LBL")); // NOI18N
         defaultButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

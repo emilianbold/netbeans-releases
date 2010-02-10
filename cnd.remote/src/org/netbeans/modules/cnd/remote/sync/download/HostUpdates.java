@@ -92,7 +92,7 @@ public class HostUpdates {
     private final ExecutionEnvironment env;
     private final RemotePathMap mapper;
     private Notification notification;
-    private final File privStorageDir;
+    private final HostUpdatesPersistence persistence;
 
     /*
      * FileDownloadInfo.LOCK guards everything.
@@ -105,7 +105,7 @@ public class HostUpdates {
     private HostUpdates(ExecutionEnvironment env, File privStorageDir) {
         this.env = env;
         this.mapper = RemotePathMap.getPathMap(env);
-        this.privStorageDir = privStorageDir;
+        this.persistence = new HostUpdatesPersistence(privStorageDir, env);
     }
 
     private FileDownloadInfo getFileInfo(File file) {
@@ -134,6 +134,10 @@ public class HostUpdates {
     }
 
     private void showNotification() {
+        if (persistence.getRememberChoice()) {
+            download();
+            return;
+        }
         ActionListener onClickAction = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 CndUtils.assertUiThread();
@@ -184,7 +188,7 @@ public class HostUpdates {
                 notification = null;
             }
         }
-        final Set<FileDownloadInfo> confirmed = HostUpdatesRequestPanel.request(unconfirmed, env, privStorageDir);
+        final Set<FileDownloadInfo> confirmed = HostUpdatesRequestPanel.request(unconfirmed, env, persistence);
         if (confirmed == null) { // null means user pressed cancel - re-show notification
             synchronized (FileDownloadInfo.LOCK) {
                 if (notification == null) {
@@ -212,6 +216,32 @@ public class HostUpdates {
                 };
                 RequestProcessor.getDefault().post(r);
             }
+        }
+    }
+    
+    /** */
+    private void download() {
+        final Collection<FileDownloadInfo> confirmed = new ArrayList<FileDownloadInfo>();
+        synchronized (FileDownloadInfo.LOCK) {
+            Collection<FileDownloadInfo> unconfirmed = getByState(FileDownloadInfo.State.UNCONFIRMED);
+            for (FileDownloadInfo info : unconfirmed) {
+                if (persistence.getFileSelected(info.getLocalFile(), true)) {
+                    info.confirm();
+                    confirmed.add(info);
+                } else {
+                    info.reject();
+                }
+            }
+            unconfirmed.removeAll(confirmed);
+            infos.removeAll(unconfirmed);
+        }
+        if (!confirmed.isEmpty()) {
+            RequestProcessor.getDefault().post(new NamedRunnable("") {
+                @Override
+                protected void runImpl() {
+                    download(confirmed);
+                }
+            });
         }
     }
 
@@ -256,5 +286,13 @@ public class HostUpdates {
                 detailsText,
                 onClickAction,
                 NotificationDisplayer.Priority.LOW));
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                Notification n = notRef.get();
+                if (n != null) {
+                    n.clear();
+                }
+            }
+        }, 15*1000);
     }
 }

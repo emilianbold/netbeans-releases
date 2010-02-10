@@ -49,10 +49,10 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 
-public abstract class BasicCompiler extends Tool {
+public abstract class AbstractCompiler extends Tool {
 
     /** Creates a new instance of GenericCompiler */
-    protected BasicCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+    protected AbstractCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
         if (!env.isLocal()) {
             includeFilePrefix = CndUtils.getIncludeFilePrefix(EnvUtils.toHostID(env));
