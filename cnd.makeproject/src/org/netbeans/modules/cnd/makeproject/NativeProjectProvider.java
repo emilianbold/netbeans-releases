@@ -438,7 +438,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                     list.add(items[i]);
                     continue;
                 }
-                if (!oldItemConf.getCCompilerConfiguration().getPreprocessorOptions().equals(newItemConf.getCCompilerConfiguration().getPreprocessorOptions())) {
+                if (!oldItemConf.getCCompilerConfiguration().getPreprocessorOptions(oldCompilerSet).equals(newItemConf.getCCompilerConfiguration().getPreprocessorOptions(newCompilerSet))) {
                     list.add(items[i]);
                     continue;
                 }
@@ -452,7 +452,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                     list.add(items[i]);
                     continue;
                 }
-                if (!oldItemConf.getCCCompilerConfiguration().getPreprocessorOptions().equals(newItemConf.getCCCompilerConfiguration().getPreprocessorOptions())) {
+                if (!oldItemConf.getCCCompilerConfiguration().getPreprocessorOptions(oldCompilerSet).equals(newItemConf.getCCCompilerConfiguration().getPreprocessorOptions(newCompilerSet))) {
                     list.add(items[i]);
                     continue;
                 }

@@ -172,6 +172,15 @@ public class ThreadMapDataStorage implements ProxyDataStorage {
         }
     }
 
+    @Override
+    public void syncAddData(String tableName, List<DataRow> data) {
+        if (sqlStorage != null) {
+            sqlStorage.syncAddData(tableName, data);
+        }
+    }
+
+
+
     public Collection<DataStorageType> getStorageTypes() {
         return Collections.singletonList(DataStorageTypeFactory.getInstance().getDataStorageType(THREAD_MAP_STORAGE_TYPE_ID));
     }

@@ -633,9 +633,6 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
     // - not all errors are checked!
     private String checkForErrors() {
-        if ("kenai.com".equals(panel.getKenai().getUrl().getHost())) {
-            return NbBundle.getMessage(NewKenaiProjectAction.class, "LBL_KenaiClosed");
-        }
         String prjName = getProjectName();
 
         if (prjName.length()>20) {

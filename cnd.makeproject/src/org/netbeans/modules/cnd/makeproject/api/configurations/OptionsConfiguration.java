@@ -46,7 +46,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 
 public class OptionsConfiguration {
     private String preDefined = ""; // NOI18N
-    boolean dirty = false;
+    private boolean dirty = false;
 
     private String commandLine;
     private boolean commandLineModified;
@@ -81,7 +81,7 @@ public class OptionsConfiguration {
     public String getDefault() {
 	return ""; // NOI18N
     }
-    public void optionsReset() {
+    public final void optionsReset() {
 	commandLine = getDefault();
 	commandLineModified = false;
     }
