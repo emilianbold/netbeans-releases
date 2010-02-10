@@ -216,7 +216,6 @@ public class ChatTopComponent extends TopComponent {
             public void run() {
                 removeAll();
                 add(chatsPanel, BorderLayout.CENTER);
-                add(kenaiClosingPanel1, BorderLayout.SOUTH);
                 putChats(kec);
                 contactList.updateFilter();
                 validate();
@@ -252,7 +251,6 @@ public class ChatTopComponent extends TopComponent {
                 clearChatsTabbedPane();
                 open.clear();
                 add(loginScreen, BorderLayout.CENTER);
-                add(kenaiClosingPanel1, BorderLayout.SOUTH);
                 validate();
                 repaint();
             }
@@ -271,7 +269,6 @@ public class ChatTopComponent extends TopComponent {
                 clearChatsTabbedPane();
                 open.clear();
                 add(errorScreen, BorderLayout.CENTER);
-                add(kenaiClosingPanel1, BorderLayout.SOUTH);
                 validate();
                 repaint();
             }
@@ -292,7 +289,6 @@ public class ChatTopComponent extends TopComponent {
                 open.clear();
                 ((JXBusyLabel) initLabel).setBusy(true);
                 add(initPanel, BorderLayout.CENTER);
-                add(kenaiClosingPanel1, BorderLayout.SOUTH);
                 validate();
                 repaint();
             }
@@ -454,7 +450,6 @@ public class ChatTopComponent extends TopComponent {
         retryLink = new javax.swing.JLabel();
         initPanel = new javax.swing.JPanel();
         initLabel = new JXBusyLabel(new Dimension(16,16));
-        kenaiClosingPanel1 = new org.netbeans.modules.kenai.ui.KenaiClosingPanel();
 
         chats.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -524,7 +519,7 @@ public class ChatTopComponent extends TopComponent {
                 .add(5, 5, 5)
                 .add(lblXmppError)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(retryLink, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(retryLink)
                 .addContainerGap(31, Short.MAX_VALUE))
         );
         errorScreenLayout.setVerticalGroup(
@@ -533,7 +528,7 @@ public class ChatTopComponent extends TopComponent {
                 .add(5, 5, 5)
                 .add(errorScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblXmppError)
-                    .add(retryLink, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(retryLink))
                 .addContainerGap(413, Short.MAX_VALUE))
         );
 
@@ -555,13 +550,12 @@ public class ChatTopComponent extends TopComponent {
         initPanelLayout.setVerticalGroup(
             initPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(initPanelLayout.createSequentialGroup()
-                .add(12, 12, 12)
+                .add(5, 5, 5)
                 .add(initLabel)
                 .addContainerGap(279, Short.MAX_VALUE))
         );
 
         add(initPanel, java.awt.BorderLayout.CENTER);
-        add(kenaiClosingPanel1, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
 
     private void retryLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_retryLinkMouseClicked
@@ -636,7 +630,6 @@ public class ChatTopComponent extends TopComponent {
     private javax.swing.JPanel errorScreen;
     private javax.swing.JLabel initLabel;
     private javax.swing.JPanel initPanel;
-    private org.netbeans.modules.kenai.ui.KenaiClosingPanel kenaiClosingPanel1;
     private javax.swing.JLabel lblXmppError;
     private javax.swing.JLabel loginLink;
     private javax.swing.JPanel loginScreen;
