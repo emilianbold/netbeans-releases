@@ -41,11 +41,11 @@
 
 package org.netbeans.modules.cnd.makeproject.actions;
 
+import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -65,18 +65,30 @@ public class TestAction extends NodeAction {
 	Project project = (Project)n.getValue("Project"); // NOI18N
 	assert project != null;
         
-//        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
-//        MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-//        if (!makeConfigurationDescriptor.okToChange()) {
-//            return;
-//        }
-//
-//	Folder newFolder = folder.addNewFolder(true);
-//	MakeLogicalViewProvider.setVisible(project, newFolder);
+        List<Folder> list = folder.getAllTests();
+        if (folder.isTest()) {
+            list.add(folder);
+        }
+        if (list.size() > 0) {
+            StringBuffer message = new StringBuffer("Would run the following test(s):\n"); // NOI18N
+            for (Folder f : list) {
+                message.append("  " + f.getDisplayName() + "\n"); // NOI18N
+            }
+            NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+        }
+
     }
 
     public boolean enable(Node[] activatedNodes) {
-        return true;
+	Node n = activatedNodes[0];
+	Folder folder = (Folder)n.getValue("Folder"); // NOI18N
+	assert folder != null;
+        if (folder.isTest()) {
+            return true;
+        }
+        List<Folder> list = folder.getAllTests();
+        return list.size() > 0;
     }
 
     public HelpCtx getHelpCtx() {

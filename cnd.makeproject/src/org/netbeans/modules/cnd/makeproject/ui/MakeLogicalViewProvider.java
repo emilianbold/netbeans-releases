@@ -731,6 +731,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         //new DebugMenuAction(project, helper),
                         ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null),
                         ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG_STEP_INTO, bundle.getString("LBL_DebugAction_Step_Name"), null),
+                        SystemAction.get(TestAction.class),
                         null,
                         CommonProjectActions.setAsMainProjectAction(),
                         CommonProjectActions.openSubprojectsAction(),
