@@ -110,4 +110,33 @@ public class ActivatorTest extends NbTestCase {
         assertEquals("10", System.getProperty("my.url.length"));
     }
 
+    /* XXX investigate why !FileUtil.configRoot.valid
+    public void testSettings() throws Exception {
+        new OSGiProcess(getWorkDir()).manifest(
+                "OpenIDE-Module: custom",
+                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Module-Dependencies: org.netbeans.modules.settings/1, org.openide.loaders, " +
+                "org.openide.filesystems, org.openide.modules, org.openide.util",
+                "OpenIDE-Module-Specification-Version: 1.0").
+                module("org.netbeans.modules.settings").sourceFile("custom/Install.java", "package custom;",
+                "public class Install extends org.openide.modules.ModuleInstall {",
+                "public @Override void restored() {",
+                "Bean b = new Bean(); b.setP(\"hello\");",
+                "try {",
+                "org.openide.loaders.InstanceDataObject.create(org.openide.loaders.DataFolder.findFolder(",
+                "org.openide.filesystems.FileUtil.getConfigRoot()), \"x\", b, null);",
+                "System.setProperty(\"my.settings\", org.openide.filesystems.FileUtil.getConfigFile(\"x.settings\").asText());",
+                "} catch (Exception x) {x.printStackTrace();}",
+                "}",
+                "@org.netbeans.api.settings.ConvertAsJavaBean public static class Bean {",
+                "private String p; public String getP() {return p;} public void setP(String p2) {p = p2;}",
+                "}",
+                "}").
+                run();
+        String settings = System.getProperty("my.settings");
+        assertNotNull(settings);
+        assertTrue(settings, settings.contains("<string>hello</string>"));
+    }
+     */
+
 }
