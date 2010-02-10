@@ -45,8 +45,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
@@ -200,11 +200,11 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         ExecutionEnvironment execEnv = getMakeConfiguration().getDevelopmentHost().getExecutionEnvironment();
 
         //if we have sun studio compiler along compiler collections presentedCompiler
-        CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(execEnv);
+        CompilerSetManager compilerSetManager = CompilerSetManager.get(execEnv);
         List<CompilerSet> compilers = compilerSetManager.getCompilerSets();
         boolean hasSunStudio = false;
         for (CompilerSet cs : compilers) {
-            if (cs.isSunCompiler()) {
+            if (cs.getCompilerFlavor().isSunStudioCompiler()) {
                 hasSunStudio = true;
                 break;
             }

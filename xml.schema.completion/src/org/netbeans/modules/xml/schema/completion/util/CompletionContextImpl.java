@@ -49,9 +49,12 @@ import java.util.ListIterator;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.AbstractDocument;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.xml.axi.AbstractAttribute;
@@ -83,14 +86,46 @@ import org.w3c.dom.Node;
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
 public class CompletionContextImpl extends CompletionContext {
-        
-    private static final Logger logger = Logger.getLogger(CompletionContextImpl.class.getName());
-    
+    public static final String PREFIX                   = "ns"; //NOI18N
+    public static final String XSI_SCHEMALOCATION       = "schemaLocation"; //NOI18N
+    public static final String XSI_NONS_SCHEMALOCATION  = "noNamespaceSchemaLocation"; //NOI18N
+
+    private static final Logger _logger = Logger.getLogger(CompletionContextImpl.class.getName());
+
+
+    private int completionAtOffset = -1;
+    private FileObject primaryFile;
+    private String typedChars;
+    private TokenItem token;
+    private SyntaxElement element;
+    private String attribute;
+    private DocRoot docRoot;
+    private char lastTypedChar;
+    private CompletionType completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+    private List<QName> pathFromRoot;
+    private String schemaLocation;
+    private String noNamespaceSchemaLocation;
+    private String defaultNamespace;
+    private BaseDocument document;
+    private HashMap<String, CompletionModel> nsModelMap =
+            new HashMap<String, CompletionModel>();
+    private List<CompletionModel> noNSModels =
+            new ArrayList<CompletionModel>();
+    private HashMap<String, String> declaredNamespaces =
+            new HashMap<String, String>();
+    private HashMap<String, String> suggestedNamespaces =
+            new HashMap<String, String>();
+    private HashMap<String, String> specialNamespaceMap =
+            new HashMap<String, String>();
+    private CompletionModel noNamespaceModel;
+    private transient List<String> existingAttributes;
+    private boolean specialCompletion;
+
     /**
      * Creates a new instance of CompletionQueryHelper
      */
-    public CompletionContextImpl(FileObject primaryFile,
-            XMLSyntaxSupport support, int offset) {
+    public CompletionContextImpl(FileObject primaryFile, XMLSyntaxSupport support,
+        int offset) {
         try {
             this.completionAtOffset = offset;
             this.primaryFile = primaryFile;
@@ -101,37 +136,43 @@ public class CompletionContextImpl extends CompletionContext {
             this.lastTypedChar = support.lastTypedChar();
             populateNamespaces();            
         } catch(Exception ex) {
-            //in the worst case, there will not be
-            //any code completion help.
-            logger.log(Level.SEVERE, ex.getMessage());
+            //in the worst case, there won't be any code completion help
+            _logger.log(Level.SEVERE, ex.getMessage());
         }
     }
     
     ////////////////START CompletionContext Implementations////////////////
+    @Override
     public CompletionType getCompletionType() {
         return completionType;
     }
         
+    @Override
     public String getDefaultNamespace() {
         return defaultNamespace;
     }
     
+    @Override
     public List<QName> getPathFromRoot() {
         return pathFromRoot;
     }
     
+    @Override
     public FileObject getPrimaryFile() {
         return primaryFile;
     }
             
+    @Override
     public BaseDocument getBaseDocument() {
         return document;
     }
     
+    @Override
     public HashMap<String, String> getDeclaredNamespaces() {
         return declaredNamespaces;
     }
     
+    @Override
     public String getTypedChars() {
         return typedChars;
     }    
@@ -203,17 +244,20 @@ public class CompletionContextImpl extends CompletionContext {
     public boolean initContext() {
         try {
             int id = token.getTokenID().getNumericID();
-            switch ( id) {
+            switch (id) {
                 //user enters < character
                 case XMLDefaultTokenContext.TEXT_ID:
-                    String chars = token.getImage().trim();
+                    String chars = token.getImage().trim(),
+                           previousTokenText = token.getPrevious().getImage().trim();
                     if(chars != null && chars.startsWith("&")) {
                         completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
                         break;
                     }                    
-                    if(chars != null && chars.equals("") &&
-                       token.getPrevious().getImage().trim().equals("/>")) {
-                        completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                    if (chars != null && chars.equals("") && //previousTokenText.equals("/>")) {
+                        previousTokenText.endsWith(">")) {
+                        //completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                        completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
+                        pathFromRoot = getPathFromRoot(element);
                         break;
                     }                    
                     if(chars != null && chars.startsWith("<")) {
@@ -222,19 +266,22 @@ public class CompletionContextImpl extends CompletionContext {
                         pathFromRoot = getPathFromRoot(element);
                         break;
                     }
-                    if(chars != null &&
-                       token.getPrevious().getImage().trim().equals(">")) {
+                    if (chars != null && previousTokenText.equals(">")) {
                         if(!chars.equals("") && !chars.equals(">"))
                             typedChars = chars;
                         pathFromRoot = getPathFromRoot(element);
                         completionType = CompletionType.COMPLETION_TYPE_ELEMENT_VALUE;
                         break;
                     }
-                    if(chars != null && !chars.equals("<") &&
-                       token.getPrevious().getImage().trim().equals(">")) {
+                    if (chars != null && !chars.equals("<") && previousTokenText.equals(">")) {
                         completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
                         break;
                     }
+                    break;
+
+                case XMLDefaultTokenContext.BLOCK_COMMENT_ID:
+                    completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
+                    pathFromRoot = getPathFromRoot(element);
                     break;
 
                 //start tag of an element
@@ -243,23 +290,33 @@ public class CompletionContextImpl extends CompletionContext {
                         completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
                         break;
                     }
-                    if(element instanceof EmptyTag) {
-                        if(token != null &&
-                           token.getImage().trim().equals("/>")) {
+                    if (element instanceof EmptyTag) {
+                        /*
+                        if (token != null &&
+                            token.getImage().trim().equals("/>")) {
                             completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
                             break;
                         }
-                        EmptyTag tag = (EmptyTag)element;
-                        if(element.getElementOffset() + 1 == this.completionAtOffset) {
+                        */
+                        EmptyTag tag = (EmptyTag) element;
+                        if (isCaretInsideTag()) {
+                            completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
+                            pathFromRoot = getPathFromRoot(element);
+                            break;
+                        }
+                        if ((element.getElementOffset() + 1 == completionAtOffset) ||
+                            (token.getOffset() + token.getImage().length() == completionAtOffset)) {
                             completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
                             pathFromRoot = getPathFromRoot(element.getPrevious());
                             break;
                         }
-                        if(completionAtOffset > element.getElementOffset() + 1 &&
-                           completionAtOffset <= element.getElementOffset() + 1 + tag.getTagName().length()) {
+                        if (completionAtOffset > element.getElementOffset() + 1 &&
+                            completionAtOffset <= (element.getElementOffset() + 1 +
+                                                  tag.getTagName().length())) {
                             completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
-                            int index = completionAtOffset-element.getElementOffset()-1;
-                            typedChars = index<0?tag.getTagName():tag.getTagName().substring(0, index);
+                            int index = completionAtOffset - element.getElementOffset() - 1;
+                            typedChars = index < 0 ? tag.getTagName() :
+                                tag.getTagName().substring(0, index);
                             pathFromRoot = getPathFromRoot(element.getPrevious());
                             break;
                         }                        
@@ -280,7 +337,8 @@ public class CompletionContextImpl extends CompletionContext {
                         } else {
                             StartTag tag = (StartTag)element;
                             int index = completionAtOffset-element.getElementOffset()-1;
-                            typedChars = index<0?tag.getTagName():tag.getTagName().substring(0, index);
+                            typedChars = index<0?tag.getTagName() :
+                                tag.getTagName().substring(0, index);
                         }
                     }
                     completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
@@ -311,7 +369,8 @@ public class CompletionContextImpl extends CompletionContext {
                         if(lastTypedChar == '\'' || lastTypedChar == '\"')
                             typedChars = null;
                         else 
-                            typedChars = token.getImage().substring(1, token.getImage().indexOf(">"));
+                            typedChars = token.getImage().substring(1,
+                                token.getImage().indexOf(">"));
                     }                    
                     
                     //user is inside start/end quotes
@@ -365,10 +424,26 @@ public class CompletionContextImpl extends CompletionContext {
         } catch (Exception ex) {
             return false;
         }
-        
         return true;        
     }
-       
+
+    private boolean isCaretInsideTag() {
+        int caretPos = completionAtOffset;
+        try {
+            ((AbstractDocument) document).readLock();
+
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(document);
+            TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+            return CompletionUtil.isCaretInsideTag(caretPos, tokenSequence);
+        } catch(Exception e) {
+            _logger.log(Level.WARNING,
+                e.getMessage() == null ? e.getClass().getName() : e.getMessage(), e);
+        } finally {
+            ((AbstractDocument) document).readUnlock();
+        }
+        return false;
+    }
+
     public List<DocRootAttribute> getDocRootAttributes() {
         return docRoot.getAttributes();
     }
@@ -528,9 +603,11 @@ public class CompletionContextImpl extends CompletionContext {
     private boolean fromSameNamespace(Tag current, Tag previous) {
         String prevPrefix = CompletionUtil.getPrefixFromTag(previous.getTagName());
         String thisPrefix = CompletionUtil.getPrefixFromTag(current.getTagName());
-        String thisNS = (thisPrefix == null) ? declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE) :
+        String thisNS = (thisPrefix == null) ? declaredNamespaces.get(
+            XMLConstants.XMLNS_ATTRIBUTE) :
             declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE+":"+thisPrefix);
-        String prevNS = (prevPrefix == null) ? declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE) :
+        String prevNS = (prevPrefix == null) ? declaredNamespaces.get(
+            XMLConstants.XMLNS_ATTRIBUTE) :
             declaredNamespaces.get(XMLConstants.XMLNS_ATTRIBUTE+":"+prevPrefix);
         
         return (thisNS == null && prevNS == null) ||
@@ -649,9 +726,8 @@ public class CompletionContextImpl extends CompletionContext {
                 CompletionModel cm = provider.getCompletionModel(new java.net.URI(temp), false);
                 populateModelMap(cm);
             } catch (Exception ex) {
-                logger.log(Level.INFO, null, ex);
-                //continue with the next one.
-                continue;
+                _logger.log(Level.INFO, null, ex);
+                continue; //continue with the next one
             }
         }
     }
@@ -752,37 +828,4 @@ public class CompletionContextImpl extends CompletionContext {
         }
         return existingAttributes;
     }
-    
-    
-    private int completionAtOffset = -1;
-    private FileObject primaryFile;
-    private String typedChars;
-    private TokenItem token;
-    private SyntaxElement element;
-    private String attribute;
-    private DocRoot docRoot;
-    private char lastTypedChar;
-    private CompletionType completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
-    private List<QName> pathFromRoot;
-    private String schemaLocation;
-    private String noNamespaceSchemaLocation;
-    private String defaultNamespace;
-    private BaseDocument document;
-    private HashMap<String, CompletionModel> nsModelMap =
-            new HashMap<String, CompletionModel>();
-    private List<CompletionModel> noNSModels =
-            new ArrayList<CompletionModel>();
-    private HashMap<String, String> declaredNamespaces =
-            new HashMap<String, String>();
-    private HashMap<String, String> suggestedNamespaces =
-            new HashMap<String, String>();
-    private HashMap<String, String> specialNamespaceMap =
-            new HashMap<String, String>();    
-    private CompletionModel noNamespaceModel;
-    private transient List<String> existingAttributes;
-    private boolean specialCompletion;
-    
-    public static final String PREFIX                   = "ns"; //NOI18N
-    public static final String XSI_SCHEMALOCATION       = "schemaLocation"; //NOI18N
-    public static final String XSI_NONS_SCHEMALOCATION  = "noNamespaceSchemaLocation"; //NOI18N
 }

@@ -48,8 +48,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
@@ -198,7 +198,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         ServerRecord record = ServerList.get(execEnv);
         assertNotNull(record);
-        final CompilerSetManager csm = CompilerSetManager.getDefault(execEnv);
+        final CompilerSetManager csm = CompilerSetManager.get(execEnv);
         for (CompilerSet cset : csm.getCompilerSets()) {
             if (cset.getName().equals(name)) {
                 csm.setDefault(cset);

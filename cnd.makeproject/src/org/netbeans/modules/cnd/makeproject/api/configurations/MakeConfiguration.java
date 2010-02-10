@@ -49,20 +49,19 @@ import java.util.Set;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.BuildPlatformNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
@@ -124,11 +123,11 @@ public class MakeConfiguration extends Configuration {
 
     // Constructors
     public MakeConfiguration(MakeConfigurationDescriptor makeConfigurationDescriptor, String name, int configurationTypeValue) {
-        this(makeConfigurationDescriptor.getBaseDir(), name, configurationTypeValue, CompilerSetManager.getDefaultDevelopmentHost());
+        this(makeConfigurationDescriptor.getBaseDir(), name, configurationTypeValue, CppUtils.getDefaultDevelopmentHost());
     }
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
-        this(baseDir, name, configurationTypeValue, CompilerSetManager.getDefaultDevelopmentHost());
+        this(baseDir, name, configurationTypeValue, CppUtils.getDefaultDevelopmentHost());
     }
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String host) {
@@ -146,7 +145,7 @@ public class MakeConfiguration extends Configuration {
         fortranRequired = new LanguageBooleanConfiguration();
         assemblerRequired = new LanguageBooleanConfiguration();
         makefileConfiguration = new MakefileConfiguration(this);
-        dependencyChecking = new BooleanConfiguration(null, isMakefileConfiguration() ? false : MakeOptions.getInstance().getDepencyChecking());
+        dependencyChecking = new BooleanConfiguration(null, isMakefileConfiguration() ? false : MakeProjectOptions.getDepencyChecking());
         cCompilerConfiguration = new CCompilerConfiguration(baseDir, null);
         ccCompilerConfiguration = new CCCompilerConfiguration(baseDir, null);
         fortranCompilerConfiguration = new FortranCompilerConfiguration(baseDir, null);
@@ -271,7 +270,7 @@ public class MakeConfiguration extends Configuration {
         return getConfigurationType().getValue() == TYPE_APPLICATION || getConfigurationType().getValue() == TYPE_DYNAMIC_LIB;
     }
 
-    public boolean isMakefileConfiguration() {
+    public final boolean isMakefileConfiguration() {
         return getConfigurationType().getValue() == TYPE_MAKEFILE;
     }
 
@@ -384,6 +383,7 @@ public class MakeConfiguration extends Configuration {
         this.qmakeConfiguration = qmakeConfiguration;
     }
 
+    @Override
     public void assign(Configuration conf) {
         MakeConfiguration makeConf = (MakeConfiguration) conf;
         setName(makeConf.getName());
@@ -425,6 +425,7 @@ public class MakeConfiguration extends Configuration {
         }
     }
 
+    @Override
     public Configuration cloneConf() {
         return (Configuration) clone();
     }
@@ -433,6 +434,7 @@ public class MakeConfiguration extends Configuration {
      * Make a copy of configuration requested from Project Properties
      * @return Copy of configuration
      */
+    @Override
     public Configuration copy() {
         MakeConfiguration copy = new MakeConfiguration(getBaseDir(), getName(), getConfigurationType().getValue());
         copy.assign(this);
@@ -660,16 +662,16 @@ public class MakeConfiguration extends Configuration {
                         itemConfiguration.getExcluded().getValue()) {
                     continue;
                 }
-                if (itemConfiguration.getTool() == Tool.CCompiler) {
+                if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
                     hasCFiles = true;
                 }
-                if (itemConfiguration.getTool() == Tool.CCCompiler) {
+                if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                     hasCPPFiles = true;
                 }
-                if (itemConfiguration.getTool() == Tool.FortranCompiler) {
+                if (itemConfiguration.getTool() == PredefinedToolKind.FortranCompiler) {
                     hasFortranFiles = true;
                 }
-                if (itemConfiguration.getTool() == Tool.Assembler) {
+                if (itemConfiguration.getTool() == PredefinedToolKind.Assembler) {
                     hasAssemblerFiles = true;
                 }
             //            if (itemConfiguration.getTool() == Tool.AsmCompiler) {
@@ -825,13 +827,13 @@ public class MakeConfiguration extends Configuration {
         }
         if (!IpeUtils.isPathAbsolute(output)) {
             output = getBaseDir() + "/" + output; // NOI18N
-            output = FilePathAdaptor.normalize(output);
+            output = IpeUtils.normalize(output);
         }
         return expandMacros(output);
     }
 
     public boolean hasDebugger() {
-        return ProjectActionSupport.getInstance().canHandle(this, ProjectActionEvent.Type.DEBUG);
+        return ProjectActionSupport.getInstance().canHandle(this, PredefinedType.DEBUG);
     }
 
     public String expandMacros(String val) {
@@ -849,7 +851,7 @@ public class MakeConfiguration extends Configuration {
      * Special version of IntConfiguration
      * Names are shifted one (because Makefile is not allowed as a choice anymore for managed projects)
      */
-    static class ManagedIntConfiguration extends IntConfiguration {
+    private final static class ManagedIntConfiguration extends IntConfiguration {
         public ManagedIntConfiguration(IntConfiguration master, int def, String[] names, String[] options) {
             super(master, def, names, options);
         }

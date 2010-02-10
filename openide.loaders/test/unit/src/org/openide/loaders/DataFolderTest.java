@@ -341,6 +341,17 @@ public class DataFolderTest extends LoggingTestCaseHid {
         }
     }
     
+    public void testNameAndRenameWithADot() throws IOException {
+        FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createFolder("name-with.dot");
+        DataFolder folder = DataFolder.findFolder(fo);
+        Node n = folder.getNodeDelegate();
+        assertEquals("Full name provided", "name-with.dot", n.getName());
+        n.setName("new-name.other");
+        assertEquals("New name set", "new-name.other", n.getName());
+        assertEquals("New name of dobj too", "new-name.other", folder.getName());
+        assertEquals("New name of fo too", "new-name.other", fo.getNameExt());
+    }
+    
     /** Testing order of folder. Needed in order to survive switching of
      * layers on system filesystem.
      */

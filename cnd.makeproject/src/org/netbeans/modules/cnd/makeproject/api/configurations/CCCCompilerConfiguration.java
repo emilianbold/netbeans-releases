@@ -41,9 +41,10 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
 import org.openide.nodes.Sheet;
@@ -319,10 +320,11 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
             this.prepend = prepend;
         }
 
+        @Override
         public String toString(String item) {
             if (0 < item.length()) {
                 if (compilerSet != null) {
-                    item = compilerSet.normalizeDriveLetter(item);
+                    item = CppUtils.normalizeDriveLetter(compilerSet, item);
                 }
                 item = IpeUtils.escapeOddCharacters(item);
                 return prepend == null ? item : prepend + item;

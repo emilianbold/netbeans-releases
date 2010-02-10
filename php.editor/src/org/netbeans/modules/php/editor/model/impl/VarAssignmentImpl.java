@@ -48,20 +48,22 @@ import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
  * @author Radek Matous
  */
 class VarAssignmentImpl extends AssignmentImpl<VariableNameImpl> {
-    VarAssignmentImpl(VariableNameImpl var, Scope scope, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
+    VarAssignmentImpl(VariableNameImpl var, Scope scope, boolean conditionalBlock, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
             Map<String, AssignmentImpl> allAssignments) {
         super(var, scope, scopeRange, nameRange, assignment, allAssignments);
         var.addElement(this);
+        setConditionalBlock(conditionalBlock);
     }
 
-    VarAssignmentImpl(VariableNameImpl var, Scope scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
+    VarAssignmentImpl(VariableNameImpl var, Scope scope, boolean conditionalBlock, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
         super(var, scope, scopeRange, nameRange, typeName);
         var.addElement(this);
+        setConditionalBlock(conditionalBlock);
     }
 
     @Override
     public String getNormalizedName() {
-        return toString();
+        return super.getNormalizedName();
     }
 
     @Override

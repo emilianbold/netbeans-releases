@@ -48,17 +48,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.errors.SuppressWarningsFixer;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
@@ -198,20 +197,7 @@ public final class FixFactory {
         if (info.getElements().getTypeElement("java.lang.SuppressWarnings") == null)
             return false;
 
-        String sourceVersion = SourceLevelQuery.getSourceLevel(info.getFileObject());
-
-        if (sourceVersion == null) {
-            return true;
-        }
-
-        try {
-            SpecificationVersion version = new SpecificationVersion(sourceVersion);
-            SpecificationVersion supp = new SpecificationVersion("1.5");
-
-            return version.compareTo(supp) >= 0;
-        } catch (NumberFormatException e) {
-            return true;
-        }
+        return info.getSourceVersion().compareTo(SourceVersion.RELEASE_5) >= 0;
     }
     
     private static final class FixImpl implements Fix {
@@ -236,7 +222,7 @@ public final class FixFactory {
                 }
             }
 
-            return NbBundle.getMessage(SuppressWarningsFixer.class, "LBL_FIX_Suppress_Waning",  keyNames.toString() );  // NOI18N
+            return NbBundle.getMessage(FixFactory.class, "LBL_FIX_Suppress_Waning",  keyNames.toString() );  // NOI18N
         }
 
         private static final Set<Kind> DECLARATION = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
@@ -293,14 +279,14 @@ public final class FixFactory {
                             List<? extends ExpressionTree> arguments = at.getArguments();
 
                             if (arguments.isEmpty() || arguments.size() > 1) {
-                                Logger.getLogger(SuppressWarningsFixer.class.getName()).log(Level.INFO, "SupressWarnings annotation has incorrect number of arguments - {0}.", arguments.size());  // NOI18N
+                                Logger.getLogger(FixFactory.class.getName()).log(Level.INFO, "SupressWarnings annotation has incorrect number of arguments - {0}.", arguments.size());  // NOI18N
                                 return ;
                             }
 
                             ExpressionTree et = at.getArguments().get(0);
 
                             if (et.getKind() != Kind.ASSIGNMENT) {
-                                Logger.getLogger(SuppressWarningsFixer.class.getName()).log(Level.INFO, "SupressWarnings annotation's argument is not an assignment - {0}.", et.getKind());  // NOI18N
+                                Logger.getLogger(FixFactory.class.getName()).log(Level.INFO, "SupressWarnings annotation's argument is not an assignment - {0}.", et.getKind());  // NOI18N
                                 return ;
                             }
 

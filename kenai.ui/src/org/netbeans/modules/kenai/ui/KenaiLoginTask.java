@@ -64,7 +64,10 @@ public class KenaiLoginTask implements Runnable {
             try {
                 if (prefs.keys().length > 0) {
                     for (Kenai k: KenaiManager.getDefault().getKenais()) {
-                        UIUtils.tryLogin(k, false);
+                        //no auto login if kenai is closing
+                        if (!k.getUrl().getHost().equals("kenai.com")) {//NOI!18N
+                            UIUtils.tryLogin(k, false);
+                        }
                     }
                 }
             } catch (BackingStoreException ex) {

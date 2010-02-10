@@ -87,6 +87,7 @@ import javax.swing.text.Document;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
+import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -113,6 +114,7 @@ import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavadocEnv;
 import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
+import org.netbeans.modules.java.source.indexing.APTUtils;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
@@ -277,7 +279,9 @@ public class JavacParser extends Parser {
                 //Revalidate
                 final Project owner = FileOwnerQuery.getOwner(this.file);
                 LOGGER.warning("ClassPath identity changed for " + this.file + ", class path owner: " +       //NOI18N
-                        (owner == null ? "null" : (FileUtil.getFileDisplayName(owner.getProjectDirectory())+" ("+owner.getClass()+")")));       //NOI18N
+                        (owner == null ? "null" : (FileUtil.getFileDisplayName(owner.getProjectDirectory())+" ("+owner.getClass()+")")) +
+                        " original sourcePath: " + cpInfo.getClassPath(PathKind.SOURCE) +
+                        " new sourcePath: " + scp);       //NOI18N
                 if (this.weakCpListener != null) {
                     cpInfo.removeChangeListener(weakCpListener);
                 }
@@ -556,7 +560,13 @@ public class JavacParser extends Parser {
                     return Phase.MODIFIED;
                 }
                 long start = System.currentTimeMillis();
-                currentInfo.getJavacTask().enter();
+                JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(currentInfo.getClasspathInfo());
+                fileManager.handleOption("apt-origin", Collections.singletonList(currentInfo.jfo.toUri().toURL().toString()).iterator()); //NOI18N
+                try {
+                    currentInfo.getJavacTask().enter();
+                } finally {
+                    fileManager.handleOption("apt-origin", Collections.singletonList("").iterator()); //NOI18N
+                }
                 currentPhase = Phase.ELEMENTS_RESOLVED;
                 long end = System.currentTimeMillis();
                 logTime(currentInfo.getFileObject(),currentPhase,(end-start));
@@ -650,21 +660,21 @@ public class JavacParser extends Parser {
         if (sourceLevel == null) {
             sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
         }
-        JavacTaskImpl javacTask = createJavacTask(cpInfo, diagnosticListener, sourceLevel, false, oraculum, parser == null ? null : new DefaultCancelService(parser));
+        JavacTaskImpl javacTask = createJavacTask(cpInfo, diagnosticListener, sourceLevel, false, oraculum, parser == null ? null : new DefaultCancelService(parser), APTUtils.get(root));
         Context context = javacTask.getContext();
         TreeLoader.preRegister(context, cpInfo);
         com.sun.tools.javac.main.JavaCompiler.instance(context).keepComments = true;
         return javacTask;
     }
     
-    public static JavacTaskImpl createJavacTask (final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel,  ClassNamesForFileOraculum cnih, CancelService cancelService) {
+    public static JavacTaskImpl createJavacTask (final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel, final ClassNamesForFileOraculum cnih, final CancelService cancelService, APTUtils aptUtils) {
         if (sourceLevel == null) {
             sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
         }
-        return createJavacTask(cpInfo, diagnosticListener, sourceLevel, true, cnih, cancelService);
+        return createJavacTask(cpInfo, diagnosticListener, sourceLevel, true, cnih, cancelService, aptUtils);
     }
     
-    private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, final ClassNamesForFileOraculum cnih, final CancelService cancelService) {
+    private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, final ClassNamesForFileOraculum cnih, final CancelService cancelService, final APTUtils aptUtils) {
         final List<String> options = new ArrayList<String>();
         String lintOptions = CompilerSettings.getCommandLine();
         com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(sourceLevel, cpInfo);
@@ -688,7 +698,10 @@ public class JavacParser extends Parser {
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
         options.add(validatedSourceLevel.name);
-        options.add("-proc:none"); // NOI18N, Disable annotation processors
+        if (aptUtils == null || !aptUtils.aptEnabled()) {
+            options.add("-proc:none"); // NOI18N, Disable annotation processors
+        }
+        options.add("-XDfindDiamond"); //XXX: should be part of options
 
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {            
@@ -699,27 +712,24 @@ public class JavacParser extends Parser {
             JavacTaskImpl task = (JavacTaskImpl)tool.getTask(null, 
                     ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo),
                     diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
-            Context.Registrator registrator = new Context.Registrator() {
-                public void register(Context context) {
-                    JavadocClassReader.preRegister(context, !backgroundCompilation);
-                    if (cnih != null) {
-                        context.put(ClassNamesForFileOraculum.class, cnih);
-                    }
-                    if (cancelService != null) {
-                        DefaultCancelService.preRegister(context, cancelService);
-                    }
-                    Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
-                    if (!backgroundCompilation) {
-                        JavacFlowListener.preRegister(context);
-                        ErrorHandlingJavadocEnter.preRegister(context);
-                        JavadocMemberEnter.preRegister(context);
-                        JavadocEnv.preRegister(context, cpInfo);
-                    }
-                }
-            };
+            if (aptUtils != null && aptUtils.aptEnabled()) {
+                task.setProcessors(aptUtils.resolveProcessors());
+            }
             Context context = task.getContext();
-            context.put(Context.Registrator.class, registrator);
-            registrator.register(context);
+            JavadocClassReader.preRegister(context, !backgroundCompilation);
+            if (cnih != null) {
+                context.put(ClassNamesForFileOraculum.class, cnih);
+            }
+            if (cancelService != null) {
+                DefaultCancelService.preRegister(context, cancelService);
+            }
+            Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
+            if (!backgroundCompilation) {
+                JavacFlowListener.preRegister(context);
+                ErrorHandlingJavadocEnter.preRegister(context);
+                JavadocMemberEnter.preRegister(context);
+                JavadocEnv.preRegister(context, cpInfo);
+            }
             return task;
         } finally {
             Thread.currentThread().setContextClassLoader(orig);

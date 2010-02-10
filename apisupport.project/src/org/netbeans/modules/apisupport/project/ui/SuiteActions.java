@@ -54,6 +54,7 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -88,7 +89,7 @@ public final class SuiteActions implements ActionProvider {
         actions.addAll(Utilities.actionsForPath("Projects/Profiler_Actions_temporary")); //NOI18N
         actions.add(null);
         NbPlatform platform = project.getPlatform(true); //true -> #96095
-        if (platform != null && platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_61) {
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V61) >= 0) {
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_test"), null));
             actions.add(null);
         }
@@ -98,11 +99,16 @@ public final class SuiteActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction("run-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_jnlp"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction("debug-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_jnlp"), null));
         actions.add(null);
-        if (platform != null && platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_55u1) {
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V69) >= 0 && platform.getModule("org.netbeans.core.netigso") != null) {
+            actions.add(ProjectSensitiveActions.projectCommandAction("build-osgi", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build_osgi"), null));
+            actions.add(ProjectSensitiveActions.projectCommandAction("run-osgi", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_osgi"), null));
+            actions.add(null);
+        }
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V55u1) >= 0) {
             actions.add(ProjectSensitiveActions.projectCommandAction("build-mac", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_mac"), null));
             actions.add(null);
         }
-        if (platform != null && platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1) { // #71631
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V50u1) >= 0) { // #71631
             actions.add(ProjectSensitiveActions.projectCommandAction("nbms", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_nbms"), null)); // #64426
             actions.add(null);
         }
@@ -140,6 +146,8 @@ public final class SuiteActions implements ActionProvider {
             "build-jnlp", // NOI18N
             "run-jnlp", // NOI18N
             "debug-jnlp", // NOI18N
+            "build-osgi", // NOI18N
+            "run-osgi", // NOI18N
             "build-mac", // NOI18N
             "nbms", // NOI18N
             "profile", // NOI18N
@@ -148,7 +156,7 @@ public final class SuiteActions implements ActionProvider {
             ActionProvider.COMMAND_DELETE
         ));
         NbPlatform platform = project.getPlatform(true); //true -> #96095
-        if (platform != null && platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_61) {
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V61) >= 0) {
             actions.add(ActionProvider.COMMAND_TEST);
         }
         return actions.toArray(new String[actions.size()]);
@@ -182,10 +190,10 @@ public final class SuiteActions implements ActionProvider {
         } else {
             NbPlatform plaf = project.getPlatform(false);
             if (plaf != null) {
-                int v = plaf.getHarnessVersion();
-                if (v != NbPlatform.HARNESS_VERSION_UNKNOWN) {
+                HarnessVersion v = plaf.getHarnessVersion();
+                if (v != HarnessVersion.UNKNOWN) {
                     for (Project p : project.getLookup().lookup(SubprojectProvider.class).getSubprojects()) {
-                        if (v < ((NbModuleProject) p).getMinimumHarnessVersion()) {
+                        if (v.compareTo(((NbModuleProject) p).getMinimumHarnessVersion()) < 0) {
                             ModuleActions.promptForNewerHarness();
                             return;
                         }
@@ -249,12 +257,8 @@ public final class SuiteActions implements ActionProvider {
                 return null;
             }
             targetNames = new String[] {"debug-jnlp"}; // NOI18N
-        } else if (command.equals("build-mac")) { // NOI18N
-            targetNames = new String[] {"build-mac"}; // NOI18N
-        } else if (command.equals("nbms")) { // NOI18N
-            targetNames = new String[] {"nbms"}; // NOI18N
-        } else if (command.equals("profile")) { // NOI18N
-            targetNames = new String[] {"profile"}; // NOI18N
+        } else if (command.matches("build-osgi|run-osgi|build-mac|nbms|profile")) { // NOI18N
+            targetNames = new String[] {command}; // NOI18N
         } else {
             throw new IllegalArgumentException(command);
         }

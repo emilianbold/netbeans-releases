@@ -51,11 +51,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
@@ -169,7 +168,6 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         String retPath = null;
         if (IpeUtils.isPathAbsolute(getPath())) {// UNIX path
             retPath = getPath();
-            retPath = FilePathAdaptor.mapToLocal(retPath);
         } else if (getFolder() != null) {
             retPath = getFolder().getConfigurationDescriptor().getBaseDir() + '/' + getPath(); // UNIX path
         }
@@ -194,6 +192,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals("name")) { // NOI18N
             // File has been renamed
@@ -229,7 +228,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 if (!IpeUtils.isPathAbsolute(getPath())) {
                     newPath = IpeUtils.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDir(), newPath);
                 }
-                newPath = FilePathAdaptor.normalize(newPath);
+                newPath = IpeUtils.normalize(newPath);
                 renameTo(newPath);
             }
         }
@@ -247,6 +246,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return file;
     }
 
+    @Override
     public File getFile() {
         // let's try to use normalized, not canonical paths
         return getNormalizedFile();
@@ -380,21 +380,21 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return mimeType;
     }
 
-    public int getDefaultTool() {
-        int tool;
+    public PredefinedToolKind getDefaultTool() {
+        PredefinedToolKind tool;
         String mimeType = getMIMEType();
         if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
-            tool = Tool.CCompiler;
+            tool = PredefinedToolKind.CCompiler;
         } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
-            tool = Tool.CustomTool;
+            tool = PredefinedToolKind.CustomTool;
         } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
-            tool = Tool.CCCompiler;
+            tool = PredefinedToolKind.CCCompiler;
         } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
-            tool = Tool.FortranCompiler;
+            tool = PredefinedToolKind.FortranCompiler;
         } else if (MIMENames.ASM_MIME_TYPE.equals(mimeType)) {
-            tool = Tool.Assembler;
+            tool = PredefinedToolKind.Assembler;
         } else {
-            tool = Tool.CustomTool;
+            tool = PredefinedToolKind.CustomTool;
         }
         return tool;
     }
@@ -414,6 +414,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return makeConfigurationDescriptor.getActiveConfiguration();
     }
 
+    @Override
     public NativeProject getNativeProject() {
         Folder curFolder = getFolder();
         if (curFolder != null) {
@@ -425,6 +426,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return null;
     }
 
+    @Override
     public List<String> getSystemIncludePaths() {
         List<String> vec = new ArrayList<String>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
@@ -437,7 +439,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (compilerSet == null) {
             return vec;
         }
-        BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(itemConfiguration.getTool());
+        AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from compiler
@@ -448,6 +450,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return vec;
     }
 
+    @Override
     public List<String> getUserIncludePaths() {
         List<String> vec = new ArrayList<String>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
@@ -460,7 +463,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (compilerSet == null) {
             return vec;
         }
-        BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(itemConfiguration.getTool());
+        AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from project/file
@@ -488,6 +491,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return vec;
     }
 
+    @Override
     public List<String> getSystemMacroDefinitions() {
         List<String> vec = new ArrayList<String>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
@@ -500,7 +504,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (compilerSet == null) {
             return vec;
         }
-        BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(itemConfiguration.getTool());
+        AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             if (compiler != null && compiler.getPath() != null && compiler.getPath().length() > 0) {
@@ -511,6 +515,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return vec;
     }
 
+    @Override
     public List<String> getUserMacroDefinitions() {
         List<String> vec = new ArrayList<String>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
@@ -523,7 +528,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (compilerSet == null) {
             return vec;
         }
-        BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(itemConfiguration.getTool());
+        AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
@@ -555,8 +560,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     /**
      * NativeFileItem interface
      **/
+    @Override
     public Language getLanguage() {
-        int tool;
+        PredefinedToolKind tool;
         Language language;
         ItemConfiguration itemConfiguration = null;
         MakeConfiguration makeConfiguration = getMakeConfiguration();
@@ -569,11 +575,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             tool = getDefaultTool();
         }
 
-        if (tool == Tool.CCompiler) {
+        if (tool == PredefinedToolKind.CCompiler) {
             language = NativeFileItem.Language.C;
-        } else if (tool == Tool.CCCompiler) {
+        } else if (tool == PredefinedToolKind.CCCompiler) {
             language = NativeFileItem.Language.CPP;
-        } else if (tool == Tool.FortranCompiler) {
+        } else if (tool == PredefinedToolKind.FortranCompiler) {
             language = NativeFileItem.Language.FORTRAN;
         } else if (hasHeaderOrSourceExtension(true, true)) {
             language = NativeFileItem.Language.C_HEADER;
@@ -587,6 +593,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     /**
      * NativeFileItem interface
      **/
+    @Override
     public LanguageFlavor getLanguageFlavor() {
         return NativeFileItem.LanguageFlavor.GENERIC;
     }
@@ -594,6 +601,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     /**
      * NativeFileItem interface
      **/
+    @Override
     public boolean isExcluded() {
         ItemConfiguration itemConfiguration = getItemConfiguration(getMakeConfiguration());
         if (itemConfiguration != null) {
@@ -622,7 +630,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         private SpiAccessor() {
         }
 
-        private List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, BasicCompiler compiler, MakeConfiguration makeConfiguration) {
+        private List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
             if (getProvider() != null) {
                 return getProvider().getItemUserIncludePaths(includes, compilerOptions, compiler, makeConfiguration);
             } else {
@@ -630,7 +638,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             }
         }
 
-        private List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, BasicCompiler compiler, MakeConfiguration makeConfiguration) {
+        private List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
             if (getProvider() != null) {
                 return getProvider().getItemUserMacros(macros, compilerOptions, compiler, makeConfiguration);
             } else {

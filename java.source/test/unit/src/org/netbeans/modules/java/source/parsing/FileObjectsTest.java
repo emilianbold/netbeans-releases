@@ -131,7 +131,7 @@ public class FileObjectsTest extends NbTestCase {
         final FileObject existing = FileUtil.createData(wd, "test/foo/existing.java");
         assertNotNull(existing);
         final javax.tools.FileObject existingFo = FileObjects.nbFileObject(existing.getURL(), wd);
-        assertEquals ("test.foo.existing",((FileObjects.InferableJavaFileObject)existingFo).inferBinaryName());
+        assertEquals ("test.foo.existing",((InferableJavaFileObject)existingFo).inferBinaryName());
         try {
             final InputStream in = existingFo.openInputStream();
             in.close();
@@ -146,7 +146,7 @@ public class FileObjectsTest extends NbTestCase {
         }
         File nonExistring = new File (new File(new File (workDir,"test"),"foo"),"nonexisting.java");
         final javax.tools.FileObject nonExistingFo = FileObjects.nbFileObject(nonExistring.toURI().toURL(), wd);
-        assertEquals ("test.foo.nonexisting",((FileObjects.InferableJavaFileObject)nonExistingFo).inferBinaryName());
+        assertEquals ("test.foo.nonexisting",((InferableJavaFileObject)nonExistingFo).inferBinaryName());
         try {
             final InputStream in = nonExistingFo.openInputStream();
             assertFalse("InputSream should not exist for non existing file",true);

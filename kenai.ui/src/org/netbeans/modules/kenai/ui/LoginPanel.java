@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
@@ -49,6 +50,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -56,6 +58,7 @@ import org.netbeans.modules.kenai.ui.dashboard.LinkButton;
 import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -94,6 +97,17 @@ public class LoginPanel extends javax.swing.JPanel {
         this.credentials = credentials;
         initComponents();
         kenaiCombo.setSelectedItem(kenai);
+
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                error.setText(NbBundle.getMessage(KenaiClosingPanel.class, "KenaiClosingPanel.warningLabel.text"));
+                error.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/warning.gif", true));
+                error.setVisible(true);
+            }
+
+        });
 //        lblKenaiLogoCenter.setBorder(null);
 //        lblKenaiLogoLeft.setBorder(null);
 //        lblKenaiLogoRight.setBorder(null);
@@ -115,6 +129,8 @@ public class LoginPanel extends javax.swing.JPanel {
     }
 
     public void showError(KenaiException ex) {
+        error.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/error.png", true));
+        error.setForeground(Color.RED);
         progressBar.setVisible(false);
         String errorMessage = ex.getMessage();
         if (errorMessage==null || "".equals(errorMessage.trim())) {
@@ -135,6 +151,7 @@ public class LoginPanel extends javax.swing.JPanel {
     }
 
     public void showProgress() {
+        moreButton.setVisible(false);
         error.setVisible(false);
         progressBar.setVisible(true);
         progressBar.setIndeterminate(true);
@@ -198,8 +215,9 @@ public class LoginPanel extends javax.swing.JPanel {
         chkIsOnline = new javax.swing.JCheckBox();
         kenaiLabel = new javax.swing.JLabel();
         kenaiCombo = new KenaiCombo(Kenai.Status.OFFLINE, true);
+        moreButton = new LinkButton(NbBundle.getMessage(KenaiClosingPanel.class, "CTL_LearnMore"), new URLDisplayerAction("", KenaiClosingPanel.getKenaiClosingUrl()));
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(11, 0, 11, 0));
 
         lblUserName.setLabelFor(username);
         org.openide.awt.Mnemonics.setLocalizedText(lblUserName, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.lblUserName.text")); // NOI18N
@@ -226,7 +244,7 @@ public class LoginPanel extends javax.swing.JPanel {
             }
         });
 
-        error.setForeground(java.awt.Color.red);
+        error.setForeground(UIManager.getColor("nb.warningForeground"));
         error.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/error.png"))); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(chkIsOnline, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.chkIsOnline.text")); // NOI18N
@@ -251,8 +269,6 @@ public class LoginPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(error)
-                    .add(progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lblUserName)
@@ -265,17 +281,21 @@ public class LoginPanel extends javax.swing.JPanel {
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(signUp))
                             .add(chkRememberMe)
-                            .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
-                            .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
+                            .add(password, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
+                            .add(username, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
                             .add(forgotPassword)
                             .add(chkIsOnline)
-                            .add(kenaiCombo, 0, 292, Short.MAX_VALUE))))
+                            .add(kenaiCombo, 0, 273, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(error)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(moreButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(kenaiLabel)
                     .add(kenaiCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -288,18 +308,21 @@ public class LoginPanel extends javax.swing.JPanel {
                     .add(lblPassword)
                     .add(password, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(chkRememberMe)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createSequentialGroup()
+                        .add(chkRememberMe)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(chkIsOnline)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(forgotPassword)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(lblNoAccount)
+                            .add(signUp))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(error))
+                    .add(moreButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(chkIsOnline)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(forgotPassword)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblNoAccount)
-                    .add(signUp))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(error)
-                .add(0, 0, 0)
                 .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -367,6 +390,7 @@ public class LoginPanel extends javax.swing.JPanel {
     javax.swing.JLabel lblNoAccount;
     javax.swing.JLabel lblPassword;
     javax.swing.JLabel lblUserName;
+    javax.swing.JButton moreButton;
     javax.swing.JPasswordField password;
     javax.swing.JProgressBar progressBar;
     javax.swing.JButton signUp;

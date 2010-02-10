@@ -120,14 +120,15 @@ SJSAS_ID="${sjsas.id}"
 
         <copy  todir="${scriptsdir}">
             <fileset dir="${basedir}/pkg/scripts"/>
-        </copy>
+        </copy>       
         <copy file="${basedir}/../../commonfiles/Description.plist" filtering="true" overwrite="true" tofile="${builddir}/Description.plist">
             <filterset>
                 <filter token="TITLE" value="${netbeans-Title}"/>
             </filterset>
         </copy>
         
-                
+        <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
+
         <echo message="Building baseide.pkg into ${basedir}/../../build/baseide.pkg"/>
         
         <exec executable="sh" failonerror="yes">

@@ -125,6 +125,7 @@ class FormRootNode extends FormNode {
                 FormUtils.getBundleString("CTL_SyntheticTab"), // NOI18N
                 FormUtils.getBundleString("CTL_SyntheticTabHint")) // NOI18N
         {
+            @Override
             public Node.Property[] getProperties() {
                 return getCodeGenProperties();
             }
@@ -134,6 +135,7 @@ class FormRootNode extends FormNode {
                 FormUtils.getBundleString("CTL_ResourceTab"), // NOI18N
                 FormUtils.getBundleString("CTL_ResourceTabHint")) // NOI18N
         {
+            @Override
             public Node.Property[] getProperties() {
                 return getResourceProperties();
             }
@@ -239,6 +241,7 @@ class FormRootNode extends FormNode {
             setKeys(keys.toArray());
         }
 
+        @Override
         protected Node[] createNodes(Object key) {
             Node node;
             if (key == OTHERS_ROOT) {

@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.bugzilla;
 
-import java.io.File;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClientManager;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.net.MalformedURLException;
@@ -53,7 +52,6 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
-import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
@@ -85,14 +83,17 @@ public class Bugzilla {
     private Bugzilla() {
         ModuleLifecycleManager.instantiated = true;
         bcp = new BugzillaCorePlugin();
-        brc = new BugzillaRepositoryConnector(new File(BugtrackingRuntime.getInstance().getCacheStore(), "bugzillaconfiguration"));
-        clientManager = getRepositoryConnector().getClientManager();
-        BugzillaIssueProvider.getInstance();
         try {
             bcp.start(null);
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
+        // up to mylyn 3.3.1 it is esential not to create the BugzillaRepositoryConnector
+        // before the BugzillaCorePlugin was started. Otherwise they won't be configured together
+        // in the BugzillaRepositoryConnector-s constructor
+        brc = new BugzillaRepositoryConnector();
+        clientManager = getRepositoryConnector().getClientManager();
+        BugzillaIssueProvider.getInstance();
     }
 
     public static synchronized Bugzilla getInstance() {
@@ -152,6 +153,7 @@ public class Bugzilla {
     }
 
     public void addRepository(BugzillaRepository repository) {
+        assert repository != null;
         if(repository instanceof KenaiRepository) {
             // we don't store kenai repositories - XXX  shouldn't be even called
             return;

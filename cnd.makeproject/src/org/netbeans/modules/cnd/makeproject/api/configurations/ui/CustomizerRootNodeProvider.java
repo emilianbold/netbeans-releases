@@ -51,20 +51,12 @@ import org.openide.util.Lookup;
 public class CustomizerRootNodeProvider {
 
     private static CustomizerRootNodeProvider instance = null;
-    private ArrayList<CustomizerNode> customizerNodes = null;
 
     public static CustomizerRootNodeProvider getInstance() {
         if (instance == null) {
             instance = new CustomizerRootNodeProvider();
         }
         return instance;
-    }
-
-    private List<CustomizerNode> getCustomizerNodesRegisteredOldStyle() {
-        if (customizerNodes == null) {
-            customizerNodes = new ArrayList<CustomizerNode>();
-        }
-        return customizerNodes;
     }
 
     public List<CustomizerNode> getCustomizerNodes(boolean advanced) {
@@ -80,9 +72,6 @@ public class CustomizerRootNodeProvider {
 
     public synchronized List<CustomizerNode> getCustomizerNodes() {
         ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
-
-        // Add nodes from providers registerd old-style
-        list.addAll(getCustomizerNodesRegisteredOldStyle());
 
         // Add nodes from providers register via services
         for (CustomizerNodeProvider provider : getCustomizerNodeProviders()) {
@@ -110,14 +99,6 @@ public class CustomizerRootNodeProvider {
             }
         }
         return list;
-    }
-
-    public synchronized void addCustomizerNode(CustomizerNode node) {
-        getCustomizerNodesRegisteredOldStyle().add(node);
-    }
-
-    public synchronized void removeCustomizerNode(CustomizerNode node) {
-        getCustomizerNodesRegisteredOldStyle().remove(node);
     }
 
     /*

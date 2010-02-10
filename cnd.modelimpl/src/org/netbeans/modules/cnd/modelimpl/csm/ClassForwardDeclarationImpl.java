@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
@@ -104,14 +105,17 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         return getEndOffset(ast);        
     }
     
+    @Override
     public CsmScope getScope() {
         return getContainingFile();
     }
 
+    @Override
     public CharSequence getName() {
         return name;
     }
 
+    @Override
     public CharSequence getQualifiedName() {
         return name;
     }
@@ -121,10 +125,12 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
 //        return getQualifiedName();
 //    }
     
+    @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION;
     }
 
+    @Override
     public CsmClass getCsmClass() {
         return  getCsmClass(null);
     }
@@ -134,14 +140,17 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         return (o instanceof CsmClass) ? (CsmClass) o : (CsmClass) null;
     }
 
+    @Override
     public boolean isTemplate() {
         return templateDescriptor != null;
     }
 
+    @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }
 
+    @Override
     public CharSequence getDisplayName() {
         return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
@@ -178,9 +187,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
                 for (StringTokenizer stringTokenizer = new StringTokenizer(scopeQName.toString()); stringTokenizer.hasMoreTokens();) {
                     l.add(NameCache.getManager().getString(stringTokenizer.nextToken()));
                 }
-                for (int i = 0; i < nameParts.length; i++) {
-                    l.add(nameParts[i]);
-                }
+                l.addAll(Arrays.asList(nameParts));
                 CharSequence[] newNameParts = new CharSequence[l.size()];
                 l.toArray(newNameParts);
                 nameParts = newNameParts;

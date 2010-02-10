@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools;
 
+import javax.swing.JComboBox;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -145,7 +146,8 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
      */
     public JComboBoxOperator cboServer() {
         if (_cboServer==null) {
-            _cboServer = new JComboBoxOperator(this);
+            JLabelOperator jlo =new JLabelOperator(this, "Server:");
+            _cboServer = new JComboBoxOperator((JComboBox)jlo.getLabelFor());
         }
         return _cboServer;
     }
@@ -166,7 +168,8 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
      */
     public JComboBoxOperator cboJavaEEVersion() {
         if (_cboJavaEEVersion==null) {
-            _cboJavaEEVersion = new JComboBoxOperator(this, 1);
+            JLabelOperator jlo =new JLabelOperator(this, "Java EE Version:");
+            _cboJavaEEVersion = new JComboBoxOperator((JComboBox)jlo.getLabelFor());
         }
         return _cboJavaEEVersion;
     }

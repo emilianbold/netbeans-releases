@@ -68,6 +68,7 @@ public class CompletionQuery extends AsyncCompletionQuery {
         this.component = component;
     }
     
+    @Override
     protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
         XMLSyntaxSupport support = 
             (XMLSyntaxSupport) ((BaseDocument) doc).getSyntaxSupport();

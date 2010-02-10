@@ -1117,6 +1117,9 @@ etc.
 app.version - version of the application, used in building the MacOS application
 bundle for example. (Since 6.0 beta2)
 
+app.conf - location of an alternative configuration file. If not specified,
+default one from harness/etc/app.conf is taken (Since 6.9)
+
 branding.dir (default "${suite.dir}/branding") - directory containing branding
 overrides.
 

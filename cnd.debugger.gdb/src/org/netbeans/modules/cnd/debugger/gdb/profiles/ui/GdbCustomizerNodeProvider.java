@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.DebuggerCustom
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -64,6 +65,7 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
 
     private CustomizerNode customizerNode = null;
     
+    @Override
     public CustomizerNode factoryCreate() {
         if (customizerNode == null) {
             customizerNode = new GdbCustomizerNode("Debug", NbBundle.getMessage(GdbCustomizerNodeProvider.class, "DebugDisplayName")); // NOI18N
@@ -71,7 +73,7 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
 	return customizerNode;
     }
 
-    static class GdbCustomizerNode extends CustomizerNode implements PrioritizedCustomizerNode, ProjectActionHandlerFactory, DebuggerCustomizerNode {
+    private static class GdbCustomizerNode extends CustomizerNode implements PrioritizedCustomizerNode, ProjectActionHandlerFactory, DebuggerCustomizerNode {
 
         public GdbCustomizerNode(String name, String displayName) {
 	    super(name, displayName, null);
@@ -89,25 +91,26 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
             return new HelpCtx("ProjectPropsDebugging"); // NOI18N
         }
 
+        @Override
         public int getPriority() {
             return GDB_PRIORITY;
         }
 
+        @Override
         public boolean canHandle(ProjectActionEvent.Type type, Configuration conf) {
-            switch (type) {
-                case DEBUG:
-                case DEBUG_LOAD_ONLY:
-                case DEBUG_STEPINTO:
-                    return true;
-                default:
-                    return false;
+            if (type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_LOAD_ONLY || type == PredefinedType.DEBUG_STEPINTO) {
+                return true;
+            } else {
+                return false;
             }
         }
 
+        @Override
         public ProjectActionHandler createHandler() {
             return new GdbActionHandler();
         }
 
+        @Override
         public String getFamily() {
             return "GNU"; //NOI18N
         }

@@ -1098,6 +1098,7 @@ public final class RubyIndex {
                         scannedClasses, haveRedirected, true);
                 }
                 // we need to explicitly set methods added via "extends with" as static
+                // (we don't track methods added via extend to instances)
                 for (IndexedMethod each : extendWithMethods) {
                     each.setStatic(true);
                 }

@@ -309,7 +309,8 @@ made subject to such option by the copyright holder.
         <copy file="${harness.dir}/launchers/${app.exe.prefix}app_w.exe" tofile="${build.launcher.dir}/bin/${app.name}_w.exe" failonerror="false" overwrite="true"/>
 
         <copy file="${harness.dir}/launchers/app.sh" tofile="${build.launcher.dir}/bin/${app.name}"/>
-        <copy file="${harness.dir}/etc/app.conf" tofile="${build.launcher.dir}/etc/${app.name}.conf">
+        <property name="app.conf" location="${harness.dir}/etc/app.conf"/>
+        <copy file="${app.conf}" tofile="${build.launcher.dir}/etc/${app.name}.conf">
             <filterchain>
                 <replacestring from="$${branding.token}" to="${branding.token}"/>
             </filterchain>
@@ -509,7 +510,20 @@ Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distributi
             <property name="jnlp.generate.versions" value="false"/>  <!-- versioning is not enabled w/o app server-->
         </ant>
     </target>
-    
+
+    <target name="build-osgi" depends="build,-jdk-init" description="Converts this suite into OSGi-compatible bundles.">
+        <echo>OSGi support is EXPERIMENTAL for now; see: http://wiki.netbeans.org/NetBeansInOSGi</echo>
+        <ant antfile="${harness.dir}/osgi.xml" target="build">
+            <reference refid="cluster.path.id"/>
+        </ant>
+    </target>
+
+    <target name="run-osgi" depends="build-osgi" description="Runs this suite in an OSGi container.">
+        <ant antfile="${harness.dir}/osgi.xml" target="run">
+            <reference refid="cluster.path.id"/>
+        </ant>
+    </target>
+
     <target name="test" depends="build" description="Runs tests for all modules in the suite.">
         <sortsuitemodules unsortedmodules="${modules}" sortedmodulesproperty="modules.test.sorted" sorttests="true"/>
         <property name="continue.after.failing.tests" value="true"/> <!-- fallback -->

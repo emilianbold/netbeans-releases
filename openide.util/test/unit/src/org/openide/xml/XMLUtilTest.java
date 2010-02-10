@@ -47,6 +47,7 @@ import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -67,6 +68,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 public class XMLUtilTest extends NbTestCase {
     
@@ -481,6 +483,18 @@ public class XMLUtilTest extends NbTestCase {
         baos = new ByteArrayOutputStream();
         XMLUtil.write(doc, baos, "UTF-8");
         assertEquals(expanded, baos.toString("UTF-8"));
+    }
+
+    public void testHandlerLeak() throws Exception {
+        ErrorHandler handler = new DefaultHandler();
+        EntityResolver resolver = new DefaultHandler();
+        Reference<?> handlerRef = new WeakReference<Object>(handler);
+        Reference<?> resolverRef = new WeakReference<Object>(resolver);
+        XMLUtil.parse(new InputSource(new StringReader("<hello/>")), false, false, handler, resolver);
+        handler = null;
+        resolver = null;
+        assertGC("can collect handler", handlerRef);
+        assertGC("can collect resolver", resolverRef);
     }
 
 }

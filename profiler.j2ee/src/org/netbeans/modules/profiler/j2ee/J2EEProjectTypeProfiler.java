@@ -345,7 +345,16 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
 
     public String getProfilerTargetName(final Project project, final FileObject buildScript, final int type,
                                         final FileObject profiledClass) {
-        return "profile-j2ee"; // NOI18N
+        switch (type) {
+            case TARGET_PROFILE:
+                return "profile-j2ee"; // NOI18N
+            case TARGET_PROFILE_TEST:
+                return null; // not currently supported // "profile-test"; // NOI18N
+            case TARGET_PROFILE_TEST_SINGLE:
+                return "profile-test-single"; // NOI18N
+            default:
+                return null;
+        }
     }
 
     public boolean isProfilingSupported(final Project project) {
@@ -721,6 +730,13 @@ public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
                 props.put("client.urlPart", servletAddress); // NOI18N
             }
         }
+        String profiledClass = SourceUtils.getToplevelClassName(profiledClassFile);
+        props.setProperty("profile.class", profiledClass); //NOI18N
+        // include it in javac.includes so that the compile-single picks it up
+        final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(
+                ProjectUtilities.getSourceRoots(project),profiledClassFile), 
+                profiledClassFile);
+        props.setProperty("javac.includes", clazz); //NOI18N
     }
 
     // --- Profiler SPI support --------------------------------------------------------------------------------------------

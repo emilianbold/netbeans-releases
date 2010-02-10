@@ -74,8 +74,7 @@ import org.openide.awt.Mnemonics;
 * @author Jan Rojcek
 * @since 1.7
 */
-class NodeTableModel extends AbstractTableModel {
-    private static final String ATTR_INVISIBLE = "InvisibleInTreeTableView"; // NOI18N
+class NodeTableModel extends AbstractTableModel {    
     static final String ATTR_COMPARABLE_COLUMN = "ComparableColumnTTV"; // NOI18N
     static final String ATTR_SORTING_COLUMN = "SortingColumnTTV"; // NOI18N
     static final String ATTR_DESCENDING_ORDER = "DescendingOrderTTV"; // NOI18N
@@ -159,7 +158,7 @@ class NodeTableModel extends AbstractTableModel {
     /** Set columns.
      * @param props the columns
      */
-    public void setProperties(Property[] props) {
+    public void setProperties(ColumnDescriptor[] props) {
         int size = props.length;
         sortColumn = -1;
 
@@ -192,7 +191,7 @@ class NodeTableModel extends AbstractTableModel {
                 allPropertyColumns[ia] = new ArrayColumn();
                 allPropertyColumns[ia].setProperty(props[i]);
 
-                if (isVisible(props[i])) {
+                if (props[i].isVisible()) {
                     visibleCount++;
 
                     Object o = props[i].getValue(ATTR_ORDER_NUMBER);
@@ -264,9 +263,9 @@ class NodeTableModel extends AbstractTableModel {
 
         while (it.hasNext()) {
             int i = it.next().intValue();
-            Property p = allPropertyColumns[i].getProperty();
+            ColumnDescriptor p = allPropertyColumns[i].getProperty();
 
-            if (isVisible(p)) {
+            if (p.isVisible()) {
                 propertyColumns[j] = i;
                 allPropertyColumns[i].setVisibleIndex(j);
                 j++;
@@ -283,6 +282,13 @@ class NodeTableModel extends AbstractTableModel {
                 }
             }
         }
+
+//        int r = propertyColumns[propertyColumns.length - 2];
+//        propertyColumns[propertyColumns.length - 2] = propertyColumns[propertyColumns.length - 4];
+//        propertyColumns[propertyColumns.length - 4] = r;
+//        r = propertyColumns[propertyColumns.length - 1];
+//        propertyColumns[propertyColumns.length - 1] = propertyColumns[propertyColumns.length - 3];
+//        propertyColumns[propertyColumns.length - 3] = r;
 
         fireTableStructureChanged();
     }
@@ -441,7 +447,7 @@ class NodeTableModel extends AbstractTableModel {
                 }
             }
         } else {
-            if (isVisible(allPropertyColumns[sortColumn].getProperty())) {
+            if (allPropertyColumns[sortColumn].getProperty().isVisible()) {
                 return getVisibleIndex(sortColumn);
             }
         }
@@ -573,25 +579,6 @@ class NodeTableModel extends AbstractTableModel {
         return -1;
     }
 
-    /** Helper method to ask if column representing a property should be
-     * visible
-     */
-    private boolean isVisible(Property p) {
-        Object o = p.getValue(ATTR_INVISIBLE);
-
-        if ((o != null) && o instanceof Boolean) {
-            return !((Boolean) o).booleanValue();
-        }
-
-        return true;
-    }
-
-    /** Set column representing a property to be visible
-     */
-    private void setVisible(Property p, boolean visible) {
-        p.setValue(ATTR_INVISIBLE, (!visible) ? Boolean.TRUE : Boolean.FALSE);
-    }
-
     //
     // TableModel methods
     //
@@ -655,9 +642,13 @@ class NodeTableModel extends AbstractTableModel {
         return allPropertyColumns[column].getProperty().getDisplayName();
     }
 
+    public String getColumnId(int column) {
+        return allPropertyColumns[propertyColumns[column]].getProperty().getName();
+    }
+
     /* display panel to set/unset set of visible columns
      */
-    boolean selectVisibleColumns(String viewName, String treeColumnName, String treeColumnDesc) {
+    boolean selectVisibleColumns() {
         boolean changed = false;
 
         javax.swing.JPanel panel = new javax.swing.JPanel();
@@ -695,18 +686,23 @@ class NodeTableModel extends AbstractTableModel {
         firstConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         firstConstraints.weightx = 1.0;
 
-        JCheckBox first = new JCheckBox(treeColumnName + ": " + treeColumnDesc, true); // NOI18N
-        first.setEnabled(false);
-        panel.add(first, firstConstraints);
+//        JCheckBox first = new JCheckBox("id" /*treeColumnName + ": " + treeColumnDesc*/, true); // NOI18N
+//        first.setEnabled(false);
+//        panel.add(first, firstConstraints);
 
         String boxtext;
         TreeMap<String, Integer> sort = new TreeMap<String, Integer>();
 
+        int alwaysVisibleCount = 0;
         for (int i = 0; i < allPropertyColumns.length; i++) {
-            oldvalues[i] = isVisible(allPropertyColumns[i].getProperty());
+            if(allPropertyColumns[i].getProperty().alwaysVisible()) {
+                alwaysVisibleCount++;
+                continue;
+            }
+            oldvalues[i] = allPropertyColumns[i].getProperty().isVisible();
             boxtext = getDisplayNameWithMnemonic( allPropertyColumns[i].getProperty() ) 
-                    + ": "                                                       // NOI18N
-                    + allPropertyColumns[i].getProperty().getShortDescription(); // NOI18N
+                    /*+ ": "                                                       // NOI18N
+                    + allPropertyColumns[i].getProperty().getShortDescription()*/; // NOI18N
             sort.put(boxtext, Integer.valueOf(i));
         }
 
@@ -727,11 +723,6 @@ class NodeTableModel extends AbstractTableModel {
         }
 
         String title = NbBundle.getMessage(NodeTableModel.class, "LBL_ColumnDialogTitle"); // NOI18N
-
-        if ((viewName != null) && (viewName.length() > 0)) {
-            title = viewName + " - " + title; // NOI18N
-        }
-
         DialogDescriptor dlg = new DialogDescriptor(
                 panel, title, true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN, null, null
@@ -750,7 +741,7 @@ class NodeTableModel extends AbstractTableModel {
                 j = sortpointer[i];
 
                 if (b.isSelected() != oldvalues[j]) {
-                    setVisible(allPropertyColumns[j].getProperty(), b.isSelected());
+                    allPropertyColumns[j].getProperty().setVisible(b.isSelected());
                     changed = true;
                 }
 
@@ -768,7 +759,7 @@ class NodeTableModel extends AbstractTableModel {
             }
              */
             if (changed) {
-                computeVisiblePorperties(nv);
+                computeVisiblePorperties(nv + alwaysVisibleCount);
             }
         }
 
@@ -810,11 +801,20 @@ class NodeTableModel extends AbstractTableModel {
         sortColumn = -1;
     }
 
+    int getIndexForPropertyName(String propertyName) {
+        for (int i = 0; i < allPropertyColumns.length; i++) {
+            if(allPropertyColumns[i].getProperty().getName().equals(propertyName)) {
+                return allPropertyColumns[i].getVisibleIndex();
+            }
+        }
+        return -1;
+    }
+
     /* class representing property column
      */
     static class ArrayColumn {
         /** Property representing column */
-        private Property property;
+        private ColumnDescriptor property;
 
         /** Preferred width of column */
         private int width;
@@ -825,14 +825,14 @@ class NodeTableModel extends AbstractTableModel {
         /** Getter for property property.
          * @return Value of property property.
          */
-        public Property getProperty() {
+        public ColumnDescriptor getProperty() {
             return this.property;
         }
 
         /** Setter for property property.
          * @param property New value of property property.
          */
-        public void setProperty(Property property) {
+        public void setProperty(ColumnDescriptor property) {
             this.property = property;
         }
 

@@ -40,9 +40,13 @@
 package org.netbeans.modules.php.symfony.ui.options;
 
 import java.util.List;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.symfony.SymfonyScript;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
 /**
@@ -64,13 +68,29 @@ public final class SymfonyOptions {
     private static final String PARAMS_FOR_APPS = "default.params.apps"; // NOI18N
     private static final String DEFAULT_PARAMS_FOR_APPS = "--escaping-strategy=on --csrf-secret=" + DEFAULT_SECRET; // NOI18N
 
+    final ChangeSupport changeSupport = new ChangeSupport(this);
+
     private volatile boolean symfonySearched = false;
 
     private SymfonyOptions() {
+        getPreferences().addPreferenceChangeListener(new PreferenceChangeListener() {
+            @Override
+            public void preferenceChange(PreferenceChangeEvent evt) {
+                changeSupport.fireChange();
+            }
+        });
     }
 
     public static SymfonyOptions getInstance() {
         return INSTANCE;
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     public synchronized String getSymfony() {

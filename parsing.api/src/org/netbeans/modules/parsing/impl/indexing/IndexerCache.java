@@ -81,6 +81,7 @@ import org.openide.util.WeakListeners;
  * @author vita
  */
 public abstract class IndexerCache <T> {
+    private static final RequestProcessor RP = new RequestProcessor("Indexer Cache"); // NOI18N
 
     // -----------------------------------------------------------------------
     // Public implementation
@@ -428,7 +429,7 @@ public abstract class IndexerCache <T> {
                 }
 
                 if (fastTrackOnly) {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
                         public void run() {
                             resetCache();
                             getData(null);
@@ -645,7 +646,7 @@ public abstract class IndexerCache <T> {
         // --------------------------------------------------------------------
 
         private final Map<String, Lookup.Result<T>> results = new HashMap<String, Lookup.Result<T>>();
-        private final RequestProcessor.Task task = RequestProcessor.getDefault().create(this);
+        private final RequestProcessor.Task task = RP.create(this);
 
     } // End of Tracker class
 

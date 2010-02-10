@@ -255,14 +255,14 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         setBuffer(fileBuffer);
         this.projectUID = UIDCsmConverter.projectToUID(project);
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
-            new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
+            new Exception("cpu.cc file@" + System.identityHashCode(FileImpl.this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
         this.projectRef = new WeakReference<ProjectBase>(project); // Suppress Warnings
         this.fileType = fileType;
         if (nativeFileItem != null) {
             project.putNativeFileItem(getUID(), nativeFileItem);
         }
-        Notificator.instance().registerNewFile(this);
+        Notificator.instance().registerNewFile(FileImpl.this);
     }
 
     /** For test purposes only */
@@ -1337,7 +1337,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 map = sortedDeclarations.get();
             }
             if (map == null) {
-                map = new HashMap<CsmDeclaration.Kind, SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>>();
+                map = new EnumMap<CsmDeclaration.Kind, SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>>(CsmDeclaration.Kind.class);
                 for(CsmUID<CsmOffsetableDeclaration> anUid : declarations.values()){
                     CsmDeclaration.Kind kind = UIDUtilities.getKind(anUid);
                     SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>> val = map.get(kind);
@@ -1867,7 +1867,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
-            new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
+            new Exception("cpu.cc file@" + System.identityHashCode(FileImpl.this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
         // not null UID
         assert this.projectUID != null;
@@ -2163,6 +2163,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public static boolean traceFile(CharSequence file) {
-        return true; // file.toString().endsWith("newfile.h") || file.toString().endsWith("shared.h"); // NOI18N
+        if (TraceFlags.TRACE_FILE_NAME != null) {
+            if (TraceFlags.TRACE_FILE_NAME.length() == 0) {
+                // trace all files
+                return true;
+            }
+            return file.toString().endsWith(TraceFlags.TRACE_FILE_NAME);
+        }
+        return false;
     }
 }

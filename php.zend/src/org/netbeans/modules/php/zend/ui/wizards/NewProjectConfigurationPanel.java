@@ -48,17 +48,19 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.zend.ZendScript;
+import org.netbeans.modules.php.zend.ui.options.ZendOptions;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public class NewProjectConfigurationPanel extends JPanel {
-    private static final long serialVersionUID = 197313216574123L;
+public class NewProjectConfigurationPanel extends JPanel implements ChangeListener {
+    private static final long serialVersionUID = 1978956424123L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -73,6 +75,18 @@ public class NewProjectConfigurationPanel extends JPanel {
             }
         });
         enableOptionsLabel();
+    }
+
+    @Override
+    public void addNotify() {
+        ZendOptions.getInstance().addChangeListener(this);
+        super.addNotify();
+    }
+
+    @Override
+    public void removeNotify() {
+        ZendOptions.getInstance().removeChangeListener(this);
+        super.removeNotify();
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -157,4 +171,8 @@ public class NewProjectConfigurationPanel extends JPanel {
     private JLabel optionsLabel;
     // End of variables declaration//GEN-END:variables
 
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        fireChange();
+    }
 }

@@ -40,13 +40,12 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -150,7 +149,7 @@ public abstract class BasicCompilerConfiguration {
     }
 
     // To be overridden
-    public String getOptions(BasicCompiler compiler) {
+    public String getOptions(AbstractCompiler compiler) {
         return "OVERRIDE"; // NOI18N
     }
 
@@ -249,7 +248,7 @@ public abstract class BasicCompilerConfiguration {
             suffix = ".pch"; // NOI18N
             ItemConfiguration itemConf = item.getItemConfiguration(conf);
             if (conf.getCompilerSet().getCompilerSet() != null) {
-                BasicCompiler compiler = (BasicCompiler) conf.getCompilerSet().getCompilerSet().getTool(itemConf.getTool());
+                AbstractCompiler compiler = (AbstractCompiler) conf.getCompilerSet().getCompilerSet().getTool(itemConf.getTool());
                 if (compiler != null) {
                     suffix = compiler.getDescriptor().getPrecompiledHeaderSuffix();
                     append = compiler.getDescriptor().getPrecompiledHeaderSuffixAppend();

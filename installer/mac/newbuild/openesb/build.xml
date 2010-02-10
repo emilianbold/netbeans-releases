@@ -86,6 +86,8 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/perm.sh" tofile="${scriptsdir}/perm.sh"/>
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/env.sh" tofile="${scriptsdir}/env.sh"/>
         
+        <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
+
         <echo message="Building openesb-${openesb.id}.pkg into ${basedir}/../build/openesb-${openesb.id}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>

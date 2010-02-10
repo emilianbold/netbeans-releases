@@ -54,6 +54,7 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -175,8 +176,10 @@ public final class J2SEProject implements Project, AntProjectListener {
     public J2SEProject(AntProjectHelper helper) throws IOException {
         this.projectPropertiesSave = new ThreadLocal<Boolean>();
         this.helper = helper;
-        eval = createEvaluator();
         aux = helper.createAuxiliaryConfiguration();
+        UpdateImplementation updateProject = new UpdateProjectImpl(this, helper, aux);
+        this.updateHelper = new UpdateHelper(updateProject, helper);
+        eval = createEvaluator();
         for (int v = 4; v < 10; v++) {
             if (aux.getConfigurationFragment("data", "http://www.netbeans.org/ns/j2se-project/" + v, true) != null) { // NOI18N
                 throw Exceptions.attachLocalizedMessage(new IOException("too new"), // NOI18N
@@ -187,8 +190,6 @@ public final class J2SEProject implements Project, AntProjectListener {
         buildExtender = AntBuildExtenderFactory.createAntExtender(new J2SEExtenderImplementation(), refHelper);
     /// TODO replace this GeneratedFilesHelper with the default one when fixing #101710
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
-        UpdateImplementation updateProject = new UpdateProjectImpl(this, helper, aux);
-        this.updateHelper = new UpdateHelper(updateProject, helper);
 
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
         this.cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper, null, createClassPathModifierCallback(), null);
@@ -247,7 +248,8 @@ public final class J2SEProject implements Project, AntProjectListener {
                 PropertyUtils.userPropertiesProvider(baseEval2,
                     "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
                 new ConfigPropertyProvider(baseEval1, "nbproject/configs", helper), // NOI18N
-                helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+                helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH),
+                UPDATE_PROPERTIES);
     }
     private static final class ConfigPropertyProvider extends FilterPropertyProvider implements PropertyChangeListener {
         private final PropertyEvaluator baseEval;
@@ -273,6 +275,22 @@ public final class J2SEProject implements Project, AntProjectListener {
                 return PropertyUtils.fixedPropertyProvider(Collections.<String,String>emptyMap());
             }
         }
+    }
+
+    private static final PropertyProvider UPDATE_PROPERTIES;
+
+    static {
+        Map<String, String> defs = new HashMap<String, String>();
+
+        defs.put(ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); //NOI18N
+        defs.put(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "false"); //NOI18N
+        defs.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); //NOI18N
+        defs.put(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); //NOI18N
+        defs.put(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); //NOI18N
+        defs.put(ProjectProperties.JAVAC_PROCESSORPATH,"${" + ProjectProperties.JAVAC_CLASSPATH + "}"); //NOI18N
+        defs.put("javac.test.processorpath", "${" + ProjectProperties.JAVAC_TEST_CLASSPATH + "}"); // NOI18N
+
+        UPDATE_PROPERTIES = PropertyUtils.fixedPropertyProvider(defs);
     }
     
     public PropertyEvaluator evaluator() {
@@ -342,7 +360,8 @@ public final class J2SEProject implements Project, AntProjectListener {
             LookupMergerSupport.createSFBLookupMerger(),
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
-            QuerySupport.createBinaryForSourceQueryImplementation(this.sourceRoots, this.testRoots, this.helper, this.eval) //Does not use APH to get/put properties/cfgdata
+            QuerySupport.createBinaryForSourceQueryImplementation(this.sourceRoots, this.testRoots, this.helper, this.eval), //Does not use APH to get/put properties/cfgdata
+            QuerySupport.createAnnotationProcessingQuery(this.helper, this.eval, ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT)
         );
         lookup = base; // in case LookupProvider's call Project.getLookup
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N

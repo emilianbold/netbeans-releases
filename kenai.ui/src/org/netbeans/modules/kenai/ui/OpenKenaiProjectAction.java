@@ -43,6 +43,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.openide.DialogDescriptor;
@@ -53,6 +55,16 @@ public final class OpenKenaiProjectAction extends AbstractAction {
 
     private String dialogTitle = NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectWindowTitle");
 
+    private Kenai kenai;
+
+    public OpenKenaiProjectAction(Kenai kenai) {
+        this.kenai = kenai;
+    }
+
+    public OpenKenaiProjectAction() {
+        kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
+    }
+
     public void actionPerformed(ActionEvent e) {
 
         final JButton open = new JButton(NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectAction.OpenFromKenai"));
@@ -60,7 +72,7 @@ public final class OpenKenaiProjectAction extends AbstractAction {
 
         JButton cancel = new JButton(NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectAction.Cancel"));
 
-        KenaiSearchPanel openPanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.OPEN, true);
+        KenaiSearchPanel openPanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.OPEN, true, kenai);
         openPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (KenaiDialogDescriptor.PROP_SELECTION_VALID.equals(evt.getPropertyName())) {

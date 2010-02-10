@@ -42,14 +42,19 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.Serializable;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.openide.awt.Mnemonics;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -85,11 +90,15 @@ public final class KenaiTopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        kenaiClosingPanel1 = new org.netbeans.modules.kenai.ui.KenaiClosingPanel();
+
         setLayout(new java.awt.BorderLayout());
+        add(kenaiClosingPanel1, java.awt.BorderLayout.PAGE_END);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private org.netbeans.modules.kenai.ui.KenaiClosingPanel kenaiClosingPanel1;
     // End of variables declaration//GEN-END:variables
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
@@ -133,6 +142,7 @@ public final class KenaiTopComponent extends TopComponent {
         dashboardComponent = DashboardImpl.getInstance().getComponent();
         add(dashboardComponent, BorderLayout.CENTER);
         add(getKenaiSwitcher(), BorderLayout.NORTH);
+        add(kenaiClosingPanel1, BorderLayout.SOUTH);
     }
 
     Component getKenaiSwitcher() {
@@ -142,13 +152,59 @@ public final class KenaiTopComponent extends TopComponent {
             public void actionPerformed(ActionEvent e) {
                 if (combo.getSelectedItem() instanceof Kenai) {
                     DashboardImpl.getInstance().setKenai((Kenai) combo.getSelectedItem());
+                    kenaiClosingPanel1.setVisible("kenai.com".equals(((Kenai) combo.getSelectedItem()).getUrl().getHost()));
                 } else {
                     new AddInstanceAction().actionPerformed(e);
                     DashboardImpl.getInstance().setKenai((Kenai) combo.getSelectedItem());
+                    kenaiClosingPanel1.setVisible("kenai.com".equals(((Kenai) combo.getSelectedItem()).getUrl().getHost()));
                 }
             }
         });
-        return combo;
+
+        JLabel serverLabel = new JLabel();
+        final JPanel panel = new JPanel();
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        serverLabel = new javax.swing.JLabel();
+        JSeparator jSeparator = new javax.swing.JSeparator();
+
+        panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 3, 0, 3));
+        panel.setLayout(new java.awt.GridBagLayout());
+
+        Mnemonics.setLocalizedText(serverLabel, NbBundle.getMessage(KenaiTopComponent.class, "LBL_Server"));
+        serverLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 3, 3));
+        panel.add(serverLabel, new java.awt.GridBagConstraints());
+
+        combo.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 3, 3));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        panel.add(combo, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        panel.add(jSeparator, gridBagConstraints);
+
+        panel.setBackground(dashboardComponent.getBackground());
+        combo.setOpaque(false);
+
+        combo.addComponentListener(new ComponentAdapter() {
+
+            @Override
+            public void componentShown(ComponentEvent e) {
+                panel.setVisible(true);
+            }
+
+            @Override
+            public void componentHidden(ComponentEvent e) {
+                panel.setVisible(false);
+            }
+        });
+
+        return panel;
     }
 
     public void setSelectedKenai(Kenai kenai) {

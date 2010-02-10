@@ -85,7 +85,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     private static final String CLASSIC = "classic";        //NOI18N
     private static final String MODERN = "modern";          //NOI18N
     private static final String JAVAC13 = "javac1.3";       //NOI18N
-    static final String[] IMPORTANT_TOOLS = {
+    public static final String[] IMPORTANT_TOOLS = {
         // Used by j2seproject:
         "javac", // NOI18N
         "java", // NOI18N

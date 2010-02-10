@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.mercurial.ui.commit;
 
+import org.netbeans.modules.versioning.util.TemplateSelector;
 import java.awt.Component;
 import java.awt.Container;
 import javax.swing.Box;
@@ -117,6 +118,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private final JScrollPane jScrollPane1 = new JScrollPane();
     private final JTextArea messageTextArea = new JTextArea();
     private final JLabel recentLink = new JLabel();
+    private final JLabel templateLink = new JLabel();
     private Icon expandedIcon, collapsedIcon;
     
     private CommitTable commitTable;
@@ -145,11 +147,16 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
 
-        final List<String> messages = Utils.getStringList(HgModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (messages.size() > 0) {
-                    messageTextArea.setText(messages.get(0));
+                TemplateSelector ts = new TemplateSelector(HgModuleConfig.getDefault().getPreferences());
+                if(ts.isAutofill()) {
+                    messageTextArea.setText(ts.getTemplate());
+                } else {
+                    List<String> messages = Utils.getStringList(HgModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
+                    if (messages.size() > 0) {
+                        messageTextArea.setText(messages.get(0));
+                    }
                 }
                 messageTextArea.selectAll();
             }
@@ -286,7 +293,14 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             messageTextArea.replaceSelection(message);
         }
     }
-    
+
+    private void onTemplate() {
+        TemplateSelector ts = new TemplateSelector(HgModuleConfig.getDefault().getPreferences());
+        if(ts.show()) {
+            messageTextArea.setText(ts.getTemplate());
+        }
+    }
+
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(HgModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             Runnable inAWT = new Runnable() {
@@ -320,6 +334,9 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         recentLink.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/recent_messages.png"))); // NOI18N
         recentLink.setToolTipText(getMessage("CTL_CommitForm_RecentMessages")); // NOI18N
 
+        templateLink.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/load_template.png"))); // NOI18N
+        templateLink.setToolTipText(getMessage("CTL_CommitForm_LoadTemplate")); // NOI18N
+
         messageTextArea.setColumns(60);    //this determines the preferred width of the whole dialog
         messageTextArea.setLineWrap(true);
         messageTextArea.setRows(4);
@@ -342,8 +359,11 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         topPanel.add(jLabel1);
         topPanel.add(Box.createHorizontalGlue());
         topPanel.add(recentLink);
+        topPanel.add(makeHorizontalStrut(recentLink, templateLink, RELATED));
+        topPanel.add(templateLink);
         jLabel1.setAlignmentY(BOTTOM_ALIGNMENT);
         recentLink.setAlignmentY(BOTTOM_ALIGNMENT);
+        templateLink.setAlignmentY(BOTTOM_ALIGNMENT);
 
         JPanel bottomPanel = new VerticallyNonResizingPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, X_AXIS));
@@ -392,6 +412,13 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
                 onBrowseRecentMessages();
             }
         });
+        templateLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        templateLink.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                onTemplate();
+            }
+        });
     }
 
     private Component makeVerticalStrut(JComponent compA,
@@ -404,6 +431,18 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
                             SOUTH,
                             this);
         return Box.createVerticalStrut(height);
+    }
+
+    private Component makeHorizontalStrut(JComponent compA,
+                                          JComponent compB,
+                                          int relatedUnrelated) {
+        int width = LayoutStyle.getSharedInstance().getPreferredGap(
+                            compA,
+                            compB,
+                            relatedUnrelated,
+                            WEST,
+                            this);
+        return Box.createHorizontalStrut(width);
     }
 
     private Component makeFlexibleHorizontalStrut(int minWidth,

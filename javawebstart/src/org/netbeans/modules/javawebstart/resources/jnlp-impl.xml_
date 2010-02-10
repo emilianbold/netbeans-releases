@@ -286,13 +286,9 @@ made subject to such option by the copyright holder.
      </target>
 
     <target name="generate-html-preview" depends="-check-html-preview" if="generate.html.preview">
-        <copy file="preview-${jnlp.descriptor}.html" tofile="${jnlp.dest.dir}/launch.html" overwrite="true" encoding="UTF-8">
-            <filterchain>
-                <replacestring from="${JNLP.FILE}" to="${jnlp.file}"/>
-                <replacestring from="${JNLP.APPLET.WIDTH}" to="${jnlp.applet.width}"/>
-                <replacestring from="${JNLP.APPLET.HEIGHT}" to="${jnlp.applet.height}"/>
-            </filterchain>
-        </copy>
+        <taskdef name="copy-template-page" classname="org.netbeans.modules.javawebstart.anttasks.CopyTemplatePageTask"
+            classpath="${libs.JWSAntTasks.classpath}"/>
+        <copy-template-page destfile="${jnlp.dest.dir}/launch.html" template="preview-${jnlp.descriptor}.html" destdir="${jnlp.dest.dir}"/>
     </target>
     
 </project>

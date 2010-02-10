@@ -182,7 +182,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
             "<target name=\"all\" >" +
             "  <mkdir dir='" + output + "' />" +
             "  <property name='javac.target' value='2.87'/>" +
-            "  <property name='public.packages' value=''/>" +
+            "  <property name='public.packages' value='x.y.ahoj'/>" +
             "  <property name='buildnumber' value='BLDprivateTESTBuild'/>" +
             "  <property name='code.name.base.slashes' value='org/netbeans/modules/sendopts'/>" +
             "  <njar manifest='" + manifest + "'   destfile='" + jar + "'>" +
@@ -231,6 +231,12 @@ public class JarWithModuleAttributesTest extends NbTestCase {
 
         String manV = file.getManifest().getMainAttributes().getValue("Bundle-ManifestVersion");
         assertEquals("Manifest version shall be specified", "2", manV);
+
+        String pkgs = file.getManifest().getMainAttributes().getValue("OpenIDE-Module-Public-Packages");
+        assertNull("No exported packages, we are in Netigso mode", pkgs);
+
+        pkgs = file.getManifest().getMainAttributes().getValue("Export-Package");
+        assertEquals("We want exported packages", "x.y.ahoj", pkgs);
     }
 
     public void testIgnoreWeirdJavacTarget() throws Exception {

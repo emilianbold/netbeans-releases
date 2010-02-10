@@ -46,7 +46,9 @@ import java.text.MessageFormat;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -57,12 +59,32 @@ import org.openide.WizardDescriptor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 public final class NewKenaiProjectAction implements ActionListener {
 
-    public void actionPerformed(ActionEvent e) {
+    private Kenai kenai;
 
-        WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(new Node[0]));
+    public NewKenaiProjectAction(Kenai kenai) {
+        this.kenai = kenai;
+    }
+
+    public NewKenaiProjectAction() {
+        kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
+    }
+
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if ("kenai.com".equals(kenai.getUrl().getHost())) {
+            JOptionPane.showMessageDialog(
+                    WindowManager.getDefault().getMainWindow(),
+                    new KenaiClosingPanel(false),
+                    NbBundle.getMessage(NewKenaiProjectAction.class, "LBL_KenaiClosed"),
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(new Node[0], kenai));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,
@@ -114,5 +136,5 @@ public final class NewKenaiProjectAction implements ActionListener {
         }
 
     }
-    
-}
+
+    }
