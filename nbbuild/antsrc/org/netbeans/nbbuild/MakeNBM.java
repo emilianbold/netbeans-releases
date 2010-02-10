@@ -867,36 +867,24 @@ public class MakeNBM extends Task {
     }
 
    private boolean pack200(final File sourceFile, final File targetFile) throws IOException {
-       OutputStream outputStream = null;
-       JarFile jarFile = null;
-       boolean result = false;
-        try {
-            jarFile = new JarFile(sourceFile);
-            if(!isSigned(jarFile)) {
-                outputStream = new GZIPOutputStream(new FileOutputStream(targetFile));
-                packer.pack(jarFile, outputStream);
-                result = true;
-            }
-        } finally {
-            if(jarFile!=null) {
-                try {
-                    jarFile.close();
-                } catch (IOException e) {
-                    log("Cannot close output stream jar for file " + sourceFile, e, Project.MSG_WARN);
-                }
-            }
-            if(outputStream!=null) {                
-                try {
-                    outputStream.close();
-                } catch (IOException e) {
-                    log("Cannot close output stream for file " + targetFile, e, Project.MSG_WARN);
-                }
-                if(result) {
-                    targetFile.setLastModified(sourceFile.lastModified());
-                }
-            }
-        }
-        return result;
+       JarFile jarFile = new JarFile(sourceFile);
+       try {
+           if (isSigned(jarFile)) {
+               return false;
+           }
+           FileOutputStream fos = new FileOutputStream(targetFile);
+           try {
+               OutputStream outputStream = new GZIPOutputStream(fos);
+               packer.pack(jarFile, outputStream);
+               outputStream.close();
+               return true;
+           } finally {
+               fos.close();
+               targetFile.setLastModified(sourceFile.lastModified());
+           }
+       } finally {
+           jarFile.close();
+       }
     }
 
 

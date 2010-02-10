@@ -203,7 +203,7 @@ public class NbmPack200Test extends NbTestCase {
         jos.write(getManifest(codeName, releaseVersion, implVersion, moduleDir, specVersion, visible, dependency).getBytes("UTF-8"));
         jos.close();
         File jarPackGz = new File(jar.getParentFile(), jar.getName() + ".pack.gz");
-        assertEquals("Cannot compress jar using pack200", pack200(jar, jarPackGz), true);
+        pack200(jar, jarPackGz);
         jar.delete();
 
 
@@ -237,30 +237,20 @@ public class NbmPack200Test extends NbTestCase {
         return nbm;
     }
 
-    private boolean pack200(final File sourceFile, final File targetFile) throws IOException {
-        OutputStream outputStream = null;
-        JarFile jarFile = null;
-        boolean result = false;
+    private void pack200(final File sourceFile, final File targetFile) throws IOException {
+        JarFile jarFile = new JarFile(sourceFile);
         try {
-            jarFile = new JarFile(sourceFile);
-            outputStream = new GZIPOutputStream(new FileOutputStream(targetFile));
-            Pack200.newPacker().pack(jarFile, outputStream);
-            result = true;
+            FileOutputStream fos = new FileOutputStream(targetFile);
+            try {
+                OutputStream outputStream = new GZIPOutputStream(fos);
+                Pack200.newPacker().pack(jarFile, outputStream);
+                outputStream.close();
+            } finally {
+                fos.close();
+            }
         } finally {
-            if (jarFile != null) {
-                try {
-                    jarFile.close();
-                } catch (IOException e) {
-                }
-            }
-            if (outputStream != null) {
-                try {
-                    outputStream.close();
-                } catch (IOException e) {
-                }
-            }
+            jarFile.close();
         }
-        return result;
     }
 
     protected void setUp() throws Exception {
