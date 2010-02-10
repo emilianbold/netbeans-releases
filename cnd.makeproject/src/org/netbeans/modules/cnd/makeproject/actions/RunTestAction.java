@@ -51,7 +51,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
-public class TestAction extends NodeAction {
+public class RunTestAction extends NodeAction {
     public String getName() {
 	return getString("TestActionName");
     }
