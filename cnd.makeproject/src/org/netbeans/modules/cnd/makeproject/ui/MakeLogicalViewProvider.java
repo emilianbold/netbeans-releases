@@ -83,9 +83,11 @@ import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction;
 import org.netbeans.modules.cnd.makeproject.actions.AddExistingItemAction;
+import org.netbeans.modules.cnd.makeproject.actions.DebugTestAction;
 import org.netbeans.modules.cnd.makeproject.actions.NewFolderAction;
 import org.netbeans.modules.cnd.makeproject.actions.NewTestAction;
 import org.netbeans.modules.cnd.makeproject.actions.RunTestAction;
+import org.netbeans.modules.cnd.makeproject.actions.StepIntoTestAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
@@ -1239,8 +1241,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                             SystemAction.get(AddExistingItemAction.class),
                             null,
                             SystemAction.get(RunTestAction.class),
-                            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null),
-                            ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG_STEP_INTO, bundle.getString("LBL_DebugAction_Step_Name"), null),
+                            SystemAction.get(DebugTestAction.class),
+                            SystemAction.get(StepIntoTestAction.class),
                             null,
                             SystemAction.get(org.openide.actions.FindAction.class), //
                             null, //

@@ -50,11 +50,11 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
-public class RunTestAction extends NodeAction {
+public class DebugTestAction extends NodeAction {
 
     @Override
     public String getName() {
-        return getString("TestActionName"); // NOI18N
+        return getString("DebugTestActionName"); // NOI18N
     }
 
     @Override
@@ -75,13 +75,11 @@ public class RunTestAction extends NodeAction {
             list.add(folder);
         }
         if (list.size() > 0) {
-            StringBuffer message = new StringBuffer("Would run the following test(s):\n\n"); // NOI18N
+            StringBuffer message = new StringBuffer("Would debug the following test:\n\n"); // NOI18N
             for (Folder f : list) {
                 message.append("  ").append(f.getDisplayName()).append("\n"); // NOI18N
             }
-            message.append("\nTest(s) would build and run with output directed to output window. Two posibilities (will have to decided):\n"); // NOI18N
-            message.append("1): output is parsed similary to how build output is parsed and failed tests are hyperlinked for easy navigation back to the failed test.\n"); // NOI18N
-            message.append("2): full-featured GUI frontend (similar to JUnit GUI frontend) with support for test progress, summary, and hyperlinks back to failed tests.\n"); // NOI18N
+            message.append("\nTest would build and debug session would start debugging the test binary."); // NOI18N
             NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
         }
@@ -90,17 +88,7 @@ public class RunTestAction extends NodeAction {
 
     @Override
     public boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length == 0) {
-            return false;
-        }
-        Node n = activatedNodes[0];
-        Folder folder = (Folder) n.getValue("Folder"); // NOI18N
-        assert folder != null;
-        if (folder.isTest()) {
-            return true;
-        }
-        List<Folder> list = folder.getAllTests();
-        return list.size() > 0;
+        return true;
     }
 
     @Override
