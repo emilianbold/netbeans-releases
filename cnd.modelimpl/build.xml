@@ -137,7 +137,7 @@ made subject to such option by the copyright holder.
         <!-- Fortran grammar -->
 
         <echo message="Extracting Open Fortran Parser" />
-        <unzip src="${open.fortran.parser.src.dir}/open-fortran-parser-0.7.1.1.zip"
+        <unzip src="${open.fortran.parser.src.dir}/open-fortran-parser-0.7.1.2.zip"
             dest="${antlr.grammar.dir}"/>
 
         <echo message="ANTLR Parser Generator   Version Sun-3.1.3" />
