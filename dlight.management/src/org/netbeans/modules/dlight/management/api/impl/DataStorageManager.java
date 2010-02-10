@@ -52,7 +52,6 @@ import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.spi.storage.PersistenceDataStorageService;
 import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory;
 import org.netbeans.modules.dlight.spi.storage.ProxyDataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
