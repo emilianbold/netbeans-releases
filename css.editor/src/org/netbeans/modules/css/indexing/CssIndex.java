@@ -274,35 +274,41 @@ public class CssIndex {
     }
 
     private FileObject resolve(FileObject source, String importedFileName) {
-        URI u = URI.create(importedFileName);
-        File file = null;
+        try {
+            URI u = URI.create(importedFileName);
+            File file = null;
 
-        if (u.isAbsolute()) {
-            //do refactor only file resources
-            if ("file".equals(u.getScheme())) { //NOI18N
-                try {
-                    //the IAE is thrown for invalid URIs quite frequently
-                    file = new File(u);
-                } catch (IllegalArgumentException iae) {
-                    //no-op
+            if (u.isAbsolute()) {
+                //do refactor only file resources
+                if ("file".equals(u.getScheme())) { //NOI18N
+                    try {
+                        //the IAE is thrown for invalid URIs quite frequently
+                        file = new File(u);
+                    } catch (IllegalArgumentException iae) {
+                        //no-op
+                    }
+                }
+            } else {
+                //no schema specified
+                file = new File(importedFileName);
+            }
+
+            if (file != null && !file.isAbsolute()) {
+                //relative to the current file's folder - let's resolve
+                FileObject resolvedFileObject = source.getParent().getFileObject(importedFileName);
+                if (resolvedFileObject != null && resolvedFileObject.isValid()) {
+                    return resolvedFileObject;
+                }
+            } else {
+                //absolute - TO THE DEPLOYMENT ROOT!!!
+                //todo implement!!!
+                if (LOG) {
+                    LOGGER.fine("Cannot resolve import '" + importedFileName + "' from file " + source.getPath()); //NOI18N
                 }
             }
-        } else {
-            //no schema specified
-            file = new File(importedFileName);
-        }
-
-        if (file != null && !file.isAbsolute()) {
-            //relative to the current file's folder - let's resolve
-            FileObject resolvedFileObject = source.getParent().getFileObject(importedFileName);
-            if (resolvedFileObject != null && resolvedFileObject.isValid()) {
-                return resolvedFileObject;
-            }
-        } else {
-            //absolute - TO THE DEPLOYMENT ROOT!!!
-            //todo implement!!!
-            if(LOG) {
-                LOGGER.fine("Cannot resolve import '" + importedFileName + "' from file " + source.getPath()); //NOI18N
+        } catch (IllegalArgumentException e) {
+            if (LOG) {
+                LOGGER.log(Level.INFO, "Cannot resolve import '" + importedFileName + "' from file " + source.getPath(), e); //NOI18N
             }
         }
         return null;
