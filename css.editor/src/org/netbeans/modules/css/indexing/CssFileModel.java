@@ -272,11 +272,13 @@ public class CssFileModel {
 
         OffsetRange documentRange = null;
         if (documentFrom == -1 || documentTo == -1) {
-            LOGGER.info("Ast offset range " + range.toString() +
-                    ", text='" + getSnapshot().getText().subSequence(range.getStart(), range.getEnd())+ "', "
-                    + " cannot be properly mapped to source offset range: ["
-                    + documentFrom + "," + documentTo + "] in file "
-                    + getFileObject().getPath()); //NOI18N
+            if(LOG) {
+                LOGGER.finer("Ast offset range " + range.toString() +
+                        ", text='" + getSnapshot().getText().subSequence(range.getStart(), range.getEnd())+ "', "
+                        + " cannot be properly mapped to source offset range: ["
+                        + documentFrom + "," + documentTo + "] in file "
+                        + getFileObject().getPath()); //NOI18N
+            }
         } else {
             documentRange = new OffsetRange(documentFrom, documentTo);
         }
