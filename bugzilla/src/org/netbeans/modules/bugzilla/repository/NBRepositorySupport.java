@@ -59,6 +59,7 @@ public class NBRepositorySupport extends BugzillaRepository {
     public static final String URL_NB_ORG_SIGNUP = "https://netbeans.org/people/signup";
 
     private static BugzillaRepository nbRepository;
+    private static boolean isKenai;
 
     /**
      * Goes through all known bugzilla repositories and returns either the first 
@@ -72,7 +73,25 @@ public class NBRepositorySupport extends BugzillaRepository {
      * @return a BugzillaRepository
      */
     public static BugzillaRepository findNbRepository() {
-        BugzillaRepository[] repos = Bugzilla.getInstance().getRepositories();
+        BugzillaRepository[] repos;
+        if(nbRepository != null) {
+            // check if repository wasn't removed since the last time it was used
+            if(!isKenai) {
+                repos = Bugzilla.getInstance().getRepositories();
+                boolean registered = false;
+                for (BugzillaRepository repo : repos) {
+                    if(BugtrackingUtil.isNbRepository(repo)) {
+                        registered = true;
+                        break;
+                    }
+                }
+                if(!registered) {
+                    Bugzilla.getInstance().addRepository(nbRepository);
+                }
+            }
+            return nbRepository;
+        }
+        repos = Bugzilla.getInstance().getRepositories();
         for (BugzillaRepository repo : repos) {
             if(BugtrackingUtil.isNbRepository(repo)) {
                 return repo;
@@ -82,7 +101,8 @@ public class NBRepositorySupport extends BugzillaRepository {
         Collection<Kenai> kenais = KenaiManager.getDefault().getKenais();
         for (Kenai kenai : kenais) {
             URL url = kenai.getUrl();
-            if(BugtrackingUtil.isNbRepository(url.toString())) { 
+            if(BugtrackingUtil.isNbRepository(url.toString())) {
+                isKenai = true;
                 // there is a nb kenai registered in the ide
                 // create a new repo but _do not register_ in services
                 nbRepository = createRepositoryIntern(); // XXX for now we keep a repository for each
@@ -96,7 +116,7 @@ public class NBRepositorySupport extends BugzillaRepository {
         if(nbRepository == null) {                              // no nb repo yet ...
             nbRepository = createRepositoryIntern();            // ... create ...
             Bugzilla.getInstance().addRepository(nbRepository); // ... and register in services/issue tracking
-        }
+        } 
 
         return nbRepository;
     }
