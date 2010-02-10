@@ -269,24 +269,24 @@ public class ClassPathProviderImplTest extends TestBase {
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "org.example.bar");
         mani.getMainAttributes().putValue("OpenIDE-Module-Module-Dependencies", "foo/1 > 1.0");
         barJar = new File(new File(new File(install, "somecluster"), "modules"), "bar.jar");
-        TestBase.createJar(barJar, Collections.EMPTY_MAP, mani);
+        TestBase.createJar(barJar, Collections.<String,String>emptyMap(), mani);
         // add testlibs to platform, so that test CP isn't full of obsolete backward-compatibility entries
         mani = new Manifest();
         File junitJar = new File(install, "platform/modules/ext/junit-4.5.jar");
-        TestBase.createJar(junitJar, Collections.EMPTY_MAP, mani);
+        TestBase.createJar(junitJar, Collections.<String,String>emptyMap(), mani);
         mani = new Manifest();
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "org.netbeans.libs.junit4");
         mani.getMainAttributes().putValue(ManifestManager.CLASS_PATH, "ext/junit-4.5.jar");
         libsJunitJar = new File(install, "platform/modules/org-netbeans-libs-junit4.jar");
-        TestBase.createJar(libsJunitJar, Collections.EMPTY_MAP, mani);
+        TestBase.createJar(libsJunitJar, Collections.<String,String>emptyMap(), mani);
         mani = new Manifest();
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "org.netbeans.modules.nbjunit");
         File nbjunitJar = new File(install, "harness/modules/org-netbeans-modules-nbjunit.jar");
-        TestBase.createJar(nbjunitJar, Collections.EMPTY_MAP, mani);
+        TestBase.createJar(nbjunitJar, Collections.<String,String>emptyMap(), mani);
         mani = new Manifest();
         mani.getMainAttributes().putValue(ManifestManager.OPENIDE_MODULE, "org.netbeans.insane");
         File insaneJar = new File(install, "harness/modules/org-netbeans-insane.jar");
-        TestBase.createJar(insaneJar, Collections.EMPTY_MAP, mani);
+        TestBase.createJar(insaneJar, Collections.<String,String>emptyMap(), mani);
         NbPlatform.addPlatform("custom", install, "custom");
     }
 
@@ -339,7 +339,7 @@ public class ClassPathProviderImplTest extends TestBase {
         assertTrue(ext.mkdirs());
         Manifest mani = new Manifest();
         File foolibJar = new File(ext, "/foolib.jar");
-        TestBase.createJar(foolibJar, Collections.EMPTY_MAP, mani);
+        TestBase.createJar(foolibJar, Collections.<String,String>emptyMap(), mani);
 
         NbModuleProject prjBar = generateTestingSuiteComponent(suite,"bar",
                 "<dependency>\n" +
