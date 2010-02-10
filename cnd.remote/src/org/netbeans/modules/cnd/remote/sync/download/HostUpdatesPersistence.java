@@ -16,14 +16,14 @@ class HostUpdatesPersistence {
 
     private final Properties data;
     private final File dataFile;
-    private static final String VERSION = "1.0";
+    private static final String VERSION = "1.0"; // NOI18N
     // NOI18N
-    private static final String VERSION_KEY = "____VERSION";
+    private static final String VERSION_KEY = "____VERSION"; // NOI18N
 
     public HostUpdatesPersistence(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
         super();
         data = new Properties();
-        String dataFileName = "downloads-" + executionEnvironment.getHost() + '-' + executionEnvironment.getUser() + '-' + executionEnvironment.getSSHPort();
+        String dataFileName = "downloads-" + executionEnvironment.getHost() + '-' + executionEnvironment.getUser() + '-' + executionEnvironment.getSSHPort(); // NOI18N
         //NOI18N
         dataFile = new File(privProjectStorageDir, dataFileName);
         try {
@@ -88,9 +88,9 @@ class HostUpdatesPersistence {
 
     private boolean getBoolean(String key, boolean defaultValue) {
         Object value = data.get(key);
-        if ("1".equals(value)) {
+        if ("1".equals(value)) { // NOI18N
             return true;
-        } else if ("0".equals(value)) {
+        } else if ("0".equals(value)) { // NOI18N
             return false;
         } else {
             return defaultValue;
@@ -98,6 +98,6 @@ class HostUpdatesPersistence {
     }
 
     private void setBoolean(String key, boolean value) {
-        data.put(key, value ? "1" : "0");
+        data.put(key, value ? "1" : "0"); // NOI18N
     }
 }
