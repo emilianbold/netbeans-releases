@@ -249,7 +249,7 @@ public class AutoUpdate extends Task {
                     InputStream is = zf.getInputStream(zipEntry);
                     OutputStream os = new FileOutputStream(trgt);
                     boolean doUnpack200 = false;
-                    if(relName.endsWith(".jar.pack.gz") && zf.getEntry(zipEntry.getName().substring(0, zipEntry.getName().length() + 8))==null) {
+                    if(relName.endsWith(".jar.pack.gz") && zf.getEntry(zipEntry.getName().substring(0, zipEntry.getName().length() - 8))==null) {
                         doUnpack200 = true;
                     }
                     CRC32 crc = new CRC32();
