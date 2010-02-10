@@ -94,7 +94,7 @@ public class IntConfiguration {
         }
     }
 
-    public void setModified(boolean b) {
+    public final void setModified(boolean b) {
         this.modified = b;
     }
 
@@ -119,7 +119,7 @@ public class IntConfiguration {
         setModified(value != getDefault());
     }
 
-    public void reset() {
+    public final void reset() {
         value = getDefault();
         setModified(false);
     }

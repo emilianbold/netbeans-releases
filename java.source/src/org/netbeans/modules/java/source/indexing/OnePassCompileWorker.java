@@ -42,6 +42,12 @@ package org.netbeans.modules.java.source.indexing;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTags;
+import com.sun.tools.javac.code.Types;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.CancelAbort;
 import com.sun.tools.javac.util.CancelService;
 import com.sun.tools.javac.util.CouplingAbort;
@@ -51,15 +57,13 @@ import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -98,8 +102,8 @@ final class OnePassCompileWorker extends CompileWorker {
 
         final LMListener mem = new LMListener();
         final DiagnosticListenerImpl dc = new DiagnosticListenerImpl();
+        final HashMap<JavaFileObject, Pair<CompilationUnitTree, CompileTuple>> jfo2units = new HashMap<JavaFileObject, Pair<CompilationUnitTree, CompileTuple>>();
         LinkedList<Pair<CompilationUnitTree, CompileTuple>> units = new LinkedList<Pair<CompilationUnitTree, CompileTuple>>();
-        HashMap<JavaFileObject, Pair<CompilationUnitTree, CompileTuple>> jfo2units = new HashMap<JavaFileObject, Pair<CompilationUnitTree, CompileTuple>>();
         JavacTaskImpl jt = null;
 
         for (CompileTuple tuple : files) {
@@ -110,7 +114,6 @@ final class OnePassCompileWorker extends CompileWorker {
                 if (mem.isLowMemory()) {
                     jt = null;
                     units = null;
-                    jfo2units = null;
                     dc.cleanDiagnostics();
                     System.gc();
                 }
@@ -154,7 +157,6 @@ final class OnePassCompileWorker extends CompileWorker {
                 else {
                     jt = null;
                     units = null;
-                    jfo2units = null;
                     dc.cleanDiagnostics();
                     System.gc();
                 }
@@ -185,26 +187,37 @@ final class OnePassCompileWorker extends CompileWorker {
                 fileManager.handleOption("apt-origin", Collections.singletonList(active.indexable.getURL().toString()).iterator()); //NOI18N
                 try {
                     types = jt.enterTrees(Collections.singletonList(unit.first));
-                    boolean yield = false;
-                    for (TypeElement te : types) {
-                        ClassSymbol cSym = (ClassSymbol)te;
-                        TypeMirror sup = null;
-                        while((sup = cSym.getSuperclass()) != null && sup.getKind() == TypeKind.DECLARED) {
-                            cSym = (ClassSymbol) ((DeclaredType) sup).asElement();
-                            Pair<CompilationUnitTree, CompileTuple> u = jfo2units.get(cSym.sourcefile);
-                            if (u != null && !finished.contains(u.second.indexable) && !u.second.indexable.equals(active.indexable)) {
-                                if (!yield) {
-                                    units.addFirst(unit);
+                    if (jfo2units.remove(active.jfo) != null) {
+                        final Types ts = Types.instance(jt.getContext());
+                        final Indexable activeIndexable = active.indexable;
+                        class ScanNested extends TreeScanner {
+                            Set<Pair<CompilationUnitTree, CompileTuple>> dependencies = new LinkedHashSet<Pair<CompilationUnitTree, CompileTuple>>();
+                            @Override
+                            public void visitClassDef(JCClassDecl node) {
+                                if (node.sym != null) {
+                                    Type st = ts.supertype(node.sym.type);
+                                    if (st.tag == TypeTags.CLASS) {
+                                        ClassSymbol c = st.tsym.outermostClass();
+                                        Pair<CompilationUnitTree, CompileTuple> u = jfo2units.remove(c.sourcefile);
+                                        if (u != null && !finished.contains(u.second.indexable) && !u.second.indexable.equals(activeIndexable)) {
+                                            if (dependencies.add(u)) {
+                                                scan((JCCompilationUnit)u.first);
+                                            }
+                                        }
+                                    }
                                 }
-                                units.addFirst(u);
-                                yield = true;
-                            } else {
-                                break;
+                                super.visitClassDef(node);
                             }
                         }
-                    }
-                    if (yield) {
-                        continue;
+                        ScanNested scanner = new ScanNested();
+                        scanner.scan((JCCompilationUnit)unit.first);
+                        if (!scanner.dependencies.isEmpty()) {
+                            units.addFirst(unit);
+                            for (Pair<CompilationUnitTree, CompileTuple> pair : scanner.dependencies) {
+                                units.addFirst(pair);
+                            }
+                            continue;
+                        }
                     }
                 } finally {
                     fileManager.handleOption("apt-origin", Collections.singletonList("").iterator()); //NOI18N
