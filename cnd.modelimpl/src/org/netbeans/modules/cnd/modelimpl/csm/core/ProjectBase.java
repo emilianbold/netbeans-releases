@@ -1508,6 +1508,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             entryFound = false;
             // put into copy array all except ourself
             for (PreprocessorStatePair pair : entryStatePairs) {
+                assert pair != null : "can not be null element in " + entryStatePairs;
+                assert pair.state != null: "state can not be null in pair " + pair + " for file " + csmFile;
                 if ((pair.pcState == FilePreprocessorConditionState.PARSING) && pair.state.equals(ppState)) {
                     assert !entryFound;
                     entryFound = true;
