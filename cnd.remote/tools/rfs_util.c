@@ -44,6 +44,7 @@
 
 #include "rfs_util.h"
 
+__attribute__ ((visibility ("hidden")))
 void report_error(const char *format, ...) {
     va_list args;
     va_start (args, format);
@@ -63,6 +64,7 @@ static unsigned long get_timestamp() {
     return tp.tv_sec*1000000000+tp.tv_nsec;
 }
 
+__attribute__ ((visibility ("hidden")))
 void trace(const char *format, ...) {
     if (!trace_file) {
         trace_file = stderr;
@@ -75,6 +77,7 @@ void trace(const char *format, ...) {
     fflush(trace_file);
 }
 
+__attribute__ ((visibility ("hidden")))
 void trace_startup(const char* _prefix, const char* env_var, const char* binary) {
     prefix = _prefix;
     char *file_name = env_var ? getenv(env_var) : NULL;
@@ -97,6 +100,7 @@ void trace_startup(const char* _prefix, const char* env_var, const char* binary)
     trace("%s started in %s\n", binary, dir);
 }
 
+__attribute__ ((visibility ("hidden")))
 void trace_shutdown() {
     if (trace_file && trace_file != stderr) {
         fclose(trace_file);
