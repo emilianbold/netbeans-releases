@@ -540,6 +540,7 @@ public class HgCommand {
         if(!doBackup){
             command.add(HG_STRIP_NOBACKUP_CMD);
         }
+        command.add(HG_VERBOSE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         if (revision != null){
