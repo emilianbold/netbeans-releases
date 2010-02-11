@@ -100,6 +100,7 @@ public final class ProgressUtils {
      * @param waitForCanceled true if method should wait until canceled task is finished (if it is not finished in 1s ISE is thrown)
      * @param waitCursorAfter time in ms after which wait cursor is shown
      * @param dialogAfter time in ms after which dialog with "Cancel" button is shown
+     * @since 1.19
      */
     public static void runOffEventDispatchThread(Runnable operation, String operationDescr, AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorAfter, int dialogAfter) {
         PROVIDER.runOffEventDispatchThread(operation, operationDescr, cancelOperation, waitForCanceled, waitCursorAfter, dialogAfter);
