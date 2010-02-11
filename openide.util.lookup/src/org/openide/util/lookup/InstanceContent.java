@@ -66,6 +66,12 @@ import org.openide.util.Lookup.Item;
  * @since 1.25
  */
 public final class InstanceContent extends AbstractLookup.Content {
+
+    public static class Converter<T0, T1> {
+
+        public Converter() {
+        }
+    }
     /**
      * Create a new, empty content.
      */
