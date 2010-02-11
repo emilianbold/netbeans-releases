@@ -40,6 +40,7 @@ package org.netbeans.test.web;
 
 import javax.swing.JTextField;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
@@ -77,5 +78,13 @@ public class RenameDialogOperator extends JDialogOperator {
     public JTextFieldOperator getNewNameFieldOperator(){
         JTextField jtf = (JTextField) new JLabelOperator(this, "New Name:").getLabelFor();
         return new JTextFieldOperator(jtf);
+    }
+
+    public void setEnabledUnrelatedOccurences(boolean enabled){
+        getUnrelatedOccurencesOperator().changeSelection(enabled);
+    }
+
+    private JCheckBoxOperator getUnrelatedOccurencesOperator(){
+        return new JCheckBoxOperator(this, "Unrelated Occurances");
     }
 }
