@@ -275,8 +275,6 @@ made subject to such option by the copyright holder.
   <target name="build-nozip" depends="init,download-all-extbins,clean-cluster-flags,build-clusters,create-license-summary,create-netbeans-import,finish-build" description="Build the IDE but do not create a final ZIP file."/>
   <target name="finish-build" depends="init">
     <loadproperties srcFile="${clusters.list.file}" />
-     
-    <loadproperties srcfile="${netbeans.dest.dir}/moduleCluster.properties" />
         
     <mkdir dir="${netbeans.dest.dir}/bin" />
     <copy file="../ide/launcher/unix/netbeans" todir="${netbeans.dest.dir}/bin" />
@@ -317,7 +315,7 @@ Hg ID:    ${hg.id}
     <delete file="NetBeans-${buildnum}-javadoc-web.zip"/> <!-- XXX why? -->
     <delete file="NetBeans-${buildnum}-javadoc.zip"/> <!-- XXX why? -->
 
-    <property name="nb-extra-files" value="*.built,test/**,extra/**"/>
+    <property name="nb-extra-files" value="test/**,extra/**"/>
 
     <antcall target="zip-cluster-config" inheritall="true"/>
     
@@ -345,13 +343,6 @@ the ${netbeans.dest}/bin/ directory.
              targetprefix="all-" 
              mergedependentmodules="${merge.dependent.modules}" >
     </nbmerge>
-    <chmod perm="ugo+x">
-      <fileset dir="${netbeans.dest.dir}">
-        <include name="bin/netbeans"/>
-        <include name="bin/**/*.pl"/>
-        <include name="jakarta-tomcat-*/bin/*.sh"/>
-      </fileset>
-    </chmod>
   </target>
 
 
@@ -456,7 +447,7 @@ the ${netbeans.dest}/bin/ directory.
     <property name="${one.cluster.name}-is-built" value="true"/>
   </target>
 
-  <target name="zip-cluster-config" depends="init">
+  <target name="zip-cluster-config" depends="init,-define-cluster-path">
     <property name="zip.dir" location="."/>
     <mkdir dir="${zip.dir}"/>
     <property name="zip.name" location="${zip.dir}/NetBeans-${buildnum}-${cluster.config}.zip"/>
@@ -465,31 +456,21 @@ the ${netbeans.dest}/bin/ directory.
     </resolvelist>
     <pathconvert property="nb.clusters.includes" pathsep=",">
         <dirset dir="${netbeans.dest.dir}" includes="${nb.clusters.dirs},etc,bin"/>
-        <mapper type="regexp" from=".*/([^/\\]*)" to="\1/**/*"/>
+        <mapper type="regexp" from=".*/([^/\\]*)" to="\1/"/>
     </pathconvert>
-    <pathconvert property="nb.clusters.exe.includes" pathsep=",">
-        <dirset dir="${netbeans.dest.dir}" includes="${nb.clusters.dirs}"/>
-        <mapper type="regexp" from=".*/([^/\\]*)" to="\1/**/*.sh,\1/**/bin/*,\1/**/bin/nativeexecution/**,\1/**/modules/ext/lib/*/tools_exec,\1/**/modules/ext/lib/**/*.so,\1/**/modules/ext/lib/**/*.dylib"/>
-    </pathconvert>
-    <pathconvert property="nb.clusters.exe.excludes" pathsep=",">
-        <dirset dir="${netbeans.dest.dir}" includes="${nb.clusters.dirs}"/>
-        <mapper type="regexp" from=".*/([^/\\]*)" to="\1/**/bin/*.bat,\1/**/bin/*.cmd"/>
-    </pathconvert>
+    <taskdef name="find-executables" classname="org.netbeans.nbbuild.FindExecutables" classpath="nbantext.jar"/>
+    <find-executables allmodules="${allmodules}" exeincludeproperty="nb.clusters.exe.includes"/>
     <!-- package the zip file -->
     <zip destfile="${zip.name}" update="true" duplicate="preserve">
-      <zipfileset file="${netbeans.dest.dir}/bin/netbeans" filemode="755" prefix="${netbeans.dest}/bin"/>
-      <zipfileset file="${netbeans.dest.dir}/${nb.cluster.platform.dir}/lib/nbexec" filemode="755" prefix="${netbeans.dest}/${nb.cluster.platform.dir}/lib"/>
       <zipfileset dir="${netbeans.dest.dir}" filemode="755" prefix="${netbeans.dest}"
-        includes="${nb.clusters.exe.includes}"
-        excludes="${nb.clusters.exe.excludes}"
+        includes="bin/netbeans,${nb.clusters.exe.includes}"
       />
       <zipfileset
         dir="${netbeans.dest.dir}" prefix="${netbeans.dest}"
         includes="${nb.clusters.includes}" excludes="${nb-extra-files}"
       />
       <zipfileset
-        dir="${netbeans.dest.dir}" prefix="${netbeans.dest}"
-        excludes="${nb-extra-files}">
+        dir="${netbeans.dest.dir}" prefix="${netbeans.dest}">
             <include name="*.txt"/>
             <include name="*.css"/>
             <include name="*.html"/>

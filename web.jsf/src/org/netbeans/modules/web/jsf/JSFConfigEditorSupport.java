@@ -185,10 +185,10 @@ public class JSFConfigEditorSupport extends DataEditorSupport
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                String displayName = messageName();
+                String displayName = messageHtmlName();
                 
                 if (! displayName.equals(tc.getDisplayName())){
-                    tc.setDisplayName(displayName);
+                    tc.setHtmlDisplayName(displayName);
                 }
                 // XXX should probably set htmlDisplayName too, from messageHtmlName
                 // XXX should probably use messageToolTip instead
@@ -196,7 +196,7 @@ public class JSFConfigEditorSupport extends DataEditorSupport
             }
         });
     }
-    
+
     private void initialize() {
         // Create DocumentListener
         final DocumentListener docListener = new DocumentListener() {

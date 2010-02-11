@@ -171,16 +171,6 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-java-hints-HideField.instance"/>
                     <file name="org-netbeans-modules-java-hints-HideFieldByVar.instance"/>
                     <file name="org-netbeans-modules-java-hints-StaticAccess.instance"/>
-                    <file name="org-netbeans-modules-java-hints-EqualsHint-getArrayEquals.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EqualsHint.getArrayEquals"/>
-                    </file>
-                    <file name="org-netbeans-modules-java-hints-EqualsHint-getIncompatibleEquals.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EqualsHint.getIncompatibleEquals"/>
-                    </file>
-                    <file name="org-netbeans-modules-java-hints-EqualsHint-getDelegate.instance">
-                        <attr name="nonGUI" boolvalue="true"/>
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EqualsHint.getDelegate"/>
-                    </file>
                     <file name="org-netbeans-modules-java-hints-EqualsMethodHint.instance"/>
                     <file name="org-netbeans-modules-java-hints-SyncOnNonFinal.instance"/>
                     <file name="org-netbeans-modules-java-hints-CollectionRemove.instance"/>
@@ -364,6 +354,10 @@ made subject to such option by the copyright holder.
                 </folder>
 
                 <folder name="code_maturity">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
+
+                <folder name="bugs">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
                 </folder>
             </folder>

@@ -150,7 +150,7 @@ public class ConnectionWizard extends WizardDescriptor {
         if (!finished || actionType == ConnectionWizardPanel2.CODE_TYPE)
             return null;
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         Set<Class> allExceptions = new HashSet<Class>();
 
         // params can be specified as method calls which in turn may produce exceptions
@@ -206,7 +206,7 @@ public class ConnectionWizard extends WizardDescriptor {
             } */
             buf.append(excName);
             buf.append(") {\n"); // NOI18N
-            buf.append("  "+excName); // NOI18N
+            buf.append("  ").append(excName); // NOI18N
             buf.append(".printStackTrace();\n"); // NOI18N
         }
         if (!allExceptions.isEmpty())
@@ -280,22 +280,27 @@ public class ConnectionWizard extends WizardDescriptor {
             return anyParameters() ? 3 : 2;
         }
 
+        @Override
         public WizardDescriptor.Panel current() {
             return panels[stage-1];
         }
 
+        @Override
         public boolean hasNext() {
             return stage < getPanelsCount();
         }
 
+        @Override
         public boolean hasPrevious() {
             return stage > 1;
         }
 
+        @Override
         public java.lang.String name() {
             return ""; // NOI18N
         }
 
+        @Override
         public void nextPanel() {
             if (stage < getPanelsCount()) {
                 if (stage == 1 && panel1.handlerAlreadyExists()) {
@@ -322,22 +327,26 @@ public class ConnectionWizard extends WizardDescriptor {
             }
         }
 
+        @Override
         public void previousPanel() {
             if (stage > 1)
                 stage--;
         }
 
+        @Override
         public void addChangeListener(ChangeListener listener) {
             if (listenerList == null)
                 listenerList = new EventListenerList();
             listenerList.add(ChangeListener.class, listener);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener listener) {
             if (listenerList != null)
                 listenerList.remove(ChangeListener.class, listener);
         }
 
+        @Override
         public void stateChanged(ChangeEvent p1) {
             if (stage == 2) {
                 panel2Changed = true;

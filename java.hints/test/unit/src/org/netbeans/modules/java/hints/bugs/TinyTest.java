@@ -166,6 +166,21 @@ public class TinyTest extends TestBase {
                             "3:30-3:31:verifier:ERR_ResultSetZero");
     }
 
+    public void testResultSet180027() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public Object test(R set, int i) {\n" +
+                            "        set.getBoolean(0);\n" +
+                            "        return set.getBoolean(i + 1);\n" +
+                            "    }" +
+                            "    private interface R extends java.sql.ResultSet {" +
+                            "        public boolean getBoolean(int i);" +
+                            "    }\n" +
+                            "}\n",
+                            "3:23-3:24:verifier:ERR_ResultSetZero");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();

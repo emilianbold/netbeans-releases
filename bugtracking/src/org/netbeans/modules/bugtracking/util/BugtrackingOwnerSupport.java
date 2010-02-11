@@ -50,6 +50,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelectorBuilder;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -404,7 +405,8 @@ public abstract class BugtrackingOwnerSupport {
                     if(file != null) {
                         OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(NbModuleOwnerSupport.NB_BUGZILLA_CONFIG, file);
                         if(ownerInfo != null) {
-                            KenaiProject kp = KenaiUtil.getKenai(url).getProject(ownerInfo.getOwner());
+                            Kenai kenai = KenaiUtil.getKenai(url);
+                            KenaiProject kp = kenai == null ? null : kenai.getProject(ownerInfo.getOwner());
                             repository = (kp != null)
                                    ? KenaiUtil.getKenaiBugtrackingRepository(kp)
                                    : null;        //not a Kenai project repository

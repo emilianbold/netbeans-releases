@@ -54,7 +54,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
@@ -63,7 +62,8 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeStaticLibraryFileFilter;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -239,18 +239,18 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
                 for (int i = 0; i < artifacts.length; i++) {
                     String location;
                     String workingdir;
-                    if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
                         location = IpeUtils.toAbsoluteOrRelativePath(baseDir, artifacts[i].getProjectLocation());
                         workingdir = IpeUtils.toAbsoluteOrRelativePath(baseDir, artifacts[i].getWorkingDirectory());
-                    } else if (PathPanel.getMode() == PathPanel.REL) {
+                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                         location = IpeUtils.toRelativePath(baseDir, artifacts[i].getProjectLocation());
                         workingdir = IpeUtils.toRelativePath(baseDir, artifacts[i].getWorkingDirectory());
                     } else {
                         location = artifacts[i].getProjectLocation();
                         workingdir = artifacts[i].getWorkingDirectory();
                     }
-                    location = FilePathAdaptor.normalize(location);
-                    workingdir = FilePathAdaptor.normalize(workingdir);
+                    location = IpeUtils.normalize(location);
+                    workingdir = IpeUtils.normalize(workingdir);
                     artifacts[i].setProjectLocation(location);
                     artifacts[i].setWorkingDirectory(workingdir);
                     myListEditorPanel.addObjectAction(new LibraryItem.ProjectItem(artifacts[i]));
@@ -357,14 +357,14 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             }
             String path = fileChooser.getSelectedFile().getPath();
             // FIXUP: why are baseDir UNIX path when remote?
-            if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
                 path = IpeUtils.toAbsoluteOrRelativePath(baseDir, path);
-            } else if (PathPanel.getMode() == PathPanel.REL) {
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                 path = IpeUtils.toRelativePath(baseDir, path);
             } else {
                 // path = path;
             }
-            path = FilePathAdaptor.normalize(path);
+            path = IpeUtils.normalize(path);
             myListEditorPanel.addObjectAction(new LibraryItem.LibFileItem(path));
         }
     }

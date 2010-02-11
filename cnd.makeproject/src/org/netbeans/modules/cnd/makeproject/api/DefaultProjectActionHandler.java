@@ -60,19 +60,20 @@ import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.toolchain.spi.CompilerLineConvertor;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -102,6 +103,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     // second is in canCancel
     private static final boolean RUN_REMOTE_IN_OUTPUT_WINDOW = true;
 
+    @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
         this.pae = pae;
     }
@@ -120,9 +122,11 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         return pae.getProfile().getEnvironment().getenv();
     }
 
+    @Override
     public void execute(final InputOutput io) {
         if (SwingUtilities.isEventDispatchThread()) {
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     _execute(io);
                 }
@@ -134,16 +138,16 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
     private void _execute(InputOutput io) {
         String rcfile = null;
-        if (pae.getType() == ProjectActionEvent.Type.RUN ||
-                pae.getType() == ProjectActionEvent.Type.BUILD ||
-                pae.getType() == ProjectActionEvent.Type.CLEAN) {
+        if (pae.getType() == ProjectActionEvent.PredefinedType.RUN ||
+                pae.getType() == ProjectActionEvent.PredefinedType.BUILD ||
+                pae.getType() == ProjectActionEvent.PredefinedType.CLEAN) {
             String exe = pae.getExecutable(); // we don't need quoting - it's execution responsibility
             ArrayList<String> args = new ArrayList<String>();
             for(String arg : pae.getProfile().getArgsArray()){
                 args.add(arg);
             }
             Map<String, String> env = pae.getProfile().getEnvironment().getenvAsMap();
-            boolean showInput = pae.getType() == ProjectActionEvent.Type.RUN;
+            boolean showInput = pae.getType() == ProjectActionEvent.PredefinedType.RUN;
             MakeConfiguration conf = pae.getConfiguration();
             ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
 
@@ -151,7 +155,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             PlatformInfo pi = conf.getPlatformInfo();
 
             boolean unbuffer = false;
-            if (pae.getType() == ProjectActionEvent.Type.RUN) {
+            if (pae.getType() == ProjectActionEvent.PredefinedType.RUN) {
                 int conType = pae.getProfile().getConsoleType().getValue();
                 if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null) {
                     String errmsg;
@@ -171,7 +175,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 }
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                     if (conf.getPlatformInfo().getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-                        exe = FilePathAdaptor.naturalize(pae.getExecutable());
+                        exe = IpeUtils.naturalize(pae.getExecutable());
                     } else if (conf.getDevelopmentHost().isLocalhost()) {
                         exe = IpeUtils.toAbsolutePath(pae.getProfile().getRunDir(), pae.getExecutable());
                     }
@@ -215,14 +219,14 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 env.put(pi.getPathName(), path);
                 // Pass QMAKE from compiler set to the Makefile (IZ 174731)
                 if (conf.isQmakeConfiguration()) {
-                    String qmakePath = conf.getCompilerSet().getCompilerSet().getTool(Tool.QMakeTool).getPath();
-                    qmakePath = conf.getCompilerSet().getCompilerSet().normalizeDriveLetter(qmakePath.replace('\\', '/')); // NOI18N
+                    String qmakePath = conf.getCompilerSet().getCompilerSet().getTool(PredefinedToolKind.QMakeTool).getPath();
+                    qmakePath = CppUtils.normalizeDriveLetter(conf.getCompilerSet().getCompilerSet(), qmakePath.replace('\\', '/')); // NOI18N
                     args.add("QMAKE=" + IpeUtils.escapeOddCharacters(qmakePath)); // NOI18N
                 }
             }
 
             LineConvertor converter = null;
-            if (pae.getType() == ProjectActionEvent.Type.BUILD) {
+            if (pae.getType() == ProjectActionEvent.PredefinedType.BUILD) {
                 converter = new CompilerLineConvertor(conf.getCompilerSet().getCompilerSet(), execEnv, FileUtil.toFileObject(new File(runDirectory)));
             }
             // TODO: this is actual only for sun studio compiler
@@ -233,7 +237,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 // TODO: fix me
                 // return null;
             }
-
             ProcessChangeListener processChangeListener = new ProcessChangeListener(this, null/*Writer outputListener*/, converter, io,
                     pae.getActionName(), rcfile);
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
@@ -244,7 +247,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     .addNativeProcessListener(processChangeListener);
             npb.getEnvironment().putAll(env);
 
-            if (pae.getType() == ProjectActionEvent.Type.RUN &&
+            if (pae.getType() == ProjectActionEvent.PredefinedType.RUN &&
                     pae.getProfile().getConsoleType().getValue() == RunProfile.CONSOLE_TYPE_EXTERNAL) {
 
                 String termPath = pae.getProfile().getTerminalPath();
@@ -268,12 +271,10 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     .errConvertorFactory(processChangeListener)
                     .outConvertorFactory(processChangeListener);
 
-            switch (pae.getType()) {
-                case DEBUG:
-                case RUN:
-                    if (ServerList.get(execEnv).getX11Forwarding() && !env.containsKey("DISPLAY")) { //NOI18N if DISPLAY is set, let it do its work
-                        npb.setX11Forwarding(true);
-                    }
+            if (pae.getType() == PredefinedType.RUN || pae.getType() == PredefinedType.DEBUG) {
+                if (ServerList.get(execEnv).getX11Forwarding() && !env.containsKey("DISPLAY")) { //NOI18N if DISPLAY is set, let it do its work
+                    npb.setX11Forwarding(true);
+                }
             }
 
             ExecutionService es = ExecutionService.newService(npb, descr, pae.getActionName()); // NOI18N
@@ -312,22 +313,27 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         }
     }
 
+    @Override
     public void addExecutionListener(ExecutionListener l) {
         if (!listeners.contains(l)) {
             listeners.add(l);
         }
     }
 
+    @Override
     public void removeExecutionListener(ExecutionListener l) {
         listeners.remove(l);
     }
 
+    @Override
     public boolean canCancel() {
         return true;
     }
 
+    @Override
     public void cancel() {
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 Future<Integer> et = executorTask;
                 if (et != null) {
@@ -337,12 +343,14 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         });
     }
 
+    @Override
     public void executionStarted(int pid) {
         for (ExecutionListener l : listeners) {
             l.executionStarted(pid);
         }
     }
 
+    @Override
     public void executionFinished(int rc) {
         for (ExecutionListener l : listeners) {
             l.executionFinished(rc);
@@ -354,7 +362,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         return NbBundle.getBundle(DefaultProjectActionHandler.class).getString(s);
     }
 
-    protected final static String getString(String key, String ... a1) {
+    protected static String getString(String key, String ... a1) {
         return NbBundle.getMessage(DefaultProjectActionHandler.class, key, a1);
     }
 
@@ -380,6 +388,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             this.rcfile = rcfile;
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             if (!(e instanceof NativeProcessChangeEvent)) {
                 return;
@@ -411,6 +420,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 {
                     closeOutputListener();
                     postRunnable = new Runnable() {
+                    @Override
                         public void run() {
                             StringBuilder res = new StringBuilder();
                             res.append(MessageFormat.format(getString("TERMINATED"), actionName.toUpperCase())); // NOI18N
@@ -437,6 +447,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 {
                     closeOutputListener();
                     postRunnable = new Runnable() {
+                    @Override
                         public void run() {
                             StringBuilder res = new StringBuilder();
                             res.append(MessageFormat.format(getString("FAILED"), actionName.toUpperCase())); // NOI18N
@@ -463,6 +474,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 {
                     closeOutputListener();
                     postRunnable = new Runnable() {
+                    @Override
                         public void run() {
                             StringBuilder res = new StringBuilder();
                             int rc = readReturnCode(rcfile, process.exitValue());
@@ -490,6 +502,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
         }
 
+        @Override
         public void run() {
             if (postRunnable != null) {
                 postRunnable.run();
@@ -543,6 +556,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             return rc;
         }
 
+        @Override
         public LineConvertor newLineConvertor() {
             return new LineConvertor() {
                 @Override
@@ -585,15 +599,15 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             long minutes = seconds/60;
             long hours = minutes/60;
             if (hours > 0) {
-                res.append(" " + hours + getString("HOUR")); // NOI18N
+                res.append(" ").append(hours).append(getString("HOUR")); // NOI18N
             }
             if (minutes > 0) {
-                res.append(" " + (minutes-hours*60) + getString("MINUTE")); // NOI18N
+                res.append(" ").append(minutes - hours * 60).append(getString("MINUTE")); // NOI18N
             }
             if (seconds > 0) {
-                res.append(" " + (seconds-minutes*60) + getString("SECOND")); // NOI18N
+                res.append(" ").append(seconds - minutes * 60).append(getString("SECOND")); // NOI18N
             } else {
-                res.append(" " + (millis-seconds*1000) + getString("MILLISECOND")); // NOI18N
+                res.append(" ").append(millis - seconds * 1000).append(getString("MILLISECOND")); // NOI18N
             }
             return res.toString();
         }

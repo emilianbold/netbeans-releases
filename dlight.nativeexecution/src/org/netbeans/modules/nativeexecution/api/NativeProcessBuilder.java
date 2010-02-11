@@ -152,6 +152,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
      *             in this builder
      * @throws IOException if the process could not be created
      */
+    @Override
     public NativeProcess call() throws IOException {
         AbstractNativeProcess process = null;
 
@@ -173,17 +174,25 @@ public final class NativeProcessBuilder implements Callable<Process> {
                 boolean available = externalTerminal.isAvailable(info.getExecutionEnvironment());
 
                 if (!available) {
-                    DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoTermianl.text"), // NOI18N
-                            NotifyDescriptor.WARNING_MESSAGE));
+                    if (Boolean.getBoolean("nativeexecution.mode.unittest")){
+                        System.err.println(loc("NativeProcessBuilder.processCreation.NoTermianl.text"));
+                    } else {
+                        DialogDisplayer.getDefault().notify(
+                                new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoTermianl.text"), // NOI18N
+                                NotifyDescriptor.WARNING_MESSAGE));
+                    }
                     canProceed = false;
                 } else {
                     if (Utilities.isWindows()) {
                         Shell shell = WindowsSupport.getInstance().getActiveShell();
                         if (shell == null) {
-                            DialogDisplayer.getDefault().notify(
-                                    new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoShell.text"), // NOI18N
-                                    NotifyDescriptor.WARNING_MESSAGE));
+                            if (Boolean.getBoolean("nativeexecution.mode.unittest")){
+                                System.err.println(loc("NativeProcessBuilder.processCreation.NoShell.text"));
+                            } else {
+                                DialogDisplayer.getDefault().notify(
+                                        new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoShell.text"), // NOI18N
+                                        NotifyDescriptor.WARNING_MESSAGE));
+                            }
                             canProceed = false;
                         } else {
                             ShellValidationStatus validationStatus = ShellValidationSupport.getValidationStatus(shell);

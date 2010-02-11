@@ -198,10 +198,10 @@ public class CommitAction extends AbstractSystemAction {
         }
         
         if (stickyTags.size() > 1) {
-            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STICKY, CommitSettings.COLUMN_NAME_STATUS, 
+            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_COMMIT, CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STICKY, CommitSettings.COLUMN_NAME_STATUS,
                                                 CommitSettings.COLUMN_NAME_ACTION, CommitSettings.COLUMN_NAME_PATH });
         } else {
-            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STATUS, 
+            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_COMMIT, CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STATUS,
                                                 CommitSettings.COLUMN_NAME_ACTION, CommitSettings.COLUMN_NAME_PATH });
         }
         

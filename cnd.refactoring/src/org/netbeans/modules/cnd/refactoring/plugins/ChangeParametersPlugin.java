@@ -185,7 +185,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
     }
 
     /**
-     * Returns list of problems. For the change method signature, there are two
+     * Returns list of problems. For the change function signature, there are two
      * possible warnings - if the method is overriden or if it overrides
      * another method.
      *
@@ -333,13 +333,13 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
                     if (decl) {
                         // in declaration add parameter
                         newText.append(pi.getType()).append(" ").append(pi.getName()); // NOI18N
-                        if (def && refactoring.isUseDefaultValueOnlyInFunctionDefinition()) {
+                        if (!def && refactoring.isUseDefaultValueOnlyInFunctionDeclaration()) {
                             newText.append(" = ").append(pi.getDefaultValue()); // NOI18N
                         } else {
                             newText.append(" /* = ").append(pi.getDefaultValue()).append(" */"); // NOI18N
                         }
                         wereChanges = true;
-                    } else if (!refactoring.isUseDefaultValueOnlyInFunctionDefinition()) {
+                    } else if (!refactoring.isUseDefaultValueOnlyInFunctionDeclaration()) {
                         // in reference add default value
                         newText.append(pi.getDefaultValue());
                         wereChanges = true;

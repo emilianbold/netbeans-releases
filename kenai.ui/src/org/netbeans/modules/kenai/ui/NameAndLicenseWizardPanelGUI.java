@@ -132,8 +132,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         panel = pnl;
         initComponents();
 
-        panel.setKenai((Kenai) kenaiCombo.getModel().getSelectedItem());
-
+        kenaiCombo.setSelectedItem(panel.getKenai());
         kenaiCombo.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {

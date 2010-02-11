@@ -41,7 +41,6 @@ package org.netbeans.modules.bugzilla;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.MissingResourceException;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,14 +52,12 @@ import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
-import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugzilla.util.FileUtils;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -193,21 +190,9 @@ public class BugzillaConfig {
             String psswd = repository.getPassword();
             NBBugzillaUtils.saveNBPassword(psswd != null ? psswd.toCharArray() : null);
         } else {
-            savePassword(password, null, url, user);
-            savePassword(httpPassword, "http", url, httpUser); // NOI18N
+            BugtrackingUtil.savePassword(password, null, user, url);
+            BugtrackingUtil.savePassword(httpPassword, "http", httpUser, url); // NOI18N
         }
-    }
-
-    private void savePassword(String password, String keyPrefix, String url, String user) throws MissingResourceException {
-        if (password != null && !password.trim().equals("")) { // NOI18N
-            Keyring.save(getPasswordKey(keyPrefix, url, user), password.toCharArray(), NbBundle.getMessage(BugzillaConfig.class, "BugzillaConfig.password_keyring_description", url)); // NOI18N
-        } else {
-            Keyring.delete(getPasswordKey(keyPrefix, url, user));
-        }
-    }
-    
-    private String getPasswordKey(String prefix, String url, String user) {
-        return (prefix != null ? prefix + "-" : "") + user + "@" + url;         // NOI18N
     }
 
     public BugzillaRepository getRepository(String repoID) {
@@ -226,10 +211,10 @@ public class BugzillaConfig {
             password = psswdArray != null ? new String(psswdArray) : null;
         } else {
             user = values[1];
-            password = readPassword(values[2], null, url, user);
+            password = new String(BugtrackingUtil.readPassword(values[2], null, user, url));
         }
         String httpUser = values.length > 3 ? values[3] : null;
-        String httpPassword = values.length > 3 ? readPassword(values[4], "http", url, httpUser) : null; // NOI18N
+        String httpPassword = new String(values.length > 3 ? BugtrackingUtil.readPassword(values[4], "http", httpUser, url) : null); // NOI18N
         boolean shortNameEnabled = false;
         if (values.length > 5) {
             shortNameEnabled = Boolean.parseBoolean(values[5]);
@@ -242,22 +227,12 @@ public class BugzillaConfig {
         }
         BugzillaRepository repo = new BugzillaRepository(repoID, name, url, user, password, httpUser, httpPassword, shortNameEnabled);
 
+        // make sure tha scrambled password is removed
         if(!values[2].trim().equals("") || (values.length > 3 && !values[3].trim().equals(""))) {
             putRepository(repoID, repo); 
         }
 
         return repo;
-    }
-
-    private String readPassword(String psswdValue, String keyPrefix, String url, String user) {
-        String password;
-        if (!psswdValue.equals("")) {                                            // NOI18N
-            password = BugtrackingUtil.descramble(psswdValue);
-        } else {
-            char[] psswdArray = Keyring.read(getPasswordKey(keyPrefix, url, user));
-            password = psswdArray != null ? new String(psswdArray) : "";        // NOI18N
-        }
-        return password;
     }
 
     public String[] getRepositories() {

@@ -55,7 +55,6 @@ import java.io.Writer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -74,7 +73,6 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.modules.ModuleInfo;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -144,7 +142,7 @@ import org.openide.util.Lookup;
         
         // Nonexistent path, just for JavadocForBuiltModuleTest:
         apisZip = new File(getWorkDir(), "apis.zip");
-        File userPropertiesFile = initializeBuildProperties(getWorkDir(), getDataDir(), apisZip,noDataDir);
+        File userPropertiesFile = initializeBuildProperties(getWorkDir(), noDataDir ? null : getDataDir(), apisZip);
         String[] suites = {
             // Suite projects:
             "suite1",
@@ -183,10 +181,10 @@ import org.openide.util.Lookup;
      * @return resulting properties file
      */
     public static File initializeBuildProperties(File workDir, File dataDir) throws Exception {
-        return initializeBuildProperties(workDir, dataDir, null,noDataDir);
+        return initializeBuildProperties(workDir, dataDir, null);
     }
     
-    private static File initializeBuildProperties(File workDir, File dataDir, File apisZip,boolean noDataDir) throws Exception {
+    private static File initializeBuildProperties(File workDir, File dataDir, File apisZip) throws Exception {
         File nbrootF = getTestNBRoot();
         boolean sourceAvailable = isSourceAvailable();
         System.setProperty("netbeans.user", workDir.getAbsolutePath());
@@ -196,7 +194,7 @@ import org.openide.util.Lookup;
         assertTrue("default platform available (" + defaultPlatform + ')', defaultPlatform.isDirectory());
         p.setProperty("nbplatform.default.netbeans.dest.dir", defaultPlatform.getAbsolutePath());
         p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness");
-        if (!noDataDir) {
+        if (dataDir != null) {
             File customPlatform = file(file(dataDir, EEP), "/suite3/nbplatform");
             assertTrue("custom platform available (" + customPlatform + ')', customPlatform.isDirectory());
             p.setProperty("nbplatform.custom.netbeans.dest.dir", customPlatform.getAbsolutePath());
@@ -419,7 +417,10 @@ import org.openide.util.Lookup;
      * Do not forget to first call {@link #initializeBuildProperties} if you are not a TestBase subclass!
      */
     public static NbModuleProject generateStandaloneModule(File workDir, String prjDir) throws IOException {
-        FileObject prjDirFO = generateStandaloneModuleDirectory(workDir, prjDir);
+        return generateStandaloneModule(workDir, prjDir, false);
+    }
+    public static NbModuleProject generateStandaloneModule(File workDir, String prjDir, boolean osgi) throws IOException {
+        FileObject prjDirFO = generateStandaloneModuleDirectory(workDir, prjDir, osgi);
         return (NbModuleProject) ProjectManager.getDefault().findProject(prjDirFO);
     }
     
@@ -428,6 +429,9 @@ import org.openide.util.Lookup;
      * <em>opening</em> a generated project.
      */
     public static FileObject generateStandaloneModuleDirectory(File workDir, String prjDir) throws IOException {
+        return generateStandaloneModuleDirectory(workDir, prjDir, false);
+    }
+    public static FileObject generateStandaloneModuleDirectory(File workDir, String prjDir, boolean osgi) throws IOException {
         String prjDirDotted = prjDir.replace('/', '.');
         File prjDirF = file(workDir, prjDir);
         NbModuleProjectGenerator.createStandAloneModule(
@@ -436,7 +440,7 @@ import org.openide.util.Lookup;
                 "Testing Module", // display name
                 "org/example/" + prjDir + "/resources/Bundle.properties",
                 "org/example/" + prjDir + "/resources/layer.xml",
-                NbPlatform.PLATFORM_ID_DEFAULT, false); // platform id
+                NbPlatform.PLATFORM_ID_DEFAULT, osgi); // platform id
         return FileUtil.toFileObject(prjDirF);
     }
     
@@ -504,7 +508,7 @@ import org.openide.util.Lookup;
      * @param contents keys are JAR entry paths, values are text contents (will be written in UTF-8)
      * @param manifest a manifest to store (or null for none)
      */
-    public static void createJar(File jar, Map/*<String,String>*/ contents, Manifest manifest) throws IOException {
+    public static void createJar(File jar, Map<String,String> contents, Manifest manifest) throws IOException {
         if (manifest != null) {
             manifest.getMainAttributes().putValue("Manifest-Version", "1.0"); // workaround for JDK bug
         }
@@ -512,11 +516,9 @@ import org.openide.util.Lookup;
         OutputStream os = new FileOutputStream(jar);
         try {
             JarOutputStream jos = manifest != null ? new JarOutputStream(os, manifest) : new JarOutputStream(os);
-            Iterator it = contents.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry) it.next();
-                String path = (String) entry.getKey();
-                byte[] data = ((String) entry.getValue()).getBytes("UTF-8");
+            for (Map.Entry<String,String> entry : contents.entrySet()) {
+                String path = entry.getKey();
+                byte[] data = entry.getValue().getBytes("UTF-8");
                 JarEntry je = new JarEntry(path);
                 je.setSize(data.length);
                 CRC32 crc = new CRC32();
@@ -539,11 +541,11 @@ import org.openide.util.Lookup;
         // To satisfy NbPlatform.defaultPlatformLocation and NbPlatform.isValid, and make at least one module:
         Manifest mani = new Manifest();
         mani.getMainAttributes().putValue("OpenIDE-Module", "core");
-        TestBase.createJar(new File(new File(new File(d, "platform"), "core"), "core.jar"), Collections.EMPTY_MAP, mani);
+        TestBase.createJar(new File(new File(new File(d, "platform"), "core"), "core.jar"), Collections.<String,String>emptyMap(), mani);
         mani = new Manifest();
         mani.getMainAttributes().putValue("OpenIDE-Module", "org.netbeans.modules.apisupport.harness");
         mani.getMainAttributes().putValue("OpenIDE-Module-Specification-Version", harnessSpecVersion);
-        TestBase.createJar(new File(new File(new File(d, "harness"), "modules"), "org-netbeans-modules-apisupport-harness.jar"), Collections.EMPTY_MAP, mani);
+        TestBase.createJar(new File(new File(new File(d, "harness"), "modules"), "org-netbeans-modules-apisupport-harness.jar"), Collections.<String,String>emptyMap(), mani);
         FileUtil.refreshFor(d);
     }
     
@@ -570,17 +572,5 @@ import org.openide.util.Lookup;
         // set in project.properties as test-unit-sys-prop.test.netbeans.dest.dir
         assertNotNull("test.netbeans.dest.dir property has to be set when running within binary distribution", destDir);
         return new File(destDir);
-    }
-
-    private static int getChildrenLength(final Node node) {
-        return node.getChildren().getNodes(true).length;
-    }
-
-    /** Fails with timeout if children are not updated to the required count. */
-    public static void assertAsynchronouslyUpdatedChildrenNodes(final Node node, final int n) throws InterruptedException {
-        for (int current = getChildrenLength(node); current != n; current = getChildrenLength(node)) {
-            System.out.println("Waiting for " + n + " child(ren); having " + current);
-            Thread.sleep(400);
-        }
     }
 }

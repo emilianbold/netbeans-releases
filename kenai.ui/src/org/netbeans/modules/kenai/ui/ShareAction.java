@@ -51,6 +51,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
@@ -125,7 +126,7 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
             }
             if (Subversion.isClientAvailable(true)) {
 
-                WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(e));
+                WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(e,KenaiManager.getDefault().getKenai("https://kenai.com")));
                 // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
                 wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
                 wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,

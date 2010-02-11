@@ -151,6 +151,7 @@ class SftpSupport {
         protected abstract void work() throws JSchException, SftpException, IOException, CancellationException;
         protected abstract String getTraceName();
 
+        @Override
         public Integer call() throws Exception {
             int rc = -1;
             try {

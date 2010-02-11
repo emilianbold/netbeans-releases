@@ -97,20 +97,14 @@ public class SourcesPanel extends JPanel {
             enc = PluginPropertyUtils.getPluginProperty(project,
                     Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, Constants.ENCODING_PARAM, null);
         }
-        Charset chs = null;
+        encoding = enc;
         if (enc != null) {
-            chs = Charset.forName(enc);
-        }
-        if (chs == null) {
-            String resourceEnc = PluginPropertyUtils.getPluginProperty(project,
-                    Constants.GROUP_APACHE_PLUGINS,
-                    Constants.PLUGIN_RESOURCES, Constants.ENCODING_PARAM, null);
-            if (resourceEnc != null) {
-                chs = Charset.forName(resourceEnc);
+            try {
+                Charset chs = Charset.forName(enc);
+                encoding = chs.name();
+            } catch (Exception e) {
+                Logger.getLogger(this.getClass().getName()).info("IllegalCharsetName: " + enc); //NOI18N
             }
-        }
-        if (chs != null) {
-            encoding = chs.name();
         }
         // TODO oh well, we fallback to default platform encoding.. that's correct
         // for times before the http://docs.codehaus.org/display/MAVENUSER/POM+Element+for+Source+File+Encoding
@@ -125,12 +119,14 @@ public class SourcesPanel extends JPanel {
         comEncoding.setRenderer(new EncodingRenderer());
         
         comSourceLevel.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 handleSourceLevelChange();
             }
         });
         
         comEncoding.addActionListener(new ActionListener () {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 handleEncodingChange();
             }            
@@ -213,14 +209,17 @@ public class SourcesPanel extends JPanel {
             super (name, new String[0]);
         }
     
+        @Override
         public boolean contains(Charset c) {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public CharsetDecoder newDecoder() {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public CharsetEncoder newEncoder() {
             throw new UnsupportedOperationException();
         }

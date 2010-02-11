@@ -201,7 +201,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
             updateJaxWsTask.schedule(1000);
         }
 
-        private synchronized void updateJaxWs() {
+        private void updateJaxWs() {
             try {
                 Map<String, ServiceInfo> newServices = wsModel.runReadAction(
                         new MetadataModelAction<WebservicesMetadata, Map<String, ServiceInfo>>() {

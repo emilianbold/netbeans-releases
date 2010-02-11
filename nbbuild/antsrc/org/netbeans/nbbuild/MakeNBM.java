@@ -639,7 +639,7 @@ public class MakeNBM extends Task {
             }
             infoXMLFileSets.add(infoXML);
         }
-        String codename = englishAttr.getValue("OpenIDE-Module");
+        String codename = JarWithModuleAttributes.extractCodeName(englishAttr);
         if (codename == null)
  	    new BuildException( "Can't get codenamebase" );
  	
@@ -794,7 +794,8 @@ public class MakeNBM extends Task {
             sys = "http://www.netbeans.org/dtds/autoupdate-info-2_3.dtd";
         }
         Document doc = domimpl.createDocument(null, "module", domimpl.createDocumentType("module", pub, sys));
-        String codenamebase = attr.getValue("OpenIDE-Module");
+        boolean osgi[] = new boolean[1];
+        String codenamebase = JarWithModuleAttributes.extractCodeName(attr, osgi);
         if (codenamebase == null) {
             Iterator it = attr.keySet().iterator();
             Name key; String val;
@@ -879,11 +880,27 @@ public class MakeNBM extends Task {
         it = attrNames.iterator();
         while (it.hasNext()) {
             String name = (String) it.next();
+            String value = attr.getValue(name);
+            if (osgi[0]) {
+                if (name.equals("Bundle-SymbolicName")) {
+                    name = "OpenIDE-Module";
+                }
+                if (name.equals("Bundle-Name")) {
+                    name = "OpenIDE-Module-Name";
+                }
+                if (name.equals("Bundle-Version")) {
+                    name = "OpenIDE-Module-Specification-Version";
+                }
+            }
             if (name.matches("OpenIDE-Module(|-(Name|(Specification|Implementation)-Version|(Module|Package|Java|IDE)-Dependencies|" +
                     "(Short|Long)-Description|Display-Category|Provides|Requires|Recommends|Needs))|AutoUpdate-(Show-In-Client|Essential-Module)")) {
-                el.setAttribute(name, attr.getValue(name));
+                el.setAttribute(name, value);
             }
         }
+        if (osgi[0] && el.getAttributeNode("OpenIDE-Module-Name") == null) {
+            el.setAttribute("OpenIDE-Module-Name", el.getAttribute("OpenIDE-Module"));
+        }
+
         module.appendChild(el);
         // Maybe write out license text.
         if (license != null) {

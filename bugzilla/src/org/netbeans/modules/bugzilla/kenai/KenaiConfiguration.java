@@ -41,7 +41,9 @@ package org.netbeans.modules.bugzilla.kenai;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -53,12 +55,12 @@ import org.netbeans.modules.bugzilla.util.BugzillaUtil;
  */
 public class KenaiConfiguration extends BugzillaConfiguration {
     private List<String> products;
-    private BugzillaRepository repository;
+    private KenaiRepository repository;
 
-    /** one instance for all kenai repositories */
-    private static RepositoryConfiguration rc;
+    /** one instance for all kenai repositories on on each kenai site */
+    private static Map<String, RepositoryConfiguration> rcs;
 
-    public KenaiConfiguration(BugzillaRepository repository, String product) {
+    public KenaiConfiguration(KenaiRepository repository, String product) {
         this.repository = repository;
         ArrayList<String> l = new ArrayList<String>();
         l.add(product);
@@ -98,13 +100,20 @@ public class KenaiConfiguration extends BugzillaConfiguration {
     }
 
     void reset() {
-        rc = null;
+        if(rcs != null) {
+            rcs.remove(repository.getUrl());
+        }
     }
 
     @Override
     protected RepositoryConfiguration getRepositoryConfiguration(BugzillaRepository repository, boolean forceRefresh) {
+        if(rcs == null) {
+            rcs = new HashMap<String, RepositoryConfiguration>(1);
+        }
+        RepositoryConfiguration rc = rcs.get(repository.getUrl());
         if(rc == null) {
             rc = super.getRepositoryConfiguration(repository, forceRefresh);
+            rcs.put(repository.getUrl(), rc);
         }
         return rc;
     }

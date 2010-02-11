@@ -107,6 +107,7 @@ public class FormPropertyEditor implements PropertyEditor,
     // -----------------------------------------------------------------------------
     // PropertyChangeListener implementation
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         PropertyEditor prEd = property.getCurrentEditor();
         if (prEd != null) {
@@ -117,6 +118,7 @@ public class FormPropertyEditor implements PropertyEditor,
         // we run this as privileged to avoid security problems - because
         // the property change can be fired from untrusted property editor code
         AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            @Override
             public Object run() {
                 FormPropertyEditor.this.firePropertyChange();
                 return null;
@@ -134,6 +136,7 @@ public class FormPropertyEditor implements PropertyEditor,
      *     the PropertyEditor should create a new object to hold any
      *     modified value.
      */
+    @Override
     public void setValue(Object newValue) {
         value = newValue;
         valueEdited = false;
@@ -156,6 +159,7 @@ public class FormPropertyEditor implements PropertyEditor,
      *
      * @return The value of the property.
      */
+    @Override
     public Object getValue() {
         if (!valueEdited) {
             PropertyEditor prEd = property.getCurrentEditor();
@@ -173,6 +177,7 @@ public class FormPropertyEditor implements PropertyEditor,
      *
      * @return  True if the class will honor the paintValue method.
      */
+    @Override
     public boolean isPaintable() {
         PropertyEditor prEd = property.getCurrentEditor();
         return prEd != null ? prEd.isPaintable() : false;
@@ -189,6 +194,7 @@ public class FormPropertyEditor implements PropertyEditor,
      * @param gfx  Graphics object to paint into.
      * @param box  Rectangle within graphics object into which we should paint.
      */
+    @Override
     public void paintValue(Graphics gfx, Rectangle box) {
         PropertyEditor prEd = property.getCurrentEditor();
         if (prEd != null)
@@ -208,6 +214,7 @@ public class FormPropertyEditor implements PropertyEditor,
      * @return A fragment of Java code representing an initializer for the
      *   	current value.
      */
+    @Override
     public String getJavaInitializationString() {
         PropertyEditor prEd = property.getCurrentEditor();
         return prEd != null ? prEd.getJavaInitializationString() : null;
@@ -225,6 +232,7 @@ public class FormPropertyEditor implements PropertyEditor,
      * <p>   If a non-null value is returned, then the PropertyEditor should
      *	     be prepared to parse that string back in setAsText().
      */
+    @Override
     public String getAsText() {
         if (value == BeanSupport.NO_VALUE) {
             if (NO_VALUE_TEXT == null)
@@ -246,6 +254,7 @@ public class FormPropertyEditor implements PropertyEditor,
      * @throws java.lang.IllegalArgumentException when the specified text
      * does not represent valid value.
      */
+    @Override
     public void setAsText(String text) throws java.lang.IllegalArgumentException {
         PropertyEditor prEd = property.getCurrentEditor();
         if (prEd != null)
@@ -265,6 +274,7 @@ public class FormPropertyEditor implements PropertyEditor,
      *   property cannot be represented as a tagged value.
      *	
      */
+    @Override
     public String[] getTags() {
         PropertyEditor prEd = property.getCurrentEditor();
         return prEd != null ? prEd.getTags() : null;
@@ -287,6 +297,7 @@ public class FormPropertyEditor implements PropertyEditor,
      *	    not supported.
      */
 
+    @Override
     public Component getCustomEditor() {
         // hack: PropertyPicker wants code regenerated - it might lead to
         // setting values to property editors
@@ -316,6 +327,7 @@ public class FormPropertyEditor implements PropertyEditor,
      *
      * @return  True if the propertyEditor can provide a custom editor.
      */
+    @Override
     public boolean supportsCustomEditor() {
         PropertyEditor[] editors = getAllEditors();
 
@@ -439,6 +451,7 @@ public class FormPropertyEditor implements PropertyEditor,
      *
      * @param l An object to be invoked when a PropertyChange event is fired.
      */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
         synchronized (this) {
             if (changeSupport == null)
@@ -452,6 +465,7 @@ public class FormPropertyEditor implements PropertyEditor,
      *
      * @param l The PropertyChange listener to be removed.
      */
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
         if (changeSupport != null)
             changeSupport.removePropertyChangeListener(l);
@@ -474,6 +488,7 @@ public class FormPropertyEditor implements PropertyEditor,
      * 
      * @param env environment.
      */
+    @Override
     public void attachEnv(PropertyEnv env) {
         propertyEnv = new WeakReference<PropertyEnv>(env);
         PropertyEditor prEd = property.getCurrentEditor();

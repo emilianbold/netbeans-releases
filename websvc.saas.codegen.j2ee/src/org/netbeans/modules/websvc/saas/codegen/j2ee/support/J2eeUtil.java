@@ -49,7 +49,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -537,28 +539,43 @@ public class J2eeUtil {
 
             public void run(WorkingCopy workingCopy) throws Exception {
                 workingCopy.toPhase(Phase.RESOLVED);
-                ClassTree classTree = getPublicTopLevelTree(workingCopy);
-                if (classTree != null) {
-                    TreeMaker make = workingCopy.getTreeMaker();
-                    TypeElement servletAn = workingCopy.getElements().getTypeElement("javax.servlet.annotation.WebServlet"); //NOI18N
-                    if (servletAn != null) {
-                        List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
-                        attrs.add(
-                                make.Assignment(make.Identifier("name"), make.Literal(servletName))); //NOI18N
-                        attrs.add(
-                                make.Assignment(make.Identifier("urlPatterns"), make.Literal(urlPattern))); //NOI18N
+                TypeElement servletAn = workingCopy.getElements().getTypeElement("javax.servlet.annotation.WebServlet"); //NOI18N
+                if (servletAn != null) {
+                    boolean found = false;
+                    TypeElement classEl = getPublicTopLevelElement(workingCopy);
+                    if (classEl != null) {
+                        List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
 
-                        AnnotationTree servletAnnotation = make.Annotation(
-                                make.QualIdent(servletAn),
-                                attrs);
-                        ClassTree modifiedClass = make.Class(
-                                    make.addModifiersAnnotation(classTree.getModifiers(), servletAnnotation),
-                                    classTree.getSimpleName(),
-                                    classTree.getTypeParameters(),
-                                    classTree.getExtendsClause(),
-                                    classTree.getImplementsClause(),
-                                    classTree.getMembers());
-                        workingCopy.rewrite(classTree, modifiedClass);
+                        for (AnnotationMirror m : annotations) {
+                            Name qualifiedName = ((TypeElement)m.getAnnotationType().asElement()).getQualifiedName();
+                            if (qualifiedName.contentEquals("javax.servlet.annotation.WebServlet")) { //NOI18N
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!found) {
+                        ClassTree classTree = getPublicTopLevelTree(workingCopy);
+                        if (classTree != null) {
+                            TreeMaker make = workingCopy.getTreeMaker();
+                            List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
+                            attrs.add(
+                                    make.Assignment(make.Identifier("name"), make.Literal(servletName))); //NOI18N
+                            attrs.add(
+                                    make.Assignment(make.Identifier("urlPatterns"), make.Literal(urlPattern))); //NOI18N
+
+                            AnnotationTree servletAnnotation = make.Annotation(
+                                    make.QualIdent(servletAn),
+                                    attrs);
+                            ClassTree modifiedClass = make.Class(
+                                        make.addModifiersAnnotation(classTree.getModifiers(), servletAnnotation),
+                                        classTree.getSimpleName(),
+                                        classTree.getTypeParameters(),
+                                        classTree.getExtendsClause(),
+                                        classTree.getImplementsClause(),
+                                        classTree.getMembers());
+                            workingCopy.rewrite(classTree, modifiedClass);
+                        }
                     }
                 }
             }

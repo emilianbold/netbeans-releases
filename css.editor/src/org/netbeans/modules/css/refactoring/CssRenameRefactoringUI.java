@@ -60,10 +60,12 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
     private CssElementContext context;
     private RenamePanel panel;
     private boolean folderRename;
+    private CssRefactoringExtraInfo extraInfo;
 
     public CssRenameRefactoringUI(CssElementContext context) {
 	this.context = context;
-	this.refactoring = new RenameRefactoring(Lookups.fixed(context));
+        this.extraInfo = new CssRefactoringExtraInfo();
+	this.refactoring = new RenameRefactoring(Lookups.fixed(context, extraInfo));
     }
 
     public String getName() {
@@ -87,6 +89,8 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
     }
 
     public Problem setParameters() {
+        extraInfo.setRefactorAll(panel.isRefactorAllOccurances());
+
 	String newName = panel.getNameValue();
 	if (refactoring instanceof RenameRefactoring) {
 	    ((RenameRefactoring) refactoring).setNewName(newName);

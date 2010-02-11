@@ -50,12 +50,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerListUI;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.toolchain.ui.api.ServerListUIEx;
-import org.netbeans.modules.cnd.toolchain.ui.api.ToolsCacheManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ServerListUIEx;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -80,9 +80,9 @@ public class RemoteServerListUI extends ServerListUIEx {
 
     @Override
     protected boolean showServerListDialogImpl(AtomicReference<ExecutionEnvironment> selectedEnv) {
-        ToolsCacheManager cacheManager = new ToolsCacheManager();
+        ToolsCacheManager cacheManager = ToolsCacheManager.get();
         for (ServerRecord record : ServerList.getRecords()) {
-            CompilerSetManager csm = CompilerSetManager.getDefault(record.getExecutionEnvironment());
+            CompilerSetManager csm = CompilerSetManager.get(record.getExecutionEnvironment());
             cacheManager.addCompilerSetManager(csm);
         }
         if (showServerListDialog(cacheManager, selectedEnv)) {

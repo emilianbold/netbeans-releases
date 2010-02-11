@@ -41,13 +41,16 @@
 
 package org.netbeans.modules.java.source;
 
+import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -57,6 +60,7 @@ import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.PositionConverter;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.parsing.api.Source;
@@ -249,6 +253,9 @@ public abstract class JavaSourceAccessor {
      * @param info
      */
     public abstract void invalidate (CompilationInfo info);
+
+    public abstract AnnotatedTypeTree makeAnnotatedType(TreeMaker make, List<? extends AnnotationTree> annotations, ExpressionTree type);
+    public abstract AnnotationTree makeTypeAnnotation(TreeMaker make, AnnotationTree t);
     
     private static class CancelableTaskWrapper extends JavaParserResultTask implements ClasspathInfoProvider {
         

@@ -78,6 +78,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         return new SPSRemoteImpl(execEnv);
     }
 
+    @Override
     synchronized String getPID() {
         if (pid != null) {
             return pid;
@@ -130,6 +131,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         pid = null;
     }
 
+    @Override
     public synchronized void requestPrivileges(Collection<String> requestedPrivileges, String user, char[] passwd) throws NotOwnerException {
         ConnectionManager mgr = ConnectionManager.getInstance();
 
@@ -141,7 +143,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         }
 
         // Construct privileges list
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         for (String priv : requestedPrivileges) {
             sb.append(priv).append(","); // NOI18N
@@ -155,7 +157,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         String script = "/usr/bin/ppriv -s I+" + // NOI18N
                 requestedPrivs + " " + getPID(); // NOI18N
 
-        StringBuffer cmd = new StringBuffer("/sbin/su - "); // NOI18N
+        StringBuilder cmd = new StringBuilder("/sbin/su - "); // NOI18N
         cmd.append(user).append(" -c \""); // NOI18N
         cmd.append(script).append("\"; echo ExitStatus:$?\n"); // NOI18N
 
@@ -193,9 +195,11 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
             Logger.getInstance().log(Level.FINE, "", ex); // NOI18N
         } finally {
             if (status != 0) {
-                NotifyDescriptor dd =
-                        new NotifyDescriptor.Message(NbBundle.getMessage(SPSRemoteImpl.class, "TaskPrivilegesSupport_GrantPrivileges_Failed"));
-                DialogDisplayer.getDefault().notify(dd);
+                if (!Boolean.getBoolean("nativeexecution.mode.unittest")){
+                    NotifyDescriptor dd =
+                            new NotifyDescriptor.Message(NbBundle.getMessage(SPSRemoteImpl.class, "TaskPrivilegesSupport_GrantPrivileges_Failed"));
+                    DialogDisplayer.getDefault().notify(dd);
+                }
             }
 
             // DO NOT CLOSE A CHANNEL HERE... (Why?)
@@ -236,7 +240,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
         int pos = 0;
         int len = expectedString.length();
         char[] cbuf = new char[2];
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         Reader r = new InputStreamReader(in);
 

@@ -60,13 +60,12 @@ import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public class RunDialogPanel extends javax.swing.JPanel {
+public final class RunDialogPanel extends javax.swing.JPanel {
     private DocumentListener modifiedValidateDocumentListener = null;
     private Project[] projectChoices = null;
     private boolean executableReadOnly = true;
@@ -105,7 +104,7 @@ public class RunDialogPanel extends javax.swing.JPanel {
         initAccessibility();
     }
     
-    protected  void initialize(String exePath, boolean executableReadOnly) {
+    private void initialize(String exePath, boolean executableReadOnly) {
         initComponents();
         errorLabel.setForeground(javax.swing.UIManager.getColor("nb.errorForeground")); // NOI18N
         this.executableReadOnly = executableReadOnly;
@@ -563,12 +562,12 @@ public class RunDialogPanel extends javax.swing.JPanel {
                 // Working dir
                 String wd = new File(getExecutablePath()).getParentFile().getPath();
                 wd = IpeUtils.toRelativePath(baseDir, wd);
-                wd = FilePathAdaptor.normalize(wd);
+                wd = IpeUtils.normalize(wd);
                 conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(wd);
                 // Executable
                 String exe = getExecutablePath();
                 exe = IpeUtils.toRelativePath(baseDir, exe);
-                exe = FilePathAdaptor.normalize(exe);
+                exe = IpeUtils.normalize(exe);
                 conf.getMakefileConfiguration().getOutput().setValue(exe);
                 
                 updateRunProfile(baseDir, conf.getProfile());
@@ -588,7 +587,7 @@ public class RunDialogPanel extends javax.swing.JPanel {
         // Working dir
         String wd = runDirectoryTextField.getText();
         wd = IpeUtils.toRelativePath(baseDir, wd);
-        wd = FilePathAdaptor.normalize(wd);
+        wd = IpeUtils.normalize(wd);
         runProfile.setRunDirectory(wd);
         // Environment
         Env env = runProfile.getEnvironment();

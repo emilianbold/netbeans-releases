@@ -49,6 +49,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -421,6 +422,9 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     }
     
     public void hidePopup() {
+        if (GraphicsEnvironment.isHeadless()) {
+            return;
+        }
         if (popupWindow != null) {
 //            popupWindow.getContentPane().removeAll();
             popupWindow.setVisible(false);
@@ -462,6 +466,9 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
 
     
     public void showPopup() {
+        if (GraphicsEnvironment.isHeadless()) {
+            return;
+        }
         if (showingPopup) {
             return;
         }

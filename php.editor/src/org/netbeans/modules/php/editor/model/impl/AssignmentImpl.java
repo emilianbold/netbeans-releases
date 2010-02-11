@@ -60,6 +60,7 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
     private Union2<String,Collection<? extends TypeScope>> typeName;
     private OffsetRange scopeRange;
     private boolean arrayAccess;
+    private boolean conditionalBlock;
 
     AssignmentImpl(Container container, Scope scope, OffsetRange scopeRange,OffsetRange nameRange, Assignment assignment,
             Map<String, AssignmentImpl> allAssignments) {
@@ -176,5 +177,19 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
 
     public void setAsArrayAccess(boolean arrayAccess) {
         this.arrayAccess = arrayAccess;
+    }
+
+    /**
+     * @return the conditionalBlock
+     */
+    public boolean isConditionalBlock() {
+        return conditionalBlock;
+    }
+
+    /**
+     * @param conditionalBlock the conditionalBlock to set
+     */
+    public void setConditionalBlock(boolean conditionalBlock) {
+        this.conditionalBlock = conditionalBlock;
     }
 }

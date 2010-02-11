@@ -61,6 +61,11 @@ public class DoxygenLexerTestCase extends NbTestCase {
         LexerTestUtilities.setTesting(true);
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testNextToken() {
         String text = "< @param aaa <code>aaa</code> xyz {@link org.Aaa#aaa()} \\tag_object \\ not_tag @ not_tag2";
         

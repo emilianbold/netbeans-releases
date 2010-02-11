@@ -1,3 +1,20 @@
+nobugid (Towards more InputOutput functionality)
+	Introduced IOResizable and IOEmulation to support Term-related
+	functionality.
+	IOREsizable allows capturing terminal size changes and forwarding
+	them to the relevant ioctl().
+	IOEmulation allows querying the actual terminal emulation provided
+	and assigning it to $TERM. It also proviedes the disciplined
+	property which describes whether the InputOutput provides it's
+	own line discipline or relies on an external agent (usually a pty).
+
+	TerminalInputOutput implements these new capabilities.
+
+	TerminalIOProviderSupport, which is code common to many of the
+	demo actions in demosrc, now uses the above InputOutput-based
+	functionality instead of accessing a Term directly.
+
+================================================================================
 nobugid (Streams from StreamTerm)
 	While experimenting with IOExecution it becaame clear that there
 	would be some merit for StreamTerm to provide actual Streams the way

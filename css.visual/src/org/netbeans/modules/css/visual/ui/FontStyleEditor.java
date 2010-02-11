@@ -334,7 +334,7 @@ public class FontStyleEditor extends StyleEditor {
         setCssPropertyChangeListener(cssStyleData);
     }
     
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
@@ -379,8 +379,8 @@ public class FontStyleEditor extends StyleEditor {
             }
         });
         fontFaceScroll.setViewportView(fontFaceList);
-        fontFaceList.getAccessibleContext().setAccessibleName(null);
-        fontFaceList.getAccessibleContext().setAccessibleDescription(null);
+        fontFaceList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontFamilyList")); // NOI18N
+        fontFaceList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontFamilyListAccessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -402,8 +402,8 @@ public class FontStyleEditor extends StyleEditor {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         fontFamilyPanel.add(fontChosenField, gridBagConstraints);
-        fontChosenField.getAccessibleContext().setAccessibleName(null);
-        fontChosenField.getAccessibleContext().setAccessibleDescription(null);
+        fontChosenField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "chosenFontsAccessibleName")); // NOI18N
+        fontChosenField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "ChosenFontAccessibleDescription")); // NOI18N
 
         fontFamilyButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_EDIT").charAt(0));
         fontFamilyButton.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "EDIT")); // NOI18N
@@ -420,7 +420,7 @@ public class FontStyleEditor extends StyleEditor {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         fontFamilyPanel.add(fontFamilyButton, gridBagConstraints);
-        fontFamilyButton.getAccessibleContext().setAccessibleDescription(null);
+        fontFamilyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "EditChosenFontsAccessibleDescription")); // NOI18N
 
         mainPanel.add(fontFamilyPanel, java.awt.BorderLayout.CENTER);
 
@@ -451,8 +451,9 @@ public class FontStyleEditor extends StyleEditor {
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         fontSizePanel.add(fontSizeField, gridBagConstraints);
-        fontSizeField.getAccessibleContext().setAccessibleName(null);
-        fontSizeField.getAccessibleContext().setAccessibleDescription(null);
+        fontSizeField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "ChosenFontSizeAccessibleName")); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle"); // NOI18N
+        fontSizeField.getAccessibleContext().setAccessibleDescription(bundle.getString("ChosenFontSizeAccessibleDescription")); // NOI18N
 
         fontSizeUnitCombo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -465,8 +466,8 @@ public class FontStyleEditor extends StyleEditor {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         fontSizePanel.add(fontSizeUnitCombo, gridBagConstraints);
-        fontSizeUnitCombo.getAccessibleContext().setAccessibleName(null);
-        fontSizeUnitCombo.getAccessibleContext().setAccessibleDescription(null);
+        fontSizeUnitCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontSizeUnitListAccessibleName")); // NOI18N
+        fontSizeUnitCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontSizeUnitListAccessibleDescription")); // NOI18N
 
         fontSizeList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         fontSizeList.setVisibleRowCount(5);
@@ -476,8 +477,8 @@ public class FontStyleEditor extends StyleEditor {
             }
         });
         fontSizeScroll.setViewportView(fontSizeList);
-        fontSizeList.getAccessibleContext().setAccessibleName(null);
-        fontSizeList.getAccessibleContext().setAccessibleDescription(null);
+        fontSizeList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontSizeListAccessibleName")); // NOI18N
+        fontSizeList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontSizeListAccessibleDesription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -583,75 +584,75 @@ public class FontStyleEditor extends StyleEditor {
 
         colorSelectionPanel.setLayout(new java.awt.BorderLayout());
 
-        org.jdesktop.layout.GroupLayout decorationPanelLayout = new org.jdesktop.layout.GroupLayout(decorationPanel);
+        javax.swing.GroupLayout decorationPanelLayout = new javax.swing.GroupLayout(decorationPanel);
         decorationPanel.setLayout(decorationPanelLayout);
         decorationPanelLayout.setHorizontalGroup(
-            decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(decorationPanelLayout.createSequentialGroup()
-                .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(decorationPanelLayout.createSequentialGroup()
-                        .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(styleLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 47, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(fontStyleComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(fontWeightComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(weightLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(variantLabel)
-                            .add(fontVariantComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(colorSelectionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 137, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(colorLabel)))
-                    .add(decorationPanelLayout.createSequentialGroup()
-                        .add(underlineCheckbox)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(overlineCheckbox)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(strikethroughCheckbox)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(noDecorationCheckbox)))
-                .addContainerGap(57, Short.MAX_VALUE))
+            decorationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(decorationPanelLayout.createSequentialGroup()
+                .addGroup(decorationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(decorationPanelLayout.createSequentialGroup()
+                        .addGroup(decorationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(styleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(fontStyleComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(decorationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(fontWeightComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(weightLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(decorationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(variantLabel)
+                            .addComponent(fontVariantComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(decorationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(colorSelectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(colorLabel)))
+                    .addGroup(decorationPanelLayout.createSequentialGroup()
+                        .addComponent(underlineCheckbox)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(overlineCheckbox)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(strikethroughCheckbox)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(noDecorationCheckbox)))
+                .addContainerGap(51, Short.MAX_VALUE))
         );
         decorationPanelLayout.setVerticalGroup(
-            decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(decorationPanelLayout.createSequentialGroup()
-                .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(styleLabel)
-                    .add(weightLabel)
-                    .add(variantLabel)
-                    .add(colorLabel))
-                .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(decorationPanelLayout.createSequentialGroup()
-                        .add(6, 6, 6)
-                        .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(fontWeightComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(fontVariantComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(fontStyleComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(decorationPanelLayout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(colorSelectionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(underlineCheckbox)
-                    .add(overlineCheckbox)
-                    .add(noDecorationCheckbox)
-                    .add(strikethroughCheckbox)))
+            decorationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(decorationPanelLayout.createSequentialGroup()
+                .addGroup(decorationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(styleLabel)
+                    .addComponent(weightLabel)
+                    .addComponent(variantLabel)
+                    .addComponent(colorLabel))
+                .addGroup(decorationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(decorationPanelLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addGroup(decorationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(fontWeightComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(fontVariantComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(fontStyleComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(decorationPanelLayout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(colorSelectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(decorationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(underlineCheckbox)
+                    .addComponent(overlineCheckbox)
+                    .addComponent(noDecorationCheckbox)
+                    .addComponent(strikethroughCheckbox)))
         );
 
-        underlineCheckbox.getAccessibleContext().setAccessibleDescription(null);
-        strikethroughCheckbox.getAccessibleContext().setAccessibleDescription(null);
-        overlineCheckbox.getAccessibleContext().setAccessibleDescription(null);
+        underlineCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontUnderlineAccessibleDescription")); // NOI18N
+        strikethroughCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontStrikeThroughAccessibleDescription")); // NOI18N
+        overlineCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontOverlineAccessibleDescription")); // NOI18N
         noDecorationCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontNoDecorationAccessibleDescription")); // NOI18N
-        fontStyleComboBox.getAccessibleContext().setAccessibleName(null);
-        fontStyleComboBox.getAccessibleContext().setAccessibleDescription(null);
-        fontWeightComboBox.getAccessibleContext().setAccessibleName(null);
-        fontWeightComboBox.getAccessibleContext().setAccessibleDescription(null);
-        variantLabel.getAccessibleContext().setAccessibleDescription(null);
-        fontVariantComboBox.getAccessibleContext().setAccessibleName(null);
-        fontVariantComboBox.getAccessibleContext().setAccessibleDescription(null);
+        fontStyleComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "STYLE_LIST_ACCES_NAME")); // NOI18N
+        fontStyleComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontStyleSelectionAccessibleDescription")); // NOI18N
+        fontWeightComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontWeightSelectionAccessibleName")); // NOI18N
+        fontWeightComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontWeightSelectionAccessibleDescription")); // NOI18N
+        variantLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontVariantSelectionAccessibleDescription")); // NOI18N
+        fontVariantComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontVariantSelectionAccessibleName")); // NOI18N
+        fontVariantComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FontVariantSelectionAccessibleDescription")); // NOI18N
 
         styleMainPanel.add(decorationPanel, java.awt.BorderLayout.CENTER);
 

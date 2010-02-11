@@ -42,11 +42,26 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import java.awt.Image;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.status.ProgressEvent;
+import javax.enterprise.deploy.spi.status.ProgressListener;
+import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.OpenModuleUrlAction;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.OpenModuleUrlCookie;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.UndeployModuleAction;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.UndeployModuleCookie;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
@@ -60,11 +75,27 @@ import org.openide.util.actions.SystemAction;
  */
 public class WLModuleNode extends AbstractNode {
 
+    private static final Logger LOGGER = Logger.getLogger(WLModuleNode.class.getName());
+
     private final ModuleType moduleType;
 
-    public WLModuleNode(String name, Lookup lookup, ModuleType moduleType, boolean stopped) {
+    private final boolean stopped;
+
+    private final String name;
+
+    private final String url;
+
+    private final TargetModuleID module;
+
+    public WLModuleNode(TargetModuleID module, Lookup lookup,
+            ModuleType moduleType, boolean stopped) {
         super(Children.LEAF);
+        this.module = module;
         this.moduleType = moduleType;
+        this.stopped = stopped;
+        this.url = module.getWebURL();
+        this.name = module.getModuleID();
+
         if (stopped) {
             setDisplayName(name + " " + "[" // NOI18N
                     + NbBundle.getMessage(WLModuleNode.class, "LBL_Stopped")
@@ -72,11 +103,22 @@ public class WLModuleNode extends AbstractNode {
         } else {
             setDisplayName(name);
         }
+
+        if (url != null) {
+            getCookieSet().add(new OpenModuleUrlCookieImpl(url));
+        }
+        getCookieSet().add(new UndeployModuleCookieImpl(module, lookup));
     }
 
     @Override
     public Action[] getActions(boolean context) {
-        return new SystemAction[] {};
+        if (url != null && !stopped) {
+            return new SystemAction[] {
+                SystemAction.get(UndeployModuleAction.class),
+                SystemAction.get(OpenModuleUrlAction.class)
+            };
+        }
+        return new SystemAction[] { SystemAction.get(UndeployModuleAction.class) };
     }
 
     @Override
@@ -97,16 +139,58 @@ public class WLModuleNode extends AbstractNode {
         return getIcon(type);
     }
 
-//    private static class OpenURLActionCookieImpl implements OpenURLActionCookie {
-//
-//        private String url;
-//
-//        public OpenURLActionCookieImpl(String url) {
-//            this.url = url;
-//        }
-//
-//        public String getWebURL() {
-//            return url;
-//        }
-//    }
+    private static class OpenModuleUrlCookieImpl implements OpenModuleUrlCookie {
+
+        private final String url;
+
+        public OpenModuleUrlCookieImpl(String url) {
+            this.url = url;
+        }
+
+        @Override
+        public void openUrl() {
+            try {
+                URLDisplayer.getDefault().showURL(new URL(url));
+            } catch (MalformedURLException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+    }
+
+    private static class UndeployModuleCookieImpl implements UndeployModuleCookie {
+
+        private final TargetModuleID module;
+
+        private final Lookup lookup;
+
+        public UndeployModuleCookieImpl(TargetModuleID module, Lookup lookup) {
+            this.module = module;
+            this.lookup = lookup;
+        }
+
+        @Override
+        public void undeploy() {
+            WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
+            if (manager != null) {
+                // TODO should we make it batch somehow (it is rare case)
+                ProgressObject obj = manager.undeploy(new TargetModuleID[] {module});
+                final CountDownLatch latch = new CountDownLatch(1);
+                obj.addProgressListener(new ProgressListener() {
+
+                    @Override
+                    public void handleProgressEvent(ProgressEvent pe) {
+                        if (pe.getDeploymentStatus().isCompleted() || pe.getDeploymentStatus().isFailed()) {
+                            latch.countDown();
+                        }
+                    }
+                });
+                try {
+                    latch.await(60000, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+
+    }
 }

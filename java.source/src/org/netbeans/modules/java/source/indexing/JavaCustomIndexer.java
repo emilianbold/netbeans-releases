@@ -78,7 +78,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.parsing.FileObjects.InferableJavaFileObject;
+import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.tasklist.TasklistSettings;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
@@ -87,6 +87,8 @@ import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.VirtualSourceProviderQuery;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
+import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
@@ -129,7 +131,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 return;
             }
             String sourceLevel = SourceLevelQuery.getSourceLevel(root);
-            if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel)) {
+            if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel) && !context.isAllFilesIndexing()) {
                 JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
                 IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
                 return;
@@ -139,6 +141,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                 IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
                 return;
             }
+            APTUtils aptUtils = APTUtils.get(root);
+            if (aptUtils != null && aptUtils.verifyAttributes(root, context.isAllFilesIndexing()))
+                return;
             final ClassPath sourcePath = ClassPath.getClassPath(root, ClassPath.SOURCE);
             final ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
             final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
@@ -177,13 +182,27 @@ public class JavaCustomIndexer extends CustomIndexer {
                         }
                         toCompile.addAll(virtualSourceTuples);
                         CompileWorker.ParsingOutput compileResult = null;
-                        for (CompileWorker w : WORKERS) {
-                            compileResult = w.compile(compileResult, context, javaContext, toCompile);
-                            if (compileResult == null || context.isCancelled()) {
-                                return null; // cancelled, IDE is sutting down
+                        List<CompileTuple> toCompileRound = toCompile;
+                        int round = 0;
+                        while (round++ < 2) {
+                            for (CompileWorker w : WORKERS) {
+                                compileResult = w.compile(compileResult, context, javaContext, toCompileRound);
+                                if (compileResult == null || context.isCancelled()) {
+                                    return null; // cancelled, IDE is sutting down
+                                }
+                                if (compileResult.success) {
+                                    break;
+                                }
                             }
-                            if (compileResult.success) {
-                                break;
+                            if (compileResult.aptGenerated.isEmpty()) {
+                                round++;
+                            } else {
+                                toCompileRound = new ArrayList<CompileTuple>(compileResult.aptGenerated.size());
+                                for (CompileTuple ct : compileResult.aptGenerated) {
+                                    toCompileRound.add(ct);
+                                    toCompile.add(ct);
+                                }
+                                compileResult.aptGenerated.clear();
                             }
                         }
                         assert compileResult != null;
@@ -324,59 +343,82 @@ public class JavaCustomIndexer extends CustomIndexer {
     private static void clear(final Context context, final JavaParsingContext javaContext, final String sourceRelative, final Set<ElementHandle<TypeElement>> removedTypes, final Set<File> removedFiles) throws IOException {
         final List<Pair<String,String>> toDelete = new ArrayList<Pair<String,String>>();
         final File classFolder = JavaIndex.getClassFolder(context);
-        final String ext = FileObjects.getExtension(sourceRelative);
-        final String withoutExt = FileObjects.stripExtension(sourceRelative);
+        final File aptFolder = JavaIndex.getAptFolder(context.getRootURI(), false);
+        final List<String> sourceRelatives = new LinkedList<String>();
+        sourceRelatives.add(sourceRelative);
         File file;
-        final boolean dieIfNoRefFile = VirtualSourceProviderQuery.hasVirtualSource(ext);
-        if (dieIfNoRefFile) {
-            file = new File(classFolder, sourceRelative + '.' + FileObjects.RX);
-        }
-        else {
-            file = new File(classFolder, withoutExt + '.' + FileObjects.RS);
-        }
-        boolean cont = !dieIfNoRefFile;
-        if (file.exists()) {
-            cont = false;
-            try {
-                String binaryName = FileObjects.getBinaryName(file, classFolder);
-                for (String className : readRSFile(file, classFolder)) {
-                    File f = new File (classFolder, FileObjects.convertPackage2Folder(className) + '.' + FileObjects.SIG);
-                    if (!binaryName.equals(className)) {
-                        toDelete.add(Pair.<String,String>of (className, sourceRelative));
-                        removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
-                        removedFiles.add(f);
+        if (aptFolder.exists()) {
+            file = new File(classFolder,  FileObjects.stripExtension(sourceRelative) + '.' + FileObjects.RAPT);
+            if (file.exists()) {
+                try {
+                    for (String fileName : readRSFile(file)) {
+                        File f = new File (aptFolder, fileName);
+                        if (f.exists() && FileObjects.JAVA.equals(FileObjects.getExtension(f.getName()))) {
+                            sourceRelatives.add(fileName);
+                        }
                         f.delete();
-                    } else {
-                        cont = !dieIfNoRefFile;
                     }
+                } catch (IOException ioe) {
+                    //The signature file is broken, report it but don't stop scanning
+                    Exceptions.printStackTrace(ioe);
                 }
-            } catch (IOException ioe) {
-                //The signature file is broken, report it but don't stop scanning
-                Exceptions.printStackTrace(ioe);
+                file.delete();
             }
-            file.delete();
         }
-        if (cont && (file = new File(classFolder, withoutExt + '.' + FileObjects.SIG)).exists()) {
-            String fileName = file.getName();
-            fileName = fileName.substring(0, fileName.lastIndexOf('.'));
-            final String[] patterns = new String[] {fileName + '.', fileName + '$'}; //NOI18N
-            File parent = file.getParentFile();
-            FilenameFilter filter = new FilenameFilter() {
-                public boolean accept(File dir, String name) {
-                    for (int i=0; i< patterns.length; i++) {
-                        if (name.startsWith(patterns[i])) {
-                            return true;
+        for (String relative : sourceRelatives) {
+            final String ext = FileObjects.getExtension(relative);
+            final String withoutExt = FileObjects.stripExtension(relative);
+            final boolean dieIfNoRefFile = VirtualSourceProviderQuery.hasVirtualSource(ext);
+            if (dieIfNoRefFile) {
+                file = new File(classFolder, relative + '.' + FileObjects.RX);
+            } else {
+                file = new File(classFolder, withoutExt + '.' + FileObjects.RS);
+            }
+            boolean cont = !dieIfNoRefFile;
+            if (file.exists()) {
+                cont = false;
+                try {
+                    String binaryName = FileObjects.getBinaryName(file, classFolder);
+                    for (String className : readRSFile(file)) {
+                        File f = new File(classFolder, FileObjects.convertPackage2Folder(className) + '.' + FileObjects.SIG);
+                        if (!binaryName.equals(className)) {
+                            toDelete.add(Pair.<String, String>of(className, relative));
+                            removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                            removedFiles.add(f);
+                            f.delete();
+                        } else {
+                            cont = !dieIfNoRefFile;
                         }
                     }
-                    return false;
+                } catch (IOException ioe) {
+                    //The signature file is broken, report it but don't stop scanning
+                    Exceptions.printStackTrace(ioe);
                 }
-            };
-            for (File f : parent.listFiles(filter)) {
-                String className = FileObjects.getBinaryName (f, classFolder);
-                toDelete.add(Pair.<String,String>of (className, null));
-                removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
-                removedFiles.add(f);
-                f.delete();
+                file.delete();
+            }
+            if (cont && (file = new File(classFolder, withoutExt + '.' + FileObjects.SIG)).exists()) {
+                String fileName = file.getName();
+                fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+                final String[] patterns = new String[]{fileName + '.', fileName + '$'}; //NOI18N
+                File parent = file.getParentFile();
+                FilenameFilter filter = new FilenameFilter() {
+
+                    public boolean accept(File dir, String name) {
+                        for (int i = 0; i < patterns.length; i++) {
+                            if (name.startsWith(patterns[i])) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+                };
+                for (File f : parent.listFiles(filter)) {
+                    String className = FileObjects.getBinaryName(f, classFolder);
+                    toDelete.add(Pair.<String, String>of(className, null));
+                    removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                    removedFiles.add(f);
+                    f.delete();
+                }
             }
         }
         for (Pair<String, String> pair : toDelete) {
@@ -394,7 +436,7 @@ public class JavaCustomIndexer extends CustomIndexer {
     }
 
     public static void verifySourceLevel(URL root, String sourceLevel) throws IOException {
-        if (JavaIndex.ensureAttributeValue(root, SOURCE_LEVEL_ROOT, sourceLevel)) {
+        if (!sourceLevel.equals(JavaIndex.getAttribute(root, SOURCE_LEVEL_ROOT, sourceLevel))) {
             JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
             IndexingManager.getDefault().refreshIndex(root, null);
         }
@@ -420,7 +462,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             cont = false;
             try {
                 String binaryName = FileObjects.getBinaryName(file, classFolder);
-                for (String className : readRSFile(file, classFolder)) {
+                for (String className : readRSFile(file)) {
                     if (!binaryName.equals(className)) {
                         result.add(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, className));
                     } else {
@@ -458,7 +500,33 @@ public class JavaCustomIndexer extends CustomIndexer {
         return result;
     }
 
-    private static List<String> readRSFile (final File file, final File root) throws IOException {
+    static void addAptGenerated(final Context context, JavaParsingContext javaContext, final String sourceRelative, final Set<CompileTuple> aptGenerated) throws IOException {
+        final File aptFolder = JavaIndex.getAptFolder(context.getRootURI(), false);
+        if (aptFolder.exists()) {
+            final FileObject root = FileUtil.toFileObject(aptFolder);
+            final File classFolder = JavaIndex.getClassFolder(context.getRootURI());
+            final String withoutExt = FileObjects.stripExtension(sourceRelative);
+            final SPIAccessor accessor = SPIAccessor.getInstance();
+            File file = new File(classFolder,  withoutExt + '.' + FileObjects.RAPT);
+            if (file.exists()) {
+                try {
+                    for (String fileName : readRSFile(file)) {
+                        File f = new File (aptFolder, fileName);
+                        if (f.exists() && FileObjects.JAVA.equals(FileObjects.getExtension(f.getName()))) {
+                            Indexable i = accessor.create(new FileObjectIndexable(root, fileName));
+                            InferableJavaFileObject ffo = FileObjects.fileFileObject(f, aptFolder, null, javaContext.encoding);
+                            aptGenerated.add(new CompileTuple(ffo, i));
+                        }
+                    }
+                } catch (IOException ioe) {
+                    //The signature file is broken, report it but don't stop scanning
+                    Exceptions.printStackTrace(ioe);
+                }
+            }
+        }
+    }
+
+    private static List<String> readRSFile (final File file) throws IOException {
         final List<String> binaryNames = new LinkedList<String>();
         BufferedReader in = new BufferedReader (new InputStreamReader ( new FileInputStream (file), "UTF-8")); //NOI18N
         try {

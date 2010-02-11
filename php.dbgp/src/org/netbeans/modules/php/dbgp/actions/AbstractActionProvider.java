@@ -71,7 +71,7 @@ public abstract class AbstractActionProvider extends ActionsProviderSupport {
         if ( id == null ){
             return null;
         }
-        return SessionManager.getInstance().getCurrentSession(id);
+        return SessionManager.getInstance().getSession(id);
     }
     
     protected SessionId getSessionId(){
