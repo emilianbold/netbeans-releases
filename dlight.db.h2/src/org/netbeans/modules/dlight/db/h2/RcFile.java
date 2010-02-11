@@ -198,10 +198,10 @@ final class RcFile {
 
      synchronized  void dump(PrintStream ps) {
         for(Section section : sections.values()) {
-            ps.printf("[%s]\n", section.name);
+            ps.printf("[%s]\n", section.name);// NOI18N
             for (String key : section.getKeys()) {
                 String value = section.get(key, null);
-                ps.printf("%s=%s\n", key, value);
+                ps.printf("%s=%s\n", key, value);// NOI18N
             }
         }
     }

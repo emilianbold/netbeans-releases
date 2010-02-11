@@ -108,12 +108,10 @@ public class CustomizerRootNodeProvider {
         HashSet<CustomizerNodeProvider> providers = new HashSet<CustomizerNodeProvider>();
         Lookup.Template<CustomizerNodeProvider> template = new Lookup.Template<CustomizerNodeProvider>(CustomizerNodeProvider.class);
         Lookup.Result<CustomizerNodeProvider> result = Lookup.getDefault().lookup(template);
-        Iterator iterator = result.allInstances().iterator();
+        Iterator<? extends CustomizerNodeProvider> iterator = result.allInstances().iterator();
         while (iterator.hasNext()) {
-            Object caop = iterator.next();
-            if (caop instanceof CustomizerNodeProvider) {
-                providers.add((CustomizerNodeProvider)caop);
-            }
+            CustomizerNodeProvider caop = iterator.next();
+            providers.add(caop);
         }
         return providers;
     }

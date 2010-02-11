@@ -464,6 +464,105 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
         js.runModificationTask(t);
     }
 
+    public void test156994() throws Exception {
+        EqualsHashCodeGenerator.randomNumber = 1;
+
+        FileObject java = FileUtil.createData(fo, "X.java");
+        final String what1 = "class X {\n" +
+                             "  private float f;\n" +
+                             "  private double d;\n" +
+                             "  private long l;\n" +
+                             "  private boolean b;\n" +
+                             "  private char c;\n" +
+                             "  private E e;\n";
+
+        String what2 =
+            "  public enum E {A, B;}\n}\n";
+        String what = what1 + what2;
+        GeneratorUtilsTest.writeIntoFile(java, what);
+
+        JavaSource js = JavaSource.forFileObject(java);
+        assertNotNull("Created", js);
+
+        class TaskImpl implements Task<WorkingCopy> {
+            public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree clazzTree = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                TreePath clazz = new TreePath(new TreePath(copy.getCompilationUnit()), clazzTree);
+                List<VariableElement> vars = new LinkedList<VariableElement>();
+
+                for (Tree m : clazzTree.getMembers()) {
+                    if (m.getKind() == Kind.VARIABLE) {
+                        vars.add((VariableElement) copy.getTrees().getElement(new TreePath(clazz, m)));
+                    }
+                }
+
+                EqualsHashCodeGenerator.generateEqualsAndHashCode(copy, clazz, vars, vars, -1);
+            }
+        }
+
+        TaskImpl t = new TaskImpl();
+
+        js.runModificationTask(t).commit();
+
+        String result = TestUtilities.copyFileToString(FileUtil.toFile(java));
+
+        String golden = "class X {\n" +
+                        "  private float f;\n" +
+                        "  private double d;\n" +
+                        "  private long l;\n" +
+                        "  private boolean b;\n" +
+                        "  private char c;\n" +
+                        "  private E e;\n" +
+                        "  public enum E {A, B;}\n" +
+                        "    @Override\n" +
+                        "    public int hashCode() {\n" +
+                        "        int hash = 1;\n" +
+                        "        hash = 1 * hash + Float.floatToIntBits(this.f);\n" +
+                        "        hash = 1 * hash + (int) (Double.doubleToLongBits(this.d) ^ (Double.doubleToLongBits(this.d) >>> 32));\n" +
+                        "        hash = 1 * hash + (int) (this.l ^ (this.l >>> 32));\n" +
+                        "        hash = 1 * hash + this.b ? 1 : 0;\n" +
+                        "        hash = 1 * hash + this.c;\n" +
+                        "        hash = 1 * hash + (this.e != null ? this.e.hashCode() : 0);\n" +
+                        "        return hash;\n" +
+                        "    }\n" +
+                        "    @Override\n" +
+                        "    public boolean equals(Object obj) {\n" +
+                        "        if (obj == null) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        if (getClass() != obj.getClass()) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        final X other = (X) obj;\n" +
+                        "        if (Float.floatToIntBits(this.f) != Float.floatToIntBits(other.f)) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        if (Double.doubleToLongBits(this.d) != Double.doubleToLongBits(other.d)) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        if (this.l != other.l) {\n" +
+                        "            return false;\n" +
+                        "        }" +
+                        "        if (this.b != other.b) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        if (this.c != other.c) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        if (this.e != other.e) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        return true;\n" +
+                        "    }\n" +
+                        "}\n";
+
+        result = result.replaceAll("[ \t\n]+", " ");
+        golden = golden.replaceAll("[ \t\n]+", " ");
+
+        assertEquals(golden, result);
+    }
+
     private static final class DD extends DialogDisplayer {
 
         public Object notify(NotifyDescriptor descriptor) {

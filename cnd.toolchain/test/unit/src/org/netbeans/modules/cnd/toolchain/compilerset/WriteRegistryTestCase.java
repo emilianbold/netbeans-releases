@@ -39,10 +39,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.toolchain.api;
+package org.netbeans.modules.cnd.toolchain.compilerset;
 
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainManagerImpl;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -83,18 +84,43 @@ public class WriteRegistryTestCase extends NbTestCase {
         ToolchainManagerImpl.getImpl().reinitToolchainManager();
         List<ToolchainDescriptor> restored = ToolchainManagerImpl.getImpl().getAllToolchains();
         for(int i = 0; i < original.size(); i++) {
-           assertTrue("Tool chain "+original.get(i)+" not equals "+restored.get(i), deepObjectComparing(original.get(i),restored.get(i)));
+           assertTrue("Tool chain "+original.get(i)+" not equals "+restored.get(i), deepObjectComparing(original.get(i),restored.get(i),null));
         }
     }
 
-    private boolean deepObjectComparing(Object original, Object restored){
+    private boolean deepObjectComparing(Object original, Object restored, Field container){
         if (!original.getClass().equals(restored.getClass())){
             System.out.println("Class "+original.getClass()+" not equals "+restored.getClass());
             return false;
         }
+        if (original instanceof String) {
+            if (!original.equals(restored)){
+                System.out.println("String fields "+container.getName()+" in class "+container.getDeclaringClass()+" not equal: "+original+" != "+restored);
+                return false;
+            }
+        } else if (original instanceof Boolean) {
+            if (!original.equals(restored)){
+                System.out.println("Boolean fields "+container.getName()+" in class "+container.getDeclaringClass()+" not equal: "+original+" != "+restored);
+                return false;
+            }
+        } else if (original instanceof Integer) {
+            if (!original.equals(restored)){
+                System.out.println("Integer fields "+container.getName()+" in class "+container.getDeclaringClass()+" not equal: "+original+" != "+restored);
+                return false;
+            }
+        } else if (original instanceof String[]) {
+            if (!Arrays.equals((String[])original, (String[])restored)){
+                System.out.println("String[] fields "+container.getName()+" in class "+container.getDeclaringClass()+" not equal:\n\t"+
+                        Arrays.toString((String[])original)+"\n\t"+Arrays.toString((String[])restored));
+                return false;
+            }
+        }
         Field[] fields = original.getClass().getDeclaredFields();
         for (int i = 0; i < fields.length; i++){
             try {
+                if ((fields[i].getModifiers() & (Modifier.PROTECTED | Modifier.PRIVATE | Modifier.STATIC)) != 0) {
+                    continue;
+                }
                 Object o1 = fields[i].get(original);
                 Object o2 = fields[i].get(restored);
                 if (o1 instanceof ToolchainManagerImpl.Compiler){
@@ -145,7 +171,7 @@ public class WriteRegistryTestCase extends NbTestCase {
                     Iterator i1 = ((Collection)o1).iterator();
                     Iterator i2 = ((Collection)o2).iterator();
                     while(i1.hasNext() && i2.hasNext()) {
-                        if (!deepObjectComparing(i1.next(), i2.next())){
+                        if (!deepObjectComparing(i1.next(), i2.next(), fields[i])){
                             return false;
                         }
                     }
@@ -155,7 +181,7 @@ public class WriteRegistryTestCase extends NbTestCase {
                         return false;
                     }
                 } else {
-                    if (!deepObjectComparing(o1, o2)){
+                    if (!deepObjectComparing(o1, o2, fields[i])){
                         return false;
                     }
                 }
@@ -163,6 +189,8 @@ public class WriteRegistryTestCase extends NbTestCase {
                 ex.printStackTrace();
                 return false;
             } catch (IllegalAccessException ex) {
+                ex.printStackTrace();
+                return false;
             }
         }
         return true;

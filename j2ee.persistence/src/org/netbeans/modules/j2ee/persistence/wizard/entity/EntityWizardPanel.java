@@ -137,7 +137,7 @@ public class EntityWizardPanel extends javax.swing.JPanel {
 //    }
 
     public boolean isCreatePU(){
-        return createPU;
+        return createPUCheckbox.isVisible() && createPU;
     }
 
     /** This method is called from within the constructor to

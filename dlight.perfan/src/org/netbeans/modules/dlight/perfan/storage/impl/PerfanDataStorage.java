@@ -279,7 +279,7 @@ public final class PerfanDataStorage implements PersistentDataStorage {
 
     @Override
     public void syncAddData(String tableName, List<DataRow> data) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet.");// NOI18N
     }
     
 

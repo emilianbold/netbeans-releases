@@ -60,7 +60,7 @@ import java.util.Vector;
  * </pre>
  */
 
-public class AttrValuePairs {
+public final class AttrValuePairs {
 
     private Vector<AttrValuePair> vector = new Vector<AttrValuePair>();
 
