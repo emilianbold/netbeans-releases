@@ -364,6 +364,26 @@ made subject to such option by the copyright holder.
         <issue number="178301"/>
     </change>
 
+    <change id="LazyActionRegistration">
+        <api name="DebuggerCoreAPI"/>
+        <summary>A declarative mechanism to delay creation of action provider instance until a file with specific MIME type becomes active.</summary>
+        <version major="1" minor="23"/>
+        <date day="11" month="2" year="2010"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
+        <description>
+             <p>
+             ActionsProvider.Registration annotation is enhanced with two additional
+             methods actions() and activateForMIMETypes(). Until a file with the
+             listed MIME type is selected in the IDE, the appropriate actions provider
+             is left disabled for the given list of actions, without instantiating the
+             implementation class.
+             </p>
+        </description>
+        <class package="org.netbeans.spi.debugger" name="ActionsProvider" />
+        <issue number="177561"/>
+    </change>
+
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->
