@@ -301,14 +301,14 @@ public final class CodeStyle {
 //        return preferences.getBoolean(spaceWithinParens, getDefaultAsBoolean(spaceWithinParens));
 //    }
 //
-//    public boolean spaceWithinMethodDeclParens() {
-//        return preferences.getBoolean(spaceWithinMethodDeclParens, getDefaultAsBoolean(spaceWithinMethodDeclParens));
-//    }
-//
-//    public boolean spaceWithinMethodCallParens() {
-//        return preferences.getBoolean(spaceWithinMethodCallParens, getDefaultAsBoolean(spaceWithinMethodCallParens));
-//    }
-//
+    public boolean spaceWithinMethodDeclParens() {
+        return preferences.getBoolean(spaceWithinMethodDeclParens, getDefaultAsBoolean(spaceWithinMethodDeclParens));
+    }
+
+    public boolean spaceWithinMethodCallParens() {
+        return preferences.getBoolean(spaceWithinMethodCallParens, getDefaultAsBoolean(spaceWithinMethodCallParens));
+    }
+
     public boolean spaceWithinIfParens() {
         return preferences.getBoolean(spaceWithinIfParens, getDefaultAsBoolean(spaceWithinIfParens));
     }
@@ -332,11 +332,11 @@ public final class CodeStyle {
 //    public boolean spaceWithinSynchronizedParens() {
 //        return preferences.getBoolean(spaceWithinSynchronizedParens, getDefaultAsBoolean(spaceWithinSynchronizedParens));
 //    }
-//
-//    public boolean spaceWithinTypeCastParens() {
-//        return preferences.getBoolean(spaceWithinTypeCastParens, getDefaultAsBoolean(spaceWithinTypeCastParens));
-//    }
-//
+
+    public boolean spaceWithinTypeCastParens() {
+        return preferences.getBoolean(spaceWithinTypeCastParens, getDefaultAsBoolean(spaceWithinTypeCastParens));
+    }
+
 //    public boolean spaceWithinAnnotationParens() {
 //        return preferences.getBoolean(spaceWithinAnnotationParens, getDefaultAsBoolean(spaceWithinAnnotationParens));
 //    }
@@ -372,10 +372,10 @@ public final class CodeStyle {
 //    public boolean spaceAfterColon() {
 //        return preferences.getBoolean(spaceAfterColon, getDefaultAsBoolean(spaceAfterColon));
 //    }
-//
-//    public boolean spaceAfterTypeCast() {
-//        return preferences.getBoolean(spaceAfterTypeCast, getDefaultAsBoolean(spaceAfterTypeCast));
-//    }
+
+    public boolean spaceAfterTypeCast() {
+        return preferences.getBoolean(spaceAfterTypeCast, getDefaultAsBoolean(spaceAfterTypeCast));
+    }
 
     
     private static class Producer implements FmtOptions.CodeStyleProducer {

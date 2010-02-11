@@ -1,7 +1,7 @@
 <?php
 
 class Example {
-    
+
     public function ifExample ($a, $b) {
         if (convert($a) > $b) {
             echo "a is bigger than b";
@@ -21,7 +21,7 @@ public function forExample() {
 public function foreachEample() {
 $arr = array(1, 2, 3, 4);
 foreach ($arr as &$value) {
-    $value = (int)$value * 2;
+    $value = $value * 2;
 }
 }
 
@@ -57,4 +57,6 @@ public function tryExample() {
 
 }
 }
+
+$value=new Example("name");
 ?>
