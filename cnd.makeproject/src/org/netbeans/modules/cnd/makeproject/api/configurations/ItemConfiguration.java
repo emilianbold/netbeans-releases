@@ -286,7 +286,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 
     // interface ProfileAuxObject
     @Override
-    public void clearChanged() {
+    public final void clearChanged() {
         needSave = false;
     }
 

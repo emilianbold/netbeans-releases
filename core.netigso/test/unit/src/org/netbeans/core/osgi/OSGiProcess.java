@@ -39,19 +39,24 @@
 package org.netbeans.core.osgi;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.jar.JarFile;
 import static junit.framework.Assert.*;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.resources.FileResource;
 import org.netbeans.SetupHid;
 import org.netbeans.nbbuild.MakeOSGi;
+import org.openide.modules.Dependency;
 import org.openide.util.test.TestFileUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
@@ -60,10 +65,16 @@ import org.osgi.framework.launch.FrameworkFactory;
 
 class OSGiProcess {
 
+    private static final File platformDir = new File(System.getProperty("platform.dir"));
+    static {
+        assertTrue(platformDir.toString(), platformDir.isDirectory());
+    }
+
     private final File workDir;
-    private final Map<String, String> sources = new HashMap<String, String>();
+    private final Map<String,String> sources = new HashMap<String,String>();
     private String manifest;
     private int backwards = 1;
+    private Set<String> modules = new HashSet<String>();
 
     public OSGiProcess(File workDir) {
         this.workDir = workDir;
@@ -85,9 +96,32 @@ class OSGiProcess {
         return this;
     }
 
+    /**
+     * Include an extra module in the runtime beyond the minimum.
+     * Transitive declared dependencies are included too.
+     * Will also be present in compile classpath for {@link #sourceFile}.
+     */
+    public OSGiProcess module(String cnb) throws IOException {
+        if (modules.add(cnb)) {
+            JarFile jar = new JarFile(new File(platformDir, "modules/" + cnb.replace('.', '-') + ".jar"));
+            try {
+                String deps = jar.getManifest().getMainAttributes().getValue("OpenIDE-Module-Module-Dependencies");
+                if (deps != null) {
+                    for (Dependency dep : Dependency.create(Dependency.TYPE_MODULE, deps)) {
+                        String cnb2 = dep.getName().replaceFirst("/\\d+$", "");
+                        if (new File(platformDir, "modules/" + cnb2.replace('.', '-') + ".jar").isFile()) {
+                            module(cnb2);
+                        }
+                    }
+                }
+            } finally {
+                jar.close();
+            }
+        }
+        return this;
+    }
+
     public void run() throws Exception {
-        File platformDir = new File(System.getProperty("platform.dir"));
-        assertTrue(platformDir.toString(), platformDir.isDirectory());
         MakeOSGi makeosgi = new MakeOSGi();
         Project antprj = new Project();
         /* XXX does not work, why?
@@ -104,10 +138,13 @@ class OSGiProcess {
         fs.createInclude().setName("core/*.jar");
         fs.createInclude().setName("modules/org-netbeans-core-netigso.jar");
         fs.createInclude().setName("modules/org-netbeans-libs-osgi.jar");
+        for (String module : modules) {
+            fs.createInclude().setName("modules/" + module.replace('.', '-') + ".jar");
+        }
         makeosgi.add(fs);
         File extra = new File(workDir, "extra");
         File srcdir = new File(workDir, "custom");
-        for (Map.Entry<String, String> entry : sources.entrySet()) {
+        for (Map.Entry<String,String> entry : sources.entrySet()) {
             TestFileUtils.writeFile(new File(srcdir, entry.getKey()), entry.getValue());
         }
         if (manifest != null) {
@@ -119,6 +156,9 @@ class OSGiProcess {
                 cp.add(new File(entry));
             }
         }
+        for (String module : modules) {
+            cp.add(new File(platformDir, "modules/" + module.replace('.', '-') + ".jar"));
+        }
         SetupHid.createTestJAR(workDir, extra, "custom", null, cp.toArray(new File[cp.size()]));
         makeosgi.add(new FileResource(extra, "custom.jar"));
         File bundles = new File(workDir, "bundles");
@@ -128,7 +168,7 @@ class OSGiProcess {
         /* Would need to introspect manifestContents above:
         assertTrue(new File(bundles, "custom-1.0.0.jar").isFile());
          */
-        Map<String, Object> config = new HashMap<String, Object>();
+        Map<String,Object> config = new HashMap<String,Object>();
         File cache = new File(workDir, "cache");
         config.put(Constants.FRAMEWORK_STORAGE, cache.toString());
         Framework f = ServiceLoader.load(FrameworkFactory.class).iterator().next().newFramework(config);

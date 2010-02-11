@@ -48,11 +48,10 @@ import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public class CCompilerConfiguration extends CCCCompilerConfiguration implements AllOptionsProvider, ConfigurationBase  {
+public class CCompilerConfiguration extends CCCCompilerConfiguration {
     // Constructors
     public CCompilerConfiguration(String baseDir, CCompilerConfiguration master) {
         super(baseDir, master);
@@ -143,14 +142,14 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         }
         options += compiler.getWarningLevelOptions(getWarningLevel().getValue()) + " "; // NOI18N
         options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
-        options += getPreprocessorOptions();
+        options += getPreprocessorOptions(compiler.getCompilerSet());
         options += getIncludeDirectoriesOptions(compiler.getCompilerSet());
         return CppUtils.reformatWhitespaces(options);
     }
     
-    public String getPreprocessorOptions() {
+    public String getPreprocessorOptions(CompilerSet cs) {
         CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
-        OptionToString visitor = new OptionToString(null, getUserMacroFlag());
+        OptionToString visitor = new OptionToString(null, getUserMacroFlag(cs));
         StringBuilder options = new StringBuilder(getPreprocessorConfiguration().toString(visitor));
         options.append(' '); // NOI18N
         while (master != null && getInheritPreprocessor().getValue()) {
@@ -167,7 +166,8 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     
     public String getIncludeDirectoriesOptions(CompilerSet cs) {
         CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
-        OptionToString visitor = new OptionToString(cs, getUserIncludeFlag());
+        cs.getCompilerFlavor().getToolchainDescriptor().getC().getUserIncludeFlag();
+        OptionToString visitor = new OptionToString(cs, getUserIncludeFlag(cs));
         StringBuilder options = new StringBuilder(getIncludeDirectories().toString(visitor));
         options.append(' '); // NOI18N
         while (master != null && getInheritIncludes().getValue()) {
@@ -183,26 +183,13 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     } 
 
     @Override
-    protected CompilerDescriptor getCompilerDescription(){
-        return null;
-    }
-    
-    @Override
-    protected String getUserIncludeFlag(){
-        // TODO get from compiler descriptor.
-        if (false) {
-            return getCompilerDescription().getUserIncludeFlag();
-        }
-        return "-I"; // NOI18N
+    protected String getUserIncludeFlag(CompilerSet cs){
+        return cs.getCompilerFlavor().getToolchainDescriptor().getC().getUserIncludeFlag();
     }
 
     @Override
-    protected String getUserMacroFlag(){
-        // TODO get from compiler descriptor.
-        if (false) {
-            return getCompilerDescription().getUserMacroFlag();
-        }
-        return "-D"; // NOI18N
+    protected String getUserMacroFlag(CompilerSet cs){
+        return cs.getCompilerFlavor().getToolchainDescriptor().getC().getUserMacroFlag();
     }
 
     // Sheet

@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public abstract class BasicCompilerConfiguration {
+public abstract class BasicCompilerConfiguration implements AllOptionsProvider, ConfigurationBase {
 
     private String baseDir;
     private BasicCompilerConfiguration master;
@@ -128,6 +128,7 @@ public abstract class BasicCompilerConfiguration {
         getTool().setMaster(compilerConfiguration.getTool());
     }
 
+    @Override
     public boolean getModified() {
         return developmentMode.getModified() ||
                 mpLevel.getModified() ||
@@ -293,7 +294,7 @@ public abstract class BasicCompilerConfiguration {
     }
 
     // Assigning & Cloning
-    public void assign(BasicCompilerConfiguration conf) {
+    protected void assign(BasicCompilerConfiguration conf) {
         setBaseDir(conf.getBaseDir());
         getDevelopmentMode().assign(conf.getDevelopmentMode());
         getWarningLevel().assign(conf.getWarningLevel());
@@ -305,19 +306,8 @@ public abstract class BasicCompilerConfiguration {
         getCommandLineConfiguration().assign(conf.getCommandLineConfiguration());
     }
 
-//    public Object clone() {
-//	BasicCompilerConfiguration clone = new BasicCompilerConfiguration(getBaseDir(), getMaster());
-//	clone.setDevelopmentMode((IntConfiguration)getDevelopmentMode().clone());
-//	clone.setWarningLevel((IntConfiguration)getWarningLevel().clone());
-//	clone.setSixtyfourBits((IntConfiguration)getSixtyfourBits().clone());
-//	clone.setStrip((BooleanConfiguration)getStrip().clone());
-//	clone.setAdditionalDependencies((StringConfiguration)getAdditionalDependencies().clone());
-//	clone.setTool((StringConfiguration)getTool().clone());
-//	clone.setCommandLineConfiguration((OptionsConfiguration)getCommandLineConfiguration().clone());
-//	return clone;
-//    }
     // Sheets
-    public Sheet.Set getBasicSet() {
+    protected Sheet.Set getBasicSet() {
         Sheet.Set set = new Sheet.Set();
         set.setName("BasicOptions"); // NOI18N
         set.setDisplayName(getString("BasicOptionsTxt"));
@@ -329,7 +319,7 @@ public abstract class BasicCompilerConfiguration {
         return set;
     }
 
-    public Sheet.Set getInputSet() {
+    protected Sheet.Set getInputSet() {
         Sheet.Set set = new Sheet.Set();
         set.setName("Input"); // NOI18N
         set.setDisplayName(getString("InputTxt"));
