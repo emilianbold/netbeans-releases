@@ -1,3 +1,2 @@
 References in file quote_nosyshdr/quote.cc
-[5716-5716] Cpu <b>MyCpu</b>(type, 0, amount); // Create CPU module object
 [5797-5797] MySystem.AddModule(&amp;<b>MyCpu</b>); // Add CPU Module to system specification
