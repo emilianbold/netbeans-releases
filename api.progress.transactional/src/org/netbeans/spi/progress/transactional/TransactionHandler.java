@@ -62,6 +62,7 @@ import org.netbeans.spi.progress.transactional.TransactionUI.ReplanningTransacti
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 /**
  * Class which can be implemented in the default lookup, and handles creating
@@ -140,8 +141,14 @@ import org.openide.util.Parameters;
 public abstract class TransactionHandler<T extends TransactionUI> {
     protected static final Logger LOGGER = Logger.getLogger(TransactionHandler.class.getName());
     private final Class<T> uiType;
+    protected final RequestProcessor threadPool;
     protected TransactionHandler(Class<T> uiType) {
+        this (uiType, null);
+    }
+
+    protected TransactionHandler(Class<T> uiType, RequestProcessor threadPool) {
         this.uiType = uiType;
+        this.threadPool = threadPool == null ? RequestProcessor.getDefault() : threadPool;
     }
 
     static {
@@ -200,6 +207,20 @@ public abstract class TransactionHandler<T extends TransactionUI> {
         }
         return null;
     }
+
+    /**
+     * Create a copy of this TransactionHandler which uses a specific thread
+     * pool, in order to throttle throughput or adjust thread priority.
+     * <p/>
+     * Note that if you pass a single-thread thread pool, Transactions
+     * created from Transaction.createParallel() may run sequentially rather
+     * than in parallel.  A minimum of two threads is recommended.
+     *
+     * @param p A thread pool
+     * @return A new TransactionHandler similar to this one, but which uses
+     * the passed thread pool for creating new threads.
+     */
+    protected abstract TransactionHandler copyWithThreadPool (RequestProcessor p);
 
     /**
      * Create an object for controlling the user interface.  Not that the UI
@@ -448,6 +469,11 @@ public abstract class TransactionHandler<T extends TransactionUI> {
             };
             return exe.submit(c);
         }
+
+        @Override
+        protected TransactionHandler copyWithThreadPool(RequestProcessor p) {
+            return this;
+        }
     }
 
     /**
@@ -525,20 +551,32 @@ public abstract class TransactionHandler<T extends TransactionUI> {
     private static final class TransactionHandlerAccessorImpl extends TransactionHandlerAccessor {
 
         @Override
-        public <ArgType, ReturnType> Future<ReturnType> launch(TransactionManager<? extends Transaction<ArgType, ReturnType>, ArgType, ReturnType> transaction, ArgType argument, FailureHandler failHandler, String name, UIMode uiMode, boolean canCancel) {
-            return TransactionHandler.getDefault().start(transaction, argument,
+        public <ArgType, ReturnType> Future<ReturnType> launch(TransactionManager<? extends Transaction<ArgType, ReturnType>, ArgType, ReturnType> transaction, ArgType argument, FailureHandler failHandler, String name, UIMode uiMode, boolean canCancel, RequestProcessor threadPool) {
+            TransactionHandler th = TransactionHandler.getDefault();
+            if (threadPool != null) {
+                th = th.copyWithThreadPool(threadPool);
+            }
+            return th.start(transaction, argument,
                     failHandler == null ? FailureHandler.getDefault() : failHandler,
                     name, uiMode, canCancel);
         }
 
         @Override
-        public <ArgType, ReturnType> Future<Boolean> rollback(TransactionManager<? extends Transaction<ArgType, ReturnType>, ArgType, ReturnType> transaction, FailureHandler failHandler, String name, UIMode uiMode) {
-            return TransactionHandler.getDefault().rollback(transaction, failHandler, name, uiMode);
+        public <ArgType, ReturnType> Future<Boolean> rollback(TransactionManager<? extends Transaction<ArgType, ReturnType>, ArgType, ReturnType> transaction, FailureHandler failHandler, String name, UIMode uiMode, RequestProcessor threadPool) {
+            TransactionHandler th = TransactionHandler.getDefault();
+            if (threadPool != null) {
+                th = th.copyWithThreadPool(threadPool);
+            }
+            return th.rollback(transaction, failHandler, name, uiMode);
         }
 
         @Override
-        public <ArgType, ResultType> Future<ResultType> start(TransactionRunner<ArgType, ResultType> runner, TransactionController controller, ArgType argument, UIMode mode) {
-            return TransactionHandler.getDefault().start(runner, controller, argument, uiFor(controller).getMode());
+        public <ArgType, ResultType> Future<ResultType> start(TransactionRunner<ArgType, ResultType> runner, TransactionController controller, ArgType argument, UIMode mode, RequestProcessor threadPool) {
+            TransactionHandler th = TransactionHandler.getDefault();
+            if (threadPool != null) {
+                th = th.copyWithThreadPool(threadPool);
+            }
+            return th.start(runner, controller, argument, uiFor(controller).getMode());
         }
 
         @Override
