@@ -83,6 +83,7 @@ import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.KenaiSearchPanel.KenaiProjectSearchInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
@@ -507,6 +508,9 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_localFolderTextFieldKeyTyped
 
     private void kenaiComboActionPerformed(ActionEvent evt) {//GEN-FIRST:event_kenaiComboActionPerformed
+        if (!(kenaiCombo.getSelectedItem() instanceof Kenai)) {
+            new AddInstanceAction().actionPerformed(evt);
+        }
         kenai = (Kenai) kenaiCombo.getModel().getSelectedItem();
         kenaiRepoComboBox.setModel(new KenaiRepositoriesComboModel());
         refreshUsername();
