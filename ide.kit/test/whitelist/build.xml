@@ -55,6 +55,11 @@ made subject to such option by the copyright holder.
         <os family="windows"/>
     </condition>
     <property name="allowed.violations" value="0"/>
+    <property name="debug.pause" value="y"/>
+    <condition property="debug.args" value="-Xdebug -Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=y,address=${debug.port}">
+        <isset property="debug.port"/>
+    </condition>
+    <property name="debug.args" value=""/>
 
     <target name="help">
         <echo>
@@ -141,7 +146,7 @@ made subject to such option by the copyright holder.
             <arg value="test-qa-functional"/>
             <arg value="-Dtest.includes=**/WhitelistTest.class"/>
             <arg value="-Dpermit.jdk6.builds=true"/>
-            <arg value="-Dtest.run.args=-ea -XX:PermSize=64m -XX:MaxPermSize=400m -Xmx512m -Xverify:none -Dtest.whitelist.stage=1 -Dorg.netbeans.core.TimeableEventQueue.quantum=60000"/>
+            <arg value="-Dtest.run.args=-ea -XX:PermSize=64m -XX:MaxPermSize=400m -Xmx512m -Xverify:none -Dtest.whitelist.stage=1 -Dorg.netbeans.core.TimeableEventQueue.quantum=60000 ${debug.args}"/>
             <arg value="-Dtest-qa-functional-sys-prop.allowed.violations=${allowed.violations}"/>
         </exec>
     </target>
@@ -156,7 +161,7 @@ made subject to such option by the copyright holder.
             <arg value="test-qa-functional"/>
             <arg value="-Dtest.includes=**/WhitelistTest.class"/>
             <arg value="-Dpermit.jdk6.builds=true"/>
-            <arg value="-Dtest.run.args=-ea -XX:PermSize=64m -XX:MaxPermSize=400m -Xmx512m -Xverify:none -Dtest.whitelist.stage=2 -Dorg.netbeans.core.TimeableEventQueue.quantum=60000"/>
+            <arg value="-Dtest.run.args=-ea -XX:PermSize=64m -XX:MaxPermSize=400m -Xmx512m -Xverify:none -Dtest.whitelist.stage=2 -Dorg.netbeans.core.TimeableEventQueue.quantum=60000 ${debug.args}"/>
             <arg value="-Dtest-qa-functional-sys-prop.allowed.violations=${allowed.violations}"/>
         </exec>
     </target>
@@ -171,7 +176,7 @@ made subject to such option by the copyright holder.
             <arg value="test-qa-functional"/>
             <arg value="-Dtest.includes=**/WhitelistTest.class"/>
             <arg value="-Dpermit.jdk6.builds=true"/>
-            <arg value="-Dtest.run.args=-ea -XX:PermSize=64m -XX:MaxPermSize=400m -Xmx512m -Xverify:none -Dtest.whitelist.stage=3 -Dorg.netbeans.core.TimeableEventQueue.quantum=60000"/>
+            <arg value="-Dtest.run.args=-ea -XX:PermSize=64m -XX:MaxPermSize=400m -Xmx512m -Xverify:none -Dtest.whitelist.stage=3 -Dorg.netbeans.core.TimeableEventQueue.quantum=60000 ${debug.args}"/>
             <arg value="-Dtest-qa-functional-sys-prop.allowed.violations=${allowed.violations}"/>
         </exec>
     </target>

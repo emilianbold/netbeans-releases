@@ -52,8 +52,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmModel;
@@ -129,7 +129,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         shutdownModel();
     }
 
-    private final void shutdownModel() {
+    private void shutdownModel() {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
         waitModelTasks(model);
         model.shutdown();
@@ -170,37 +170,37 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         return new File(path+File.separator+"configure");
     }
 
-    public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers){
+    public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers, final String subFolder){
         Map<String, String> tools = findTools();
-        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        CompilerSet def = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
         if (useSunCompilers) {
-            if (def != null && def.isGnuCompiler()) {
-                for(CompilerSet set : CompilerSetManager.getDefault().getCompilerSets()){
-                    if (set.isSunCompiler()) {
-                        CompilerSetManager.getDefault().setDefault(set);
+            if (def != null && def.getCompilerFlavor().isGnuCompiler()) {
+                for(CompilerSet set : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()){
+                    if (set.getCompilerFlavor().isSunStudioCompiler()) {
+                        CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
                         break;
                     }
                 }
             }
         } else {
-            if (def != null && def.isSunCompiler()) {
-                for(CompilerSet set : CompilerSetManager.getDefault().getCompilerSets()){
-                    if (set.isGnuCompiler()) {
-                        CompilerSetManager.getDefault().setDefault(set);
+            if (def != null && def.getCompilerFlavor().isSunStudioCompiler()) {
+                for(CompilerSet set : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()){
+                    if (set.getCompilerFlavor().isGnuCompiler()) {
+                        CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
                         break;
                     }
                 }
             }
         }
-        def = CompilerSetManager.getDefault().getDefaultCompilerSet();
-        final boolean isSUN = def != null ? def.isSunCompiler() : false;
+        def = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
+        final boolean isSUN = def != null ? def.getCompilerFlavor().isSunStudioCompiler() : false;
         if (tools == null) {
             assertTrue("Please install required tools.", false);
             System.err.println("Test did not run because required tools do not found");
             return;
         }
         try {
-            final String path = download(URL, additionalScripts, tools);
+            final String path = download(URL, additionalScripts, tools)+subFolder;
 
             final File configure = detectConfigure(path);
             final File makeFile = new File(path+File.separator+"Makefile");
@@ -209,6 +209,11 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                     assertTrue("Cannot find configure or Makefile in folder "+path, false);
                 }
             }
+            if (Utilities.isWindows()){
+                // cygwin does not allow test discovery in real time, so disable tests on windows
+                return;
+            }
+
             WizardDescriptor wizard = new WizardDescriptor() {
                 @Override
                 public synchronized Object getProperty(String name) {
@@ -225,7 +230,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                             return configure.getAbsolutePath();
                         }
                     } else if ("realFlags".equals(name)) {
-                        if (path.indexOf("cmake-")>0) {
+                        if (path.indexOf("cmake-")>0 && subFolder.isEmpty()) {
                             if (isSUN) {
                                 return "CMAKE_C_COMPILER=cc CMAKE_CXX_COMPILER=CC CFLAGS=-g CXXFLAGS=-g CMAKE_BUILD_TYPE=Debug CMAKE_CXX_FLAGS_DEBUG=-g CMAKE_C_FLAGS_DEBUG=-g";
                             } else {
@@ -252,9 +257,9 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                                         return "-spec macx-g++ QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
                                     } else {
                                         if (Utilities.isWindows()) {
-                                            for (CompilerSet set : CompilerSetManager.getDefault().getCompilerSets()){
+                                            for (CompilerSet set : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()){
                                                 if (set.getCompilerFlavor().getToolchainDescriptor().getName().startsWith("MinGW")) {
-                                                    CompilerSetManager.getDefault().setDefault(set);
+                                                    CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
                                                     break;
                                                 }
                                             }
@@ -293,6 +298,8 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                 }
                 i++;
             }
+            assertEquals("Failed configure", ImportProject.State.Successful, importer.getState().get(ImportProject.Step.Configure));
+            assertEquals("Failed build", ImportProject.State.Successful, importer.getState().get(ImportProject.Step.Make));
             CsmModel model = CsmModelAccessor.getModel();
             Project makeProject = importer.getProject();
             assertTrue("Not found model", model != null);

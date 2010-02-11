@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -73,6 +73,21 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="ap-query">
+            <api name="classpath"/>
+            <summary>Introducing AnnotationProcessingQuery</summary>
+            <version major="1" minor="25"/>
+            <date day="27" month="1" year="2010"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes" modification="no" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>Adding AnnotationProcessingQuery return annotation processing options for a given file/folder.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.queries" name="AnnotationProcessingQuery" />
+            <class package="org.netbeans.spi.java.queries" name="AnnotationProcessingQueryImplementation" />
+            <issue number="179749"/>
+        </change>
         <change id="java-classpath-processorpath">
             <api name="classpath"/>
             <summary>Introducing JavaClassPathConstants.PROCESSOR_PATH</summary>

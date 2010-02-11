@@ -79,6 +79,7 @@
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>ext/derby-10.2.2.0.jar</runtime-relative-path>
+                <binary-origin>external/derby-10.2.2.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

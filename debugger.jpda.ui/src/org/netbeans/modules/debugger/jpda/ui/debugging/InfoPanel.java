@@ -51,9 +51,9 @@ import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -105,7 +105,7 @@ public class InfoPanel extends javax.swing.JPanel {
 
     private JButton arrowButton;
     private JPopupMenu arrowMenu;
-    private Map<JPDAThread, JMenuItem> threadToMenuItem = new HashMap<JPDAThread, JMenuItem>();
+    private Map<JPDAThread, JMenuItem> threadToMenuItem = new WeakHashMap<JPDAThread, JMenuItem>();
     private JPDAThread debuggerDeadlockThread;
     private WeakReference<JPDADebugger> stepBrkpDebuggerRef;
     private DebuggingView debuggingView;

@@ -593,6 +593,10 @@ final class ModuleListParser {
                         String res = expr.evaluate(doc);
                         File jar = new File(cluster, res.replace('/', File.separatorChar));
                         if (!jar.isFile()) {
+                            if (cluster.getName().equals("ergonomics")) {
+                                // this is normal
+                                continue;
+                            }
                             throw new BuildException("Cannot find module " + jar + " from " + xml);
                         }
                         scanOneBinary(jar, cluster, entries, moduleAutoDepsDir);

@@ -119,6 +119,11 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         super.tearDown();
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     /**
      * Gets execution environment this test was created with.
      * @return

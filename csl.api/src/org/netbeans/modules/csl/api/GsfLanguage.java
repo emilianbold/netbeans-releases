@@ -45,6 +45,7 @@ import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 
 
 /**
@@ -121,6 +122,7 @@ public interface GsfLanguage {
      * <b>no</b> source classpath.
      *
      * @return The set of source classpath IDs, can be empty or even <code>null</code>.
+     * @deprecated Use {@link PathRecognizerRegistration} instead.
      */
     Set<String> getSourcePathIds();
 
@@ -131,6 +133,7 @@ public interface GsfLanguage {
      *
      * @return The set of library classpath IDs, can be empty or even <code>null</code>.
      *   Please see {@link #getSourcePathIds()} for the exact meaning of those values.
+     * @deprecated Use {@link PathRecognizerRegistration} instead.
      */
     Set<String> getLibraryPathIds();
 
@@ -145,6 +148,7 @@ public interface GsfLanguage {
      *
      * @return The set of binary library classpath IDs, can be empty or even <code>null</code>.
      *   Please see {@link #getLibraryPathIds()} for the exact meaning of those values.
+     * @deprecated Use {@link PathRecognizerRegistration} instead.
      */
     Set<String> getBinaryLibraryPathIds();
 }

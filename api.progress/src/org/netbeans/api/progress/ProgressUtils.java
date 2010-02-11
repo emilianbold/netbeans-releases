@@ -39,9 +39,14 @@
 
 package org.netbeans.api.progress;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider;
+import org.netbeans.modules.progress.spi.RunOffEDTProvider.Progress;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -95,9 +100,136 @@ public final class ProgressUtils {
      * @param waitForCanceled true if method should wait until canceled task is finished (if it is not finished in 1s ISE is thrown)
      * @param waitCursorAfter time in ms after which wait cursor is shown
      * @param dialogAfter time in ms after which dialog with "Cancel" button is shown
+     * @since 1.19
      */
     public static void runOffEventDispatchThread(Runnable operation, String operationDescr, AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorAfter, int dialogAfter) {
         PROVIDER.runOffEventDispatchThread(operation, operationDescr, cancelOperation, waitForCanceled, waitCursorAfter, dialogAfter);
+    }
+
+    /**
+     * Show a modal progress dialog that blocks the main window, while running
+     * the passed runnable on a background thread.
+     * <p/>
+     * This method is thread-safe, and will block until the operation has
+     * completed, regardless of what thread calls this method.
+     * <p/>
+     * Unless you are being passed the runnable or progress handle from foreign
+     * code (such as in WizardDescriptor.progressInstantiatingIterator), it
+     * is usually simpler to use the version of this method that takes a
+     * <code>ProgressCallable</code>.
+     *
+     * @param operation A runnable to run in the background
+     * @param progress A progress handle to create a progress bar for
+     * @param includeDetailLabel True if the caller will use
+     * ProgressHandle.progress (String, int), false if not.  If true, the
+     * created dialog will include a label that shows progress details.
+     * @since 1.19
+     */
+    public static void showProgressDialogAndRun(Runnable operation, ProgressHandle progress, boolean includeDetailLabel) {
+        if (PROVIDER instanceof Progress) {
+            Progress p = (Progress) PROVIDER;
+            p.showProgressDialogAndRun(operation, progress, includeDetailLabel);
+        } else {
+            PROVIDER.runOffEventDispatchThread(operation, progress.getDisplayName(), new AtomicBoolean(false), false, 0, 0);
+        }
+    }
+
+    /**
+     * Show a modal progress dialog that blocks the main window, while running
+     * the passed runnable on a background thread.
+     * <p/>
+     * This method is thread-safe, and will block until the operation has
+     * completed, regardless of what thread calls this method.
+     *
+     * @param <T> The result type - use Void if no return type needed
+     * @param operation A runnable-like object which performs work in the
+     * background, and is passed a ProgressHandle to update progress
+     * @param displayName The display name for this operation
+     * @param includeDetailLabel If true, include a lable to show progress
+     * details (needed only if you plan to call ProgressHandle.setProgress(String, int)
+     * @return The result of the operation.
+     * @since 1.19
+     */
+    public static <T> T showProgressDialogAndRun(final ProgressRunnable<T> operation, final String displayName, boolean includeDetailLabel) {
+        if (PROVIDER instanceof Progress) {
+            Progress p = (Progress) PROVIDER;
+            return p.showProgressDialogAndRun(operation, displayName, includeDetailLabel);
+        } else {
+            final AtomicReference<T> ref = new AtomicReference<T>();
+            PROVIDER.runOffEventDispatchThread(new Runnable() {
+                @Override
+                public void run() {
+                    ProgressHandle handle = ProgressHandleFactory.createHandle(displayName);
+                    handle.start();
+                    handle.switchToIndeterminate();
+                    try {
+                        ref.set(operation.run(handle));
+                    } finally {
+                        handle.finish();
+                    }
+                }
+            }, displayName, new AtomicBoolean(false), true, 0, 0);
+            return ref.get();
+        }
+    }
+
+
+
+    /**
+     * Show a modal progress dialog that blocks the main window, while running
+     * the passed runnable on a background thread with an indeterminate-state
+     * progress bar.
+     * <p/>
+     * This method is thread-safe, and will block until the operation has
+     * completed, regardless of what thread calls this method.
+     * .
+     * @param operation A runnable to run
+     * @param displayName The display name of the operation, to show in the dialog
+     * @since 1.19
+     */
+    public static void showProgressDialogAndRun(Runnable operation, String displayName) {
+        showProgressDialogAndRun(new RunnableWrapper(operation), displayName, false);
+    }
+
+    /**
+     * Show a modal progress dialog that blocks the main window while running
+     * a background process.  This call should block until the work is
+     * started, and then return a task which can be monitored for completion
+     * or cancellation.  This method will not block while the work is run,
+     * only until the progress UI is initialized.
+     *
+     * @param operation
+     * @param handle
+     * @param includeDetailLabel
+     * @return
+     */
+    public static <T> Future<T> showProgressDialogAndRunLater (final ProgressRunnable<T> operation, final ProgressHandle handle, boolean includeDetailLabel) {
+        if (PROVIDER instanceof Progress) {
+            Progress p = (Progress) PROVIDER;
+            return p.showProgressDialogAndRunLater(operation, handle, includeDetailLabel);
+        } else {
+            FutureTask<T> result = new FutureTask<T>(new Callable<T>() {
+                @Override
+                public T call() throws Exception {
+                    return operation.run(handle);
+                }
+            });
+            PROVIDER.runOffEventDispatchThread(result, handle.getDisplayName(), new AtomicBoolean(false), true, 0, 0);
+            return result;
+        }
+    }
+
+    private static final class RunnableWrapper implements ProgressRunnable<Void> {
+        private final Runnable toRun;
+        RunnableWrapper(Runnable toRun) {
+            this.toRun = toRun;
+        }
+
+        @Override
+        public Void run(ProgressHandle handle) {
+            toRun.run();
+            return null;
+        }
     }
 
     private static class Trivial implements RunOffEDTProvider {

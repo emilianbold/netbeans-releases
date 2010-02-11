@@ -274,35 +274,19 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
 
 
      private void fillSubMenu(JMenu menuItem, Project project) {
-        menuItem.removeAll();
+         menuItem.removeAll();
 
-        ActionListener menuListener = new PopupListener();
-        
-        // check the action context for recommmended/privileged templates..
-        PrivilegedTemplates privs = getLookup().lookup(PrivilegedTemplates.class);
-        List lruList = OpenProjectList.getDefault().getTemplatesLRU( project, privs );
-        boolean itemAdded = false;
-        for( Iterator it = lruList.iterator(); it.hasNext(); ) {
-            DataObject template = (DataObject)it.next();
-
-            Node delegate = template.getNodeDelegate();
-            JMenuItem item = new JMenuItem(
-                MessageFormat.format( TEMPLATE_NAME_FORMAT, new Object[] { delegate.getDisplayName() } ),
-                new ImageIcon( delegate.getIcon( BeanInfo.ICON_COLOR_16x16 ) ) );
-            item.addActionListener( menuListener );
-            item.putClientProperty( TEMPLATE_PROPERTY, template );
-            menuItem.add( item );
-            itemAdded = true;
-        }
-        if (itemAdded) {
-            menuItem.add( new Separator() );
-        }
-        JMenuItem fileItem = new JMenuItem( FILE_POPUP_NAME, (Icon)getValue( Action.SMALL_ICON ) );
-        fileItem.addActionListener( menuListener );
-        fileItem.putClientProperty( TEMPLATE_PROPERTY, null );
-        menuItem.add( fileItem );
+         ActionListener menuListener = new PopupListener();
+         MessageFormat mf = new MessageFormat(TEMPLATE_NAME_FORMAT);
+         boolean itemAdded = OpenProjectList.prepareTemplates(menuItem, menuListener, mf, TEMPLATE_PROPERTY, project, getLookup());
+         if (itemAdded) {
+             menuItem.add( new Separator() );
+         }
+         JMenuItem fileItem = new JMenuItem( FILE_POPUP_NAME, (Icon)getValue( Action.SMALL_ICON ) );
+         fileItem.addActionListener( menuListener );
+         fileItem.putClientProperty( TEMPLATE_PROPERTY, null );
+         menuItem.add( fileItem );
     }
-
 
     private void fillNonProjectSubMenu(JMenu menuItem) {
         menuItem.removeAll();

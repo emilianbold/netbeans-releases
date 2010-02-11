@@ -85,6 +85,7 @@ public class ComboBoxWithTree extends JComboBox {
     private void initCombo() {
         setEditable(true);
         addPopupMenuListener(new PopupMenuListener() {
+            @Override
             public void popupMenuCanceled(PopupMenuEvent e) {
                 if (issue112997Hack) {
                     setPopupVisible(true);
@@ -93,6 +94,7 @@ public class ComboBoxWithTree extends JComboBox {
                 getPopup().setVisible(false);
             }
 
+            @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
                 if (issue112997Hack) {
                     issue112997Hack = false;
@@ -102,6 +104,7 @@ public class ComboBoxWithTree extends JComboBox {
                 getPopup().setVisible(false);
             }
 
+            @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                 updateTreeSelection();
                 Dimension dim = getSize();
@@ -166,6 +169,7 @@ public class ComboBoxWithTree extends JComboBox {
             }
         });
         tree.addTreeSelectionListener(new TreeSelectionListener() {
+            @Override
             public void valueChanged(TreeSelectionEvent e) {
                 String value = converter.pathToString(e.getPath());
                 setSelectedItem(value);
@@ -212,6 +216,7 @@ public class ComboBoxWithTree extends JComboBox {
         } else {
             tree.setSelectionPath(path);
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     tree.scrollPathToVisible(path);
                 }

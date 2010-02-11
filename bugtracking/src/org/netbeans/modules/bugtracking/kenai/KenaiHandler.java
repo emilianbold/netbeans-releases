@@ -348,7 +348,19 @@ public class KenaiHandler implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
-                qaImpl.fireQueriesChanged(ph, getQueryHandles(repo, ph));
+                List<QueryHandle> queryHandles = getQueryHandles(repo, ph);
+                for (QueryHandle queryHandle : queryHandles) {
+                    if(queryHandle instanceof QueryHandleImpl) {
+                        QueryHandleImpl impl = (QueryHandleImpl) queryHandle;
+                        if(impl.getQuery().isSaved()) {
+                            // at this point every saved query should already be refreshed.
+                            // it's just for the one which was eventually saved right now
+                            // that it's needsRefresh flag haven't been set yet.
+                            impl.needsRefresh = false;
+                        }
+                    }
+                }
+                qaImpl.fireQueriesChanged(ph, queryHandles);
             }
         }
     }

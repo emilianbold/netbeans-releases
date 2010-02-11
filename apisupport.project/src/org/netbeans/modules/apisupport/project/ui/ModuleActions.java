@@ -73,6 +73,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderI
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -500,7 +501,8 @@ public final class ModuleActions implements ActionProvider {
 
     private static boolean verifySufficientlyNewHarness(NbModuleProject project) {
         NbPlatform plaf = project.getPlatform(false);
-        if (plaf != null && plaf.getHarnessVersion() != NbPlatform.HARNESS_VERSION_UNKNOWN && plaf.getHarnessVersion() < project.getMinimumHarnessVersion()) {
+        if (plaf != null && plaf.getHarnessVersion() != HarnessVersion.UNKNOWN &&
+                plaf.getHarnessVersion().compareTo(project.getMinimumHarnessVersion()) < 0) {
             promptForNewerHarness();
             return false;
         } else {

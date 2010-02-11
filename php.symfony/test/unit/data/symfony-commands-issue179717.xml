@@ -1,0 +1,3161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<symfony>
+  <tasks>
+    <task id="help" namespace="_global" name="help">
+  <usage> help [--xml] [task_name]</usage>
+  <description>Displays help for a task</description>
+  <help>The &lt;em&gt;help&lt;/em&gt; task displays help for a given task:
+
+   &lt;em&gt;./symfony help test:all&lt;/em&gt;
+
+ You can also output the help as XML by using the &lt;strong&gt;--xml&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony help test:all --xml&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="task_name" is_required="0" is_array="0">
+      <description>The task name</description>
+      <defaults>
+        <default>help</default>
+      </defaults>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--xml" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>To output help as XML</description>
+    </option>
+  </options>
+</task>
+    <task id="list" namespace="_global" name="list">
+  <usage> list [--xml] [namespace]</usage>
+  <description>Lists tasks</description>
+  <help>The &lt;em&gt;list&lt;/em&gt; task lists all tasks:
+
+   &lt;em&gt;./symfony list&lt;/em&gt;
+
+ You can also display the tasks for a specific namespace:
+
+   &lt;em&gt;./symfony list test&lt;/em&gt;
+
+ You can also output the information as XML by using the &lt;strong&gt;--xml&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony list --xml&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="namespace" is_required="0" is_array="0">
+      <description>The namespace name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--xml" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>To output help as XML</description>
+    </option>
+  </options>
+</task>
+    <task id="apostrophe:after-deploy" namespace="apostrophe" name="after-deploy">
+  <usage> apostrophe:after-deploy [-1|--skip-migrate] env</usage>
+  <description>Remote end of apostrophe:deploy</description>
+  <help>The &lt;em&gt;apostrophe:after-deploy&lt;/em&gt; task carries out appropriate tasks on the server end
+ after the project:deploy task has been run on the dev end. It is invoked remotely by
+ apostrophe:deploy.
+
+ It currently invokes:
+
+ ./symfony cc
+ ./symfony doctrine:migrate --env=envname
+
+ You can skip the migrate step with --skip-migrate.
+
+ You won't normally call it yourself, but you could call it with:
+
+   &lt;em&gt;php symfony apostrophe:after-deploy (staging|prod)&lt;/em&gt;
+
+ Note that you must specify the environment.</help>
+  <aliases/>
+  <arguments>
+    <argument name="env" is_required="1" is_array="0">
+      <description>The remote environment ("staging")</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--skip-migrate" shortcut="-1" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description/>
+    </option>
+  </options>
+</task>
+    <task id="apostrophe:deploy" namespace="apostrophe" name="deploy">
+  <usage> apostrophe:deploy [-1|--skip-migrate] server env</usage>
+  <description>Deploys a site, then performs migrations, cc, etc.</description>
+  <help>The &lt;em&gt;apostrophe:deploy&lt;/em&gt; task deploys a site to a server, carrying out additional steps after
+ the core Symfony project:deploy task is complete to ensure success.
+
+ It currently invokes:
+
+ ./symfony project:permissions
+ ./symfony project:deploy servernickname --go
+
+ And then, on the remote end via ssh:
+
+ ./symfony project:after-deploy
+
+ Which currently invokes:
+
+ ./symfony cc
+ ./symfony doctrine:migrate --env=envname
+
+ Call it with:
+
+   &lt;em&gt;php symfony apostrophe:deploy (staging|production) (staging|prod)&lt;/em&gt;
+
+ You can skip the migration step by adding the --skip-migrate option. This is necessary
+ if the remote database has just been created or does not exist yet.
+
+ Note that you must specify both the server nickname and the remote environment name.</help>
+  <aliases/>
+  <arguments>
+    <argument name="server" is_required="1" is_array="0">
+      <description>The remote server nickname. The server nickname must be defined in properties.ini</description>
+      <defaults/>
+    </argument>
+    <argument name="env" is_required="1" is_array="0">
+      <description>The remote environment ("staging")</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--skip-migrate" shortcut="-1" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description/>
+    </option>
+  </options>
+</task>
+    <task id="apostrophe:generate-slot-type" namespace="apostrophe" name="generate-slot-type">
+  <usage> apostrophe:generate-slot-type [--application="..."] [--plugin="..."] [--type="..."] </usage>
+  <description>generate scaffolding for a new slot type you intend to develop</description>
+  <help>The &lt;em&gt;apostrophe:generate-slot-type&lt;/em&gt; task generates scaffolding for a new slot type you intend
+ to develop yourself. This is not the way to install existing types of slots in your application.
+
+ This task does the following:
+
+ 1. Adds a new module for your new slot type, with actions and components classes that subclass the
+ appropriate Apostrophe base classes and _normalView and _editView partials ready for you to
+ complete.
+
+ 2. Adds a new Doctrine model class for your new slot type. This class will extend the
+ aSlot class via Doctrine column aggregation inheritance. This will append to the
+ project-level schema.yml file, or to the plugin-level one if you specify --plugin.
+
+ 3. Creates a stub form class for your slot's edit view. You are responsible for adding
+ fields and validators to that form clas and deciding how to save the result.
+
+ There is more to do before your new slot type is ready to use. You will need to enable the module
+ in settings.yml and add the new slot type to app_a_slot_types in app.yml, as well as adding it to
+ the page templates where you wish to employ it. This task is just a convenience to
+ help you down the road. See the Apostrophe documentation for more information.
+
+ For instance, to generate scaffolding for a slot that displays baseball box scores specifically in a single application, you might call the task like this:
+
+   [./symfony apostrophe:generate-slot-type --application=frontend --type=baseball]
+
+ This creates the slot at the project level.
+
+ To scaffold a slot that you will reuse in other projects, you might specify a plugin instead of an application. The slot is added to the plugin, which is created (in the plugins folder) if it does not exist:
+
+   [./symfony apostrophe:generate-slot-type --plugin=sfSportsPlugin --type=baseball]
+
+ Please do not add 'Slot' to the end of the slot type name unless you really want classes with 'SlotSlot' in their name. Please reserve slot names beginning with 'a' and followed by an uppercase letter
+ for P'unk Avenue to avoid incompatibility with future releases of Apostrophe (or perhaps discuss your
+ fantastic plans with us in advance).</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The application name</description>
+      <defaults/>
+    </option>
+    <option name="--plugin" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The plugin name</description>
+      <defaults/>
+    </option>
+    <option name="--type" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The slot type name</description>
+      <defaults/>
+    </option>
+  </options>
+</task>
+    <task id="apostrophe:migrate-data-from-pkcontextcms" namespace="apostrophe" name="migrate-data-from-pkcontextcms">
+  <usage> apostrophe:migrate-data-from-pkcontextcms [--application="..."] [--env="..."] [--connection="..."] </usage>
+  <description>migrate pkContextCMS data to Apostrophe</description>
+  <help>The &lt;em&gt;apostrophe:migrate-data-from-pkcontextcms&lt;/em&gt; task migrates CMS-related tables and slots
+ to the new Apostrophe naming convention. It also rebuilds the search index since the naming
+ convention used inside the Zend indexes has also changed.
+
+ Call it with:
+
+   &lt;em&gt;php symfony apostrophe:migrate-data-from-pkcontextcms --env=staging&lt;/em&gt;
+
+ Be certain to specify the right environment for the system you are running it on.
+
+ Note: on ONE development machine, you will run the migrate-from-pkcontextcms task. That
+ task will run this task as a subtask. Verify success and commit the project, then sync
+ or svn update your code to other servers and development machines. On those machines,
+ run this task (migrate-data-from-pkcontextcms) directly to migrate just your data. There
+ is no need to migrate the source code more than once!</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The application name</description>
+      <defaults/>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--connection" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The connection name</description>
+      <defaults>
+        <default>doctrine</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="apostrophe:migrate-from-pkcontextcms" namespace="apostrophe" name="migrate-from-pkcontextcms">
+  <usage> apostrophe:migrate-from-pkcontextcms [--application="..."] [--env="..."] [--connection="..."] </usage>
+  <description>Migrate old pkContextCMS project to Apostrophe</description>
+  <help>The &lt;em&gt;apostrophe:migrate-from-pkcontextcms&lt;/em&gt; task migrates pkContextCMS projects to Apostrophe. Call it with:
+
+   &lt;em&gt;php symfony apostrophe:migrate-from-pkcontextcms&lt;/em&gt;</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The application name</description>
+      <defaults/>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--connection" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The connection name</description>
+      <defaults>
+        <default>doctrine</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="apostrophe:rebuild-search-index" namespace="apostrophe" name="rebuild-search-index">
+  <usage> apostrophe:rebuild-search-index [--application="..."] [--env="..."] [--connection="..."] [--table[="..."]] </usage>
+  <description>Rebuild all Lucene search indexes defined in app.yml</description>
+  <help>The &lt;em&gt;apostrophe:rebuild-search-index&lt;/em&gt; task rebuilds the search indexes defined in app.yml.
+ Call it with:
+
+   &lt;em&gt;php symfony apostrophe:rebuild-search-index&lt;/em&gt;
+
+ You can optionally specify a table parameter (--table=aPage) to rebuild just that table.</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>frontend</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--connection" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The connection name</description>
+      <defaults>
+        <default>doctrine</default>
+      </defaults>
+    </option>
+    <option name="--table" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The table name</description>
+      <defaults/>
+    </option>
+  </options>
+</task>
+    <task id="apostrophe:refresh" namespace="apostrophe" name="refresh">
+  <usage> apostrophe:refresh [--application="..."] [--env="..."] [--connection="..."] [-1|--allversions] </usage>
+  <description>Refresh metadata in all slots that require it</description>
+  <help>The &lt;em&gt;apostrophe:refresh&lt;/em&gt; task gives every slot an opportunity to update any cached metadata
+ it may be retaining. In particular, the media slots query the media server to update all media URLs
+ they currently contain. For efficiency reasons, media slots contain direct URLs pointing to scaled
+ and/or original images, PDFs and videos. If you switch frontend controllers from frontend_dev.php
+ to index.php and switch on no_script_name (i.e. go from a dev to a prod environment) you may find
+ that images load slower than expected (because index.php is still in old URLs) or fail to load
+ (because there is no frontend_dev controller on your production server). If you manually click
+ "Choose Image" and re-confirm the same selection for every slot, the problem goes away. A much
+ more efficient solution: just run this task, which fetches updated direct URLs for every
+ media slot.
+
+ This task also removes any references to media items that have been deleted. For safety reasons
+ it does so only if the media item is actually gone, not if the media plugin simply fails to
+ return a proper response.
+
+ For periodic refreshes of slots representing current content, call this task normally to
+ quickly refresh only the current versions of slots. For a one-time changeover in which
+ every slot should be refreshed, including older versions of slots, add the
+ --allversions option. This is slower, of course.
+
+ Custom slot types can participate in this task by implementing the refreshSlot() method.
+
+ Call it with:
+
+   &lt;em&gt;php symfony a:refresh&lt;/em&gt;
+
+ This task defaults to the dev environment and the frontend application. You can override these
+ with --env=envname and --application=applicationname.</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>frontend</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--connection" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The connection name</description>
+      <defaults>
+        <default>doctrine</default>
+      </defaults>
+    </option>
+    <option name="--allversions" shortcut="-1" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description/>
+    </option>
+  </options>
+</task>
+    <task id="apostrophe:repair-tree" namespace="apostrophe" name="repair-tree">
+  <usage> apostrophe:repair-tree [--application="..."] [--env="..."] [--connection="..."] </usage>
+  <description/>
+  <help>The &lt;em&gt;apostrohe:repair-tree&lt;/em&gt; task rebuilds the Doctrine nested set tree of your site
+ based on the slugs of your pages. This will always work even if the nested set has
+ somehow become corrupted. The order of pages at the same level will NOT be
+ preserved, however parent-child relationships will be preserved, and you can
+ then clean up the mess with the reorganize tool.
+
+ Call it with:
+
+   &lt;em&gt;php symfony a:repair-tree&lt;/em&gt;</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The application name</description>
+      <defaults/>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--connection" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The connection name</description>
+      <defaults>
+        <default>doctrine</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="apostrophe:ssh" namespace="apostrophe" name="ssh">
+  <usage> apostrophe:ssh  server</usage>
+  <description>Opens an interactive ssh connection to the specified server using the username, port and hostname in properties.ini</description>
+  <help>The &lt;em&gt;apostrophe:ssh&lt;/em&gt; task opens an interactive ssh connection to the specified server, using the
+ credentials specified in properties.ini. The cd command is used to change the current directory to
+ the project directory, and then you are given interactive control of the shell. NOTE: uses expect
+ and prompts you for the ssh password. Not designed for situations where a password is not required.
+
+ Call it with:
+
+   [php symfony apostrophePlugin:ssh servername (examples: staging, production)]
+   </help>
+  <aliases/>
+  <arguments>
+    <argument name="server" is_required="1" is_array="0">
+      <description>A server name as listed in properties.ini (examples: staging, production)</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options/>
+</task>
+    <task id="apostrophe:update-search-index" namespace="apostrophe" name="update-search-index">
+  <usage> apostrophe:update-search-index [--application="..."] [--env="..."] [--connection="..."] </usage>
+  <description>update search indexes for recently modified pages</description>
+  <help>The &lt;em&gt;a:update-lucene&lt;/em&gt; task updates the Lucene search indexes for
+ recently modified pages in the CMS. You should call it from cron or another
+ scheduled task manager on a regular basis (for instance, every
+ five minutes).
+
+ Call it like this:
+
+   &lt;em&gt;php /path/to/your/project/symfony a:update-lucene&lt;/em&gt;</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The application name</description>
+      <defaults/>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--connection" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The connection name</description>
+      <defaults>
+        <default>doctrine</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="app:routes" namespace="app" name="routes">
+  <usage> app:routes  application [name]</usage>
+  <description>Displays current routes for an application</description>
+  <help>The &lt;em&gt;app:routes&lt;/em&gt; displays the current routes for a given application:
+
+   &lt;em&gt;./symfony app:routes frontend&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="application" is_required="1" is_array="0">
+      <description>The application name</description>
+      <defaults/>
+    </argument>
+    <argument name="name" is_required="0" is_array="0">
+      <description>A route name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options/>
+</task>
+    <task id="cache:clear" namespace="cache" name="clear">
+  <usage> cache:clear [--app[="..."]] [--env[="..."]] [--type[="..."]] </usage>
+  <description>Clears the cache</description>
+  <help>The &lt;em&gt;cache:clear&lt;/em&gt; task clears the symfony cache.
+
+ By default, it removes the cache for all available types, all applications,
+ and all environments.
+
+ You can restrict by type, application, or environment:
+
+ For example, to clear the &lt;strong&gt;frontend&lt;/strong&gt; application cache:
+
+   &lt;em&gt;./symfony cache:clear --app=frontend&lt;/em&gt;
+
+ To clear the cache for the &lt;strong&gt;prod&lt;/strong&gt; environment for the &lt;strong&gt;frontend&lt;/strong&gt; application:
+
+   &lt;em&gt;./symfony cache:clear --app=frontend --env=prod&lt;/em&gt;
+
+ To clear the cache for all &lt;strong&gt;prod&lt;/strong&gt; environments:
+
+   &lt;em&gt;./symfony cache:clear --env=prod&lt;/em&gt;
+
+ To clear the &lt;strong&gt;config&lt;/strong&gt; cache for all &lt;strong&gt;prod&lt;/strong&gt; environments:
+
+   &lt;em&gt;./symfony cache:clear --type=config --env=prod&lt;/em&gt;
+
+ The built-in types are: &lt;strong&gt;config&lt;/strong&gt;, &lt;strong&gt;i18n&lt;/strong&gt;, &lt;strong&gt;routing&lt;/strong&gt;, &lt;strong&gt;module&lt;/strong&gt;
+ and &lt;strong&gt;template&lt;/strong&gt;.
+ </help>
+  <aliases>
+    <alias>cc</alias>
+  </aliases>
+  <arguments/>
+  <options>
+    <option name="--app" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults/>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The environment</description>
+      <defaults/>
+    </option>
+    <option name="--type" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The type</description>
+      <defaults>
+        <default>all</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="configure:author" namespace="configure" name="author">
+  <usage> configure:author  author</usage>
+  <description>Configure project author</description>
+  <help>The &lt;em&gt;configure:author&lt;/em&gt; task configures the author for a project:
+
+   &lt;em&gt;./symfony configure:author "Fabien Potencier &lt;fabien.potencier@symfony-project.com&gt;"&lt;/em&gt;
+
+ The author is used by the generates to pre-configure the PHPDoc header for each generated file.
+
+ The value is stored in [config/properties.ini].</help>
+  <aliases/>
+  <arguments>
+    <argument name="author" is_required="1" is_array="0">
+      <description>The project author</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options/>
+</task>
+    <task id="configure:database" namespace="configure" name="database">
+  <usage> configure:database [--env[="..."]] [--name[="..."]] [--class[="..."]] [--app[="..."]] dsn [username] [password]</usage>
+  <description>Configure database DSN</description>
+  <help>The &lt;em&gt;configure:database&lt;/em&gt; task configures the database DSN
+ for a project:
+
+   &lt;em&gt;./symfony configure:database mysql:host=localhost;dbname=example root mYsEcret&lt;/em&gt;
+
+ By default, the task change the configuration for all environment. If you want
+ to change the dsn for a specific environment, use the &lt;strong&gt;env&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony configure:database --env=dev mysql:host=localhost;dbname=example_dev root mYsEcret&lt;/em&gt;
+
+ To change the configuration for a specific application, use the &lt;strong&gt;app&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony configure:database --app=frontend mysql:host=localhost;dbname=example root mYsEcret&lt;/em&gt;
+
+ You can also specify the connection name and the database class name:
+
+   &lt;em&gt;./symfony configure:database --name=main --class=ProjectDatabase mysql:host=localhost;dbname=example root mYsEcret&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="dsn" is_required="1" is_array="0">
+      <description>The database dsn</description>
+      <defaults/>
+    </argument>
+    <argument name="username" is_required="0" is_array="0">
+      <description>The database username</description>
+      <defaults>
+        <default>root</default>
+      </defaults>
+    </argument>
+    <argument name="password" is_required="0" is_array="0">
+      <description>The database password</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>all</default>
+      </defaults>
+    </option>
+    <option name="--name" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The connection name</description>
+      <defaults>
+        <default>doctrine</default>
+      </defaults>
+    </option>
+    <option name="--class" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The database class name</description>
+      <defaults>
+        <default>sfDoctrineDatabase</default>
+      </defaults>
+    </option>
+    <option name="--app" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults/>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:build" namespace="doctrine" name="build">
+  <usage> doctrine:build [--application[="..."]] [--env="..."] [--no-confirmation] [--all] [--all-classes] [--model] [--forms] [--filters] [--sql] [--db] [--and-migrate] [--and-load[="..."]] [--and-append[="..."]] </usage>
+  <description>Generate code based on your schema</description>
+  <help>The &lt;em&gt;doctrine:build&lt;/em&gt; task generates code based on your schema:
+
+   &lt;em&gt;./symfony doctrine:build&lt;/em&gt;
+
+ You must specify what you would like built. For instance, if you want model
+ and form classes built use the &lt;strong&gt;--model&lt;/strong&gt; and &lt;strong&gt;--forms&lt;/strong&gt; options:
+
+   &lt;em&gt;./symfony doctrine:build --model --forms&lt;/em&gt;
+
+ You can use the &lt;strong&gt;--all&lt;/strong&gt; shortcut option if you would like all classes and
+ SQL files generated and the database rebuilt:
+
+   &lt;em&gt;./symfony doctrine:build --all&lt;/em&gt;
+
+ This is equivalent to running the following tasks:
+
+   &lt;em&gt;./symfony doctrine:drop-db&lt;/em&gt;
+   &lt;em&gt;./symfony doctrine:build-db&lt;/em&gt;
+   &lt;em&gt;./symfony doctrine:build-model&lt;/em&gt;
+   &lt;em&gt;./symfony doctrine:build-forms&lt;/em&gt;
+   &lt;em&gt;./symfony doctrine:build-filters&lt;/em&gt;
+   &lt;em&gt;./symfony doctrine:build-sql&lt;/em&gt;
+   &lt;em&gt;./symfony doctrine:insert-sql&lt;/em&gt;
+
+ You can also generate only class files by using the &lt;strong&gt;--all-classes&lt;/strong&gt; shortcut
+ option. When this option is used alone, the database will not be modified.
+
+   &lt;em&gt;./symfony doctrine:build --all-classes&lt;/em&gt;
+
+ The &lt;strong&gt;--and-migrate&lt;/strong&gt; option will run any pending migrations once the builds
+ are complete:
+
+   &lt;em&gt;./symfony doctrine:build --db --and-migrate&lt;/em&gt;
+
+ The &lt;strong&gt;--and-load&lt;/strong&gt; option will load data from the project and plugin
+ &lt;strong&gt;data/fixtures/&lt;/strong&gt; directories:
+
+   &lt;em&gt;./symfony doctrine:build --db --and-migrate --and-load&lt;/em&gt;
+
+ To specify what fixtures are loaded, add a parameter to the &lt;strong&gt;--and-load&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony doctrine:build --all --and-load="data/fixtures/dev/"&lt;/em&gt;
+
+ To append fixture data without erasing any records from the database, include
+ the &lt;strong&gt;--and-append&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony doctrine:build --all --and-append&lt;/em&gt;</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--no-confirmation" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Whether to force dropping of the database</description>
+    </option>
+    <option name="--all" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Build everything and reset the database</description>
+    </option>
+    <option name="--all-classes" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Build all classes</description>
+    </option>
+    <option name="--model" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Build model classes</description>
+    </option>
+    <option name="--forms" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Build form classes</description>
+    </option>
+    <option name="--filters" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Build filter classes</description>
+    </option>
+    <option name="--sql" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Build SQL</description>
+    </option>
+    <option name="--db" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Drop, create, and either insert SQL or migrate the database</description>
+    </option>
+    <option name="--and-migrate" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Migrate the database</description>
+    </option>
+    <option name="--and-load" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="1">
+      <description>Load fixture data</description>
+      <defaults/>
+    </option>
+    <option name="--and-append" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="1">
+      <description>Append fixture data</description>
+      <defaults/>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:build-db" namespace="doctrine" name="build-db">
+  <usage> doctrine:build-db [--application[="..."]] [--env="..."] [database1] ... [databaseN]</usage>
+  <description>Creates database for current model</description>
+  <help>The &lt;em&gt;doctrine:build-db&lt;/em&gt; task creates one or more databases based on
+ configuration in &lt;strong&gt;config/databases.yml&lt;/strong&gt;:
+
+   &lt;em&gt;./symfony doctrine:build-db&lt;/em&gt;
+
+ You can specify what databases to create by providing their names:
+
+   &lt;em&gt;./symfony doctrine:build-db slave1 slave2&lt;/em&gt;</help>
+  <aliases>
+    <alias>doctrine:create-db</alias>
+  </aliases>
+  <arguments>
+    <argument name="database" is_required="0" is_array="1">
+      <description>A specific database</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:build-filters" namespace="doctrine" name="build-filters">
+  <usage> doctrine:build-filters [--application[="..."]] [--env="..."] [--model-dir-name="..."] [--filter-dir-name="..."] [--generator-class="..."] </usage>
+  <description>Creates filter form classes for the current model</description>
+  <help>The &lt;em&gt;doctrine:build-filters&lt;/em&gt; task creates form filter classes from the schema:
+
+   &lt;em&gt;./symfony doctrine:build-filters&lt;/em&gt;
+
+ This task creates form filter classes based on the model. The classes are
+ created in &lt;strong&gt;lib/doctrine/filter&lt;/strong&gt;.
+
+ This task never overrides custom classes in &lt;strong&gt;lib/doctrine/filter&lt;/strong&gt;.
+ It only replaces base classes generated in &lt;strong&gt;lib/doctrine/filter/base&lt;/strong&gt;.</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--model-dir-name" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The model dir name</description>
+      <defaults>
+        <default>model</default>
+      </defaults>
+    </option>
+    <option name="--filter-dir-name" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The filter form dir name</description>
+      <defaults>
+        <default>filter</default>
+      </defaults>
+    </option>
+    <option name="--generator-class" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The generator class</description>
+      <defaults>
+        <default>sfDoctrineFormFilterGenerator</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:build-forms" namespace="doctrine" name="build-forms">
+  <usage> doctrine:build-forms [--application[="..."]] [--env="..."] [--model-dir-name="..."] [--form-dir-name="..."] [--generator-class="..."] </usage>
+  <description>Creates form classes for the current model</description>
+  <help>The &lt;em&gt;doctrine:build-forms&lt;/em&gt; task creates form classes from the schema:
+
+   &lt;em&gt;./symfony doctrine:build-forms&lt;/em&gt;
+
+ This task creates form classes based on the model. The classes are created
+ in &lt;strong&gt;lib/doctrine/form&lt;/strong&gt;.
+
+ This task never overrides custom classes in &lt;strong&gt;lib/doctrine/form&lt;/strong&gt;.
+ It only replaces base classes generated in &lt;strong&gt;lib/doctrine/form/base&lt;/strong&gt;.</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--model-dir-name" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The model dir name</description>
+      <defaults>
+        <default>model</default>
+      </defaults>
+    </option>
+    <option name="--form-dir-name" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The form dir name</description>
+      <defaults>
+        <default>form</default>
+      </defaults>
+    </option>
+    <option name="--generator-class" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The generator class</description>
+      <defaults>
+        <default>sfDoctrineFormGenerator</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:build-model" namespace="doctrine" name="build-model">
+  <usage> doctrine:build-model [--application[="..."]] [--env="..."] </usage>
+  <description>Creates classes for the current model</description>
+  <help>The &lt;em&gt;doctrine:build-model&lt;/em&gt; task creates model classes from the schema:
+
+   &lt;em&gt;./symfony doctrine:build-model&lt;/em&gt;
+
+ The task read the schema information in &lt;strong&gt;config/doctrine/*.yml&lt;/strong&gt;
+ from the project and all enabled plugins.
+
+ The model classes files are created in &lt;strong&gt;lib/model/doctrine&lt;/strong&gt;.
+
+ This task never overrides custom classes in &lt;strong&gt;lib/model/doctrine&lt;/strong&gt;.
+ It only replaces files in &lt;strong&gt;lib/model/doctrine/base&lt;/strong&gt;.</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:build-schema" namespace="doctrine" name="build-schema">
+  <usage> doctrine:build-schema [--application[="..."]] [--env="..."] </usage>
+  <description>Creates a schema from an existing database</description>
+  <help>The &lt;em&gt;doctrine:build-schema&lt;/em&gt; task introspects a database to create a schema:
+
+   &lt;em&gt;./symfony doctrine:build-schema&lt;/em&gt;
+
+ The task creates a yml file in &lt;strong&gt;config/doctrine&lt;/strong&gt;</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:build-sql" namespace="doctrine" name="build-sql">
+  <usage> doctrine:build-sql [--application[="..."]] [--env="..."] </usage>
+  <description>Creates SQL for the current model</description>
+  <help>The &lt;em&gt;doctrine:build-sql&lt;/em&gt; task creates SQL statements for table creation:
+
+   &lt;em&gt;./symfony doctrine:build-sql&lt;/em&gt;
+
+ The generated SQL is optimized for the database configured in &lt;strong&gt;config/databases.yml&lt;/strong&gt;:
+
+   &lt;em&gt;doctrine.database = mysql&lt;/em&gt;</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:clean-model-files" namespace="doctrine" name="clean-model-files">
+  <usage> doctrine:clean-model-files [--no-confirmation] </usage>
+  <description>Delete all generated model classes for models which no longer exist in your YAML schema</description>
+  <help>The &lt;em&gt;doctrine:clean-model-files&lt;/em&gt; task deletes model classes that are not
+ represented in project or plugin schema.yml files:
+
+   &lt;em&gt;./symfony doctrine:clean-model-files&lt;/em&gt;</help>
+  <aliases>
+    <alias>doctrine:clean</alias>
+  </aliases>
+  <arguments/>
+  <options>
+    <option name="--no-confirmation" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Do not ask for confirmation</description>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:create-model-tables" namespace="doctrine" name="create-model-tables">
+  <usage> doctrine:create-model-tables [--application[="..."]] [--env="..."] [models1] ... [modelsN]</usage>
+  <description>Drop and recreate tables for specified models.</description>
+  <help>The &lt;em&gt;doctrine:create-model-tables&lt;/em&gt; Drop and recreate tables for specified models:
+
+   &lt;em&gt;./symfony doctrine:create-model-tables User&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="models" is_required="0" is_array="1">
+      <description>The list of models</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>frontend</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:data-dump" namespace="doctrine" name="data-dump">
+  <usage> doctrine:data-dump [--application[="..."]] [--env="..."] [target]</usage>
+  <description>Dumps data to the fixtures directory</description>
+  <help>The &lt;em&gt;doctrine:data-dump&lt;/em&gt; task dumps database data:
+
+   &lt;em&gt;./symfony doctrine:data-dump&lt;/em&gt;
+
+ The task dumps the database data in &lt;strong&gt;data/fixtures/%target%&lt;/strong&gt;.
+
+ The dump file is in the YML format and can be reimported by using
+ the &lt;em&gt;doctrine:data-load&lt;/em&gt; task.
+
+   &lt;em&gt;./symfony doctrine:data-load&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="target" is_required="0" is_array="0">
+      <description>The target filename</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:data-load" namespace="doctrine" name="data-load">
+  <usage> doctrine:data-load [--application[="..."]] [--env="..."] [--append] [dir_or_file1] ... [dir_or_fileN]</usage>
+  <description>Loads YAML fixture data</description>
+  <help>The &lt;em&gt;doctrine:data-load&lt;/em&gt; task loads data fixtures into the database:
+
+   &lt;em&gt;./symfony doctrine:data-load&lt;/em&gt;
+
+ The task loads data from all the files found in &lt;strong&gt;data/fixtures/&lt;/strong&gt;.
+
+ If you want to load data from specific files or directories, you can append
+ them as arguments:
+
+   &lt;em&gt;./symfony doctrine:data-load data/fixtures/dev data/fixtures/users.yml&lt;/em&gt;
+
+ If you don't want the task to remove existing data in the database,
+ use the &lt;strong&gt;--append&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony doctrine:data-load --append&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="dir_or_file" is_required="0" is_array="1">
+      <description>Directory or file to load</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--append" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Don't delete current data in the database</description>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:delete-model-files" namespace="doctrine" name="delete-model-files">
+  <usage> doctrine:delete-model-files [--no-confirmation] name1 ... [nameN]</usage>
+  <description>Delete all the related auto generated files for a given model name.</description>
+  <help>The &lt;em&gt;doctrine:delete-model-files&lt;/em&gt; task deletes all files associated with certain
+ models:
+
+   &lt;em&gt;./symfony doctrine:delete-model-files Article Author&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="name" is_required="1" is_array="1">
+      <description>The name of the model you wish to delete all related files for.</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--no-confirmation" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Do not ask for confirmation</description>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:dql" namespace="doctrine" name="dql">
+  <usage> doctrine:dql [--application[="..."]] [--env="..."] [--show-sql] [--table] dql_query [parameter1] ... [parameterN]</usage>
+  <description>Execute a DQL query and view the results</description>
+  <help>The &lt;em&gt;doctrine:dql&lt;/em&gt; task executes a DQL query and displays the formatted
+ results:
+
+   &lt;em&gt;./symfony doctrine:dql "FROM User"&lt;/em&gt;
+
+ You can show the SQL that would be executed by using the &lt;strong&gt;--show-sql&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony doctrine:dql --show-sql "FROM User"&lt;/em&gt;
+
+ Provide query parameters as additional arguments:
+
+   &lt;em&gt;./symfony doctrine:dql "FROM User WHERE email LIKE ?" "%symfony-project.com"&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="dql_query" is_required="1" is_array="0">
+      <description>The DQL query to execute</description>
+      <defaults/>
+    </argument>
+    <argument name="parameter" is_required="0" is_array="1">
+      <description>Query parameter</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--show-sql" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Show the sql that would be executed</description>
+    </option>
+    <option name="--table" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Return results in table format</description>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:drop-db" namespace="doctrine" name="drop-db">
+  <usage> doctrine:drop-db [--application[="..."]] [--env="..."] [--no-confirmation] [database1] ... [databaseN]</usage>
+  <description>Drops database for current model</description>
+  <help>The &lt;em&gt;doctrine:drop-db&lt;/em&gt; task drops one or more databases based on
+ configuration in &lt;strong&gt;config/databases.yml&lt;/strong&gt;:
+
+   &lt;em&gt;./symfony doctrine:drop-db&lt;/em&gt;
+
+ You will be prompted for confirmation before any databases are dropped unless
+ you provide the &lt;strong&gt;--no-confirmation&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony doctrine:drop-db --no-confirmation&lt;/em&gt;
+
+ You can specify what databases to drop by providing their names:
+
+   &lt;em&gt;./symfony doctrine:drop-db slave1 slave2&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="database" is_required="0" is_array="1">
+      <description>A specific database</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--no-confirmation" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Whether to force dropping of the database</description>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:generate-admin" namespace="doctrine" name="generate-admin">
+  <usage> doctrine:generate-admin [--module="..."] [--theme="..."] [--singular="..."] [--plural="..."] [--env="..."] [--actions-base-class="..."] application route_or_model</usage>
+  <description>Generates a Doctrine admin module</description>
+  <help>The &lt;em&gt;doctrine:generate-admin&lt;/em&gt; task generates a Doctrine admin module:
+
+   &lt;em&gt;./symfony doctrine:generate-admin frontend Article&lt;/em&gt;
+
+ The task creates a module in the &lt;strong&gt;%frontend%&lt;/strong&gt; application for the
+ &lt;strong&gt;%Article%&lt;/strong&gt; model.
+
+ The task creates a route for you in the application &lt;strong&gt;routing.yml&lt;/strong&gt;.
+
+ You can also generate a Doctrine admin module by passing a route name:
+
+   &lt;em&gt;./symfony doctrine:generate-admin frontend article&lt;/em&gt;
+
+ The task creates a module in the &lt;strong&gt;%frontend%&lt;/strong&gt; application for the
+ &lt;strong&gt;%article%&lt;/strong&gt; route definition found in &lt;strong&gt;routing.yml&lt;/strong&gt;.
+
+ For the filters and batch actions to work properly, you need to add
+ the &lt;strong&gt;with_wildcard_routes&lt;/strong&gt; option to the route:
+
+   article:
+     class: sfDoctrineRouteCollection
+     options:
+       model:                Article
+       with_wildcard_routes: true</help>
+  <aliases/>
+  <arguments>
+    <argument name="application" is_required="1" is_array="0">
+      <description>The application name</description>
+      <defaults/>
+    </argument>
+    <argument name="route_or_model" is_required="1" is_array="0">
+      <description>The route name or the model class</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--module" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The module name</description>
+      <defaults/>
+    </option>
+    <option name="--theme" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The theme name</description>
+      <defaults>
+        <default>admin</default>
+      </defaults>
+    </option>
+    <option name="--singular" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The singular name</description>
+      <defaults/>
+    </option>
+    <option name="--plural" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The plural name</description>
+      <defaults/>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--actions-base-class" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The base class for the actions</description>
+      <defaults>
+        <default>sfActions</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:generate-migration" namespace="doctrine" name="generate-migration">
+  <usage> doctrine:generate-migration [--application[="..."]] [--env="..."] [--editor-cmd="..."] name</usage>
+  <description>Generate migration class</description>
+  <help>The &lt;em&gt;doctrine:generate-migration&lt;/em&gt; task generates migration template
+
+   &lt;em&gt;./symfony doctrine:generate-migration AddUserEmailColumn&lt;/em&gt;
+
+ You can provide an &lt;strong&gt;--editor-cmd&lt;/strong&gt; option to open the new migration class in your
+ editor of choice upon creation:
+
+   &lt;em&gt;./symfony doctrine:generate-migration AddUserEmailColumn --editor-cmd=mate&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="name" is_required="1" is_array="0">
+      <description>The name of the migration</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--editor-cmd" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>Open script with this command upon creation</description>
+      <defaults/>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:generate-migrations-db" namespace="doctrine" name="generate-migrations-db">
+  <usage> doctrine:generate-migrations-db [--application[="..."]] [--env="..."] </usage>
+  <description>Generate migration classes from existing database connections</description>
+  <help>The &lt;em&gt;doctrine:generate-migrations-db&lt;/em&gt; task generates migration classes from
+ existing database connections:
+
+   &lt;em&gt;./symfony doctrine:generate-migrations-db&lt;/em&gt;</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:generate-migrations-diff" namespace="doctrine" name="generate-migrations-diff">
+  <usage> doctrine:generate-migrations-diff [--application[="..."]] [--env="..."] </usage>
+  <description>Generate migration classes by producing a diff between your old and new schema.</description>
+  <help>The &lt;em&gt;doctrine:generate-migrations-diff&lt;/em&gt; task generates migration classes by
+ producing a diff between your old and new schema.
+
+   &lt;em&gt;./symfony doctrine:generate-migrations-diff&lt;/em&gt;</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:generate-migrations-models" namespace="doctrine" name="generate-migrations-models">
+  <usage> doctrine:generate-migrations-models [--application[="..."]] [--env="..."] </usage>
+  <description>Generate migration classes from an existing set of models</description>
+  <help>The &lt;em&gt;doctrine:generate-migrations-models&lt;/em&gt; task generates migration classes
+ from an existing set of models:
+
+   &lt;em&gt;./symfony doctrine:generate-migrations-models&lt;/em&gt;</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:generate-module" namespace="doctrine" name="generate-module">
+  <usage> doctrine:generate-module [--theme="..."] [--generate-in-cache] [--non-verbose-templates] [--with-show] [--singular="..."] [--plural="..."] [--route-prefix="..."] [--with-doctrine-route] [--env="..."] [--actions-base-class="..."] application module model</usage>
+  <description>Generates a Doctrine module</description>
+  <help>The &lt;em&gt;doctrine:generate-module&lt;/em&gt; task generates a Doctrine module:
+
+   &lt;em&gt;./symfony doctrine:generate-module frontend article Article&lt;/em&gt;
+
+ The task creates a &lt;strong&gt;%module%&lt;/strong&gt; module in the &lt;strong&gt;%application%&lt;/strong&gt; application
+ for the model class &lt;strong&gt;%model%&lt;/strong&gt;.
+
+ You can also create an empty module that inherits its actions and templates from
+ a runtime generated module in &lt;strong&gt;%sf_app_cache_dir%/modules/auto%module%&lt;/strong&gt; by
+ using the &lt;strong&gt;--generate-in-cache&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony doctrine:generate-module --generate-in-cache frontend article Article&lt;/em&gt;
+
+ The generator can use a customized theme by using the &lt;strong&gt;--theme&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony doctrine:generate-module --theme="custom" frontend article Article&lt;/em&gt;
+
+ This way, you can create your very own module generator with your own conventions.
+
+ You can also change the default actions base class (default to sfActions) of
+ the generated modules:
+
+   &lt;em&gt;./symfony doctrine:generate-module --actions-base-class="ProjectActions" frontend article Article&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="application" is_required="1" is_array="0">
+      <description>The application name</description>
+      <defaults/>
+    </argument>
+    <argument name="module" is_required="1" is_array="0">
+      <description>The module name</description>
+      <defaults/>
+    </argument>
+    <argument name="model" is_required="1" is_array="0">
+      <description>The model class name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--theme" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The theme name</description>
+      <defaults>
+        <default>default</default>
+      </defaults>
+    </option>
+    <option name="--generate-in-cache" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Generate the module in cache</description>
+    </option>
+    <option name="--non-verbose-templates" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Generate non verbose templates</description>
+    </option>
+    <option name="--with-show" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Generate a show method</description>
+    </option>
+    <option name="--singular" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The singular name</description>
+      <defaults/>
+    </option>
+    <option name="--plural" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The plural name</description>
+      <defaults/>
+    </option>
+    <option name="--route-prefix" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The route prefix</description>
+      <defaults/>
+    </option>
+    <option name="--with-doctrine-route" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Whether you will use a Doctrine route</description>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--actions-base-class" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The base class for the actions</description>
+      <defaults>
+        <default>sfActions</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:generate-module-for-route" namespace="doctrine" name="generate-module-for-route">
+  <usage> doctrine:generate-module-for-route [--theme="..."] [--non-verbose-templates] [--singular="..."] [--plural="..."] [--env="..."] [--actions-base-class="..."] application route</usage>
+  <description>Generates a Doctrine module for a route definition</description>
+  <help>The &lt;em&gt;doctrine:generate-module-for-route&lt;/em&gt; task generates a Doctrine module for a route definition:
+
+   &lt;em&gt;./symfony doctrine:generate-module-for-route frontend article&lt;/em&gt;
+
+ The task creates a module in the &lt;strong&gt;%frontend%&lt;/strong&gt; application for the
+ &lt;strong&gt;%article%&lt;/strong&gt; route definition found in &lt;strong&gt;routing.yml&lt;/strong&gt;.</help>
+  <aliases/>
+  <arguments>
+    <argument name="application" is_required="1" is_array="0">
+      <description>The application name</description>
+      <defaults/>
+    </argument>
+    <argument name="route" is_required="1" is_array="0">
+      <description>The route name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--theme" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The theme name</description>
+      <defaults>
+        <default>default</default>
+      </defaults>
+    </option>
+    <option name="--non-verbose-templates" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Generate non verbose templates</description>
+    </option>
+    <option name="--singular" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The singular name</description>
+      <defaults/>
+    </option>
+    <option name="--plural" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The plural name</description>
+      <defaults/>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--actions-base-class" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The base class for the actions</description>
+      <defaults>
+        <default>sfActions</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:insert-sql" namespace="doctrine" name="insert-sql">
+  <usage> doctrine:insert-sql [--application[="..."]] [--env="..."] </usage>
+  <description>Inserts SQL for current model</description>
+  <help>The &lt;em&gt;doctrine:insert-sql&lt;/em&gt; task creates database tables:
+
+   &lt;em&gt;./symfony doctrine:insert-sql&lt;/em&gt;
+
+ The task connects to the database and creates tables for all the
+ &lt;strong&gt;lib/model/doctrine/*.class.php&lt;/strong&gt; files.</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="doctrine:migrate" namespace="doctrine" name="migrate">
+  <usage> doctrine:migrate [--application[="..."]] [--env="..."] [--up] [--down] [--dry-run] [version]</usage>
+  <description>Migrates database to current/specified version</description>
+  <help>The &lt;em&gt;doctrine:migrate&lt;/em&gt; task migrates the database:
+
+   &lt;em&gt;./symfony doctrine:migrate&lt;/em&gt;
+
+ Provide a version argument to migrate to a specific version:
+
+   &lt;em&gt;./symfony doctrine:migrate 10&lt;/em&gt;
+
+ To migration up or down one migration, use the &lt;strong&gt;--up&lt;/strong&gt; or &lt;strong&gt;--down&lt;/strong&gt; options:
+
+   &lt;em&gt;./symfony doctrine:migrate --down&lt;/em&gt;
+
+ If your database supports rolling back DDL statements, you can run migrations
+ in dry-run mode using the &lt;strong&gt;--dry-run&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony doctrine:migrate --dry-run&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="version" is_required="0" is_array="0">
+      <description>The version to migrate to</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--up" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Migrate up one version</description>
+    </option>
+    <option name="--down" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Migrate down one version</description>
+    </option>
+    <option name="--dry-run" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Do not persist migrations</description>
+    </option>
+  </options>
+</task>
+    <task id="generate:app" namespace="generate" name="app">
+  <usage> generate:app [--escaping-strategy="..."] [--csrf-secret="..."] app</usage>
+  <description>Generates a new application</description>
+  <help>The &lt;em&gt;generate:app&lt;/em&gt; task creates the basic directory structure
+ for a new application in the current project:
+
+   &lt;em&gt;./symfony generate:app frontend&lt;/em&gt;
+
+ This task also creates two front controller scripts in the
+ &lt;strong&gt;web/&lt;/strong&gt; directory:
+
+   &lt;em&gt;web/%application%.php&lt;/em&gt;     for the production environment
+   &lt;em&gt;web/%application%_dev.php&lt;/em&gt; for the development environment
+
+ For the first application, the production environment script is named
+ &lt;strong&gt;index.php&lt;/strong&gt;.
+
+ If an application with the same name already exists,
+ it throws a &lt;strong&gt;sfCommandException&lt;/strong&gt;.
+
+ By default, the output escaping is enabled (to prevent XSS), and a random
+ secret is also generated to prevent CSRF.
+
+ You can disable output escaping by using the &lt;strong&gt;escaping-strategy&lt;/strong&gt;
+ option:
+
+   &lt;em&gt;./symfony generate:app frontend --escaping-strategy=false&lt;/em&gt;
+
+ You can enable session token in forms (to prevent CSRF) by defining
+ a secret with the &lt;strong&gt;csrf-secret&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony generate:app frontend --csrf-secret=UniqueSecret&lt;/em&gt;
+
+ You can customize the default skeleton used by the task by creating a
+ &lt;strong&gt;%sf_data_dir%/skeleton/app&lt;/strong&gt; directory.</help>
+  <aliases/>
+  <arguments>
+    <argument name="app" is_required="1" is_array="0">
+      <description>The application name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--escaping-strategy" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>Output escaping strategy</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--csrf-secret" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>Secret to use for CSRF protection</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="generate:controller" namespace="generate" name="controller">
+  <usage> generate:controller [--filename="..."] [--debug] [--allowed-ip="..."] [--check-server] [--force] app [env]</usage>
+  <description>Generates a new front controller</description>
+  <help>The &lt;em&gt;generate:controller&lt;/em&gt; task creates a front controller in the &lt;strong&gt;web/&lt;/strong&gt;
+ directory:
+
+   &lt;em&gt;./symfony generate:controller frontend dev --debug&lt;/em&gt;
+
+ Traffic to this controller can be restricted by IP address by using the
+ &lt;strong&gt;allowed-ip&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony generate:controller frontend dev --allowed-ip="127.0.0.1" --debug&lt;/em&gt;
+
+ This common use case can also be accomplished using the &lt;strong&gt;localhost&lt;/strong&gt; shortcut:
+
+   &lt;em&gt;./symfony generate:controller frontend dev --allowed-ip="localhost" --debug&lt;/em&gt;
+
+ If you want to use a filename other than the symfony default filename, use
+ the &lt;strong&gt;filename&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony generate:controller frontend prod --filename="index"&lt;/em&gt;
+
+ The controller can be configured to listen to the server for configuration
+ variables using the &lt;strong&gt;check-server&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony generate:controller frontend prod --check-server&lt;/em&gt;
+
+ This option will add logic to your controller to first look for
+ &lt;strong&gt;SF_APPLICATION&lt;/strong&gt;, &lt;strong&gt;SF_ENVIRONMENT&lt;/strong&gt; and &lt;strong&gt;SF_DEBUG&lt;/strong&gt; keys in the &lt;strong&gt;$ SERVER&lt;/strong&gt; array. If
+ these keys are not found, the command arguments are used.
+
+   &lt;em&gt;./symfony generate:controller frontend prod --filename="index" --check-server --force&lt;/em&gt;
+ </help>
+  <aliases>
+    <alias>init-controller</alias>
+  </aliases>
+  <arguments>
+    <argument name="app" is_required="1" is_array="0">
+      <description>The controller application name</description>
+      <defaults/>
+    </argument>
+    <argument name="env" is_required="0" is_array="0">
+      <description>The controller environment name</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--filename" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>Filename for the controller</description>
+      <defaults/>
+    </option>
+    <option name="--debug" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Controller debug mode</description>
+    </option>
+    <option name="--allowed-ip" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="1">
+      <description>Restrict traffic by IP address</description>
+      <defaults/>
+    </option>
+    <option name="--check-server" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Check for configuration variables in the $_SERVER array</description>
+    </option>
+    <option name="--force" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Overwrite any existing file of the same name</description>
+    </option>
+  </options>
+</task>
+    <task id="generate:module" namespace="generate" name="module">
+  <usage> generate:module  application module</usage>
+  <description>Generates a new module</description>
+  <help>The &lt;em&gt;generate:module&lt;/em&gt; task creates the basic directory structure
+ for a new module in an existing application:
+
+   &lt;em&gt;./symfony generate:module frontend article&lt;/em&gt;
+
+ The task can also change the author name found in the &lt;strong&gt;actions.class.php&lt;/strong&gt;
+ if you have configure it in &lt;strong&gt;config/properties.ini&lt;/strong&gt;:
+
+   &lt;em&gt;[symfony]
+     name=blog
+     author=Fabien Potencier &lt;fabien.potencier@sensio.com&gt;&lt;/em&gt;
+
+ You can customize the default skeleton used by the task by creating a
+ &lt;strong&gt;%sf_data_dir%/skeleton/module&lt;/strong&gt; directory.
+
+ The task also creates a functional test stub named
+ &lt;strong&gt;%sf_test_dir%/functional/%application%/%module%ActionsTest.class.php&lt;/strong&gt;
+ that does not pass by default.
+
+ If a module with the same name already exists in the application,
+ it throws a &lt;strong&gt;sfCommandException&lt;/strong&gt;.</help>
+  <aliases/>
+  <arguments>
+    <argument name="application" is_required="1" is_array="0">
+      <description>The application name</description>
+      <defaults/>
+    </argument>
+    <argument name="module" is_required="1" is_array="0">
+      <description>The module name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options/>
+</task>
+    <task id="generate:plugin" namespace="generate" name="plugin">
+  <usage> generate:plugin [--module="..."] [--test-application="..."] [--skip-test-dir] plugin</usage>
+  <description>Generates a new plugin</description>
+  <help>The &lt;em&gt;generate:plugin&lt;/em&gt; task creates the basic directory structure for a
+ new plugin in the current project:
+
+   &lt;em&gt;./symfony generate:plugin sfExamplePlugin&lt;/em&gt;
+
+ You can customize the default skeleton used by the task by creating a
+ &lt;strong&gt;%SF_DATA_DIR%/skeleton/plugin&lt;/strong&gt; directory.
+
+ You can also specify one or more modules you would like included in this
+ plugin using the &lt;strong&gt;--module&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony generate:plugin sfExamplePlugin --module=sfExampleFoo --module=sfExampleBar&lt;/em&gt;
+
+ This task automatically generates all the necessary files for writing unit and
+ functional tests for your plugin, including an embedded symfony project and
+ application in &lt;strong&gt;/test/fixtures/project&lt;/strong&gt;. You can customized the name
+ used with the &lt;strong&gt;--test-application&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony generate:plugin sfExamplePlugin --test-application=backend&lt;/em&gt;
+
+ Use the &lt;strong&gt;--skip-test-dir&lt;/strong&gt; to skip generation of the plugin &lt;strong&gt;/test&lt;/strong&gt;
+ directory entirely:
+
+   &lt;em&gt;./symfony generate:plugin sfExamplePlugin --skip-test-dir&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="plugin" is_required="1" is_array="0">
+      <description>The plugin name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--module" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="1">
+      <description>Add a module</description>
+      <defaults/>
+    </option>
+    <option name="--test-application" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>A name for the initial test application</description>
+      <defaults>
+        <default>frontend</default>
+      </defaults>
+    </option>
+    <option name="--skip-test-dir" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Skip generation of the plugin test directory</description>
+    </option>
+  </options>
+</task>
+    <task id="generate:plugin-module" namespace="generate" name="plugin-module">
+  <usage> generate:plugin-module  plugin module</usage>
+  <description>Generates a new module in a plugin</description>
+  <help>The &lt;em&gt;generate:plugin-module&lt;/em&gt; task creates the basic directory structure
+ for a new module in an existing plugin:
+
+   &lt;em&gt;./symfony generate:plugin-module sfExamplePlugin article&lt;/em&gt;
+
+ You can customize the default skeleton used by the task by creating a
+ &lt;strong&gt;%sf_data_dir%/skeleton/plugin_module&lt;/strong&gt; directory.
+
+ The task also creates a functional test stub in your plugin's
+ &lt;strong&gt;/test/functional&lt;/strong&gt; directory.
+
+ If a module with the same name already exists in the plugin, a
+ &lt;strong&gt;sfCommandException&lt;/strong&gt; is thrown.</help>
+  <aliases/>
+  <arguments>
+    <argument name="plugin" is_required="1" is_array="0">
+      <description>The plugin name</description>
+      <defaults/>
+    </argument>
+    <argument name="module" is_required="1" is_array="0">
+      <description>The module name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options/>
+</task>
+    <task id="generate:project" namespace="generate" name="project">
+  <usage> generate:project [--orm="..."] [--installer="..."] name [author]</usage>
+  <description>Generates a new project</description>
+  <help>The &lt;em&gt;generate:project&lt;/em&gt; task creates the basic directory structure
+ for a new project in the current directory:
+
+   &lt;em&gt;./symfony generate:project blog&lt;/em&gt;
+
+ If the current directory already contains a symfony project,
+ it throws a &lt;strong&gt;sfCommandException&lt;/strong&gt;.
+
+ By default, the task configures Doctrine as the ORM. If you want to use
+ Propel, use the &lt;strong&gt;--orm&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony generate:project blog --orm=Propel&lt;/em&gt;
+
+ If you don't want to use an ORM, pass &lt;strong&gt;none&lt;/strong&gt; to &lt;strong&gt;--orm&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony generate:project blog --orm=none&lt;/em&gt;
+
+ You can also pass the &lt;strong&gt;--installer&lt;/strong&gt; option to further customize the
+ project:
+
+   &lt;em&gt;./symfony generate:project blog --installer=./installer.php&lt;/em&gt;
+
+ You can optionally include a second &lt;strong&gt;author&lt;/strong&gt; argument to specify what name to
+ use as author when symfony generates new classes:
+
+   &lt;em&gt;./symfony generate:project blog "Jack Doe"&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="name" is_required="1" is_array="0">
+      <description>The project name</description>
+      <defaults/>
+    </argument>
+    <argument name="author" is_required="0" is_array="0">
+      <description>The project author</description>
+      <defaults>
+        <default>Your name here</default>
+      </defaults>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--orm" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The ORM to use by default</description>
+      <defaults>
+        <default>Doctrine</default>
+      </defaults>
+    </option>
+    <option name="--installer" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>An installer script to execute</description>
+      <defaults/>
+    </option>
+  </options>
+</task>
+    <task id="generate:task" namespace="generate" name="task">
+  <usage> generate:task [--dir="..."] [--use-database="..."] [--brief-description="..."] task_name</usage>
+  <description>Creates a skeleton class for a new task</description>
+  <help>The &lt;em&gt;generate:task&lt;/em&gt; creates a new sfTask class based on the name passed as
+ argument:
+
+   &lt;em&gt;./symfony generate:task namespace:name&lt;/em&gt;
+
+ The &lt;strong&gt;namespaceNameTask.class.php&lt;/strong&gt; skeleton task is created under the &lt;strong&gt;lib/task/&lt;/strong&gt;
+ directory. Note that the namespace is optional.
+
+ If you want to create the file in another directory (relative to the project
+ root folder), pass it in the &lt;strong&gt;--dir&lt;/strong&gt; option. This directory will be created
+ if it does not already exist.
+
+   &lt;em&gt;./symfony generate:task namespace:name --dir=plugins/myPlugin/lib/task&lt;/em&gt;
+
+ If you want the task to default to a connection other than &lt;strong&gt;doctrine&lt;/strong&gt;, provide
+ the name of this connection with the &lt;strong&gt;--use-database&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony generate:task namespace:name --use-database=main&lt;/em&gt;
+
+ The &lt;strong&gt;--use-database&lt;/strong&gt; option can also be used to disable database
+ initialization in the generated task:
+
+   &lt;em&gt;./symfony generate:task namespace:name --use-database=false&lt;/em&gt;
+
+ You can also specify a description:
+
+   &lt;em&gt;./symfony generate:task namespace:name --brief-description="Does interesting things"&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="task_name" is_required="1" is_array="0">
+      <description>The task name (can contain namespace)</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--dir" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The directory to create the task in</description>
+      <defaults>
+        <default>lib/task</default>
+      </defaults>
+    </option>
+    <option name="--use-database" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>Whether the task needs model initialization to access database</description>
+      <defaults>
+        <default>doctrine</default>
+      </defaults>
+    </option>
+    <option name="--brief-description" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>A brief task description (appears in task list)</description>
+      <defaults/>
+    </option>
+  </options>
+</task>
+    <task id="generate:test" namespace="generate" name="test">
+  <usage> generate:test [--force] [--editor-cmd="..."] class</usage>
+  <description>Generates a single unit test stub script</description>
+  <help>The &lt;em&gt;generate:test&lt;/em&gt; task generates an empty unit test script in your
+ &lt;strong&gt;test/unit/&lt;/strong&gt; directory and reflects the organization of your &lt;strong&gt;lib/&lt;/strong&gt; directory:
+
+   &lt;em&gt;./symfony generate:test myClass&lt;/em&gt;
+
+ To open the test script in your test editor once the task completes, use the
+ &lt;strong&gt;--editor-cmd&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony generate:test myClass --editor-cmd=mate&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="class" is_required="1" is_array="0">
+      <description>The class to test</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--force" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Overwrite any existing test file</description>
+    </option>
+    <option name="--editor-cmd" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>Open script with this command upon creation</description>
+      <defaults/>
+    </option>
+  </options>
+</task>
+    <task id="guard:add-group" namespace="guard" name="add-group">
+  <usage> guard:add-group [--application[="..."]] [--env="..."] username group</usage>
+  <description>Adds a group to a user</description>
+  <help>The &lt;em&gt;guard:add-group&lt;/em&gt; task adds a group to a user:
+
+   &lt;em&gt;./symfony guard:add-group fabien admin&lt;/em&gt;
+
+ The user and the group must exist in the database.</help>
+  <aliases/>
+  <arguments>
+    <argument name="username" is_required="1" is_array="0">
+      <description>The user name</description>
+      <defaults/>
+    </argument>
+    <argument name="group" is_required="1" is_array="0">
+      <description>The group name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults/>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="guard:add-permission" namespace="guard" name="add-permission">
+  <usage> guard:add-permission [--application[="..."]] [--env="..."] username permission</usage>
+  <description>Adds a permission to a user</description>
+  <help>The &lt;em&gt;guard:add-permission&lt;/em&gt; task adds a permission to a user:
+
+   &lt;em&gt;./symfony guard:add-permission fabien admin&lt;/em&gt;
+
+ The user and the permission must exist in the database.</help>
+  <aliases/>
+  <arguments>
+    <argument name="username" is_required="1" is_array="0">
+      <description>The user name</description>
+      <defaults/>
+    </argument>
+    <argument name="permission" is_required="1" is_array="0">
+      <description>The permission name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults/>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="guard:change-password" namespace="guard" name="change-password">
+  <usage> guard:change-password [--application[="..."]] [--env="..."] username password</usage>
+  <description>Changes the password of the user</description>
+  <help>The &lt;em&gt;guard:change-password&lt;/em&gt; task allows to change a user's password:
+
+   &lt;em&gt;./symfony guard:change-password fabien changeme&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="username" is_required="1" is_array="0">
+      <description>The user name</description>
+      <defaults/>
+    </argument>
+    <argument name="password" is_required="1" is_array="0">
+      <description>The new password</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults/>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="guard:create-user" namespace="guard" name="create-user">
+  <usage> guard:create-user [--application[="..."]] [--env="..."] username password</usage>
+  <description>Creates a user</description>
+  <help>The &lt;em&gt;guard:create-user&lt;/em&gt; task creates a user:
+
+   &lt;em&gt;./symfony guard:create-user fabien password&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="username" is_required="1" is_array="0">
+      <description>The user name</description>
+      <defaults/>
+    </argument>
+    <argument name="password" is_required="1" is_array="0">
+      <description>The password</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults/>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="guard:promote" namespace="guard" name="promote">
+  <usage> guard:promote [--application[="..."]] [--env="..."] username</usage>
+  <description>Promotes a user as a super administrator</description>
+  <help>The &lt;em&gt;guard:promote&lt;/em&gt; task promotes a user as a super administrator:
+
+   &lt;em&gt;./symfony guard:promote fabien&lt;/em&gt;
+
+ The user must exist in the database.</help>
+  <aliases/>
+  <arguments>
+    <argument name="username" is_required="1" is_array="0">
+      <description>The user name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults/>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="i18n:extract" namespace="i18n" name="extract">
+  <usage> i18n:extract [--display-new] [--display-old] [--auto-save] [--auto-delete] application culture</usage>
+  <description>Extracts i18n strings from php files</description>
+  <help>The &lt;em&gt;i18n:extract&lt;/em&gt; task extracts i18n strings from your project files
+ for the given application and target culture:
+
+   &lt;em&gt;./symfony i18n:extract frontend fr&lt;/em&gt;
+
+ By default, the task only displays the number of new and old strings
+ it found in the current project.
+
+ If you want to display the new strings, use the &lt;strong&gt;--display-new&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony i18n:extract --display-new frontend fr&lt;/em&gt;
+
+ To save them in the i18n message catalogue, use the &lt;strong&gt;--auto-save&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony i18n:extract --auto-save frontend fr&lt;/em&gt;
+
+ If you want to display strings that are present in the i18n messages
+ catalogue but are not found in the application, use the
+ &lt;strong&gt;--display-old&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony i18n:extract --display-old frontend fr&lt;/em&gt;
+
+ To automatically delete old strings, use the &lt;strong&gt;--auto-delete&lt;/strong&gt; but
+ be careful, especially if you have translations for plugins as they will
+ appear as old strings but they are not:
+
+   &lt;em&gt;./symfony i18n:extract --auto-delete frontend fr&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="application" is_required="1" is_array="0">
+      <description>The application name</description>
+      <defaults/>
+    </argument>
+    <argument name="culture" is_required="1" is_array="0">
+      <description>The target culture</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--display-new" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Output all new found strings</description>
+    </option>
+    <option name="--display-old" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Output all old strings</description>
+    </option>
+    <option name="--auto-save" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Save the new strings</description>
+    </option>
+    <option name="--auto-delete" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Delete old strings</description>
+    </option>
+  </options>
+</task>
+    <task id="i18n:find" namespace="i18n" name="find">
+  <usage> i18n:find [--env="..."] application</usage>
+  <description>Finds non "i18n ready" strings in an application</description>
+  <help>The &lt;em&gt;i18n:find&lt;/em&gt; task finds non internationalized strings embedded in templates:
+
+   &lt;em&gt;./symfony i18n:find frontend&lt;/em&gt;
+
+ This task is able to find non internationalized strings in pure HTML and in PHP code:
+
+   &lt;p&gt;Non i18n text&lt;/p&gt;
+   &lt;p&gt;&lt;?php echo 'Test' ?&gt;&lt;/p&gt;
+
+ As the task returns all strings embedded in PHP, you can have some false positive (especially
+ if you use the string syntax for helper arguments).</help>
+  <aliases/>
+  <arguments>
+    <argument name="application" is_required="1" is_array="0">
+      <description>The application name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="log:clear" namespace="log" name="clear">
+  <usage> log:clear  </usage>
+  <description>Clears log files</description>
+  <help>The &lt;em&gt;log:clear&lt;/em&gt; task clears all symfony log files:
+
+   &lt;em&gt;./symfony log:clear&lt;/em&gt;</help>
+  <aliases/>
+  <arguments/>
+  <options/>
+</task>
+    <task id="log:rotate" namespace="log" name="rotate">
+  <usage> log:rotate [--history="..."] [--period="..."] application env</usage>
+  <description>Rotates an application's log files</description>
+  <help>The &lt;em&gt;log:rotate&lt;/em&gt; task rotates application log files for a given
+ environment:
+
+   &lt;em&gt;./symfony log:rotate frontend dev&lt;/em&gt;
+
+ You can specify a &lt;strong&gt;period&lt;/strong&gt; or a &lt;strong&gt;history&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony log:rotate frontend dev --history=10 --period=7&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="application" is_required="1" is_array="0">
+      <description>The application name</description>
+      <defaults/>
+    </argument>
+    <argument name="env" is_required="1" is_array="0">
+      <description>The environment name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--history" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The maximum number of old log files to keep</description>
+      <defaults>
+        <default>10</default>
+      </defaults>
+    </option>
+    <option name="--period" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The period in days</description>
+      <defaults>
+        <default>7</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="plugin:add-channel" namespace="plugin" name="add-channel">
+  <usage> plugin:add-channel  name</usage>
+  <description>Add a new PEAR channel</description>
+  <help>The &lt;em&gt;plugin:add-channel&lt;/em&gt; task adds a new PEAR channel:
+
+   &lt;em&gt;./symfony plugin:add-channel symfony.plugins.pear.example.com&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="name" is_required="1" is_array="0">
+      <description>The channel name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options/>
+</task>
+    <task id="plugin:install" namespace="plugin" name="install">
+  <usage> plugin:install [-s|--stability="..."] [-r|--release="..."] [-c|--channel="..."] [-d|--install_deps] [--force-license] name</usage>
+  <description>Installs a plugin</description>
+  <help>The &lt;em&gt;plugin:install&lt;/em&gt; task installs a plugin:
+
+   &lt;em&gt;./symfony plugin:install sfGuardPlugin&lt;/em&gt;
+
+ By default, it installs the latest &lt;strong&gt;stable&lt;/strong&gt; release.
+
+ If you want to install a plugin that is not stable yet,
+ use the &lt;strong&gt;stability&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony plugin:install --stability=beta sfGuardPlugin&lt;/em&gt;
+   &lt;em&gt;./symfony plugin:install -s beta sfGuardPlugin&lt;/em&gt;
+
+ You can also force the installation of a specific version:
+
+   &lt;em&gt;./symfony plugin:install --release=1.0.0 sfGuardPlugin&lt;/em&gt;
+   &lt;em&gt;./symfony plugin:install -r 1.0.0 sfGuardPlugin&lt;/em&gt;
+
+ To force installation of all required dependencies, use the &lt;em&gt;install_deps&lt;/em&gt; flag:
+
+   &lt;em&gt;./symfony plugin:install --install-deps sfGuardPlugin&lt;/em&gt;
+   &lt;em&gt;./symfony plugin:install -d sfGuardPlugin&lt;/em&gt;
+
+ By default, the PEAR channel used is &lt;em&gt;symfony-plugins&lt;/em&gt;
+ (plugins.symfony-project.org).
+
+ You can specify another channel with the &lt;strong&gt;channel&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony plugin:install --channel=mypearchannel sfGuardPlugin&lt;/em&gt;
+   &lt;em&gt;./symfony plugin:install -c mypearchannel sfGuardPlugin&lt;/em&gt;
+
+ You can also install PEAR packages hosted on a website:
+
+   &lt;em&gt;./symfony plugin:install http://somewhere.example.com/sfGuardPlugin-1.0.0.tgz&lt;/em&gt;
+
+ Or local PEAR packages:
+
+   &lt;em&gt;./symfony plugin:install /home/fabien/plugins/sfGuardPlugin-1.0.0.tgz&lt;/em&gt;
+
+ If the plugin contains some web content (images, stylesheets or javascripts),
+ the task creates a &lt;strong&gt;%name%&lt;/strong&gt; symbolic link for those assets under &lt;strong&gt;web/&lt;/strong&gt;.
+ On Windows, the task copy all the files to the &lt;strong&gt;web/%name%&lt;/strong&gt; directory.</help>
+  <aliases/>
+  <arguments>
+    <argument name="name" is_required="1" is_array="0">
+      <description>The plugin name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--stability" shortcut="-s" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The preferred stability (stable, beta, alpha)</description>
+      <defaults/>
+    </option>
+    <option name="--release" shortcut="-r" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The preferred version</description>
+      <defaults/>
+    </option>
+    <option name="--channel" shortcut="-c" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The PEAR channel name</description>
+      <defaults/>
+    </option>
+    <option name="--install_deps" shortcut="-d" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Whether to force installation of required dependencies</description>
+    </option>
+    <option name="--force-license" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Whether to force installation even if the license is not MIT like</description>
+    </option>
+  </options>
+</task>
+    <task id="plugin:list" namespace="plugin" name="list">
+  <usage> plugin:list  </usage>
+  <description>Lists installed plugins</description>
+  <help>The &lt;em&gt;plugin:list&lt;/em&gt; task lists all installed plugins:
+
+   &lt;em&gt;./symfony plugin:list&lt;/em&gt;
+
+ It also gives the channel and version for each plugin.</help>
+  <aliases/>
+  <arguments/>
+  <options/>
+</task>
+    <task id="plugin:package" namespace="plugin" name="package">
+  <usage> plugin:package [--plugin-version="..."] [--plugin-stability="..."] [--non-interactive] [--nocompress] [--application[="..."]] [--env="..."] plugin</usage>
+  <description>Create a plugin PEAR package</description>
+  <help>The &lt;em&gt;plugin:package&lt;/em&gt; task creates a plugin PEAR package:
+
+   &lt;em&gt;./symfony plugin:package sfExamplePlugin&lt;/em&gt;
+
+ If your plugin includes a package.xml file, it will be used. If not, the task
+ will look for a package.xml.tmpl file in your plugin and use either that or a
+ default template to dynamically generate your package.xml file.
+
+ You can either edit your plugin's package.xml.tmpl file or use the
+ &lt;strong&gt;--plugin-version&lt;/strong&gt; or &lt;strong&gt;--plugin-stability&lt;/strong&gt; options to set the
+ release version and stability, respectively:
+
+   &lt;em&gt;./symfony plugin:package sfExamplePlugin --plugin-version=0.5.0 --plugin-stability=alpha&lt;/em&gt;
+
+ To disable any interactive prompts in the packaging process, include the
+ &lt;strong&gt;--non-interactive&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony plugin:package sfExamplePlugin --non-interactive&lt;/em&gt;
+
+ To disable compression of the package tar, use the &lt;strong&gt;--nocompress&lt;/strong&gt;
+ option:
+
+   &lt;em&gt;./symfony plugin:package sfExamplePlugin --nocompress&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="plugin" is_required="1" is_array="0">
+      <description>The plugin name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--plugin-version" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The plugin version</description>
+      <defaults/>
+    </option>
+    <option name="--plugin-stability" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The plugin stability</description>
+      <defaults/>
+    </option>
+    <option name="--non-interactive" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Skip interactive prompts</description>
+    </option>
+    <option name="--nocompress" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Do not compress the package</description>
+    </option>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="plugin:publish-assets" namespace="plugin" name="publish-assets">
+  <usage> plugin:publish-assets [--core-only] [plugins1] ... [pluginsN]</usage>
+  <description>Publishes web assets for all plugins</description>
+  <help>The &lt;em&gt;plugin:publish-assets&lt;/em&gt; task will publish web assets from all plugins.
+
+   &lt;em&gt;./symfony plugin:publish-assets&lt;/em&gt;
+
+ In fact this will send the &lt;em&gt;plugin.post_install&lt;/em&gt; event to each plugin.
+
+ You can specify which plugin or plugins should install their assets by passing
+ those plugins' names as arguments:
+
+   &lt;em&gt;./symfony plugin:publish-assets sfDoctrinePlugin&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="plugins" is_required="0" is_array="1">
+      <description>Publish this plugin's assets</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--core-only" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>If set only core plugins will publish their assets</description>
+    </option>
+  </options>
+</task>
+    <task id="plugin:uninstall" namespace="plugin" name="uninstall">
+  <usage> plugin:uninstall [-c|--channel="..."] [-d|--install_deps] name</usage>
+  <description>Uninstalls a plugin</description>
+  <help>The &lt;em&gt;plugin:uninstall&lt;/em&gt; task uninstalls a plugin:
+
+   &lt;em&gt;./symfony plugin:uninstall sfGuardPlugin&lt;/em&gt;
+
+ The default channel is &lt;em&gt;symfony&lt;/em&gt;.
+
+ You can also uninstall a plugin which has a different channel:
+
+   &lt;em&gt;./symfony plugin:uninstall --channel=mypearchannel sfGuardPlugin&lt;/em&gt;
+
+   &lt;em&gt;./symfony plugin:uninstall -c mypearchannel sfGuardPlugin&lt;/em&gt;
+
+ Or you can use the &lt;em&gt;channel/package&lt;/em&gt; notation:
+
+   &lt;em&gt;./symfony plugin:uninstall mypearchannel/sfGuardPlugin&lt;/em&gt;
+
+ You can get the PEAR channel name of a plugin by launching the
+ &lt;strong&gt;plugin:list] task.
+
+ If the plugin contains some web content (images, stylesheets or javascripts),
+ the task also removes the [web/%name%&lt;/strong&gt; symbolic link (on *nix)
+ or directory (on Windows).</help>
+  <aliases/>
+  <arguments>
+    <argument name="name" is_required="1" is_array="0">
+      <description>The plugin name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--channel" shortcut="-c" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The PEAR channel name</description>
+      <defaults/>
+    </option>
+    <option name="--install_deps" shortcut="-d" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Whether to force installation of dependencies</description>
+    </option>
+  </options>
+</task>
+    <task id="plugin:upgrade" namespace="plugin" name="upgrade">
+  <usage> plugin:upgrade [-s|--stability="..."] [-r|--release="..."] [-c|--channel="..."] name</usage>
+  <description>Upgrades a plugin</description>
+  <help>The &lt;em&gt;plugin:upgrade&lt;/em&gt; task tries to upgrade a plugin:
+
+   &lt;em&gt;./symfony plugin:upgrade sfGuardPlugin&lt;/em&gt;
+
+ The default channel is &lt;em&gt;symfony&lt;/em&gt;.
+
+ If the plugin contains some web content (images, stylesheets or javascripts),
+ the task also updates the &lt;strong&gt;web/%name%&lt;/strong&gt; directory content on Windows.
+
+ See &lt;em&gt;plugin:install&lt;/em&gt; for more information about the format of the plugin name and options.</help>
+  <aliases/>
+  <arguments>
+    <argument name="name" is_required="1" is_array="0">
+      <description>The plugin name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--stability" shortcut="-s" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The preferred stability (stable, beta, alpha)</description>
+      <defaults/>
+    </option>
+    <option name="--release" shortcut="-r" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The preferred version</description>
+      <defaults/>
+    </option>
+    <option name="--channel" shortcut="-c" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The PEAR channel name</description>
+      <defaults/>
+    </option>
+  </options>
+</task>
+    <task id="project:clear-controllers" namespace="project" name="clear-controllers">
+  <usage> project:clear-controllers  </usage>
+  <description>Clears all non production environment controllers</description>
+  <help>The &lt;em&gt;project:clear-controllers&lt;/em&gt; task clears all non production environment
+ controllers:
+
+   &lt;em&gt;./symfony project:clear-controllers&lt;/em&gt;
+
+ You can use this task on a production server to remove all front
+ controller scripts except the production ones.
+
+ If you have two applications named &lt;strong&gt;frontend&lt;/strong&gt; and &lt;strong&gt;backend&lt;/strong&gt;,
+ you have four default controller scripts in &lt;strong&gt;web/&lt;/strong&gt;:
+
+   &lt;em&gt;index.php
+   frontend_dev.php
+   backend.php
+   backend_dev.php&lt;/em&gt;
+
+ After executing the &lt;strong&gt;project:clear-controllers&lt;/strong&gt; task, two front
+ controller scripts are left in &lt;strong&gt;web/&lt;/strong&gt;:
+
+   &lt;em&gt;index.php
+   backend.php&lt;/em&gt;
+
+ Those two controllers are safe because debug mode and the web debug
+ toolbar are disabled.</help>
+  <aliases/>
+  <arguments/>
+  <options/>
+</task>
+    <task id="project:deploy" namespace="project" name="deploy">
+  <usage> project:deploy [--go] [--rsync-dir="..."] [--rsync-options[="..."]] server</usage>
+  <description>Deploys a project to another server</description>
+  <help>The &lt;em&gt;project:deploy&lt;/em&gt; task deploys a project on a server:
+
+   &lt;em&gt;./symfony project:deploy production&lt;/em&gt;
+
+ The server must be configured in &lt;strong&gt;config/properties.ini&lt;/strong&gt;:
+
+   &lt;em&gt;[production]
+     host=www.example.com
+     port=22
+     user=fabien
+     dir=/var/www/sfblog/
+     type=rsync&lt;/em&gt;
+
+ To automate the deployment, the task uses rsync over SSH.
+ You must configure SSH access with a key or configure the password
+ in &lt;strong&gt;config/properties.ini&lt;/strong&gt;.
+
+ By default, the task is in dry-mode. To do a real deployment, you
+ must pass the &lt;strong&gt;--go&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony project:deploy --go production&lt;/em&gt;
+
+ Files and directories configured in &lt;strong&gt;config/rsync_exclude.txt&lt;/strong&gt; are
+ not deployed:
+
+   &lt;em&gt;.svn
+   /web/uploads/*
+   /cache/*
+   /log/*&lt;/em&gt;
+
+ You can also create a &lt;strong&gt;rsync.txt&lt;/strong&gt; and &lt;strong&gt;rsync_include.txt&lt;/strong&gt; files.
+
+ If you need to customize the &lt;strong&gt;rsync*.txt&lt;/strong&gt; files based on the server,
+ you can pass a &lt;strong&gt;rsync-dir&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony project:deploy --go --rsync-dir=config/production production&lt;/em&gt;
+
+ Last, you can specify the options passed to the rsync executable, using the
+ &lt;em&gt;rsync-options&lt;/em&gt; option (defaults are &lt;em&gt;-azC --force --delete --progress&lt;/em&gt;):
+
+   &lt;em&gt;./symfony project:deploy --go --rsync-options=-avz&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="server" is_required="1" is_array="0">
+      <description>The server name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--go" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Do the deployment</description>
+    </option>
+    <option name="--rsync-dir" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The directory where to look for rsync*.txt files</description>
+      <defaults>
+        <default>config</default>
+      </defaults>
+    </option>
+    <option name="--rsync-options" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>To options to pass to the rsync executable</description>
+      <defaults>
+        <default>-azC --force --delete --progress</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="project:disable" namespace="project" name="disable">
+  <usage> project:disable  env [app1] ... [appN]</usage>
+  <description>Disables an application in a given environment</description>
+  <help>The &lt;em&gt;project:disable&lt;/em&gt; task disables an environment:
+
+   &lt;em&gt;./symfony project:disable prod&lt;/em&gt;
+
+ You can also specify individual applications to be disabled in that
+ environment:
+
+   &lt;em&gt;./symfony project:disable prod frontend backend&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="env" is_required="1" is_array="0">
+      <description>The environment name</description>
+      <defaults/>
+    </argument>
+    <argument name="app" is_required="0" is_array="1">
+      <description>The application name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options/>
+</task>
+    <task id="project:enable" namespace="project" name="enable">
+  <usage> project:enable  env [app1] ... [appN]</usage>
+  <description>Enables an application in a given environment</description>
+  <help>The &lt;em&gt;project:enable&lt;/em&gt; task enables a specific environment:
+
+   &lt;em&gt;./symfony project:enable frontend prod&lt;/em&gt;
+
+ You can also specify individual applications to be enabled in that
+ environment:
+
+   &lt;em&gt;./symfony project:enable prod frontend backend&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="env" is_required="1" is_array="0">
+      <description>The environment name</description>
+      <defaults/>
+    </argument>
+    <argument name="app" is_required="0" is_array="1">
+      <description>The application name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options/>
+</task>
+    <task id="project:mysql-dump" namespace="project" name="mysql-dump">
+  <usage> project:mysql-dump [--application="..."] [--env="..."] [--connection="..."] </usage>
+  <description>Outputs a MySQL SQL dump</description>
+  <help>You must specify the application ("frontend") the environment ("dev", "staging", "production"),
+ and an optional database connection name ("doctrine"). If you do not specify a database connection name the first (usually only) database connection for the specified environment is used. This task is
+ primarily intended to be run remotely by the sync-content task.',
+ </help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The application name</description>
+      <defaults/>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--connection" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The connection name</description>
+      <defaults>
+        <default>doctrine</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="project:mysql-load" namespace="project" name="mysql-load">
+  <usage> project:mysql-load [--application="..."] [--env="..."] [--connection="..."] </usage>
+  <description>Loads a MySQL SQL dump</description>
+  <help>You must specify the application ("frontend") the environment ("dev", "staging", "production"),
+ and an optional database connection name ("doctrine"). If you do not specify a database connection name the first (usually only) database connection for the specified environment is used. This task is
+ primarily intended to be run remotely by the sync-content task.',
+ </help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The application name</description>
+      <defaults/>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--connection" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The connection name</description>
+      <defaults>
+        <default>doctrine</default>
+      </defaults>
+    </option>
+  </options>
+</task>
+    <task id="project:optimize" namespace="project" name="optimize">
+  <usage> project:optimize  application [env]</usage>
+  <description>Optimizes a project for better performance</description>
+  <help>The &lt;em&gt;project:optimize&lt;/em&gt; optimizes a project for better performance:
+
+   &lt;em&gt;./symfony project:optimize frontend prod&lt;/em&gt;
+
+ This task should only be used on a production server. Don't forget to re-run
+ the task each time the project changes.</help>
+  <aliases/>
+  <arguments>
+    <argument name="application" is_required="1" is_array="0">
+      <description>The application name</description>
+      <defaults/>
+    </argument>
+    <argument name="env" is_required="0" is_array="0">
+      <description>The environment name</description>
+      <defaults>
+        <default>prod</default>
+      </defaults>
+    </argument>
+  </arguments>
+  <options/>
+</task>
+    <task id="project:permissions" namespace="project" name="permissions">
+  <usage> project:permissions  </usage>
+  <description>Fixes symfony directory permissions</description>
+  <help>The &lt;em&gt;project:permissions&lt;/em&gt; task fixes directory permissions:
+
+   &lt;em&gt;./symfony project:permissions&lt;/em&gt;</help>
+  <aliases/>
+  <arguments/>
+  <options/>
+</task>
+    <task id="project:send-emails" namespace="project" name="send-emails">
+  <usage> project:send-emails [--application[="..."]] [--env="..."] [--message-limit[="..."]] [--time-limit[="..."]] </usage>
+  <description>Sends emails stored in a queue</description>
+  <help>The &lt;em&gt;project:send-emails&lt;/em&gt; sends emails stored in a queue:
+
+   &lt;em&gt;php symfony project:send-emails&lt;/em&gt;
+
+ You can limit the number of messages to send:
+
+   &lt;em&gt;php symfony project:send-emails --message-limit=10&lt;/em&gt;
+
+ Or limit to time (in seconds):
+
+   &lt;em&gt;php symfony project:send-emails --time-limit=10&lt;/em&gt;</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The application name</description>
+      <defaults>
+        <default>1</default>
+      </defaults>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--message-limit" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The maximum number of messages to send</description>
+      <defaults/>
+    </option>
+    <option name="--time-limit" shortcut="" accept_parameter="1" is_parameter_required="0" is_multiple="0">
+      <description>The time limit for sending messages (in seconds)</description>
+      <defaults/>
+    </option>
+  </options>
+</task>
+    <task id="project:sync-content" namespace="project" name="sync-content">
+  <usage> project:sync-content  application env direction remoteenv</usage>
+  <description>Synchronize content (not code) between Symfony instances</description>
+  <help>You must specify the application ("frontend"), local environment ("dev"), "to" or "from", and the remote environment and site ("dev@staging", "prod@production", etc). Currently only the default database connection is copied. This may change in a future release. In addition to the database, data folders listed at app_sfSyncContentPlugin_content will also be synced.',
+ </help>
+  <aliases/>
+  <arguments>
+    <argument name="application" is_required="1" is_array="0">
+      <description>The application name ("frontend")</description>
+      <defaults/>
+    </argument>
+    <argument name="env" is_required="1" is_array="0">
+      <description>The local environment ("dev")</description>
+      <defaults/>
+    </argument>
+    <argument name="direction" is_required="1" is_array="0">
+      <description>Either "from" or "to"; when you specify "from" content is copied FROM the remote site, when you specify "to" content is copied TO the remote site</description>
+      <defaults/>
+    </argument>
+    <argument name="remoteenv" is_required="1" is_array="0">
+      <description>The remote environment and site. The site name must be defined in properties.ini</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options/>
+</task>
+    <task id="project:validate" namespace="project" name="validate">
+  <usage> project:validate  </usage>
+  <description>Finds deprecated usage in a project</description>
+  <help>The &lt;em&gt;project:validate&lt;/em&gt; task detects deprecated usage in your project.
+
+   &lt;em&gt;./symfony project:validate&lt;/em&gt;
+
+ The task lists all the files you need to change before switching to
+ symfony 1.4.</help>
+  <aliases/>
+  <arguments/>
+  <options/>
+</task>
+    <task id="subversion:set-props" namespace="subversion" name="set-props">
+  <usage> subversion:set-props [--with-svn="..."] </usage>
+  <description>Sets typical Subversion properties</description>
+  <help>The &lt;em&gt;subversion:set-props&lt;/em&gt; sets typical Subversion properties on your project
+ directories.
+
+   &lt;em&gt;./symfony subversion:set-props&lt;/em&gt;
+
+ This will set the &lt;strong&gt;svn:ignore&lt;/strong&gt; property to &lt;strong&gt;*&lt;/strong&gt; on the following directories:
+
+   cache/
+   data/sql
+   lib/form/doctrine/base
+   lib/form/doctrine/*/base
+   lib/filter/doctrine/base
+   lib/filter/doctrine/*/base
+   lib/model/doctrine/base
+   lib/model/doctrine/*/base
+   lib/model/om
+   lib/model/map
+   log/
+   web/uploads/
+
+ Additionally, the &lt;strong&gt;svn:ignore&lt;/strong&gt; property will be set to &lt;strong&gt;*_dev.php&lt;/strong&gt;
+ on the &lt;strong&gt;web/&lt;/strong&gt; directory.
+
+ You can specify which svn binary to use with the &lt;strong&gt;--with-svn&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony subversion:set-props --with-svn=/path/to/svn&lt;/em&gt;</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--with-svn" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>Subversion binary to use</description>
+      <defaults/>
+    </option>
+  </options>
+</task>
+    <task id="symfony:test" namespace="symfony" name="test">
+  <usage> symfony:test [-u|--update-autoloader] [-f|--only-failed] [--xml="..."] [--rebuild-all] </usage>
+  <description>Launches the symfony test suite</description>
+  <help>The &lt;em&gt;test:all&lt;/em&gt; task launches the symfony test suite:
+
+   &lt;em&gt;./symfony symfony:test&lt;/em&gt;</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--update-autoloader" shortcut="-u" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Update the sfCoreAutoload class</description>
+    </option>
+    <option name="--only-failed" shortcut="-f" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Only run tests that failed last time</description>
+    </option>
+    <option name="--xml" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The file name for the JUnit compatible XML log file</description>
+      <defaults/>
+    </option>
+    <option name="--rebuild-all" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Rebuild all generated fixture files</description>
+    </option>
+  </options>
+</task>
+    <task id="taggable:clean" namespace="taggable" name="clean">
+  <usage> taggable:clean [--application="..."] [--env="..."] [--connection="..."] [--verbose] </usage>
+  <description>deletes orphaned/unused Tag objects</description>
+  <help>The &lt;em&gt;taggable:clean&lt;/em&gt; task deletes orphaned/unused Tag objects.
+ Call it with:
+
+   &lt;em&gt;php symfony taggable:clean&lt;/em&gt;</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--application" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The application name</description>
+      <defaults/>
+    </option>
+    <option name="--env" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The environment</description>
+      <defaults>
+        <default>dev</default>
+      </defaults>
+    </option>
+    <option name="--connection" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The connection name</description>
+      <defaults>
+        <default>doctrine</default>
+      </defaults>
+    </option>
+    <option name="--verbose" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Display more output</description>
+    </option>
+  </options>
+</task>
+    <task id="test:all" namespace="test" name="all">
+  <usage> test:all [-f|--only-failed] [--xml="..."] </usage>
+  <description>Launches all tests</description>
+  <help>The &lt;em&gt;test:all&lt;/em&gt; task launches all unit and functional tests:
+
+   &lt;em&gt;./symfony test:all&lt;/em&gt;
+
+ The task launches all tests found in &lt;strong&gt;test/&lt;/strong&gt;.
+
+ If some tests fail, you can use the &lt;strong&gt;--trace&lt;/strong&gt; option to have more
+ information about the failures:
+
+     &lt;em&gt;./symfony test:all -t&lt;/em&gt;
+
+ Or you can also try to fix the problem by launching them by hand or with the
+ &lt;strong&gt;test:unit&lt;/strong&gt; and &lt;strong&gt;test:functional&lt;/strong&gt; task.
+
+ Use the &lt;strong&gt;--only-failed&lt;/strong&gt; option to force the task to only execute tests
+ that failed during the previous run:
+
+     &lt;em&gt;./symfony test:all --only-failed&lt;/em&gt;
+
+ Here is how it works: the first time, all tests are run as usual. But for
+ subsequent test runs, only tests that failed last time are executed. As you
+ fix your code, some tests will pass, and will be removed from subsequent runs.
+ When all tests pass again, the full test suite is run... you can then rinse
+ and repeat.
+
+ The task can output a JUnit compatible XML log file with the &lt;strong&gt;--xml&lt;/strong&gt;
+ options:
+
+   &lt;em&gt;./symfony test:all --xml=log.xml&lt;/em&gt;</help>
+  <aliases/>
+  <arguments/>
+  <options>
+    <option name="--only-failed" shortcut="-f" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Only run tests that failed last time</description>
+    </option>
+    <option name="--xml" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The file name for the JUnit compatible XML log file</description>
+      <defaults/>
+    </option>
+  </options>
+</task>
+    <task id="test:coverage" namespace="test" name="coverage">
+  <usage> test:coverage [--detailed] test_name lib_name</usage>
+  <description>Outputs test code coverage</description>
+  <help>The &lt;em&gt;test:coverage&lt;/em&gt; task outputs the code coverage
+ given a test file or test directory
+ and a lib file or lib directory for which you want code
+ coverage:
+
+   &lt;em&gt;./symfony test:coverage test/unit/model lib/model&lt;/em&gt;
+
+ To output the lines not covered, pass the &lt;em&gt;--detailed&lt;/em&gt; option:
+
+   &lt;em&gt;./symfony test:coverage --detailed test/unit/model lib/model&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="test_name" is_required="1" is_array="0">
+      <description>A test file name or a test directory</description>
+      <defaults/>
+    </argument>
+    <argument name="lib_name" is_required="1" is_array="0">
+      <description>A lib file name or a lib directory for wich you want to know the coverage</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--detailed" shortcut="" accept_parameter="0" is_parameter_required="0" is_multiple="0">
+      <description>Output detailed information</description>
+    </option>
+  </options>
+</task>
+    <task id="test:functional" namespace="test" name="functional">
+  <usage> test:functional [--xml="..."] application [controller1] ... [controllerN]</usage>
+  <description>Launches functional tests</description>
+  <help>The &lt;em&gt;test:functional&lt;/em&gt; task launches functional tests for a
+ given application:
+
+   &lt;em&gt;./symfony test:functional frontend&lt;/em&gt;
+
+ The task launches all tests found in &lt;strong&gt;test/functional/%application%&lt;/strong&gt;.
+
+ If some tests fail, you can use the &lt;strong&gt;--trace&lt;/strong&gt; option to have more
+ information about the failures:
+
+     &lt;em&gt;./symfony test:functional frontend -t&lt;/em&gt;
+
+ You can launch all functional tests for a specific controller by
+ giving a controller name:
+
+   &lt;em&gt;./symfony test:functional frontend article&lt;/em&gt;
+
+ You can also launch all functional tests for several controllers:
+
+   &lt;em&gt;./symfony test:functional frontend article comment&lt;/em&gt;
+
+ The task can output a JUnit compatible XML log file with the &lt;strong&gt;--xml&lt;/strong&gt;
+ options:
+
+   &lt;em&gt;./symfony test:functional --xml=log.xml&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="application" is_required="1" is_array="0">
+      <description>The application name</description>
+      <defaults/>
+    </argument>
+    <argument name="controller" is_required="0" is_array="1">
+      <description>The controller name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--xml" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The file name for the JUnit compatible XML log file</description>
+      <defaults/>
+    </option>
+  </options>
+</task>
+    <task id="test:plugin" namespace="test" name="plugin">
+  <usage> test:plugin [--only="..."] plugin1 ... [pluginN]</usage>
+  <description>Launches a plugin test suite</description>
+  <help>The &lt;em&gt;test:plugin&lt;/em&gt; task launches a plugin's test suite:
+
+   &lt;em&gt;./symfony test:plugin sfExamplePlugin&lt;/em&gt;
+
+ You can specify only unit or functional tests with the &lt;strong&gt;--only&lt;/strong&gt; option:
+
+   &lt;em&gt;./symfony test:plugin sfExamplePlugin --only=unit&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="plugin" is_required="1" is_array="1">
+      <description>The plugin name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--only" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>Only run "unit" or "functional" tests</description>
+      <defaults/>
+    </option>
+  </options>
+</task>
+    <task id="test:unit" namespace="test" name="unit">
+  <usage> test:unit [--xml="..."] [name1] ... [nameN]</usage>
+  <description>Launches unit tests</description>
+  <help>The &lt;em&gt;test:unit&lt;/em&gt; task launches unit tests:
+
+   &lt;em&gt;./symfony test:unit&lt;/em&gt;
+
+ The task launches all tests found in &lt;strong&gt;test/unit&lt;/strong&gt;.
+
+ If some tests fail, you can use the &lt;strong&gt;--trace&lt;/strong&gt; option to have more
+ information about the failures:
+
+     &lt;em&gt;./symfony test:unit -t&lt;/em&gt;
+
+ You can launch unit tests for a specific name:
+
+   &lt;em&gt;./symfony test:unit strtolower&lt;/em&gt;
+
+ You can also launch unit tests for several names:
+
+   &lt;em&gt;./symfony test:unit strtolower strtoupper&lt;/em&gt;
+
+ The task can output a JUnit compatible XML log file with the &lt;strong&gt;--xml&lt;/strong&gt;
+ options:
+
+   &lt;em&gt;./symfony test:unit --xml=log.xml&lt;/em&gt;</help>
+  <aliases/>
+  <arguments>
+    <argument name="name" is_required="0" is_array="1">
+      <description>The test name</description>
+      <defaults/>
+    </argument>
+  </arguments>
+  <options>
+    <option name="--xml" shortcut="" accept_parameter="1" is_parameter_required="1" is_multiple="0">
+      <description>The file name for the JUnit compatible XML log file</description>
+      <defaults/>
+    </option>
+  </options>
+</task>
+  </tasks>
+  <namespaces>
+    <namespace id="_global">
+      <task>help</task>
+      <task>list</task>
+    </namespace>
+    <namespace id="apostrophe">
+      <task>after-deploy</task>
+      <task>deploy</task>
+      <task>generate-slot-type</task>
+      <task>migrate-data-from-pkcontextcms</task>
+      <task>migrate-from-pkcontextcms</task>
+      <task>rebuild-search-index</task>
+      <task>refresh</task>
+      <task>repair-tree</task>
+      <task>ssh</task>
+      <task>update-search-index</task>
+    </namespace>
+    <namespace id="app">
+      <task>routes</task>
+    </namespace>
+    <namespace id="cache">
+      <task>clear</task>
+    </namespace>
+    <namespace id="configure">
+      <task>author</task>
+      <task>database</task>
+    </namespace>
+    <namespace id="doctrine">
+      <task>build</task>
+      <task>build-db</task>
+      <task>build-filters</task>
+      <task>build-forms</task>
+      <task>build-model</task>
+      <task>build-schema</task>
+      <task>build-sql</task>
+      <task>clean-model-files</task>
+      <task>create-model-tables</task>
+      <task>data-dump</task>
+      <task>data-load</task>
+      <task>delete-model-files</task>
+      <task>dql</task>
+      <task>drop-db</task>
+      <task>generate-admin</task>
+      <task>generate-migration</task>
+      <task>generate-migrations-db</task>
+      <task>generate-migrations-diff</task>
+      <task>generate-migrations-models</task>
+      <task>generate-module</task>
+      <task>generate-module-for-route</task>
+      <task>insert-sql</task>
+      <task>migrate</task>
+    </namespace>
+    <namespace id="generate">
+      <task>app</task>
+      <task>controller</task>
+      <task>module</task>
+      <task>plugin</task>
+      <task>plugin-module</task>
+      <task>project</task>
+      <task>task</task>
+      <task>test</task>
+    </namespace>
+    <namespace id="guard">
+      <task>add-group</task>
+      <task>add-permission</task>
+      <task>change-password</task>
+      <task>create-user</task>
+      <task>promote</task>
+    </namespace>
+    <namespace id="i18n">
+      <task>extract</task>
+      <task>find</task>
+    </namespace>
+    <namespace id="log">
+      <task>clear</task>
+      <task>rotate</task>
+    </namespace>
+    <namespace id="plugin">
+      <task>add-channel</task>
+      <task>install</task>
+      <task>list</task>
+      <task>package</task>
+      <task>publish-assets</task>
+      <task>uninstall</task>
+      <task>upgrade</task>
+    </namespace>
+    <namespace id="project">
+      <task>clear-controllers</task>
+      <task>deploy</task>
+      <task>disable</task>
+      <task>enable</task>
+      <task>mysql-dump</task>
+      <task>mysql-load</task>
+      <task>optimize</task>
+      <task>permissions</task>
+      <task>send-emails</task>
+      <task>sync-content</task>
+      <task>validate</task>
+    </namespace>
+    <namespace id="subversion">
+      <task>set-props</task>
+    </namespace>
+    <namespace id="symfony">
+      <task>test</task>
+    </namespace>
+    <namespace id="taggable">
+      <task>clean</task>
+    </namespace>
+    <namespace id="test">
+      <task>all</task>
+      <task>coverage</task>
+      <task>functional</task>
+      <task>plugin</task>
+      <task>unit</task>
+    </namespace>
+  </namespaces>
+</symfony>

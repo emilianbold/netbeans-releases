@@ -551,7 +551,7 @@ Nothing.
    Standard property evaluators mirror system properties, as does Ant.
   </p>
   <p>
-      <api type="export" group="property" name="netbeans.do.not.check.xalan" category="private">
+      <api type="export" group="systemproperty" name="netbeans.do.not.check.xalan" category="private">
           The "netbeans.do.not.check.xalan" property switches off the startup check for
           buggy Xalan. See issue #70130 for more information.
       </api>

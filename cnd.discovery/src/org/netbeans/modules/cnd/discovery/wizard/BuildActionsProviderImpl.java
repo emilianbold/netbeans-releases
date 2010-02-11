@@ -84,8 +84,8 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         //return Collections.<Action>emptyList();
         List<BuildAction> res = new ArrayList<BuildAction>();
         if (events != null && events.length == 2) {
-            if (events[0].getType() == ProjectActionEvent.Type.CLEAN &&
-                events[1].getType() == ProjectActionEvent.Type.BUILD &&
+            if (events[0].getType() == ProjectActionEvent.PredefinedType.CLEAN &&
+                events[1].getType() == ProjectActionEvent.PredefinedType.BUILD &&
                 (events[1].getConfiguration() instanceof MakeConfiguration)&&
                  events[1].getConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
                 res.add(new ConfigureAction(ioTabName, events));
@@ -115,20 +115,24 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
             }
         }
 
+        @Override
         public void executionStarted(int pid) {
             setEnabled(false);
         }
 
+        @Override
         public void executionFinished(int rc) {
             if (step == 1 && rc == 0) {
                 setEnabled(true);
             }
         }
 
+        @Override
         public void setStep(int step) {
             this.step = step;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             setEnabled(false);
             JEditorPane pane = findPane();

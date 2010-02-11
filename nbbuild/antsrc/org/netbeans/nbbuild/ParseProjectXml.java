@@ -52,6 +52,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -866,7 +867,14 @@ public final class ParseProjectXml extends Task {
         }
         Object automaticDependencies = automaticDependenciesClazz.getMethod("parse", URL[].class).invoke(
                 null, (Object) moduleAutoDeps.toArray(new URL[moduleAutoDeps.size()]));
-        String result = (String) refineDependenciesSimple.invoke(automaticDependencies, myCNB, depsS);
+        String result;
+        try {
+            result = (String) refineDependenciesSimple.invoke(automaticDependencies, myCNB, depsS);
+        } catch (InvocationTargetException x) {
+            // Can occur when core modules are being recompiled in the same Ant run.
+            log("Cannot translate according to " + moduleAutoDeps + " due to " + x.getCause(), Project.MSG_WARN);
+            return;
+        }
         if (result == null) {
             return;
         }
@@ -1055,11 +1063,9 @@ public final class ParseProjectXml extends Task {
                     "Cluster.path is: " + clusterPath;
             throw new BuildException(msg, getLocation());
         }
-        /* XXX consider readding:
         if (excludedModules != null && excludedModules.contains(cnb)) { // again #68716
             throw new BuildException("Module " + cnb + " excluded from the target platform", getLocation());
         }
-         */
         if (!jar.isFile()) {
             File srcdir = module.getSourceLocation();
             if (Project.toBoolean(getProject().getProperty(DO_NOT_RECURSE))) {

@@ -244,8 +244,10 @@ public final class DefaultProjectOperationsImplementation {
                     public void run() throws IOException {
                         try {
                             doCopyProject(handle, project, nueName, newTgtFO);
-                        } catch (Exception ex) {
-                            throw new IOException(ex.getLocalizedMessage());
+                        } catch (IOException x) {
+                            throw x;
+                        } catch (Exception x) {
+                            throw new IOException(x);
                         }
                     }
                 });
@@ -336,8 +338,10 @@ public final class DefaultProjectOperationsImplementation {
                     public void run() throws IOException {
                         try {
                             doMoveProject(handle, project, nueFolderName, nueProjectName, newTgtFO, "ERR_Cannot_Move");
-                        } catch (Exception ex) {
-                            throw new IOException(ex.getLocalizedMessage());
+                        } catch (IOException x) {
+                            throw x;
+                        } catch (Exception x) {
+                            throw new IOException(x);
                         }
                     }
                 });
@@ -365,8 +369,10 @@ public final class DefaultProjectOperationsImplementation {
                         public void run() throws IOException {
                             try {
                                 doMoveProject(handle, project, nueName, nueName, project.getProjectDirectory().getParent(), "ERR_Cannot_Rename");
-                            } catch (Exception ex) {
-                                throw new IOException(ex.getLocalizedMessage());
+                            } catch (IOException x) {
+                                throw x;
+                            } catch (Exception x) {
+                                throw new IOException(x);
                             }
                         }
                     });
@@ -375,8 +381,10 @@ public final class DefaultProjectOperationsImplementation {
                         public void run() throws IOException {
                             try {
                                 doRenameProject(handle, project, nueName);
-                            } catch (Exception ex) {
-                                throw new IOException(ex.getLocalizedMessage());
+                        } catch (IOException x) {
+                            throw x;
+                        } catch (Exception x) {
+                            throw new IOException(x);
                             }
                         }
                     });
@@ -417,6 +425,7 @@ public final class DefaultProjectOperationsImplementation {
             for (MoveOperationImplementation o : operations) {
                 o.notifyMoved(project, projectDirectoryFile, nueName);
             }
+            ProjectManager.getDefault().saveProject(project);
             ProjectManager.getDefault().saveProject(nue);
             open(nue, wasMain);
             handle.progress(++currentWorkDone);

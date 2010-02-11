@@ -47,6 +47,7 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -65,6 +66,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -131,7 +133,7 @@ public class IncludePathNodeFactory implements NodeFactory {
 
     private static class IncludePathChildFactory extends ChildFactory<Node> {
 
-        private PhpProject project;
+        private final PhpProject project;
 
         public IncludePathChildFactory(PhpProject project) {
             this.project = project;
@@ -153,7 +155,13 @@ public class IncludePathNodeFactory implements NodeFactory {
         NodeList<Node> createNodeList() {
             List<Node> list = new ArrayList<Node>();
             assert project != null;
-            List<FileObject> includePath = PhpSourcePath.getIncludePath(project.getProjectDirectory());
+            // #172092
+            List<FileObject> includePath = ProjectManager.mutex().readAccess(new Mutex.Action<List<FileObject>>() {
+                @Override
+                public List<FileObject> run() {
+                    return PhpSourcePath.getIncludePath(project.getProjectDirectory());
+                }
+            });
             for (FileObject fileObject : includePath) {
                 if (fileObject != null && fileObject.isFolder()) {
                     DataFolder df = DataFolder.findFolder(fileObject);

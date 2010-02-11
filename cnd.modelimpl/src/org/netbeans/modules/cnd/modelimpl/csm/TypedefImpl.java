@@ -275,12 +275,25 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
+    private static final byte UNNAMED_TYPE_FLAG = 1;
+    private static final byte UNNAMED_TYPEDEF_FLAG = 1 << 1;
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
-        output.writeBoolean(typeUnnamed);
+        byte unnamedState = 0;
+        if (typeUnnamed) {
+            unnamedState |= UNNAMED_TYPE_FLAG;
+        }
+        boolean unnamed = getName().length() == 0;
+        if (unnamed) {
+            unnamedState |= UNNAMED_TYPEDEF_FLAG;
+        }
+        output.writeByte(unnamedState);
+        if (unnamed) {
+            super.writeUID(output);
+        }
         assert this.type != null;
         PersistentUtils.writeType(this.type, output);
 
@@ -299,7 +312,18 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         super(input);
         this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
-        typeUnnamed = input.readBoolean();
+        byte unnamedState = input.readByte();
+        typeUnnamed = false;
+        if ((unnamedState & UNNAMED_TYPE_FLAG) == UNNAMED_TYPE_FLAG) {
+            typeUnnamed = true;
+        }
+        boolean unnamed = false;
+        if ((unnamedState & UNNAMED_TYPEDEF_FLAG) == UNNAMED_TYPEDEF_FLAG) {
+            unnamed = true;
+        }
+        if (unnamed) {
+            super.readUID(input);
+        }
         this.type = PersistentUtils.readType(input);
         assert this.type != null;
 

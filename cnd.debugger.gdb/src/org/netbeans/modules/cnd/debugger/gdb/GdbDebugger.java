@@ -69,8 +69,8 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -152,7 +152,7 @@ public class GdbDebugger implements PropertyChangeListener {
     private LastGoState                 lastGo;
     private String                      lastStop;
 
-    private static final ProjectActionEvent.Type DEBUG_ATTACH = ProjectActionEvent.Type.CHECK_EXECUTABLE;
+    private static final ProjectActionEvent.Type DEBUG_ATTACH = ProjectActionEvent.PredefinedType.CHECK_EXECUTABLE;
 
     /** ID of GDB Debugger Engine for C */
     public static final String          ENGINE_ID = "netbeans-cnd-GdbSession/C"; // NOI18N
@@ -439,7 +439,7 @@ public class GdbDebugger implements PropertyChangeListener {
                         gdb.set_new_console();
                     }
                 }
-                if (pae.getType() == ProjectActionEvent.Type.DEBUG_STEPINTO) {
+                if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO) {
                     continueAfterFirstStop = false; // step into project
                 }
                 gdb.break_insert_temporary("main"); // NOI18N
@@ -2134,7 +2134,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
             if (path != null) {
                 ProjectActionEvent pae = new ProjectActionEvent(project,
-                        ProjectActionEvent.Type.CHECK_EXECUTABLE, pinfo.getDisplayName(), path, conf, null, false);
+                        ProjectActionEvent.PredefinedType.CHECK_EXECUTABLE, path, conf, null, false);
                 DebuggerEngine[] es = DebuggerManager.getDebuggerManager().startDebugging(
                         DebuggerInfo.create(SESSION_PROVIDER_ID, new Object[] { pae, target }));
                 if (es == null) {
@@ -2173,7 +2173,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
         if (path.length() == 0) {
             ProjectActionEvent pae = new ProjectActionEvent(pinfo.getProject(),
-                    ProjectActionEvent.Type.CHECK_EXECUTABLE, pinfo.getDisplayName(), path, conf, null, false);
+                    ProjectActionEvent.PredefinedType.CHECK_EXECUTABLE, path, conf, null, false);
             ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[] { pae });
             path = conf.getAbsoluteOutputValue().replace("\\", "/"); // NOI18N
         }

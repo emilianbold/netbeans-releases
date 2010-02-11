@@ -490,7 +490,7 @@ public class HgUtils {
 
         if (FILENAME_HGIGNORE.equals(file.getName())) return false;
         if (checkSharability) {
-            int sharability = SharabilityQuery.getSharability(file);
+            int sharability = SharabilityQuery.getSharability(FileUtil.normalizeFile(file));
             if (sharability == SharabilityQuery.NOT_SHARABLE) {
                 addNotSharable(topFile, path);
                 return true;

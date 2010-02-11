@@ -856,6 +856,16 @@ public final class Utils {
      * @param caller caller object for logger name determination
      * @param e exception that defines the error
      */
+    public static void logInfo(Class caller, Throwable e) {
+        Logger.getLogger(caller.getName()).log(Level.INFO, e.getMessage(), e);
+    }
+
+    /**
+     * Convenience method for awkward Logger invocation.
+     *
+     * @param caller caller object for logger name determination
+     * @param e exception that defines the error
+     */
     public static void logWarn(Class caller, Throwable e) {
         Logger.getLogger(caller.getName()).log(Level.WARNING, e.getMessage(), e);
     }

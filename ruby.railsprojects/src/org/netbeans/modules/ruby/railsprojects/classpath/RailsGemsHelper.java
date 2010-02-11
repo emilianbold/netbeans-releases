@@ -54,6 +54,8 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
+import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
@@ -80,7 +82,7 @@ public final class RailsGemsHelper implements RakeTaskCustomizer {
             return;
         }
         RequiredGems requiredGems = project.getLookup().lookup(RequiredGems.class);
-        this.convertor = new GemsLineConvertor(requiredGems, project);
+        this.convertor = new GemsLineConvertor(requiredGems, (RubyBaseProject) project);
         taskDescriptor.addOutConvertor(convertor);
         taskDescriptor.setOutProcessorFactory(new RakeGemsInputProcessorFactory(convertor.getGems(), requiredGems));
     }
@@ -156,9 +158,9 @@ public final class RailsGemsHelper implements RakeTaskCustomizer {
 
         private final List<GemRequirement> gems = new ArrayList<GemRequirement>();
         private final RequiredGems requiredGems;
-        private final Project project;
+        private final RubyBaseProject project;
 
-        public GemsLineConvertor(RequiredGems requiredGems, Project project) {
+        public GemsLineConvertor(RequiredGems requiredGems, RubyBaseProject project) {
             this.requiredGems = requiredGems;
             this.project = project;
         }
@@ -210,7 +212,8 @@ public final class RailsGemsHelper implements RakeTaskCustomizer {
         }
 
         private void save() {
-            SharedRubyProjectProperties properties = project.getLookup().lookup(SharedRubyProjectProperties.class);
+            RailsProjectProperties properties = new RailsProjectProperties(project, project.getUpdateHelper(),
+                    project.evaluator(), project.getReferenceHelper(), project.getGenFilesHelper());
             properties.setGemRequirements(requiredGems.getGemRequirements());
             properties.save();
         }

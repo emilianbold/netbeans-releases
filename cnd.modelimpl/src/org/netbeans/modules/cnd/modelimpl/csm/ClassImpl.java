@@ -505,14 +505,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             visibility = curentVisibility;
         }
 
+        @Override
         public boolean isStatic() {
             return false;
         }
 
+        @Override
         public CsmVisibility getVisibility() {
             return visibility;
         }
 
+        @Override
         public CsmClass getContainingClass() {
             return (CsmClass) getScope();
         }
@@ -576,10 +579,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             unregisterInProject();
         }
 
+        @Override
         public boolean isStatic() {
             return false;
         }
 
+        @Override
         public CsmVisibility getVisibility() {
             return visibility;
         }
@@ -590,6 +595,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             }
         }
 
+        @Override
         public CsmClass getContainingClass() {
             CsmClass out = containerRef;
             if (out == null) {
@@ -734,10 +740,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         templateDescriptor = td;
     }
 
+    @Override
     public CsmDeclaration.Kind getKind() {
         return this.kind;
     }
 
+    @Override
     public Collection<CsmMember> getMembers() {
         Collection<CsmMember> out;
         synchronized (members) {
@@ -746,6 +754,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return out;
     }
 
+    @Override
     public Iterator<CsmMember> getMembers(CsmFilter filter) {
         Collection<CsmUID<CsmMember>> uids = new ArrayList<CsmUID<CsmMember>>();
         synchronized (members) {
@@ -754,6 +763,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return UIDCsmConverter.UIDsToDeclarations(uids, filter);
     }
 
+    @Override
     public Collection<CsmFriend> getFriends() {
         Collection<CsmFriend> out;
         synchronized (friends) {
@@ -762,16 +772,19 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return out;
     }
 
+    @Override
     public List<CsmInheritance> getBaseClasses() {
         synchronized (inheritances) {
             return new ArrayList<CsmInheritance>(inheritances);
         }
     }
 
+    @Override
     public boolean isTemplate() {
         return templateDescriptor != null;
     }
 
+    @Override
     public CsmOffsetableDeclaration findExistingDeclaration(int start, int end, CharSequence name) {
         CsmUID<? extends CsmOffsetableDeclaration> out = null;
         synchronized (members) {
@@ -826,11 +839,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return (lcurly instanceof CsmAST) ? ((CsmAST) lcurly).getOffset() : getStartOffset();
     }
 
+    @Override
     public int getLeftBracketOffset() {
         return leftBracketPos;
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public Collection<CsmScopeElement> getScopeElements() {
         return (Collection<CsmScopeElement>) (Collection<?>) getMembers();
     }
@@ -873,10 +888,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return CsmDeclaration.Kind.CLASS;
     }
 
+    @Override
     public CharSequence getDisplayName() {
         return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
 
+    @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }

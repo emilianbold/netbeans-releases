@@ -75,6 +75,7 @@ import javax.swing.SwingUtilities;
  */
 public class CommitSettings extends javax.swing.JPanel implements PreferenceChangeListener, TableModelListener, DocumentListener {
     
+    public static final String COLUMN_NAME_COMMIT    = "commit"; // NOI18N
     static final String COLUMN_NAME_NAME    = "name"; // NOI18N
     static final String COLUMN_NAME_STICKY  = "sticky"; // NOI18N
     static final String COLUMN_NAME_STATUS  = "status"; // NOI18N

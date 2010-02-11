@@ -265,11 +265,13 @@ public class CodeCustomizer implements CustomCodeView.Listener {
     // -----
     // CustomCodeView.Listener implementation
 
+    @Override
     public void componentExchanged(String compName) {
         retreiveCurrentData();
         selectComponent(formModel.findRADComponent(compName));
     }
 
+    @Override
     public void renameInvoked() {
         NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine(
                 NbBundle.getMessage(CodeCustomizer.class, "CTL_RenameLabel"), // NOI18N
@@ -309,6 +311,7 @@ public class CodeCustomizer implements CustomCodeView.Listener {
         }
     }
 
+    @Override
     public void declarationChanged() {
         // remeber the current data - we'll return to it so there is no change in the model
         CustomCodeData original = JavaCodeGenerator.getCodeData(customizedComponent);

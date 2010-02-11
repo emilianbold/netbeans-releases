@@ -250,7 +250,11 @@ public abstract class BaseFileObj extends FileObject {
             result = (BaseFileObj) FileBasedFileSystem.getFileObject(
                     new File(target.getFileName().getFile(), nameExt));
             if (result != null) {
-                result.fireFileDataCreatedEvent(false);
+                if (result.isData()) {
+                    result.fireFileDataCreatedEvent(false);
+                } else {
+                    result.fireFileFolderCreatedEvent(false);
+                }
                 break;
             }
             // #179109 - result is sometimes null, probably when moved file

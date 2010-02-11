@@ -43,8 +43,7 @@ package org.netbeans.modules.cnd.makeproject.ui.options;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import javax.swing.JList;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,15 +60,17 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
-import org.netbeans.modules.cnd.toolchain.ui.api.IsChangedListener;
-import org.netbeans.modules.cnd.toolchain.ui.api.ToolsCacheManager;
-import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelSupport;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.api.toolchain.ui.IsChangedListener;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
@@ -225,11 +226,11 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
         // Show only the selected C and C++ compiler from the compiler collection
         ArrayList<Tool> toolSet = new ArrayList<Tool>();
-        Tool cCompiler = compilerCollection.getTool(Tool.CCompiler);
+        Tool cCompiler = compilerCollection.getTool(PredefinedToolKind.CCompiler);
         if (cCompiler != null && cCompiler.getPath().length() > 0) {
             toolSet.add(cCompiler);
         }
-        Tool cppCompiler = compilerCollection.getTool(Tool.CCCompiler);
+        Tool cppCompiler = compilerCollection.getTool(PredefinedToolKind.CCCompiler);
         if (cppCompiler != null && cppCompiler.getPath().length() > 0) {
             toolSet.add(cppCompiler);
         }
@@ -237,11 +238,11 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             String key = ""+tool.getKind()+csp.displayName + tool.getPath(); // display name has collection name and hkey
             PredefinedPanel predefinedPanel = predefinedPanels.get(key);
             if (predefinedPanel == null) {
-                predefinedPanel = new PredefinedPanel((CCCCompiler) tool, this);
+                predefinedPanel = new PredefinedPanel((AbstractCompiler) tool, this);
                 predefinedPanels.put(key, predefinedPanel);
             //modified = true; // See 126368
             } else {
-                predefinedPanel.updateCompiler((CCCCompiler) tool);
+                predefinedPanel.updateCompiler((AbstractCompiler) tool);
             }
             tabbedPane.addTab(tool.getDisplayName(), predefinedPanel);
         }

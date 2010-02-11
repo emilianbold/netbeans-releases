@@ -76,7 +76,7 @@ public final class TargetChooserPanel<T> implements WizardDescriptor.Panel {
     private static final Pattern INVALID_FILENAME_CHARACTERS = 
         Pattern.compile("[`~!@#$%^&*()=+\\|{};:'\",<>/?]"); // NOI18N
     private static final Pattern INVALID_FOLDERNAME_CHARACTERS = 
-        Pattern.compile("[`~!@#$%^&*()=+|{};'\",<>?]"); // NOI18N
+        Pattern.compile("\\.$|[`~!@#$%^&*()=+|{};'\",<>?]", Pattern.MULTILINE); // NOI18N
 
     public TargetChooserPanel(Project project, SourceGroup[] folders , 
             T id ) 

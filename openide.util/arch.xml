@@ -317,12 +317,12 @@ made subject to such option by the copyright holder.
 
  <answer id="exec-property">
   <ul>
-    <li><api type="export" group="property" name="netbeans.screen.insets" category="private">
+    <li><api type="export" group="systemproperty" name="netbeans.screen.insets" category="private">
     Influences results of Utilities.getUsableScreenBounds</api>.</li>
-    <li><api type="export" group="property" name="netbeans.taskbar.height" category="private">
+    <li><api type="export" group="systemproperty" name="netbeans.taskbar.height" category="private">
     Influences results of Utilities.getUsableScreenBounds</api>.</li>
     <li>
-        <api type='import' group="property" name="line.separator" category="standard" >
+        <api type='import' group="systemproperty" name="line.separator" category="standard" >
         used on few places
         </api>.
     </li>

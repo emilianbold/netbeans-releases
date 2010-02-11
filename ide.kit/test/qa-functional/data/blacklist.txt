@@ -26,10 +26,6 @@ org.netbeans.modules.uml.project.UMLProjectDataObject$Loader
 # org.netbeans.modules.visualweb.palette.PaletteItemDataObject$PaletteItemDataLoader
 # org.netbeans.modules.visualweb.complib.ComplibPaletteItemDataObject$PaletteItemDataLoader
 
-# IZ 140390:
-org.netbeans.modules.java.hints.analyzer.AnalyzeFolder
-org.netbeans.modules.java.hints.analyzer.AnalyzeFolder$ToolsAction
-org.netbeans.modules.java.hints.analyzer.OverridePreferences
 
 # org.netbeans.modules.java.jarloader.JarDataLoader
 

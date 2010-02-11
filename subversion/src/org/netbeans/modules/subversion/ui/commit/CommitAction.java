@@ -93,6 +93,7 @@ public class CommitAction extends ContextAction {
 
     static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage";
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Commit";    // NOI18N
     }
@@ -169,8 +170,8 @@ public class CommitAction extends ContextAction {
         Set<File> ret = new HashSet<File>();
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         for (File file : fileList) {
-            File parent = null;
-            while((parent = file.getParentFile()) != null) {
+            File parent = file;
+            while((parent = parent.getParentFile()) != null) {
                 if (checked.contains(parent)) {
                     break;
                 }
@@ -252,11 +253,13 @@ public class CommitAction extends ContextAction {
               new HelpCtx(CommitAction.class),
               null);
         panel.addVersioningListener(new VersioningListener() {
+            @Override
             public void versioningEvent(VersioningEvent event) {
                 refreshCommitDialog(panel, data, commitButton);
             }
         });
         data.getTableModel().addTableModelListener(new TableModelListener() {
+            @Override
             public void tableChanged(TableModelEvent e) {
                 refreshCommitDialog(panel, data, commitButton);
             }
@@ -286,6 +289,7 @@ public class CommitAction extends ContextAction {
         }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
+            @Override
             public void perform() {
                 performCommit(message, commitFiles, ctx, this, hooks);
             }
@@ -296,6 +300,7 @@ public class CommitAction extends ContextAction {
     private static SvnProgressSupport getProgressSupport(final Context ctx, final CommitTable data, JPanel progressPanel) {
         SvnProgressSupport support = new PanelProgressSupport(progressPanel) {
             
+            @Override
             public void perform() {
                 // get files without exclusions
                 File[] contextFiles = ctx.getFiles();
@@ -307,9 +312,7 @@ public class CommitAction extends ContextAction {
                 // add also the roots to the to be commited list.
                 List<File> rootFiles = ctx.getRoots();
                 Set<File> filesSet = new HashSet<File>();
-                for (File file : contextFiles) {
-                    filesSet.add(file);
-                }
+                filesSet.addAll(Arrays.asList(contextFiles));
                 for (File file : rootFiles) {
                     filesSet.add(file);
                 }
@@ -358,12 +361,13 @@ public class CommitAction extends ContextAction {
                     }
                 }
 
-                if (fileList.size() == 0) {
+                if (fileList.isEmpty()) {
                     return;
                 }
                 fileList.addAll(getUnversionedParents(fileList, false));
                 final SvnFileNode[] nodes = getFileNodes(fileList, this);
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         data.setNodes(nodes);
                     }
@@ -417,10 +421,10 @@ public class CommitAction extends ContextAction {
         }
 
         if (stickyTags.size() > 1) {
-            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_BRANCH, CommitTableModel.COLUMN_NAME_STATUS,
-                                                CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
+            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_COMMIT, CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_BRANCH,
+                                                CommitTableModel.COLUMN_NAME_STATUS, CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
         } else {
-            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_STATUS,
+            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_COMMIT, CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_STATUS,
                                                 CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
         }
 
@@ -428,7 +432,7 @@ public class CommitAction extends ContextAction {
         DialogDescriptor dd = (DialogDescriptor) panel.getClientProperty("DialogDescriptor"); // NOI18N
         String errorLabel;
         if (stickyTags.size() <= 1) {
-            String stickyTag = stickyTags.size() == 0 ? null : (String) stickyTags.iterator().next();
+            String stickyTag = stickyTags.isEmpty() ? null : (String) stickyTags.iterator().next();
             if (stickyTag == null) {
                 dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle }));
                 errorLabel = ""; // NOI18N
@@ -449,6 +453,7 @@ public class CommitAction extends ContextAction {
         commit.setEnabled(enabled && containsCommitable(table));
     }
 
+    @Override
     protected void performContextAction(Node[] nodes) {
         if(!Subversion.getInstance().checkClientAvailable()) {
             return;
@@ -682,7 +687,7 @@ public class CommitAction extends ContextAction {
     }
 
     private static void afterCommit(Collection<SvnHook> hooks, List<File> files, String message, List<ISVNLogMessage> logs) {
-        if(hooks.size() == 0) {
+        if(hooks.isEmpty()) {
             return;
         }
         List<SvnHookContext.LogEntry> entries = new ArrayList<SvnHookContext.LogEntry>(logs.size());
@@ -712,7 +717,7 @@ public class CommitAction extends ContextAction {
             Subversion.LOG.log(Level.INFO, null, ex);
         }
         if (Subversion.LOG.isLoggable(Level.FINER)) {
-            Subversion.LOG.log(Level.FINER, CommitAction.class.getName() + ": getting last commit message for svn hooks");
+            Subversion.LOG.log(Level.FINER, "{0}: getting last commit message for svn hooks", CommitAction.class.getName());
         }
         ISVNLogMessage[] ls = client.getLogMessages(SvnUtils.getRepositoryRootUrl(file), rev, rev);
         if (ls.length > 0) {

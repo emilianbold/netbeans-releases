@@ -65,6 +65,7 @@ import org.netbeans.modules.apisupport.project.ui.SuiteOperations;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -131,7 +132,7 @@ public final class SuiteProject implements Project {
             new SuiteCustomizer(this, helper, eval),
             new PrivilegedTemplatesImpl(),
             new SuiteOperations(this),
-            new TemplateAttributesProvider(helper, false),
+            new TemplateAttributesProvider(null, helper, false),
             new FileEncodingQueryImpl());
         lookup = LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-apisupport-project-suite/Lookup");
     }
@@ -318,7 +319,7 @@ public final class SuiteProject implements Project {
             return;
         }
         String buildImplPath =
-                platform.getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65
+                platform.getHarnessVersion().compareTo(HarnessVersion.V65) <= 0
                 || eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
                 ? "build-impl-65.xsl" : "build-impl.xsl";    // NOI18N
         genFilesHelper.refreshBuildScript(

@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.SharedClassObject;
@@ -61,9 +62,6 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     private static final String MAKE_OPTIONS = "makeOptions"; // NOI18N
     private static String defaultMakeOptions = ""; // NOI18N
     // Default Path mode
-    //private static final int PATH_REL_OR_ABS = 0;
-    private static final int PATH_REL = 1;
-    //private static final int PATH_ABS = 2;
     private static final String PATH_MODE = "pathMode"; // NOI18N
     // Dependency checking
     private static final String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
@@ -125,7 +123,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
 
     // Path Mode
     public int getPathMode() {
-        return getPreferences().getInt(PATH_MODE, PATH_REL);
+        return getPreferences().getInt(PATH_MODE, MakeProjectOptions.REL);
     }
 
     public void setPathMode(int pathMode) {

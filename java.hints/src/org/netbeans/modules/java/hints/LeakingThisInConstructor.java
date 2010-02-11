@@ -40,13 +40,11 @@
 package org.netbeans.modules.java.hints;
 
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
@@ -107,8 +105,9 @@ public class LeakingThisInConstructor {
     }
 
     private static boolean isInConstructor(HintContext ctx) {
-        Scope scope = ctx.getInfo().getTrees().getScope(ctx.getPath());
-        ExecutableElement enclosingMethodElement = scope.getEnclosingMethod();
+        TreePath method = OverridableMethodCallInConstructor.findEnclosingMethodOrConstructor(ctx.getPath());
+        if (method == null) return false;
+        Element enclosingMethodElement = ctx.getInfo().getTrees().getElement(method);
         return (enclosingMethodElement != null &&
                 enclosingMethodElement.getKind() == ElementKind.CONSTRUCTOR);
     }

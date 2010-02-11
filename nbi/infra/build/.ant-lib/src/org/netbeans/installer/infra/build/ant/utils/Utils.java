@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Stack;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Pack200;
@@ -173,13 +174,26 @@ public final class Utils {
         JarFile jar = new JarFile(file);
         
         try {
-            if (jar.getEntry(SUN_MICR_RSA) == null) {
-                return false;
+            Enumeration<JarEntry> entries = jar.entries();
+            boolean signatureInfoPresent = false;
+            boolean signatureFilePresent = false;
+            while (entries.hasMoreElements()) {
+                String entryName = entries.nextElement().getName();
+                if (entryName.startsWith("META-INF/")) {
+                    if (entryName.endsWith(".RSA") || entryName.endsWith(".DSA")) {
+                        signatureFilePresent = true;
+                        if(signatureInfoPresent) {
+                            break;
+                        }
+                    } else if (entryName.endsWith(".SF")) {
+                        signatureInfoPresent = true;
+                        if(signatureFilePresent) {
+                            break;
+                        }
+                    }
+                }
             }
-            if (jar.getEntry(SUN_MICR_SF) == null) {
-                return false;
-            }
-            return true;
+            return signatureFilePresent && signatureInfoPresent;
         } finally {
             jar.close();
         }
@@ -835,13 +849,93 @@ public final class Utils {
         
         return handleProcess(process);
     }
+
+    private static int getPermissionsAnalized(final File file) {
+        if (file.isDirectory()) {
+            return getIntegerValue(DEFAULT_PERMISSION_DIR_PROP, DEFAULT_PERMISSION_DIR);
+                        
+        } else {
+            return isExecutableAnalized(file) ? 
+                getIntegerValue(DEFAULT_EXECUTABLE_PERMISSION_FILE_PROP, DEFAULT_EXECUTABLE_PERMISSION_FILE) :
+                getIntegerValue(DEFAULT_NOT_EXECUTABLE_PERMISSION_FILE_PROP, DEFAULT_NOT_EXECUTABLE_PERMISSION_FILE);
+        }
+    }
+    private static final int getIntegerValue(String prop, int defaultValue) {
+        int result = defaultValue;
+        String value = project.getProperty(prop);
+        if (value != null && !value.equals("")) {
+            try {
+                result = Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                if (project != null) {
+                    project.log("Error while parsing property " + prop
+                            + " which value is [" + value + "]"
+                            + " but should be integer", e, Project.MSG_WARN);
+                }
+            }
+        }
+        return result;
+    }
+
+    private static final boolean isExecutableAnalized(File file) {
+        int index = file.getName().lastIndexOf(".");
+        String ext = (index != -1) ? file.getName().substring(index + 1) : "";
+    
+        for (String e : EXECUTABLE_EXTENSIONS) {
+            if (ext.equals(e)) {
+                return true;
+            }
+        }
+        for (String e : NOT_EXECUTABLE_EXTENSIONS) {
+            if (ext.equals(e)) {
+                return false;
+            }
+        }
+
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(file);
+            byte[] bytes = new byte[64];
+
+            int c;
+            c = fis.read(bytes);
+            if (c >= 4) { // length of ELF header and min length of "#!/X" string
+                if (bytes[0] == '\177'
+                        && bytes[1] == 'E'
+                        && bytes[2] == 'L'
+                        && bytes[3] == 'F') {
+                    return true;
+                } else if (bytes[0] == '#' && bytes[1] == '!') {
+                    String s = new String(bytes, 0, c);
+                    String[] array = s.split("(?:\r\n|\n|\r)");
+
+                    if (array.length > 0) {
+                        //read the first line only
+                        //allow lines like "#! /bin/sh"
+                        if (array[0].replaceAll("#!(\\s)+/", "#!/").startsWith("#!/")) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            if(fis!=null) {
+                try {
+                    fis.close();
+                } catch (IOException ex) {
+                }
+            }
+        }
+
+        return false;
+    }
     
     public static int getPermissions(final File file) {
         try {
             final String lsExec = getLsExecutable();
             if (lsExec == null) {
                 //no ls found
-                return 777;
+                return getPermissionsAnalized(file);
             }
             final Results results = run(file.getParentFile(), lsExec, "-ld", file.getName());
             
@@ -1426,10 +1520,27 @@ public final class Utils {
             "jarsigner.executable";
     public static final String VERIFICATION_JAVA_EXECUTABLE_PROPERTY =
             "verification.java.executable";
+
+    public static final String DEFAULT_EXECUTABLE_PERMISSION_FILE_PROP =
+            "default.file.executable.permissions";
+    public static final String DEFAULT_NOT_EXECUTABLE_PERMISSION_FILE_PROP =
+            "default.file.not.executable.permissions";
+    public static final String DEFAULT_PERMISSION_DIR_PROP =
+            "default.dir.permissions";
     
     private static final String JARSIGNER_EXECUTABLE = JAVA_HOME_VALUE +
         ((IS_WINDOWS) ? "\\..\\bin\\jarsigner.exe" : "/../bin/jarsigner");//NOI18N
     private static final String LS_EXECUTABLE = 
         (IS_WINDOWS) ? "ls.exe" : "ls";//NOI18N
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
+    public static final String [] EXECUTABLE_EXTENSIONS =
+            {"so", "a", "jnilib", "dylib", "sl",
+             "sh", "pl", "rb", "py", "command"};
+    public static final String [] NOT_EXECUTABLE_EXTENSIONS =
+            {"jar", "zip", "gz", "bzip2", "tgz", "txt", "xml", 
+             "html", "htm", "pdf", "conf", "css", "java"};
+    public static final int DEFAULT_EXECUTABLE_PERMISSION_FILE = 755;//rwx r-x r-x
+    public static final int DEFAULT_NOT_EXECUTABLE_PERMISSION_FILE = 644;//rwx r-- r--
+    public static final int DEFAULT_PERMISSION_DIR = 755; //rwx r-x r-x
 }

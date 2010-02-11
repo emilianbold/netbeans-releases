@@ -72,9 +72,9 @@ import org.openide.util.Utilities;
 public final class LocalizedBundleInfo {
     
     public static final String NAME = "OpenIDE-Module-Name"; // NOI18N
-    public static final String DISPLAY_CATEGORY = "OpenIDE-Module-Display-Category"; // NOI18N
-    public static final String SHORT_DESCRIPTION = "OpenIDE-Module-Short-Description"; // NOI18N
-    public static final String LONG_DESCRIPTION = "OpenIDE-Module-Long-Description"; // NOI18N
+    private static final String DISPLAY_CATEGORY = "OpenIDE-Module-Display-Category"; // NOI18N
+    private static final String SHORT_DESCRIPTION = "OpenIDE-Module-Short-Description"; // NOI18N
+    private static final String LONG_DESCRIPTION = "OpenIDE-Module-Long-Description"; // NOI18N
     
     static final LocalizedBundleInfo EMPTY = new LocalizedBundleInfo(new EditableProperties[] {new EditableProperties(true)});
     
@@ -275,6 +275,7 @@ public final class LocalizedBundleInfo {
                 props[i].remove(name);
             }
         }
+        // XXX Bundle-Name added by project template; could add Bundle-Category and/or Bundle-Description if similar properties set here
     }
     
     private static String[] splitBySentence(String text) {

@@ -81,8 +81,8 @@ public class ProjectGenerator {
         return MakeProjectGenerator.createBlankProject(projectName, projectFolder, confs, open);
     }
 
-    public static Project createProject(File dir, String name, String makefileName, MakeConfiguration[] confs, Iterator<SourceFolderInfo> sourceFolders, String sourceFoldersFilter, Iterator<String> importantItems) throws IOException {
-        MakeProject createdProject = MakeProjectGenerator.createProject(dir, name, makefileName, confs, sourceFolders, sourceFoldersFilter, importantItems, null);
+    public static Project createProject(File dir, String name, String makefileName, MakeConfiguration[] confs, Iterator<SourceFolderInfo> sourceFolders, String sourceFoldersFilter, Iterator<SourceFolderInfo> testFolders, Iterator<String> importantItems) throws IOException {
+        MakeProject createdProject = MakeProjectGenerator.createProject(dir, name, makefileName, confs, sourceFolders, sourceFoldersFilter, testFolders, importantItems, null);
         ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
         return createdProject;
     }

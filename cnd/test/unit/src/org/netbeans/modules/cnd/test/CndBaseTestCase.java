@@ -47,6 +47,7 @@ import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Collections;
 import java.util.TreeSet;
@@ -99,6 +100,8 @@ import org.openide.util.Lookup;
  */
 public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
 
+    private static final boolean TRACE_START_STOP = false;
+
     static {
         // Setting netbeans.dirs makes installedFileLocator work properly
         File[] clusters = findClusters();
@@ -123,6 +126,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         File netbeans = findNetbeans();
         assert netbeans != null;
         File[] clusters = netbeans.listFiles(new FileFilter() {
+            @Override
             public boolean accept(File dir) {
                 if (dir.isDirectory()) {
                     File m = new File(new File(dir, "config"), "Modules");
@@ -191,11 +195,17 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+        if (TRACE_START_STOP) {
+            System.err.println("End   "+getName()+" at "+Calendar.getInstance().getTime());
+        }
     }
     
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        if (TRACE_START_STOP) {
+            System.err.println("Start "+getName()+" at "+Calendar.getInstance().getTime());
+        }
         
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
         System.setProperty("cnd.mode.unittest", "true");
@@ -343,7 +353,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
                     if (i == 0) {
                         buf.append("\nBeginning of diff:");
                     }
-                    buf.append("\n\t" + line);
+                    buf.append("\n\t").append(line);
                     i++;
                 }
                 in.close();

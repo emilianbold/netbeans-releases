@@ -61,6 +61,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -71,7 +72,6 @@ public class SearchField extends JPanel implements ActionListener {
     private Kenai selected;
     private static final String KENAI = "kenai";
     static final String SEARCH = "search";
-    private final ImageIcon kenaiIcon = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/kenai/ui/resources/kenai-small.png")); // NOI18N
     private JTextComponent command = createCommandField();
     private javax.swing.JLabel leftIcon;
     private javax.swing.JPanel panel;
@@ -105,7 +105,7 @@ public class SearchField extends JPanel implements ActionListener {
         panel.setBorder(javax.swing.BorderFactory.createLineBorder(getComboBorderColor()));
         panel.setLayout(new java.awt.GridBagLayout());
 
-        leftIcon.setIcon(kenaiIcon);
+        leftIcon.setIcon(selected.getIcon());
         leftIcon.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         leftIcon.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -218,14 +218,14 @@ public class SearchField extends JPanel implements ActionListener {
 
         for (Kenai kenai : KenaiManager.getDefault().getKenais()) {
             JRadioButtonMenuItem item = new JRadioButtonMenuItem(getKenaiDisplayName(kenai));
-            item.setIcon(kenaiIcon);
+            item.setIcon(kenai.getIcon());
             item.setSelected(kenai==getSelectedKenai());
             item.putClientProperty(KENAI, kenai);
             item.addActionListener(this);
             pm.add(item);
         }
 
-        JMenuItem item = new JMenuItem("add new");
+        JMenuItem item = new JMenuItem(NbBundle.getMessage(KenaiComboModel.class, "CTL_AddNew"));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 AddInstanceAction addInstanceAction = new AddInstanceAction();
@@ -260,6 +260,7 @@ public class SearchField extends JPanel implements ActionListener {
         if (k!=null) {
             selected = (Kenai) k;
             setTooltip();
+            leftIcon.setIcon(selected.getIcon());
         }
         for (ActionListener l:listenerList.getListeners(ActionListener.class)) {
             l.actionPerformed(e);
