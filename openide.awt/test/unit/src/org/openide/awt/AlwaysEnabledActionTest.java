@@ -65,6 +65,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.AbstractLookup;
@@ -84,6 +85,7 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
     
     @Override
     protected void setUp() throws Exception {
+        NbBundle.setBranding("big");
         folder = FileUtil.getConfigFile("actions/support/test");
         assertNotNull("testing layer is loaded: ", folder);
 
@@ -110,7 +112,13 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
         Object name = a.getValue(a.NAME);
         Object mnem = a.getValue(a.MNEMONIC_KEY);
         Object smallIcon = a.getValue(a.SMALL_ICON);
-        //Object icon = a.getValue(a.ICON)
+        if (smallIcon instanceof Icon) {
+            Icon icon = (Icon) smallIcon;
+            assertEquals("Icon height", 32, icon.getIconHeight());
+            assertEquals("Icon widht", 32, icon.getIconWidth());
+        } else {
+            fail("Icon shall be Icon: " + smallIcon);
+        }
             
         assertEquals("Right localized name", "Icon &Name Action", name);
         assertEquals("Mnemonic is N", (int)'N', mnem);

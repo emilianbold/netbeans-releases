@@ -41,16 +41,21 @@
 
 package org.openide.filesystems;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.Enumeration;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -195,6 +200,189 @@ public class MIMESupportTest extends NbTestCase {
         private String getMime() {
             return mime;
         }
+    }
+
+    public void testRetryOnInterruptedIOException() throws Exception {
+        final byte[] arr = new byte[]{10, 11, 12, 13};
+        final FilterInputStream is = new FilterInputStream(new ByteArrayInputStream(arr)) {
+            boolean thrown = false;
+
+            @Override
+            public synchronized int read() throws IOException {
+                throwIfNotThrown();
+                return super.read();
+            }
+
+            @Override
+            public int read(byte[] b) throws IOException {
+                throwIfNotThrown();
+                return super.read(b);
+            }
+
+            @Override
+            public synchronized int read(byte[] b, int off, int len) throws IOException {
+                throwIfNotThrown();
+                return super.read(b, off, len);
+            }
+
+            private void throwIfNotThrown() throws InterruptedIOException {
+                if (!thrown) {
+                    thrown = true;
+                    throw new InterruptedIOException();
+                }
+            }
+        };
+
+        FileObject myFo = new FileObject() {
+            @Override
+            public String getName() {
+                return "fake";
+            }
+
+            @Override
+            public String getExt() {
+                return "ext";
+            }
+
+            @Override
+            public void rename(FileLock lock, String name, String ext) throws IOException {
+                throw new IOException();
+            }
+
+            @Override
+            public FileSystem getFileSystem() throws FileStateInvalidException {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public FileObject getParent() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public boolean isFolder() {
+                return false;
+            }
+
+            @Override
+            public Date lastModified() {
+                return new Date(333);
+            }
+
+            @Override
+            public boolean isRoot() {
+                return false;
+            }
+
+            @Override
+            public boolean isData() {
+                return true;
+            }
+
+            @Override
+            public boolean isValid() {
+                return true;
+            }
+
+            @Override
+            public void delete(FileLock lock) throws IOException {
+                throw new IOException();
+            }
+
+            @Override
+            public Object getAttribute(String attrName) {
+                return null;
+            }
+
+            @Override
+            public void setAttribute(String attrName, Object value) throws IOException {
+                throw new IOException();
+            }
+
+            @Override
+            public Enumeration<String> getAttributes() {
+                return Enumerations.empty();
+            }
+
+            @Override
+            public void addFileChangeListener(FileChangeListener fcl) {
+            }
+
+            @Override
+            public void removeFileChangeListener(FileChangeListener fcl) {
+            }
+
+            @Override
+            public long getSize() {
+                return arr.length;
+            }
+
+            @Override
+            public InputStream getInputStream() throws FileNotFoundException {
+                return is;
+            }
+
+            @Override
+            public OutputStream getOutputStream(FileLock lock) throws IOException {
+                throw new IOException();
+            }
+
+            @Override
+            public FileLock lock() throws IOException {
+                throw new IOException();
+            }
+
+            @Override
+            public void setImportant(boolean b) {
+            }
+
+            @Override
+            public FileObject[] getChildren() {
+                return new FileObject[0];
+            }
+
+            @Override
+            public FileObject getFileObject(String name, String ext) {
+                return null;
+            }
+
+            @Override
+            public FileObject createFolder(String name) throws IOException {
+                throw new IOException();
+            }
+
+            @Override
+            public FileObject createData(String name, String ext) throws IOException {
+                throw new IOException();
+            }
+
+            @Override
+            public boolean isReadOnly() {
+                return true;
+            }
+        };
+
+        class MockMimeResolver extends MIMEResolver {
+            @Override
+            public String findMIMEType(FileObject fo) {
+                try {
+                    InputStream is = fo.getInputStream();
+                    if (is.read() == 10 && is.read() == 11 && is.read() == 12 && is.read() == 13) {
+                        is.close();
+                        return "hi/there";
+                    }
+                    is.close();
+                } catch (IOException ex) {
+                    throw new IllegalStateException(ex);
+                }
+                return null;
+            }
+        }
+
+        lookup.setLookups(new MockMimeResolver());
+
+        String type = FileUtil.getMIMEType(myFo);
+        assertEquals("The proper type is guessed", "hi/there", type);
     }
 
     public void testWithinMimeTypes() throws Exception {
