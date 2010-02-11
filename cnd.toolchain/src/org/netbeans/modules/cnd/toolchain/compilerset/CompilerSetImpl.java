@@ -448,6 +448,11 @@ public final class CompilerSetImpl extends CompilerSet {
                 public String getOutputFileFlag() {
                     return ""; // NOI18N
                 }
+
+                @Override
+                public String getStripFlag() {
+                    return ""; // NOI18N
+                }
             };
         }
 

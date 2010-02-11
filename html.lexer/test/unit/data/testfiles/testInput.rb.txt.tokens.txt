@@ -1,117 +1,117 @@
 .t.e.s.t. Script
-TAG_OPEN_SYMBOL  "<", la=1, st=8000
-TAG_OPEN        "p", la=1, st=9000
-TAG_CLOSE_SYMBOL  ">", st=0
-TAG_OPEN_SYMBOL  "<", la=1, st=8000
-TAG_OPEN        "script", la=1, st=9001
-TAG_CLOSE_SYMBOL  ">", st=35001
-SCRIPT          "foo bar", la=9, st=0
-TAG_OPEN_SYMBOL  "</", la=7, st=4000
-TAG_CLOSE       "script", la=1, st=6000
-TAG_CLOSE_SYMBOL  ">", st=0
-TAG_OPEN_SYMBOL  "</", st=4000
-TAG_CLOSE       "p", la=1, st=6000
-TAG_CLOSE_SYMBOL  ">", st=0
+TAG_OPEN_SYMBOL  "<", la=1, st=State(hash=4927739,s=8,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN        "p", la=1, st=State(hash=5011372,s=9,ss=0,es=0,tag=p,attr=null)
+TAG_CLOSE_SYMBOL  ">", st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN_SYMBOL  "<", la=1, st=State(hash=4927739,s=8,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN        "script", la=1, st=State(hash=-902674136,s=9,ss=0,es=1,tag=script,attr=null)
+TAG_CLOSE_SYMBOL  ">", st=State(hash=7183095,s=35,ss=0,es=1,tag=null,attr=null)
+SCRIPT          "foo bar", la=9, st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN_SYMBOL  "</", la=7, st=State(hash=4593655,s=4,ss=0,es=0,tag=null,attr=null)
+TAG_CLOSE       "script", la=1, st=State(hash=4760697,s=6,ss=0,es=0,tag=null,attr=null)
+TAG_CLOSE_SYMBOL  ">", st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN_SYMBOL  "</", st=State(hash=4593655,s=4,ss=0,es=0,tag=null,attr=null)
+TAG_CLOSE       "p", la=1, st=State(hash=4760697,s=6,ss=0,es=0,tag=null,attr=null)
+TAG_CLOSE_SYMBOL  ">", st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
 ----- EOF -----
 
 .t.e.s.t. HTML Attributes
-TAG_OPEN_SYMBOL  "<", la=1, st=8000
-TAG_OPEN        "li", la=1, st=9000
-WS              " ", la=1, st=9000
-ARGUMENT        "style", la=1, st=12000,style
-OPERATOR        "=", st=14000,style
-VALUE_CSS       ""foo"", st=9000
-TAG_CLOSE_SYMBOL  ">", st=0
-TEXT            "hello", la=1, st=0
-TAG_OPEN_SYMBOL  "</", st=4000
-TAG_CLOSE       "li", la=1, st=6000
-TAG_CLOSE_SYMBOL  ">", st=0
-TEXT            "\n", la=1, st=0
-TAG_OPEN_SYMBOL  "<", la=1, st=8000
-TAG_OPEN        "span", la=1, st=9000
-WS              " ", la=1, st=9000
-ARGUMENT        "onklikk", la=1, st=12000
-OPERATOR        "=", st=14000
-VALUE           ""hello"", st=9000
-TAG_CLOSE_SYMBOL  "/>", st=0
+TAG_OPEN_SYMBOL  "<", la=1, st=State(hash=4927739,s=8,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN        "li", la=1, st=State(hash=5014713,s=9,ss=0,es=0,tag=li,attr=null)
+WS              " ", la=1, st=State(hash=5014713,s=9,ss=0,es=0,tag=li,attr=null)
+ARGUMENT        "style", la=1, st=State(hash=1871532093,s=12,ss=0,es=0,tag=li,attr=style)
+OPERATOR        "=", st=State(hash=1871699135,s=14,ss=0,es=0,tag=li,attr=style)
+VALUE_CSS       ""foo"", st=State(hash=5014713,s=9,ss=0,es=0,tag=li,attr=null)
+TAG_CLOSE_SYMBOL  ">", st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TEXT            "hello", la=1, st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN_SYMBOL  "</", st=State(hash=4593655,s=4,ss=0,es=0,tag=null,attr=null)
+TAG_CLOSE       "li", la=1, st=State(hash=4760697,s=6,ss=0,es=0,tag=null,attr=null)
+TAG_CLOSE_SYMBOL  ">", st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TEXT            "\n", la=1, st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN_SYMBOL  "<", la=1, st=State(hash=4927739,s=8,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN        "span", la=1, st=State(hash=8547974,s=9,ss=0,es=0,tag=span,attr=null)
+WS              " ", la=1, st=State(hash=8547974,s=9,ss=0,es=0,tag=span,attr=null)
+ARGUMENT        "onklikk", la=1, st=State(hash=-870708766,s=12,ss=0,es=0,tag=span,attr=onklikk)
+OPERATOR        "=", st=State(hash=-870541724,s=14,ss=0,es=0,tag=span,attr=onklikk)
+VALUE           ""hello"", st=State(hash=8547974,s=9,ss=0,es=0,tag=span,attr=null)
+TAG_CLOSE_SYMBOL  "/>", st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
 ----- EOF -----
 
 .t.e.s.t. JavaScript attributes
-TAG_OPEN_SYMBOL  "<", la=1, st=8000
-TAG_OPEN        "input", la=1, st=9000
-WS              " ", la=1, st=9000
-ARGUMENT        "onblur", la=1, st=12000,onblur
-OPERATOR        "=", st=14000,onblur
-VALUE_JAVASCRIPT  ""foo"", st=9000
-TAG_CLOSE_SYMBOL  "/>", st=0
-TEXT            "\n", la=1, st=0
-TAG_OPEN_SYMBOL  "<", la=1, st=8000
-TAG_OPEN        "input", la=1, st=9000
-WS              " ", la=1, st=9000
-ARGUMENT        "onclick", la=1, st=12000,onclick
-WS              " ", la=1, st=12000,onclick
-OPERATOR        "=", st=14000,onclick
-WS              " ", la=1, st=14000,onclick
-VALUE_JAVASCRIPT  ""hello"", st=9000
-TAG_CLOSE_SYMBOL  "/>", st=0
-TEXT            "\n", la=1, st=0
-TAG_OPEN_SYMBOL  "<", la=1, st=8000
-TAG_OPEN        "input", la=1, st=9000
-WS              " ", la=1, st=9000
-ARGUMENT        "onclick", la=1, st=12000,onclick
-OPERATOR        "=", st=14000,onclick
-VALUE_JAVASCRIPT  "'foo'", st=9000
-TAG_CLOSE_SYMBOL  "/>", st=0
-TEXT            "\n", la=1, st=0
-TAG_OPEN_SYMBOL  "<", la=1, st=8000
-TAG_OPEN        "input", la=1, st=9000
-WS              " ", la=1, st=9000
-ARGUMENT        "onclick", la=1, st=12000,onclick
-WS              " ", la=1, st=12000,onclick
-OPERATOR        "=", st=14000,onclick
-WS              " ", la=1, st=14000,onclick
-VALUE_JAVASCRIPT  "'bar'", st=9000
-WS              " ", la=1, st=9000
-TAG_CLOSE_SYMBOL  "/>", st=0
+TAG_OPEN_SYMBOL  "<", la=1, st=State(hash=4927739,s=8,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN        "input", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+WS              " ", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+ARGUMENT        "onblur", la=1, st=State(hash=72697071,s=12,ss=0,es=0,tag=input,attr=onblur)
+OPERATOR        "=", st=State(hash=72864113,s=14,ss=0,es=0,tag=input,attr=onblur)
+VALUE_JAVASCRIPT  ""foo"", st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+TAG_CLOSE_SYMBOL  "/>", st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TEXT            "\n", la=1, st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN_SYMBOL  "<", la=1, st=State(hash=4927739,s=8,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN        "input", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+WS              " ", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+ARGUMENT        "onclick", la=1, st=State(hash=-899490462,s=12,ss=0,es=0,tag=input,attr=onclick)
+WS              " ", la=1, st=State(hash=-899490462,s=12,ss=0,es=0,tag=input,attr=onclick)
+OPERATOR        "=", st=State(hash=-899323420,s=14,ss=0,es=0,tag=input,attr=onclick)
+WS              " ", la=1, st=State(hash=-899323420,s=14,ss=0,es=0,tag=input,attr=onclick)
+VALUE_JAVASCRIPT  ""hello"", st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+TAG_CLOSE_SYMBOL  "/>", st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TEXT            "\n", la=1, st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN_SYMBOL  "<", la=1, st=State(hash=4927739,s=8,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN        "input", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+WS              " ", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+ARGUMENT        "onclick", la=1, st=State(hash=-899490462,s=12,ss=0,es=0,tag=input,attr=onclick)
+OPERATOR        "=", st=State(hash=-899323420,s=14,ss=0,es=0,tag=input,attr=onclick)
+VALUE_JAVASCRIPT  "'foo'", st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+TAG_CLOSE_SYMBOL  "/>", st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TEXT            "\n", la=1, st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN_SYMBOL  "<", la=1, st=State(hash=4927739,s=8,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN        "input", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+WS              " ", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+ARGUMENT        "onclick", la=1, st=State(hash=-899490462,s=12,ss=0,es=0,tag=input,attr=onclick)
+WS              " ", la=1, st=State(hash=-899490462,s=12,ss=0,es=0,tag=input,attr=onclick)
+OPERATOR        "=", st=State(hash=-899323420,s=14,ss=0,es=0,tag=input,attr=onclick)
+WS              " ", la=1, st=State(hash=-899323420,s=14,ss=0,es=0,tag=input,attr=onclick)
+VALUE_JAVASCRIPT  "'bar'", st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+WS              " ", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+TAG_CLOSE_SYMBOL  "/>", st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
 ----- EOF -----
 
 .t.e.s.t. Inlined CSS
-TAG_OPEN_SYMBOL  "<", la=1, st=8000
-TAG_OPEN        "input", la=1, st=9000
-WS              " ", la=1, st=9000
-ARGUMENT        "style", la=1, st=12000,style
-OPERATOR        "=", st=14000,style
-VALUE_CSS       ""color: red"", st=9000
-TAG_CLOSE_SYMBOL  "/>", st=0
-TEXT            "\n", la=1, st=0
-TAG_OPEN_SYMBOL  "<", la=1, st=8000
-TAG_OPEN        "input", la=1, st=9000
-WS              " ", la=1, st=9000
-ARGUMENT        "style", la=1, st=12000,style
-WS              " ", la=1, st=12000,style
-OPERATOR        "=", st=14000,style
-WS              " ", la=1, st=14000,style
-VALUE_CSS       ""color: green"", st=9000
-TAG_CLOSE_SYMBOL  "/>", st=0
-TEXT            "\n", la=1, st=0
-TAG_OPEN_SYMBOL  "<", la=1, st=8000
-TAG_OPEN        "input", la=1, st=9000
-WS              " ", la=1, st=9000
-ARGUMENT        "style", la=1, st=12000,style
-OPERATOR        "=", st=14000,style
-VALUE_CSS       "'color: yellow'", st=9000
-TAG_CLOSE_SYMBOL  "/>", st=0
-TEXT            "\n", la=1, st=0
-TAG_OPEN_SYMBOL  "<", la=1, st=8000
-TAG_OPEN        "input", la=1, st=9000
-WS              " ", la=1, st=9000
-ARGUMENT        "style", la=1, st=12000,style
-WS              " ", la=1, st=12000,style
-OPERATOR        "=", st=14000,style
-WS              " ", la=1, st=14000,style
-VALUE_CSS       "'color: fuchsia'", st=9000
-WS              " ", la=1, st=9000
-TAG_CLOSE_SYMBOL  "/>", st=0
+TAG_OPEN_SYMBOL  "<", la=1, st=State(hash=4927739,s=8,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN        "input", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+WS              " ", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+ARGUMENT        "style", la=1, st=State(hash=1971886730,s=12,ss=0,es=0,tag=input,attr=style)
+OPERATOR        "=", st=State(hash=1972053772,s=14,ss=0,es=0,tag=input,attr=style)
+VALUE_CSS       ""color: red"", st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+TAG_CLOSE_SYMBOL  "/>", st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TEXT            "\n", la=1, st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN_SYMBOL  "<", la=1, st=State(hash=4927739,s=8,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN        "input", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+WS              " ", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+ARGUMENT        "style", la=1, st=State(hash=1971886730,s=12,ss=0,es=0,tag=input,attr=style)
+WS              " ", la=1, st=State(hash=1971886730,s=12,ss=0,es=0,tag=input,attr=style)
+OPERATOR        "=", st=State(hash=1972053772,s=14,ss=0,es=0,tag=input,attr=style)
+WS              " ", la=1, st=State(hash=1972053772,s=14,ss=0,es=0,tag=input,attr=style)
+VALUE_CSS       ""color: green"", st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+TAG_CLOSE_SYMBOL  "/>", st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TEXT            "\n", la=1, st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN_SYMBOL  "<", la=1, st=State(hash=4927739,s=8,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN        "input", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+WS              " ", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+ARGUMENT        "style", la=1, st=State(hash=1971886730,s=12,ss=0,es=0,tag=input,attr=style)
+OPERATOR        "=", st=State(hash=1972053772,s=14,ss=0,es=0,tag=input,attr=style)
+VALUE_CSS       "'color: yellow'", st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+TAG_CLOSE_SYMBOL  "/>", st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TEXT            "\n", la=1, st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN_SYMBOL  "<", la=1, st=State(hash=4927739,s=8,ss=0,es=0,tag=null,attr=null)
+TAG_OPEN        "input", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+WS              " ", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+ARGUMENT        "style", la=1, st=State(hash=1971886730,s=12,ss=0,es=0,tag=input,attr=style)
+WS              " ", la=1, st=State(hash=1971886730,s=12,ss=0,es=0,tag=input,attr=style)
+OPERATOR        "=", st=State(hash=1972053772,s=14,ss=0,es=0,tag=input,attr=style)
+WS              " ", la=1, st=State(hash=1972053772,s=14,ss=0,es=0,tag=input,attr=style)
+VALUE_CSS       "'color: fuchsia'", st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+WS              " ", la=1, st=State(hash=105369350,s=9,ss=0,es=0,tag=input,attr=null)
+TAG_CLOSE_SYMBOL  "/>", st=State(hash=4259571,s=0,ss=0,es=0,tag=null,attr=null)
 ----- EOF -----
 
 <Unnamed test>

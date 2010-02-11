@@ -322,7 +322,7 @@ No.
         </question>
 -->
 <answer id="exec-component">
-    <api type="export" group="property" name="org.openide.explorer.VisualizerNode.prefetchCount" category="private">
+    <api type="export" group="systemproperty" name="org.openide.explorer.VisualizerNode.prefetchCount" category="private">
         Setting this property to integer number controls prefetching of nodes
         when VisualizerChildren are constructed (prefetchCount = 0 disables
         prefetching).
@@ -407,7 +407,7 @@ No.
         </question>
 -->
 <answer id="exec-property">
-    <api name="netbeans.dnd.enabled" group="property" category="private" type="export" url="">
+    <api name="netbeans.dnd.enabled" group="systemproperty" category="private" type="export" url="">
     Checks by Drag &amp; Drop support for views. True is regard as default
     (no matter what jdk's version). False value disallows Drag &amp; Drop in
     all views.

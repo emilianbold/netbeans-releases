@@ -278,7 +278,7 @@ made subject to such option by the copyright holder.
 
     <target name="release" depends="files-init" if="has.release.dir">
         <mkdir dir="${cluster}"/>
-        <copy todir="${cluster}">
+        <copy todir="${cluster}" overwrite="true">
             <fileset dir="${release.dir}">
                 <patternset includes="${release.files}"/>
             </fileset>

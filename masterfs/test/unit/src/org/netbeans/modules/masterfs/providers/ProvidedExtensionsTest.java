@@ -554,15 +554,19 @@ public class ProvidedExtensionsTest extends NbTestCase {
                     assertFalse(to.exists());
                     
                     assertFalse(from.equals(to));
-                    InputStream inputStream = new FileInputStream(from);
-                    OutputStream outputStream = new FileOutputStream(to);
-                    try {
-                        FileUtil.copy(inputStream, outputStream);
-                    } finally {
-                        if (inputStream != null) inputStream.close();
-                        if (outputStream != null) outputStream.close();
+                    if (from.isDirectory()) {
+                        from.renameTo(to);
+                    } else {
+                        InputStream inputStream = new FileInputStream(from);
+                        OutputStream outputStream = new FileOutputStream(to);
+                        try {
+                            FileUtil.copy(inputStream, outputStream);
+                        } finally {
+                            if (inputStream != null) inputStream.close();
+                            if (outputStream != null) outputStream.close();
+                        }
+                        assertTrue(from.delete());
                     }
-                    assertTrue(from.delete());
                     
                     assertFalse(from.exists());
                     assertTrue(to.exists());

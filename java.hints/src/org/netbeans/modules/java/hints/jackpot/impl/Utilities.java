@@ -591,8 +591,11 @@ public class Utilities {
 
         //TODO: remove impl. dep. on java.source
         JavaFileObject jfo = FileObjects.memoryFileObject("$", "$", new File("/tmp/t" + count + ".java").toURI(), System.currentTimeMillis(), clazz.toString());
+        boolean oldSkipAPs = jti.skipAnnotationProcessing;
 
         try {
+            jti.skipAnnotationProcessing = true;
+            
             Iterable<? extends CompilationUnitTree> parsed = jti.parse(jfo);
             CompilationUnitTree cut = parsed.iterator().next();
 
@@ -602,6 +605,8 @@ public class Utilities {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return null;
+        } finally {
+            jti.skipAnnotationProcessing = oldSkipAPs;
         }
     }
     }

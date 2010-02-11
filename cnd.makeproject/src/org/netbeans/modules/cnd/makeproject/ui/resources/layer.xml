@@ -286,6 +286,12 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-cnd-makeproject-actions-RunTestAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.RunTestAction"/>
             </file>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-DebugTestAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.DebugTestAction"/>
+            </file>
+            <file name="org-netbeans-modules-cnd-makeproject-actions-StepIntoTestAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.StepIntoTestAction"/>
+            </file>
             <file name="org-netbeans-modules-cnd-makeproject-actions-BatchBuildAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.actions.BatchBuildAction.MainBatchBuildAction"/>
             </file>
