@@ -60,6 +60,7 @@ import org.netbeans.modules.web.debug.Context;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.modules.web.debug.breakpoints.JspLineBreakpoint;
 import org.netbeans.modules.web.debug.util.Utils;
+import org.netbeans.spi.debugger.ActionsProvider.Registration;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.util.Exceptions;
@@ -69,6 +70,7 @@ import org.openide.util.Lookup;
 *
 * @author Martin Grebac, Libor Kotouc
 */
+@Registration(actions={"runToCursor"}, activateForMIMETypes={"text/x-jsp"})
 public class JspRunToCursorActionProvider extends ActionsProviderSupport {
     
     private JspLineBreakpoint breakpoint;
