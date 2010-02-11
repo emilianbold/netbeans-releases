@@ -3007,7 +3007,7 @@ public class HgCommand {
                                 HgUtils.replaceHttpPassword(cmdOutput)));
         }
 
-        if (cmdOutput != null && (isErrorPossibleProxyIssue(cmdOutput.get(0)) || isErrorPossibleProxyIssue(cmdOutput.get(cmdOutput.size() - 1)))) {
+        if (cmdOutput != null && !cmdOutput.isEmpty() && (isErrorPossibleProxyIssue(cmdOutput.get(0)) || isErrorPossibleProxyIssue(cmdOutput.get(cmdOutput.size() - 1)))) {
             boolean bConfirmSetProxy;
             bConfirmSetProxy = HgUtils.confirmDialog(HgCommand.class, "MSG_POSSIBLE_PROXY_ISSUE_TITLE", "MSG_POSSIBLE_PROXY_ISSUE_QUERY"); // NOI18N
             if(bConfirmSetProxy){
