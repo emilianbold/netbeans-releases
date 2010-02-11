@@ -356,14 +356,15 @@ import org.openide.util.NbBundle;
         final String localInterfaceFQN = pkg + "." + getUniqueClassName(entitySimpleName + FACADE_LOCAL_SUFFIX, targetFolder);
         final String remoteInterfaceFQN = pkg + "." + getUniqueClassName(entitySimpleName + FACADE_REMOTE_SUFFIX, targetFolder);
 
+        List<GenerationOptions> intfOptions = getAbstractFacadeMethodOptions(entityFQN, variableName);
         if (hasLocal) {
             FileObject local = createInterface(JavaIdentifiers.unqualify(localInterfaceFQN), EJB_LOCAL, targetFolder);
-            addMethodToInterface(methodOptions, local);
+            addMethodToInterface(intfOptions, local);
             createdFiles.add(local);
         }
         if (hasRemote) {
             FileObject remote = createInterface(JavaIdentifiers.unqualify(remoteInterfaceFQN), EJB_REMOTE, targetFolder);
-            addMethodToInterface(methodOptions, remote);
+            addMethodToInterface(intfOptions, remote);
             createdFiles.add(remote);
         }
 
