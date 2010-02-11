@@ -250,7 +250,7 @@ public abstract class ActionsProvider {
                 String currentMIMEType = getCurrentMIMEType();
                 if (currentMIMEType != ERROR) {
                     if (!enabledOnMIMETypes.contains(currentMIMEType)) {
-                        System.err.println("Delegate '"+serviceName+"' NOT enabled on "+currentMIMEType+", enabled MIME types = "+enabledOnMIMETypes);
+                        //System.err.println("Delegate '"+serviceName+"' NOT enabled on "+currentMIMEType+", enabled MIME types = "+enabledOnMIMETypes);
                         return false;
                     }
                 }
