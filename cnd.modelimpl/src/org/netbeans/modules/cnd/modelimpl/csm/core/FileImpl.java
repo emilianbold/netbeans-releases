@@ -1163,11 +1163,6 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
             TokenStream filteredTokenStream = walker.getFilteredTokenStream(getLanguageFilter(ppState));
 
-            FilePreprocessorConditionState pcState = pcBuilder.build();
-            if (false) {
-                setAPTCacheEntry(preprocHandler, aptCacheEntry, false);
-            }
-            startProject.setParsedPCState(this, ppState, pcState);
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
 
             if(fileType == FileType.SOURCE_FORTRAN_FILE) {
@@ -1179,6 +1174,12 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
 
             parsing.stageOne(filteredTokenStream);
+
+            FilePreprocessorConditionState pcState = pcBuilder.build();
+            if (false) {
+                setAPTCacheEntry(preprocHandler, aptCacheEntry, false);
+            }
+            startProject.setParsedPCState(this, ppState, pcState);
             
             if (emptyAstStatictics) {
                 time = System.currentTimeMillis() - time;

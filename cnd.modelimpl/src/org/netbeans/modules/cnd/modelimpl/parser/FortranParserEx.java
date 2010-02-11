@@ -121,12 +121,12 @@ public class FortranParserEx extends FortranParser {
             }
 
             public void end_program_stmt(Token label, Token endKeyword, Token programKeyword, Token id, Token eos) {
-                if(endKeyword instanceof APTToken) {
-                    programData.endOffset = ((APTToken)endKeyword).getEndOffset();
-                } else if(endKeyword instanceof MyToken && ((MyToken) endKeyword).t instanceof APTToken) {
-                    programData.endOffset = ((APTToken)((MyToken)endKeyword).t).getEndOffset();
-                }
                 if(programData != null) {
+                    if(endKeyword instanceof APTToken) {
+                        programData.endOffset = ((APTToken)endKeyword).getEndOffset();
+                    } else if(endKeyword instanceof MyToken && ((MyToken) endKeyword).t instanceof APTToken) {
+                        programData.endOffset = ((APTToken)((MyToken)endKeyword).t).getEndOffset();
+                    }
                     parsedObjects.add(programData);
                 }
                 programData = null;
@@ -142,12 +142,12 @@ public class FortranParserEx extends FortranParser {
             }
 
             public void end_subroutine_stmt(Token label, Token keyword1, Token keyword2, Token name, Token eos) {
-                if (keyword2 instanceof MyToken && ((MyToken) keyword2).t instanceof APTToken) {
-                    programData.endOffset = ((APTToken) ((MyToken) keyword2).t).getEndOffset();
-                } else if(keyword1 instanceof MyToken && ((MyToken) keyword1).t instanceof APTToken) {
-                    programData.endOffset = ((APTToken)((MyToken)keyword1).t).getEndOffset();
-                }
                 if(programData != null) {
+                    if (keyword2 instanceof MyToken && ((MyToken) keyword2).t instanceof APTToken) {
+                        programData.endOffset = ((APTToken) ((MyToken) keyword2).t).getEndOffset();
+                    } else if(keyword1 instanceof MyToken && ((MyToken) keyword1).t instanceof APTToken) {
+                        programData.endOffset = ((APTToken)((MyToken)keyword1).t).getEndOffset();
+                    }
                     parsedObjects.add(programData);
                 }
                 programData = null;

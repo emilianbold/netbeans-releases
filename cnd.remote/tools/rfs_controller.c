@@ -515,7 +515,8 @@ int main(int argc, char* argv[]) {
         pthread_create(&thread, NULL /*&attr*/, (void *(*) (void *)) serve_connection, conn_data);
         pthread_detach(thread);
     }
-
-    close(sd);
-    trace_shutdown();
+    // the code below is unreachable, so I commented it out
+    // TODO: (?) more accurate shutdon?
+    // close(sd);
+    // trace_shutdown();
 }
