@@ -89,7 +89,7 @@ abstract class AbstractWindowRunner<T> extends WindowAdapter implements Runnable
     private volatile T operationResult;
     private final CountDownLatch startLatch = new CountDownLatch(1);
     private final CountDownLatch waitForTaskAssignment = new CountDownLatch(1);
-    private Future<T> future;
+    private RunOffEDTImpl.CancellableFutureTask<T> future;
     private final boolean showCancel;
 
     AbstractWindowRunner(ProgressHandle handle, boolean includeDetail, boolean showCancel) {
@@ -117,20 +117,25 @@ abstract class AbstractWindowRunner<T> extends WindowAdapter implements Runnable
 
     Future<T> waitForStart() throws InterruptedException {
         Future<T> result = task();
-        if (result == null) {
-            startLatch.await();
-            result = task();
+        if (!EventQueue.isDispatchThread()) {
+            if (result == null) {
+                startLatch.await();
+                result = task();
+            }
         }
+        assert result != null;
         return result;
     }
 
     @Override
     public final void windowOpened(WindowEvent e) {
         dlg = (JDialog) e.getSource();
-        RunOffEDTImpl.CancellableFutureTask ft = new RunOffEDTImpl.CancellableFutureTask<T>(this);
-        ft.task = RequestProcessor.getDefault().post(ft);
-        synchronized (handle) {
-            future = ft;
+        if (!isDispatchThread) {
+            createTask();
+        }
+        RunOffEDTImpl.CancellableFutureTask f;
+        synchronized(this) {
+             f = future;
         }
         //Runnable could theoretically complete before we have set the
         //handle, allowing
@@ -138,7 +143,17 @@ abstract class AbstractWindowRunner<T> extends WindowAdapter implements Runnable
         //So we block launch until the task has been assigned, which is now
         waitForTaskAssignment.countDown();
         grayOutMainWindow();
+        f.task.schedule(0);
         startLatch.countDown();
+    }
+
+    private Future<T> createTask() {
+        RunOffEDTImpl.CancellableFutureTask<T> ft = new RunOffEDTImpl.CancellableFutureTask<T>(this);
+        ft.task = RequestProcessor.getDefault().create(ft);
+        synchronized (handle) {
+            future = ft;
+        }
+        return ft;
     }
 
     @Override
@@ -151,9 +166,14 @@ abstract class AbstractWindowRunner<T> extends WindowAdapter implements Runnable
         latch.await();
     }
 
-    final void start() {
+    boolean isDispatchThread;
+    Future<T> start() {
         if (EventQueue.isDispatchThread()) {
-            createModalProgressDialog(handle, includeDetail);
+            isDispatchThread = true;
+            Future<T> task = createTask();
+            dlg = createModalProgressDialog(handle, includeDetail);
+            dlg.setVisible(true);
+            return task;
         } else {
             CountDownLatch dlgLatch = new CountDownLatch(1);
             DialogCreator dc = new DialogCreator(dlgLatch);
@@ -163,6 +183,7 @@ abstract class AbstractWindowRunner<T> extends WindowAdapter implements Runnable
             } catch (InterruptedException ex) {
                 throw new IllegalStateException(ex);
             }
+            return null;
         }
     }
 
@@ -241,7 +262,6 @@ abstract class AbstractWindowRunner<T> extends WindowAdapter implements Runnable
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    System.err.println("Cancel button");
                     task().cancel(true);
                 }
 
@@ -291,7 +311,7 @@ abstract class AbstractWindowRunner<T> extends WindowAdapter implements Runnable
         panel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createRaisedBevelBorder(), BorderFactory.createEmptyBorder(edgeGap, edgeGap, edgeGap, edgeGap)));
         panel.setMinimumSize(new Dimension(400, 100));
         Frame mainWindow = WindowManager.getDefault().getMainWindow();
-        JDialog result = new JDialog(mainWindow, true);
+        final JDialog result = new JDialog(mainWindow, true);
         result.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         result.setUndecorated(true);
         result.setSize(400, 100);
@@ -302,7 +322,17 @@ abstract class AbstractWindowRunner<T> extends WindowAdapter implements Runnable
         result.setSize(Math.max(reqWidth, mainWindow instanceof JFrame ? ((JFrame) mainWindow).getContentPane().getWidth() / 3 : mainWindow.getWidth()), result.getHeight());
         result.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
         result.addWindowListener(this);
-        result.setVisible(true);
+        if (EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    result.setVisible(true);
+                }
+            });
+        } else {
+            result.setVisible(true);
+        }
+        
         return result;
     }
 

@@ -39,16 +39,25 @@
 
 package org.netbeans.modules.progress.ui;
 
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import javax.swing.JFrame;
+import junit.framework.AssertionFailedError;
+import junit.framework.TestCase;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -56,41 +65,26 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
-import org.junit.After;
 import static org.junit.Assert.*;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressRunnable;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.junit.MockServices;
+import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.Workspace;
 
 /**
  *
  * @author Tim Boudreau
  */
-public class RunOffEDTImplTest {
-
-    public RunOffEDTImplTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
+public class RunOffEDTImplTest extends TestCase {
 
     @Before
     public void setUp() {
         MockServices.setServices(WM.class, RunOffEDTImpl.class);
-    }
-
-    @After
-    public void tearDown() {
     }
 
     private static boolean canTestGlassPane() {
@@ -101,22 +95,89 @@ public class RunOffEDTImplTest {
 
     @Test
     public void testShowProgressDialogAndRun_3args_1_EQ() throws Exception {
-        EventQueue.invokeAndWait(new Runnable() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        EventQueue.invokeLater(new Runnable() {
 
             @Override
             public void run() {
-                testShowProgressDialogAndRun_3args_1();
+                try {
+                    testShowProgressDialogAndRun_3args_1();
+                } finally {
+                    latch.countDown();
+                }
             }
         });
+        latch.await();
     }
 
     @Test
     public void testShowProgressDialogAndRun_3args_2_EQ() throws Exception {
-        EventQueue.invokeAndWait(new Runnable() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        EventQueue.invokeLater(new Runnable() {
 
             @Override
             public void run() {
-                testShowProgressDialogAndRun_3args_2();
+                try {
+                    testShowProgressDialogAndRun_3args_2();
+                } catch (AssertionFailedError e) {
+                    throw e;
+                } catch (Exception ex) {
+                    throw new RuntimeException (ex);
+                } finally {
+                    latch.countDown();
+                }
+            }
+        });
+        latch.await();
+    }
+
+    @Test
+    public void testShowProgressDialogAndRunLater() throws Exception {
+        final WM wm = Lookup.getDefault().lookup(WM.class);
+        //make sure main window is on screen before proceeding
+        wm.await();
+        final JFrame jf = (JFrame) WindowManager.getDefault().getMainWindow();
+        final CountDownLatch countDown = new CountDownLatch(1);
+        final AtomicBoolean glassPaneFound = new AtomicBoolean(false);
+        final boolean testGlassPane = canTestGlassPane();
+        class R implements ProgressRunnable<String> {
+            volatile boolean hasRun;
+            @Override
+            public String run(ProgressHandle handle) {
+                try {
+                    wm.waitForGlassPane();
+                    if (testGlassPane) {
+                        glassPaneFound.set(jf.getGlassPane() instanceof RunOffEDTImpl.TranslucentMask);
+                    }
+                    hasRun = true;
+                    return "Done";
+                } finally {
+                    countDown.countDown();
+                }
+            }
+        }
+        R r = new R();
+        Future<String> f = ProgressUtils.showProgressDialogAndRunLater(r, ProgressHandleFactory.createHandle("Something"), true);
+        assertNotNull (f);
+        assertEquals ("Done", f.get());
+        countDown.await();
+        assertTrue (r.hasRun);
+        assertFalse (f.isCancelled());
+        assertTrue (f.isDone());
+        assertEquals ("Done", f.get());
+        assertTrue ("Glass pane not set", !testGlassPane || glassPaneFound.get());
+    }
+
+    @Test
+    public void testShowProgressDialogAndRunLaterEQ() throws Throwable {
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    testShowProgressDialogAndRunLater();
+                } catch (Exception ex) {
+                    throw new AssertionError(ex);
+                }
             }
         });
     }
@@ -127,25 +188,80 @@ public class RunOffEDTImplTest {
     }
 
     @Test
-    public void testShowProgressDialogAndRun_3args_2() {
+    public void testShowProgressDialogAndRun_3args_2() throws InterruptedException {
+        final WM wm = Lookup.getDefault().lookup(WM.class);
+        //make sure main window is on screen before proceeding
+        wm.await();
         final JFrame jf = (JFrame) WindowManager.getDefault().getMainWindow();
+        final CountDownLatch countDown = new CountDownLatch(1);
+        final AtomicBoolean glassPaneFound = new AtomicBoolean(false);
+        final boolean testGlassPane = canTestGlassPane();
         class R implements Runnable {
-            boolean hasRun;
+            volatile boolean hasRun;
+            @Override
             public void run() {
                 try {
-                    Thread.sleep(200);
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
+                    wm.waitForGlassPane();
+                    if (testGlassPane) {
+                        glassPaneFound.set(jf.getGlassPane() instanceof RunOffEDTImpl.TranslucentMask);
+                    }
+                    hasRun = true;
+                } finally {
+                    countDown.countDown();
                 }
-                if (canTestGlassPane()) {
-                    assertTrue (jf.getGlassPane() instanceof RunOffEDTImpl.TranslucentMask);
-                }
-                hasRun = true;
             }
-        };
+        }
         R r = new R();
         ProgressUtils.showProgressDialogAndRun(r, "Something");
+        countDown.await();
         assertTrue (r.hasRun);
+        assertTrue ("Glass pane not set", !testGlassPane || glassPaneFound.get());
+    }
+
+    @Test
+    public void testStressWithRandomContention() throws InterruptedException, Exception {
+        Random r = new Random(123456789);
+        for (int i = 0; i < 30; i++) {
+            testShowProgressDialogAndRun_3args_1();
+            createRandomContention(r);
+            testShowProgressDialogAndRun_3args_1_EQ();
+            createRandomContention(r);
+            testShowProgressDialogAndRun_3args_2();
+            createRandomContention(r);
+            testShowProgressDialogAndRun_3args_2_EQ();
+        }
+    }
+
+    private void createRandomContention(final Random r) throws Exception {
+        if (r.nextInt(10) > 7) {
+            for (int i= 0; i < r.nextInt(5); i++) {
+                RequestProcessor.getDefault().post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        try {
+                            //No, Jesse, this will not affect the test
+                            //passing or failing unless something else is
+                            //broken
+                            Thread.sleep(r.nextInt(200));
+                        } catch (InterruptedException ex) {
+                            //do nothing
+                        }
+                    }
+                });
+                EventQueue.invokeAndWait(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.sleep(r.nextInt(200));
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            }
+        }
     }
 
     private class CB implements ProgressRunnable<String> {
@@ -154,11 +270,6 @@ public class RunOffEDTImplTest {
         public String run(ProgressHandle handle) {
             handle.switchToDeterminate(5);
             for (int i= 0; i < 5; i++) {
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
                 handle.progress("Job " + i, i);
             }
             return "Done";
@@ -166,10 +277,57 @@ public class RunOffEDTImplTest {
 
     }
 
-    public static final class WM extends WindowManager {
-        private final JFrame jf = new JFrame ("Main Window");
+    private static final class JF extends JFrame {
+        boolean inited;
+        private final CountDownLatch waitForGlassPane = new CountDownLatch(1);
+
+        JF () {
+            super ("Main Window");
+            inited = true;
+        }
+
+        @Override
+        public void addNotify() {
+            super.addNotify();
+            inited = true;
+        }
+
+        @Override
+        public void setGlassPane(java.awt.Component glassPane) {
+            super.setGlassPane(glassPane);
+            if (inited && glassPane instanceof RunOffEDTImpl.TranslucentMask) {
+                waitForGlassPane.countDown();
+            }
+        }
+
+    }
+
+    public static final class WM extends WindowManager implements WindowListener {
+
+        private final JF jf = new JF();
+        private CountDownLatch latch = new CountDownLatch(1);
         public WM() {
+            jf.addWindowListener(this);
+            jf.setPreferredSize(new Dimension(400, 400));
             jf.setVisible(true);
+        }
+
+        public void waitForGlassPane() {
+            try {
+                jf.waitForGlassPane.await();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        public void await() {
+            if (!jf.isDisplayable()) {
+                try {
+                    latch.await();
+                } catch (InterruptedException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
         }
 
         @Override
@@ -305,6 +463,41 @@ public class RunOffEDTImplTest {
         @Override
         public TopComponent findTopComponent(String tcID) {
             throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void windowOpened(WindowEvent e) {
+            latch.countDown();
+        }
+
+        @Override
+        public void windowClosing(WindowEvent e) {
+            //do nothing
+        }
+
+        @Override
+        public void windowClosed(WindowEvent e) {
+            //do nothing
+        }
+
+        @Override
+        public void windowIconified(WindowEvent e) {
+            //do nothing
+        }
+
+        @Override
+        public void windowDeiconified(WindowEvent e) {
+            //do nothing
+        }
+
+        @Override
+        public void windowActivated(WindowEvent e) {
+            //do nothing
+        }
+
+        @Override
+        public void windowDeactivated(WindowEvent e) {
+            //do nothing
         }
     }
 }

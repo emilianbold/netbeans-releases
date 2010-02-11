@@ -177,7 +177,15 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                                 openedComponents.notifyAll();
                             }
                             synchronized (OPENED_COMPONENTS) {
-                                OPENED_COMPONENTS.addAll(cs);
+                                if (componentsInitiallyOpened.size() == 0) {
+                                    OPENED_COMPONENTS.addAll(cs);
+                                } else {
+                                    List<Component> ocs = new ArrayList<Component>(cs);
+                                    for (Reference<Component> cref : componentsInitiallyOpened) {
+                                        ocs.remove(cref.get());
+                                    }
+                                    OPENED_COMPONENTS.addAll(ocs);
+                                }
                             }
                         }
                     }
