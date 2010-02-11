@@ -168,7 +168,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
                             System.arraycopy(breakpoints, 0, newBreakpoints, 0, i);
                         }
                         if (i < (n-1)) {
-                            System.arraycopy(breakpoints, i+1, newBreakpoints, i, n - 1);
+                            System.arraycopy(breakpoints, i+1, newBreakpoints, i, n - 1 - i);
                         }
                         n--;
                         breakpoints = newBreakpoints;
