@@ -297,7 +297,7 @@ public final class NbModuleProject implements Project {
         ic.add(LookupProviderSupport.createSourcesMerger());
         ic.add(UILookupMergerSupport.createPrivilegedTemplatesMerger());
         ic.add(UILookupMergerSupport.createRecommendedTemplatesMerger());
-        ic.add(new TemplateAttributesProvider(getHelper(), getModuleType() == NbModuleType.NETBEANS_ORG));
+        ic.add(new TemplateAttributesProvider(this, getHelper(), getModuleType() == NbModuleType.NETBEANS_ORG));
         ic.add(new FileEncodingQueryImpl());
         ic.add(new AnnotationProcessingQueryImpl());
 
