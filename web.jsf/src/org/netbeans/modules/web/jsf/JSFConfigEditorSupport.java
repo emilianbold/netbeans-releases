@@ -188,7 +188,7 @@ public class JSFConfigEditorSupport extends DataEditorSupport
                 String displayName = messageHtmlName();
                 
                 if (! displayName.equals(tc.getDisplayName())){
-                    tc.setDisplayName(displayName);
+                    tc.setHtmlDisplayName(displayName);
                 }
                 // XXX should probably set htmlDisplayName too, from messageHtmlName
                 // XXX should probably use messageToolTip instead

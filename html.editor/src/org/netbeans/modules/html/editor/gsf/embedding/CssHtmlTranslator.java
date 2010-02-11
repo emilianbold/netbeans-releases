@@ -70,7 +70,7 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
-        TokenHierarchy<CharSequence> th = TokenHierarchy.create(snapshot.getText(), HTMLTokenId.language());
+        TokenHierarchy th = snapshot.getTokenHierarchy();
         TokenSequence<HTMLTokenId> ts = th.tokenSequence(HTMLTokenId.language());
         HashMap<String, Object> state = new HashMap<String, Object>(6);
         List<Embedding> embeddings = new ArrayList<Embedding>();
