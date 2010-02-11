@@ -48,14 +48,17 @@ package org.netbeans.modules.form;
  */
 public abstract class FormDesignValueAdapter implements FormDesignValue {
     
+    @Override
     public Object getDesignValue(Object target) {
         return null;
     }
 
+    @Override
     public String getDescription() {
         return null;
     }
 
+    @Override
     public Object copy(FormProperty targetFormProperty) {
         return null;
     }

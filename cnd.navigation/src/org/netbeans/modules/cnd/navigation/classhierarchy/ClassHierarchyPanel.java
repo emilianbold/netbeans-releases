@@ -372,6 +372,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             final Children children = root.getChildren();
             if (!Children.MUTEX.isReadAccess()){
                 Children.MUTEX.writeAccess(new Runnable(){
+                    @Override
                     public void run() {
                         children.remove(children.getNodes());
                         HierarchyModel model = HierarchyFactory.getInstance().buildTypeHierarchyModel(csmClass, actions, subDirection, plain, recursive);
@@ -383,6 +384,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
                         } catch (PropertyVetoException ex) {
                         }
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 ((BeanTreeView) hierarchyPane).expandNode(node);
                             }
@@ -394,6 +396,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             final Children children = root.getChildren();
             if (!Children.MUTEX.isReadAccess()){
                 Children.MUTEX.writeAccess(new Runnable(){
+                    @Override
                     public void run() {
                         children.remove(children.getNodes());
                     }
@@ -402,6 +405,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         }
     }
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -429,10 +433,12 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             refreshButtonActionPerformed(e);
         }
 
+        @Override
         public final JMenuItem getPopupPresenter() {
             return menuItem;
         }
@@ -447,10 +453,12 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
+        @Override
         public void actionPerformed(ActionEvent e) {
             setSubtypeHierarchy(true);
         }
 
+        @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(subDirection);
             return menuItem;
@@ -466,10 +474,13 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
+        @Override
         public void actionPerformed(ActionEvent e) {
             setSubtypeHierarchy(false);
         }
 
+
+        @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(!subDirection);
             return menuItem;
@@ -485,10 +496,12 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
+        @Override
         public void actionPerformed(ActionEvent e) {
             setRecursive(!recursive);
         }
 
+        @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(!recursive);
             return menuItem;
@@ -504,10 +517,12 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
+        @Override
         public void actionPerformed(ActionEvent e) {
             setPlain(!plain);
         }
 
+        @Override
         public final JMenuItem getPopupPresenter() {
             menuItem.setSelected(!plain);
             return menuItem;
@@ -517,6 +532,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     private class DialogClose extends AbstractAction {
         public DialogClose() {
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             Component p = ClassHierarchyPanel.this;
             while (p != null){
@@ -595,6 +611,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         return org.openide.util.NbBundle.getMessage(getClass(), path);
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("TypeView"); // NOI18N
     }

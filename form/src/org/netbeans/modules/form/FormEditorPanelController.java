@@ -59,11 +59,13 @@ public final class FormEditorPanelController extends OptionsPanelController {
     private boolean initialized = false;
 
 
+    @Override
     public void update () {
         initialized = true;
         customizer.update ();
     }
     
+    @Override
     public void applyChanges () {
         if (initialized) {
             customizer.applyChanges ();
@@ -71,31 +73,38 @@ public final class FormEditorPanelController extends OptionsPanelController {
         initialized = false;
     }
     
+    @Override
     public void cancel () {
         customizer.cancel ();
         initialized = false;
     }
     
+    @Override
     public boolean isValid () {
         return customizer.dataValid ();
     }
     
+    @Override
     public boolean isChanged () {
         return customizer.isChanged ();
     }
     
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx ("netbeans.optionsDialog.advanced.formEditor"); // NOI18N
     }
     
+    @Override
     public JComponent getComponent (Lookup masterLookup) {
         return customizer;
     }
 
+    @Override
     public void addPropertyChangeListener (PropertyChangeListener l) {
         customizer.addPropertyChangeListener (l);
     }
 
+    @Override
     public void removePropertyChangeListener (PropertyChangeListener l) {
         customizer.removePropertyChangeListener (l);
     }

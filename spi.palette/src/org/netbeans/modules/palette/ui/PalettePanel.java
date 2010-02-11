@@ -45,6 +45,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.GraphicsEnvironment;
 import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -105,8 +106,10 @@ public class PalettePanel extends JPanel implements Scrollable {
     private PalettePanel () {
         setLayout( new PaletteLayoutManager() );
         addMouseListener( mouseListener() );
-        
-        dndSupport = new DnDSupport( this );
+
+        if (!GraphicsEnvironment.isHeadless()) {
+            dndSupport = new DnDSupport(this);
+        }
 
         if( "Aqua".equals(UIManager.getLookAndFeel().getID()) )
             setBackground( UIManager.getColor("NbExplorerView.background") ); //NOI18N
@@ -204,14 +207,18 @@ public class PalettePanel extends JPanel implements Scrollable {
             CategoryDescriptor descriptor = descriptors[i];
             if( !arrayContains( paletteCategoryDescriptors, descriptor ) ) {
                 remove( descriptor.getComponent() );
-                dndSupport.remove( descriptor );
+                if (dndSupport != null) {
+                    dndSupport.remove(descriptor);
+                }
             }
         }
         for( int i=0; i<paletteCategoryDescriptors.length; i++ ) {
             CategoryDescriptor paletteCategoryDescriptor = paletteCategoryDescriptors[i];
             if( !arrayContains( descriptors, paletteCategoryDescriptor ) ) {
                 add( paletteCategoryDescriptor.getComponent() );
-                dndSupport.add( paletteCategoryDescriptor );
+                if (dndSupport != null) {
+                    dndSupport.add(paletteCategoryDescriptor);
+                }
             }
         }
         if( descriptors.length == 0 && paletteCategoryDescriptors.length > 0 ) {

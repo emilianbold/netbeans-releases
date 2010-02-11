@@ -44,5 +44,5 @@ package org.netbeans.modules.dlight.spi.storage;
  * @author Maria Tishkova
  */
 public interface PersistentDataStorage extends DataStorage{
-
+    void loadSchema();
 }

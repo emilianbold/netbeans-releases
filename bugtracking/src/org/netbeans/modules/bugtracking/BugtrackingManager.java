@@ -44,6 +44,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -147,9 +148,7 @@ public final class BugtrackingManager implements LookupListener {
         for (BugtrackingConnector bc : conns) {
             Repository[] rs = bc.getRepositories();
             if(rs != null) {
-                for (Repository r : rs) {
-                    repos.add(r);
-                }
+                repos.addAll(Arrays.asList(rs));
             }
         }
         return repos.toArray(new Repository[repos.size()]);
@@ -176,6 +175,7 @@ public final class BugtrackingManager implements LookupListener {
         }
     }
 
+    @Override
     public void resultChanged(LookupEvent ev) {
         refreshConnectors();
     }

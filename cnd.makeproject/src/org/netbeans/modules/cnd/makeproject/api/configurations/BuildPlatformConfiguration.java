@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.makeproject.api.platforms.PlatformNone;
+import org.netbeans.modules.cnd.makeproject.platform.PlatformNone;
 import org.openide.util.NbBundle;
 
 /**

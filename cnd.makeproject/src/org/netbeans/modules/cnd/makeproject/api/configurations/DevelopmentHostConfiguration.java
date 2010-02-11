@@ -42,13 +42,13 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.platform.Platform;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
@@ -85,7 +85,7 @@ public class DevelopmentHostConfiguration {
         def = value;
         pcs = new PropertyChangeSupport(this);
 
-        int buildPlatform = CompilerSetManager.getDefault(execEnv).getPlatform();
+        int buildPlatform = CompilerSetManager.get(execEnv).getPlatform();
         if (buildPlatform == -1) {
             // TODO: CompilerSet is not reliable about platform; it must be.
             buildPlatform = PlatformTypes.PLATFORM_NONE;
@@ -129,7 +129,7 @@ public class DevelopmentHostConfiguration {
     public boolean isConfigured() {
         // localhost is always STATE_COMPLETE so isLocalhost() is assumed
         // keeping track of online status takes more efforts and can miss sometimes
-        return !CompilerSetManager.getDefault(getExecutionEnvironment()).isUninitialized();
+        return !CompilerSetManager.get(getExecutionEnvironment()).isUninitialized();
     }
 
     public int getValue() {
@@ -165,7 +165,7 @@ public class DevelopmentHostConfiguration {
         for (int i = 0; i < servers.size(); i++) {
             if (servers.get(i).equals(execEnv)) {
                 value = i;
-                setBuildPlatform(CompilerSetManager.getDefault(execEnv).getPlatform());
+                setBuildPlatform(CompilerSetManager.get(execEnv).getPlatform());
                 if (getBuildPlatform() == -1) {
                     // TODO: CompilerSet is not reliable about platform; it must be.
                     setBuildPlatform(PlatformTypes.PLATFORM_NONE);
@@ -189,9 +189,10 @@ public class DevelopmentHostConfiguration {
             if (currRecord.getDisplayName().equals(v)) {
                 final int newValue = i;
                 final Runnable setter = new Runnable() {
+                    @Override
                     public void run() {
                         value = newValue;
-                        setBuildPlatform(CompilerSetManager.getDefault(currEnv).getPlatform());
+                        setBuildPlatform(CompilerSetManager.get(currEnv).getPlatform());
                         if (getBuildPlatform() == -1) {
                             // TODO: CompilerSet is not reliable about platform; it must be.
                             setBuildPlatform(PlatformTypes.PLATFORM_NONE);
@@ -207,6 +208,7 @@ public class DevelopmentHostConfiguration {
                     setter.run();
                 } else {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             if (currRecord.setUp()) {
                                 setter.run();

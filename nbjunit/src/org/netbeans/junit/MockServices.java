@@ -130,7 +130,7 @@ public class MockServices {
 
         // Need to also reset global lookup since it caches the singleton and we need to change it.
         try {
-            Class mainLookup = Class.forName("org.netbeans.core.startup.MainLookup");
+            Class<?> mainLookup = Class.forName("org.netbeans.core.startup.MainLookup");
             Method sClsLoaderChanged = mainLookup.getDeclaredMethod("systemClassLoaderChanged",ClassLoader.class);
             sClsLoaderChanged.setAccessible(true);
             sClsLoaderChanged.invoke(null,l);
@@ -141,7 +141,7 @@ public class MockServices {
         }
 
         try {
-            Class lookup = Class.forName("org.openide.util.Lookup");
+            Class<?> lookup = Class.forName("org.openide.util.Lookup");
             Method defaultLookup = lookup.getDeclaredMethod("resetDefaultLookup");
             defaultLookup.setAccessible(true);
             defaultLookup.invoke(null);

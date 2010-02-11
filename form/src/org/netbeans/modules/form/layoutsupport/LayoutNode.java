@@ -70,11 +70,13 @@ public class LayoutNode extends FormNode
     }
 
     // RADComponentCookie
+    @Override
     public RADComponent getRADComponent() {
         return layoutSupport.getMetaContainer();
     }
 
     // FormPropertyCookie
+    @Override
     public FormProperty getProperty(String name) {
         Node.Property prop = layoutSupport.getLayoutProperty(name);
         return prop instanceof FormProperty ? (FormProperty) prop : null;
@@ -157,6 +159,7 @@ public class LayoutNode extends FormNode
                 layoutSupport.getPrimaryContainerDelegate().getLayout());
 
             customizer.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     Node.Property[] properties;
                     if (evt.getPropertyName() != null) {
@@ -188,6 +191,7 @@ public class LayoutNode extends FormNode
         // just for sure we run this as privileged to avoid security problems,
         // the property change can be fired from untrusted bean customizer code
         AccessController.doPrivileged(new PrivilegedAction() {
+            @Override
             public Object run() {
                 try {
                     PropertyChangeEvent ev = evt == null ? null :

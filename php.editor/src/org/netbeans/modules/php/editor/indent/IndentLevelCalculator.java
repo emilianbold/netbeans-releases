@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
@@ -87,6 +88,9 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     private Map<Position, Integer> indentLevels;
     private int indentSize;
     private int continuationIndentSize;
+    // contains informataion about indentation items in array deaclaration
+    private int itemsInArrayDeclarationSize;
+
     private BaseDocument doc;
     private Collection<Class<? extends ASTNode>>PARENTS_WITHOUT_CONT_INDENT = Arrays.asList(
             Assignment.class, FieldsDeclaration.class, ReturnStatement.class,
@@ -99,6 +103,7 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
         CodeStyle codeStyle = CodeStyle.get(doc);
         indentSize = codeStyle.getIndentSize();
         continuationIndentSize = codeStyle.getContinuationIndentSize();
+        itemsInArrayDeclarationSize = codeStyle.getItemsInArrayDeclarationIndentSize();
     }
 
     @Override
@@ -111,17 +116,16 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
 
         TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, node.getStartOffset());
         ts.move(node.getStartOffset());
-        ts.moveNext();
-        ts.moveNext();
-        int start = ts.offset();
-        ts = LexUtilities.getPHPTokenSequence(doc, node.getEndOffset());
-        ts.move(node.getEndOffset());
-        ts.movePrevious();
-        ts.movePrevious();
-        
-        int end = ts.offset() + ts.token().length();
-        addIndentLevel(start, indentSize);
-        addIndentLevel(end, -1 * indentSize);  
+        if (ts.moveNext() && ts.moveNext()) {
+	    int start = ts.offset();
+	    ts = LexUtilities.getPHPTokenSequence(doc, node.getEndOffset());
+	    ts.move(node.getEndOffset());
+	    ts.movePrevious();
+	    ts.movePrevious();
+	    int end = ts.offset() + ts.token().length();
+	    addIndentLevel(start, indentSize);
+	    addIndentLevel(end, -1 * indentSize);
+	}
     }
 
     @Override
@@ -160,14 +164,22 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     public void visit(ArrayCreation node) {
         Class parentClass = getPath().get(0).getClass();
 
-        if (!PARENTS_WITHOUT_CONT_INDENT.contains(parentClass)
-                && node.getElements().size() > 0){
+        if (node.getElements().size() > 0) {
             int start = node.getElements().get(0).getStartOffset();
             ArrayElement lastElem = node.getElements().get(node.getElements().size() - 1);
             int end = lastElem.getEndOffset();
 
-            addIndentLevel(start, continuationIndentSize);
-            addIndentLevel(end, -1 * continuationIndentSize);
+            if ((parentClass == FunctionInvocation.class
+		    && ((FunctionInvocation)getPath().get(0)).getParameters().size() > 1)
+		    || !PARENTS_WITHOUT_CONT_INDENT.contains(parentClass)){
+//	    if (!PARENTS_WITHOUT_CONT_INDENT.contains(parentClass)){
+                addIndentLevel(start, itemsInArrayDeclarationSize);
+                addIndentLevel(end, -1 * itemsInArrayDeclarationSize);
+            }
+            else {
+                addIndentLevel(start, itemsInArrayDeclarationSize - continuationIndentSize);
+                addIndentLevel(end, continuationIndentSize - itemsInArrayDeclarationSize );
+            }
         }
 
         super.visit(node);
@@ -176,6 +188,17 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     @Override
     public void visit(InfixExpression node) {
         Class parentClass = getPath().get(0).getClass();
+
+        if (!PARENTS_WITHOUT_CONT_INDENT.contains(parentClass)){
+            indentContinuationWithinStatement(node);
+        }
+
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(FunctionInvocation node) {
+	Class parentClass = getPath().get(0).getClass();
 
         if (!PARENTS_WITHOUT_CONT_INDENT.contains(parentClass)){
             indentContinuationWithinStatement(node);
@@ -204,7 +227,13 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     @Override
     public void visit(FieldsDeclaration node) {
         indentContinuationWithinStatement(node);
-        super.visit(node);
+         super.visit(node);
+    }
+
+    @Override
+    public void visit(SingleFieldDeclaration node) {
+        // TODO: this is hack for #179877
+        //super.visit(node);
     }
 
     @Override
@@ -381,11 +410,11 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     }
 
     private void addIndentLevel(int offset, int indent){
-        Integer existingIndent = getExistingIndentLevel(offset);
+        //Integer existingIndent = getExistingIndentLevel(offset);
 
-        int newIndent = existingIndent == null ? indent : indent + existingIndent;
+        //int newIndent = existingIndent == null ? indent : indent + existingIndent;
         try {
-            indentLevels.put(doc.createPosition(offset), newIndent);
+            indentLevels.put(doc.createPosition(offset), indent);
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -395,7 +424,7 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
     private Integer getExistingIndentLevel(int offset){
         for (Position pos : indentLevels.keySet()){
             if (pos.getOffset() == offset){
-                indentLevels.get(pos);
+                return indentLevels.get(pos);
             }
         }
 

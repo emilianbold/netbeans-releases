@@ -97,11 +97,15 @@ public class FmtOptions {
     public static final String spacesPerTab = SimpleValueNames.SPACES_PER_TAB;
     public static final String indentSize = SimpleValueNames.INDENT_SHIFT_WIDTH;
     public static final String continuationIndentSize = "continuationIndentSize"; //NOI18N
+    public static final String itemsInArrayDeclarationIndentSize = "itemsInArrayDeclarationIndentSize"; //NOI18N
     public static final String reformatComments = "reformatComments"; //NOI18N
     public static final String indentHtml = "indentHtml"; //NOI18N
     public static final String rightMargin = SimpleValueNames.TEXT_LIMIT_WIDTH;
-    public static final String openingBraceStyle = "openingBraceStyle"; //NOI18N
     public static final String initialIndent = "init.indent"; //NOI18N
+
+    public static final String classDeclBracePlacement = "classDeclBracePlacement"; //NOI18N
+    public static final String methodDeclBracePlacement = "methodDeclBracePlacement"; //NOI18N
+    public static final String otherBracePlacement = "otherBracePlacement"; //NOI18N
 
     public static final String blankLinesBeforeNamespace = "blankLinesBeforeNamespace"; //NOI18N
     public static final String blankLinesAfterNamespace = "blankLinesAfterNamespace"; //NOI18N
@@ -117,6 +121,56 @@ public class FmtOptions {
     public static final String blankLinesAfterFunction = "blankLinesAfterFunction"; //NOI18N
     public static final String blankLinesBeforeFunctionEnd = "blankLinesBeforeFunctionEnd"; //NOI18N
 
+    public static final String spaceBeforeWhile = "spaceBeforeWhile"; //NOI18N
+    public static final String spaceBeforeElse = "spaceBeforeElse"; //NOI18N
+    public static final String spaceBeforeCatch = "spaceBeforeCatch"; //NOI18N
+    public static final String spaceBeforeMethodDeclParen = "spaceBeforeMethodDeclParen"; //NOI18N
+    public static final String spaceBeforeMethodCallParen = "spaceBeforeMethodCallParen"; //NOI18N
+    public static final String spaceBeforeIfParen = "spaceBeforeIfParen"; //NOI18N
+    public static final String spaceBeforeForParen = "spaceBeforeForParen"; //NOI18N
+    public static final String spaceBeforeWhileParen = "spaceBeforeWhileParen"; //NOI18N
+    public static final String spaceBeforeCatchParen = "spaceBeforeCatchParen"; //NOI18N
+    public static final String spaceBeforeSwitchParen = "spaceBeforeSwitchParen"; //NOI18N
+    public static final String spaceAroundUnaryOps = "spaceAroundUnaryOps"; //NOI18N
+    public static final String spaceAroundBinaryOps = "spaceAroundBinaryOps"; //NOI18N
+    public static final String spaceAroundTernaryOps = "spaceAroundTernaryOps"; //NOI18N
+    public static final String spaceAroundStringConcatOps = "spaceAroundStringConcatOps"; //NOI18N
+    public static final String spaceAroundAssignOps = "spaceAroundAssignOps"; //NOI18N
+    public static final String spaceAroundObjectOps = "spaceAroundObjectOps"; //NOI18N
+    public static final String spaceBeforeClassDeclLeftBrace = "spaceBeforeClassDeclLeftBrace"; //NOI18N
+    public static final String spaceBeforeMethodDeclLeftBrace = "spaceBeforeMethodDeclLeftBrace"; //NOI18N
+    public static final String spaceBeforeIfLeftBrace = "spaceBeforeIfLeftBrace"; //NOI18N
+    public static final String spaceBeforeElseLeftBrace = "spaceBeforeElseLeftBrace"; //NOI18N
+    public static final String spaceBeforeWhileLeftBrace = "spaceBeforeWhileLeftBrace"; //NOI18N
+    public static final String spaceBeforeForLeftBrace = "spaceBeforeForLeftBrace"; //NOI18N
+    public static final String spaceBeforeDoLeftBrace = "spaceBeforeDoLeftBrace"; //NOI18N
+    public static final String spaceBeforeSwitchLeftBrace = "spaceBeforeSwitchLeftBrace"; //NOI18N
+    public static final String spaceBeforeTryLeftBrace = "spaceBeforeTryLeftBrace"; //NOI18N
+    public static final String spaceBeforeCatchLeftBrace = "spaceBeforeCatchLeftBrace"; //NOI18N
+//    public static final String spaceBeforeSynchronizedLeftBrace = "spaceBeforeSynchronizedLeftBrace"; //NOI18N
+//    public static final String spaceBeforeStaticInitLeftBrace = "spaceBeforeStaticInitLeftBrace"; //NOI18N
+//    public static final String spaceBeforeArrayInitLeftBrace = "spaceBeforeArrayInitLeftBrace"; //NOI18N
+//    public static final String spaceWithinParens = "spaceWithinParens"; //NOI18N
+//    public static final String spaceWithinMethodDeclParens = "spaceWithinMethodDeclParens"; //NOI18N
+//    public static final String spaceWithinMethodCallParens = "spaceWithinMethodCallParens"; //NOI18N
+    public static final String spaceWithinIfParens = "spaceWithinIfParens"; //NOI18N
+    public static final String spaceWithinForParens = "spaceWithinForParens"; //NOI18N
+    public static final String spaceWithinWhileParens = "spaceWithinWhileParens"; //NOI18N
+    public static final String spaceWithinSwitchParens = "spaceWithinSwitchParens"; //NOI18N
+    public static final String spaceWithinCatchParens = "spaceWithinCatchParens"; //NOI18N
+//    public static final String spaceWithinSynchronizedParens = "spaceWithinSynchronizedParens"; //NOI18N
+//    public static final String spaceWithinTypeCastParens = "spaceWithinTypeCastParens"; //NOI18N
+//    public static final String spaceWithinAnnotationParens = "spaceWithinAnnotationParens"; //NOI18N
+//    public static final String spaceWithinBraces = "spaceWithinBraces"; //NOI18N
+//    public static final String spaceWithinArrayInitBrackets = "spaceWithinArrayInitBrackets"; //NOI18N
+//    public static final String spaceBeforeComma = "spaceBeforeComma"; //NOI18N
+//    public static final String spaceAfterComma = "spaceAfterComma"; //NOI18N
+//    public static final String spaceBeforeSemi = "spaceBeforeSemi"; //NOI18N
+//    public static final String spaceAfterSemi = "spaceAfterSemi"; //NOI18N
+//    public static final String spaceBeforeColon = "spaceBeforeColon"; //NOI18N
+//    public static final String spaceAfterColon = "spaceAfterColon"; //NOI18N
+//    public static final String spaceAfterTypeCast = "spaceAfterTypeCast"; //NOI18N
+    
     public static CodeStyleProducer codeStyleProducer;
 
     private FmtOptions() {}
@@ -139,9 +193,9 @@ public class FmtOptions {
     private static final String FALSE = "false";    // NOI18N
 
     //opening brace styles
-    public static final String OBRACE_NEWLINE = "ob.new_line"; //NOI18N
-    public static final String OBRACE_SAMELINE = "ob.sameline_line"; //NOI18N
-    public static final String OBRACE_PRESERVE = "ob.preserve"; //NOI18N
+    public static final String OBRACE_NEWLINE = CodeStyle.BracePlacement.NEW_LINE.name();
+    public static final String OBRACE_SAMELINE = CodeStyle.BracePlacement.SAME_LINE.name();
+    public static final String OBRACE_PRESERVE = CodeStyle.BracePlacement.PRESERVE_EXISTING.name();
     
     private static Map<String,String> defaults;
     
@@ -155,11 +209,15 @@ public class FmtOptions {
             { tabSize, "8"}, //NOI18N
             { indentSize, "4"}, //NOI18N
             { continuationIndentSize, "8"}, //NOI18N
+            { itemsInArrayDeclarationIndentSize, "4"}, // NOI18N
             { reformatComments, FALSE }, //NOI18N
             { indentHtml, TRUE }, //NOI18N
             { rightMargin, "80"}, //NOI18N
-            { openingBraceStyle, OBRACE_SAMELINE},
             { initialIndent, "0"}, //NOI18N
+
+	    { classDeclBracePlacement, OBRACE_SAMELINE },
+	    { methodDeclBracePlacement, OBRACE_SAMELINE },
+	    { otherBracePlacement, OBRACE_SAMELINE },
 
             { blankLinesBeforeNamespace, "1"}, //NOI18N
             { blankLinesAfterNamespace, "1"}, //NOI18N
@@ -173,7 +231,58 @@ public class FmtOptions {
             { blankLinesAfterField, "1"}, //NOI18N
             { blankLinesBeforeFunction, "1"}, //NOI18N
             { blankLinesAfterFunction, "1"}, //NOI18N
-            { blankLinesBeforeFunctionEnd, "0"} //NOI18N
+            { blankLinesBeforeFunctionEnd, "0"}, //NOI18N
+
+            { spaceBeforeWhile, TRUE},
+            { spaceBeforeElse, TRUE},
+            { spaceBeforeCatch, TRUE},
+            { spaceBeforeMethodDeclParen, FALSE},
+            { spaceBeforeMethodCallParen, FALSE},
+            { spaceBeforeIfParen, TRUE},
+            { spaceBeforeForParen, TRUE},
+            { spaceBeforeWhileParen, TRUE},
+            { spaceBeforeCatchParen, TRUE},
+            { spaceBeforeSwitchParen, TRUE},
+            { spaceAroundUnaryOps, FALSE},
+            { spaceAroundBinaryOps, TRUE},
+            { spaceAroundTernaryOps, TRUE},
+	    { spaceAroundStringConcatOps, TRUE},
+            { spaceAroundAssignOps, TRUE},
+	    { spaceAroundObjectOps, FALSE},
+            { spaceBeforeClassDeclLeftBrace, TRUE},
+            { spaceBeforeMethodDeclLeftBrace, TRUE},
+            { spaceBeforeIfLeftBrace, TRUE},
+            { spaceBeforeElseLeftBrace, TRUE},
+            { spaceBeforeWhileLeftBrace, TRUE},
+            { spaceBeforeForLeftBrace, TRUE},
+            { spaceBeforeDoLeftBrace, TRUE},
+            { spaceBeforeSwitchLeftBrace, TRUE},
+            { spaceBeforeTryLeftBrace, TRUE},
+            { spaceBeforeCatchLeftBrace, TRUE},
+//            { spaceBeforeSynchronizedLeftBrace, TRUE},
+//            { spaceBeforeStaticInitLeftBrace, TRUE},
+//            { spaceBeforeArrayInitLeftBrace, FALSE},
+//            { spaceWithinParens, FALSE},
+//            { spaceWithinMethodDeclParens, FALSE},
+//            { spaceWithinMethodCallParens, FALSE},
+            { spaceWithinIfParens, FALSE},
+            { spaceWithinForParens, FALSE},
+            { spaceWithinWhileParens, FALSE},
+            { spaceWithinSwitchParens, FALSE},
+            { spaceWithinCatchParens, FALSE},
+//            { spaceWithinSynchronizedParens, FALSE},
+//            { spaceWithinTypeCastParens, FALSE},
+//            { spaceWithinAnnotationParens, FALSE},
+//            { spaceWithinBraces, FALSE},
+//            { spaceWithinArrayInitBrackets, FALSE},
+//            { spaceBeforeComma, FALSE},
+//            { spaceAfterComma, TRUE},
+//            { spaceBeforeSemi, FALSE},
+//            { spaceAfterSemi, TRUE},
+//            { spaceBeforeColon, TRUE},
+//            { spaceAfterColon, TRUE},
+//            { spaceAfterTypeCast, TRUE}
+
         };
         
         defaults = new HashMap<String,String>();
@@ -182,6 +291,10 @@ public class FmtOptions {
             defaults.put(strings[0], strings[1]);
         }
 
+    }
+
+    protected static Map<String, String> getDefaults() {
+	return defaults;
     }
 
      // Support section ---------------------------------------------------------
@@ -252,7 +365,7 @@ public class FmtOptions {
             scan(STORE, p);
         }
 
-        protected void notifyChanged() {
+        public void notifyChanged() {
 //            if (loaded)
 //                return;
             storeTo(preferences);

@@ -104,7 +104,7 @@ public class ArchetypeWizardUtils {
     public static final Archetype EA_ARCH;
     
     public static final Archetype NB_MODULE_ARCH, NB_APP_ARCH;
-    public static final Archetype OSGI_ARCH;
+    public static final Archetype OSGI_ARCH, NB_MODULE_OSGI_ARCH;
 
     public static final String[] EE_LEVELS = new String[] {
         NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE6"), //NOI18N
@@ -178,8 +178,9 @@ public class ArchetypeWizardUtils {
 
         NB_MODULE_ARCH = new Archetype();
         NB_MODULE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_MODULE_ARCH.setVersion("1.2"); //NOI18N
+        NB_MODULE_ARCH.setVersion("1.3-SNAPSHOT"); //NOI18N
         NB_MODULE_ARCH.setArtifactId("nbm-archetype"); //NOI18N
+        NB_MODULE_ARCH.setRepository("http://snapshots.repository.codehaus.org/");
 
         NB_APP_ARCH = new Archetype();
         NB_APP_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
@@ -192,6 +193,12 @@ public class ArchetypeWizardUtils {
         OSGI_ARCH.setVersion("1.0-SNAPSHOT"); //NOI18N
         OSGI_ARCH.setArtifactId("osgi-archetype"); //NOI18N
         OSGI_ARCH.setRepository("http://snapshots.repository.codehaus.org/");
+
+        NB_MODULE_OSGI_ARCH = new Archetype();
+        NB_MODULE_OSGI_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
+        NB_MODULE_OSGI_ARCH.setVersion("1.0-SNAPSHOT"); //NOI18N
+        NB_MODULE_OSGI_ARCH.setArtifactId("nbm-osgi-archetype"); //NOI18N
+        NB_MODULE_OSGI_ARCH.setRepository("http://snapshots.repository.codehaus.org/");
     }
 
 
@@ -382,9 +389,9 @@ public class ArchetypeWizardUtils {
             resultSet.add(fDir);
             processProjectFolder(fDir);
             // Look for nested projects to open as well:
-            Enumeration e = fDir.getFolders(true);
+            Enumeration<? extends FileObject> e = fDir.getFolders(true);
             while (e.hasMoreElements()) {
-                FileObject subfolder = (FileObject) e.nextElement();
+                FileObject subfolder = e.nextElement();
                 if (ProjectManager.getDefault().isProject(subfolder)) {
                     resultSet.add(subfolder);
                     processProjectFolder(subfolder);
@@ -418,6 +425,7 @@ public class ArchetypeWizardUtils {
                 }
                 //see #163529 for reasoning
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         watch.downloadDependencyAndJavadocSource();
                     }
@@ -453,6 +461,7 @@ public class ArchetypeWizardUtils {
         FileObject pomFO = FileUtil.toFileObject(new File(projDir, "pom.xml")); //NOI18N
         if (pomFO != null) {
             ModelOperation<POMModel> op = new ModelOperation<POMModel> () {
+                @Override
                 public void performOperation(POMModel model) {
                     model.getProject().setName(newName);
                 }

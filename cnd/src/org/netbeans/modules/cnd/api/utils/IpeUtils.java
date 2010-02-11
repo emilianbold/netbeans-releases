@@ -90,7 +90,7 @@ public class IpeUtils {
      * its directory name. Unlike dirname, however, return null if
      * the file is in the current directory rather than ".".
      */
-    public static final String getDirName(String path) {
+    public static String getDirName(String path) {
         int sep = path.lastIndexOf('/');
         if (sep == -1) {
             sep = path.lastIndexOf('\\');
@@ -104,7 +104,7 @@ public class IpeUtils {
     /** Same as the C library basename function: given a path, return
      * its filename.
      */
-    public static final String getBaseName(String path) {
+    public static String getBaseName(String path) {
         int sep = path.lastIndexOf('/');
         if (sep == -1) {
             sep = path.lastIndexOf('\\');
@@ -126,7 +126,7 @@ public class IpeUtils {
      *  to <code>base</code> or a copy of <code>path</code>. In all cases the
      *  returned path is a NEW string.
      */
-    static public final String getRelativePath(String base, String path) {
+    public static String getRelativePath(String base, String path) {
         // Convert both to canonical paths first
         // Using getCanonicalPath has problems on Mac where /tmp is being converted to /private/tmp.
         // Not sure it is really needed. Using trimDotDot instead.
@@ -139,24 +139,24 @@ public class IpeUtils {
         base = trimDotDot(base);
 
         if (path.equals(base)) {
-            return new String(path);
+            return path;
         } else if (path.startsWith(base + '/')) {
             // This should be the normal case...
-            return new String(path.substring(base.length() + 1));
+            return path.substring(base.length() + 1);
         } else if (path.startsWith(base + '\\')) {
             // This should be the normal case...
-            return new String(path.substring(base.length() + 1));
+            return path.substring(base.length() + 1);
         } else if (!isPathAbsolute(path)) {
             // already a relative path, return path as-is
-            return new String(path);
+            return path;
         } else {
             // some other absolute path
-            Object[] bnames = getPathNameArray(base);
-            Object[] pnames = getPathNameArray(path);
+            String[] bnames = getPathNameArray(base);
+            String[] pnames = getPathNameArray(path);
             int match = 0;
             for (int i = 0; i < bnames.length && i < pnames.length; i++) {
-                String bstring = new String(bnames[i].toString());
-                String pstring = new String(pnames[i].toString());
+                String bstring = bnames[i];
+                String pstring = pnames[i];
                 if (bstring.equals(pstring)) {
                     match++;
                 } else {
@@ -168,7 +168,7 @@ public class IpeUtils {
                 // path is a substring of
                 StringBuilder s = new StringBuilder();
                 for (int cnt = 0; cnt < (bnames.length - match - 1); cnt++) {
-                    s.append(".." + File.separator);					// NOI18N
+                    s.append("..").append(File.separator);	// NOI18N
                 }
                 s.append("..");					// NOI18N
                 return s.toString();
@@ -176,17 +176,17 @@ public class IpeUtils {
                 StringBuilder s = new StringBuilder();
 
                 for (int cnt = bnames.length - match; cnt > 0; cnt--) {
-                    s.append(".." + File.separator);					// NOI18N
+                    s.append("..").append(File.separator);	// NOI18N
                 }
                 for (int i = match; i < pnames.length; i++) {
                     if (s.length() > 0 && s.charAt(s.length() - 1) != File.separatorChar) {
                         s.append(File.separator);
                     }
-                    s.append(pnames[i].toString());
+                    s.append(pnames[i]);
                 }
                 return s.toString();
             } else {
-                return new String(path);
+                return path;
             }
         }
     }
@@ -255,36 +255,11 @@ public class IpeUtils {
         return res;
     }
 
-    /*
-     * From PicklistUtils
-     */
-    public static String subPath(String path, int levels) {
-        if (path == null || path.length() == 0) {
-            return path;
-        }
-        String newPath = null;
-
-        List<Integer> separators = new ArrayList<Integer>();
-        for (int i = 0; i < path.length(); i++) {
-            if (path.charAt(i) == '/') {
-                separators.add(0, i);
-            } else if (path.charAt(i) == '\\') {
-                separators.add(0, i);
-            }
-        }
-        if (separators.size() > levels) {
-            newPath = "..." + // NOI18N
-                    path.substring((separators.get(levels)).intValue(), path.length());
-        } else {
-            newPath = path;
-        }
-        return newPath;
-    }
-
     /**
-     *  Compute an array of the individual path elements of a pathname.
+     * Compute an array of the individual path elements of a pathname.
+     * package-local for testing
      */
-    /*package*/ static final String[] getPathNameArray(String path) {
+    /*package*/ static String[] getPathNameArray(String path) {
         ArrayList<String> l;
         int pos = 0;			    // start of a path name component
         int next;			    // position of next '/' in path
@@ -484,6 +459,20 @@ public class IpeUtils {
         return trimSlashes(dir.trim());
     }
 
+    public static String normalize(String path) {
+        return path.replaceAll("\\\\", "/"); // NOI18N
+    }
+
+    public static String naturalize(String path) {
+        if (Utilities.isUnix()) {
+            return path.replaceAll("\\\\", "/"); // NOI18N
+        } else if (Utilities.isWindows()) {
+            return path.replaceAll("/", "\\\\"); // NOI18N
+        } else {
+            return path;
+        }
+    }
+
     // Utility to request focus for a component by using the
     // swing utilities to invoke it at a later
     public static void requestFocus(final Component c) {
@@ -536,7 +525,7 @@ public class IpeUtils {
      * This is the case when the string contains space or meta characters.
      * For now, we only worry about space, tab, *, [, ], ., ( and )
      */
-    public static final String quoteIfNecessary(String s) {
+    public static String quoteIfNecessary(String s) {
         int n = s.length();
         if (n == 0) {
             // Don't quote empty strings ("")

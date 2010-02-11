@@ -187,9 +187,14 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                             buildGeneratedDir = _buildGeneratedDir;
                             FileUtil.addFileChangeListener(buildGeneratedDirListener, buildGeneratedDir);
                         }
+                        String apSourcesDirS = evaluator.getProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT);
+                        File apSourcesDir = apSourcesDirS != null ? projectHelper.resolveFile(apSourcesDirS) : null;
                         if (buildGeneratedDir.isDirectory()) { // #105645
                             for (File root : buildGeneratedDir.listFiles()) {
                                 if (!root.isDirectory()) {
+                                    continue;
+                                }
+                                if (root.equals(apSourcesDir)) {
                                     continue;
                                 }
                                 result.add(ClassPathSupport.createResource(root.toURI().toURL()));

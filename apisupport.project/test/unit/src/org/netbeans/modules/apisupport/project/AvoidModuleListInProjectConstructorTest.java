@@ -45,7 +45,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.openide.filesystems.FileObject;
 
@@ -60,7 +59,7 @@ public class AvoidModuleListInProjectConstructorTest extends TestBase {
         super(name);
     }
 
-    @RandomlyFails  // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    // XXX cannot be run in binary dist, requires sources; test against fake platform
     public void testNetBeansOrgModules() throws Exception {
         assertEquals("no scans of netbeans.org initially", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/ide/org-apache-tools-ant-module.jar")).size());
         FileObject fo = nbRoot().getFileObject("o.apache.tools.ant.module");

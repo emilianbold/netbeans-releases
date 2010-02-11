@@ -23,15 +23,14 @@ class ServerThread extends SingleThread {
     private int myPort;
     private ServerSocket myServer;
     private AtomicBoolean isStopped;
-    private SessionManager sessionManager;
 
-    ServerThread(SessionManager sessionManager) {
+    ServerThread() {
         super();
-        this.sessionManager = sessionManager;
         isStopped = new AtomicBoolean(false);
     }
 
 
+    @Override
     public void run() {
         isStopped = new AtomicBoolean(false);
         DebugSession debugSession = getDebugSession();
@@ -46,8 +45,7 @@ class ServerThread extends SingleThread {
                 try {
                     Socket sessionSocket = myServer.accept();
                     if (!isStopped.get() && sessionSocket != null) {
-                        debugSession.start(sessionSocket);
-                        sessionManager.add(debugSession);
+                        debugSession.startProcessing(sessionSocket);
                     }
                 } catch (SocketTimeoutException e) {
                     log(e);
@@ -116,9 +114,10 @@ class ServerThread extends SingleThread {
         }
     }
 
-    public void cancel() {
+    public boolean cancel() {
         isStopped.set(true);
         closeSocket();
+        return true;
     }
 
     private boolean isStopped() {

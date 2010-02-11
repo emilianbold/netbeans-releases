@@ -45,6 +45,7 @@ import java.lang.reflect.InvocationTargetException;
 import junit.framework.TestCase;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
@@ -54,6 +55,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 
 /**
  * @author mkleint
@@ -69,7 +71,7 @@ public class NodeFactorySupportTest extends TestCase {
      */
     public void testCreateCompositeChildren() throws InterruptedException, InvocationTargetException {
         InstanceContent ic = new InstanceContent();
-        final Children dels = new TestDelegates(ic);
+        final Children dels = new TestDelegates(new AbstractLookup(ic));
         final Node node1 = new AbstractNode(Children.LEAF);
         final Node node2 = new AbstractNode(Children.LEAF);
         final Node node3 = new AbstractNode(Children.LEAF);
@@ -105,6 +107,20 @@ public class NodeFactorySupportTest extends TestCase {
         
     }
 
+    public void testFindChild() throws Exception {
+        class HelloNode extends AbstractNode {
+            HelloNode() {
+                super(Children.LEAF);
+                setName("hello");
+            }
+        }
+        Node n = new HelloNode();
+        assertEquals(Collections.singletonList(n), Arrays.asList(new TestDelegates(Lookups.fixed(new TestNodeFactory(n))).getNodes(true)));
+        assertEquals(1, new TestDelegates(Lookups.fixed(new TestNodeFactory(new HelloNode()))).getNodesCount(true));
+        n = new HelloNode();
+        assertEquals(n, new TestDelegates(Lookups.fixed(new TestNodeFactory(n))).findChild("hello"));
+    }
+
    private class TestNodeFactory implements NodeFactory {
        
        Node node;
@@ -117,14 +133,14 @@ public class NodeFactorySupportTest extends TestCase {
    }
    
    private class TestDelegates extends NodeFactorySupport.DelegateChildren  {
-       public AbstractLookup.Content content;
-       TestDelegates(AbstractLookup.Content cont) {
+       public Lookup lkp;
+       TestDelegates(Lookup lkp) {
            super(null, null);
-           content = cont;
+           this.lkp = lkp;
        }
        
        protected @Override Lookup createLookup() {
-           return new AbstractLookup(content);
+           return lkp;
        }
    }
     

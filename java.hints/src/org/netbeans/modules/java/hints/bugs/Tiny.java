@@ -159,6 +159,11 @@ public class Tiny {
 
         TreePath columnIndex = ctx.getVariables().get("$columnIndex");
         Number value = ArithmeticUtilities.compute(ctx.getInfo(), columnIndex, true);
+
+        if (value == null) {
+            return null;
+        }
+
         int intValue = value.intValue();
 
         if (intValue > 0) {

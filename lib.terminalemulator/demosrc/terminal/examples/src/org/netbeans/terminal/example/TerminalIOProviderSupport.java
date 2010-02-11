@@ -12,17 +12,19 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.util.Map;
-import org.netbeans.lib.terminalemulator.LineDiscipline;
-import org.netbeans.lib.terminalemulator.Term;
-import org.netbeans.lib.terminalemulator.TermListener;
+
 import org.netbeans.lib.richexecution.program.Command;
 import org.netbeans.lib.richexecution.program.Program;
 import org.netbeans.lib.richexecution.Pty;
 import org.netbeans.lib.richexecution.PtyException;
 import org.netbeans.lib.richexecution.PtyExecutor;
 import org.netbeans.lib.terminalemulator.StreamTerm;
+
+import org.netbeans.modules.terminal.ioprovider.IOEmulation;
 import org.netbeans.modules.terminal.ioprovider.IOExecution;
+import org.netbeans.modules.terminal.ioprovider.IOResizable;
 import org.netbeans.modules.terminal.ioprovider.TerminalInputOutput;
+
 import org.openide.util.Exceptions;
 import org.openide.windows.IOColorLines;
 import org.openide.windows.IOProvider;
@@ -53,15 +55,15 @@ public final class TerminalIOProviderSupport {
      * @param b Add line discipline if true.
      */
     public static void setInternal(InputOutput io, boolean b) {
-        TerminalInputOutput tio = null;
-        if (io instanceof TerminalInputOutput)
-            tio = (TerminalInputOutput) io;
+	if (IOEmulation.isSupported(io) && b)
+	    IOEmulation.setDisciplined(io);
+    }
 
-        Term term = null;
-        if (tio != null) {
-            term = tio.term();
-            term.pushStream(new LineDiscipline());
-        }
+    private void startShuttle(InputOutput io, OutputStream pin, InputStream pout) {
+	OutputWriter toIO = io.getOut();
+	Reader fromIO = io.getIn();
+	IOShuttle shuttle = new IOShuttle(pin, pout, toIO, fromIO);
+	shuttle.run();
     }
 
     public void executeCommand(IOProvider iop, String cmd) {
@@ -124,25 +126,26 @@ public final class TerminalIOProviderSupport {
                 return;
             }
 
-            StreamTerm term = null;
-            if (tio != null) {
-                term = tio.term();
-                term.addListener(new TermListener() {
-                    public void sizeChanged(Dimension cells, Dimension pixels) {
+	    if (IOResizable.isSupported(io)) {
+		IOResizable.addListener(io, new IOResizable.Listener() {
+		    public void sizeChanged(Dimension cells, Dimension pixels) {
                         pty.masterTIOCSWINSZ(cells.height, cells.width,
                                              pixels.height, pixels.width);
-                    }
-                });
-            }
+		    }
+		});
+	    }
 
             //
             // Create a program and process
             //
             Program program = new Command(cmd);
-            if (term != null) {
-                Map<String, String> env = program.environment();
-                env.put("TERM", term.getEmulation());
-            }
+	    Map<String, String> env = program.environment();
+	    if (IOEmulation.isSupported(io)) {
+                env.put("TERM", IOEmulation.getEmulation(io));
+	    } else {
+                env.put("TERM", "dumb");
+	    }
+
             PtyExecutor executor = new PtyExecutor();
             executor.start(program, pty);
 
@@ -156,14 +159,15 @@ public final class TerminalIOProviderSupport {
             OutputStream pin = pty.getOutputStream();
             InputStream pout = pty.getInputStream();
 
-            boolean implicit = true;
+            boolean implicit = false;
             if (implicit) {
-                term.connect(pin, pout, null);
+		StreamTerm term = (tio != null)? tio.term(): null;
+		if (term != null)
+		    term.connect(pin, pout, null);
+		else
+		    startShuttle(io, pin, pout);
             } else {
-                OutputWriter toIO = io.getOut();
-                Reader fromIO = io.getIn();
-                IOShuttle shuttle = new IOShuttle(pin, pout, toIO, fromIO);
-                shuttle.run();
+		startShuttle(io, pin, pout);
             }
         }
     }

@@ -222,6 +222,8 @@ made subject to such option by the copyright holder.
         <filter_out pattern="^::\(.*\)"/>
         <filter_out pattern="^:\(.*\).*"/>
         <filter_out pattern="^\(.*\).*:"/>
+        <filter_out pattern=".* --> Job errors$"/>
+        <filter_out pattern=".* --> Job output$"/>
     </scanner>
     <linker>
         <library_prefix stringvalue="lib"/>
@@ -233,12 +235,14 @@ made subject to such option by the copyright holder.
         <dynamic_library flags="-Bdynamic"/>
         <dynamic_library_basic flags="-G "/>
         <output_file flags="-o "/>
+        <strip_flag flags="-s"/>
     </linker>
     <make>
         <tool name="dmake"/>
         <alternative_path>
-            <path toolchain_name="*"/>
             <path directory="$PATH"/>
+            <path toolchain_family="SunStudio"/>
+            <path toolchain_name="*"/>
         </alternative_path>
         <version flags="-v" />
         <dependency_support code=".KEEP_STATE:\n.KEEP_STATE_FILE:.make.state.${CONF}\n" />
@@ -246,24 +250,24 @@ made subject to such option by the copyright holder.
     <debugger>
         <tool name="gdb"/>
         <alternative_path>
-            <path toolchain_name="*"/>
             <path directory="$PATH"/>
+            <path toolchain_name="*"/>
         </alternative_path>
         <version flags="-v" />
     </debugger>
     <qmake>
         <tool name="qmake"/>
         <alternative_path>
-            <path toolchain_name="*"/>
             <path directory="$PATH"/>
+            <path toolchain_name="*"/>
         </alternative_path>
         <version flags="-v" />
     </qmake>
     <cmake>
         <tool name="cmake"/>
         <alternative_path>
-            <path toolchain_name="*"/>
             <path directory="$PATH"/>
+            <path toolchain_name="*"/>
         </alternative_path>
         <version flags="--version" />
     </cmake>

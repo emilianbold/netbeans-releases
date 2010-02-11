@@ -99,6 +99,7 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
         this.specifySuperclass = specifySuperclass;
     }
 
+    @Override
     public void initialize(WizardDescriptor wizard) {
         wiz = wizard;
         delegateIterator.initialize(wizard);
@@ -116,11 +117,13 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
         }    
     }
 
+    @Override
     public void uninitialize(WizardDescriptor wizard) {
         delegateIterator.uninitialize(wizard);
         superclassPanel = null;
     }
 
+    @Override
     public Set instantiate() throws IOException, IllegalArgumentException {
         Set set = delegateIterator.instantiate();
         FileObject template = (FileObject) set.iterator().next();
@@ -136,8 +139,10 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
                     ((SuperclassWizardPanel) superclassPanel).getSuperclassName();
             JavaSource js = JavaSource.forFileObject(template);
             js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(WorkingCopy wcopy) throws Exception {
                     wcopy.toPhase(JavaSource.Phase.RESOLVED);
 
@@ -170,18 +175,22 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
         return set;
     }
 
+    @Override
     public WizardDescriptor.Panel current() {
         return superclassPanelCurrent ? superclassPanel : delegateIterator.current();
     }
 
+    @Override
     public boolean hasNext() {
         return delegateIterator.hasNext() || (!superclassPanelCurrent && superclassPanel != null);
     }
     
+    @Override
     public boolean hasPrevious() {
         return superclassPanelCurrent ? true : delegateIterator.hasPrevious();
     }
     
+    @Override
     public void nextPanel() {
         if (delegateIterator.hasNext()) {
             delegateIterator.nextPanel();
@@ -194,6 +203,7 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
         }
     }
     
+    @Override
     public void previousPanel() {
         if (superclassPanelCurrent) {
             superclassPanelCurrent = false;
@@ -202,14 +212,17 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
         }
     }
     
+    @Override
     public void addChangeListener(ChangeListener l) {
         delegateIterator.addChangeListener(l);
     }
     
+    @Override
     public String name() {
         return superclassPanelCurrent ? "" : delegateIterator.name(); // NOI18N
     }
     
+    @Override
     public void removeChangeListener(ChangeListener l) {
         delegateIterator.removeChangeListener(l);
     }
@@ -226,32 +239,40 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
             return name != null && !"".equals(name) ? name : "java.lang.Object"; // NOI18N
         }
 
+        @Override
         public Component getComponent() {
             if (panelUI == null)
                 panelUI = new SuperclassPanel();
             return panelUI;
         }
 
+        @Override
         public boolean isValid() {
             return true;
         }
 
+        @Override
         public void readSettings(Object settings) {
         }
 
+        @Override
         public void storeSettings(Object settings) {
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
         }
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
         }
 
+        @Override
         public org.openide.util.HelpCtx getHelp () {
             return new org.openide.util.HelpCtx("gui.creatingforms"); // NOI18N
         }
         
+        @Override
         public boolean isFinishPanel() {
             return true;
         }

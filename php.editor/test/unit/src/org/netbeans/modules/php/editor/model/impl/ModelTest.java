@@ -253,7 +253,6 @@ public class ModelTest extends ModelTestBase {
         //assertEquals(2, method.getReturnTypes().size());
         TypeScope type = ModelUtils.getFirst(method.getReturnTypes());
         assertNotNull(type);
-        assertEquals("MySuperClass", type.getName());
         assertEquals(method.getName(), "meth");
         assertSame(myClass, ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredClasses(program),QuerySupport.Kind.REGEXP, "MyC.*")));
 

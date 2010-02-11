@@ -237,11 +237,11 @@ public class PHPFormatter implements Formatter {
 
     private void prettyPrint(final Context context, final ParserResult info) {
         final BaseDocument doc = (BaseDocument) context.document();
-        final String openingBraceStyle = CodeStyle.get(doc).getOpeningBraceStyle();
+//        final String openingBraceStyle = CodeStyle.get(doc).getOpeningBraceStyle();
 
-        if (FmtOptions.OBRACE_PRESERVE.equals(openingBraceStyle)){
-            return;
-        }
+//        if (FmtOptions.OBRACE_PRESERVE.equals(openingBraceStyle)){
+//            return;
+//        }
 
         doc.runAtomic(new Runnable() {
 
@@ -339,7 +339,10 @@ public class PHPFormatter implements Formatter {
 
                             if (lineDelta != null) {
                                 currentIndent += lineDelta;
-                                assert currentIndent >= 0 : "currentIndent < 0";
+                                if (currentIndent < 0 ) {
+				    LOG.warning("currentIndent was < 0 in PHPFormatter.astReformat(). It shouldn't happen."); //I18N
+				    currentIndent = 0;
+				}
                             }
 
                             if (!lineUnformattable(doc, lineStart)) {

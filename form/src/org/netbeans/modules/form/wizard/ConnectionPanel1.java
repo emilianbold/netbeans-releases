@@ -78,12 +78,14 @@ class ConnectionPanel1 extends javax.swing.JPanel {
         eventNameCombo.setEnabled(wizardPanel.getSelectedEvent() != null);
 
         eventNameCombo.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 ConnectionPanel1.this.wizardPanel.fireStateChanged();
             }
         });
 
         eventNameCombo.getEditor().addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 ConnectionPanel1.this.wizardPanel.fireStateChanged();
             }
@@ -92,24 +94,31 @@ class ConnectionPanel1 extends javax.swing.JPanel {
          // populate event tree
         final Vector<EventSetNode> eventNodes = new Vector<EventSetNode>();
         TreeNode rootNode = new TreeNode() {
+            @Override
             public TreeNode getChildAt(int childIndex) {
                 return(TreeNode) eventNodes.elementAt(childIndex);
             }
+            @Override
             public int getChildCount() {
                 return eventNodes.size();
             }
+            @Override
             public TreeNode getParent() {
                 return null;
             }
+            @Override
             public int getIndex(TreeNode node) {
                 return eventNodes.indexOf(node);
             }
+            @Override
             public boolean getAllowsChildren() {
                 return true;
             }
+            @Override
             public boolean isLeaf() {
                 return false;
             }
+            @Override
             public Enumeration children() {
                 return eventNodes.elements();
             }
@@ -137,6 +146,7 @@ class ConnectionPanel1 extends javax.swing.JPanel {
 
         DefaultTreeSelectionModel treeSelectionModel = new DefaultTreeSelectionModel();
         treeSelectionModel.addTreeSelectionListener(new TreeSelectionListener() {
+            @Override
             public void valueChanged(TreeSelectionEvent evt) {
                 TreePath[] paths = eventSelectTree.getSelectionPaths();
                 if ((paths != null) &&(paths.length == 1)) {
@@ -312,24 +322,31 @@ class ConnectionPanel1 extends javax.swing.JPanel {
             this.subNodes = subNodes;
         }
 
+        @Override
         public TreeNode getChildAt(int childIndex) {
             return subNodes.get(childIndex);
         }
+        @Override
         public int getChildCount() {
             return subNodes.size();
         }
+        @Override
         public TreeNode getParent() {
             return null;
         }
+        @Override
         public int getIndex(TreeNode node) {
             return subNodes.indexOf(node);
         }
+        @Override
         public boolean getAllowsChildren() {
             return true;
         }
+        @Override
         public boolean isLeaf() {
             return false;
         }
+        @Override
         public Enumeration children() {
             return Collections.enumeration(subNodes);
         }
@@ -346,24 +363,31 @@ class ConnectionPanel1 extends javax.swing.JPanel {
             this.parent = parent;
             this.event = event;
         }
+        @Override
         public TreeNode getChildAt(int childIndex) {
             return null;
         }
+        @Override
         public int getChildCount() {
             return 0;
         }
+        @Override
         public TreeNode getParent() {
             return parent;
         }
+        @Override
         public int getIndex(TreeNode node) {
             return -1;
         }
+        @Override
         public boolean getAllowsChildren() {
             return false;
         }
+        @Override
         public boolean isLeaf() {
             return true;
         }
+        @Override
         public Enumeration children() {
             return null;
         }

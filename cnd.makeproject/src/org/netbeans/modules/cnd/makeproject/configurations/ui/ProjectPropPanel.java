@@ -67,6 +67,7 @@ import org.openide.util.NbBundle;
 public class ProjectPropPanel extends javax.swing.JPanel {
 
     private SourceRootChooser sourceRootChooser;
+    private TestRootChooser testRootChooser;
     private Project project;
     private MakeConfigurationDescriptor makeConfigurationDescriptor;
     private String originalEncoding;
@@ -79,6 +80,9 @@ public class ProjectPropPanel extends javax.swing.JPanel {
         projectTextField.setText(FileUtil.toFile(project.getProjectDirectory()).getPath());
         sourceRootPanel.add(sourceRootChooser = new SourceRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getSourceRoots()));
         ignoreFoldersTextField.setText(makeConfigurationDescriptor.getFolderVisibilityQuery().getRegEx());
+        if (makeConfigurationDescriptor.getActiveConfiguration() != null && makeConfigurationDescriptor.getActiveConfiguration().isMakefileConfiguration()) {
+            testRootPanel.add(testRootChooser = new TestRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getTestRoots()));
+        }
         MakeCustomizerProvider makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProvider.class);
 //        makeCustomizerProvider.addActionListener(this);
 
@@ -119,8 +123,8 @@ public class ProjectPropPanel extends javax.swing.JPanel {
         }
         ((MakeProject) project).setSourceEncoding(encName);
 
-        Vector<String> newSourceRoots = sourceRootChooser.getListData();
-        makeConfigurationDescriptor.setSourceRoots(newSourceRoots);
+        makeConfigurationDescriptor.setSourceRoots(sourceRootChooser.getListData());
+        makeConfigurationDescriptor.setTestRoots(testRootChooser.getListData());
         makeConfigurationDescriptor.setFolderVisibilityQuery(ignoreFoldersTextField.getText());
     }
 
@@ -238,6 +242,35 @@ public class ProjectPropPanel extends javax.swing.JPanel {
         }
     }
 
+    static class TestRootChooser extends DirectoryChooserInnerPanel {
+
+        public TestRootChooser(String baseDir, List<String> feed) {
+            super(baseDir, feed);
+            getCopyButton().setVisible(false);
+            getEditButton().setVisible(false);
+        }
+
+        @Override
+        public String getListLabelText() {
+            return getString("ProjectPropPanel.testRootLabel.text");
+        }
+
+        @Override
+        public char getListLabelMnemonic() {
+            return getString("ProjectPropPanel.testRootLabel.mn").charAt(0);
+        }
+
+        @Override
+        public char getAddButtonMnemonics() {
+            return getString("ADD_BUTTON_MN").charAt(0);
+        }
+
+        @Override
+        public String getAddButtonText() {
+            return getString("ADD_BUTTON_TXT");
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -250,14 +283,15 @@ public class ProjectPropPanel extends javax.swing.JPanel {
         projectLabel = new javax.swing.JLabel();
         projectTextField = new javax.swing.JTextField();
         sourceRootPanel = new javax.swing.JPanel();
-        encodingPanel = new javax.swing.JPanel();
-        encodingLabel = new javax.swing.JLabel();
-        encoding = new javax.swing.JComboBox();
         ignoreFolderPanel = new javax.swing.JPanel();
         ignoreFoldersLabel = new javax.swing.JLabel();
         ignoreFoldersTextField = new javax.swing.JTextField();
         ignoreFoldersDefaultButton = new javax.swing.JButton();
         seeAlsoLabel = new javax.swing.JLabel();
+        testRootPanel = new javax.swing.JPanel();
+        encodingPanel = new javax.swing.JPanel();
+        encodingLabel = new javax.swing.JLabel();
+        encoding = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -270,6 +304,11 @@ public class ProjectPropPanel extends javax.swing.JPanel {
         projectLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.projectLabel.ad")); // NOI18N
 
         projectTextField.setEditable(false);
+        projectTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                projectTextFieldActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -287,33 +326,6 @@ public class ProjectPropPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         add(sourceRootPanel, gridBagConstraints);
-
-        encodingLabel.setLabelFor(encoding);
-        org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.encodingLabel.text")); // NOI18N
-
-        javax.swing.GroupLayout encodingPanelLayout = new javax.swing.GroupLayout(encodingPanel);
-        encodingPanel.setLayout(encodingPanelLayout);
-        encodingPanelLayout.setHorizontalGroup(
-            encodingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(encodingPanelLayout.createSequentialGroup()
-                .addComponent(encodingLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(encoding, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        encodingPanelLayout.setVerticalGroup(
-            encodingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(encodingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(encodingLabel)
-                .addComponent(encoding, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        add(encodingPanel, gridBagConstraints);
 
         ignoreFolderPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -357,15 +369,58 @@ public class ProjectPropPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(ignoreFolderPanel, gridBagConstraints);
+
+        testRootPanel.setBackground(new java.awt.Color(255, 255, 255));
+        testRootPanel.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        add(testRootPanel, gridBagConstraints);
+
+        encodingLabel.setLabelFor(encoding);
+        org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.encodingLabel.text")); // NOI18N
+
+        javax.swing.GroupLayout encodingPanelLayout = new javax.swing.GroupLayout(encodingPanel);
+        encodingPanel.setLayout(encodingPanelLayout);
+        encodingPanelLayout.setHorizontalGroup(
+            encodingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(encodingPanelLayout.createSequentialGroup()
+                .addComponent(encodingLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(encoding, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        encodingPanelLayout.setVerticalGroup(
+            encodingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(encodingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(encodingLabel)
+                .addComponent(encoding, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        add(encodingPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void ignoreFoldersDefaultButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreFoldersDefaultButtonActionPerformed
         // TODO add your handling code here:
         ignoreFoldersTextField.setText(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN);
     }//GEN-LAST:event_ignoreFoldersDefaultButtonActionPerformed
+
+    private void projectTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_projectTextFieldActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox encoding;
@@ -379,6 +434,7 @@ public class ProjectPropPanel extends javax.swing.JPanel {
     private javax.swing.JTextField projectTextField;
     private javax.swing.JLabel seeAlsoLabel;
     private javax.swing.JPanel sourceRootPanel;
+    private javax.swing.JPanel testRootPanel;
     // End of variables declaration//GEN-END:variables
 
     private static String getString(String key) {

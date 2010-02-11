@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.progress.transactional
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/progress/transactional/Bundle.properties
+OpenIDE-Module-Provides: org.netbeans.progress.api.transactional.TransactionHandler
+OpenIDE-Module-Specification-Version: 1.0
+

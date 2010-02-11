@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,6 +46,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -71,7 +72,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private String distJar = "dist.jar"; // NOI18N
     private String buildTestClassesDir = "build.test.classes.dir"; // NOI18N
     private String[] javacClasspath = new String[]{"javac.classpath"};    //NOI18N
+    private String[] processorClasspath = new String[]{ProjectProperties.JAVAC_PROCESSORPATH};    //NOI18N
     private String[] javacTestClasspath = new String[]{"javac.test.classpath"};  //NOI18N
+    private String[] processorTestClasspath = new String[]{"javac.test.processorpath"};  //NOI18N
     private String[] runClasspath = new String[]{"run.classpath"};    //NOI18N
     private String[] runTestClasspath = new String[]{"run.test.classpath"};  //NOI18N
     private String[] endorsedClasspath = new String[]{ProjectProperties.ENDORSED_CLASSPATH};  //NOI18N
@@ -93,8 +96,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
      * 6  -  execute class path for dist.jar
      * 7  -  boot class path
      * 8  -  endorsed class path
+     * 9  -  processor path
+     * 10  -  test processor path
      */
-    private final ClassPath[] cache = new ClassPath[9];
+    private final ClassPath[] cache = new ClassPath[11];
 
     private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
 
@@ -143,11 +148,36 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             String buildClassesDir, String distJar, String buildTestClassesDir,
             String[] javacClasspath, String[] javacTestClasspath, String[] runClasspath,
             String[] runTestClasspath, String[] endorsedClasspath) {
+        this(helper,
+            evaluator,
+            sourceRoots,
+            testSourceRoots,
+            buildClassesDir,
+            distJar,
+            buildTestClassesDir,
+            javacClasspath,
+            javacClasspath,
+            javacTestClasspath,
+            runClasspath,
+            runTestClasspath,
+            new String[]{ProjectProperties.ENDORSED_CLASSPATH});
+    }
+
+    /**
+     * Constructor allowing customization of processorPath.
+     * @since org.netbeans.modules.java.api.common/0 1.14
+     */
+    public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator,
+            SourceRoots sourceRoots, SourceRoots testSourceRoots,
+            String buildClassesDir, String distJar, String buildTestClassesDir,
+            String[] javacClasspath, String[] processorPath, String[] javacTestClasspath, String[] runClasspath,
+            String[] runTestClasspath, String[] endorsedClasspath) {
         this(helper, evaluator, sourceRoots, testSourceRoots);
         this.buildClassesDir = buildClassesDir;
         this.distJar = distJar;
         this.buildTestClassesDir = buildTestClassesDir;
         this.javacClasspath = javacClasspath;
+        this.processorClasspath = processorPath;
         this.javacTestClasspath = javacTestClasspath;
         this.runClasspath = runClasspath;
         this.runTestClasspath = runTestClasspath;
@@ -196,6 +226,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         return getDir(buildTestClassesDir);
     }
     
+    private FileObject getAnnotationProcessingSourceOutputDir() {
+        return getDir(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT);
+    }
+
     /**
      * Find what a given file represents.
      * @param file a file in the project
@@ -238,6 +272,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         }
         dir = getBuildGeneratedDir();
         if (dir != null && FileUtil.isParentOf(dir, file) /* but dir != file */) { // #105645
+            dir = getAnnotationProcessingSourceOutputDir();
+            if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) { //not the annotation processing source output
+                return -1;
+            }
             return 0;
         }
         return -1;
@@ -270,6 +308,33 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         return cp;
     }
     
+    private ClassPath getProcessorClasspath(FileObject file) {
+        int type = getType(file);
+        return this.getProcessorClasspath(type);
+    }
+
+    private synchronized ClassPath getProcessorClasspath(int type) {
+        if (type < 0 || type > 1) {
+            // Not a source file.
+            return null;
+        }
+        ClassPath cp = cache[9+type];
+        if ( cp == null) {
+            if (type == 0) {
+                cp = ClassPathFactory.createClassPath(
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, processorClasspath)); // NOI18N
+            }
+            else {
+                cp = ClassPathFactory.createClassPath(
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, processorTestClasspath)); // NOI18N
+            }
+            cache[9+type] = cp;
+        }
+        return cp;
+    }
+
     private ClassPath getRunTimeClasspath(FileObject file) {
         int type = getType(file);
         if (type < 0 || type > 4) {
@@ -366,6 +431,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     public ClassPath findClassPath(FileObject file, String type) {
         if (type.equals(ClassPath.COMPILE)) {
             return getCompileTimeClasspath(file);
+        } else if (type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
+            return getProcessorClasspath(file);
         } else if (type.equals(ClassPath.EXECUTE)) {
             return getRunTimeClasspath(file);
         } else if (type.equals(ClassPath.SOURCE)) {
@@ -395,6 +462,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     l[1] = getCompileTimeClasspath(1);
                     return l;
                 }
+                if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
+                    ClassPath[] l = new ClassPath[2];
+                    l[0] = getProcessorClasspath(0);
+                    l[1] = getProcessorClasspath(1);
+                    return l;
+                }
                 if (ClassPath.SOURCE.equals(type)) {
                     ClassPath[] l = new ClassPath[2];
                     l[0] = getSourcepath(0);
@@ -417,6 +490,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         if (ClassPath.COMPILE.equals(type)) {
             return getCompileTimeClasspath(0);
         }
+        if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
+            return getProcessorClasspath(0);
+        }
         if (ClassPath.SOURCE.equals(type)) {
             return getSourcepath(0);
         }
@@ -437,6 +513,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             }
             else if (ClassPath.EXECUTE.equals(type)) {
                 return runTestClasspath;
+            } else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
+                return processorTestClasspath;
             }
             else {
                 return null;
@@ -448,6 +526,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             }
             else if (ClassPath.EXECUTE.equals(type)) {
                 return runClasspath;
+            }
+            else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
+                return processorClasspath;
             }
             else {
                 return null;
@@ -468,6 +549,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 }
                 else if (ClassPath.EXECUTE.equals(type)) {
                     return runClasspath;
+                }
+                else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
+                    return processorClasspath;
                 }
                 else {
                     return null;

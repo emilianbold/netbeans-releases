@@ -51,20 +51,12 @@ import org.openide.util.Lookup;
 public class CustomizerRootNodeProvider {
 
     private static CustomizerRootNodeProvider instance = null;
-    private ArrayList<CustomizerNode> customizerNodes = null;
 
     public static CustomizerRootNodeProvider getInstance() {
         if (instance == null) {
             instance = new CustomizerRootNodeProvider();
         }
         return instance;
-    }
-
-    private List<CustomizerNode> getCustomizerNodesRegisteredOldStyle() {
-        if (customizerNodes == null) {
-            customizerNodes = new ArrayList<CustomizerNode>();
-        }
-        return customizerNodes;
     }
 
     public List<CustomizerNode> getCustomizerNodes(boolean advanced) {
@@ -80,9 +72,6 @@ public class CustomizerRootNodeProvider {
 
     public synchronized List<CustomizerNode> getCustomizerNodes() {
         ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
-
-        // Add nodes from providers registerd old-style
-        list.addAll(getCustomizerNodesRegisteredOldStyle());
 
         // Add nodes from providers register via services
         for (CustomizerNodeProvider provider : getCustomizerNodeProviders()) {
@@ -112,14 +101,6 @@ public class CustomizerRootNodeProvider {
         return list;
     }
 
-    public synchronized void addCustomizerNode(CustomizerNode node) {
-        getCustomizerNodesRegisteredOldStyle().add(node);
-    }
-
-    public synchronized void removeCustomizerNode(CustomizerNode node) {
-        getCustomizerNodesRegisteredOldStyle().remove(node);
-    }
-
     /*
      * Get list (dynamic) registered via services
      */
@@ -127,12 +108,10 @@ public class CustomizerRootNodeProvider {
         HashSet<CustomizerNodeProvider> providers = new HashSet<CustomizerNodeProvider>();
         Lookup.Template<CustomizerNodeProvider> template = new Lookup.Template<CustomizerNodeProvider>(CustomizerNodeProvider.class);
         Lookup.Result<CustomizerNodeProvider> result = Lookup.getDefault().lookup(template);
-        Iterator iterator = result.allInstances().iterator();
+        Iterator<? extends CustomizerNodeProvider> iterator = result.allInstances().iterator();
         while (iterator.hasNext()) {
-            Object caop = iterator.next();
-            if (caop instanceof CustomizerNodeProvider) {
-                providers.add((CustomizerNodeProvider)caop);
-            }
+            CustomizerNodeProvider caop = iterator.next();
+            providers.add(caop);
         }
         return providers;
     }

@@ -190,6 +190,10 @@ made subject to such option by the copyright holder.
             <param name="date" expression="${modules-javadoc-date}"/>
         </style>
         
+        <style in="${netbeans.javadoc.dir}/modules.xml" out="${netbeans.javadoc.dir}/properties.html" style="export2property.xsl">
+            <param name="date" expression="${modules-javadoc-date}"/>
+        </style>
+        
         <style in="${netbeans.javadoc.dir}/modules.xml" out="${netbeans.javadoc.dir}/overview-summary.html" style="export2html.xsl">
             <param name="date" expression="${modules-javadoc-date}"/>
             <param name="download" expression="true"/>
