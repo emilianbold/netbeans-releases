@@ -372,10 +372,10 @@ public final class CodeStyle {
 //    public boolean spaceAfterColon() {
 //        return preferences.getBoolean(spaceAfterColon, getDefaultAsBoolean(spaceAfterColon));
 //    }
-//
-//    public boolean spaceAfterTypeCast() {
-//        return preferences.getBoolean(spaceAfterTypeCast, getDefaultAsBoolean(spaceAfterTypeCast));
-//    }
+
+    public boolean spaceAfterTypeCast() {
+        return preferences.getBoolean(spaceAfterTypeCast, getDefaultAsBoolean(spaceAfterTypeCast));
+    }
 
     
     private static class Producer implements FmtOptions.CodeStyleProducer {

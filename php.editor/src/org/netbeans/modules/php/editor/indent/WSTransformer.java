@@ -482,6 +482,11 @@ class WSTransformer extends DefaultTreePathVisitor {
 	    if (!space && spaceAtEnd > 0) {
 		replacements.add(new Replacement(ts.offset() + text.length() - 1, spaceAtEnd, "")); // NOI18N
 	    }
+	    // space after type cast
+	    ts.moveNext();
+	    LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
+	    replaceSpaceBeforeToken(ts, CodeStyle.get(context.document()).spaceAfterTypeCast(),
+		    Arrays.asList(PHPTokenId.PHP_CASTING));
 	}
 	super.visit(node);
     }

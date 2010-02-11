@@ -169,7 +169,7 @@ public class FmtOptions {
 //    public static final String spaceAfterSemi = "spaceAfterSemi"; //NOI18N
 //    public static final String spaceBeforeColon = "spaceBeforeColon"; //NOI18N
 //    public static final String spaceAfterColon = "spaceAfterColon"; //NOI18N
-//    public static final String spaceAfterTypeCast = "spaceAfterTypeCast"; //NOI18N
+    public static final String spaceAfterTypeCast = "spaceAfterTypeCast"; //NOI18N
     
     public static CodeStyleProducer codeStyleProducer;
 
@@ -281,7 +281,7 @@ public class FmtOptions {
 //            { spaceAfterSemi, TRUE},
 //            { spaceBeforeColon, TRUE},
 //            { spaceAfterColon, TRUE},
-//            { spaceAfterTypeCast, TRUE}
+            { spaceAfterTypeCast, TRUE}
 
         };
         
