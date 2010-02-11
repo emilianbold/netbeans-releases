@@ -71,6 +71,8 @@ made subject to such option by the copyright holder.
         <property name="antlr3.jar" location="${cluster}/modules/org-netbeans-modules-cnd-antlr3.jar"/>
         <property name="antlr3.evaluator.grammar.dir" location="src/org/netbeans/modules/cnd/modelimpl/impl/services/evaluator/parser"/>
 
+         <!-- Open Fortran Parser -->
+         <property name="open.fortran.parser.src.dir" location="external"/>
     </target>
     
     <target name="clean" depends="projectized-common.clean, init-antlr">
@@ -134,7 +136,9 @@ made subject to such option by the copyright holder.
 
         <!-- Fortran grammar -->
 
-        <!--
+        <echo message="Extracting Open Fortran Parser" />
+        <unzip src="${open.fortran.parser.src.dir}/open-fortran-parser-0.7.1.2.zip"
+            dest="${antlr.grammar.dir}"/>
 
         <echo message="ANTLR Parser Generator   Version Sun-3.1.3" />
         <java classname="org.antlr.Tool" fork="true">
@@ -152,8 +156,6 @@ made subject to such option by the copyright holder.
             match='^public class FortranParser_FortranParser2 (.*)'
             replace='@SuppressWarnings({"unchecked", "cast", "fallthrough"}) public class FortranParser_FortranParser2 \1'
             flags="mg" />
-
-        -->
 
         <!-- Expression evaluator -->
         <mkdir dir="${antlr3.evaluator.output.dir}"/>

@@ -46,7 +46,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
-import org.netbeans.modules.cnd.api.remote.RemoteBinaryService;
+import org.netbeans.modules.remote.api.RemoteBinaryService;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;

@@ -1074,6 +1074,38 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
     }
 
+    public void checkForChangedTestRoots(List<String> oldList, List<String> newList) {
+        synchronized (testRoots) {
+            testRoots.clear();
+            for (String l : newList) {
+                addTestRoot(l);
+            }
+
+            List<String> toBeAdded = new ArrayList<String>();
+            for (String s : testRoots) {
+                if (!inList(oldList, s)) {
+                    toBeAdded.add(s);
+                }
+            }
+            List<String> toBeRemoved = new ArrayList<String>();
+            for (String s : oldList) {
+                if (!inList(testRoots, s)) {
+                    toBeRemoved.add(s);
+                }
+            }
+
+            // Notify source root notifiers
+            // FIXUP: hack to get the tree updated! Need to only refresh actual nodes.
+            if (toBeAdded.size() > 0 || toBeRemoved.size() > 0) {
+                List<String> sourceRootsSave = new ArrayList<String>();
+                sourceRootsSave.addAll(sourceRoots);
+                checkForChangedSourceRoots(sourceRootsSave, new ArrayList<String>());
+                checkForChangedSourceRoots(new ArrayList<String>(), sourceRootsSave);
+                setModified();
+            }
+        }
+    }
+
     public void checkConfigurations(Configuration oldActive, Configuration newActive) {
         getConfs().fireChangedActiveConfiguration(oldActive, newActive);
     }
