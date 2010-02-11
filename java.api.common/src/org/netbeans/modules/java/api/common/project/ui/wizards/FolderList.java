@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
@@ -57,6 +58,8 @@ import javax.swing.JList;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressRunnable;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -66,6 +69,7 @@ import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
 
@@ -230,7 +234,6 @@ public final class FolderList extends javax.swing.JPanel {
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setDialogTitle(this.fcMessage);
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
         chooser.setMultiSelectionEnabled(true);
@@ -241,14 +244,16 @@ public final class FolderList extends javax.swing.JPanel {
             chooser.setCurrentDirectory (this.projectFolder);
         }
         if (chooser.showOpenDialog(this)== JFileChooser.APPROVE_OPTION) {
-            final AtomicBoolean cancel = new AtomicBoolean();
             final File[] files = normalizeFiles(chooser.getSelectedFiles());
-            final List<File> toAdd = Collections.synchronizedList(new ArrayList<File>());
-            final Runnable task = new Runnable() {
-                public void run() {
+            final AtomicReference<List<File>> toAddRef = new AtomicReference<List<File>>();
+            class ScanTask implements ProgressRunnable<Void>, Cancellable {
+                private final AtomicBoolean cancel = new AtomicBoolean();
+                @Override
+                public Void run(final ProgressHandle handle) {
+                    final List<File> toAdd = new ArrayList<File>();
                     for (File file : files) {
                         if (cancel.get()) {
-                            return;
+                            return null;
                         }
                         final Collection<? extends FileObject> detectedRoots = JavadocAndSourceRootDetection.findSourceRoots(FileUtil.toFileObject(file),cancel);
                         if (detectedRoots.isEmpty()) {
@@ -260,14 +265,21 @@ public final class FolderList extends javax.swing.JPanel {
                             }
                         }
                     }
+                    toAddRef.set(toAdd);    //threading: Needs to be a tail call!
+                    return null;
+                }
+
+                @Override
+                public boolean cancel() {
+                    cancel.set(true);
+                    return true;
                 }
             };
-            ProgressUtils.runOffEventDispatchThread(task, NbBundle.getMessage(FolderList.class, "TXT_SearchingSourceRoots"), cancel, true);
-            File[] toAddArr;
-            synchronized (toAdd) {
-                toAddArr = cancel.get() ? files : toAdd.toArray(new File[toAdd.size()]);
-            }
-            int[] indecesToSelect = new int[toAdd.size()];
+            final ScanTask task = new ScanTask();
+            ProgressUtils.showProgressDialogAndRun(task, NbBundle.getMessage(FolderList.class, "TXT_SearchingSourceRoots"), false);
+            final List<File> toAdd = toAddRef.get();
+            final File[] toAddArr = toAdd == null ? files : toAdd.toArray(new File[toAdd.size()]);
+            int[] indecesToSelect = new int[toAddArr.length];
             DefaultListModel model = (DefaultListModel)this.roots.getModel();
             Set<File> invalidRoots = new HashSet<File>();
             File[] relatedFolders = this.relatedFolderList == null ?
