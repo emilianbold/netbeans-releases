@@ -1106,14 +1106,20 @@ itor tabs #66700).
 
     /**
      * Forces refresh of Status for the given directory 
-     *
+     * If a repository root is passed as the parameter, the cache will be refreshed only for already seen or open folders.
      * @param start file or dir to begin refresh from
      * @return void
      */
     public static void forceStatusRefresh(File file) {
         if (isAdministrative(file)) return;
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-        cache.refresh(file);
+        File repositoryRoot = Mercurial.getInstance().getRepositoryRoot(file);
+        if (file.equals(repositoryRoot)) {
+            // do not scan the whole repository, only open folders, projects etc. should be enough
+            cache.refreshAllRoots(Collections.singletonMap(repositoryRoot, Mercurial.getInstance().getSeenRoots(repositoryRoot)));
+        } else {
+            cache.refresh(file);
+        }
     }
 
     /**
