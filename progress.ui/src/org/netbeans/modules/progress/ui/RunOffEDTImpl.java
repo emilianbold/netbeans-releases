@@ -42,6 +42,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -211,17 +212,22 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
     @Override
     public <T> Future<T> showProgressDialogAndRunLater (ProgressRunnable<T> operation, ProgressHandle handle, boolean includeDetailLabel) {
        AbstractWindowRunner<T> wr = new ProgressBackgroundRunner<T>(operation, handle, includeDetailLabel, operation instanceof Cancellable);
-       wr.start();
-        try {
-            return wr.waitForStart();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
+       Future<T> result = wr.start();
+       assert EventQueue.isDispatchThread() == (result != null);
+       if (result == null) {
+           try {
+               result = wr.waitForStart();
+           } catch (InterruptedException ex) {
+               Logger.getLogger(RunOffEDTImpl.class.getName()).log(Level.FINE, "Interrupted/cancelled during start {0}", operation);
+               Logger.getLogger(RunOffEDTImpl.class.getName()).log(Level.FINER, "Interrupted/cancelled during start", ex);
+               return null;
+           }
+       }
+       return result;
     }
+
     @Override
     public <T> T showProgressDialogAndRun(ProgressRunnable<T> toRun, String displayName, boolean includeDetailLabel) {
-       boolean showCancelButton = toRun instanceof Cancellable;
         try {
             return showProgressDialogAndRunLater(toRun, toRun instanceof Cancellable ?
                 ProgressHandleFactory.createHandle(displayName, (Cancellable) toRun) :
@@ -269,7 +275,6 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
 
         @Override
         public boolean cancel(boolean mayInterruptIfRunning) {
-            System.err.println(this + "Cancel");
             boolean result = c instanceof Cancellable ? ((Cancellable) c).cancel() : false;
             result &= super.cancel(mayInterruptIfRunning) & task.cancel();
             return result;

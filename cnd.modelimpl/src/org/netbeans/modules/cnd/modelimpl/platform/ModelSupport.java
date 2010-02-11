@@ -278,6 +278,7 @@ public class ModelSupport implements PropertyChangeListener {
                 switch (item.getLanguage()) {
                     case C:
                     case CPP:
+                    case FORTRAN:
                         sources.add(item);
                         break;
                     case C_HEADER:
@@ -363,6 +364,7 @@ public class ModelSupport implements PropertyChangeListener {
                     switch (item.getLanguage()) {
                         case C:
                         case CPP:
+                        case FORTRAN:
                             sources.add(item);
                             break;
                         case C_HEADER:

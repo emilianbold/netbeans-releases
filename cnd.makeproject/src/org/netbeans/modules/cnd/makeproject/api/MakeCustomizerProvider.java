@@ -267,6 +267,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                 projectDescriptor.save(); // IZ 133606
                 ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, item);
                 ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedSourceRoots(oldSourceRoots, newSourceRoots);
+                ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedTestRoots(oldTestRoots, newTestRoots);
                 ((MakeConfigurationDescriptor) projectDescriptor).checkConfigurations(oldActive, newActive);
             }
             if (currentCommand.equals(COMMAND_APPLY)) {
