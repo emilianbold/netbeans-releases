@@ -541,7 +541,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public FolderConfiguration getFolderConfiguration(Configuration configuration) {
         FolderConfiguration folderConfiguration = null;
-        if (isProjectFiles()) {
+        if (isProjectFiles() || isTest() || isTestLogicalFolder()) {
             folderConfiguration = (FolderConfiguration) configuration.getAuxObject(getId());
             if (folderConfiguration == null) {
                 CCompilerConfiguration parentCCompilerConfiguration;

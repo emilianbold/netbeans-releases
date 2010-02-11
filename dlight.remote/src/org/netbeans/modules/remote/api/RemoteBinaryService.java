@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.api.remote;
+package org.netbeans.modules.remote.api;
 
 import java.util.Collections;
 import java.util.HashMap;

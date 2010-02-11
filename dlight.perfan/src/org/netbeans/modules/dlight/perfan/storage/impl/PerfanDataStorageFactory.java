@@ -72,7 +72,7 @@ public final class PerfanDataStorageFactory implements PersistentDataStorageFact
 
     @Override
     public PerfanDataStorage createStorage(String uniqueKey) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet.");// NOI18N
     }
 
     

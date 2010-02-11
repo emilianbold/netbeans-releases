@@ -37,23 +37,45 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.ui.options;
+package org.netbeans.modules.cnd.modelimpl.fsm;
+
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.modelimpl.csm.MutableDeclarationsContainer;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.parser.FortranParserEx;
 
 /**
- * service to manage Tools panel customization
- * FIXME: only isDebuggerCustomizable is supported now
- * 
- * @author Vladimir Voskresensky
+ *
+ * @author nk220367
  */
-public interface ToolsPanelGlobalCustomizer {
-    public boolean isHostCustomizable();
-    public boolean isBaseDirCustomizable();
-    public boolean isCCustomizable();
-    public boolean isCppCustomizable();
-    public boolean isFortranCustomizable();
-    public boolean isAssemblerCustomizable();
-    public boolean isMakeCustomizable();
-    public boolean isDebuggerCustomizable();
-    public boolean isQMakeCustomizable();
-    public boolean isCMakeCustomizable();
+public class DataRenderer {
+
+    private final FileImpl file;
+
+    public DataRenderer(FileImpl fileImpl) {
+        this.file = fileImpl;
+    }
+
+    public void render(List<Object> objs) {
+        render(objs, (NamespaceImpl) file.getProject().getGlobalNamespace(), file);
+    }
+
+    public void render(List<Object> objs, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
+        if (objs == null) {
+            return;
+        }
+        for (Object object : objs) {
+            if(object instanceof FortranParserEx.ProgramData) {
+                FortranParserEx.ProgramData data = (FortranParserEx.ProgramData) object;
+                CsmFunction fun = new ProgramImpl(data.name, file, data.startOffset, data.endOffset, null, currentNamespace);
+                
+                container.addDeclaration(fun);
+                currentNamespace.addDeclaration(fun);
+            }
+        }
+    }
+
+
 }

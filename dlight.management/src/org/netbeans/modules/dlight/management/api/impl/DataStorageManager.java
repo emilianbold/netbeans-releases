@@ -144,7 +144,6 @@ public final class DataStorageManager {
             try{
                 DataStorage storage = factory.openStorage(uniqueKey);
                 if (storage != null){
-                    System.out.println("I have opened STORAGEEEE URAA!!");
                     result.add(storage);
                 }
             }catch(Throwable e){

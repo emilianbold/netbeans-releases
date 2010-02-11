@@ -61,6 +61,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Martin Grebac
  */
+@ActionsProvider.Registration(actions={"toggleBreakpoint"}, activateForMIMETypes={"text/x-jsp", "text/x-tag"})
 public class JspToggleBreakpointActionProvider extends ActionsProviderSupport implements PropertyChangeListener {
     
     

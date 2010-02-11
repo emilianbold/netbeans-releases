@@ -44,6 +44,7 @@ import org.netbeans.api.progress.transactional.FailureHandler;
 import org.netbeans.api.progress.transactional.TransactionController;
 import org.netbeans.api.progress.transactional.UIMode;
 import org.netbeans.spi.progress.transactional.TransactionRunner;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -54,11 +55,11 @@ public abstract class TransactionHandlerAccessor {
     public abstract <ArgType, ReturnType> Future<ReturnType> launch(
             TransactionManager<? extends Transaction<ArgType, ReturnType>, ArgType, ReturnType> runner,
             ArgType argument, FailureHandler failHandler, String name,
-            UIMode uiMode, boolean canCancel);
+            UIMode uiMode, boolean canCancel, RequestProcessor threadPool);
     public abstract <ArgType, ReturnType> Future<Boolean> rollback(
             TransactionManager<? extends Transaction<ArgType, ReturnType>, ArgType, ReturnType> runner, FailureHandler failHandler,
-            String name, UIMode uiMode);
-    public abstract <ArgType, ResultType> Future<ResultType> start(TransactionRunner<ArgType, ResultType> runner, TransactionController controller, ArgType argument, UIMode mode);
+            String name, UIMode uiMode, RequestProcessor threadPool);
+    public abstract <ArgType, ResultType> Future<ResultType> start(TransactionRunner<ArgType, ResultType> runner, TransactionController controller, ArgType argument, UIMode mode, RequestProcessor threadPool);
     public abstract <ArgType, ResultType> Future<Boolean> startRollback(TransactionRunner<ArgType, ResultType> runner, TransactionController controller, UIMode mode);
     public abstract <ArgType, ResultType> TransactionRunner<ArgType, ResultType> createRunner (TransactionManager<?, ArgType, ResultType> mgr);
     public abstract UI createUI(String name, UIMode uiMode, boolean canCancel);

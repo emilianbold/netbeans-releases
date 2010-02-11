@@ -52,6 +52,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.common.disassembly.DisassemblyService;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.spi.debugger.ActionsProvider.Registration;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.openide.util.NbBundle;
 
@@ -59,6 +60,7 @@ import org.openide.util.NbBundle;
  *
  * @author Egor Ushakov
  */
+@Registration(actions={"toggleBreakpoint"}, activateForMIMETypes={"text/x-c++", "text/x-c", "text/x-h", "text/x-c/text/x-h", "text/x-fortran", "text/x-asm"})
 public class ToggleBreakpointActionProvider extends ActionsProviderSupport implements PropertyChangeListener {
 
     private final Logger log = Logger.getLogger("cnd.breakpoint.annotations"); // NOI18N

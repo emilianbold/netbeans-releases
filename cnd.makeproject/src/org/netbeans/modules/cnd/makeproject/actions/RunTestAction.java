@@ -52,11 +52,16 @@ import org.openide.util.actions.NodeAction;
 
 public class RunTestAction extends NodeAction {
 
+    @Override
     public String getName() {
-        return getString("TestActionName");
+        return getString("TestActionName"); // NOI18N
     }
 
+    @Override
     public void performAction(Node[] activatedNodes) {
+        if (activatedNodes.length == 0) {
+            return;
+        }
         Node n = activatedNodes[0];
         Folder folder = (Folder) n.getValue("Folder"); // NOI18N
         assert folder != null;
@@ -70,17 +75,24 @@ public class RunTestAction extends NodeAction {
             list.add(folder);
         }
         if (list.size() > 0) {
-            StringBuffer message = new StringBuffer("Would run the following test(s):\n"); // NOI18N
+            StringBuffer message = new StringBuffer("Would run the following test(s):\n\n"); // NOI18N
             for (Folder f : list) {
-                message.append("  " + f.getDisplayName() + "\n"); // NOI18N
+                message.append("  ").append(f.getDisplayName()).append("\n"); // NOI18N
             }
+            message.append("\nTest(s) would build and run with output directed to output window. Two posibilities (will have to decided):\n"); // NOI18N
+            message.append("1): output is parsed similary to how build output is parsed and failed tests are hyperlinked for easy navigation back to the failed test.\n"); // NOI18N
+            message.append("2): full-featured GUI frontend (similar to JUnit GUI frontend) with support for test progress, summary, and hyperlinks back to failed tests.\n"); // NOI18N
             NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
         }
 
     }
 
+    @Override
     public boolean enable(Node[] activatedNodes) {
+        if (activatedNodes.length == 0) {
+            return false;
+        }
         Node n = activatedNodes[0];
         Folder folder = (Folder) n.getValue("Folder"); // NOI18N
         assert folder != null;
@@ -91,6 +103,7 @@ public class RunTestAction extends NodeAction {
         return list.size() > 0;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return null;
     }

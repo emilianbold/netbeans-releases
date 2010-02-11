@@ -70,6 +70,8 @@ public class ContextAwareServiceHandler implements InvocationHandler {
 
     public static final String SERVICE_NAME = "serviceName"; // NOI18N
     public static final String SERVICE_CLASSES = "serviceClasses"; // NOI18N
+    public static final String SERVICE_ACTIONS = "debugger_actions"; // NOI18N
+    public static final String SERVICE_ENABLED_MIMETYPES = "debugger_activateForMIMETypes"; // NOI18N
 
     private String serviceName;
     private Class[] serviceClasses;
