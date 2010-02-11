@@ -278,8 +278,8 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 
             new Item("WithinParentheses",                       // NOI18N
 //                new Item(spaceWithinParens),
-//                new Item(spaceWithinMethodDeclParens),
-//                new Item(spaceWithinMethodCallParens),
+                new Item(spaceWithinMethodDeclParens),
+                new Item(spaceWithinMethodCallParens),
                 new Item(spaceWithinIfParens),
                 new Item(spaceWithinForParens),
                 new Item(spaceWithinWhileParens),

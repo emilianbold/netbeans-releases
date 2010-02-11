@@ -301,14 +301,14 @@ public final class CodeStyle {
 //        return preferences.getBoolean(spaceWithinParens, getDefaultAsBoolean(spaceWithinParens));
 //    }
 //
-//    public boolean spaceWithinMethodDeclParens() {
-//        return preferences.getBoolean(spaceWithinMethodDeclParens, getDefaultAsBoolean(spaceWithinMethodDeclParens));
-//    }
-//
-//    public boolean spaceWithinMethodCallParens() {
-//        return preferences.getBoolean(spaceWithinMethodCallParens, getDefaultAsBoolean(spaceWithinMethodCallParens));
-//    }
-//
+    public boolean spaceWithinMethodDeclParens() {
+        return preferences.getBoolean(spaceWithinMethodDeclParens, getDefaultAsBoolean(spaceWithinMethodDeclParens));
+    }
+
+    public boolean spaceWithinMethodCallParens() {
+        return preferences.getBoolean(spaceWithinMethodCallParens, getDefaultAsBoolean(spaceWithinMethodCallParens));
+    }
+
     public boolean spaceWithinIfParens() {
         return preferences.getBoolean(spaceWithinIfParens, getDefaultAsBoolean(spaceWithinIfParens));
     }
