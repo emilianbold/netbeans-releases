@@ -132,7 +132,7 @@ public final class SuiteProject implements Project {
             new SuiteCustomizer(this, helper, eval),
             new PrivilegedTemplatesImpl(),
             new SuiteOperations(this),
-            new TemplateAttributesProvider(helper, false),
+            new TemplateAttributesProvider(null, helper, false),
             new FileEncodingQueryImpl());
         lookup = LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-apisupport-project-suite/Lookup");
     }
