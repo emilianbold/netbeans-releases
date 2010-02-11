@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelGlobalCustomizer;
 import org.netbeans.modules.cnd.api.toolchain.ui.ServerListUIEx;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import java.awt.Component;

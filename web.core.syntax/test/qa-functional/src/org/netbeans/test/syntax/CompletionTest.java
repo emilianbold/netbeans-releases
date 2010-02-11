@@ -155,7 +155,7 @@ public class CompletionTest extends J2eeTestCase {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(CompletionTest.class);
-        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
+        addServerTests(Server.GLASSFISH_V3, conf, new String[0]);//register server
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
     }

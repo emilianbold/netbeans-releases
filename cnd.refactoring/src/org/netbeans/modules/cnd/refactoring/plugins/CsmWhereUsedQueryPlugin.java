@@ -41,11 +41,13 @@
 package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -62,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
@@ -196,7 +199,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         if (isFindUsages()) {
             if (CsmKindUtilities.isMethod(referencedObject)) {
                 CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
-                if (isFindOverridingMethods() && CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
+                if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
                     out.addAll(CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, isSearchFromBaseClass()));
                 }
             } else if (CsmKindUtilities.isClass(referencedObject)) {
@@ -236,6 +239,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                                                             final Collection<CsmObject> csmObjects,            
                                                             final Collection<CsmFile> files) {
         assert isFindUsages() : "must be find usages mode";
+        final boolean onlyUsages = !isFindOverridingMethods();
         final CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
         final Collection<RefactoringElementImplementation> elements = new ConcurrentLinkedQueue<RefactoringElementImplementation>();
         //Set<CsmReferenceKind> kinds = isFindOverridingMethods() ? CsmReferenceKind.ALL : CsmReferenceKind.ANY_USAGE;
@@ -258,7 +262,13 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                                 Thread.currentThread().setName("FindUsagesQuery: Analyzing " + file.getAbsolutePath()); //NOI18N
                                 Collection<CsmReference> refs = xRef.getReferences(objs, file, kinds, interrupter);
                                 for (CsmReference csmReference : refs) {
-                                    elements.add(CsmRefactoringElementImpl.create(csmReference, true));
+                                    boolean accept = true;
+                                    if (onlyUsages) {
+                                        accept = !CsmReferenceResolver.getDefault().isKindOf(csmReference, EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION));
+                                    }
+                                    if (accept) {
+                                        elements.add(CsmRefactoringElementImpl.create(csmReference, true));
+                                    }
                                 }
                             } finally {
                                 Thread.currentThread().setName(oldName);

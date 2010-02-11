@@ -1,4 +1,2 @@
 References in file quote_nosyshdr/module.cc
 [4040-4040] output &lt;&lt; "Module type: " &lt;&lt; module.<b>GetType</b>() &lt;&lt; endl;
-References in file quote_nosyshdr/module.h
-[2806-2806] virtual const char* <b>GetType</b>() const = 0;
