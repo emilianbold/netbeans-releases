@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
+import java.util.Vector;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -114,6 +116,7 @@ public class JpaControllerGenerator {
         final ClasspathInfo classpathInfo = ClasspathInfo.create(pkg);
         JavaSource javaSource = JavaSource.create(classpathInfo);
         javaSource.runUserActionTask(new Task<CompilationController>() {
+            @Override
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement jc = controller.getElements().getTypeElement(entityClass);
@@ -224,6 +227,7 @@ public class JpaControllerGenerator {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final boolean[] modified = new boolean[] { false };
         ModificationResult modificationResult = javaSource.runModificationTask(new Task<WorkingCopy>() {
+            @Override
             public void run(WorkingCopy workingCopy) throws Exception {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
@@ -263,9 +267,10 @@ public class JpaControllerGenerator {
             
             JavaSource controllerJavaSource = JavaSource.forFileObject(controllerFileObject);
             controllerJavaSource.runModificationTask(new Task<WorkingCopy>() {
+            @Override
                 public void run(WorkingCopy workingCopy) throws IOException {
                     workingCopy.toPhase(JavaSource.Phase.RESOLVED);
-                    
+
                     ExecutableElement idGetterElement = idGetter.resolve(workingCopy);
                     idGetterName[0] = idGetterElement.getSimpleName().toString();
                     TypeMirror idType = idGetterElement.getReturnType();
@@ -405,7 +410,11 @@ public class JpaControllerGenerator {
                             
                             String relFieldToAttach = isCollection ? relFieldName + relTypeReference + "ToAttach" : relFieldName;
                             String scalarRelFieldName = isCollection ? relFieldName + relTypeReference : relFieldName;
-                            
+
+                            if(fieldName.equals(scalarRelFieldName)){
+                                scalarRelFieldName  = scalarRelFieldName + "Rel";//if entity have references to itself (i.e. tree/chain etc of entities), need to make name different from entity field name
+                            }
+
                             if (!controllerClass.startsWith(entityClass + "JpaController")) {
                                 modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, relType);
                             }
