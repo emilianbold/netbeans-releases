@@ -69,6 +69,7 @@ public class RefactorActionTest extends J2eeTestCase {
         if (firstRun) {
             File projectDir = new File(getDataDir(), PROJECT_DIR_NAME);
             openProjects(projectDir.getAbsolutePath());
+            resolveServer(projectDir.getName());
             firstRun = false;
         }
         waitScanFinished();
@@ -90,6 +91,10 @@ public class RefactorActionTest extends J2eeTestCase {
 
     public void testRefactorIdFromHTML() throws Exception {
         doRefactoring("metamorph_orange", "index.html", "#logo", "#znak_firmy");
+        
+        EditorOperator index2 = openFile("wrestling/index2.html");
+        assertTrue("unrelated not refactored", index2.getText().contains("logo"));
+        assertFalse("unrelated not refactored", index2.getText().contains("simple_log"));
     }
 
     public void testRefactorClassFromCSS() throws Exception {
@@ -108,15 +113,39 @@ public class RefactorActionTest extends J2eeTestCase {
         assertTrue("second html refactored", index2.getText().contains("simple_log"));
     }
 
+    public void testUnrelatedReferencesFromHTML() throws Exception{
+        doRefactoring("metamorph_orange", "index.html", "#header", "#hlavicka", false, true);
+
+        EditorOperator index = openFile("wrestling/index.html");
+        assertFalse("unrelated html refactored", index.getText().contains("header"));
+        assertTrue("unrelated html refactored", index.getText().contains("hlavicka"));
+
+        EditorOperator index2 = openFile("wrestling/index2.html");
+        assertFalse("unrelated html refactored", index2.getText().contains("header"));
+        assertTrue("unrelated html refactored", index2.getText().contains("hlavicka"));
+    }
+
+    public void testUnrelatedReferencesFromCSS() throws Exception{
+        doRefactoring("metamorph_orange", "style.css", "#hlavicka", "#zahlavi", false, true);
+
+        EditorOperator index = openFile("wrestling/index.html");
+        assertFalse("unrelated html refactored", index.getText().contains("hlavicka"));
+        assertTrue("unrelated html refactored", index.getText().contains("zahlavi"));
+
+        EditorOperator index2 = openFile("wrestling/index2.html");
+        assertFalse("unrelated html refactored", index2.getText().contains("hlavicka"));
+        assertTrue("unrelated html refactored", index2.getText().contains("zahlavi"));
+    }
+
     public void testIssue180215() throws Exception {// cycle reference
-        doRefactoring("wrestling", "newcss.css", "root", "leaf", true);
+        doRefactoring("wrestling", "newcss.css", "root", "leaf", true, false);
     }
 
     private void doRefactoring(String directory, String refactoredFileName, String oldValue, String newValue) throws Exception {
-        doRefactoring(directory, refactoredFileName, oldValue, newValue, false);
+        doRefactoring(directory, refactoredFileName, oldValue, newValue, false, false);
     }
 
-    private void doRefactoring(String directory, String refactoredFileName, String oldValue, String newValue, boolean skipHTML) throws Exception {
+    private void doRefactoring(String directory, String refactoredFileName, String oldValue, String newValue, boolean onlyThisCSSFile, boolean refactorUnrelated) throws Exception {
         EditorOperator eo = openFile(directory + "/" + refactoredFileName);
         String searchedValue = oldValue;
         if (refactoredFileName.endsWith("html")) {
@@ -127,15 +156,21 @@ public class RefactorActionTest extends J2eeTestCase {
         RenameDialogOperator renameOperator = new RenameDialogOperator();
         assertEquals(oldValue, renameOperator.getNewName());
         renameOperator.setNewName(newValue);
+        renameOperator.setEnabledUnrelatedOccurences(refactorUnrelated);
         renameOperator.refactor();
         Thread.sleep(5000);
         eo.close(true);
 
-        EditorOperator css = openFile(directory + "/style.css");
+        EditorOperator css;
+        if (onlyThisCSSFile) {
+            css = openFile(directory + "/" + refactoredFileName);
+        } else {
+            css = openFile(directory + "/style.css");
+        }
         assertFalse("css refactored: \n" + css.getText(), css.contains(oldValue));
         assertTrue("css refactored: \n" + css.getText(), css.contains(newValue));
 
-        if (!skipHTML) {
+        if (!onlyThisCSSFile) {
             EditorOperator index = openFile(directory + "/index.html");
             assertFalse("html refactored: \n" + index.getText(), index.contains(filterForHTML(oldValue)));
             assertTrue("html refactored: \n" + index.getText(), index.contains(filterForHTML(newValue)));
