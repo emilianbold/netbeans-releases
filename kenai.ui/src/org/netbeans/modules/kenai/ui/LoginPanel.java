@@ -40,6 +40,7 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.Container;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -344,15 +345,22 @@ public class LoginPanel extends javax.swing.JPanel {
             setUsername(credentials.getUsername(kenai));
             setPassword(credentials.getPassword(kenai));
         } else {
-            new AddInstanceAction().actionPerformed(evt);
-            this.kenai = ((Kenai) kenaiCombo.getSelectedItem());
-            forgotPassword.setAction(new URLDisplayerAction("", getForgetPasswordUrl()));
-            signUp.setAction(new URLDisplayerAction("", getRegisterUrl()));
+            final ActionEvent e = evt;
+            SwingUtilities.invokeLater(new Runnable() {
 
-            forgotPassword.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"));
-            signUp.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"));
+                @Override
+                public void run() {
+                    new AddInstanceAction().actionPerformed(e);
+                    LoginPanel.this.kenai = ((Kenai) kenaiCombo.getSelectedItem());
+                    forgotPassword.setAction(new URLDisplayerAction("", getForgetPasswordUrl()));
+                    signUp.setAction(new URLDisplayerAction("", getRegisterUrl()));
 
-            setChkOnline();
+                    forgotPassword.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"));
+                    signUp.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"));
+
+                    setChkOnline();
+                }
+            });
         }
     }//GEN-LAST:event_kenaiComboActionPerformed
 

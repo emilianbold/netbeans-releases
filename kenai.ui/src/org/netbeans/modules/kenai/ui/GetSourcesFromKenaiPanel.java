@@ -73,6 +73,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -508,12 +509,18 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_localFolderTextFieldKeyTyped
 
     private void kenaiComboActionPerformed(ActionEvent evt) {//GEN-FIRST:event_kenaiComboActionPerformed
-        if (!(kenaiCombo.getSelectedItem() instanceof Kenai)) {
-            new AddInstanceAction().actionPerformed(evt);
-        }
-        kenai = (Kenai) kenaiCombo.getModel().getSelectedItem();
-        kenaiRepoComboBox.setModel(new KenaiRepositoriesComboModel());
-        refreshUsername();
+        final ActionEvent e = evt;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (!(kenaiCombo.getSelectedItem() instanceof Kenai)) {
+                    new AddInstanceAction().actionPerformed(e);
+                }
+                kenai = (Kenai) kenaiCombo.getModel().getSelectedItem();
+                kenaiRepoComboBox.setModel(new KenaiRepositoriesComboModel());
+                refreshUsername();
+            }
+        });
     }//GEN-LAST:event_kenaiComboActionPerformed
 
     private class KenaiRepositoriesComboModel extends DefaultComboBoxModel  {
