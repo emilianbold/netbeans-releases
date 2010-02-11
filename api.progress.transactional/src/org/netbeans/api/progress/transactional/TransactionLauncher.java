@@ -43,6 +43,7 @@ import org.netbeans.modules.progress.transactional.TransactionManager;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.progress.transactional.TransactionHandlerAccessor;
+import org.openide.util.RequestProcessor;
 
 /**
  * Class which can launch a transaction on a background thread.  If an instance
@@ -57,9 +58,15 @@ public final class TransactionLauncher<ArgType, ResultType> {
     private final AtomicBoolean launched = new AtomicBoolean(false);
     private final AtomicBoolean failed = new AtomicBoolean(false);
     private final String jobName;
+    private final RequestProcessor threadPool;
     TransactionLauncher(String jobName, Transaction<ArgType, ResultType> t) {
+        this (jobName, t, null);
+    }
+
+    TransactionLauncher(String jobName, Transaction<ArgType, ResultType> t, RequestProcessor threadPool) {
         delegate = createDelegate(t);
         this.jobName = jobName;
+        this.threadPool = threadPool;
     }
 
     private LaunchStateDelegate<ArgType, ResultType> createDelegate(Transaction<ArgType, ResultType> t) {
@@ -118,7 +125,7 @@ public final class TransactionLauncher<ArgType, ResultType> {
             throw new IllegalStateException(this + " is not reusable.  launch() called twice");
         }
         launched.set(true);
-        return TransactionHandlerAccessor.DEFAULT.launch(delegate, argument, handler, jobName, mode, canCancel);
+        return TransactionHandlerAccessor.DEFAULT.launch(delegate, argument, handler, jobName, mode, canCancel, threadPool);
     }
     /**
      * Roll back a transaction, causing it to be rolled back on a background thread.
@@ -143,7 +150,7 @@ public final class TransactionLauncher<ArgType, ResultType> {
             throw new IllegalStateException("Cannot roll back a transaction " + //NOI18N
                     "which has not been run"); //NOI18N
         }
-        return TransactionHandlerAccessor.DEFAULT.rollback(delegate, handler, jobName, mode);
+        return TransactionHandlerAccessor.DEFAULT.rollback(delegate, handler, jobName, mode, threadPool);
     }
 
     /**
