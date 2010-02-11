@@ -227,7 +227,8 @@ made subject to such option by the copyright holder.
             </available>
         </condition>
 
-        <makeupdatedesc desc="${build.updates.dir}/updates.xml" distbase="." automaticgrouping="true" uselicenseurl="${use.license.url.in.catalog}">
+        <property name="catalog.base.url" value="."/>
+        <makeupdatedesc desc="${build.updates.dir}/updates.xml" distbase="${catalog.base.url}" automaticgrouping="true" uselicenseurl="${use.license.url.in.catalog}">
             <fileset dir="${build.updates.dir}">
                 <include name="*.nbm"/>
             </fileset>
