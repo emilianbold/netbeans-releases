@@ -183,6 +183,8 @@ public final class Kenai implements Comparable<Kenai> {
                 icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/testkenai-small.png", false);
             } else if (getUrl().getHost().contains("odftoolkit.org")) { //NOI18N
                 icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/odftoolkit-small.png", false);
+            } else if (getUrl().getHost().contains("java.net")) { //NOI18N
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/javanet.png", false);
             } else {
                 icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/kenai-small.png", false);
             }
