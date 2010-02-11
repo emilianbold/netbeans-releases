@@ -81,7 +81,4 @@ paramValues[]
 param[]
 requestScope[]
 sessionScope[]
-EE: unexpected CC result:
-< ${slunicko}    </body>
-> ${slunicko}
 End cursor position = 546
