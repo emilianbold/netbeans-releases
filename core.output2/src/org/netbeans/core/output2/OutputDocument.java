@@ -198,6 +198,13 @@ public class OutputDocument implements Document, Element, ChangeListener {
         try {
             synchronized (getLines().readLock()) {
                 int charCount = getLines().getCharCount();
+                // #180404
+                if (charCount < 0) {
+                    txt.array = new char[0];
+                    txt.offset=0;
+                    txt.count = 0;
+                    return;
+                }
                 int linesOffset = Math.min(charCount, offset);
                 int linesEnd = Math.min(charCount, offset + length);
                 char[] chars = getLines().getText(linesOffset, linesEnd, reusableSubrange);

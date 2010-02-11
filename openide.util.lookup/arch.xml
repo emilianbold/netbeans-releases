@@ -424,7 +424,7 @@ org.my.netbeans.extramodule.ExtraTip
 
  <answer id="lookup-lookup">
     <ul>
-    <li><api name="LookupInitializationLookup" category="devel" group="lookup" type="export" url="#property-org.openide.util.Lookup">
+    <li><api name="LookupInitializationLookup" category="devel" group="lookup" type="export" url="#systemproperty-org.openide.util.Lookup">
     during 
     initialization of the <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
     the <a href="@TOP@/org/openide/util/Lookup.Provider.html">Lookup.Provider</a>

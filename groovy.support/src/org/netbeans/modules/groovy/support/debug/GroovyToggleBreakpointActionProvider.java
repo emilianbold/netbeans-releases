@@ -48,6 +48,7 @@ import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.spi.debugger.ActionsProvider.Registration;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.filesystems.FileObject;
@@ -58,6 +59,7 @@ import org.openide.filesystems.FileObject;
  * @author Martin Grebac
  * @author Martin Adamek
  */
+@Registration(actions={"toggleBreakpoint"}, activateForMIMETypes={"text/x-groovy"})
 public class GroovyToggleBreakpointActionProvider extends ActionsProviderSupport implements PropertyChangeListener {
     
     private JPDADebugger debugger;

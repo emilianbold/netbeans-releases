@@ -66,13 +66,13 @@ static int test_env = 0;
 
 static int __thread inside_open = 0;
 
-#define get_real_addr(name) _get_real_addr(#name, name);
+#define get_real_addr(name) _get_real_addr(#name, (void*)name);
 
 static inline void *_get_real_addr(const char *name, void* wrapper_addr) {
     void *res;
     int saved_errno = errno;
     res = dlsym(RTLD_NEXT, name);
-    if (res && res == wrapper_addr) {
+    if (res && (res == wrapper_addr)) {
         res = dlsym(RTLD_NEXT, name);
     }
     if (!res) {
@@ -256,8 +256,8 @@ pid_t fork() {
     pid_t result;
     static pid_t (*prev)(void);
         if (!prev) {
-            prev = (pid_t (*)(void)) _get_real_addr("fork", fork);
-        }
+            prev = (pid_t (*)(void)) get_real_addr(fork);
+            }
         if (prev) {
             result = prev();
         } else {
@@ -523,7 +523,7 @@ int execve(const char *path, char *const argv[], char *const envp[]) {
     if (pre_open(path, flags)) {
         static int (*prev)(const char *, char *const *, char *const *);
         if (!prev) {
-            prev = (int (*)(const char *, char *const *, char *const *)) _get_real_addr(function_name, execve);
+            prev = (int (*)(const char *, char *const *, char *const *)) _get_real_addr(function_name, (void*) execve);
         }
         if (prev) {
             result = prev(path, argv, envp);
@@ -548,7 +548,7 @@ int rename(const char *oldpath, const char *path) {
     if (pre_open(oldpath, 0)) {
         static int (*prev)(const char *, const char *);
         if (!prev) {
-            prev = (int (*)(const char *, const char *)) _get_real_addr(function_name, rename);
+            prev = (int (*)(const char *, const char *)) _get_real_addr(function_name, (void*) rename);
         }
         if (prev) {
             result = prev(oldpath, path);
