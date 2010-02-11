@@ -85,7 +85,6 @@ public class Activator implements BundleActivator, SynchronousBundleListener, Fr
         if (storage != null) {
             System.setProperty("netbeans.user", storage);
         }
-        // XXX set netbeans.buildnumber to OpenIDE-Module-Implementation-Version of org.netbeans.bootstrap
         OSGiMainLookup.initialize(context);
         context.addFrameworkListener(this);
         context.addBundleListener(this);
@@ -118,6 +117,9 @@ public class Activator implements BundleActivator, SynchronousBundleListener, Fr
 //            System.err.println("resolved " + bundle.getSymbolicName());
             OSGiMainLookup.bundleResolved(bundle);
             OSGiRepository.DEFAULT.addLayers(layersFor(bundle));
+            if (bundle.getSymbolicName().equals("org.netbeans.bootstrap")) { // NOI18N
+                System.setProperty("netbeans.buildnumber", bundle.getVersion().getQualifier()); // NOI18N
+            }
             break;
         case BundleEvent.UNRESOLVED:
 //            System.err.println("unresolved " + bundle.getSymbolicName());
