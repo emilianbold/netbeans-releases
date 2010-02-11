@@ -127,33 +127,8 @@ public class SpecializesTest extends CommonTestCase {
                 for (Element element : children) {
                     if (element instanceof VariableElement) {
                         assert element.getSimpleName().contentEquals("myField");
-                        inform("test injectables for 'myField'");
-                        Result result = provider.findVariableInjectable(
-                                    (VariableElement)element, null);
-                        
-                        assertNotNull(result);
-                        assertTrue(result instanceof ResultImpl);
-                        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-                        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-                        assertEquals(2, typeElements.size());
-                        assertEquals(0, productions.size());
-                        
-                        boolean twoFound = false;
-                        boolean threeFound = false;
-                        for (TypeElement injectable : typeElements) {
-                            Name qualifiedName = injectable.getQualifiedName();
-                            if (qualifiedName.contentEquals("foo.Two")) {
-                                twoFound = true;
-                            }
-                            else if (qualifiedName.contentEquals("foo.Three")) {
-                                threeFound = true;
-                            }
-                        }
-                        assertTrue("foo.Two is eligible for injection , "
-                                + "but not found", twoFound);
-                        assertTrue("foo.Three is eligible for injection , "
-                                + "but not found", threeFound);
+                        assertFindVariableResultInjectables((VariableElement)element, provider, "foo.Two", "foo.Three");
+                        assertFindVariableResultProductions((VariableElement)element, provider);
                     }
                 }
                 return null;
@@ -251,23 +226,8 @@ public class SpecializesTest extends CommonTestCase {
                 for (Element element : children) {
                     if (element instanceof VariableElement) {
                         assert element.getSimpleName().contentEquals("myField");
-                        inform("test injectables for 'myField'");
-                        
-                        Result result = provider.findVariableInjectable(
-                                (VariableElement)element, null);
-
-                        assertNotNull(result);
-                        assertTrue(result instanceof ResultImpl);
-                        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-                        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-                        assertEquals(1, typeElements.size());
-                        assertEquals(0, productions.size());
-
-                        TypeElement injectable = typeElements.iterator().next();
-                        assertNotNull(injectable);
-                        assertEquals("foo.Three", ((TypeElement) injectable)
-                                .getQualifiedName().toString());
+                        assertFindVariableResultInjectables((VariableElement)element, provider, "foo.Three");
+                        assertFindVariableResultProductions((VariableElement)element, provider);
                     }
                 }
                 return null;
@@ -364,13 +324,16 @@ public class SpecializesTest extends CommonTestCase {
                     if ( element instanceof VariableElement ){
                         names.add( element.getSimpleName().toString());
                         if ( element.getSimpleName().contentEquals("myField1")){
-                            check1( (VariableElement)element , provider );
+                            assertFindVariableResultInjectables((VariableElement)element, provider, "foo.Two");
+                            assertFindVariableResultProductions((VariableElement)element, provider);
                         }
                         else if ( element.getSimpleName().contentEquals("myField2")){
-                            check2( (VariableElement)element , provider );
+                            assertFindVariableResultInjectables((VariableElement)element, provider, "foo.Three");
+                            assertFindVariableResultProductions((VariableElement)element, provider);
                         }
                         else if ( element.getSimpleName().contentEquals("myField3")){
-                            check3( (VariableElement)element , provider );
+                            assertFindVariableResultInjectables((VariableElement)element, provider, "foo.Three");
+                            assertFindVariableResultProductions((VariableElement)element, provider);
                         }
                     }
                 }
@@ -382,53 +345,6 @@ public class SpecializesTest extends CommonTestCase {
         });
     }
 
-    protected void check1( VariableElement element , 
-            TestWebBeansModelProviderImpl provider ) 
-    {
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injectable = typeElements.iterator().next();
-        assertNotNull(injectable);
-        
-        assertNotNull( injectable );
-        assertEquals( "foo.Two", injectable.getQualifiedName().toString());        
-    }
-    
-    protected void check2( VariableElement element, 
-            TestWebBeansModelProviderImpl provider)
-
-    {
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(1, typeElements.size());
-        assertEquals(0, productions.size());
-
-        TypeElement injectable = typeElements.iterator().next();
-        assertNotNull(injectable);
-        
-        assertEquals("foo.Three", injectable.getQualifiedName()
-                .toString());
-    }
-    
-    protected void check3( VariableElement element, 
-            TestWebBeansModelProviderImpl provider )
-    {
-        check2(element, provider);
-    }
-    
     public void testSimpleProductionSpecializes() throws IOException, InterruptedException{
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/CustomBinding.java",
@@ -483,28 +399,8 @@ public class SpecializesTest extends CommonTestCase {
                 for (Element element : children) {
                     if (element instanceof VariableElement) {
                         assert element.getSimpleName().contentEquals("myField");
-                        inform("test injectables for 'myField'");
-                        
-                        Result result = provider.findVariableInjectable(
-                                (VariableElement)element, null);
-
-                        assertNotNull(result);
-                        assertTrue(result instanceof ResultImpl);
-                        Set<TypeElement> typeElements = ((ResultImpl) result).
-                            getTypeElements();
-                        Set<Element> productions = ((ResultImpl) result).
-                            getProductions();
-
-                        assertEquals(0, typeElements.size());
-                        assertEquals(2, productions.size());
-                        
-                        for (Element injectable : productions) {
-                            assertTrue("injectbale " + element
-                                    + " should be production method ",
-                                    injectable instanceof ExecutableElement);
-                            Name qualifiedName = injectable.getSimpleName();
-                            assertEquals("getIndex", qualifiedName.toString());
-                        }
+                        assertFindVariableResultInjectables((VariableElement)element, provider);
+                        assertFindVariableResultProductions((VariableElement)element, provider, "getIndex", "getIndex");
                     }
                 }
                 return null;
@@ -605,37 +501,8 @@ public class SpecializesTest extends CommonTestCase {
                             if (element instanceof VariableElement) {
                                 assert element.getSimpleName().contentEquals(
                                         "myField");
-                                inform("test injectables for 'myField'");
-                                
-                                Result result = provider.findVariableInjectable(
-                                        (VariableElement)element, null);
-
-                                assertNotNull(result);
-                                assertTrue(result instanceof ResultImpl);
-                                Set<TypeElement> typeElements = ((ResultImpl) 
-                                        result).getTypeElements();
-                                Set<Element> productions = ((ResultImpl) 
-                                        result).getProductions();
-
-                                assertEquals(0, typeElements.size());
-                                assertEquals(1, productions.size());
-                                
-                                Element injectable = productions.iterator().next();
-                                
-                                assertNotNull( injectable );
-                                
-                                assertTrue ("Injectable element should be " +
-                                        "a production method",
-                                        injectable instanceof ExecutableElement );
-                                assertEquals( "getIndex",
-                                        injectable.getSimpleName().toString());
-
-                                Element enclosingElement = injectable.getEnclosingElement();
-                                assertTrue( enclosingElement instanceof TypeElement);
-                                
-                                assertEquals("foo.Three",
-                                        ((TypeElement) enclosingElement)
-                                                .getQualifiedName().toString());
+                                assertFindVariableResultInjectables((VariableElement)element, provider);
+                                assertFindVariableResultProductions((VariableElement)element, provider, "getIndex");
                             }
                         }
                         return null;
@@ -735,10 +602,12 @@ public class SpecializesTest extends CommonTestCase {
                     if ( element instanceof VariableElement ){
                         names.add( element.getSimpleName().toString());
                         if ( element.getSimpleName().contentEquals("myField1")){
-                            checkProduces1( (VariableElement)element , provider );
+                            assertFindVariableResultInjectables((VariableElement)element, provider);
+                            assertFindVariableResultProductions((VariableElement)element, provider, "getIndex");
                         }
                         else if ( element.getSimpleName().contentEquals("myField2")){
-                            checkProduces2( (VariableElement)element , provider );
+                            assertFindVariableResultInjectables((VariableElement)element, provider);
+                            assertFindVariableResultProductions((VariableElement)element, provider, "isNull");
                         }
                     }
                 }
@@ -749,56 +618,4 @@ public class SpecializesTest extends CommonTestCase {
         });
     }
     
-    protected void checkProduces1( VariableElement element , 
-            TestWebBeansModelProviderImpl provider )
-    {
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(1, productions.size());
-        
-        Element injectable = productions.iterator().next();
-        assertNotNull(injectable);
-        assertTrue("Injectable element should be a production method",
-                injectable instanceof ExecutableElement);
-        assertEquals("getIndex", injectable.getSimpleName().toString());
-        
-        Element enclosingElement = injectable.getEnclosingElement();
-        assert enclosingElement instanceof TypeElement;
-        
-        assertEquals("foo.Two",  
-                ((TypeElement)enclosingElement).getQualifiedName().toString());
-    }
-    
-    protected void checkProduces2( VariableElement element , 
-            TestWebBeansModelProviderImpl provider )
-    {
-        Result result = provider.findVariableInjectable(element, null);
-
-        assertNotNull(result);
-        assertTrue(result instanceof ResultImpl);
-        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
-        Set<Element> productions = ((ResultImpl) result).getProductions();
-
-        assertEquals(0, typeElements.size());
-        assertEquals(1, productions.size());
-        
-        Element injectable = productions.iterator().next();
-        assertNotNull(injectable);
-        
-        assertTrue("Injectable element should be a production method",
-                injectable instanceof ExecutableElement);
-        assertEquals("isNull", injectable.getSimpleName().toString());
-
-        Element enclosingElement = injectable.getEnclosingElement();
-        assert enclosingElement instanceof TypeElement;
-
-        assertEquals("foo.Three", ((TypeElement) enclosingElement)
-                .getQualifiedName().toString());
-    }
 }
