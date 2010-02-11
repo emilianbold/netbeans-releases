@@ -682,6 +682,18 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceWithinParens08.php", options);
     }
 
+    public void testSpacesWithinTypeCastParens01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinTypeCastParens, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinTypeCastParens01.php", options);
+    }
+
+    public void testSpacesWithinTypeCastParens02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinTypeCastParens, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinTypeCastParens02.php", options);
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }

@@ -52,6 +52,7 @@ import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.CastExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
@@ -448,6 +449,39 @@ class WSTransformer extends DefaultTreePathVisitor {
 		    parameters.get(0).getStartOffset(),
 		    parameters.get(parameters.size() -1).getEndOffset(),
 		    CodeStyle.get(context.document()).spaceWithinMethodCallParens());
+	}
+	super.visit(node);
+    }
+
+    @Override
+    public void visit(CastExpression node) {
+	// spaces within
+	TokenSequence<PHPTokenId> ts = tokenSequence(node.getStartOffset());
+        ts.move(node.getStartOffset());
+        if (ts.movePrevious() && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_CASTING) {
+	    CharSequence text = ts.token().text();
+	    boolean space = CodeStyle.get(context.document()).spaceWithinTypeCastParens();
+
+	    int spaceAtStart = 0;
+	    int spaceAtEnd = 0;
+	    while (text.charAt(1 + spaceAtStart) == ' ') {
+		spaceAtStart++;
+	    }
+	    while (text.charAt(text.length() - 2 - spaceAtEnd) == ' ') {
+		spaceAtEnd++;
+	    }
+	    if (space && spaceAtStart != 1) {
+		replacements.add(new Replacement(ts.offset() + 1 + spaceAtStart, spaceAtStart, " ")); // NOI18N
+	    }
+	    if (space && spaceAtEnd != 1) {
+		replacements.add(new Replacement(ts.offset() + text.length() - 1, spaceAtEnd, " ")); // NOI18N
+	    }
+	    if (!space && spaceAtStart > 0) {
+		replacements.add(new Replacement(ts.offset() + 1 + spaceAtStart, spaceAtStart, "")); // NOI18N
+	    }
+	    if (!space && spaceAtEnd > 0) {
+		replacements.add(new Replacement(ts.offset() + text.length() - 1, spaceAtEnd, "")); // NOI18N
+	    }
 	}
 	super.visit(node);
     }

@@ -332,11 +332,11 @@ public final class CodeStyle {
 //    public boolean spaceWithinSynchronizedParens() {
 //        return preferences.getBoolean(spaceWithinSynchronizedParens, getDefaultAsBoolean(spaceWithinSynchronizedParens));
 //    }
-//
-//    public boolean spaceWithinTypeCastParens() {
-//        return preferences.getBoolean(spaceWithinTypeCastParens, getDefaultAsBoolean(spaceWithinTypeCastParens));
-//    }
-//
+
+    public boolean spaceWithinTypeCastParens() {
+        return preferences.getBoolean(spaceWithinTypeCastParens, getDefaultAsBoolean(spaceWithinTypeCastParens));
+    }
+
 //    public boolean spaceWithinAnnotationParens() {
 //        return preferences.getBoolean(spaceWithinAnnotationParens, getDefaultAsBoolean(spaceWithinAnnotationParens));
 //    }
