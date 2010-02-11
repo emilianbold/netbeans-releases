@@ -301,8 +301,7 @@ public class SourceUtils {
             }
         } else { // embedded java, look up the handler for the top level language
             Lookup lookup = MimeLookup.getLookup(MimePath.get(topLevelLanguageMIMEType));
-            Lookup.Result result = lookup.lookup(new Lookup.Template(ImportProcessor.class));
-            Collection<ImportProcessor> instances = result.allInstances();
+            Collection<? extends ImportProcessor> instances = lookup.lookupAll(ImportProcessor.class);
 
             for (ImportProcessor importsProcesor : instances) {
                 importsProcesor.addImport(info.getDocument(), fqn);
