@@ -47,6 +47,7 @@ import java.util.Set;
 
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.modules.web.client.javascript.debugger.ui.NbJSEditorUtil;
+import org.netbeans.spi.debugger.ActionsProvider.Registration;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.util.WeakListeners;
@@ -54,6 +55,7 @@ import org.openide.util.WeakListeners;
 /**
  * Provides actions for adding and removing Javascript breakpoints.
  */
+@Registration(actions={"toggleBreakpoint"}, activateForMIMETypes={"text/javascript", "text/html"})
 public final class NbJSBreakpointActionProvider extends ActionsProviderSupport
         implements PropertyChangeListener {
 

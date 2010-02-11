@@ -446,17 +446,20 @@ public class FileObjectTestHid extends TestBaseHid {
         FileObject fold2 = fold.createFolder("B");
 
         FileObject toMove = fold1.createFolder("something");
+        toMove.createData("kid");
         FileLock lock = toMove.lock();
+        FileObject last = null;
         try {
             FileObject toMove2 = null;
             assertNotNull (toMove2 = toMove.move(lock, fold2, toMove.getName(), toMove.getExt()));
             lock.releaseLock();
             lock = toMove2.lock();
-            assertNotNull (toMove2.move(lock, fold1, toMove.getName(), toMove.getExt()));
-
+            assertNotNull(last = toMove2.move(lock, fold1, toMove.getName(), toMove.getExt()));
         } finally {
             lock.releaseLock();
         }
+        assertTrue("Folder remains folder", last.isFolder());
+        assertEquals("One child remains", 1, last.getChildren().length);
     }
 
     /** Test of move method, of class org.openide.filesystems.FileObject. */

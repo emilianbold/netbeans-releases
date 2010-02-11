@@ -180,11 +180,6 @@ color windowtext
 color yellow
 End cursor position = 449
 [<style> | </style>, @import, <style> @import </style>, 531]
-@charset
-@font-face
-@import
-@media
-@page
 a
 abbr
 acronym
@@ -274,6 +269,11 @@ tt
 u
 ul
 var
+@charset
+@font-face
+@import
+@media
+@page
 End cursor position = 547
 [<table style="|"></table>, background, <table style="background: "></table>, 682]
 azimuth
