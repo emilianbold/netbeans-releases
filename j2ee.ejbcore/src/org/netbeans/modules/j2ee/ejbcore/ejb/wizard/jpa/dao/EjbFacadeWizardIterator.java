@@ -302,7 +302,7 @@ import org.openide.util.NbBundle;
                                      (List<TypeParameterTree>)Collections.EMPTY_LIST,
                                      vars,
                                      (List<ExpressionTree>)Collections.EMPTY_LIST,
-                                     "{" + option.getCallLines("getEntityManager()", entityClassVar) + "}", //NOI18N
+                                     "{" + option.getCallLines("getEntityManager()", entityClassVar, PersistenceUtils.getJPAVersion(project)) + "}", //NOI18N
                                      null));
                         }
                     }
