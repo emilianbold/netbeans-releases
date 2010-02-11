@@ -41,21 +41,12 @@ package org.netbeans.modules.css.parser;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
-import org.netbeans.modules.css.editor.Css;
 
 /**
  *
  * @author marek
  */
 public class SimpleNodeUtil {
-
-    public static String unquotedValue(CharSequence value) {
-        return Css.unquotedValue(value);
-    }
-
-    public static boolean isValueQuoted(CharSequence value) {
-        return Css.isValueQuoted(value);
-    }
 
     public static Token getNodeToken(SimpleNode node, int tokenKind) {
         Token t = node.jjtGetFirstToken();

@@ -43,7 +43,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.css.gsf.CssLanguage;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.indexing.CssFileModel.Entry;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -150,7 +150,7 @@ public class CssIndexer extends EmbeddingIndexer {
 
         private boolean isIndexable(Snapshot snapshot) {
             //index all files possibly containing css
-            return Css.CSS_MIME_TYPE.equals(snapshot.getMimeType());
+            return CssLanguage.CSS_MIME_TYPE.equals(snapshot.getMimeType());
         }
     }
 }

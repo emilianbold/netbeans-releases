@@ -47,9 +47,9 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.editor.LexerUtils;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -83,9 +83,9 @@ public class CssDeclarationFinder implements DeclarationFinder {
             }
         }
         
-        valueText = Css.unquotedValue(valueText);
+        valueText = WebUtils.unquotedValue(valueText);
 
-        FileObject resolved = Css.resolve(info.getSnapshot().getSource().getFileObject(), valueText);
+        FileObject resolved = WebUtils.resolve(info.getSnapshot().getSource().getFileObject(), valueText);
         if(resolved != null) {
             return new DeclarationLocation(resolved, 0);
         }
@@ -115,7 +115,7 @@ public class CssDeclarationFinder implements DeclarationFinder {
         }
 
         Token<CssTokenId> token = ts.token();
-        int quotesDiff = Css.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
+        int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
         OffsetRange range = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
         if(token.id() == CssTokenId.STRING || token.id() == CssTokenId.URI) {
             //check if there is @import token before

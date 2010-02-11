@@ -54,6 +54,7 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.completion.AttrValuesCompletion;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -131,7 +132,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
         //tag attribute value hyperlinking
         if(ts.token().id() == HTMLTokenId.VALUE) {
             //find attribute name
-            int quotesDiff = Utils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
+            int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
             OffsetRange range = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
             String attrName = null;
             String tagName = null;
@@ -188,7 +189,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             if(attribs.size() == 1) {
                 Attribute attr = attribs.iterator().next();
                 String value = attr.unquotedValue();
-                FileObject resolved = Utils.resolve(info.getSnapshot().getSource().getFileObject(), value);
+                FileObject resolved = WebUtils.resolve(info.getSnapshot().getSource().getFileObject(), value);
                 if(resolved != null) {
                     return new DeclarationLocation(resolved, 0);
                 }

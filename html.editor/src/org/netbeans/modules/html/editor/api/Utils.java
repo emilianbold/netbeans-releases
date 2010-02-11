@@ -62,22 +62,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  */
 public class Utils {
 
-    /** finds first ResultIterator */
-    public static ResultIterator getResultIterator(ResultIterator ri, String mimetype) {
-        for(Embedding e : ri.getEmbeddings() ) {
-            ResultIterator eri = ri.getResultIterator(e);
-            if(e.getMimeType().equals(mimetype)) {
-                return eri;
-            } else {
-                ResultIterator eeri = getResultIterator(eri, mimetype);
-                if(eeri != null) {
-                    return eeri;
-                }
-            }
-        }
-        return null;
-    }
-
+   
     /** Returns an absolute context URL (starting with '/') for a relative URL and base URL.
     *  @param relativeTo url to which the relative URL is related. Treated as directory iff
     *    ends with '/'
@@ -210,63 +195,5 @@ public class Utils {
         return null;
     }
 
-    public static String unquotedValue(String value) {
-        return isValueQuoted(value) ? value.substring(1, value.length() - 1) : value;
-    }
-
-    public static boolean isValueQuoted(String value) {
-        if (value.length() < 2) {
-            return false;
-        } else {
-            return ((value.charAt(0) == '\'' || value.charAt(0) == '"') &&
-                    (value.charAt(value.length() - 1) == '\'' || value.charAt(value.length() - 1) == '"'));
-        }
-    }
-
-    /**
-     * Resolves the relative or absolute link from the base file
-     * 
-     * @todo Copied from CssIndex - refactor to some shared code
-     *
-     * @param source The base file
-     * @param importedFileName the link
-     * @return
-     */
-    public static FileObject resolve(FileObject source, String importedFileName) {
-        try {
-            URI u = URI.create(importedFileName);
-            File file = null;
-
-            if (u.isAbsolute()) {
-                //do refactor only file resources
-                if ("file".equals(u.getScheme())) { //NOI18N
-                    try {
-                        //the IAE is thrown for invalid URIs quite frequently
-                        file = new File(u);
-                    } catch (IllegalArgumentException iae) {
-                        //no-op
-                    }
-                }
-            } else {
-                //no schema specified
-                file = new File(importedFileName);
-            }
-
-            if (file != null && !file.isAbsolute()) {
-                //relative to the current file's folder - let's resolve
-                FileObject resolvedFileObject = source.getParent().getFileObject(importedFileName);
-                if (resolvedFileObject != null && resolvedFileObject.isValid()) {
-                    return resolvedFileObject;
-                }
-            } else {
-                //absolute - TO THE DEPLOYMENT ROOT!!!
-                //todo implement!!!
-            }
-        } catch (IllegalArgumentException e) {
-            Logger.getAnonymousLogger().log(Level.INFO, "Cannot resolve import '" + importedFileName + "' from file " + source.getPath(), e); //NOI18N
-        }
-        return null;
-    }
-
-
+  
 }

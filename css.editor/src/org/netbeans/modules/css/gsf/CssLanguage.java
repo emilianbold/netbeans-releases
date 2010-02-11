@@ -61,7 +61,9 @@ import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 //index all source roots only
 @PathRecognizerRegistration(mimeTypes="text/x-css", libraryPathIds={}, binaryLibraryPathIds={}) //NOI18N
 public class CssLanguage extends DefaultLanguageConfig {
-    
+
+    public static final String CSS_MIME_TYPE = "text/x-css";//NOI18N
+
     public CssLanguage() {
     }
 

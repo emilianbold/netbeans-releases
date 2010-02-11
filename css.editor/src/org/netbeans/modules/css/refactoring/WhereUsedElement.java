@@ -52,9 +52,9 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.indexing.CssFileModel;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
@@ -200,7 +200,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         }
 
 
-        CloneableEditorSupport ces = Css.findCloneableEditorSupport(fileObject);
+        CloneableEditorSupport ces = GsfUtilities.findCloneableEditorSupport(fileObject);
         PositionRef ref1 = ces.createPositionRef(start, Bias.Forward);
         PositionRef ref2 = ces.createPositionRef(end, Bias.Forward);
         PositionBounds bounds = new PositionBounds(ref1, ref2);
