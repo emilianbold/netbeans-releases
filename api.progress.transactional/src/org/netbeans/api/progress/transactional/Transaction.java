@@ -49,6 +49,7 @@ import org.netbeans.spi.progress.transactional.TransactionHandler;
 import org.netbeans.spi.progress.transactional.TransactionUI;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 /**
  * An undoable operation which may be one of a sequence of undoable operations
@@ -467,6 +468,11 @@ public abstract class Transaction<ArgType,ResultType> {
     public final TransactionLauncher<ArgType, ResultType> createLauncher(String jobName) {
         Parameters.notNull("jobName", jobName);
         return new TransactionLauncher<ArgType, ResultType>(jobName, this);
+    }
+
+    public final TransactionLauncher<ArgType, ResultType> createLauncher(String jobName, RequestProcessor threadPool) {
+        Parameters.notNull("jobName", jobName);
+        return new TransactionLauncher<ArgType, ResultType>(jobName, this, threadPool);
     }
 
     /**

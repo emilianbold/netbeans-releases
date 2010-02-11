@@ -65,7 +65,7 @@ final class ParallelTransactionManager<AArgType, BArgType, AResultType, BResultT
     protected ParallelValue<AResultType, BResultType> run(TransactionController controller, ParallelValue<AArgType, BArgType> argument) throws TransactionException {
         TransactionRunner<BArgType, BResultType> runner = TransactionHandlerAccessor.DEFAULT.createRunner(bManager);
         TransactionController bController = controller.cloneWithNewUI();
-        Future<BResultType> f  = TransactionHandlerAccessor.DEFAULT.start(runner, bController, argument == null ? null : argument.b(), controller.ui().getMode());
+        Future<BResultType> f  = TransactionHandlerAccessor.DEFAULT.start(runner, bController, argument == null ? null : argument.b(), controller.ui().getMode(), null);
         Exception x = null;
         try {
             AResultType a = null;
