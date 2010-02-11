@@ -114,6 +114,7 @@ import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.ui.ModuleActions;
 import org.netbeans.modules.apisupport.project.ui.ModuleLogicalView;
 import org.netbeans.modules.apisupport.project.ui.ModuleOperations;
+import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -955,6 +956,16 @@ public final class NbModuleProject implements Project {
 
         public File getModuleJarLocation() {
             return NbModuleProject.this.getModuleJarLocation();
+        }
+
+        public @Override boolean hasDependency(String codeNameBase) throws IOException {
+            ProjectXMLManager pxm = new ProjectXMLManager(NbModuleProject.this);
+            for (ModuleDependency d : pxm.getDirectDependencies()) {
+                if (d.getModuleEntry().getCodeNameBase().equals(codeNameBase)) {
+                    return true;
+                }
+            }
+            return false;
         }
         
     }
