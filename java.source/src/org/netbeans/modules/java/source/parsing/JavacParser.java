@@ -120,7 +120,6 @@ import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.Pair;
-import org.netbeans.modules.java.source.util.LMListener;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
@@ -378,7 +377,7 @@ public class JavacParser extends Parser {
                 } catch (IOException ioe) {
                     throw new ParseException ("JavacParser failure", ioe); //NOI18N
                 }
-            }            
+            }
         }
         final boolean isJavaParserResultTask = task instanceof JavaParserResultTask;
         final boolean isParserResultTask = task instanceof ParserResultTask;
@@ -421,8 +420,8 @@ public class JavacParser extends Parser {
             if (cancelService != null) {
                 cancelService.mayCancel.set(true);
             }
-            try {                
-                reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false, false);
+            try {
+                reachedPhase = moveToPhase(requiredPhase, ciImpl, true);
             } catch (IOException ioe) {
                 throw new ParseException ("JavacParser failure", ioe);      //NOI18N
             } finally {
@@ -449,7 +448,7 @@ public class JavacParser extends Parser {
             if (nct.getCompilationController() == null || nct.getTimeStamp() != parseId) {
                 try {
                     nct.setCompilationController(
-                        JavaSourceAccessor.getINSTANCE().createCompilationController(new CompilationInfoImpl(this, file, root, null, cachedSnapShot, false)),
+                        JavaSourceAccessor.getINSTANCE().createCompilationController(new CompilationInfoImpl(this, file, root, null, cachedSnapShot)),
                         parseId);
                 } catch (IOException ioe) {
                     throw new ParseException ("Javac Failure", ioe);
@@ -458,12 +457,12 @@ public class JavacParser extends Parser {
         }
         return result;
     }
-    
+
     @Override
     public void cancel () {
         canceled.set(true);
     }
-        
+
     public void resultFinished (boolean isCancelable) {
         if (isCancelable) {
             Index.cancel.remove();
@@ -476,14 +475,14 @@ public class JavacParser extends Parser {
         assert changeListener != null;
         this.listeners.addChangeListener(changeListener);
     }
- 
+
     @Override
     public void removeChangeListener(ChangeListener changeListener) {
         assert changeListener != null;
         this.listeners.removeChangeListener(changeListener);
     }
-    
-    
+
+
     /**
      * Returns {@link ClasspathInfo} used by this javac
      * @return the ClasspathInfo
@@ -498,24 +497,15 @@ public class JavacParser extends Parser {
      * @param the required {@link JavaSource#Phase}
      * @parma currentInfo - the javac 
      * @param cancellable when true the method checks cancels
-     * @param hasMoreFile true when the parser processes more files in a batch
      * @return the reached phase
      * @throws IOException when the javac throws an exception
      */
     Phase moveToPhase (final Phase phase, final CompilationInfoImpl currentInfo,
-            final boolean cancellable, final boolean hasMoreFiles, final boolean clone) throws IOException {
+            final boolean cancellable) throws IOException {
         JavaSource.Phase parserError = currentInfo.parserCrashed;
         assert parserError != null;
-        Phase currentPhase = currentInfo.getPhase();        
-        LMListener lmListener = null;
-        if (hasMoreFiles) {
-            lmListener = new LMListener ();
-        }                                
+        Phase currentPhase = currentInfo.getPhase();
         try {
-            if (lmListener != null && lmListener.isLowMemory()) {
-                currentInfo.needsRestart = true;
-                return currentPhase;
-            }
             if (currentPhase.compareTo(Phase.PARSED)<0 && phase.compareTo(Phase.PARSED)>=0 && phase.compareTo(parserError)<=0) {
                 if (cancellable && canceled.get()) {
                     //Keep the currentPhase unchanged, it may happen that an userActionTask
@@ -538,7 +528,7 @@ public class JavacParser extends Parser {
                 currentInfo.setCompilationUnit(unit);
                 assert !it.hasNext();
                 final Document doc = listener == null ? null : listener.document;
-                if (doc != null && supportsReparse && !clone) {
+                if (doc != null && supportsReparse) {
                     FindMethodRegionsVisitor v = new FindMethodRegionsVisitor(doc,Trees.instance(currentInfo.getJavacTask()).getSourcePositions(),this.canceled);
                     v.visit(unit, null);
                     synchronized (positions) {
@@ -553,10 +543,6 @@ public class JavacParser extends Parser {
                     new Object[] {currentFile, unit});
 
                 logTime (currentFile,currentPhase,(end-start));
-            }                
-            if (lmListener != null && lmListener.isLowMemory()) {
-                currentInfo.needsRestart = true;
-                return currentPhase;
             }
             if (currentPhase == Phase.PARSED && phase.compareTo(Phase.ELEMENTS_RESOLVED)>=0 && phase.compareTo(parserError)<=0) {
                 if (cancellable && canceled.get()) {
@@ -574,11 +560,7 @@ public class JavacParser extends Parser {
                 long end = System.currentTimeMillis();
                 logTime(currentInfo.getFileObject(),currentPhase,(end-start));
            }
-            if (lmListener != null && lmListener.isLowMemory()) {
-                currentInfo.needsRestart = true;
-                return currentPhase;
-            }
-            if (currentPhase == Phase.ELEMENTS_RESOLVED && phase.compareTo(Phase.RESOLVED)>=0 && phase.compareTo(parserError)<=0) {
+           if (currentPhase == Phase.ELEMENTS_RESOLVED && phase.compareTo(Phase.RESOLVED)>=0 && phase.compareTo(parserError)<=0) {
                 if (cancellable && canceled.get()) {
                     return Phase.MODIFIED;
                 }
@@ -589,17 +571,12 @@ public class JavacParser extends Parser {
                 long end = System.currentTimeMillis ();
                 logTime(currentInfo.getFileObject(),currentPhase,(end-start));
             }
-            if (lmListener != null && lmListener.isLowMemory()) {
-                currentInfo.needsRestart = true;
-                return currentPhase;
-            }
             if (currentPhase == Phase.RESOLVED && phase.compareTo(Phase.UP_TO_DATE)>=0) {
                 currentPhase = Phase.UP_TO_DATE;
             }
         } catch (CouplingAbort a) {
             TreeLoader.dumpCouplingAbort(a, null);
-            currentInfo.needsRestart = true;
-            return currentPhase;            
+            return currentPhase;
         } catch (CancelAbort ca) {
             currentPhase = Phase.MODIFIED;
         } catch (Abort abort) {
@@ -611,7 +588,7 @@ public class JavacParser extends Parser {
         } catch (RuntimeException ex) {
             parserError = currentPhase;
             dumpSource(currentInfo, ex);
-            throw ex;        
+            throw ex;
         } catch (Error ex) {
             parserError = currentPhase;
             dumpSource(currentInfo, ex);
@@ -624,20 +601,20 @@ public class JavacParser extends Parser {
         }
         return currentPhase;
     }
-    
+
     private static CompilationInfoImpl createCurrentInfo (final JavacParser parser,
             final FileObject file,
             final FileObject root,
             final Snapshot snapshot,
-            final JavacTaskImpl javac) throws IOException {                
-        CompilationInfoImpl info = new CompilationInfoImpl(parser, file, root, javac, snapshot, false);
+            final JavacTaskImpl javac) throws IOException {
+        CompilationInfoImpl info = new CompilationInfoImpl(parser, file, root, javac, snapshot);
         if (file != null) {
             Logger.getLogger("TIMER").log(Level.FINE, "CompilationInfo",    //NOI18N
                     new Object[] {file, info});
         }
         return info;
     }
-    
+
     static JavacTaskImpl createJavacTask(
             final FileObject file,
             final FileObject root,
