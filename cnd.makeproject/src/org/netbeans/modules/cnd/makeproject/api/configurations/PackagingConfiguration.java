@@ -44,6 +44,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -59,7 +60,6 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
-import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Sheet;
@@ -287,7 +287,7 @@ public class PackagingConfiguration {
     
     private TypePropertyChangeListener typePropertyChangeListener;
     // Sheet
-    public Sheet getGeneralSheet(MakeCustomizer makeCustomizer) {
+    public Sheet getGeneralSheet(JPanel makeCustomizer) {
         IntNodeProp intNodeprop;
         OutputNodeProp outputNodeProp;
         StringNodeProp toolNodeProp;
@@ -368,12 +368,12 @@ public class PackagingConfiguration {
 
     private class TypePropertyChangeListener implements PropertyChangeListener {
 
-        private MakeCustomizer makeCustomizer;
+        private JPanel makeCustomizer;
         private OutputNodeProp outputNodeProp;
         private StringNodeProp toolNodeProp;
         private StringNodeProp optionsNodeProp;
 
-        TypePropertyChangeListener(MakeCustomizer makeCustomizer, OutputNodeProp outputNodeProp, StringNodeProp toolNodeProp, StringNodeProp optionsNodeProp) {
+        TypePropertyChangeListener(JPanel makeCustomizer, OutputNodeProp outputNodeProp, StringNodeProp toolNodeProp, StringNodeProp optionsNodeProp) {
             this.makeCustomizer = makeCustomizer;
             this.outputNodeProp = outputNodeProp;
             this.toolNodeProp = toolNodeProp;

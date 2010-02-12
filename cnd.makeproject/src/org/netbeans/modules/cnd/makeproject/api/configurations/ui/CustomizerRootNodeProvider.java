@@ -59,9 +59,9 @@ public class CustomizerRootNodeProvider {
         return instance;
     }
 
-    public List<CustomizerNode> getCustomizerNodes(boolean advanced) {
+    public List<CustomizerNode> getCustomizerNodes(boolean advanced, Lookup lookup) {
         ArrayList<CustomizerNode> ret = new ArrayList<CustomizerNode>();
-        List<CustomizerNode> nodes = getCustomizerNodes();
+        List<CustomizerNode> nodes = getCustomizerNodes(lookup);
         for (CustomizerNode n : nodes) {
             if (n != null && n.advanced == advanced) {
                 ret.add(n);
@@ -70,18 +70,18 @@ public class CustomizerRootNodeProvider {
         return ret;
     }
 
-    public synchronized List<CustomizerNode> getCustomizerNodes() {
+    public synchronized List<CustomizerNode> getCustomizerNodes(Lookup lookup) {
         ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
 
         // Add nodes from providers register via services
         for (CustomizerNodeProvider provider : getCustomizerNodeProviders()) {
-            list.add(provider.factoryCreate());
+            list.add(provider.factoryCreate(lookup));
         }
         return list;
     }
 
-    public CustomizerNode getCustomizerNode(String id) {
-        List<CustomizerNode> nodes = getCustomizerNodes();
+    public CustomizerNode getCustomizerNode(String id, Lookup lookup) {
+        List<CustomizerNode> nodes = getCustomizerNodes(lookup);
         for (CustomizerNode n : nodes) {
             if (n != null && n.name.equals(id)) {
                 return n;
@@ -90,9 +90,9 @@ public class CustomizerRootNodeProvider {
         return null;
     }
 
-    public List<CustomizerNode> getCustomizerNodes(String id) {
+    public List<CustomizerNode> getCustomizerNodes(String id, Lookup lookup) {
         ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
-        List<CustomizerNode> nodes = getCustomizerNodes();
+        List<CustomizerNode> nodes = getCustomizerNodes(lookup);
         for (CustomizerNode n : nodes) {
             if (n != null && n.name.equals(id)) {
                 list.add(n);
