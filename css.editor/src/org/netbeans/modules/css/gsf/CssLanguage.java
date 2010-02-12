@@ -42,6 +42,7 @@ package org.netbeans.modules.css.gsf;
 
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
@@ -60,8 +61,15 @@ import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 //index all source roots only
 @PathRecognizerRegistration(mimeTypes="text/x-css", libraryPathIds={}, binaryLibraryPathIds={}) //NOI18N
 public class CssLanguage extends DefaultLanguageConfig {
-    
+
+    public static final String CSS_MIME_TYPE = "text/x-css";//NOI18N
+
     public CssLanguage() {
+    }
+
+    @Override
+    public DeclarationFinder getDeclarationFinder() {
+        return new CssDeclarationFinder();
     }
 
     @Override

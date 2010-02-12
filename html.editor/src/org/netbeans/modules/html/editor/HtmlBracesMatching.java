@@ -60,6 +60,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
@@ -182,7 +183,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
 
                     if (!source.getMimeType().equals(HtmlKit.HTML_MIME_TYPE)) {
                         //find embedded result iterator
-                        resultIterator = Utils.getResultIterator(resultIterator, HtmlKit.HTML_MIME_TYPE);
+                        resultIterator = WebUtils.getResultIterator(resultIterator, HtmlKit.HTML_MIME_TYPE);
                     }
 
                     if (resultIterator == null) {
