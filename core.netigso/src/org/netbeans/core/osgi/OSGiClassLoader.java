@@ -58,6 +58,7 @@ class OSGiClassLoader extends ClassLoader {
     private final BundleContext context;
 
     public OSGiClassLoader(BundleContext context) {
+        super(ClassLoader.getSystemClassLoader().getParent());
         this.context = context;
     }
 
