@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
@@ -50,28 +51,29 @@ import javax.swing.ListSelectionModel;
  *
  * @author Jan Becicka
  */
-public class KenaiCheckListRenderer extends JPanel implements ListCellRenderer {
+public class KenaiCheckListRenderer implements ListCellRenderer {
 
     private ListCellRenderer delegateRenderer;
     private ListSelectionModel model;
-    private JCheckBox checkBox = new JCheckBox();
 
     public KenaiCheckListRenderer(ListCellRenderer renderer, ListSelectionModel selectionModel) {
         super();
         this.delegateRenderer = renderer;
         this.model = selectionModel;
-        setLayout(new BorderLayout());
-        setOpaque(false);
-        checkBox.setOpaque(false);
     }
 
     @Override
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        JPanel panel = new JPanel();
+        JCheckBox checkBox = new JCheckBox();
+        panel.setLayout(new BorderLayout());
+        panel.setOpaque(false);
+        checkBox.setOpaque(false);
         Component renderer = delegateRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         checkBox.setSelected(model.isSelectedIndex(index));
-        removeAll();
-        add(checkBox, BorderLayout.WEST);
-        add(renderer, BorderLayout.CENTER);
-        return this;
+        panel.add(checkBox, BorderLayout.WEST);
+        panel.add(renderer, BorderLayout.CENTER);
+        panel.setToolTipText(((JLabel)renderer).getToolTipText());
+        return panel;
     }
 }

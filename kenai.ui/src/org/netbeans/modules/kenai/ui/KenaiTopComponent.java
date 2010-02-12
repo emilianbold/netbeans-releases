@@ -51,6 +51,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
@@ -144,12 +145,17 @@ public final class KenaiTopComponent extends TopComponent {
         combo = new KenaiCombo(false);
         combo.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 if (combo.getSelectedItem() instanceof Kenai) {
                     DashboardImpl.getInstance().setKenai((Kenai) combo.getSelectedItem());
                 } else {
-                    new AddInstanceAction().actionPerformed(e);
-                    DashboardImpl.getInstance().setKenai((Kenai) combo.getSelectedItem());
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            new AddInstanceAction().actionPerformed(e);
+                            DashboardImpl.getInstance().setKenai((Kenai) combo.getSelectedItem());
+                        }
+                    });
                 }
             }
         });

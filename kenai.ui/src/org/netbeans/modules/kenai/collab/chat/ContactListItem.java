@@ -52,5 +52,7 @@ public interface ContactListItem {
     public Icon getIcon();
 
     public boolean hasMessages();
+
+    public String getKenaiName();
     
 }
