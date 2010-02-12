@@ -83,5 +83,4 @@ public class KenaiCombo extends JComboBox {
             setVisible(manager.getKenais().size()>1);
         }
     }
-
 }
