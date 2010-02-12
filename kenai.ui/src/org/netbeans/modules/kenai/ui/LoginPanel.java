@@ -116,6 +116,7 @@ public class LoginPanel extends javax.swing.JPanel {
     }
 
     public void showError(KenaiException ex) {
+        kenaiCombo.setEnabled(true);
         progressBar.setVisible(false);
         String errorMessage = ex.getMessage();
         if (errorMessage==null || "".equals(errorMessage.trim())) {
@@ -139,6 +140,7 @@ public class LoginPanel extends javax.swing.JPanel {
         error.setVisible(false);
         progressBar.setVisible(true);
         progressBar.setIndeterminate(true);
+        kenaiCombo.setEnabled(false);
         setLoginButtonEnabled(false);
     }
 
@@ -146,6 +148,7 @@ public class LoginPanel extends javax.swing.JPanel {
         error.setVisible(false);
         progressBar.setVisible(false);
         setLoginButtonEnabled(true);
+        kenaiCombo.setEnabled(true);
     }
 
     private void setChkOnline() {
