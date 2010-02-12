@@ -459,6 +459,9 @@ public class FileObjectTestHid extends TestBaseHid {
         }
         assertTrue("Folder remains folder", last.isFolder());
         assertEquals("One child remains", 1, last.getChildren().length);
+        FileObject created = last.getChildren()[0];
+        assertEquals("kid", created.getNameExt());
+        assertTrue("is data", created.isData());
     }
 
     /** Test of move method, of class org.openide.filesystems.FileObject. */
