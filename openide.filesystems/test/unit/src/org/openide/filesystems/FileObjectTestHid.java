@@ -51,7 +51,6 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 import java.util.logging.Level;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.RandomlyFails;
 
 /**
@@ -86,7 +85,7 @@ public class FileObjectTestHid extends TestBaseHid {
     
     @Override
     protected void setUp() throws java.lang.Exception {
-        MockServices.setServices();
+        FileSystemFactoryHid.setServices(this);
         
         super.setUp();
         
@@ -1153,7 +1152,7 @@ public class FileObjectTestHid extends TestBaseHid {
     public void testGetMIMETypeWithResolver() {
         checkSetUp();
         FileObject fo = getTestFile1(root);
-        MockServices.setServices(MR.class);
+        FileSystemFactoryHid.setServices(this, MR.class);
         
         String actualMT = fo.getMIMEType();
         assertNotNull("MIMEResolver not accessed at all.", MR.tested);
@@ -1167,7 +1166,7 @@ public class FileObjectTestHid extends TestBaseHid {
     public void testGetMIMETypeCached() throws IOException {
         checkSetUp();
         FileObject fo = getTestFile1(root);
-        MockServices.setServices(MR.class);
+        FileSystemFactoryHid.setServices(this, MR.class);
 
         StatFiles accessCounter = new StatFiles();
         accessCounter.register();

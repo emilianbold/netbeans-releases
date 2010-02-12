@@ -114,7 +114,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertNotNull(root1);
         assertNotNull(FileUtil.toFile(root1));
     }
-    
+
     public void testRefresh109490() throws Exception {
         final File wDir = new File(getWorkDir(), getName());
         wDir.mkdir();
@@ -550,7 +550,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertNotNull(root.getFileObject("subpackage1"));
         assertNotNull(root.getFileObject("subpackage1/newclass.java"));
         FileObjectTestHid.implOfTestGetFileObjectForSubversion(root, "subpackage");                                
-        final String subpackageName = (ProvidedExtensionsTest.ProvidedExtensionsImpl.isImplsDeleteRetVal() && Utilities.isWindows()) ? 
+        final String subpackageName = (ProvidedExtensionsTest.ProvidedExtensionsImpl.isImplsDeleteRetVal() && Utilities.isWindows()) ?
             "subpackage2" : "Subpackage";
         fs.addFileChangeListener(tl);
         try {
@@ -741,8 +741,8 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertTrue (f.delete());
         fileObject.refresh();
         
-        if (!ProvidedExtensionsTest.ProvidedExtensionsImpl.isImplsDeleteRetVal()) {        
-            assertFalse(fileObject.isValid());       
+        if (!ProvidedExtensionsTest.ProvidedExtensionsImpl.isImplsDeleteRetVal()) {
+            assertFalse(fileObject.isValid());
         }
     }
         
