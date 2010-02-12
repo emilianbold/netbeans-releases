@@ -64,10 +64,11 @@ import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
-import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
+import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Sheet;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 public class MakeConfiguration extends Configuration {
@@ -153,7 +154,8 @@ public class MakeConfiguration extends Configuration {
         archiverConfiguration = new ArchiverConfiguration(this);
         packagingConfiguration = new PackagingConfiguration(this);
         requiredProjectsConfiguration = new RequiredProjectsConfiguration();
-        debuggerChooserConfiguration = new DebuggerChooserConfiguration();
+
+        debuggerChooserConfiguration = new DebuggerChooserConfiguration(Lookup.EMPTY);
         qmakeConfiguration = new QmakeConfiguration(this);
 
         developmentHost.addPropertyChangeListener(compilerSet);
@@ -562,7 +564,7 @@ public class MakeConfiguration extends Configuration {
         return clone;
     }
 
-    public Sheet getBuildSheet(Project project, MakeCustomizer makeCustomizer) {
+    public Sheet getBuildSheet(Project project) {
         Sheet sheet = new Sheet();
 
         Sheet.Set set = new Sheet.Set();

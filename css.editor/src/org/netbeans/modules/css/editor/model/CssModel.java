@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.css.gsf.CssLanguage;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CssParserConstants;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
@@ -62,6 +62,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -130,7 +131,7 @@ public final class CssModel {
     private void processModels(final Collection<CssModel> models, CssModel model) {
         for (FileObject importedFile : model.getImportedFiles()) {
             final AtomicReference<CssModel> ref = new AtomicReference<CssModel>();
-            if (importedFile.isValid() && importedFile.getMIMEType().equals(Css.CSS_MIME_TYPE)) {
+            if (importedFile.isValid() && importedFile.getMIMEType().equals(CssLanguage.CSS_MIME_TYPE)) {
                 try {
                     Source source = Source.create(importedFile);
                     ParserManager.parse(Collections.singleton(source), new UserTask() {
@@ -230,7 +231,7 @@ public final class CssModel {
                     } else if (node.kind() == CssParserTreeConstants.JJTIMPORTRULE) {
                         Token importedFile = SimpleNodeUtil.getNodeToken(node, CssParserConstants.STRING);
                         if (importedFile != null) {
-                            imported_files.add(SimpleNodeUtil.unquotedValue(importedFile.image));
+                            imported_files.add(WebUtils.unquotedValue(importedFile.image));
                         }
 
                     }

@@ -44,6 +44,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.css.gsf.CssLanguage;
 import org.openide.util.WeakListeners;
 
 /**
@@ -71,7 +72,7 @@ public class CssPreferences {
 
     private static void lazyIntialize() {
         if(initialized.compareAndSet(false, true)) {
-            preferences = MimeLookup.getLookup(Css.CSS_MIME_TYPE).lookup(Preferences.class);
+            preferences = MimeLookup.getLookup(CssLanguage.CSS_MIME_TYPE).lookup(Preferences.class);
             preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, preferencesTracker, preferences));
             preferencesTracker.preferenceChange(null);
         }

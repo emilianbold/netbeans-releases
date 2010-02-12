@@ -64,7 +64,7 @@ import org.openide.util.ImageUtilities;
 public abstract class AttrValuesCompletion {
 
     private static final Map<String, Map<String, AttrValuesCompletion>> SUPPORTS = new HashMap<String, Map<String, AttrValuesCompletion>>();
-    private static final AttrValuesCompletion FILE_NAME_SUPPORT = new FilenameSupport();
+    public static final AttrValuesCompletion FILE_NAME_SUPPORT = new FilenameSupport();
     private static final AttrValuesCompletion CONTENT_TYPE_SUPPORT = new ContentTypeSupport();
 
     static {
