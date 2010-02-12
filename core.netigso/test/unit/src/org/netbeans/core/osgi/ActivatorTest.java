@@ -140,4 +140,19 @@ public class ActivatorTest extends NbTestCase {
         assertTrue(settings, settings.contains("<string>hello</string>"));
     }
 
+    public void testDynamicImport() throws Exception {
+        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom;",
+                "public class Install extends org.openide.modules.ModuleInstall {",
+                "public @Override void restored() {",
+                "new javax.swing.JOptionPane().setUI(new javax.swing.plaf.basic.BasicOptionPaneUI());",
+                "System.setProperty(\"my.bundle.worked\", \"true\");",
+                "}",
+                "}").manifest(
+                "OpenIDE-Module: custom",
+                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules",
+                "OpenIDE-Module-Specification-Version: 1.0").run();
+        assertTrue(Boolean.getBoolean("my.bundle.worked"));
+    }
+
 }
