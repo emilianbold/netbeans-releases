@@ -65,6 +65,11 @@ public class CssLexerTest extends TestBase {
                 CssTokenId.language());
     }
 
+    public void testImportsLexing() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/testImportsLexing.css.txt",
+                CssTokenId.language());
+    }
+
     //http://www.netbeans.org/issues/show_bug.cgi?id=161642
     public void testIssue161642() throws Exception {
         String input = "/* c */;";

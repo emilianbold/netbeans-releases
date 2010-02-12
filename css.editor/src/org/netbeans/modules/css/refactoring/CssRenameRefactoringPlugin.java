@@ -46,9 +46,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Position.Bias;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
-import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.indexing.CssFileModel;
 import org.netbeans.modules.css.indexing.CssFileModel.Entry;
@@ -62,6 +62,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
@@ -161,7 +162,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                 for (FileObject file : involvedFiles) {
                     try {
                         Source source;
-                        CloneableEditorSupport editor = Css.findCloneableEditorSupport(file);
+                        CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(file);
                         //prefer using editor
                         //XXX this approach doesn't match the dependencies graph
                         //which is made strictly upon the index data
@@ -203,7 +204,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                 //we do refactor only elements in the current css file, and even this is questionable if makes much sense
                 CssFileModel model = new CssFileModel(econtext.getParserResult());
                 List<Difference> diffs = new ArrayList<Difference>();
-                CloneableEditorSupport editor = Css.findCloneableEditorSupport(context.getFileObject());
+                CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(context.getFileObject());
                 for(Entry entry : model.getHtmlElements()) {
                     if(entry.isValidInSourceDocument() && elementImage.equals(entry.getName())) {
                         diffs.add(new Difference(Difference.Kind.CHANGE,
