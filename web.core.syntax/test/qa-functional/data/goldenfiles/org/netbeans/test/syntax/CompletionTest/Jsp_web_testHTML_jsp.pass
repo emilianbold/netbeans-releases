@@ -1,4 +1,4 @@
-[<h|, html, <html>, 128]
+[<h|, html, <html, 127]
 <h1 >
 <h2 >
 <h3 >
@@ -8,8 +8,8 @@
 <head >
 <hr >
 <html >
-End cursor position = 135
-[<a |, href, <a href="", 203]
+End cursor position = 133
+[<a |, href, <a href="", 202]
 accesskey
 charset
 class
@@ -40,12 +40,12 @@ tabindex
 target
 title
 type
-End cursor position = 213
-[<p dir="|, rtl, <p dir="rtl, 279]
+End cursor position = 212
+[<p dir="|, rtl, <p dir="rtl, 278]
 ltr
 rtl
-End cursor position = 291
-[&|, &quot;, &quot;, 348]
+End cursor position = 290
+[&|, &quot;, &quot;, 347]
 Æ &AElig;
 Á &Aacute;
 Â &Acirc;
@@ -298,8 +298,8 @@ End cursor position = 291
 ζ &zeta;
 ‍ &zwj;
 ‌ &zwnj;
-End cursor position = 355
-[<b|, body, <body>, 416]
+End cursor position = 354
+[<b|, body, <body, 414]
 <b >
 <base >
 <basefont >
@@ -309,7 +309,7 @@ End cursor position = 355
 <body >
 <br >
 <button >
-End cursor position = 423
-[<head><meta></|, /head, <head><meta></head>, 508]
+End cursor position = 420
+[<head><meta></|, /head, <head><meta></head>, 506]
 </head >
-End cursor position = 528
+End cursor position = 526
