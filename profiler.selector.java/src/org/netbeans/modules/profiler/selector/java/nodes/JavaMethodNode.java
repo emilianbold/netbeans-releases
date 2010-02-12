@@ -51,6 +51,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
+import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 import org.netbeans.modules.profiler.selector.spi.nodes.MethodNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.MethodsNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.Modifier;
@@ -80,7 +81,7 @@ public class JavaMethodNode extends MethodNode {
 
                 public void run(CompilationController controller)
                         throws Exception {
-                    signatureString[0] = JavacUtils.getVMMethodSignature(method, controller);
+                    signatureString[0] = SourceUtils.getVMMethodSignature(method, controller);
                 }
             }, true);
         } catch (IOException ex) {
