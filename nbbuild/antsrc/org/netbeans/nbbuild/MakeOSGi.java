@@ -108,7 +108,7 @@ public class MakeOSGi extends Task {
             throw new BuildException("missing destdir");
         }
         for (ResourceCollection rc : modules) {
-            Iterator it = rc.iterator();
+            Iterator<?> it = rc.iterator();
             while (it.hasNext()) {
                 File jar = ((FileResource) it.next()).getFile();
                 try {
@@ -387,7 +387,6 @@ public class MakeOSGi extends Task {
     }
 
     private Set<String> findImports(File module) throws Exception {
-        Map<String, Boolean> loadable = new HashMap<String, Boolean>();
         Map<String, byte[]> classfiles = new TreeMap<String, byte[]>();
         VerifyClassLinkage.read(module, classfiles, new HashSet<File>(), this, null);
         final Set<String> imports = new TreeSet<String>();
