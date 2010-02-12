@@ -62,6 +62,16 @@ public final class RubyPlatformProvider {
             Executors.newSingleThreadExecutor(ExecutionUtils.namedThreadFactory("Ruby Platform AutoDetection"));//NOI18N
     private final PropertyEvaluator evaluator;
 
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                EXECUTOR.shutdown();
+            }
+        });
+
+    }
+
     public RubyPlatformProvider(final PropertyEvaluator evaluator) {
         this.evaluator = evaluator;
     }
