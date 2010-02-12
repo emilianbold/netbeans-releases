@@ -52,7 +52,7 @@ public function tryExample() {
     try {
     echo inverse(5) . "\n";
 } catch (Exception $e) {
-    echo 'Caught exception: ',  $e->getMessage(), "\n";
+    echo 'Caught exception: '.  $e->getMessage(). "\n";
 }
 
 }

@@ -348,15 +348,15 @@ public final class CodeStyle {
 //    public boolean spaceWithinArrayInitBrackets() {
 //        return preferences.getBoolean(spaceWithinArrayInitBrackets, getDefaultAsBoolean(spaceWithinArrayInitBrackets));
 //    }
-//
-//    public boolean spaceBeforeComma() {
-//        return preferences.getBoolean(spaceBeforeComma, getDefaultAsBoolean(spaceBeforeComma));
-//    }
-//
-//    public boolean spaceAfterComma() {
-//        return preferences.getBoolean(spaceAfterComma, getDefaultAsBoolean(spaceAfterComma));
-//    }
-//
+
+    public boolean spaceBeforeComma() {
+        return preferences.getBoolean(spaceBeforeComma, getDefaultAsBoolean(spaceBeforeComma));
+    }
+
+    public boolean spaceAfterComma() {
+        return preferences.getBoolean(spaceAfterComma, getDefaultAsBoolean(spaceAfterComma));
+    }
+
 //    public boolean spaceBeforeSemi() {
 //        return preferences.getBoolean(spaceBeforeSemi, getDefaultAsBoolean(spaceBeforeSemi));
 //    }

@@ -143,6 +143,16 @@ class WSTransformer extends DefaultTreePathVisitor {
 		if (".".equals(text)) {
 		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundStringConcatOps());
 		}
+		else if (",".equals(text)) {
+		    int offset = ts.offset();
+		    replaceSpaceBeforeToken(ts, CodeStyle.get(context.document()).spaceBeforeComma(), null);
+		    ts.move(offset);
+		    if (ts.moveNext() && ts.moveNext()) {
+			LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
+			replaceSpaceBeforeToken(ts, CodeStyle.get(context.document()).spaceAfterComma(), null);
+		    }
+		    System.out.println("comma");
+		}
 		else if (ASSIGN_OPERATORS.contains(text)) {
 		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundAssignOps());
 		}

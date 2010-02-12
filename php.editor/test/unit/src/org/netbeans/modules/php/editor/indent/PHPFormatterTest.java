@@ -706,6 +706,34 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceAfterTypeCast02.php", options);
     }
 
+    public void testSpacesBeforeAfterComma01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceBeforeComma, false);
+	options.put(FmtOptions.spaceAfterComma, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterComma01.php", options);
+    }
+
+    public void testSpacesBeforeAfterComma02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceBeforeComma, false);
+	options.put(FmtOptions.spaceAfterComma, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterComma02.php", options);
+    }
+
+    public void testSpacesBeforeAfterComma03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceBeforeComma, true);
+	options.put(FmtOptions.spaceAfterComma, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterComma03.php", options);
+    }
+
+    public void testSpacesBeforeAfterComma04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceBeforeComma, true);
+	options.put(FmtOptions.spaceAfterComma, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterComma04.php", options);
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
