@@ -109,7 +109,7 @@ public abstract class Children extends Object {
     static final Logger LOG = Logger.getLogger(Children.class.getName());
     
     /** access to entries/nodes */
-    EntrySupport entrySupport;
+    private EntrySupport entrySupport;
 
     /** parent node for all nodes in this list (can be null) */
     Node parent;
@@ -144,12 +144,12 @@ public abstract class Children extends Object {
      */
     EntrySupport entrySupport() {
         synchronized (Children.class) {
-            if (entrySupport == null) {
+            if (getEntrySupport() == null) {
                 LOG.finer("Initializing entrySupport");
-                entrySupport = lazySupport ? new EntrySupport.Lazy(this) : new EntrySupport.Default(this);
+                setEntrySupport(lazySupport ? new EntrySupport.Lazy(this) : new EntrySupport.Default(this));
                 postInitializeEntrySupport();
             }
-            return entrySupport;
+            return getEntrySupport();
         }
     }
 
@@ -334,10 +334,12 @@ public abstract class Children extends Object {
     */
     @Override
     protected Object clone() throws CloneNotSupportedException {
-        Children ch = (Children) super.clone();
-        ch.parent = null;
-        ch.entrySupport = null;
-        return ch;
+        synchronized (Children.class) {
+            Children ch = (Children) super.clone();
+            ch.parent = null;
+            ch.setEntrySupport(null);
+            return ch;
+        }
     }
 
     /**
@@ -568,7 +570,22 @@ public abstract class Children extends Object {
      * they are not created
      */
     private Node[] testNodes() {
-        return entrySupport == null ? null : entrySupport().testNodes();
+        return getEntrySupport() == null ? null : entrySupport().testNodes();
+    }
+
+    /**
+     * @return the entrySupport
+     */
+    final EntrySupport getEntrySupport() {
+        return entrySupport;
+    }
+
+    /**
+     * @param entrySupport the entrySupport to set
+     */
+    final void setEntrySupport(EntrySupport entrySupport) {
+        assert Thread.holdsLock(Children.class);
+        this.entrySupport = entrySupport;
     }
 
 
@@ -1331,14 +1348,16 @@ public abstract class Children extends Object {
 
                 boolean init = entrySupport().isInitialized();
                 if (init && parent != null) {
-                    List<Node> snapshot = entrySupport.snapshot();
+                    List<Node> snapshot = getEntrySupport().snapshot();
                     if (snapshot.size() > 0) {
                         int[] idxs = getSnapshotIdxs(snapshot);
                         parent.fireSubNodesChangeIdx(false, idxs, null, Collections.<Node>emptyList(), snapshot);
                     }
                 }
 
-                entrySupport = null;
+                synchronized (Children.class) {
+                    setEntrySupport(null);
+                }
                 lazySupport = toLazy;
                 if (toLazy) {
                     nodesEntry = null;
