@@ -106,10 +106,12 @@ public class GuiRunLevel implements RunLevel {
         // -----------------------------------------------------------------------------------------------------
         // 8. Advance Policy
 
-        // set security manager
-        TopSecurityManager.install();
-        if (CLIOptions.isGui()) {
-        TopSecurityManager.makeSwingUseSpecialClipboard(Lookup.getDefault().lookup(org.openide.util.datatransfer.ExClipboard.class));
+        if (!Boolean.getBoolean("TopSecurityManager.disable")) {
+            // set security manager
+            TopSecurityManager.install();
+            if (CLIOptions.isGui()) {
+                TopSecurityManager.makeSwingUseSpecialClipboard(Lookup.getDefault().lookup(org.openide.util.datatransfer.ExClipboard.class));
+            }
         }
 
         // install java.net.Authenticator
