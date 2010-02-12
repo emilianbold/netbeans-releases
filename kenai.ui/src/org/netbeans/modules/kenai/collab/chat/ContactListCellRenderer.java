@@ -137,6 +137,8 @@ public class ContactListCellRenderer extends javax.swing.JPanel implements ListC
             buddyLabel.setForeground(list.getSelectionForeground());
             messageLabel.setBackground(list.getSelectionBackground());
             messageLabel.setForeground(list.getSelectionForeground());
+            kenaiName.setBackground(list.getSelectionBackground());
+            kenaiName.setForeground(list.getSelectionForeground());
         } else {
             this.setBackground(list.getBackground());
             this.setForeground(list.getForeground());
@@ -144,6 +146,8 @@ public class ContactListCellRenderer extends javax.swing.JPanel implements ListC
             buddyLabel.setForeground(list.getForeground());
             messageLabel.setBackground(list.getBackground());
             messageLabel.setForeground(list.getForeground());
+            kenaiName.setBackground(list.getBackground());
+            kenaiName.setForeground(Color.gray);
         }
         this.setPreferredSize(new Dimension(10, getPreferredSize().height));
         return this;
