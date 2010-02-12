@@ -45,7 +45,6 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.editor.Css;
 import org.openide.filesystems.FileObject;
 
 
@@ -66,7 +65,7 @@ public class CssElement implements ElementHandle {
     }
 
     public String getMimeType() {
-        return Css.CSS_MIME_TYPE;
+        return CssLanguage.CSS_MIME_TYPE;
     }
 
     public String getIn() {

@@ -48,7 +48,7 @@ import java.util.Set;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
 import org.openide.util.Lookup;
 
-public class CustomizerRootNodeProvider {
+public final class CustomizerRootNodeProvider {
 
     private static CustomizerRootNodeProvider instance = null;
 
@@ -59,42 +59,21 @@ public class CustomizerRootNodeProvider {
         return instance;
     }
 
-    public List<CustomizerNode> getCustomizerNodes(boolean advanced) {
-        ArrayList<CustomizerNode> ret = new ArrayList<CustomizerNode>();
-        List<CustomizerNode> nodes = getCustomizerNodes();
-        for (CustomizerNode n : nodes) {
-            if (n != null && n.advanced == advanced) {
-                ret.add(n);
-            }
-        }
-        return ret;
-    }
-
-    public synchronized List<CustomizerNode> getCustomizerNodes() {
+    public List<CustomizerNode> getCustomizerNodes(Lookup lookup) {
         ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
 
         // Add nodes from providers register via services
         for (CustomizerNodeProvider provider : getCustomizerNodeProviders()) {
-            list.add(provider.factoryCreate());
+            list.add(provider.factoryCreate(lookup));
         }
         return list;
     }
 
-    public CustomizerNode getCustomizerNode(String id) {
-        List<CustomizerNode> nodes = getCustomizerNodes();
-        for (CustomizerNode n : nodes) {
-            if (n != null && n.name.equals(id)) {
-                return n;
-            }
-        }
-        return null;
-    }
-
-    public List<CustomizerNode> getCustomizerNodes(String id) {
+    public List<CustomizerNode> getCustomizerNodes(String id, Lookup lookup) {
         ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
-        List<CustomizerNode> nodes = getCustomizerNodes();
+        List<CustomizerNode> nodes = getCustomizerNodes(lookup);
         for (CustomizerNode n : nodes) {
-            if (n != null && n.name.equals(id)) {
+            if (n != null && n.getName().equals(id)) {
                 list.add(n);
             }
         }

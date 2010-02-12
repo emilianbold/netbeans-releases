@@ -46,7 +46,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.css.gsf.CssLanguage;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CssParserConstants;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
@@ -60,6 +60,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -80,7 +81,7 @@ public class CssFileModel {
 
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
-                ResultIterator cssRi = Css.getResultIterator(resultIterator, Css.CSS_MIME_TYPE);
+                ResultIterator cssRi = WebUtils.getResultIterator(resultIterator, CssLanguage.CSS_MIME_TYPE);
                 if (cssRi != null) {
                     parserResult = (CssParserResult)cssRi.getParserResult();
                     init();
@@ -241,8 +242,8 @@ public class CssFileModel {
             Token token = SimpleNodeUtil.getNodeToken(node, CssParserConstants.STRING);
             if (token != null) {
                 String image = token.image;
-                boolean quoted = SimpleNodeUtil.isValueQuoted(image);
-                return createEntry(SimpleNodeUtil.unquotedValue(image),
+                boolean quoted = WebUtils.isValueQuoted(image);
+                return createEntry(WebUtils.unquotedValue(image),
                         new OffsetRange(token.offset + (quoted ? 1 : 0),
                         token.offset + image.length() - (quoted ? 1 : 0)));
             }
@@ -254,11 +255,11 @@ public class CssFileModel {
                 if (m.matches()) {
                     int groupIndex = 1;
                     String content = m.group(groupIndex);
-                    boolean quoted = SimpleNodeUtil.isValueQuoted(content);
-                    int from = m.start(groupIndex);
-                    int to = m.end(groupIndex);
-                    return createEntry(SimpleNodeUtil.unquotedValue(content),
-                            new OffsetRange(from + (quoted ? 1 : 0), to - (quoted ? 1 : 0)));
+                    boolean quoted = WebUtils.isValueQuoted(content);
+                    int from = token.offset + m.start(groupIndex) + (quoted ? 1 : 0);
+                    int to = token.offset + m.end(groupIndex) - (quoted ? 1 : 0);
+                    return createEntry(WebUtils.unquotedValue(content),
+                            new OffsetRange(from, to));
                 }
             }
 
