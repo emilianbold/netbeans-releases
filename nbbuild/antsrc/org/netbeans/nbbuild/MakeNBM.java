@@ -58,6 +58,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -66,8 +67,12 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.Pack200;
+import java.util.jar.Pack200.Packer;
 import java.util.zip.CRC32;
+import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -323,6 +328,9 @@ public class MakeNBM extends Task {
     private Attributes englishAttr = null;
     private Path updaterJar;
     private FileSet executablesSet;
+    private boolean usePack200;
+    private String pack200excludes;
+    private final static Packer packer = Pack200.newPacker();
 
     /** Try to find and create localized info.xml files */
     public void setLocales(String s) {
@@ -344,6 +352,14 @@ public class MakeNBM extends Task {
     /** Name of resulting NBM file. */
     public void setFile(File file) {
         this.file = file;
+    }
+
+    public void setUsePack200(boolean usePack200) {
+        this.usePack200 = usePack200;
+    }
+
+    public void setPack200Excludes(String pack200excludes) {
+        this.pack200excludes = pack200excludes;
     }
 
     /** List of executable files in NBM concatinated by ${line.separator}. */
@@ -648,8 +664,66 @@ public class MakeNBM extends Task {
  	ZipFileSet fs = new ZipFileSet();
         List <String> moduleFiles = new ArrayList <String>();
  	fs.setDir( productDir );
- 	for (int i=0; i < files.length; i++) {
- 	    fs.createInclude().setName( files[i] );
+        String [] filesForPackaging = null;
+        if(usePack200 && pack200excludes!=null && !pack200excludes.equals("")) {
+            FileSet pack200Files = new FileSet();
+            pack200Files.setDir(productDir);
+            pack200Files.setExcludes(pack200excludes);
+            pack200Files.setProject(getProject());
+            for (int i=0; i < files.length; i++) {
+                  pack200Files.createInclude().setName( files[i] );
+            }
+            DirectoryScanner ds = pack200Files.getDirectoryScanner();
+            ds.scan();
+            filesForPackaging = ds.getIncludedFiles();            
+        }
+
+        List<File> packedFiles = new ArrayList<File>();
+        for (int i = 0; i < files.length; i++) {
+            if (usePack200) {
+                File sourceFile = new File(productDir, files[i]);
+                if (sourceFile.isFile() && sourceFile.getName().endsWith(".jar")) {
+
+                    boolean doPackage = true;
+                    if (filesForPackaging != null) {
+                        doPackage = false;
+                        for (String f : filesForPackaging) {
+                            if (new File(productDir, f).equals(sourceFile)) {
+                                doPackage = true;
+                                break;
+                            }
+                        }
+                    }
+                    if(doPackage) {
+                        //if both <filename>.jar and <filename>.jad exist - skip it
+                        //if both <filename>.jar and <filename>.jar.pack.gz exist - skip it                        
+                        for (String f : files) {
+                            if(f.equals(files[i].substring(0, files[i].lastIndexOf(".jar")) + ".jad") ||
+                                    f.equals(files[i] + ".pack.gz")) {
+                                doPackage = false;
+                                break;
+                            }
+                        }
+
+                    }
+                    if (doPackage) {
+                        File targetFile = new File(productDir, files[i] + ".pack.gz");
+                        try {
+                            if (pack200(sourceFile, targetFile)) {
+                                packedFiles.add(targetFile);
+                                files[i] = files[i] + ".pack.gz";
+                            }
+                        } catch (IOException e) {
+                            if(targetFile.exists()) {
+                                targetFile.delete();
+                            }
+                            log("Cannot pack file " + sourceFile, e, Project.MSG_WARN);
+                        }
+                    }
+                }
+            }
+
+            fs.createInclude().setName(files[i]);
             moduleFiles.add(files[i]);
         }
  	fs.setPrefix("netbeans/");
@@ -715,6 +789,9 @@ public class MakeNBM extends Task {
 	jar.setLocation(getLocation());
 	jar.init ();
 	jar.execute ();
+        for(File f : packedFiles) {
+            f.delete();
+        }
 
 	// Print messages if we overrode anything. //
         if (nbm.lastModified() != jarModified) {
@@ -765,6 +842,51 @@ public class MakeNBM extends Task {
             }
 	}
     }
+
+    private boolean isSigned(final JarFile jar) throws IOException {
+        Enumeration<JarEntry> entries = jar.entries();
+        boolean signatureInfoPresent = false;
+        boolean signatureFilePresent = false;
+        while (entries.hasMoreElements()) {
+            String entryName = entries.nextElement().getName();
+            if (entryName.startsWith("META-INF/")) {
+                if (entryName.endsWith(".RSA") || entryName.endsWith(".DSA")) {
+                    signatureFilePresent = true;
+                    if (signatureInfoPresent) {
+                        break;
+                    }
+                } else if (entryName.endsWith(".SF")) {
+                    signatureInfoPresent = true;
+                    if (signatureFilePresent) {
+                        break;
+                    }
+                }
+            }
+        }
+        return signatureFilePresent && signatureInfoPresent;
+    }
+
+   private boolean pack200(final File sourceFile, final File targetFile) throws IOException {
+       JarFile jarFile = new JarFile(sourceFile);
+       try {
+           if (isSigned(jarFile)) {
+               return false;
+           }
+           FileOutputStream fos = new FileOutputStream(targetFile);
+           try {
+               OutputStream outputStream = new GZIPOutputStream(fos);
+               packer.pack(jarFile, outputStream);
+               outputStream.close();
+               return true;
+           } finally {
+               fos.close();
+               targetFile.setLastModified(sourceFile.lastModified());
+           }
+       } finally {
+           jarFile.close();
+       }
+    }
+
 
     private Document createInfoXml(final Attributes attr) throws BuildException {
         DOMImplementation domimpl;
