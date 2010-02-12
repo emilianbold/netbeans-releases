@@ -79,6 +79,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.core.syntax.completion.api.ElCompletionItem;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache.JsfBeansProvider;
@@ -211,7 +212,7 @@ public class JsfElExpressionTest extends TestBase {
 
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
-                HtmlParserResult result = (HtmlParserResult) Utils.getResultIterator(resultIterator, "text/html").getParserResult();
+                HtmlParserResult result = (HtmlParserResult) WebUtils.getResultIterator(resultIterator, "text/html").getParserResult();
 
                 //get declared variabled model
                 _jsfVarModel[0] = JsfVariablesModel.getModel(result);
@@ -281,7 +282,7 @@ public class JsfElExpressionTest extends TestBase {
 
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
-                HtmlParserResult result = (HtmlParserResult) Utils.getResultIterator(resultIterator, "text/html").getParserResult();
+                HtmlParserResult result = (HtmlParserResult) WebUtils.getResultIterator(resultIterator, "text/html").getParserResult();
 
                 //get declared variabled model
                 _jsfVarModel[0] = JsfVariablesModel.getModel(result);
@@ -335,7 +336,7 @@ public class JsfElExpressionTest extends TestBase {
 
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
-                HtmlParserResult result = (HtmlParserResult) Utils.getResultIterator(resultIterator, "text/html").getParserResult();
+                HtmlParserResult result = (HtmlParserResult) WebUtils.getResultIterator(resultIterator, "text/html").getParserResult();
 
                 //get declared variabled model
                 _jsfVarModel[0] = JsfVariablesModel.getModel(result);
@@ -429,7 +430,7 @@ public class JsfElExpressionTest extends TestBase {
 
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
-                HtmlParserResult result = (HtmlParserResult) Utils.getResultIterator(resultIterator, "text/html").getParserResult();
+                HtmlParserResult result = (HtmlParserResult) WebUtils.getResultIterator(resultIterator, "text/html").getParserResult();
 
                 //enable EL
                 ((JsfHtmlExtension) getHtmlExtension(file)).checkELEnabled(result);
