@@ -104,6 +104,7 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAThread;
@@ -206,11 +207,19 @@ public class EditorContextImpl extends EditorContext {
                     "Show Source: Have no line for URL = "+url+", line number = "+lineNumber);
             return null;
         }
+        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
+        boolean reuseEditorTabs = p.getBoolean("ReuseEditorTabs", true);
         if ("true".equalsIgnoreCase(fronting) || Utilities.isWindows()) {
-            l.show (ShowOpenType.REUSE, ShowVisibilityType.FOCUS);
+            if (reuseEditorTabs) {
+                l.show (ShowOpenType.REUSE, ShowVisibilityType.FOCUS);
+            }
             l.show (ShowOpenType.OPEN, ShowVisibilityType.FRONT); //FIX 47825
         } else {
-            l.show (ShowOpenType.REUSE, ShowVisibilityType.FOCUS);
+            if (reuseEditorTabs) {
+                l.show (ShowOpenType.REUSE, ShowVisibilityType.FOCUS);
+            } else {
+                l.show (ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+            }
         }
         return l;
     }
