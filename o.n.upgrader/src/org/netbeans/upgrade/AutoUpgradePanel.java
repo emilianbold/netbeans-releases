@@ -95,6 +95,8 @@ final class AutoUpgradePanel extends JPanel {
 
         txtVersions = new javax.swing.JTextArea();
 
+        setPreferredSize(new java.awt.Dimension(550, 60));
+
         txtVersions.setBackground(getBackground());
         txtVersions.setColumns(50);
         txtVersions.setEditable(false);
