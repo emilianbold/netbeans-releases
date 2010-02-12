@@ -287,6 +287,8 @@ public class HgCommand {
     private static final String HG_ABORT_BACKOUT_MERGE_CSET_ERR = "abort: cannot back out a merge changeset without --parent"; // NOI18N"
     private static final String HG_COMMIT_AFTER_MERGE_ERR = "abort: cannot partially commit a merge (do not specify files or patterns)"; // NOI18N"
     private static final String HG_ADDING = "adding";                   //NOI18N
+    private static final String HG_WARNING_PERFORMANCE_FILES_OVER = ": files over"; //NOI18N
+    private static final String HG_WARNING_PERFORMANCE_CAUSE_PROBLEMS = "cause memory and performance problems"; //NOI18N
 
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
@@ -1963,9 +1965,11 @@ public class HgCommand {
             List<String> command = new LinkedList<String>(basicCommand);
             command.addAll(attributes);
             List<String> list = exec(command);
-            if (!list.isEmpty() && !isErrorAlreadyTracked(list.get(0))
-                     && !isAddingLine(list.get(0))) {
-                handleError(command, list, list.get(0), logger);
+            if (!list.isEmpty() && !isErrorAlreadyTracked(list.get(0)) && !isAddingLine(list.get(0))) {
+                if (getFilesWithPerformanceWarning(list).isEmpty()) {
+                    // XXX we could notify the user about the performance warning and abort the command
+                    handleError(command, list, list.get(0), logger);
+                }
             }
         }
     }
@@ -3199,6 +3203,17 @@ public class HgCommand {
     
     private static boolean isAddingLine (String msg) {
         return msg.toLowerCase().indexOf(HG_ADDING) > -1;
+    }
+
+    private static List<String> getFilesWithPerformanceWarning (List<String> list) {
+        List<String> fileList = new LinkedList<String>();
+        for (String line : list) {
+            int pos;
+            if ((pos = line.indexOf(HG_WARNING_PERFORMANCE_FILES_OVER)) > 0 && line.contains(HG_WARNING_PERFORMANCE_CAUSE_PROBLEMS)) {
+                fileList.add(line.substring(0, pos));
+            }
+        }
+        return fileList;
     }
 
     public static void createConflictFile(String path) {
