@@ -45,7 +45,6 @@ import org.netbeans.spi.java.classpath.support.PathResourceBase;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 
 import java.net.URL;
-import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -66,14 +65,12 @@ public final class SimplePathResourceImplementation  extends PathResourceBase {
         if (root == null) {
             throw new IllegalArgumentException("Root cannot be null." + context);
         }
-        // FU.iAF is a bit slow, so don't call it except when assertions are on:
-        boolean assertions = false;
-        assert assertions = true;
-        if (assertions && FileUtil.isArchiveFile(root)) {
-            throw new IllegalArgumentException(root + " is not a valid classpath entry. Use a jar: URL." + context);
+        String rootS = root.toString();
+        if (rootS.matches("file:.+[.]jar/?")) {
+            throw new IllegalArgumentException(rootS + " is not a valid classpath entry; use a jar-protocol URL." + context);
         }
-        if (!root.toExternalForm().endsWith("/")) {
-            throw new IllegalArgumentException(root + " must end with ''/''." + context);
+        if (!rootS.endsWith("/")) {
+            throw new IllegalArgumentException(rootS + " is not a valid classpath entry; it must end with a slash." + context);
         }
     }
 

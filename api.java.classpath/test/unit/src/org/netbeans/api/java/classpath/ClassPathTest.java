@@ -717,6 +717,10 @@ public class ClassPathTest extends NbTestCase {
             ClassPathSupport.createClassPath(new URL("file:/some/dir/without/final/slash"));
             fail();
         } catch (IllegalArgumentException x) {/* right */}
+        try {
+            ClassPathSupport.createClassPath(new URL("file:/some/jar/without/correct/protocol.jar/"));
+            fail();
+        } catch (IllegalArgumentException x) {/* right */}
     }
 
 }
