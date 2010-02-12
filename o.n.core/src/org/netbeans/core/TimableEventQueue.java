@@ -55,10 +55,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.netbeans.core.startup.Main;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -108,7 +108,10 @@ implements Runnable {
         try {
             Mutex.EVENT.writeAccess (new Mutex.Action<Void>() {
                 public Void run() {
-                    Thread.currentThread().setContextClassLoader(Main.getModuleSystem().getManager().getClassLoader());
+                    ClassLoader scl = Lookup.getDefault().lookup(ClassLoader.class);
+                    if (scl != null) {
+                        Thread.currentThread().setContextClassLoader(scl);
+                    }
                     Toolkit.getDefaultToolkit().getSystemEventQueue().push(new TimableEventQueue());
                     LOG.fine("Initialization done");
                     return null;
