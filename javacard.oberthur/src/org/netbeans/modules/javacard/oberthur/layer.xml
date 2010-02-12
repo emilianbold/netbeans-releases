@@ -4,7 +4,7 @@
     <folder name="Actions">
         <folder name="JavaCard3">
             <file name="org-netbeans-modules-javacard-oberthur-RefreshStatusAction.instance">
-                <attr name="position" intvalue="2002"/>
+                <attr name="position" intvalue="2001"/>
             </file>
         </folder>
     </folder>
