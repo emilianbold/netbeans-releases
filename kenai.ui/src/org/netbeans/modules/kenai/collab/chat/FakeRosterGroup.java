@@ -66,7 +66,7 @@ public class FakeRosterGroup implements Comparable<FakeRosterGroup> {
     }
 
     public String getDisplayName() {
-        return getKenaiProject().getDisplayName() + " @" + StringUtils.parseServer(muc.getRoom());
+        return getKenaiProject().getDisplayName();
     }
 
     public String getJid() {
