@@ -87,21 +87,6 @@ final class MainImpl extends Object {
         m.get().invoke(null, new Object[] {args});
     }
 
-    /** Returns string describing usage of the system. Does that by talking to
-     * all registered handlers and asking them to show their usage.
-     *
-     * @return the usage string for the system
-     */
-    public static String usage () throws Exception {
-        java.io.ByteArrayOutputStream os = new java.io.ByteArrayOutputStream ();
-        java.io.ByteArrayOutputStream err = new java.io.ByteArrayOutputStream ();
-
-        String[] newArgs = { "--help" };
-
-        execute(newArgs, System.in, os, err, null);
-        return new String (os.toByteArray ());
-    }
-
     /** Constructs the correct ClassLoader, finds main method to execute
      * and invokes all registered CLIHandlers.
      *
