@@ -70,9 +70,18 @@ public class SingletonLookupTest extends NbTestCase {
 
     public void testId() {
         Object orig = new Object();
+        Lookup l = new SingletonLookup(orig, "id");
+        doTest(l, orig);
+    }
+    public void testDefaultId() {
+        Object orig = "id";
+        Lookup l = new SingletonLookup(orig);
+        doTest(l, orig);
+    }
+
+    private void doTest(Lookup l, Object orig) {
         Collection allInstances;
 
-        Lookup l = new SingletonLookup(orig, "id");
 
         allInstances = l.lookup(new Lookup.Template<Object>(Object.class, null, null)).allInstances();
         assertNotNull(allInstances);
@@ -90,15 +99,29 @@ public class SingletonLookupTest extends NbTestCase {
         assertNotNull(allInstances);
         assertTrue(allInstances.isEmpty());
 
-        allInstances = l.lookup(new Lookup.Template<String>(String.class, null, null)).allInstances();
+        if (!(orig instanceof String)) {
+            allInstances = l.lookup(new Lookup.Template<String>(String.class, null, null)).allInstances();
+            assertNotNull(allInstances);
+            assertTrue(allInstances.isEmpty());
+
+            allInstances = l.lookup(new Lookup.Template<String>(String.class, "id", null)).allInstances();
+            assertNotNull(allInstances);
+            assertTrue(allInstances.isEmpty());
+
+            allInstances = l.lookup(new Lookup.Template<String>(String.class, "not", null)).allInstances();
+            assertNotNull(allInstances);
+            assertTrue(allInstances.isEmpty());
+        }
+        
+        allInstances = l.lookup(new Lookup.Template<Number>(Number.class, null, null)).allInstances();
         assertNotNull(allInstances);
         assertTrue(allInstances.isEmpty());
 
-        allInstances = l.lookup(new Lookup.Template<String>(String.class, "id", null)).allInstances();
+        allInstances = l.lookup(new Lookup.Template<Number>(Number.class, "id", null)).allInstances();
         assertNotNull(allInstances);
         assertTrue(allInstances.isEmpty());
 
-        allInstances = l.lookup(new Lookup.Template<String>(String.class, "not", null)).allInstances();
+        allInstances = l.lookup(new Lookup.Template<Number>(Number.class, "not", null)).allInstances();
         assertNotNull(allInstances);
         assertTrue(allInstances.isEmpty());
     }

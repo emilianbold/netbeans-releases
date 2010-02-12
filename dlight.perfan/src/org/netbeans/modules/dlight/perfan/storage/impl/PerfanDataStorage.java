@@ -276,4 +276,17 @@ public final class PerfanDataStorage implements PersistentDataStorage {
         // Adding data is not supported for er_print
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
+
+    @Override
+    public void syncAddData(String tableName, List<DataRow> data) {
+        throw new UnsupportedOperationException("Not supported yet.");// NOI18N
+    }
+    
+
+    @Override
+    public void loadSchema() {
+        
+    }
+
+
 }

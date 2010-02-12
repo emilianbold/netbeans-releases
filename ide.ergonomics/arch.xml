@@ -631,7 +631,7 @@ Microsystems, Inc. All Rights Reserved.
       </api>
     </li>
     <li>
-        <api name="org.netbeans.modules.ide.ergonomics.noparse" category="private" group="property" type="export">
+        <api name="org.netbeans.modules.ide.ergonomics.noparse" category="private" group="systemproperty" type="export">
         To measure how much overhead ergonomics adds to regular start, one
         can disable XML parsing and by setting this property to true:
         -Dorg.netbeans.modules.ide.ergonomics.noparse=true

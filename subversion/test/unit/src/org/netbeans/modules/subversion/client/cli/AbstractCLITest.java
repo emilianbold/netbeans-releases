@@ -55,7 +55,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.subversion.AbstractSvnTest;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;

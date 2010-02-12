@@ -122,10 +122,10 @@ static void serve_connection(void* data) {
         if (pkg->kind == pkg_written) {
             if (fd == NULL) {
                 trace("File %s is unknown - nothing to uncontrol\n", filename);
-            } else if (fd->state == UNCONTROLLED) {
-                trace("File %s already uncontrolled\n", filename);
+            } else if (fd->state == MODIFIED) {
+                trace("File %s already reported as modified\n", filename);
             } else {
-                fd->state = UNCONTROLLED;
+                fd->state = MODIFIED;
                 trace("File %s sending uncontrol request to LC\n", filename);
                 // TODO: this is a very primitive sync!
                 pthread_mutex_lock(&mutex);
@@ -158,8 +158,9 @@ static void serve_connection(void* data) {
                         break;
                     case COPIED:    // fall through
                     case UNCONTROLLED:
+                    case MODIFIED:
                         response[0] = response_ok;
-                        trace("File %s state %c - uncontrolled/copied, replying %s\n", filename, (char) fd->state,  response);
+                        trace("File %s state %c - uncontrolled/modified/copied, replying %s\n", filename, (char) fd->state,  response);
                         break;
                     case ERROR:
                         response[0] = response_failure;
@@ -284,6 +285,7 @@ static enum file_state char_to_state(char c) {
         case COPIED:
         case ERROR:
         case UNCONTROLLED:
+        case MODIFIED:
         case DIRECTORY:
             return c;
         default:
@@ -402,6 +404,8 @@ static int init_files() {
                         list = tail;
                     }
                 }
+            } else if (state = UNCONTROLLED) {
+                // nothing
             } else {
                 report_error("prodocol error: %s\n", buffer);
             }
@@ -511,7 +515,8 @@ int main(int argc, char* argv[]) {
         pthread_create(&thread, NULL /*&attr*/, (void *(*) (void *)) serve_connection, conn_data);
         pthread_detach(thread);
     }
-
-    close(sd);
-    trace_shutdown();
+    // the code below is unreachable, so I commented it out
+    // TODO: (?) more accurate shutdon?
+    // close(sd);
+    // trace_shutdown();
 }

@@ -282,6 +282,11 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         try {
                             // Most lines are fully-qualified class names.
                             inst = Class.forName(line, false, loader);
+                        } catch (LinkageError err) {
+                            if (remove) {
+                                continue;
+                            }
+                            throw new ClassNotFoundException(err.getMessage(), err);
                         } catch (ClassNotFoundException cnfe) {
                             if (remove) {
                                 // if we are removing somthing and the something

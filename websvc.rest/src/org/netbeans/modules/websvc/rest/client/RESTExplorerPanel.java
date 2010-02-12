@@ -95,7 +95,7 @@ public class RESTExplorerPanel extends JPanel implements ExplorerManager.Provide
 
         setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLblTreeView, NbBundle.getMessage(RESTExplorerPanel.class, "LBL_RESTResources")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLblTreeView, NbBundle.getMessage(RESTExplorerPanel.class, "LBL_SelectRESTResource")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;

@@ -64,6 +64,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
@@ -72,7 +73,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
@@ -90,7 +90,6 @@ import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -126,7 +125,8 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         wiz = wizardDescriptor;
         Project project = Templates.getProject(wiz);
         Sources sources = ProjectUtils.getSources(project);
-        sourceGroups = SourceGroups.getJavaSourceGroups(project);
+        sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+
         ejbPanel = new EntityWizardDescriptor();
         WizardDescriptor.Panel targetChooserPanel = null;
         // Need to check if there are any Java Source group. See issue 139851
@@ -361,12 +361,6 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
             }
             return super.isValid();
         }
-
-        @Override
-        public boolean isFinishPanel() {
-            return isValid();
-        }
-
 
     }
 }

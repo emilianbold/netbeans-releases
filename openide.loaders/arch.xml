@@ -563,13 +563,13 @@ for more information about this.
         Boolean.TRUE means to dettach from shared impl of parser, it is static!?
     </api>
     
-    <api type="export" group="property" name="org.openide.loaders.FolderList.refresh.interval" category="private" > 
+    <api type="export" group="systemproperty" name="org.openide.loaders.FolderList.refresh.interval" category="private" > 
         The value of type integer determines the number of milliseconds
         between successive refreshes of contents of a folder. Can be used to tweak
         performance of folder refresh. Defaults to 10.
     </api>
     
-    <api group="property" category="friend" name="netbeans.dataobject.insecure.operation" type="export" >
+    <api group="systemproperty" category="friend" name="netbeans.dataobject.insecure.operation" type="export" >
         If set to <b>true</b>, the <code>DataObject.copy, move, createFromTemplate</code> 
         are executed in insecure way. That means that other threads can access the
         products of such operation before it finishes. This is a friend contract

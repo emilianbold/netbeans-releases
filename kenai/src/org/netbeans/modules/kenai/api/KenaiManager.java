@@ -116,6 +116,7 @@ public final class KenaiManager {
      */
     public synchronized void removeKenai(Kenai instance) {
         initInstances();
+        instance.logout();
         instances.remove(instance.getUrl().toString());
         store();
         propertyChangeSupport.firePropertyChange(PROP_INSTANCES, instance, null);

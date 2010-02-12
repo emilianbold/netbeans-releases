@@ -68,10 +68,12 @@ public final class PersistenceClientEntitySelection implements WizardDescriptor.
         this.wizardDescriptor = wizardDescriptor;
     }
     
+    @Override
     public boolean isFinishPanel() {
         return false;
     }
     
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new PersistenceClientEntitySelectionVisual(panelName, wizardDescriptor);
@@ -80,10 +82,12 @@ public final class PersistenceClientEntitySelection implements WizardDescriptor.
         return component;
     }
     
+    @Override
     public HelpCtx getHelp() {
         return helpCtx;
     }
     
+    @Override
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
@@ -91,9 +95,11 @@ public final class PersistenceClientEntitySelection implements WizardDescriptor.
     
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     
+    @Override
     public final void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
@@ -101,6 +107,7 @@ public final class PersistenceClientEntitySelection implements WizardDescriptor.
         changeSupport.fireChange();
     }
     
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
@@ -113,13 +120,15 @@ public final class PersistenceClientEntitySelection implements WizardDescriptor.
         }
     }
     
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
-        d.putProperty(WizardProperties.PERSISTENCE_UNIT, component.getPersistenceUnit());
+        d.putProperty(WizardProperties.CREATE_PERSISTENCE_UNIT, component.getCreatePersistenceUnit());
         ((WizardDescriptor) d).putProperty("NewProjectWizard_Title", null); // NOI18N
     }
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireChangeEvent(e);
     }

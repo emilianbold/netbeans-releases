@@ -57,7 +57,7 @@ import org.openide.awt.StatusDisplayer;
 
 // we depend on NetBeans editor stuff
 import org.netbeans.editor.*;
-import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
+import org.netbeans.modules.csl.api.ToggleBlockCommentAction;
 import org.netbeans.modules.editor.*;
 
 import org.netbeans.modules.xml.text.XmlCommentHandler;

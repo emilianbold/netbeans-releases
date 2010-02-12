@@ -69,7 +69,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -79,18 +79,16 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.DebuggerCustomizerNode;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.DebuggerChooserNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
-import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
+import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -393,6 +391,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     // End of variables declaration//GEN-END:variables
 
     // HelpCtx.Provider implementation -----------------------------------------
+    @Override
     public HelpCtx getHelpCtx() {
         if (currentConfigurationNode != null) {
             return HelpCtx.findHelp(currentConfigurationNode);
@@ -453,6 +452,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             }
         }
 
+        @Override
         public ExplorerManager getExplorerManager() {
             return manager;
         }
@@ -507,6 +507,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
          */
         private class ManagerChangeListener implements PropertyChangeListener {
 
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getSource() != manager) {
                     return;
@@ -739,7 +740,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 //                advancedNodes.add(node);
 //            }
 //        }
-        if (descriptions.size() == 0) {
+        if (descriptions.isEmpty()) {
             return null;
         }
         return new CustomizerNode(
@@ -755,7 +756,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     private Node createRootNodeItem(Project project, Item item) {
         CustomizerNode descriptions[];
 
-        int tool = -1;
+        PredefinedToolKind tool = PredefinedToolKind.UnknownTool;
         int compilerSet = -1;
         boolean isCompileConfiguration = ((MakeConfiguration) selectedConfigurations[0]).isCompileConfiguration();
 
@@ -766,39 +767,39 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             if (itemConfiguration == null) {
                 continue;
             }
-            int tool2 = itemConfiguration.getTool();
-            if (tool == -1 && compilerSet == -1) {
+            PredefinedToolKind tool2 = itemConfiguration.getTool();
+            if (tool == PredefinedToolKind.UnknownTool && compilerSet == -1) {
                 tool = tool2;
                 compilerSet = compilerSet2;
             }
             if (tool != tool2 || compilerSet != compilerSet2) {
-                tool = -1;
+                tool = PredefinedToolKind.UnknownTool;
                 break;
             }
 
             if ((isCompileConfiguration && !makeConfiguration.isCompileConfiguration()) || (!isCompileConfiguration && makeConfiguration.isCompileConfiguration())) {
-                tool = -1;
+                tool = PredefinedToolKind.UnknownTool;
                 break;
             }
         }
 
         int count = 1;
-        if (tool >= 0) {
+        if (tool != PredefinedToolKind.UnknownTool) {
             count++;
         }
         descriptions = new CustomizerNode[count];
         int index = 0;
         descriptions[index++] = createGeneralItemDescription(project, item);
-        if (tool >= 0) {
-            if (tool == Tool.CCompiler) {
+        if (tool != PredefinedToolKind.UnknownTool) {
+            if (tool == PredefinedToolKind.CCompiler) {
                 descriptions[index++] = createCCompilerDescription(project, compilerSet, item, folder, isCompileConfiguration);
-            } else if (tool == Tool.CCCompiler) {
+            } else if (tool == PredefinedToolKind.CCCompiler) {
                 descriptions[index++] = createCCCompilerDescription(project, compilerSet, item, folder, isCompileConfiguration);
-            } else if (tool == Tool.FortranCompiler) {
+            } else if (tool == PredefinedToolKind.FortranCompiler) {
                 descriptions[index++] = createFortranCompilerDescription(project, compilerSet, item, isCompileConfiguration);
-            } else if (tool == Tool.Assembler) {
+            } else if (tool == PredefinedToolKind.Assembler) {
                 descriptions[index++] = createAssemblerDescription(project, compilerSet, item, isCompileConfiguration);
-            } else if (tool == Tool.CustomTool) {
+            } else if (tool == PredefinedToolKind.CustomTool) {
                 descriptions[index++] = createCustomBuildItemDescription(project, item);
             } else {
                 descriptions[index++] = createCustomBuildItemDescription(project, item); // FIXUP
@@ -1022,27 +1023,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
     }
 
-    private class DebugCustomizerNode extends CustomizerNode {
-
-        public DebugCustomizerNode(String name, String displayName, CustomizerNode[] children) {
-            super(name, displayName, children);
-        }
-
-        @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            Sheet sheet = new Sheet();
-
-            Sheet.Set set = new Sheet.Set();
-            set.setName("DebuggerChooser"); // NOI18N
-            set.setDisplayName(getString("LBL_DebuggerChooser")); // NOI18N
-            set.setShortDescription(getString("HINT_DebuggerChooser")); // NOI18N
-            set.put(new DebuggerChooserNodeProp(((MakeConfiguration) configuration).getDebuggerChooserConfiguration(),
-                    getString("LBL_DebuggerChooser"), getString("HINT_DebuggerChooser"))); // NOI18N
-            sheet.put(set);
-            return sheet;
-        }
-    }
-
     // Make Node
     private CustomizerNode createMakefileDescription(Project project) {
         return new MakefileCustomizerNode(
@@ -1199,10 +1179,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     // C Compiler Node
     private CustomizerNode createCCompilerDescription(Project project, int compilerSetIdx,
             Item item, Folder folder, boolean isCompilerConfiguration) {
-        ExecutionEnvironment execEnv = getSelectedHost();
-        CompilerSet csm = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx);
-        String compilerName = csm.getTool(BasicCompiler.CCompiler).getName();
-        String compilerDisplayName = csm.getTool(BasicCompiler.CCompiler).getDisplayName();
+        CompilerSet csm = CompilerSetManager.get(getSelectedHost()).getCompilerSets().get(compilerSetIdx);
+        String compilerName = csm.getTool(PredefinedToolKind.CCompiler).getName();
+        String compilerDisplayName = csm.getTool(PredefinedToolKind.CCompiler).getDisplayName();
         CustomizerNode cCompilerCustomizerNode = new CCompilerCustomizerNode(
                 compilerName,
                 compilerDisplayName,
@@ -1269,9 +1248,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
     // CC Compiler Node
     private CustomizerNode createCCCompilerDescription(Project project, int compilerSetIdx, Item item, Folder folder, boolean isCompilerConfiguration) {
-        ExecutionEnvironment execEnv = getSelectedHost();
-        String compilerName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.CCCompiler).getName();
-        String compilerDisplayName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.CCCompiler).getDisplayName();
+        final CompilerSet cs = CompilerSetManager.get(getSelectedHost()).getCompilerSets().get(compilerSetIdx);
+        String compilerName = cs.getTool(PredefinedToolKind.CCCompiler).getName();
+        String compilerDisplayName = cs.getTool(PredefinedToolKind.CCCompiler).getDisplayName();
         CustomizerNode ccCompilerCustomizerNode = new CCCompilerCustomizerNode(
                 compilerName,
                 compilerDisplayName,
@@ -1316,8 +1295,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     // Fortran Compiler Node
     private CustomizerNode createFortranCompilerDescription(Project project, int compilerSetIdx, Item item, boolean isCompilerConfiguration) {
         ExecutionEnvironment execEnv = getSelectedHost();
-        String compilerName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.FortranCompiler).getName();
-        String compilerDisplayName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.FortranCompiler).getDisplayName();
+        final CompilerSet cs = CompilerSetManager.get(execEnv).getCompilerSets().get(compilerSetIdx);
+        String compilerName = cs.getTool(PredefinedToolKind.FortranCompiler).getName();
+        String compilerDisplayName = cs.getTool(PredefinedToolKind.FortranCompiler).getDisplayName();
         CustomizerNode fortranCompilerCustomizerNode = new FortranCompilerCustomizerNode(
                 compilerName,
                 compilerDisplayName,
@@ -1353,9 +1333,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
     // Assembler Compiler Node
     private CustomizerNode createAssemblerDescription(Project project, int compilerSetIdx, Item item, boolean isCompilerConfiguration) {
-        ExecutionEnvironment execEnv = getSelectedHost();
-        String compilerName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.Assembler).getName();
-        String compilerDisplayName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.Assembler).getDisplayName();
+        final CompilerSet cs = CompilerSetManager.get(getSelectedHost()).getCompilerSets().get(compilerSetIdx);
+        String compilerName = cs.getTool(PredefinedToolKind.Assembler).getName();
+        String compilerDisplayName = cs.getTool(PredefinedToolKind.Assembler).getDisplayName();
         CustomizerNode assemblerCustomizerNode = new AssemblerCustomizerNode(
                 compilerName,
                 compilerDisplayName,
@@ -1475,6 +1455,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             setKeys(Collections.EMPTY_LIST);
         }
 
+        @Override
         protected Node[] createNodes(CustomizerNode key) {
             return new Node[]{new PropertyNode(key)};
         }
@@ -1528,9 +1509,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
         @Override
         public void defaultAction(Configuration o) {
-            Vector confs = getListData();
-            for (Enumeration e = confs.elements(); e.hasMoreElements();) {
-                ((Configuration) e.nextElement()).setDefault(false);
+            Vector<Configuration> confs = getListData();
+            for (Enumeration<Configuration> e = confs.elements(); e.hasMoreElements();) {
+                e.nextElement().setDefault(false);
             }
             o.setDefault(true);
         }
@@ -1624,7 +1605,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
         @Override
         public synchronized AssemblerConfiguration getAssemblerConfiguration() {
-            if (getTool() == Tool.Assembler) {
+            if (getTool() == PredefinedToolKind.Assembler) {
                 return super.getAssemblerConfiguration();
             } else {
                 if (assemblerConfiguration == null) {
@@ -1637,7 +1618,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
         @Override
         public synchronized CCCompilerConfiguration getCCCompilerConfiguration() {
-            if (getTool() == Tool.CCCompiler) {
+            if (getTool() == PredefinedToolKind.CCCompiler) {
                 return super.getCCCompilerConfiguration();
             } else {
                 if (cCCompilerConfiguration == null) {
@@ -1654,7 +1635,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
         @Override
         public CCompilerConfiguration getCCompilerConfiguration() {
-            if (getTool() == Tool.CCompiler) {
+            if (getTool() == PredefinedToolKind.CCompiler) {
                 return super.getCCompilerConfiguration();
             } else {
                 FolderConfiguration folderConfiguration = getItem().getFolder().getFolderConfiguration(getConfiguration());
@@ -1669,7 +1650,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
         @Override
         public synchronized FortranCompilerConfiguration getFortranCompilerConfiguration() {
-            if (getTool() == Tool.FortranCompiler) {
+            if (getTool() == PredefinedToolKind.FortranCompiler) {
                 return super.getFortranCompilerConfiguration();
             } else {
                 if (fortranCompilerConfiguration == null) {
@@ -1681,7 +1662,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
         @Override
         public synchronized CustomToolConfiguration getCustomToolConfiguration() {
-            if (getTool() == Tool.CustomTool) {
+            if (getTool() == PredefinedToolKind.CustomTool) {
                 return super.getCustomToolConfiguration();
             } else {
                 if (customToolConfiguration == null) {

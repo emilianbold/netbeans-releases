@@ -85,6 +85,7 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.WeakHashMap;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -106,7 +107,6 @@ import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 
@@ -121,7 +121,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.editor.JumpList;
 
@@ -167,6 +166,7 @@ public class EditorContextImpl extends EditorContext {
     private PropertyChangeListener  dispatchListener;
     private EditorContextDispatcher contextDispatcher;
     private final Map<JavaSource, JavaSourceUtil.Handle> sourceHandles = new WeakHashMap<JavaSource, JavaSourceUtil.Handle>();
+    private final Map<JavaSource, Date> sourceModifStamps = new WeakHashMap<JavaSource, Date>();
     private DebuggerManagerListener sessionsListener; // cleans up sourceHandles
 
 
@@ -1504,14 +1504,18 @@ public class EditorContextImpl extends EditorContext {
                 // No JavaSource, we can not ask for a compilation controller
                 return null;
             }
+            Date lastModified = fo.lastModified();
+            Date storedStamp = null;
             JavaSourceUtil.Handle handle;
             synchronized (sourceHandles) {
                 handle = sourceHandles.get(js);
+                storedStamp = sourceModifStamps.get(js);
             }
-            if (handle == null) {
+            if (handle == null || (storedStamp != null && lastModified.after(storedStamp))) {
                 handle = JavaSourceUtil.createControllerHandle(fo, handle);
                 synchronized (sourceHandles) {
                     sourceHandles.put(js, handle);
+                    sourceModifStamps.put(js, lastModified);
                 }
             }
             preferredCI = (CompilationController) handle.getCompilationController();
@@ -2184,6 +2188,21 @@ public class EditorContextImpl extends EditorContext {
                                 // The constructor name is the class name:
                                 currentElementPtr[0] = el.getEnclosingElement().getSimpleName().toString();
                             }
+                        } else {
+                            TreePath path = ci.getTreeUtilities().pathFor(currentOffset);
+                            Tree tree = path != null ? path.getLeaf() : null;
+                            while (tree != null && !(tree instanceof MethodTree || tree instanceof ClassTree)) {
+                                path = path.getParentPath();
+                                tree = path != null ? path.getLeaf() : null;
+                            }
+                            if (tree instanceof MethodTree) {
+                                String name = ((MethodTree)tree).getName().toString();
+                                if (name.equals("<init>")) {
+                                    el = scope.getEnclosingClass();
+                                    name = el.getSimpleName().toString();
+                                }
+                                currentElementPtr[0] = name;
+                            }
                         }
                     } else if (kind == ElementKind.FIELD) {
                         int offset = currentOffset;
@@ -2484,9 +2503,11 @@ public class EditorContextImpl extends EditorContext {
             if (numSession > 0) {
                 // Trigger the check for live values
                 sourceHandles.size();
+                sourceModifStamps.size();
             } else {
                 // No debugger sessions - clean the map
                 sourceHandles.clear();
+                sourceModifStamps.clear();
             }
         }
 

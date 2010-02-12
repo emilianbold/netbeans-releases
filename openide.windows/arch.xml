@@ -294,72 +294,7 @@ JRE is enough.
         </question>
 -->
 <answer id="dep-nb">
-Module uses following API's:
-<ul>
-<li>
-    <api 
-        name="NodesAPI"
-        type="import"
-        category="official"
-        url="@org-openide-nodes@/org/openide/nodes/doc-files/api.html"
-        group="java" 
-    />
-</li>
-<li>
-    <api 
-        name="ActionsAPI"
-        type="import"
-        category="official"
-        url="@org-openide-actions@/org/openide/actions/doc-files/api.html"
-        group="java" 
-    />
-</li>
-<li>
-    <api 
-        name="ModulesAPI"
-        type="import"
-        category="official"
-        url="@org-openide-modules@/org/openide/modules/doc-files/api.html"
-        group="java" 
-    />
-</li>
-<li>
-    <api 
-        name="FilesystemsAPI"
-        type="import"
-        category="official"
-        url="@org-openide-filesystems@/org/openide/filesystems/doc-files/api.html"
-        group="java" 
-    />
-</li>
-<li>
-    <api 
-        name="LoadersAPI"
-        type="import"
-        category="official"
-        url="@org-openide-loaders@/org/openide/loaders/doc-files/api.html"
-        group="java" 
-    />
-</li>
-<li>
-    <api 
-        name="UtilitiesAPI"
-        type="import"
-        category="official"
-        url="@org-openide-util@/org/openide/util/doc-files/api.html"
-        group="java" 
-    />
-</li>
-<li>
-    <api 
-        name="SettingsAPI"
-        type="import"
-        category="official"
-        url="@org-netbeans-modules-settings@/org/netbeans/spi/settings/doc-files/api.html"
-        group="java" 
-    />
-</li>
-</ul>
+  <defaultanswer generate='here' />
 </answer>
 
 
@@ -718,60 +653,60 @@ window system configuration will not be part of project.-->
         </question>
 -->
 <answer id="exec-property">
-<api group="property" name="netbeans.winsys.imageSource" type="export" category="private">
+<api group="systemproperty" name="netbeans.winsys.imageSource" type="export" category="private">
     Valid values are path to image in NB like "org/netbeans/core/resources/splash.gir". 
     It puts the specified image into the the emptied documents area.
     it is experimental now.
     <code>-J-Dnetbeans.winsys.imageSource=org/netbeans/core/resources/splash.gif</code>
 </api>
-<api group="property" name="netbeans.winsys.dndfade.on" type="export" category="private">
+<api group="systemproperty" name="netbeans.winsys.dndfade.on" type="export" category="private">
     Valid values are "true" and "false". Default is "false".
     If it is "true" it paint faded feedback during DnD of windows. Keep in mind it makes
     some performance impact on DnD.
     It is experimental now.
     <code>-J-Dnetbeans.winsys.fade.on=true</code>
 </api>
-<api group="property" name="netbeans.winsys.disable_dnd" type="export" category="private">
+<api group="systemproperty" name="netbeans.winsys.disable_dnd" type="export" category="private">
     Valid values are "true" and "false". Default is "false". 
     If it is "true" it disables DnD of windows.
     <code>-J-Dnetbeans.winsys.disable_dnd=true</code>
 </api>
-<api group="property" name="netbeans.winsys.allow.dock.anywhere" type="export" category="private">
+<api group="systemproperty" name="netbeans.winsys.allow.dock.anywhere" type="export" category="private">
     Valid values are "true" and "false". Default is "false". 
     It allows user to move (e.g. using DnD) <code>TopComponent</code>S between editor(document) and view
     which is restricte otherwise.
     It is experimental now.
     <code>-J-Dnetbeans.winsys.allow.dock.anywhere=true</code>
 </api>
-<api group="property" name="netbeans.winsys.hideEmptyDocArea" type="export" category="private">
+<api group="systemproperty" name="netbeans.winsys.hideEmptyDocArea" type="export" category="private">
     Valid values are "true" and "false". Default is "false". 
     If it is "true" it doesn't show empty documents area.
     <code>-J-Dnetbeans.winsys.hideEmptyDocArea=true</code>
 </api>
-<api group="property" name="netbeans.winsys.statusLine.in.menuBar" type="export" category="private">
+<api group="systemproperty" name="netbeans.winsys.statusLine.in.menuBar" type="export" category="private">
     Valid values are "true" and "false". Default is "false".
     If it is "true" it shows status line at the and of menu bar instead of the
     bottom of documents are (or main window).
     <code>-J-Dnetbeans.winsys.statusLine.in.menuBar=true</code>
 </api>
-<api group="property" name="netbeans.winsys.no_toolbars" type="export" category="private">
+<api group="systemproperty" name="netbeans.winsys.no_toolbars" type="export" category="private">
     Valid values are "true" and "false". Default is "false".
     If it is "true" it hides all toolbars.
     <code>-J-Dnetbeans.winsys.no_toolbars=true</code>
 </api>
-<api group="property" name="netbeans.winsys.menu_bar.path" type="export" category="private">
+<api group="systemproperty" name="netbeans.winsys.menu_bar.path" type="export" category="private">
     If this property is set its value must point to a file on the system file system
     that provides instance of type <code>org.openide.awt.MenuBar</code>. 
     This alternative menu bar will be used instead of the default one.
     <code>-J-Dnetbeans.winsys.menu_bar.path=foo/bar.instance</code>
 </api>
-<api group="property" name="netbeans.winsys.status_line.path" type="export" category="private">
+<api group="systemproperty" name="netbeans.winsys.status_line.path" type="export" category="private">
     If this property is set its value must point to a file on the system file system
     that provides instance of type <code>javax.swing.JComponent</code>. 
     This alternative status line will be used instead of the default one.
     <code>-J-Dnetbeans.winsys.status_line.path=foo/bar.instance</code>
 </api>
-<api group="property" name="netbeans.winsys.no_help_in_dialogs" type="export" category="private">
+<api group="systemproperty" name="netbeans.winsys.no_help_in_dialogs" type="export" category="private">
     Valid values are "true" and "false". Default is "false". 
     If set to "true" the modal dialogs will be shown without the help button.
     <code>-J-Dnetbeans.winsys.no_help_in_dialogs=true</code>
@@ -780,7 +715,7 @@ window system configuration will not be part of project.-->
     This property was deleted and has no effect now, as sdi support was dropped
     and replaced by individual seperate windows. Please don't use, it's useless.
 </api>
-<api group="property" name="org.openide.windows.DummyWindowManager.VISIBLE" type="export" category="private">
+<api group="systemproperty" name="org.openide.windows.DummyWindowManager.VISIBLE" type="export" category="private">
     <p>
         If set to <code>false</code>, windows opened (e.g. <code>TopComponent.open</code>) using the
         dummy fallback window manager will not really be set to be visible. Useful for unit tests which
@@ -852,25 +787,25 @@ window system configuration will not be part of project.-->
     <code>javax.swing.UIManager.put("org.netbeans.core.windows.view.ui.tabcontrol.BorderProvider", borderProviderImpl)</code>
     during startup, before main window is shown.
 </api>
-<!--<api group="property" name="netbeans.scrolling.tabs" type="export" category="private">
+<!--<api group="systemproperty" name="netbeans.scrolling.tabs" type="export" category="private">
     Valid values are "true" and "false". Default is "false". If it is true new JDK 1.4 scrolling tabs 
     are used. 
     It can be set on command line or in ide.cfg. Usage example: To enable scrolling tabs use
     <code>-J-Dnetbeans.scrolling.tabs=true</code>
 </api>
-<api group="property" name="netbeans.winsys.dnd" type="export" category="private">
+<api group="systemproperty" name="netbeans.winsys.dnd" type="export" category="private">
     Valid values are "true" and "false". Default is "false". If it is true it enables window system DnD
     on JDK 1.4. 
     It can be set on command line or in ide.cfg. Usage example: To enable window system DnD use 
     <code>-J-Dnetbeans.winsys.dnd=true</code>
 </api>
-<api group="property" name="netbeans.windows.tabs_on_top" type="export" category="private">
+<api group="systemproperty" name="netbeans.windows.tabs_on_top" type="export" category="private">
     Valid values are "true" and "false". Default is "false". If it si true tabs are put
     on top. By default tabs are at bottom. 
     It can be set on command line or in ide.cfg. Usage example: To place tabs on top of container (area)
     use <code>-J-Dnetbeans.windows.tabs_on_top=true</code>
 </api>
-<api group="property" name="netbeans.windows.no_wswitcher" type="export" category="private">
+<api group="systemproperty" name="netbeans.windows.no_wswitcher" type="export" category="private">
     Valid values are "true" and "false". Default is "false". If it is true workspace switcher
     and status line are not displayed. It can be used to save some screen space esp. useful
     on notebook.
@@ -1347,8 +1282,6 @@ Module reads its own configuration from its layer and eventualy from other modul
 if provided. Data have following <a href="http://core.netbeans.org/windowsystem/changes.html#3.4.2">folder structure</a>.
 It contains <api group="layer" category="private" type="export" name="ModuleDataStructure" url="http://core.netbeans.org/windowsystem/changes.html#3.4.2">Module folder structure under Windows2 directory </api>
 and <api group="layer" category="private" type="export" name="LocalDataStructure" url="http://core.netbeans.org/windowsystem/changes.html#3.4.2">Local folder structure under Windows2Local directory</api>.
-<!--<a href="http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/windows/doc-files/api.html#xml">directory structure</a>.
--->
 </answer>
 
 </api-answers>

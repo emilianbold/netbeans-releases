@@ -549,7 +549,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         try {
             d = DataObject.find(fo);
         } catch (DataObjectNotFoundException e) {
-            throw (IllegalArgumentException)new IllegalArgumentException(e.toString()).initCause(e);
+            throw new IllegalArgumentException(e);
         }
         if (!(d instanceof DataFolder)) {
             throw new IllegalArgumentException("Not a DataFolder: " + fo + " (was a " + d.getClass().getName() + ") (file is folder? " + fo.isFolder() + ")"); // NOI18N

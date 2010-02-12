@@ -237,6 +237,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         updateAssistant();
         settingsListener = new PreferenceChangeListener() {
+            @Override
             public void preferenceChange(PreferenceChangeEvent evt) {
                 if (FormLoaderSettings.PROP_ASSISTANT_SHOWN.equals(evt.getKey())) {
                     updateAssistant();
@@ -257,6 +258,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         
         if(!hasPropertyChangeListener) {
             addPropertyChangeListener("activatedNodes", new PropertyChangeListener() { // NOI18N
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     try {
                         if (formEditor == null) {
@@ -583,6 +585,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             FormLAF.setUsePreviewDefaults(classLoader, previewInfo);
             result = (Container) FormLAF.executeWithLookAndFeel(formModel,
             new Mutex.ExceptionAction () {
+                @Override
                 public Object run() throws Exception {
                     VisualReplicator r = new VisualReplicator(false, FormUtils.getViewConverters(), null);
                     r.setTopMetaComponent(metacomp);
@@ -1053,7 +1056,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     private void updateDesignerActions() {
         Collection selectedIds = selectedLayoutComponentIds();
-        boolean enabled = (layoutDesigner == null) ? false : layoutDesigner.canAlign(selectedIds);;
+        boolean enabled = (layoutDesigner == null) ? false : layoutDesigner.canAlign(selectedIds);
         Iterator iter = getDesignerActions(true).iterator();
         while (iter.hasNext()) {
             Action action = (Action)iter.next();
@@ -1527,6 +1530,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
             // hack: after all updates, switch to editor
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     formModel.getFormEvents().attachEvent(event, eventName, null);
                 }
@@ -1605,6 +1609,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     private InPlaceEditLayer.FinishListener getFinnishListener() {
         if(finnishListener==null) {
            finnishListener =  new InPlaceEditLayer.FinishListener() {
+                @Override
                 public void editingFinished(boolean textChanged) {
                     finishInPlaceEditing(textEditLayer.isTextChanged());
                 }
@@ -1740,14 +1745,17 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     // ------
     // multiview stuff
 
+    @Override
     public JComponent getToolbarRepresentation() {
         return getFormToolBar();
     }
 
+    @Override
     public JComponent getVisualRepresentation() {
         return this;
     }
 
+    @Override
     public void setMultiViewCallback(MultiViewElementCallback callback) {
         multiViewObserver = callback;
 
@@ -1802,6 +1810,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 RequestProcessor.getDefault().post(preLoadTask);
 
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         StatusDisplayer.getDefault().setStatusText(
                             FormUtils.getFormattedBundleString(
@@ -1824,10 +1833,12 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             formDataObject = fdo;
         }
 
+        @Override
         public void run() {
             final GandalfPersistenceManager persistenceManager = getPersistenceManager();
             final String superClassName = (persistenceManager != null) ? computeSuperClass() : null;
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if (formEditor != null) {
                         try {
@@ -1879,6 +1890,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             // hack: after IDE start, if some form is opened but not active in
             // winsys, we need to select it in ComponentInspector
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if (formEditor != null && formEditor.isFormLoaded()
                             && ComponentInspector.exists()
@@ -1906,6 +1918,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         if ((formEditor == null) && (multiViewObserver != null)) { // Issue 67879
             multiViewObserver.getTopComponent().close();
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     FormEditorSupport.checkFormGroupVisibility();
                 }
@@ -1913,6 +1926,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         }
     }
 
+    @Override
     public CloseOperationState canCloseElement() {
         // if this is not the last cloned designer, closing is OK
         if (!FormEditorSupport.isLastView(multiViewObserver.getTopComponent()))
@@ -1954,6 +1968,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 //            return getTopDesignComponent().getId();
 //        }
 
+        @Override
         public Rectangle getComponentBounds(String componentId) {
             Component visual = getVisualComponent(componentId, true, false);
             Rectangle rect = null;
@@ -1969,6 +1984,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             return rect;
         }
 
+        @Override
         public Rectangle getContainerInterior(String componentId) {
             Component visual = getVisualComponent(componentId, true, false);
             if (visual == null)
@@ -1993,6 +2009,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             return rect;
         }
 
+        @Override
         public Dimension getComponentMinimumSize(String componentId) {
             Component visual = getVisualComponent(componentId, false, false);
             Dimension dim = null;
@@ -2006,6 +2023,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             return dim;
         }
 
+        @Override
         public Dimension getComponentPreferredSize(String componentId) {
             Component visual = getVisualComponent(componentId, false, false);
             Dimension dim = null;
@@ -2019,6 +2037,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             return dim;
         }
 
+        @Override
         public boolean hasExplicitPreferredSize(String componentId) {
             JComponent visual = (JComponent) getVisualComponent(componentId, false, true);
             boolean hasExplPrefSize = false;
@@ -2031,6 +2050,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             return hasExplPrefSize;
         }
 
+        @Override
         public int getBaselinePosition(String componentId, int width, int height) {
             int baseLinePos = -1;            
             JComponent comp = (JComponent) getVisualComponent(componentId, true, true);
@@ -2064,6 +2084,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             return baseLinePos;
         }
 
+        @Override
         public int getPreferredPadding(String comp1Id,
                                        String comp2Id,
                                        int dimension,
@@ -2118,6 +2139,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             return prefPadding;
         }
 
+        @Override
         public int getPreferredPaddingInParent(String parentId,
                                                String compId,
                                                int dimension,
@@ -2175,17 +2197,20 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             return prefPadding;
         }
 
+        @Override
         public boolean[] getComponentResizability(String compId, boolean[] resizability) {
             resizability[0] = resizability[1] = true;
             // [real resizability spec TBD]
             return resizability;
         }
 
+        @Override
         public void rebuildLayout(String contId) {
             replicator.updateContainerLayout((RADVisualContainer)getMetaComponent(contId));
             replicator.getLayoutBuilder(contId).doLayout();
         }
 
+        @Override
         public void setComponentVisibility(String componentId, boolean visible) {
             Object comp = getComponent(componentId);
             if (comp instanceof Component) {
@@ -2252,9 +2277,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         private FormModelEvent[] events;
 
+        @Override
         public void formChanged(final FormModelEvent[] events) {
             if (!EventQueue.isDispatchThread()) {
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         processEvents(events);
                     }
@@ -2304,6 +2331,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             else run();
         }
 
+        @Override
         public void run() {
             if (events == null) {
                 Object originalVisualComp = (topDesignComponent == null) ? null : replicator.getClonedComponent(topDesignComponent);
@@ -2326,6 +2354,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     // when the form is opened and validate does nothing on components
                     // without peer.
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             updateComponentLayer(false);
                         }
@@ -2521,6 +2550,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
          *
          * @param e event that invoked the action.
          */
+        @Override
         public void actionPerformed(ActionEvent e) {
             align(closed, dimension, alignment);
         }
@@ -2562,6 +2592,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
          *
          * @param e event that invoked the action.
          */
+        @Override
         public void actionPerformed(ActionEvent e) {
             FormModel formModel = getFormModel();
             LayoutModel layoutModel = formModel.getLayoutModel();

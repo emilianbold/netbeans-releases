@@ -253,6 +253,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         pleaseWaitTimer = new Timer(PLEASE_WAIT_TIMEOUT, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String waitText = PLEASE_WAIT;
+                boolean politeWaitText = false;
                 Result localCompletionResult;
                 synchronized (this) {
                     localCompletionResult = completionResult;
@@ -263,6 +264,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                         CompletionResultSetImpl resultSet = (CompletionResultSetImpl)it.next();
                         if (resultSet != null && resultSet.getWaitText() != null) {
                             waitText = resultSet.getWaitText();
+                            politeWaitText = true;
                             break;
                         }
                     }
@@ -270,7 +272,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                 layout.showCompletion(Collections.singletonList(waitText),
                         null, -1, CompletionImpl.this, null, null, 0);
                 pleaseWaitDisplayed = true;
-                initializeProfiling();
+                if (!politeWaitText) {
+                    initializeProfiling();
+                }
             }
         });
         pleaseWaitTimer.setRepeats(false);

@@ -44,11 +44,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.platform.Platform;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.PackagingNodeProp;
@@ -93,7 +93,7 @@ public class PackagingConfiguration {
         setDefaultValues();
     }
     
-    public void setDefaultValues() {
+    public final void setDefaultValues() {
         // Init default values
         String perm = MakeOptions.getInstance().getDefExePerm();
         String packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
@@ -284,7 +284,8 @@ public class PackagingConfiguration {
         clone.setTopDir(getTopDir().clone());
         return clone;
     }
-    TypePropertyChangeListener typePropertyChangeListener;
+    
+    private TypePropertyChangeListener typePropertyChangeListener;
     // Sheet
     public Sheet getGeneralSheet(MakeCustomizer makeCustomizer) {
         IntNodeProp intNodeprop;
@@ -314,7 +315,7 @@ public class PackagingConfiguration {
         return sheet;
     }
     
-    class PackagerIntConfiguration extends IntConfiguration {
+    private class PackagerIntConfiguration extends IntConfiguration {
         PackagerIntConfiguration(IntConfiguration master, int def, String[] names, String[] options) {
             super(master, def, names, options);
         }
@@ -341,7 +342,7 @@ public class PackagingConfiguration {
     
     }
     
-    class PackagerIntNodeProp extends IntNodeProp {
+    private class PackagerIntNodeProp extends IntNodeProp {
         public PackagerIntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String unused, String name, String description) {
             super(intConfiguration, canWrite, unused, name, description);
         }
@@ -365,7 +366,7 @@ public class PackagingConfiguration {
         }
     }
 
-    class TypePropertyChangeListener implements PropertyChangeListener {
+    private class TypePropertyChangeListener implements PropertyChangeListener {
 
         private MakeCustomizer makeCustomizer;
         private OutputNodeProp outputNodeProp;
@@ -379,6 +380,7 @@ public class PackagingConfiguration {
             this.optionsNodeProp = optionsNodeProp;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent arg0) {
             toolNodeProp.setCanWrite(getToolDefault().length() > 0);
             optionsNodeProp.setCanWrite(getToolDefault().length() > 0);

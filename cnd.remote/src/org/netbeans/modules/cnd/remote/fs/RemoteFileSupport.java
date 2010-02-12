@@ -311,7 +311,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
     // NB: it is always called in a specially created thread
     public void connected() {
         ProgressHandle handle = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(getClass(), "Progress_Title", RemoteFileSystemNotifier.getDisplayName(execEnv)));
+                NbBundle.getMessage(getClass(), "Progress_Title", RemoteUtil.getDisplayName(execEnv)));
         handle.start();
         RemoteServerListUI.revalidate(execEnv);
         handle.switchToDeterminate(pendingFilesQueue.size());

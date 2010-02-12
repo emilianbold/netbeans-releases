@@ -180,58 +180,6 @@ public final class SourceUtils {
         }
     }
 
-    private static final class DeclaredTypeResolver implements TypeVisitor<TypeElement, Void> {
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
-        public TypeElement visit(TypeMirror t, Void p) {
-            return null;
-        }
-
-        public TypeElement visit(TypeMirror t) {
-            return null;
-        }
-
-        public TypeElement visitArray(ArrayType t, Void p) {
-            return null;
-        }
-
-        public TypeElement visitDeclared(DeclaredType t, Void p) {
-            return (TypeElement) t.asElement();
-        }
-
-        public TypeElement visitError(ErrorType t, Void p) {
-            return null;
-        }
-
-        public TypeElement visitExecutable(ExecutableType t, Void p) {
-            return null;
-        }
-
-        public TypeElement visitNoType(NoType t, Void p) {
-            return null;
-        }
-
-        public TypeElement visitNull(NullType t, Void p) {
-            return null;
-        }
-
-        public TypeElement visitPrimitive(PrimitiveType t, Void p) {
-            return null;
-        }
-
-        public TypeElement visitTypeVariable(TypeVariable t, Void p) {
-            return null;
-        }
-
-        public TypeElement visitUnknown(TypeMirror t, Void p) {
-            return null;
-        }
-
-        public TypeElement visitWildcard(WildcardType t, Void p) {
-            return null;
-        }
-    }
-
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
     private static final Logger LOGGER = Logger.getLogger(SourceUtils.class.getName());
     private static final FileObject[] NOFILES = new FileObject[0];
@@ -241,7 +189,6 @@ public final class SourceUtils {
     private static final String[] APPLET_CLASSES = new String[]{"java.applet.Applet", "javax.swing.JApplet"}; // NOI18N
     private static final String[] TEST_CLASSES = new String[]{"junit.framework.TestCase", "junit.framework.TestSuite"}; // NOI18N
     private static final String[] TEST_ANNOTATIONS = new String[]{"org.junit.Test", "org.testng.annotations.Test"}; // NOI18N
-    private static final DeclaredTypeResolver declaredTypeResolver = new DeclaredTypeResolver();
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
     public static boolean isApplet(FileObject javaFile) {
@@ -912,30 +859,6 @@ public final class SourceUtils {
         return signature.getValue();
     }
 
-    /**
-     * Constructs the VM signature for the given executable element (method, constructor ...)
-     * @param ee The executable element to create the VM sginature for (method, constructor ...)
-     * @return Returns the textual representation of a VM signature valid for the given executable element
-     *
-     * @deprecated
-     */
-    public static String getVMSignature(ExecutableElement ee) {
-        String constructedSig = "("; // NOI18N
-        final List<? extends VariableElement> paramsList = ee.getParameters();
-
-        for (VariableElement param : paramsList) {
-            constructedSig += VMUtils.typeToVMSignature(param.asType().toString());
-        }
-
-        if (ee.getKind().equals(ElementKind.CONSTRUCTOR)) {
-            constructedSig += ")V"; // NOI18N
-        } else {
-            constructedSig += (")" + VMUtils.typeToVMSignature(ee.getReturnType().toString())); // NOI18N
-        }
-
-        return constructedSig;
-    }
-
     public static FileObject findFileObjectByClassName(final String className, final Project project) {
         if (className == null) {
             return null;
@@ -1122,7 +1045,7 @@ public final class SourceUtils {
                     // resolve field at cursor
 
                     if (resolveField && ((element.getKind() == ElementKind.FIELD) || (element.getKind() == ElementKind.LOCAL_VARIABLE)) && (element.asType().getKind() == TypeKind.DECLARED)) {
-                        TypeElement jclass = getDeclaredType(element.asType());
+                        TypeElement jclass = (TypeElement)ci.getTypes().erasure(element.asType());
                         String vmClassName = ElementUtilities.getBinaryName(jclass);
                         resolvedClass.setValue(new ResolvedClass(jclass, vmClassName));
 
@@ -1312,10 +1235,6 @@ public final class SourceUtils {
         return resolvedMethod.getValue();
     }
 
-    private static TypeElement getDeclaredType(TypeMirror type) {
-        return type.accept(declaredTypeResolver, null);
-    }
-
     private static boolean isEnclosingElement(Element element) {
         if (element == null) {
             return false;
@@ -1350,7 +1269,7 @@ public final class SourceUtils {
 
         while (it.hasNext()) {
             TypeMirror type = it.next().asType();
-            String realTypeName = getRealTypeName(type, ci);
+            String realTypeName = getRealTypeName(ci, type);
             String typeVMSignature = VMUtils.typeToVMSignature(realTypeName);
             ret.append(typeVMSignature);
         }
@@ -1379,54 +1298,8 @@ public final class SourceUtils {
         return getProjectTypes(ProjectUtilities.getSourceRoots(project, true), js);
     }
 
-    private static String getRealTypeName(TypeMirror type, CompilationInfo ci) {
-        TypeKind typeKind = type.getKind();
-
-        if (typeKind.isPrimitive()) {
-            return type.toString(); // primitive type, return its name
-        }
-
-        switch (typeKind) {
-            case VOID:
-
-                // VOID type, return "void" - will be converted later by VMUtils.typeToVMSignature
-                return type.toString();
-            case DECLARED:
-
-                // Java class (also parametrized - "ArrayList<String>" or "ArrayList<T>"), need to generate correct innerclass signature using "$"
-                return ElementUtilities.getBinaryName(getDeclaredType(type));
-            case ARRAY:
-
-                // Array means "String[]" or "T[]" and also varargs "Object ... args"
-                return getRealTypeName(((ArrayType) type).getComponentType(), ci) + "[]"; // NOI18N
-            case TYPEVAR:
-
-                // TYPEVAR means "T" or "<T extends String>" or "<T extends List&Runnable>"
-                List<? extends TypeMirror> subTypes = ci.getTypes().directSupertypes(type);
-
-                if (subTypes.size() == 0) {
-                    return "java.lang.Object"; // NOI18N // Shouldn't happen
-                }
-
-                if ((subTypes.size() > 1) && subTypes.get(0).toString().equals("java.lang.Object") && getDeclaredType(subTypes.get(1)).getKind().isInterface()) {
-                    // NOI18N
-                    // Master type is interface
-                    return getRealTypeName(subTypes.get(1), ci);
-                } else {
-                    // Master type is class
-                    return getRealTypeName(subTypes.get(0), ci);
-                }
-
-            case WILDCARD:
-
-                // WILDCARD means "<?>" or "<? extends Number>" or "<? super T>", shouldn't occur here
-                throw new IllegalArgumentException("Unexpected WILDCARD parameter: " + type); // NOI18N
-            default:
-
-                // Unexpected parameter type
-                throw new IllegalArgumentException("Unexpected type parameter: " + type + " of kind " + typeKind); // NOI18N
-        }
-
+    private static String getRealTypeName(CompilationInfo ci, TypeMirror type) {
+        return ci.getTypes().erasure(type).toString();
     }
 
     /**
@@ -1443,7 +1316,7 @@ public final class SourceUtils {
 
                     //case INSTANCE_INIT: // not supported
                     String paramsVMSignature = getParamsSignature(method.getParameters(), ci);
-                    String retTypeVMSignature = VMUtils.typeToVMSignature(getRealTypeName(method.getReturnType(), ci));
+                    String retTypeVMSignature = VMUtils.typeToVMSignature(getRealTypeName(ci, method.getReturnType()));
 
                     return "(" + paramsVMSignature + ")" + retTypeVMSignature; //NOI18N
                 default:
@@ -1460,8 +1333,7 @@ public final class SourceUtils {
     /**
      * Returns the JavaSource repository of a given project or global JavaSource if no project is provided
      */
-    public static JavaSource getSources(
-            Project project) {
+    public static JavaSource getSources(Project project) {
         if (project == null) {
             return getSources((FileObject[]) null);
         } else {
@@ -1535,13 +1407,8 @@ public final class SourceUtils {
      * @param ee The executable element to compare the signature to (method, constructor ...)
      * @return Returns true if the signature of the executable element matches the desired signature
      */
-    private static boolean methodSignatureMatch(final String vmSig,
-            final ExecutableElement ee) {
-        // heuristic: it is hard to distinguish where innerclass starts in CallableFeature params, so let's not deal with
-        // this at all
-        final String vmSigCheck = vmSig.replaceAll("\\$", "/"); // NOI18N
-
-        return getVMSignature(ee).equals(vmSigCheck);
+    private static boolean methodSignatureMatch(CompilationInfo ci, final String vmSig, final ExecutableElement ee) {
+        return getVMMethodSignature(ee,ci).equals(vmSig);
     }
 
     /**
@@ -1551,7 +1418,7 @@ public final class SourceUtils {
      * @param signature The VM signature of the method
      * @return Returns an ExecutableElement representing the method or null
      */
-    public static ExecutableElement resolveMethodByName(
+    public static ExecutableElement resolveMethodByName(CompilationInfo ci,
             TypeElement parentClass, String methodName, String signature) {
         // TODO: static initializer
         if ((parentClass == null) || (methodName == null)) {
@@ -1577,20 +1444,13 @@ public final class SourceUtils {
         for (ExecutableElement method : methods) {
             // match the current method against the required method name and signature
             if (methodNameMatch(methodName, method)) {
-                if (signature != null && methodSignatureMatch(signature, method)) {
+                if (signature != null && methodSignatureMatch(ci, signature, method)) {
                     foundMethod = method;
-                    found =
-                            true;
-
+                    found = true;
                     break;
-
                 }
-
-
-
                 foundMethod = method; // keeping the track of the closest match
             }
-
         }
 
         if (!found) {

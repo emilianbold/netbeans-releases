@@ -41,10 +41,10 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.LinkerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.LinkerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.LibrariesNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
@@ -52,9 +52,9 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Sheet;
@@ -82,9 +82,9 @@ public class LinkerConfiguration implements AllOptionsProvider {
         output = new StringConfiguration(null, ""); // NOI18N
         additionalLibs = new VectorConfiguration<String>(null);
         dynamicSearch = new VectorConfiguration<String>(null);
-        stripOption = new LinkerStripConfiguration(null, false); // NOI18N
-        picOption = new BooleanConfiguration(null, true, "", "-Kpic"); // NOI18N
-        norunpathOption = new BooleanConfiguration(null, true, "", "-norunpath"); // NOI18N
+        stripOption = new BooleanConfiguration(null, false); // NOI18N
+        picOption = new BooleanConfiguration(null, true); // NOI18N
+        norunpathOption = new BooleanConfiguration(null, true); // NOI18N
         nameassignOption = new BooleanConfiguration(null, true);
         commandLineConfiguration = new OptionsConfiguration();
         additionalDependencies = new OptionsConfiguration();
@@ -260,25 +260,27 @@ public class LinkerConfiguration implements AllOptionsProvider {
             // FIXUP: should be move to Platform...
             if (cs != null) {
                 options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibraryBasicFlag();
-                if (cs.isGnuCompiler() && getMakeConfiguration().getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
+                if (cs.getCompilerFlavor().isGnuCompiler() && getMakeConfiguration().getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
                     options += libName + " "; // NOI18N
                 }
             }
         }
         if (cs != null) {
             options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getOutputFileFlag() + getOutputValue() + " "; // NOI18N
-        } else {
-            options += "-o " + getOutputValue() + " "; // NOI18N
         }
-        options += getStripOption().getOption() + " "; // NOI18N
+        if (cs != null && getStripOption().getValue()) {
+            options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getStripFlag() + " "; // NOI18N
+        }
         if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
             // FIXUP: should move to Platform
             if (cs != null) {
                 if (getPICOption().getValue()) {
                     options += getPICOption(cs);
                 }
-                if (cs.isSunCompiler()) {
-                    options += getNorunpathOption().getOption() + " "; // NOI18N
+                if (cs.getCompilerFlavor().isSunStudioCompiler()) {
+                    if (getNorunpathOption().getValue()) {
+                        options += "-norunpath "; // NOI18N
+                    }
                     options += getNameassignOption(getNameassignOption().getValue()) + " "; // NOI18N
                 }
             }
@@ -314,7 +316,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 
     // Interface OptionsProvider
     @Override
-    public String getAllOptions(BasicCompiler compiler) {
+    public String getAllOptions(AbstractCompiler compiler) {
         String options = getBasicOptions() + " "; // NOI18N
         options += getLibraryItems() + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
@@ -330,10 +332,10 @@ public class LinkerConfiguration implements AllOptionsProvider {
         if (compilerSet != null) {
             linker = compilerSet == null ? null : compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker();
             if (conf.hasCPPFiles(configurationDescriptor)) {
-                BasicCompiler ccCompiler = (BasicCompiler) compilerSet.getTool(Tool.CCCompiler);
+                AbstractCompiler ccCompiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
                 linkDriver = ccCompiler.getName();
             } else {
-                BasicCompiler cCompiler = (BasicCompiler) compilerSet.getTool(Tool.CCompiler);
+                AbstractCompiler cCompiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCompiler);
                 linkDriver = cCompiler.getName();
             }
         }
@@ -358,7 +360,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
             set2.put(new BooleanNodeProp(getStripOption(), true, "StripSymbols", getString("StripSymbolsTxt"), getString("StripSymbolsHint"))); // NOI18N
             if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
                 set2.put(new BooleanNodeProp(getPICOption(), true, "PositionIndependantCode", getString("PositionIndependantCodeTxt"), getString("PositionIndependantCodeHint"))); // NOI18N
-                if (compilerSet != null && compilerSet.isSunCompiler()) {
+                if (compilerSet != null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
                     set2.put(new BooleanNodeProp(getNorunpathOption(), true, "NoRunPath", getString("NoRunPathTxt"), getString("NoRunPathHint"))); // NOI18N
                     set2.put(new BooleanNodeProp(getNameassignOption(), true, "AssignName", getString("AssignNameTxt"), getString("AssignNameHint"))); // NOI18N
                 }
@@ -402,10 +404,10 @@ public class LinkerConfiguration implements AllOptionsProvider {
         return sheet;
     }
 
-    class AdditionalDependenciesOptions implements AllOptionsProvider {
+    private final class AdditionalDependenciesOptions implements AllOptionsProvider {
 
         @Override
-        public String getAllOptions(BasicCompiler compiler) {
+        public String getAllOptions(AbstractCompiler compiler) {
             String options = ""; // NOI18N
             options += additionalDependencies.getPreDefined();
             return CppUtils.reformatWhitespaces(options);
@@ -465,44 +467,6 @@ public class LinkerConfiguration implements AllOptionsProvider {
                 return;
             }
             super.setValue(v);
-        }
-    }
-
-    private class LinkerStripConfiguration extends BooleanConfiguration {
-
-        public LinkerStripConfiguration(BooleanConfiguration master, boolean def) {
-            super(master, def);
-        }
-
-        @Override
-        public String getOption() {
-            if (getValue()) {
-                String option;
-                if (getMakeConfiguration().getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
-                    option = "-Wl,-S "; // NOI18N
-                } else {
-                    option = "-s ";  // NOI18N
-                }
-                return option;
-            } else {
-                return ""; // NOI18N
-            }
-        }
-
-        // Clone and Assign
-        @Override
-        public void assign(BooleanConfiguration conf) {
-            setDirty(getDirty() || getValue() != conf.getValue());
-            setValue(conf.getValue());
-            setModified(conf.getValue());
-        }
-
-        @Override
-        public LinkerStripConfiguration clone() {
-            LinkerStripConfiguration clone = new LinkerStripConfiguration(getMaster(), getDefault());
-            clone.setValue(getValue());
-            clone.setModified(getModified());
-            return clone;
         }
     }
 

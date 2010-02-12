@@ -70,6 +70,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -337,6 +338,39 @@ public class JspCompletionItem implements CompletionItem {
 
     public CompletionTask createToolTipTask() {
         return null;
+    }
+
+    public static class UnresolvedPrefixTag extends PrefixTag {
+        private String tagLibURI;
+        private String tagLibPrefix;
+
+        public UnresolvedPrefixTag(String text, int substitutionOffset, String tagLibURI, String tagLibPrefix) {
+            super(text, substitutionOffset);
+            this.tagLibURI = tagLibURI;
+            this.tagLibPrefix = tagLibPrefix;
+        }
+
+        @Override
+        public void defaultAction(JTextComponent component) {
+            super.defaultAction(component);
+            final BaseDocument doc = (BaseDocument) component.getDocument();
+
+            doc.runAtomic(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        doc.insertString(Util.findPositionForJspDirective(doc),
+                                "<%@ taglib prefix=\"" //NOI18N
+                                + tagLibPrefix + "\" uri=\"" //NOI18N
+                                + tagLibURI + "\" %>\n", null);     //NOI18N
+
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        }
     }
 
     //------------------------------------------------------------------------------

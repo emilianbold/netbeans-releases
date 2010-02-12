@@ -106,7 +106,7 @@ public class FileObjectTestHid extends TestBaseHid {
         root = null;
         //assertGC("", ref);
     }
-    
+
     public void testEventsDelivery81746() throws Exception {
         doEventsDelivery81746(1);
     }
@@ -435,6 +435,31 @@ public class FileObjectTestHid extends TestBaseHid {
         } finally {
             lock.releaseLock();
         }
+    }
+
+    public void  testMoveFolder() throws IOException {
+        checkSetUp();
+        if (fs.isReadOnly()) return;
+        FileObject fold = getTestFolder1(root);
+
+        FileObject fold1 = fold.createFolder("A");
+        FileObject fold2 = fold.createFolder("B");
+
+        FileObject toMove = fold1.createFolder("something");
+        toMove.createData("kid");
+        FileLock lock = toMove.lock();
+        FileObject last = null;
+        try {
+            FileObject toMove2 = null;
+            assertNotNull (toMove2 = toMove.move(lock, fold2, toMove.getName(), toMove.getExt()));
+            lock.releaseLock();
+            lock = toMove2.lock();
+            assertNotNull(last = toMove2.move(lock, fold1, toMove.getName(), toMove.getExt()));
+        } finally {
+            lock.releaseLock();
+        }
+        assertTrue("Folder remains folder", last.isFolder());
+        assertEquals("One child remains", 1, last.getChildren().length);
     }
 
     /** Test of move method, of class org.openide.filesystems.FileObject. */

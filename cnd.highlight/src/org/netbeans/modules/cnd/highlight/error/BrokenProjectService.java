@@ -54,35 +54,38 @@ import org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes;
  * @author Alexander Simon
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes.class)
-public class BrokenProjectService implements BrokenIncludes, ChangeListener {
+public class BrokenProjectService implements BrokenIncludes {
     private static WeakHashMap<ChangeListener,Boolean> listeners = new WeakHashMap<ChangeListener,Boolean>();
-    private final Object lock = new String("BrokenProjectService lock"); // NOI18N
+    private final static Object lock = new Object();
     
     public BrokenProjectService() {
     }
 
+    @Override
     public boolean isBroken(NativeProject project) {
         return BadgeProvider.getInstance().isBroken(project);
     }
 
+    @Override
     public void addChangeListener(ChangeListener provider){
         synchronized(lock) {
             listeners.put(provider,Boolean.TRUE);
         }
     }
 
+    @Override
     public void removeChangeListener(ChangeListener provider){
         synchronized(lock) {
             listeners.remove(provider);
         }
     }
 
-    public void stateChanged(ChangeEvent e) {
+    /*package*/static void fireChanges(ChangeEvent e) {
         List<ChangeListener> list = null;
-        synchronized(lock) {
+        synchronized (lock) {
             list = new ArrayList<ChangeListener>(listeners.keySet());
         }
-        for (ChangeListener provider : list){
+        for (ChangeListener provider : list) {
             provider.stateChanged(e);
         }
     }
