@@ -9,17 +9,17 @@
     <property name="install.dir" value="/Applications/NetBeans"/>
     
     <!-- Base IDE properties   -->       
-    <property name="baseide.version" value="Dev"/>
-    <property name="appname" value="NetBeans Dev ${buildnumber}"/> 
-    <property name="mpkg.name_nb" value="NetBeans Dev ${buildnumber}"/> 
+    <property name="baseide.version" value="6.9M1"/>
+    <property name="appname" value="NetBeans 6.9M1"/> 
+    <property name="mpkg.name_nb" value="NetBeans 6.9M1"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb"/>      
     <property name="nb.check.build.number" value="0"/>
     <property name="nb.id" value="${buildnumber}"/>
 
-    <property name="appversion" value="Development Version"/>
-    <property name="nb.display.version.long"  value="Development Version ${buildnumber}"/>
-    <property name="nb.display.version.short" value="Dev"/>
+    <property name="appversion" value="6.9M1"/>
+    <property name="nb.display.version.long"  value="6.9M1"/>
+    <property name="nb.display.version.short" value="6.9M1"/>
 
     <property name="servicetag.source" value="NetBeans IDE ${nb.display.version.short} Installer"/>
     
@@ -118,7 +118,7 @@
     <!--property name="openesb_core_source" value="${openesb_builds_host}/kits/openesb/main/latest/CORE/jbi-core-installer.jar"/-->                  
 
 
-    <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
+    <property name="dmg.prefix.name" value="${prefix}"/>                         
 
     <property name="mpkg.name_nb_mysql" value="NetBeans IDE with MySQL"/> 
     <property name="mysql.version"      value="5.0.67"/>
