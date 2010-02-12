@@ -57,9 +57,9 @@ class PropertyNode extends AbstractNode implements HelpCtx.Provider {
     private CustomizerNode description;
 
     public PropertyNode(CustomizerNode description) {
-        super(description.children == null ? Children.LEAF : new PropertyNodeChildren(description.children));
-        setName(description.name);
-        setDisplayName(description.displayName);
+        super(description.getChildren() == null ? Children.LEAF : new PropertyNodeChildren(description.getChildren()));
+        setName(description.getName());
+        setDisplayName(description.getDisplayName());
         setIconBaseWithExtension(CustomizerNode.icon);
         this.description = description;
     }

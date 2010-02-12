@@ -48,7 +48,7 @@ import java.util.Set;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
 import org.openide.util.Lookup;
 
-public class CustomizerRootNodeProvider {
+public final class CustomizerRootNodeProvider {
 
     private static CustomizerRootNodeProvider instance = null;
 
@@ -59,18 +59,7 @@ public class CustomizerRootNodeProvider {
         return instance;
     }
 
-    public List<CustomizerNode> getCustomizerNodes(boolean advanced, Lookup lookup) {
-        ArrayList<CustomizerNode> ret = new ArrayList<CustomizerNode>();
-        List<CustomizerNode> nodes = getCustomizerNodes(lookup);
-        for (CustomizerNode n : nodes) {
-            if (n != null && n.advanced == advanced) {
-                ret.add(n);
-            }
-        }
-        return ret;
-    }
-
-    public synchronized List<CustomizerNode> getCustomizerNodes(Lookup lookup) {
+    public List<CustomizerNode> getCustomizerNodes(Lookup lookup) {
         ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
 
         // Add nodes from providers register via services
@@ -80,21 +69,11 @@ public class CustomizerRootNodeProvider {
         return list;
     }
 
-    public CustomizerNode getCustomizerNode(String id, Lookup lookup) {
-        List<CustomizerNode> nodes = getCustomizerNodes(lookup);
-        for (CustomizerNode n : nodes) {
-            if (n != null && n.name.equals(id)) {
-                return n;
-            }
-        }
-        return null;
-    }
-
     public List<CustomizerNode> getCustomizerNodes(String id, Lookup lookup) {
         ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
         List<CustomizerNode> nodes = getCustomizerNodes(lookup);
         for (CustomizerNode n : nodes) {
-            if (n != null && n.name.equals(id)) {
+            if (n != null && n.getName().equals(id)) {
                 list.add(n);
             }
         }

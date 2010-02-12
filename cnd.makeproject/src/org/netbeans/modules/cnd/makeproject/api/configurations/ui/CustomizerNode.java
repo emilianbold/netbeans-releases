@@ -52,28 +52,22 @@ public class CustomizerNode {
     public static final String iconbase = "org/netbeans/modules/cnd/makeproject/ui/resources/general"; // NOI18N
     public static final String icon = "org/netbeans/modules/cnd/makeproject/ui/resources/general.gif"; // NOI18N
 
-    public final String name;
-    public final String displayName;
-    public final boolean advanced;
-    public final CustomizerNode[] children;
-    public final Lookup lookup;
+    private final String name;
+    private final String displayName;
+    private final CustomizerNode[] children;
+    private final Lookup lookup;
 
     public enum CustomizerStyle {SHEET, PANEL};
         
-    public CustomizerNode(String name, String displayName, boolean advanced, CustomizerNode[] children, Lookup lookup) {
-        this.name = name;
-        this.displayName = displayName;
-        this.advanced = advanced;
-        this.children = children;
-        this.lookup = lookup;
-    }
-    
     public final MakeContext getContext(){
         return lookup.lookup(MakeContext.class);
     }
 
-    public CustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup context) {
-        this(name, displayName, false, children, context);
+    public CustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
+        this.name = name;
+        this.displayName = displayName;
+        this.children = children;
+        this.lookup = lookup;
     }
     
     public CustomizerStyle customizerStyle() {
@@ -92,7 +86,15 @@ public class CustomizerNode {
         return new HelpCtx(""); // NOI18N // See CR 6718766
     }
 
+    public String getName() {
+        return name;
+    }
+
     public String getDisplayName() {
         return displayName;
+    }
+
+    public CustomizerNode[] getChildren() {
+        return children;
     }
 }
