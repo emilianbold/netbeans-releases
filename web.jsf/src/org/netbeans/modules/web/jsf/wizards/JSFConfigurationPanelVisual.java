@@ -79,6 +79,9 @@ import org.openide.util.RequestProcessor;
 public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, DocumentListener  {
 
     private static final Logger LOG = Logger.getLogger(JSFConfigurationPanelVisual.class.getName());
+
+    private static final String JSF_SERVLET_NAME="Faces Servlet";   //NOI18N
+    private String jsfServletName=null;
     private JSFConfigurationPanel panel;
     private boolean customizer;
     
@@ -263,8 +266,6 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         lVersion = new javax.swing.JLabel();
         jtNewLibraryName = new javax.swing.JTextField();
         confPanel = new javax.swing.JPanel();
-        lServletName = new javax.swing.JLabel();
-        tServletName = new javax.swing.JTextField();
         lURLPattern = new javax.swing.JLabel();
         tURLPattern = new javax.swing.JTextField();
         cbPackageJars = new javax.swing.JCheckBox();
@@ -355,24 +356,24 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             .add(libPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(rbNoneLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
+                    .add(rbNoneLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)
                     .add(libPanelLayout.createSequentialGroup()
                         .add(rbRegisteredLibrary)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(cbLibraries, 0, 293, Short.MAX_VALUE)
+                            .add(cbLibraries, 0, 279, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, libPanelLayout.createSequentialGroup()
                                 .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(jtNewLibraryName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
-                                    .add(jtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE))
+                                    .add(jtNewLibraryName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+                                    .add(jtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(jbBrowse))))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, rbNewLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, rbNewLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)
                     .add(libPanelLayout.createSequentialGroup()
                         .add(22, 22, 22)
                         .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, lVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
-                            .add(lDirectory, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE))))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, lVersion, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE)
+                            .add(lDirectory, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         libPanelLayout.setVerticalGroup(
@@ -397,13 +398,6 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         );
 
         jsfTabbedPane.addTab(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_TAB_Libraries"), libPanel); // NOI18N
-
-        lServletName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_lServletName").charAt(0));
-        lServletName.setLabelFor(tServletName);
-        lServletName.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_Servlet_Name")); // NOI18N
-
-        tServletName.setEditable(false);
-        tServletName.setText("Faces Servlet");
 
         lURLPattern.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_lURLPattern").charAt(0));
         lURLPattern.setLabelFor(tURLPattern);
@@ -431,17 +425,10 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             .add(confPanelLayout.createSequentialGroup()
                 .add(confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(confPanelLayout.createSequentialGroup()
-                        .add(confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(confPanelLayout.createSequentialGroup()
-                                .addContainerGap()
-                                .add(lURLPattern))
-                            .add(confPanelLayout.createSequentialGroup()
-                                .add(11, 11, 11)
-                                .add(lServletName)))
+                        .addContainerGap()
+                        .add(lURLPattern)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(tServletName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
-                            .add(tURLPattern, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)))
+                        .add(tURLPattern, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
                     .add(confPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(cbPackageJars))
@@ -455,24 +442,18 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         confPanelLayout.setVerticalGroup(
             confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(confPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lServletName)
-                    .add(tServletName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lURLPattern)
                     .add(tURLPattern, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbPackageJars)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(cbPreferredLang, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(42, 42, 42))
+                .add(79, 79, 79))
         );
 
-        tServletName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_ServletName")); // NOI18N
         tURLPattern.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_Mapping")); // NOI18N
         cbPackageJars.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_PackageJarToWar")); // NOI18N
 
@@ -549,14 +530,12 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
     private javax.swing.JTextField jtFolder;
     private javax.swing.JTextField jtNewLibraryName;
     private javax.swing.JLabel lDirectory;
-    private javax.swing.JLabel lServletName;
     private javax.swing.JLabel lURLPattern;
     private javax.swing.JLabel lVersion;
     private javax.swing.JPanel libPanel;
     private javax.swing.JRadioButton rbNewLibrary;
     private javax.swing.JRadioButton rbNoneLibrary;
     private javax.swing.JRadioButton rbRegisteredLibrary;
-    private javax.swing.JTextField tServletName;
     private javax.swing.JTextField tURLPattern;
     // End of variables declaration//GEN-END:variables
  
@@ -774,28 +753,32 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
     /** Help context where to find more about the paste type action.
      * @return the help context for this action
      */
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(JSFConfigurationPanelVisual.class);
     }
     
+    @Override
     public void removeUpdate(javax.swing.event.DocumentEvent e) {
         panel.fireChangeEvent();
     }
 
+    @Override
     public void insertUpdate(javax.swing.event.DocumentEvent e) {
         panel.fireChangeEvent();
     }
 
+    @Override
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
         panel.fireChangeEvent();
     }
 
     public String getServletName(){
-        return tServletName.getText();
+        return jsfServletName==null ? JSF_SERVLET_NAME : jsfServletName;
     }
     
     protected void setServletName(String name){
-        tServletName.setText(name);
+        jsfServletName = name;
     }
     
     public String getURLPattern(){

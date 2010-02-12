@@ -41,7 +41,6 @@
 package org.netbeans.modules.css.lexer.api;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +49,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.css.gsf.CssLanguage;
 import org.netbeans.modules.css.lexer.CssLexer;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
@@ -217,7 +216,7 @@ public enum CssTokenId implements TokenId {
 
         @Override
         protected String mimeType() {
-            return Css.CSS_MIME_TYPE;
+            return CssLanguage.CSS_MIME_TYPE;
         }
     }.language();
 

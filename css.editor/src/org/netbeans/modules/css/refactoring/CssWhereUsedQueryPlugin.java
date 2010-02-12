@@ -44,7 +44,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.indexing.CssFileModel;
 import org.netbeans.modules.css.indexing.CssFileModel.Entry;
@@ -59,6 +59,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
@@ -135,7 +136,7 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
                 for (FileObject file : involvedFiles) {
                     try {
                         Source source;
-                        CloneableEditorSupport editor = Css.findCloneableEditorSupport(file);
+                        CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(file);
                         //prefer using editor
                         //XXX this approach doesn't match the dependencies graph
                         //which is made strictly upon the index data
