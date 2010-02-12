@@ -85,7 +85,7 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         CsmFile file = referencedClass.getContainingFile();
         long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
         CsmProject project = file.getProject();
-        Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> fullMap = getOrCreateFullMap(project, lastVersion);
+        Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> fullMap = getOrCreateFullMap(project, fileVersion);
         HierarchyModelImpl model = new HierarchyModelImpl(fullMap, referencedClass, !directSubtypesOnly);
         CsmUID<CsmClass> referencedClassUID = UIDs.get(referencedClass);
         Set<CsmUID<CsmClass>> set = model.getModel().get(referencedClassUID);
