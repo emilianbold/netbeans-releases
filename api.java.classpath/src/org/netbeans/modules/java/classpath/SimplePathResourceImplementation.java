@@ -45,6 +45,7 @@ import org.netbeans.spi.java.classpath.support.PathResourceBase;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 
 import java.net.URL;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -53,19 +54,39 @@ import java.net.URL;
 
 public final class SimplePathResourceImplementation  extends PathResourceBase {
 
-    private URL[] url;
+    /**
+     * Check URL for correct syntax for a classpath root.
+     * Must be folder URL, and JARs must use jar protocol.
+     * @param context additional information to include in exception, or null if stack trace suffices
+     */
+    public static void verify(URL root, String context) throws IllegalArgumentException {
+        if (context == null) {
+            context = "";
+        }
+        if (root == null) {
+            throw new IllegalArgumentException("Root cannot be null." + context);
+        }
+        // FU.iAF is a bit slow, so don't call it except when assertions are on:
+        boolean assertions = false;
+        assert assertions = true;
+        if (assertions && FileUtil.isArchiveFile(root)) {
+            throw new IllegalArgumentException(root + " is not a valid classpath entry. Use a jar: URL." + context);
+        }
+        if (!root.toExternalForm().endsWith("/")) {
+            throw new IllegalArgumentException(root + " must end with ''/''." + context);
+        }
+    }
 
-
+    private URL url;
 
     public SimplePathResourceImplementation (URL root) {
-        if (root == null)
-            throw new IllegalArgumentException ();
-        this.url = new URL[] {root};
+        verify(root, null);
+        this.url = root;
     }
 
 
     public URL[] getRoots() {
-        return this.url;
+        return new URL[] {url};
     }
 
     public ClassPathImplementation getContent() {
@@ -73,17 +94,17 @@ public final class SimplePathResourceImplementation  extends PathResourceBase {
     }
 
     public String toString () {
-        return "SimplePathResource{"+this.getRoots()[0]+"}";   //NOI18N
+        return "SimplePathResource{" + url + "}"; // NOI18N
     }
 
     public int hashCode () {
-        return this.url[0].hashCode();
+        return url.hashCode();
     }
 
     public boolean equals (Object other) {
         if (other instanceof SimplePathResourceImplementation) {
             SimplePathResourceImplementation opr = (SimplePathResourceImplementation) other;
-            return this.url[0].equals (opr.url[0]);
+            return url.equals(opr.url);
         }
         else
             return false;

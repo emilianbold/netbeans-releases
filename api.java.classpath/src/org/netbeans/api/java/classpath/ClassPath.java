@@ -65,6 +65,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.java.classpath.ClassPathAccessor;
+import org.netbeans.modules.java.classpath.SimplePathResourceImplementation;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
@@ -328,12 +329,6 @@ public final class ClassPath {
     }
     
     private List<ClassPath.Entry> createEntries (final List<Object[]> resources) {
-        //The ClassPathImplementation.getResources () should never return
-        // null but it was not explicitly stated in the javadoc
-        if (resources == null) {
-            return Collections.<ClassPath.Entry>emptyList();
-        }
-        else {
             List<ClassPath.Entry> cache = new ArrayList<ClassPath.Entry> ();
             for (Object[] pair : resources) {
                 PathResourceImplementation pr = (PathResourceImplementation) pair[0];
@@ -341,12 +336,14 @@ public final class ClassPath {
                 pr.removePropertyChangeListener(weakPListener);
                 pr.addPropertyChangeListener(weakPListener = WeakListeners.propertyChange(pListener, pr));
                 for (URL root : roots) {
+                    if (!(pr instanceof SimplePathResourceImplementation)) { // ctor already checks these things
+                        SimplePathResourceImplementation.verify(root, " From: " + pr.getClass().getName());
+                    }
                     cache.add(new Entry(root,
                             pr instanceof FilteringPathResourceImplementation ? (FilteringPathResourceImplementation) pr : null));
                 }
             }
             return Collections.unmodifiableList(cache);
-        }
     }
 
     private ClassPath (ClassPathImplementation impl) {
@@ -355,6 +352,7 @@ public final class ClassPath {
         this.impl = impl;
         this.pListener = new SPIListener ();
         this.impl.addPropertyChangeListener (weakPListener = WeakListeners.propertyChange(this.pListener, this.impl));
+        entries(); // perform IAE checks early
     }
 
     /**
