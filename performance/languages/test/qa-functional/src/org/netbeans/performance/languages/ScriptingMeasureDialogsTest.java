@@ -41,9 +41,6 @@
 
 package org.netbeans.performance.languages;
 
-import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
 
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
@@ -55,26 +52,14 @@ import org.netbeans.performance.languages.dialogs.*;
  * @author mkhramov@netbeans.org
  */
 public class ScriptingMeasureDialogsTest {
-    public static NbTestSuite suite() throws URISyntaxException {
+    public static NbTestSuite suite() {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Dialogs suite");
         System.setProperty("suitename", ScriptingMeasureDialogsTest.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness Scripting Dialogs suite");
 
-        URL u = ScriptingMeasureDialogsTest.class.getProtectionDomain().getCodeSource().getLocation();
-        File f = new File(u.toURI());
-        while (f != null) {
-            File hg = new File(f, ".hg");
-            if (hg.isDirectory()) {
-                System.setProperty("versioning.unversionedFolders", f.getPath());
-                System.err.println("ignoring Hg folder: " + f);
-                break;
-            }
-            f = f.getParentFile();
-        }
-
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.emptyConfiguration().honorAutoloadEager(true)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
         .addTest(ScriptingProjectsPropertiesDialogTest.class)
         .addTest(RailsGeneratorDialogTest.class)
         .addTest(RubyGemsDialogTest.class)
