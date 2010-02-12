@@ -38,70 +38,41 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.runprofiles;
 
-import java.util.ResourceBundle;
+package org.netbeans.modules.cnd.makeproject.ui.customizer;
+
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
-import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
-public class RunProfileNodeProvider implements CustomizerNodeProvider {
+class CCompilerCustomizerNode extends CustomizerNode {
 
-    /**
-     * Creates an instance of a customizer node
-     */
-    private CustomizerNode customizerNode = null;
+    public CCompilerCustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
+        super(name, displayName, children, lookup);
+    }
 
     @Override
-    public CustomizerNode factoryCreate(Lookup lookup) {
-        if (customizerNode == null) {
-            customizerNode = createProfileNode(lookup);
+    public Sheet getSheet(Configuration configuration) {
+        switch (getContext().getKind()){
+            case Item:
+                ItemConfiguration itemConfiguration = getContext().getItem().getItemConfiguration(configuration);
+                return itemConfiguration.getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, null);
+            case Folder:
+                Folder folder = getContext().getFolder();
+                return folder.getFolderConfiguration(configuration).getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, folder);
+            case Project:
+                return ((MakeConfiguration) configuration).getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, null);
         }
-        return customizerNode;
+        return null;
     }
 
-    public CustomizerNode createProfileNode(Lookup lookup) {
-        return new RunProfileCustomizerNode(
-                "Run", // NOI18N
-                getString("RUNNING"),
-                null, lookup);
-    }
-
-    private static class RunProfileCustomizerNode extends CustomizerNode {
-
-        public RunProfileCustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
-            super(name, displayName, children, lookup);
-        }
-
-        @Override
-        public Sheet getSheet(Configuration configuration) {
-            RunProfile runProfile = (RunProfile) configuration.getAuxObject(RunProfile.PROFILE_ID);
-            boolean isRemote = false;
-            if (configuration instanceof MakeConfiguration) {
-                isRemote = !((MakeConfiguration) configuration).getDevelopmentHost().isLocalhost();
-            }
-            return runProfile != null ? runProfile.getSheet(isRemote) : null;
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsRunning"); // NOI18N
-        }
-    }
-    /** Look up i18n strings here */
-    private ResourceBundle bundle;
-
-    protected String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(RunProfileNodeProvider.class);
-        }
-        return bundle.getString(s);
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(getContext().isCompilerConfiguration() ? "ProjectPropsCompiling" : "ProjectPropsParser"); // NOI18N
     }
 }

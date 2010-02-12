@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,16 +31,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.configurations;
+package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
+import java.util.ArrayList;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
-public interface CustomizerNodeProvider {
-    /**
-     * Creates an instance of CustomizerNode node
-     */
-    public CustomizerNode factoryCreate(Lookup lookup);
+/**
+ *
+ * @author as204739
+ */
+public class FolderNodeFactory {
+    private FolderNodeFactory() {
+    }
+
+    public static  Node createRootNodeFolder(Lookup lookup) {
+        MakeContext context = lookup.lookup(MakeContext.class);
+        int compilerSet = context.selectedCompilerSet();
+        ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>(); //new CustomizerNode[2];
+        descriptions.add(createGeneralFolderDescription(lookup));
+        if (compilerSet >= 0) {
+            descriptions.add(ItemNodeFactory.createCCompilerDescription(lookup));
+            descriptions.add(ItemNodeFactory.createCCCompilerDescription(lookup));
+        }
+
+        CustomizerNode rootDescription = new CustomizerNode(
+                "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), descriptions.toArray(new CustomizerNode[descriptions.size()]), lookup);  // NOI18N
+
+        return new PropertyNode(rootDescription);
+    }
+
+    private static CustomizerNode createGeneralFolderDescription(Lookup lookup) {
+        return new GeneralFolderCustomizerNode(
+                "GeneralItem", getString("LBL_Config_General"), null, lookup); // NOI18N
+    }
+
+    private static String getString(String s) {
+        return NbBundle.getBundle(MakeCustomizer.class).getString(s);
+    }
+
 }

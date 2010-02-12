@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
+import java.util.logging.Level;
 import javax.swing.plaf.UIResource;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -49,7 +50,6 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.List;
-import java.util.Vector;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
@@ -60,11 +60,12 @@ import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.netbeans.modules.cnd.makeproject.ui.utils.DirectoryChooserInnerPanel;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public class ProjectPropPanel extends javax.swing.JPanel {
+public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.Savable {
 
     private SourceRootChooser sourceRootChooser;
     private TestRootChooser testRootChooser;
@@ -104,6 +105,7 @@ public class ProjectPropPanel extends javax.swing.JPanel {
 
         encoding.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent arg0) {
                 handleEncodingChange();
             }
@@ -113,6 +115,7 @@ public class ProjectPropPanel extends javax.swing.JPanel {
     private void handleEncodingChange() {
     }
 
+    @Override
     public void save() {
         Charset enc = (Charset) encoding.getSelectedItem();
         String encName;
@@ -134,6 +137,7 @@ public class ProjectPropPanel extends javax.swing.JPanel {
             setOpaque(true);
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             assert value instanceof Charset;
             setName("ComboBox.listRenderer"); // NOI18N
@@ -175,7 +179,7 @@ public class ProjectPropPanel extends javax.swing.JPanel {
                     addElement(defEnc);
                 } catch (IllegalCharsetNameException e) {
                     //The source.encoding property is completely broken
-                    Logger.getLogger(this.getClass().getName()).info("IllegalCharsetName: " + originalEncoding);
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, "IllegalCharsetName: {0}", originalEncoding);
                 }
             }
             if (defEnc == null) {
@@ -191,29 +195,23 @@ public class ProjectPropPanel extends javax.swing.JPanel {
             super(name, new String[0]);
         }
 
+        @Override
         public boolean contains(Charset c) {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public CharsetDecoder newDecoder() {
             throw new UnsupportedOperationException();
         }
 
+        @Override
         public CharsetEncoder newEncoder() {
             throw new UnsupportedOperationException();
         }
     }
 
-//    public void actionPerformed(ActionEvent e) {
-////        if (sourceRootChooser.isChanged()) {
-////            Vector<String> list = sourceRootChooser.getListData();
-////            makeConfigurationDescriptor.setSourceRootsList(new ArrayList<String>(list));
-////        }
-////        MakeCustomizerProvider makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProvider.class);
-////        makeCustomizerProvider.removeActionListener(this);
-//    }
-
-    static class SourceRootChooser extends DirectoryChooserInnerPanel {
+    private static class SourceRootChooser extends DirectoryChooserInnerPanel {
 
         public SourceRootChooser(String baseDir, List<String> feed) {
             super(baseDir, feed);
@@ -242,7 +240,7 @@ public class ProjectPropPanel extends javax.swing.JPanel {
         }
     }
 
-    static class TestRootChooser extends DirectoryChooserInnerPanel {
+    private static class TestRootChooser extends DirectoryChooserInnerPanel {
 
         public TestRootChooser(String baseDir, List<String> feed) {
             super(baseDir, feed);

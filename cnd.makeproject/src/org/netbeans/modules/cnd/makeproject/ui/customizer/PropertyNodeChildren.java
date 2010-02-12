@@ -39,62 +39,40 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.configurations.ui;
+package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
-import javax.swing.JPanel;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
-import org.openide.nodes.Sheet;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
-public class CustomizerNode {
-    public static final String iconbase = "org/netbeans/modules/cnd/makeproject/ui/resources/general"; // NOI18N
-    public static final String icon = "org/netbeans/modules/cnd/makeproject/ui/resources/general.gif"; // NOI18N
+/**
+ * Children used for configuration
+ */
+class PropertyNodeChildren extends Children.Keys<CustomizerNode> {
 
-    private final String name;
-    private final String displayName;
-    private final CustomizerNode[] children;
-    private final Lookup lookup;
+    private Collection<CustomizerNode> descriptions;
 
-    public enum CustomizerStyle {SHEET, PANEL};
-        
-    public final MakeContext getContext(){
-        return lookup.lookup(MakeContext.class);
+    public PropertyNodeChildren(CustomizerNode[] descriptions) {
+        this.descriptions = Arrays.asList(descriptions);
     }
 
-    public CustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
-        this.name = name;
-        this.displayName = displayName;
-        this.children = children;
-        this.lookup = lookup;
-    }
-    
-    public CustomizerStyle customizerStyle() {
-        return CustomizerStyle.SHEET; // Backward compatible
+    // Children.Keys impl --------------------------------------------------
+    @Override
+    public void addNotify() {
+        setKeys(descriptions);
     }
 
-    public Sheet getSheet(Configuration configuration) {
-        return null;
-    }
-    
-    public JPanel getPanel(Configuration configuration) {
-        return null;
+    @Override
+    @SuppressWarnings(value = "unchecked")
+    public void removeNotify() {
+        setKeys(Collections.EMPTY_LIST);
     }
 
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(""); // NOI18N // See CR 6718766
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public CustomizerNode[] getChildren() {
-        return children;
+    @Override
+    protected Node[] createNodes(CustomizerNode key) {
+        return new Node[]{new PropertyNode(key)};
     }
 }
