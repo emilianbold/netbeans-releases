@@ -924,6 +924,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             PropertyChangeEvent suspEvt = new PropertyChangeEvent(this, PROP_SUSPENDED,
                     Boolean.valueOf(!suspendedToFire.booleanValue()),
                     suspendedToFire);
+            if (!resumed) suspEvt.setPropagationId("methodInvoke"); // NOI18N
             if (stepBrkpEvt != null) {
                 return Arrays.asList(new PropertyChangeEvent[] {stepBrkpEvt, suspEvt});
             } else {
@@ -1145,7 +1146,9 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         }
         // Do not notify suspended state when was already unsuspended when started invoking.
         if (!wasUnsuspendedStateWhenInvoking) {
-            notifySuspended();
+            PropertyChangeEvent evt = notifySuspended(false, false);
+            evt.setPropagationId("methodInvoke"); // NOI18N
+            pch.firePropertyChange(evt);
         }
     }
     

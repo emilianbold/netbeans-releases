@@ -314,12 +314,7 @@ public class ClientJavaSourceHelper {
                 }
             }
         } else if (saasMethods != null) {
-            for (WadlSaasMethod saasMethod : saasMethods) {
-                List<MethodTree> httpMethods = Wadl2JavaHelper.createHttpMethods(copy, saasMethod);
-                for (MethodTree httpMethod : httpMethods) {
-                    modifiedInnerClass = maker.addClassMember(modifiedInnerClass, httpMethod);
-                }
-            }
+            modifiedInnerClass = Wadl2JavaHelper.addHttpMethods(copy, modifiedInnerClass, saasMethods);
         }
 
         // add close()
@@ -830,6 +825,24 @@ public class ClientJavaSourceHelper {
 
         public String getMediaType() {
             return mediaType;
+        }
+    }
+
+    static class Pair {
+        private String key;
+        private String value;
+
+        public Pair(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getValue() {
+            return value;
         }
     }
 }

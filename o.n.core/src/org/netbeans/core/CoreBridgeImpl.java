@@ -139,10 +139,6 @@ public final class CoreBridgeImpl extends CoreBridge {
         }
     }
 
-    public void cliUsage(PrintWriter printWriter) {
-        // nothing for now
-    }
-
     public int cli(
         String[] args,
         InputStream inputStream, 
@@ -197,7 +193,5 @@ public final class CoreBridgeImpl extends CoreBridge {
         PropertyEditorManager.registerEditor (Boolean.TYPE, org.netbeans.beaninfo.editors.BoolEditor.class);
         editorsRegistered = true;
     }
-
-    protected void loadSettings() {}
 
 }

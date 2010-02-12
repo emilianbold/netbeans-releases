@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,50 +31,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans;
+package org.netbeans.api.progress.transactional;
 
-import java.util.ResourceBundle;
-import javax.swing.JOptionPane;
+import java.util.List;
 
-/** Bootstrap main class.
- * @author Jaroslav Tulach, Jesse Glick
+/**
+ * Convenience base class for transactions which take no arguments and
+ * return no value.
+ *
+ * @author Tim Boudreau
  */
-public final class Main extends Object {
-    private Main() {
+public abstract class VoidTransaction extends Transaction <Void, Void> {
+    protected VoidTransaction(String name) {
+        super (name, Void.class, Void.class);
     }
 
-    /** Starts the NetBeans system.
-     * @param args the command line arguments
-     * @throws Exception for lots of reasons
-     */
-    public static void main (String args[]) throws Exception {
-        // following code has to execute without java6 - e.g. do not use
-        // NbBundle or any other library compiled against java6 only
-        // also prevent usage of java6 methods and classes
-        try {
-            Class.forName("java.util.ServiceLoader"); // NOI18N
-        } catch (ClassNotFoundException ex) {
-            JOptionPane.showMessageDialog(
-                null,
-                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_InstallJava6"),
-                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_NeedsJava6"),
-                JOptionPane.WARNING_MESSAGE
-            );
-            System.exit(10);
-        }
-        // end of java6 only code
+    @Override
+    protected final int indexOf(Transaction<?, ?> t) {
+        return super.indexOf(t);
+    }
 
-        MainImpl.main(args);
+    @Override
+    protected final void listContents(List<? super Transaction<?, ?>> contents) {
+        super.listContents(contents);
     }
-        
-    
-    /**
-     * Call when the system is up and running, to complete handling of
-     * delayed command-line options like -open FILE.
-     */
-    public static void finishInitialization() {
-        MainImpl.finishInitialization();
+
+    @Override
+    protected final boolean rollback(TransactionController controller, Void argument, Void prevResult) throws TransactionException {
+        return rollback(controller);
     }
+
+    @Override
+    protected final int size() {
+        return super.size();
+    }
+
+    @Override
+    protected final Void run(TransactionController controller, Void argument) throws TransactionException {
+        run(controller);
+        return null;
+    }
+
+    protected abstract void run(TransactionController controller) throws TransactionException;
+    protected abstract boolean rollback(TransactionController controller) throws TransactionException;
 }
