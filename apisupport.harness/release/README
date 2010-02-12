@@ -799,6 +799,12 @@ module, or in nbbuild/user.build.properties for a netbeans.org module). You may
 also define just ${nbjdk.home} directly, without using ${nbjdk.active}, if you do
 not need to use the Java Platform Manager to set up the JDK definition.
 
+use.pack200 [since 6.9] - whether to Pack200 compress NBMs; default true.
+
+pack200.excludes [since 6.9] - comma- or space- separated list of patterns of 
+files relative to cluster directory for which pack200 compression should not be used 
+while creating NBMs.
+
 project.license [since 6.0] - license to use for newly created files in the project
 (applies also to suites); default is 'cddl' for modules inside netbeans.org.
 
