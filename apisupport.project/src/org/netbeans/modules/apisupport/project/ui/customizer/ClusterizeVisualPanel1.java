@@ -62,7 +62,7 @@ final class ClusterizeVisualPanel1 extends JPanel {
 
     @Override
     public String getName() {
-        return panel.settings.getStep(0);
+        return "Hello";//panel.settings.getStep(0);
     }
 
     void showProgress() {
