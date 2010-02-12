@@ -151,15 +151,15 @@ public class FmtOptions {
 //    public static final String spaceBeforeStaticInitLeftBrace = "spaceBeforeStaticInitLeftBrace"; //NOI18N
 //    public static final String spaceBeforeArrayInitLeftBrace = "spaceBeforeArrayInitLeftBrace"; //NOI18N
 //    public static final String spaceWithinParens = "spaceWithinParens"; //NOI18N
-//    public static final String spaceWithinMethodDeclParens = "spaceWithinMethodDeclParens"; //NOI18N
-//    public static final String spaceWithinMethodCallParens = "spaceWithinMethodCallParens"; //NOI18N
+    public static final String spaceWithinMethodDeclParens = "spaceWithinMethodDeclParens"; //NOI18N
+    public static final String spaceWithinMethodCallParens = "spaceWithinMethodCallParens"; //NOI18N
     public static final String spaceWithinIfParens = "spaceWithinIfParens"; //NOI18N
     public static final String spaceWithinForParens = "spaceWithinForParens"; //NOI18N
     public static final String spaceWithinWhileParens = "spaceWithinWhileParens"; //NOI18N
     public static final String spaceWithinSwitchParens = "spaceWithinSwitchParens"; //NOI18N
     public static final String spaceWithinCatchParens = "spaceWithinCatchParens"; //NOI18N
 //    public static final String spaceWithinSynchronizedParens = "spaceWithinSynchronizedParens"; //NOI18N
-//    public static final String spaceWithinTypeCastParens = "spaceWithinTypeCastParens"; //NOI18N
+    public static final String spaceWithinTypeCastParens = "spaceWithinTypeCastParens"; //NOI18N
 //    public static final String spaceWithinAnnotationParens = "spaceWithinAnnotationParens"; //NOI18N
 //    public static final String spaceWithinBraces = "spaceWithinBraces"; //NOI18N
 //    public static final String spaceWithinArrayInitBrackets = "spaceWithinArrayInitBrackets"; //NOI18N
@@ -169,7 +169,7 @@ public class FmtOptions {
 //    public static final String spaceAfterSemi = "spaceAfterSemi"; //NOI18N
 //    public static final String spaceBeforeColon = "spaceBeforeColon"; //NOI18N
 //    public static final String spaceAfterColon = "spaceAfterColon"; //NOI18N
-//    public static final String spaceAfterTypeCast = "spaceAfterTypeCast"; //NOI18N
+    public static final String spaceAfterTypeCast = "spaceAfterTypeCast"; //NOI18N
     
     public static CodeStyleProducer codeStyleProducer;
 
@@ -263,15 +263,15 @@ public class FmtOptions {
 //            { spaceBeforeStaticInitLeftBrace, TRUE},
 //            { spaceBeforeArrayInitLeftBrace, FALSE},
 //            { spaceWithinParens, FALSE},
-//            { spaceWithinMethodDeclParens, FALSE},
-//            { spaceWithinMethodCallParens, FALSE},
+            { spaceWithinMethodDeclParens, FALSE},
+            { spaceWithinMethodCallParens, FALSE},
             { spaceWithinIfParens, FALSE},
             { spaceWithinForParens, FALSE},
             { spaceWithinWhileParens, FALSE},
             { spaceWithinSwitchParens, FALSE},
             { spaceWithinCatchParens, FALSE},
 //            { spaceWithinSynchronizedParens, FALSE},
-//            { spaceWithinTypeCastParens, FALSE},
+            { spaceWithinTypeCastParens, FALSE},
 //            { spaceWithinAnnotationParens, FALSE},
 //            { spaceWithinBraces, FALSE},
 //            { spaceWithinArrayInitBrackets, FALSE},
@@ -281,7 +281,7 @@ public class FmtOptions {
 //            { spaceAfterSemi, TRUE},
 //            { spaceBeforeColon, TRUE},
 //            { spaceAfterColon, TRUE},
-//            { spaceAfterTypeCast, TRUE}
+            { spaceAfterTypeCast, TRUE}
 
         };
         
