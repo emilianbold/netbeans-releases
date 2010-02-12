@@ -55,6 +55,7 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.WebUtils;
 
 /**
  * Creates CSS virtual source for html sources.
@@ -193,7 +194,7 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                             }
                         } else if (id == HTMLTokenId.VALUE) {
                             if (isLinkTag && HREF_ATTR_NAME.equals(currentAttributeName.toLowerCase(Locale.ENGLISH))) {
-                                String unquotedValue = Utils.unquotedValue(t.text().toString().toString());
+                                String unquotedValue = WebUtils.unquotedValue(t.text().toString().toString());
                                 //found href value, generate virtual css import
                                 StringBuilder buf = new StringBuilder();
                                 buf.append("@import \""); //NOI18N

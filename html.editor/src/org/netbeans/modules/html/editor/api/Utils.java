@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.html.editor.api;
 
+import java.io.File;
+import java.net.URI;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,22 +62,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  */
 public class Utils {
 
-    /** finds first ResultIterator */
-    public static ResultIterator getResultIterator(ResultIterator ri, String mimetype) {
-        for(Embedding e : ri.getEmbeddings() ) {
-            ResultIterator eri = ri.getResultIterator(e);
-            if(e.getMimeType().equals(mimetype)) {
-                return eri;
-            } else {
-                ResultIterator eeri = getResultIterator(eri, mimetype);
-                if(eeri != null) {
-                    return eeri;
-                }
-            }
-        }
-        return null;
-    }
-
+   
     /** Returns an absolute context URL (starting with '/') for a relative URL and base URL.
     *  @param relativeTo url to which the relative URL is related. Treated as directory iff
     *    ends with '/'
@@ -208,17 +195,5 @@ public class Utils {
         return null;
     }
 
-    public static String unquotedValue(String value) {
-        return isValueQuoted(value) ? value.substring(1, value.length() - 1) : value;
-    }
-
-    public static boolean isValueQuoted(String value) {
-        if (value.length() < 2) {
-            return false;
-        } else {
-            return ((value.charAt(0) == '\'' || value.charAt(0) == '"') &&
-                    (value.charAt(value.length() - 1) == '\'' || value.charAt(value.length() - 1) == '"'));
-        }
-    }
-
+  
 }
