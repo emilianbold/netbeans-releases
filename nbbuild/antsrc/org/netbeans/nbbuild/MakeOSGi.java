@@ -46,9 +46,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -60,7 +58,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -394,23 +391,13 @@ public class MakeOSGi extends Task {
         Map<String, byte[]> classfiles = new TreeMap<String, byte[]>();
         VerifyClassLinkage.read(module, classfiles, new HashSet<File>(), this, null);
         final Set<String> imports = new TreeSet<String>();
-        ClassLoader loader = new ClassLoader() {
-            final ClassLoader jre = ClassLoader.getSystemClassLoader().getParent();
-            public @Override URL getResource(String name) {
-                if (!name.startsWith("java/") && (name.startsWith("org/osgi/") || jre.getResource(name) != null)) {
-                    imports.add(name.replaceFirst("/[^/]+[.]class$", "").replace('/', '.'));
-                }
-                try {
-                    return new URL("file:/" + name); // irrelevant
-                } catch (MalformedURLException x) {
-                    throw new RuntimeException(x);
+        ClassLoader jre = ClassLoader.getSystemClassLoader().getParent();
+        for (byte[] data : classfiles.values()) {
+            for (String clazz : VerifyClassLinkage.dependencies(data)) {
+                if (!clazz.startsWith("java.") && (clazz.startsWith("org.osgi.") || jre.getResource(clazz.replace('.', '/') + ".class") != null)) {
+                    imports.add(clazz.replaceFirst("[.][^.]+$", ""));
                 }
             }
-        };
-        for (Map.Entry<String, byte[]> entry : classfiles.entrySet()) {
-            String clazz = entry.getKey();
-            byte[] data = entry.getValue();
-            VerifyClassLinkage.verify(clazz, data, loadable, loader, new AtomicInteger(), this, /* should never fail anyway */true);
         }
         return imports;
     }
