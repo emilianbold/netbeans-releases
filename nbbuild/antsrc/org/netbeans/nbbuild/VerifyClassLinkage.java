@@ -55,6 +55,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -170,7 +171,7 @@ public class VerifyClassLinkage extends Task {
             for (Map.Entry<String, byte[]> entry: classfiles.entrySet()) {
                 String clazz = entry.getKey();
                 byte[] data = entry.getValue();
-                verify(clazz, data, loadable, loader, max, this, failOnError);
+                verify(clazz, data, loadable, loader, max);
                 if (max.get() < 0) {
                     break;
                 }
@@ -231,20 +232,47 @@ public class VerifyClassLinkage extends Task {
         }
     }
 
+    private void verify(String clazz, byte[] data, Map<String,Boolean> loadable, ClassLoader loader, AtomicInteger maxWarn)
+            throws IOException, BuildException {
+        //log("Verifying linkage of " + clazz.replace('/', '.'), Project.MSG_DEBUG);
+        Set<String> dependencies = dependencies(data);
+        //System.err.println(clazz + " -> " + dependencies);
+        for (String clazz2 : dependencies) {
+            Boolean exists = loadable.get(clazz2);
+            if (exists == null) {
+                exists = loader.getResource(clazz2.replace('.', '/') + ".class") != null;
+                loadable.put(clazz2, exists);
+            }
+            if (!exists) {
+                String message = clazz + " cannot access " + clazz2;
+                if (failOnError) {
+                    throw new BuildException(message, getLocation());
+                } else if (maxWarn.getAndDecrement() > 0) {
+                    log("Warning: " + message, Project.MSG_WARN);
+                } else {
+                    log("(additional warnings not reported)", Project.MSG_WARN);
+                    return;
+                }
+            } else {
+                //log("Working reference to " + clazz2, Project.MSG_DEBUG);
+            }
+        }
+    }
+    
     private static void skip(DataInput input, int bytes) throws IOException {
         int skipped = input.skipBytes(bytes);
         if (skipped != bytes) {
             throw new IOException("Truncated class file");
         }
     }
-    static void verify(String clazz, byte[] data, Map<String,Boolean> loadable, ClassLoader loader, AtomicInteger maxWarn, Task task, boolean failOnError)
-            throws IOException, BuildException {
-        //log("Verifying linkage of " + clazz.replace('/', '.'), Project.MSG_DEBUG);
+    static Set<String> dependencies(byte[] data) throws IOException {
+        Set<String> result = new TreeSet<String>();
         DataInput input = new DataInputStream(new ByteArrayInputStream(data));
         skip(input, 8); // magic, minor_version, major_version
         int size = input.readUnsignedShort() - 1; // constantPoolCount
         String[] utf8Strings = new String[size];
         boolean[] isClassName = new boolean[size];
+        boolean[] isDescriptor = new boolean[size];
         for (int i = 0; i < size; i++) {
             byte tag = input.readByte();
             switch (tag) {
@@ -254,7 +282,7 @@ public class VerifyClassLinkage extends Task {
                 case 7: // CONSTANT_Class
                     int index = input.readUnsignedShort() - 1;
                     if (index >= size) {
-                        throw new IOException("CONSTANT_Class index " + index + " too big for size of pool " + size);
+                        throw new IOException("@" + i + ": CONSTANT_Class_info.name_index " + index + " too big for size of pool " + size);
                     }
                     //log("Class reference at " + index, Project.MSG_DEBUG);
                     isClassName[index] = true;
@@ -264,8 +292,15 @@ public class VerifyClassLinkage extends Task {
                 case 9: // CONSTANT_Fieldref
                 case 10: // CONSTANT_Methodref
                 case 11: // CONSTANT_InterfaceMethodref
-                case 12: // CONSTANT_NameAndType
                     skip(input, 4);
+                    break;
+                case 12: // CONSTANT_NameAndType
+                    skip(input, 2);
+                    index = input.readUnsignedShort() - 1;
+                    if (index >= size || index < 0) {
+                        throw new IOException("@" + i + ": CONSTANT_NameAndType_info.descriptor_index " + index + " too big for size of pool " + size);
+                    }
+                    isDescriptor[index] = true;
                     break;
                 case 8: // CONSTANT_String
                     skip(input, 2);
@@ -280,46 +315,39 @@ public class VerifyClassLinkage extends Task {
                             "; running UTF-8 strings: " + Arrays.asList(utf8Strings));
             }
         }
-        task.log("UTF-8 strings: " + Arrays.asList(utf8Strings), Project.MSG_DEBUG);
+        //task.log("UTF-8 strings: " + Arrays.asList(utf8Strings), Project.MSG_DEBUG);
         for (int i = 0; i < size; i++) {
-            if (!isClassName[i]) {
-                continue;
-            }
-            String vmname = utf8Strings[i];
-            while (vmname.charAt(0) == '[') {
-                // array type
-                vmname = vmname.substring(1);
-            }
-            if (vmname.length() == 1) {
-                // primitive
-                continue;
-            }
-            String clazz2;
-            if (vmname.charAt(vmname.length() - 1) == ';' && vmname.charAt(0) == 'L') {
-                // Uncommon but seems sometimes this happens.
-                clazz2 = vmname.substring(1, vmname.length() - 1);
-            } else {
-                clazz2 = vmname;
-            }
-            Boolean exists = loadable.get(clazz2.replace('/', '.'));
-            if (exists == null) {
-                exists = loader.getResource(clazz2 + ".class") != null;
-                loadable.put(clazz2, exists);
-            }
-            if (!exists) {
-                String message = clazz + " cannot access " + clazz2.replace('/', '.');
-                if (failOnError) {
-                    throw new BuildException(message, task.getLocation());
-                } else if (maxWarn.getAndDecrement() > 0) {
-                    task.log("Warning: " + message, Project.MSG_WARN);
-                } else {
-                    task.log("(additional warnings not reported)", Project.MSG_WARN);
-                    return;
+            String s = utf8Strings[i];
+            if (isClassName[i]) {
+                while (s.charAt(0) == '[') {
+                    // array type
+                    s = s.substring(1);
                 }
-            } else {
-                //log("Working reference to " + clazz2.replace('/', '.'), Project.MSG_DEBUG);
+                if (s.length() == 1) {
+                    // primitive
+                    continue;
+                }
+                String c;
+                if (s.charAt(s.length() - 1) == ';' && s.charAt(0) == 'L') {
+                    // Uncommon but seems sometimes this happens.
+                    c = s.substring(1, s.length() - 1);
+                } else {
+                    c = s;
+                }
+                result.add(c.replace('/', '.'));
+            } else if (isDescriptor[i]) {
+                int idx = 0;
+                while ((idx = s.indexOf('L', idx)) != -1) {
+                    int semi = s.indexOf(';', idx);
+                    if (semi == -1) {
+                        throw new IOException("Invalid type or descriptor: " + s);
+                    }
+                    result.add(s.substring(idx + 1, semi).replace('/', '.'));
+                    idx = semi;
+                }
             }
         }
+        return result;
     }
 
 }

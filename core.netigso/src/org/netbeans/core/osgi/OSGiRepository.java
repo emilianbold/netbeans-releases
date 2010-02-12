@@ -136,6 +136,7 @@ class OSGiRepository extends Repository {
             delegates.add(userdir);
             delegates.addAll(fss.values());
             setDelegates(delegates.toArray(new FileSystem[delegates.size()]));
+            // XXX fails since MFO's ctor has leader==null: assert getRoot().isValid() : "invalid root of " + getRoot().getClass();
             // XXX also include FileSystem's from lookup
         }
 

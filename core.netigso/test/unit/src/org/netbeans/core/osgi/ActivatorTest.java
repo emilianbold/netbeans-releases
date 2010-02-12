@@ -110,26 +110,28 @@ public class ActivatorTest extends NbTestCase {
         assertEquals("10", System.getProperty("my.url.length"));
     }
 
-    /* XXX investigate why !FileUtil.configRoot.valid
     public void testSettings() throws Exception {
         new OSGiProcess(getWorkDir()).manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: custom.Install",
                 "OpenIDE-Module-Module-Dependencies: org.netbeans.modules.settings/1, org.openide.loaders, " +
-                "org.openide.filesystems, org.openide.modules, org.openide.util",
+                "org.openide.filesystems, org.openide.modules, org.openide.util, org.netbeans.core/2",
                 "OpenIDE-Module-Specification-Version: 1.0").
-                module("org.netbeans.modules.settings").sourceFile("custom/Install.java", "package custom;",
+                // XXX consider moving Environment.Provider part of FileEntityResolver to settings module to avoid core dep:
+                module("org.netbeans.modules.settings").module("org.netbeans.core").sourceFile("custom/Install.java", "package custom;",
                 "public class Install extends org.openide.modules.ModuleInstall {",
                 "public @Override void restored() {",
                 "Bean b = new Bean(); b.setP(\"hello\");",
                 "try {",
                 "org.openide.loaders.InstanceDataObject.create(org.openide.loaders.DataFolder.findFolder(",
-                "org.openide.filesystems.FileUtil.getConfigRoot()), \"x\", b, null);",
-                "System.setProperty(\"my.settings\", org.openide.filesystems.FileUtil.getConfigFile(\"x.settings\").asText());",
+                "org.openide.filesystems.FileUtil.getConfigRoot().createFolder(\"d\")), \"x\", b, null);",
+                "System.setProperty(\"my.settings\", org.openide.filesystems.FileUtil.getConfigFile(\"d/x.settings\").asText());",
                 "} catch (Exception x) {x.printStackTrace();}",
                 "}",
                 "@org.netbeans.api.settings.ConvertAsJavaBean public static class Bean {",
                 "private String p; public String getP() {return p;} public void setP(String p2) {p = p2;}",
+                "public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {}",
+                "public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {}",
                 "}",
                 "}").
                 run();
@@ -137,6 +139,20 @@ public class ActivatorTest extends NbTestCase {
         assertNotNull(settings);
         assertTrue(settings, settings.contains("<string>hello</string>"));
     }
-     */
+
+    public void testDynamicImport() throws Exception {
+        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom;",
+                "public class Install extends org.openide.modules.ModuleInstall {",
+                "public @Override void restored() {",
+                "new javax.swing.JOptionPane().setUI(new javax.swing.plaf.basic.BasicOptionPaneUI());",
+                "System.setProperty(\"my.bundle.worked\", \"true\");",
+                "}",
+                "}").manifest(
+                "OpenIDE-Module: custom",
+                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules",
+                "OpenIDE-Module-Specification-Version: 1.0").run();
+        assertTrue(Boolean.getBoolean("my.bundle.worked"));
+    }
 
 }
