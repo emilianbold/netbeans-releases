@@ -50,6 +50,8 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="build" depends="init">
+        <!-- XXX dangerous to do incrementally since qualifier easily changes acc. to date or nb.org Hg rev: -->
+        <delete dir="${osgi.dest.dir}"/>
         <mkdir dir="${osgi.dest.dir}"/>
         <makeosgi destdir="${osgi.dest.dir}">
             <pathfileset>

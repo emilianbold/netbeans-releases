@@ -302,9 +302,6 @@ public final class Main extends Object {
     CoreBridge.getDefault().registerPropertyEditors();
     StartLog.logProgress ("PropertyEditors registered"); // NOI18N
 
-    CoreBridge.getDefault().loadSettings();
-    StartLog.logProgress ("IDE settings loaded"); // NOI18N
-
     org.netbeans.Main.finishInitialization();
     StartLog.logProgress("Ran any delayed command-line options"); // NOI18N
     

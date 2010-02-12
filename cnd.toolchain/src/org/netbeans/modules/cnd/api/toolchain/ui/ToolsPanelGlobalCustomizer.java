@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.ui.options;
+package org.netbeans.modules.cnd.api.toolchain.ui;
 
 /**
  * service to manage Tools panel customization

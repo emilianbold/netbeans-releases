@@ -52,17 +52,23 @@ import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.CastExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
@@ -136,6 +142,16 @@ class WSTransformer extends DefaultTreePathVisitor {
 		String text = token.text().toString();
 		if (".".equals(text)) {
 		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundStringConcatOps());
+		}
+		else if (",".equals(text)) {
+		    int offset = ts.offset();
+		    replaceSpaceBeforeToken(ts, CodeStyle.get(context.document()).spaceBeforeComma(), null);
+		    ts.move(offset);
+		    if (ts.moveNext() && ts.moveNext()) {
+			LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
+			replaceSpaceBeforeToken(ts, CodeStyle.get(context.document()).spaceAfterComma(), null);
+		    }
+		    System.out.println("comma");
 		}
 		else if (ASSIGN_OPERATORS.contains(text)) {
 		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundAssignOps());
@@ -342,7 +358,7 @@ class WSTransformer extends DefaultTreePathVisitor {
 
     @Override
     public void visit(MethodDeclaration node) {
-        visitFunctionMethod(node);
+        visitFunctionMethodDeclaration(node);
         isMethod = true;
         super.visit(node);
         isMethod = false;
@@ -352,12 +368,12 @@ class WSTransformer extends DefaultTreePathVisitor {
     @Override
     public void visit(FunctionDeclaration node) {
         if (!isMethod) {  // add blank lines, only if it is not a method
-            visitFunctionMethod(node);
+            visitFunctionMethodDeclaration(node);
         }
         super.visit(node);
     }
 
-    private void visitFunctionMethod(ASTNode node) {
+    private void visitFunctionMethodDeclaration(ASTNode node) {
         int insertLines = 0;
         ASTNode previousNode = previousNode(node);
 
@@ -366,20 +382,20 @@ class WSTransformer extends DefaultTreePathVisitor {
                 : insertLineBeforeAfter(astNodeToType(previousNode), astNodeToType(node));
         checkEmptyLinesBefore(node.getStartOffset(), insertLines, true);
 
+	List<FormalParameter> parameters = null;
         // line before end of function (before })
         List<Statement> statements = null;
         if (node instanceof MethodDeclaration) {
             MethodDeclaration md = (MethodDeclaration)node;
-            if (md.getFunction().getBody() != null) {
+            if (md.getFunction().getBody() != null) { // is it an abstract method
                 statements = md.getFunction().getBody().getStatements();
             }
-            else {
-                // probably abstract method
-                return;
-            }
+	    parameters = md.getFunction().getFormalParameters();
         }
         else if (node instanceof FunctionDeclaration) {
-            statements = ((FunctionDeclaration)node).getBody().getStatements();
+	    FunctionDeclaration fd = (FunctionDeclaration)node;
+            statements = fd.getBody().getStatements();
+	    parameters = fd.getFormalParameters();
         }
 
 
@@ -403,6 +419,14 @@ class WSTransformer extends DefaultTreePathVisitor {
             checkSpaceBetweenTokenAndOpenParen(name.getStartOffset(), CodeStyle.get(context.document()).spaceBeforeMethodDeclParen(),
                      Arrays.asList(PHPTokenId.PHP_STRING));
         }
+
+	// spaces within ( )
+	if (parameters != null && parameters.size() > 0) {
+	    checkSpacesWithinParents(
+		    parameters.get(0).getStartOffset(),
+		    parameters.get(parameters.size() -1).getEndOffset(),
+		    CodeStyle.get(context.document()).spaceWithinMethodDeclParens());
+	}
     }
 
     @Override
@@ -413,6 +437,69 @@ class WSTransformer extends DefaultTreePathVisitor {
                      Arrays.asList(PHPTokenId.PHP_STRING));
     }
 
+    @Override
+    public void visit(FunctionInvocation node) {
+	// spaces within ( )
+	List<Expression> parameters = node.getParameters();
+	if (parameters != null && parameters.size() > 0) {
+	    checkSpacesWithinParents(
+		    parameters.get(0).getStartOffset(),
+		    parameters.get(parameters.size() -1).getEndOffset(),
+		    CodeStyle.get(context.document()).spaceWithinMethodCallParens());
+	}
+	super.visit(node);
+    }
+
+    @Override
+    public void visit(ClassInstanceCreation node) {
+	// spaces within ( )
+	List<Expression> parameters = node.ctorParams();
+	if (parameters != null && parameters.size() > 0) {
+	    checkSpacesWithinParents(
+		    parameters.get(0).getStartOffset(),
+		    parameters.get(parameters.size() -1).getEndOffset(),
+		    CodeStyle.get(context.document()).spaceWithinMethodCallParens());
+	}
+	super.visit(node);
+    }
+
+    @Override
+    public void visit(CastExpression node) {
+	// spaces within
+	TokenSequence<PHPTokenId> ts = tokenSequence(node.getStartOffset());
+        ts.move(node.getStartOffset());
+        if (ts.movePrevious() && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_CASTING) {
+	    CharSequence text = ts.token().text();
+	    boolean space = CodeStyle.get(context.document()).spaceWithinTypeCastParens();
+
+	    int spaceAtStart = 0;
+	    int spaceAtEnd = 0;
+	    while (text.charAt(1 + spaceAtStart) == ' ') {
+		spaceAtStart++;
+	    }
+	    while (text.charAt(text.length() - 2 - spaceAtEnd) == ' ') {
+		spaceAtEnd++;
+	    }
+	    if (space && spaceAtStart != 1) {
+		replacements.add(new Replacement(ts.offset() + 1 + spaceAtStart, spaceAtStart, " ")); // NOI18N
+	    }
+	    if (space && spaceAtEnd != 1) {
+		replacements.add(new Replacement(ts.offset() + text.length() - 1, spaceAtEnd, " ")); // NOI18N
+	    }
+	    if (!space && spaceAtStart > 0) {
+		replacements.add(new Replacement(ts.offset() + 1 + spaceAtStart, spaceAtStart, "")); // NOI18N
+	    }
+	    if (!space && spaceAtEnd > 0) {
+		replacements.add(new Replacement(ts.offset() + text.length() - 1, spaceAtEnd, "")); // NOI18N
+	    }
+	    // space after type cast
+	    ts.moveNext();
+	    LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
+	    replaceSpaceBeforeToken(ts, CodeStyle.get(context.document()).spaceAfterTypeCast(),
+		    Arrays.asList(PHPTokenId.PHP_CASTING));
+	}
+	super.visit(node);
+    }
 
     @Override
     public void visit(NamespaceDeclaration node) {

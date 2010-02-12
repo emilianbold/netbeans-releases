@@ -21,7 +21,7 @@ public function forExample() {
 public function foreachEample() {
 $arr = array(1, 2, 3, 4);
 foreach ($arr as &$value) {
-    $value = $value * 2;
+    $value = (int)$value * 2;
 }
 }
 
@@ -52,7 +52,7 @@ public function tryExample() {
     try {
     echo inverse(5) . "\n";
 } catch (Exception $e) {
-    echo 'Caught exception: ',  $e->getMessage(), "\n";
+    echo 'Caught exception: '.  $e->getMessage(). "\n";
 }
 
 }

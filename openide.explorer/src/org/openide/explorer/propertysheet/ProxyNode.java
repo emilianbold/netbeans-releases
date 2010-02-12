@@ -324,7 +324,7 @@ final class ProxyNode extends AbstractNode {
      * delegates to original[0] or applies changes to all
      * original properties.
      */
-    private static class ProxyProperty extends Node.Property {
+    static final class ProxyProperty extends Node.Property {
         private Node.Property[] original;
 
         /** It sets name, displayName and short description.
@@ -372,18 +372,26 @@ final class ProxyNode extends AbstractNode {
          */
         public Object getValue() throws IllegalAccessException, java.lang.reflect.InvocationTargetException {
             Object o = original[0].getValue();
-
-            if (o == null) {
-                return null;
-            }
-
             for (int i = 0; i < original.length; i++) {
-                if (!o.equals(original[i].getValue())) {
+                if (!equals(o, original[i].getValue())) {
                     throw new DifferentValuesException();
                 }
             }
-
             return o;
+        }
+
+        static boolean equals (Object a, Object b) {
+            boolean aIsNull = a == null;
+            boolean bIsNull = b == null;
+            boolean bothNull = aIsNull && (aIsNull == bIsNull);
+            if (bothNull) {
+                return true;
+            }
+            boolean nullMismatch = aIsNull != bIsNull;
+            if (nullMismatch) {
+                return false;
+            }
+            return a.equals(b);
         }
 
         /** Set the value. Calls setValue on all delegates.
