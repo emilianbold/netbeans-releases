@@ -163,8 +163,8 @@ public class FmtOptions {
 //    public static final String spaceWithinAnnotationParens = "spaceWithinAnnotationParens"; //NOI18N
 //    public static final String spaceWithinBraces = "spaceWithinBraces"; //NOI18N
 //    public static final String spaceWithinArrayInitBrackets = "spaceWithinArrayInitBrackets"; //NOI18N
-//    public static final String spaceBeforeComma = "spaceBeforeComma"; //NOI18N
-//    public static final String spaceAfterComma = "spaceAfterComma"; //NOI18N
+    public static final String spaceBeforeComma = "spaceBeforeComma"; //NOI18N
+    public static final String spaceAfterComma = "spaceAfterComma"; //NOI18N
 //    public static final String spaceBeforeSemi = "spaceBeforeSemi"; //NOI18N
 //    public static final String spaceAfterSemi = "spaceAfterSemi"; //NOI18N
 //    public static final String spaceBeforeColon = "spaceBeforeColon"; //NOI18N
@@ -275,8 +275,8 @@ public class FmtOptions {
 //            { spaceWithinAnnotationParens, FALSE},
 //            { spaceWithinBraces, FALSE},
 //            { spaceWithinArrayInitBrackets, FALSE},
-//            { spaceBeforeComma, FALSE},
-//            { spaceAfterComma, TRUE},
+            { spaceBeforeComma, FALSE},
+            { spaceAfterComma, TRUE},
 //            { spaceBeforeSemi, FALSE},
 //            { spaceAfterSemi, TRUE},
 //            { spaceBeforeColon, TRUE},

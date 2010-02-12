@@ -53,7 +53,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.core.startup.RunLevel;
 import org.openide.modules.ModuleInstall;
+import org.openide.util.Lookup;
 import org.openide.util.NbCollections;
 import org.openide.util.SharedClassObject;
 import org.osgi.framework.Bundle;
@@ -85,7 +87,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener, Fr
         if (storage != null) {
             System.setProperty("netbeans.user", storage);
         }
-        // XXX set netbeans.buildnumber to OpenIDE-Module-Implementation-Version of org.netbeans.bootstrap
+        System.setProperty("TopSecurityManager.disable", "true");
         OSGiMainLookup.initialize(context);
         context.addFrameworkListener(this);
         context.addBundleListener(this);
@@ -106,7 +108,6 @@ public class Activator implements BundleActivator, SynchronousBundleListener, Fr
             }
         }
 //        System.err.println("done processing already loaded bundles.");
-        // XXX if GUI mode: Main.initUICustomizations(); add "org.netbeans.beaninfo" to Introspector.beanInfoSearchPath; GuiRunLevel.run
     }
 
     public @Override void stop(BundleContext context) throws Exception {}
@@ -118,6 +119,9 @@ public class Activator implements BundleActivator, SynchronousBundleListener, Fr
 //            System.err.println("resolved " + bundle.getSymbolicName());
             OSGiMainLookup.bundleResolved(bundle);
             OSGiRepository.DEFAULT.addLayers(layersFor(bundle));
+            if (bundle.getSymbolicName().equals("org.netbeans.bootstrap")) { // NOI18N
+                System.setProperty("netbeans.buildnumber", bundle.getVersion().getQualifier()); // NOI18N
+            }
             break;
         case BundleEvent.UNRESOLVED:
 //            System.err.println("unresolved " + bundle.getSymbolicName());
@@ -133,6 +137,15 @@ public class Activator implements BundleActivator, SynchronousBundleListener, Fr
                 mi.restored();
             }
             // XXX if o.n.core (or o.n.m.settings?) tell OSGiMainLookup to use CoreBridge.getDefault().lookupCacheLoad()
+            if (bundle.getSymbolicName().equals("org.netbeans.core.windows")) { // NOI18N
+                // Trigger for showing main window and setting up related GUI elements.
+                // - Main.initUICustomizations()
+                // - add "org.netbeans.beaninfo" to Introspector.beanInfoSearchPath
+                // - CoreBridge.getDefault().registerPropertyEditors()
+                for (RunLevel rl : Lookup.getDefault().lookupAll(RunLevel.class)) {
+                    rl.run();
+                }
+            }
             break;
         case BundleEvent.STOPPED:
 //            System.err.println("stopped " + bundle.getSymbolicName());
@@ -179,7 +192,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener, Fr
     }
 
     private void registerUrlProtocolHandlers(final Bundle bundle) {
-        Enumeration e = bundle.getEntryPaths("META-INF/namedservices/URLStreamHandler/");
+        Enumeration<?> e = bundle.getEntryPaths("META-INF/namedservices/URLStreamHandler/");
         if (e != null) {
             for (String path : NbCollections.iterable(NbCollections.checkedEnumerationByFilter(e, String.class, true))) {
                 URL entry = bundle.getEntry(path + "java.net.URLStreamHandler");
