@@ -49,7 +49,7 @@ public final class PtyProcessStartUtility extends HelperUtility {
     private final static PtyProcessStartUtility instance = new PtyProcessStartUtility();
 
     private PtyProcessStartUtility() {
-        super("bin/nativeexecution/$osname-$platform/process_start"); // NOI18N
+        super("bin/nativeexecution/$osname-${platform}$_isa/process_start"); // NOI18N
     }
 
     public static PtyProcessStartUtility getInstance() {

@@ -88,7 +88,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         String executable = PtyProcessStartUtility.getInstance().getPath(env);
 
         List<String> newArgs = new ArrayList<String>();
-        newArgs.add("-pty"); // NOI18N
+        newArgs.add("-p"); // NOI18N
         newArgs.add(pty.getSlaveName());
         newArgs.add(info.getExecutable());
         newArgs.addAll(info.getArguments());
