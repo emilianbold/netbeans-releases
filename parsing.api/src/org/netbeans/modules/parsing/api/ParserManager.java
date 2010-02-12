@@ -147,7 +147,6 @@ public final class ParserManager {
         }
 
         public Void run () throws Exception {
-            //tzezula: Wrong - doesn't work for multiple files!
             LMListener lMListener = new LMListener ();
             Parser parser = null;
             final Collection<Snapshot> snapShots = new LazySnapshots(sources);
