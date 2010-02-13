@@ -53,8 +53,11 @@ import javax.swing.text.AbstractDocument;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.xml.axi.AbstractAttribute;
@@ -235,14 +238,81 @@ public class CompletionContextImpl extends CompletionContext {
             declaredNamespaces.put(attrName, attr.getValue());
         }
     }
+
+    private TokenSequence getTokenSequence() {
+        TokenSequence tokenSequence = null;
+        try {
+            ((AbstractDocument) document).readLock();
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(document);
+            tokenSequence = tokenHierarchy.tokenSequence();
+        } catch(Exception e) {
+            _logger.log(Level.WARNING,
+                e.getMessage() == null ? e.getClass().getName() : e.getMessage(), e);
+        } finally {
+            ((AbstractDocument) document).readUnlock();
+        }
+        return tokenSequence;
+    }
+
+    private boolean isTagAttributeRequired(TokenSequence tokenSequence) {
+        int caretPos = completionAtOffset;
+
+        tokenSequence.move(caretPos);
+        tokenSequence.moveNext();
+
+        Token tok = tokenSequence.token();
+        if (tok == null) return false;
+        
+        TokenId tokID = tok.id();
+        if (tokID.equals(XMLTokenId.TAG) && CompletionUtil.isEndTagSuffix(tok) &&
+           (tokenSequence.offset() + 1 == caretPos)) { // <... /|>, | - a caret position
+            return false;
+        }
+        boolean 
+            isAttributeOrSpace = tokID.equals(XMLTokenId.ARGUMENT) ||
+                                 tokID.equals(XMLTokenId.WS),
+            isTagLastCharFound = tokID.equals(XMLTokenId.TAG) &&
+                                 (CompletionUtil.isTagLastChar(tok) ||
+                                  CompletionUtil.isEndTagSuffix(tok));
+        while (true) {
+            if (tokID.equals(XMLTokenId.TAG)) {
+                if (CompletionUtil.isEndTagPrefix(tok)) break;
+                else {
+                    String tagName = CompletionUtil.getTokenTagName(tok);
+                    if (tagName != null) {
+                        int tokOffset = tokenSequence.offset(),
+                            tagNameEndPos = tokOffset + CompletionUtil.TAG_FIRST_CHAR.length() +
+                                            tagName.length();
+                        if ((tagNameEndPos < caretPos) && 
+                            (isAttributeOrSpace || isTagLastCharFound)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            if (! tokenSequence.movePrevious()) break;
             
+            tok = tokenSequence.token();
+            tokID = tok.id();
+            if (CompletionUtil.isEndTagSuffix(tok) || CompletionUtil.isTagLastChar(tok)) break;
+        }
+        return false;
+    }
+
     /**
      * At a given context, that is, at the current cursor location
      * in the document, finds the type of query that needs to be
      * carried out and finds the path from root.
      */
     public boolean initContext() {
+        TokenSequence tokenSequence = getTokenSequence();
         try {
+            if (isTagAttributeRequired(tokenSequence)) {
+                completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
+                pathFromRoot = getPathFromRoot(element);
+                return true;
+            }
+            
             int id = token.getTokenID().getNumericID();
             switch (id) {
                 //user enters < character
@@ -299,9 +369,9 @@ public class CompletionContextImpl extends CompletionContext {
                         }
                         */
                         EmptyTag tag = (EmptyTag) element;
-                        if (isCaretInsideTag()) {
-                            completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
-                            pathFromRoot = getPathFromRoot(element);
+                        if (CompletionUtil.isCaretInsideTag(completionAtOffset, tokenSequence)) {
+//***???completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
+//***???pathFromRoot = getPathFromRoot(element);
                             break;
                         }
                         if ((element.getElementOffset() + 1 == completionAtOffset) ||
@@ -320,8 +390,8 @@ public class CompletionContextImpl extends CompletionContext {
                             pathFromRoot = getPathFromRoot(element.getPrevious());
                             break;
                         }                        
-                        completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
-                        pathFromRoot = getPathFromRoot(element);
+//***???completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
+//***???pathFromRoot = getPathFromRoot(element);
                         break;
                     }
                     
@@ -347,9 +417,9 @@ public class CompletionContextImpl extends CompletionContext {
 
                 //user enters an attribute name
                 case XMLDefaultTokenContext.ARGUMENT_ID:
-                    completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
-                    typedChars = token.getImage();
-                    pathFromRoot = getPathFromRoot(element);
+//***???completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
+//***???typedChars = token.getImage();
+//***???pathFromRoot = getPathFromRoot(element);
                     break;
 
                 //some random character
@@ -410,10 +480,9 @@ public class CompletionContextImpl extends CompletionContext {
                     if( (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
                         (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID) ) {
                         //no attr completion for end tags
-                        if(prev.getImage().startsWith("</"))
-                            break;
-                        completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
-                        pathFromRoot = getPathFromRoot(element);
+                        if (prev.getImage().startsWith("</")) break;
+//***???completionType = CompletionType.COMPLETION_TYPE_ATTRIBUTE;
+//***???pathFromRoot = getPathFromRoot(element);
                     }
                     break;
 
@@ -421,27 +490,12 @@ public class CompletionContextImpl extends CompletionContext {
                     completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
                     break;
             }
-        } catch (Exception ex) {
+        } catch (Exception e) {
+            _logger.log(Level.WARNING,
+                e.getMessage() == null ? e.getClass().getName() : e.getMessage(), e);
             return false;
         }
         return true;        
-    }
-
-    private boolean isCaretInsideTag() {
-        int caretPos = completionAtOffset;
-        try {
-            ((AbstractDocument) document).readLock();
-
-            TokenHierarchy tokenHierarchy = TokenHierarchy.get(document);
-            TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
-            return CompletionUtil.isCaretInsideTag(caretPos, tokenSequence);
-        } catch(Exception e) {
-            _logger.log(Level.WARNING,
-                e.getMessage() == null ? e.getClass().getName() : e.getMessage(), e);
-        } finally {
-            ((AbstractDocument) document).readUnlock();
-        }
-        return false;
     }
 
     public List<DocRootAttribute> getDocRootAttributes() {

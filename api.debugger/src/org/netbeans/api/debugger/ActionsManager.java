@@ -103,7 +103,7 @@ public final class ActionsManager {
     /** Action constant for Restart Action. */
     public static final Object              ACTION_RESTART = "restart";
 
-    /** Action constant for Restart Action. */
+    /** Action constant for Toggle Breakpoint Action. */
     public static final Object              ACTION_TOGGLE_BREAKPOINT = "toggleBreakpoint";
     
     

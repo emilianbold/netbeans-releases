@@ -214,8 +214,8 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
         if (typeID.equals (FieldBreakpoint.class.getName ()) ||
                 typeID.equals (FieldBreakpoint.class.getName ()+"$FieldBreakpointImpl")) {
             FieldBreakpoint fb = FieldBreakpoint.create (
-                properties.getString (FieldBreakpoint.PROP_CLASS_NAME, null),
-                properties.getString (FieldBreakpoint.PROP_FIELD_NAME, null),
+                properties.getString (FieldBreakpoint.PROP_CLASS_NAME, ""),
+                properties.getString (FieldBreakpoint.PROP_FIELD_NAME, ""),
                 properties.getInt (
                     FieldBreakpoint.PROP_BREAKPOINT_TYPE, 
                     FieldBreakpoint.TYPE_ACCESS
