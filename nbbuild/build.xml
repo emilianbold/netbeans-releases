@@ -1162,7 +1162,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <mkdir dir="build/test/unit/results"/>
         <property name="includes" value="**/*Test"/>
         <property name="junit.vm.args" value=""/>
-        <junit showoutput="true" fork="true" tempdir="build/test/unit/results">
+        <junit showoutput="true" fork="true" tempdir="build/test/unit/results" filtertrace="false" includeantruntime="false">
             <batchtest todir="build/test/unit/results">
                 <fileset dir="build/test/unit/classes">
                     <include name="${includes}.class"/>
