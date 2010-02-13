@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -56,6 +56,7 @@ import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.ExtensionList;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
@@ -86,6 +87,15 @@ public final class JavaDataLoader extends UniFileLoader {
     }
 
     @Override
+    protected void initialize() {
+        super.initialize();
+        ExtensionList extensions = new ExtensionList();
+        extensions.addExtension(JAVA_EXTENSION);
+        extensions.addMimeType(JAVA_MIME_TYPE);
+        setExtensions(extensions);
+    }
+
+    @Override
     protected String actionsContext () {
         return "Loaders/text/x-java/Actions/"; // NOI18N
     }
@@ -103,7 +113,7 @@ public final class JavaDataLoader extends UniFileLoader {
     */
     protected MultiDataObject createMultiObject (FileObject primaryFile)
     throws DataObjectExistsException, java.io.IOException {
-        if (primaryFile.getExt().equals(JAVA_EXTENSION))
+        if (getExtensions().isRegistered(primaryFile))
             return new JavaDataObject(primaryFile, this);
         return null;
     }
@@ -123,10 +133,8 @@ public final class JavaDataLoader extends UniFileLoader {
         // ignore templates using scripting
         if (fo.getAttribute("template") != null && fo.getAttribute("javax.script.ScriptEngine") != null) // NOI18N
             return null;
-        
-        if (fo.getExt().equals(JAVA_EXTENSION))
-            return fo;
-        return null;
+
+        return super.findPrimaryFile(fo);
     }
 
     /** Create the primary file entry.
@@ -137,7 +145,7 @@ public final class JavaDataLoader extends UniFileLoader {
     * @return primary entry for that file
     */
     protected MultiDataObject.Entry createPrimaryEntry (MultiDataObject obj, FileObject primaryFile) {
-        if (JAVA_EXTENSION.equals(primaryFile.getExt())) {
+        if (getExtensions().isRegistered(primaryFile)) {
 //            return new JavaFileEntry (obj, primaryFile);
             return JavaDataSupport.createJavaFileEntry(obj, primaryFile);
         }
