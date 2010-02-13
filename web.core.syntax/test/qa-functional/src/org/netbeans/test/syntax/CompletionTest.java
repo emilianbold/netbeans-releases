@@ -534,6 +534,9 @@ public class CompletionTest extends J2eeTestCase {
     private void logIntoRef(String message){
         message = message.replaceAll("<\\?>", "");
         message = message.replaceAll("<\\? >", "");
+        if (message.length() > 30){
+            message = message.substring(0,30);
+        }
         ref(message);
     }
 
