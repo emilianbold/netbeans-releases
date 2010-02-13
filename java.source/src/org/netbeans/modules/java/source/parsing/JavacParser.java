@@ -146,30 +146,30 @@ import org.openide.util.WeakListeners;
 //@NotThreadSafe
 public class JavacParser extends Parser {
     //Timer logger
-    private static final Logger TIME_LOGGER = Logger.getLogger("TIMER");        //NOI18N    
-    //Debug logger    
+    private static final Logger TIME_LOGGER = Logger.getLogger("TIMER");        //NOI18N
+    //Debug logger
     private static final Logger LOGGER = Logger.getLogger(JavacParser.class.getName());
     //Java Mime Type
     public static final String MIME_TYPE = "text/x-java";
     //JavaFileObjectProvider used by the JavacParser - may be overriden by unit test
-    static JavaFileObjectProvider jfoProvider = new DefaultJavaFileObjectProvider (); 
+    static JavaFileObjectProvider jfoProvider = new DefaultJavaFileObjectProvider ();
     //No output writer like /dev/null
     private static final PrintWriter DEV_NULL = new PrintWriter(new NullWriter(), false);
-    
+
     //Max number of dump files
     private static final int MAX_DUMPS = Integer.getInteger("org.netbeans.modules.java.source.parsing.JavacParser.maxDumps", 255);
-    
+
     /**
      * Helper map mapping the {@link Phase} to message for performance logger
      */
     private static Map<Phase, String> phase2Message = new HashMap<Phase,String> ();
-    
+
     static {
         phase2Message.put (Phase.PARSED,"Parsed");                              //NOI18N
         phase2Message.put (Phase.ELEMENTS_RESOLVED,"Signatures Attributed");    //NOI18N
         phase2Message.put (Phase.RESOLVED, "Attributed");                       //NOI18N
     }
-    
+
     //Listener support
     private final ChangeSupport listeners = new ChangeSupport(this);
     //Cancelling of parser & index
@@ -201,7 +201,7 @@ public class JavacParser extends Parser {
     private CompilationInfoImpl ciImpl;
     //State of the parser, used only for single source parser, otherwise don't care.
     private boolean initialized;
-    //Parser is invalidated, new parser impl need to be created
+    //Parser is invalidated, new parser impl need to be created, but keeps current classpath info.
     private boolean invalid;
     //Last used snapshot
     private Snapshot cachedSnapShot;
@@ -209,7 +209,7 @@ public class JavacParser extends Parser {
     private long parseId;
     //Weak Change listener on ClasspathInfo, created by init
     private ChangeListener weakCpListener;
-    
+
     JavacParser (final Collection<Snapshot> snapshots, boolean privateParser) {
         this.privateParser = privateParser;
         this.sourceCount = snapshots.size();
@@ -239,7 +239,7 @@ public class JavacParser extends Parser {
         this.listener = ec != null ? new DocListener(ec) : null;
         this.cpInfoListener = new ClasspathInfoListener (listeners);
     }
-    
+
     private void init (final Snapshot snapshot, final Task task, final boolean singleSource) {
         final boolean explicitCpInfo = (task instanceof ClasspathInfoProvider) && ((ClasspathInfoProvider)task).getClasspathInfo() != null;
         if (!initialized) {
@@ -264,7 +264,7 @@ public class JavacParser extends Parser {
                 }
                 if (!explicitCpInfo) {      //Don't listen on artificial classpahs
                     this.weakCpListener = WeakListeners.change(cpInfoListener, cpInfo);
-                    cpInfo.addChangeListener (this.weakCpListener);                    
+                    cpInfo.addChangeListener (this.weakCpListener);
                 }
                 initialized = true;
             }
@@ -313,7 +313,7 @@ public class JavacParser extends Parser {
         assert task != null;
         assert privateParser || Utilities.holdsParserLock();
         parseId++;
-        canceled.set(false);        
+        canceled.set(false);
         LOGGER.fine("parse: task: " + task.toString() +"\n" + (snapshot == null ? "null" : snapshot.getText()));      //NOI18N
         switch (this.sourceCount) {
             case 0:
@@ -363,37 +363,32 @@ public class JavacParser extends Parser {
         assert ciImpl != null;
         assert privateParser || Utilities.holdsParserLock();
         LOGGER.fine ("getResult: task:" + task.toString());                     //NOI18N
-        //Assumes that caller is synchronized by the Parsing API lock
-        if (invalid) {
-            LOGGER.fine ("\t:invalid, reparse");                                //NOI18N
-            invalid = false;
-            if (cachedSnapShot != null) {
-                try {
-                    parseImpl(cachedSnapShot, task, null);
-                } catch (FileObjects.InvalidFileException ife) {
-                    //Deleted file
-                    LOGGER.warning(ife.getMessage());
-                    return null;
-                } catch (IOException ioe) {
-                    throw new ParseException ("JavacParser failure", ioe); //NOI18N
-                }
-            }
-        }
+
         final boolean isJavaParserResultTask = task instanceof JavaParserResultTask;
         final boolean isParserResultTask = task instanceof ParserResultTask;
         final boolean isUserTask = task instanceof UserTask;
         final boolean isClasspathInfoProvider = task instanceof ClasspathInfoProvider;
-        if (isClasspathInfoProvider) {
-            //Verify validity of explicit classpath
-            //Not sure about the parsing.api contract for multiple files
-            //maybe not needed and assertion is enough
-            final ClasspathInfo providedInfo = ((ClasspathInfoProvider)task).getClasspathInfo();
-            if (providedInfo != null && !providedInfo.equals(cpInfo)) {
-                if (sourceCount != 0) {
-                    LOGGER.fine ("Task "+task+" has changed ClasspathInfo form: " + cpInfo +" to:" + providedInfo); //NOI18N
+
+        //Assumes that caller is synchronized by the Parsing API lock
+        if (invalid || isClasspathInfoProvider) {
+            boolean reparse = false;        //Needs reparse?
+            if (isClasspathInfoProvider) {
+                final ClasspathInfo providedInfo = ((ClasspathInfoProvider)task).getClasspathInfo();
+                if (providedInfo != null && !providedInfo.equals(cpInfo)) {
+                    if (sourceCount != 0) {
+                        LOGGER.fine ("Task "+task+" has changed ClasspathInfo form: " + cpInfo +" to:" + providedInfo); //NOI18N
+                    }
+                    initialized = false;        //Reset initialized, world has changed.
+                    reparse = true;             //Force reparse
                 }
+            }
+            if (invalid) {
+                LOGGER.fine ("\t:invalid, reparse");    //NOI18N
+                invalid = false;
+                reparse = true;                 //Force reparse
+            }
+            if (reparse) {
                 assert cachedSnapShot != null;
-                initialized = false;        //Reset initialized, world has changed.
                 try {
                     parseImpl(cachedSnapShot, task, null);
                 } catch (FileObjects.InvalidFileException ife) {
@@ -487,15 +482,15 @@ public class JavacParser extends Parser {
      * Returns {@link ClasspathInfo} used by this javac
      * @return the ClasspathInfo
      */
-    public ClasspathInfo getClasspathInfo () {
+    ClasspathInfo getClasspathInfo () {
         return this.cpInfo;
     }
-                
+
     /**
      * Moves the Javac into the required {@link JavaSource#Phase}
      * Not synchronized, has to be called under Parsing API lock.
      * @param the required {@link JavaSource#Phase}
-     * @parma currentInfo - the javac 
+     * @parma currentInfo - the javac
      * @param cancellable when true the method checks cancels
      * @return the reached phase
      * @throws IOException when the javac throws an exception
@@ -626,9 +621,8 @@ public class JavacParser extends Parser {
         if (file != null) {
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(file));
-            }            
+            }
             sourceLevel = SourceLevelQuery.getSourceLevel(file);
-                                  
             if (root != null && sourceLevel != null) {
                 try {
                     JavaCustomIndexer.verifySourceLevel(root.getURL(), sourceLevel);
@@ -646,14 +640,14 @@ public class JavacParser extends Parser {
         com.sun.tools.javac.main.JavaCompiler.instance(context).keepComments = true;
         return javacTask;
     }
-    
+
     public static JavacTaskImpl createJavacTask (final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel, final ClassNamesForFileOraculum cnih, final CancelService cancelService, APTUtils aptUtils) {
         if (sourceLevel == null) {
             sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
         }
         return createJavacTask(cpInfo, diagnosticListener, sourceLevel, true, cnih, cancelService, aptUtils);
     }
-    
+
     private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, final ClassNamesForFileOraculum cnih, final CancelService cancelService, final APTUtils aptUtils) {
         final List<String> options = new ArrayList<String>();
         String lintOptions = CompilerSettings.getCommandLine();
@@ -684,7 +678,7 @@ public class JavacParser extends Parser {
         options.add("-XDfindDiamond"); //XXX: should be part of options
 
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        try {            
+        try {
             //The ToolProvider.defaultJavaCompiler will use the context classloader to load the javac implementation
             //it should be load by the current module's classloader (should delegate to other module's classloaders as necessary)
             Thread.currentThread().setContextClassLoader(ClasspathInfo.class.getClassLoader());
@@ -715,7 +709,7 @@ public class JavacParser extends Parser {
             Thread.currentThread().setContextClassLoader(orig);
         }
     }
-    
+
     private static com.sun.tools.javac.code.Source validateSourceLevel(String sourceLevel, ClasspathInfo cpInfo) {
         ClassPath bootClassPath = cpInfo.getClassPath(PathKind.BOOT);
         com.sun.tools.javac.code.Source[] sources = com.sun.tools.javac.code.Source.values();
@@ -754,15 +748,14 @@ public class JavacParser extends Parser {
             return sources[sources.length-1];
         }
     }
-    
+
     private static void logTime (FileObject source, Phase phase, long time) {
         assert source != null && phase != null;
         String message = phase2Message.get(phase);
         assert message != null;
-        TIME_LOGGER.log(Level.FINE, message, new Object[] {source, time});                
+        TIME_LOGGER.log(Level.FINE, message, new Object[] {source, time});
     }
-    
-    
+
     /**
      * Dumps the source code to the file. Used for parser debugging. Only a limited number
      * of dump files is used. If the last file exists, this method doesn't dump anything.
@@ -796,7 +789,7 @@ public class JavacParser extends Parser {
                 try {
                     writer.println(src);
                     writer.println("----- Classpath: ---------------------------------------------"); // NOI18N
-                    
+
                     final ClassPath bootPath   = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
                     final ClassPath classPath  = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
                     final ClassPath sourcePath = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
@@ -804,7 +797,7 @@ public class JavacParser extends Parser {
                     writer.println("bootPath: " + (bootPath != null ? bootPath.toString() : "null"));
                     writer.println("classPath: " + (classPath != null ? classPath.toString() : "null"));
                     writer.println("sourcePath: " + (sourcePath != null ? sourcePath.toString() : "null"));
-                    
+
                     writer.println("----- Original exception ---------------------------------------------"); // NOI18N
                     exc.printStackTrace(writer);
                 } finally {
@@ -827,12 +820,11 @@ public class JavacParser extends Parser {
                     "clean all *.dump files in that directory."); // NOI18N
         }
     }
-    
-    
+
     private static boolean reparseMethod (final CompilationInfoImpl ci,
             final Snapshot snapshot,
             final MethodTree orig,
-            final String newBody) throws IOException {        
+            final String newBody) throws IOException {
         assert ci != null;
         final FileObject fo = ci.getFileObject();
         if (LOGGER.isLoggable(Level.FINER)) {
@@ -901,8 +893,8 @@ public class JavacParser extends Parser {
                         return false;
                     }
                     ((JCTree.JCCompilationUnit)cu).docComments.keySet().removeAll(fav.docOwners);
-                    ((JCTree.JCCompilationUnit)cu).docComments.putAll(docComments);                    
-                    long end = System.currentTimeMillis();                
+                    ((JCTree.JCCompilationUnit)cu).docComments.putAll(docComments);
+                    long end = System.currentTimeMillis();
                     if (fo != null) {
                         logTime (fo,Phase.PARSED,(end-start));
                     }
@@ -925,7 +917,7 @@ public class JavacParser extends Parser {
                                     final List<? extends Diagnostic> diag = ci.getDiagnostics();
                                     if (!diag.isEmpty()) {
                                         LOGGER.finer("Reflow with errors: " + fo + " " + diag);     //NOI18N
-                                    }                            
+                                    }
                                 }
                                 TreePath tp = TreePath.getPath(cu, orig);       //todo: store treepath in changed method => improve speed
                                 Tree t = tp.getParentPath().getLeaf();
@@ -950,7 +942,7 @@ public class JavacParser extends Parser {
             } finally {
               if (treeLoader != null) {
                   treeLoader.endPartialReparse();
-              }  
+              }
             }
         } catch (CouplingAbort ca) {
             //Needs full reparse
@@ -968,13 +960,12 @@ public class JavacParser extends Parser {
         }
         return true;
     }
-    
+
     //Helper classes
-            
     private static class DefaultCancelService extends CancelService {
 
         //May be the parser canceled inside javac?
-        final AtomicBoolean mayCancel = new AtomicBoolean();        
+        final AtomicBoolean mayCancel = new AtomicBoolean();
         private final JavacParser parser;
 
         private DefaultCancelService(final JavacParser parser) {
@@ -999,34 +990,35 @@ public class JavacParser extends Parser {
 
     /**
      * Lexer listener used to detect partial reparse
+     * todo: should be replaced by parsing API events when available
      */
     private class DocListener implements PropertyChangeListener, TokenHierarchyListener {
-        
+
         private EditorCookie.Observable ec;
         private TokenHierarchyListener lexListener;
         private volatile Document document;
-        
+
         public DocListener (EditorCookie.Observable ec) {
             assert ec != null;
             this.ec = ec;
             this.ec.addPropertyChangeListener(WeakListeners.propertyChange(this, this.ec));
-            Document doc = ec.getDocument();            
+            Document doc = ec.getDocument();
             if (doc != null) {
                 TokenHierarchy th = TokenHierarchy.get(doc);
                 th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
                 document = doc;
-            }            
+            }
         }
-                                   
+
         public void propertyChange(PropertyChangeEvent evt) {
             if (EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName())) {
-                Object old = evt.getOldValue();                
+                Object old = evt.getOldValue();
                 if (old instanceof Document && lexListener != null) {
                     TokenHierarchy th = TokenHierarchy.get((Document) old);
                     th.removeTokenHierarchyListener(lexListener);
                     lexListener = null;
-                }                
-                Document doc = ec.getDocument();                
+                }
+                Document doc = ec.getDocument();
                 if (doc != null) {
                     TokenHierarchy th = TokenHierarchy.get(doc);
                     th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
@@ -1038,13 +1030,13 @@ public class JavacParser extends Parser {
                 }
             }
         }
-        
+
         public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
             Pair<DocPositionRegion,MethodTree> changedMethod = null;
             if (evt.type() == TokenHierarchyEventType.MODIFICATION) {
                 if (supportsReparse) {
                     int start = evt.affectedStartOffset();
-                    int end = evt.affectedEndOffset();                                                                
+                    int end = evt.affectedEndOffset();
                     synchronized (positions) {
                         for (Pair<DocPositionRegion,MethodTree> pe : positions) {
                             PositionRegion p = pe.first;
@@ -1068,7 +1060,7 @@ public class JavacParser extends Parser {
                                     }
                                 }
                                 if (changedMethod != null) {
-                                    TokenSequence<JavaTokenId> current = change.currentTokenSequence();                
+                                    TokenSequence<JavaTokenId> current = change.currentTokenSequence();
                                     current.moveIndex(change.index());
                                     for (int i=0; i< change.addedTokenCount(); i++) {
                                         current.moveNext();
@@ -1091,8 +1083,8 @@ public class JavacParser extends Parser {
                         }
                     }
                 }
-            }            
-        }        
+            }
+        }
     }
 
 
@@ -1106,18 +1098,17 @@ public class JavacParser extends Parser {
         this.changedMethod = changedMethod;
     }
 
-    
     /**
      * Filter listener to listen on j2me preprocessor
      */
-    private final class FilterListener implements ChangeListener {        
-        
+    private final class FilterListener implements ChangeListener {
+
         public FilterListener (final JavaFileFilterImplementation filter) {
             filter.addChangeListener(WeakListeners.change(this, filter));
         }
-        
+
         public void stateChanged(ChangeEvent event) {
             listeners.fireChange();
         }
-    }        
+    }
 }
