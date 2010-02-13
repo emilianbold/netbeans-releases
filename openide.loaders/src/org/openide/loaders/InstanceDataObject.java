@@ -1629,7 +1629,8 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                 if (c.equals(clazz) || Object.class.equals(c)) {
                     FileObject ret = FileUtil.getConfigFile(providerPath);
                     if (ret == null) {
-                        throw new FileNotFoundException("Invalid settings.providerPath under SFS/xml/memory/ for " + clazz); // NOI18N
+                        throw new FileNotFoundException("Invalid " + EA_PROVIDER_PATH + "=" + providerPath +
+                                " under SFS/xml/memory/ for " + clazz); // NOI18N
                     } else {
                         return ret;
                     }

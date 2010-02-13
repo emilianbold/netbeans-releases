@@ -40,6 +40,7 @@
 package org.netbeans.core.osgi;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 public class ActivatorTest extends NbTestCase {
 
@@ -110,6 +111,7 @@ public class ActivatorTest extends NbTestCase {
         assertEquals("10", System.getProperty("my.url.length"));
     }
 
+    @RandomlyFails // XXX NB-Core-Build #4023, 4026: InstanceDataObject.resolveConvertor: "Invalid settings.providerPath ... for class custom.Install$Bean"
     public void testSettings() throws Exception {
         new OSGiProcess(getWorkDir()).manifest(
                 "OpenIDE-Module: custom",
