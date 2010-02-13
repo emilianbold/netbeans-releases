@@ -151,7 +151,6 @@ class WSTransformer extends DefaultTreePathVisitor {
 			LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
 			replaceSpaceBeforeToken(ts, CodeStyle.get(context.document()).spaceAfterComma(), null);
 		    }
-		    System.out.println("comma");
 		}
 		else if (ASSIGN_OPERATORS.contains(text)) {
 		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundAssignOps());
