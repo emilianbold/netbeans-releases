@@ -41,7 +41,6 @@
 
 package org.netbeans.upgrade;
 
-import java.awt.Dialog;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -96,7 +95,7 @@ final class AutoUpgradePanel extends JPanel {
 
         txtVersions = new javax.swing.JTextArea();
 
-        setLayout(new java.awt.BorderLayout());
+        setPreferredSize(new java.awt.Dimension(550, 60));
 
         txtVersions.setBackground(getBackground());
         txtVersions.setColumns(50);
@@ -107,8 +106,21 @@ final class AutoUpgradePanel extends JPanel {
         txtVersions.setText(NbBundle.getMessage (AutoUpgradePanel.class, "MSG_Confirmation", source)); // NOI18N
         txtVersions.setWrapStyleWord(true);
         txtVersions.setFocusable(false);
-        txtVersions.setMinimumSize(new java.awt.Dimension(100, 50));
-        add(txtVersions, java.awt.BorderLayout.CENTER);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(txtVersions, javax.swing.GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(txtVersions, javax.swing.GroupLayout.DEFAULT_SIZE, 72, Short.MAX_VALUE)
+                .addContainerGap())
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

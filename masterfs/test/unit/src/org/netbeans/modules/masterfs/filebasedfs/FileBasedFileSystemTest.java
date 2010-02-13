@@ -44,9 +44,13 @@ package org.netbeans.modules.masterfs.filebasedfs;
 import junit.framework.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
+import org.netbeans.modules.masterfs.providers.CheckProviders;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileObjectTestHid;
 import org.openide.filesystems.FileSystem;
@@ -59,32 +63,31 @@ import org.openide.filesystems.URLMapperTestHidden;
 /**
  * @author rmatous
  */
-public class FileBasedFileSystemTest extends FileSystemFactoryHid {            
+public class FileBasedFileSystemTest extends FileSystemFactoryHid {
     public FileBasedFileSystemTest(Test test) {
         super(test);
     }
     
-    protected void setUp() throws Exception {
-        super.setUp();
-        MockServices.setServices(new Class[] {FileBasedURLMapper.class});
+    @Override
+    protected void setServices(Class<?>... services) {
+        List<Class<?>> arr = new ArrayList<Class<?>>();
+        arr.addAll(Arrays.asList(services));
+        arr.add(FileBasedURLMapper.class);
+        MockServices.setServices(arr.toArray(new Class<?>[0]));
     }
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-    
-    public static void main(String args[]) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
     public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();        
+        return new FileBasedFileSystemTest(suite(false));
+    }
+    static NbTestSuite suite(boolean created) {
+        NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(FileSystemTestHid.class);
         suite.addTestSuite(FileObjectTestHid.class);
         suite.addTestSuite(URLMapperTestHidden.class);
-        suite.addTestSuite(FileUtilTestHidden.class);                
-        suite.addTestSuite(BaseFileObjectTestHid.class);                
-        return new FileBasedFileSystemTest(suite);
+        suite.addTestSuite(FileUtilTestHidden.class);
+        suite.addTestSuite(BaseFileObjectTestHid.class);
+        suite.addTest(new CheckProviders(created));
+        return suite;
     }
         
     private File getWorkDir() {
@@ -93,6 +96,7 @@ public class FileBasedFileSystemTest extends FileSystemFactoryHid {
         return new File(workDirProperty);
     }
             
+    @Override
     protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
         FileObjectFactory.reinitForTests();
         FileObject workFo = FileBasedFileSystem.getFileObject(getWorkDir());
@@ -108,8 +112,10 @@ public class FileBasedFileSystemTest extends FileSystemFactoryHid {
         return new FileSystem[]{workFo.getFileSystem()};
     }
     
+    @Override
     protected void destroyFileSystem(String testName) throws IOException {}    
 
+    @Override
     protected String getResourcePrefix(String testName, String[] resources) {
         return FileBasedFileSystem.getFileObject(getWorkDir()).getPath();
     }

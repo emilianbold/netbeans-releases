@@ -508,8 +508,8 @@ public final class UpdateTracking {
             bsrc = new BufferedInputStream( new FileInputStream( file ) );
             byte[] bytes = new byte[1024];
             int i;
-            while( (i = bsrc.read()) != -1 ) {
-                crc.update( (byte)i );
+            while( (i = bsrc.read(bytes)) != -1 ) {
+                crc.update(bytes, 0, i );
             }
         }
         finally {

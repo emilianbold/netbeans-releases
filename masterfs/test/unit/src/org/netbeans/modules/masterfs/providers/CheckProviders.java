@@ -37,28 +37,24 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.api.progress.transactional;
+package org.netbeans.modules.masterfs.providers;
+
+import org.netbeans.junit.NbTestCase;
 
 /**
- * UI modes for how progress is presented to the user.  Note that all of
- * these are <i>optional</i> - they are suggestions to the UI for how it
- * should present progress to the user.  A TransactionHandlerUIImplementation
- * is free to decide to ignore or not support some UI modes.
  *
- * @author Tim Boudreau
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public enum UIMode {
-    /** Run the transaction in the background, but with a visible progress bar or equivalent */
-    BACKGROUND,
-    /** Run the transaction in the background, and block the UI */
-    BLOCKING,
-    /** Run the transaction in the background, and show no indication to the
-     *  unless the user attempts to shut down the application
-     */
-    INVISIBLE,
-    /** Run the transaction in the background, and show no indication to the user.
-     * The application may be shut down while the transaction is in progress,
-     * with no indication to the user, and with no cleanup or rollback.
-     */
-    NONE,
+public final class CheckProviders extends NbTestCase {
+    private boolean created;
+
+    public CheckProviders(boolean created) {
+        super("testProviders");
+        this.created = created;
+    }
+
+    public void testProviders() {
+        ProvidedExtensionsTest.ProvidedExtensionsImpl.assertCreated("Provided extensions provided as expected", created);
+        InterceptionListenerTest.AnnotationProviderImpl.assertCreated("Annotation provider created or not as expected", created);
+    }
 }
