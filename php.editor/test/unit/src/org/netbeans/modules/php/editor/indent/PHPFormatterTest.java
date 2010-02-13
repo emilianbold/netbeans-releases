@@ -738,6 +738,18 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceWithinTypeCastParens02.php", options);
     }
 
+    public void testSpacesWithinArrayDeclParens01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinArrayDeclParens, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinArrayDeclParens01.php", options);
+    }
+
+    public void testSpacesWithinArrayDeclParens02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinArrayDeclParens, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinArrayDeclParens02.php", options);
+    }
+
     public void testSpacesAfterTypeCast01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.spaceAfterTypeCast, false);

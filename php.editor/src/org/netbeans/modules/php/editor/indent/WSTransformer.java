@@ -51,6 +51,7 @@ import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.CastExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
@@ -692,6 +693,17 @@ class WSTransformer extends DefaultTreePathVisitor {
 		node.getValue().getEndOffset(),
 		CodeStyle.get(context.document()).spaceWithinForParens());
         super.visit(node);
+    }
+
+    @Override
+    public void visit(ArrayCreation node) {
+	// spaces within
+	if (node.getElements().size() > 0)
+	checkSpacesWithinParents(
+		node.getElements().get(0).getStartOffset(),
+		node.getElements().get(node.getElements().size() - 1).getEndOffset(),
+		CodeStyle.get(context.document()).spaceWithinArrayDeclParens());
+	super.visit(node);
     }
 
     private void checkSpaceBetweenCurlyCloseAndToken(int offset, boolean insertSpace,

@@ -156,6 +156,7 @@ public class FmtOptions {
 //    public static final String spaceBeforeStaticInitLeftBrace = "spaceBeforeStaticInitLeftBrace"; //NOI18N
 //    public static final String spaceBeforeArrayInitLeftBrace = "spaceBeforeArrayInitLeftBrace"; //NOI18N
 //    public static final String spaceWithinParens = "spaceWithinParens"; //NOI18N
+    public static final String spaceWithinArrayDeclParens = "spaceWithinArrayDeclParens"; //NOI18N
     public static final String spaceWithinMethodDeclParens = "spaceWithinMethodDeclParens"; //NOI18N
     public static final String spaceWithinMethodCallParens = "spaceWithinMethodCallParens"; //NOI18N
     public static final String spaceWithinIfParens = "spaceWithinIfParens"; //NOI18N
@@ -274,6 +275,7 @@ public class FmtOptions {
 //            { spaceBeforeStaticInitLeftBrace, TRUE},
 //            { spaceBeforeArrayInitLeftBrace, FALSE},
 //            { spaceWithinParens, FALSE},
+	    { spaceWithinArrayDeclParens, FALSE},
             { spaceWithinMethodDeclParens, FALSE},
             { spaceWithinMethodCallParens, FALSE},
             { spaceWithinIfParens, FALSE},

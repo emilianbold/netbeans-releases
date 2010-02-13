@@ -362,6 +362,10 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceWithinTypeCastParens, getDefaultAsBoolean(spaceWithinTypeCastParens));
     }
 
+    public boolean spaceWithinArrayDeclParens() {
+        return preferences.getBoolean(spaceWithinArrayDeclParens, getDefaultAsBoolean(spaceWithinArrayDeclParens));
+    }
+
 //    public boolean spaceWithinAnnotationParens() {
 //        return preferences.getBoolean(spaceWithinAnnotationParens, getDefaultAsBoolean(spaceWithinAnnotationParens));
 //    }
