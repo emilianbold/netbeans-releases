@@ -105,6 +105,11 @@ public class FmtOptions {
 
     public static final String classDeclBracePlacement = "classDeclBracePlacement"; //NOI18N
     public static final String methodDeclBracePlacement = "methodDeclBracePlacement"; //NOI18N
+    public static final String ifBracePlacement = "ifBracePlacement"; //NOI18N
+    public static final String forBracePlacement = "forBracePlacement"; //NOI18N
+    public static final String whileBracePlacement = "whileBracePlacement"; //NOI18N
+    public static final String switchBracePlacement = "switchBracePlacement"; //NOI18N
+    public static final String catchBracePlacement = "catchBracePlacement"; //NOI18N
     public static final String otherBracePlacement = "otherBracePlacement"; //NOI18N
 
     public static final String blankLinesBeforeNamespace = "blankLinesBeforeNamespace"; //NOI18N
@@ -196,6 +201,7 @@ public class FmtOptions {
     public static final String OBRACE_NEWLINE = CodeStyle.BracePlacement.NEW_LINE.name();
     public static final String OBRACE_SAMELINE = CodeStyle.BracePlacement.SAME_LINE.name();
     public static final String OBRACE_PRESERVE = CodeStyle.BracePlacement.PRESERVE_EXISTING.name();
+    public static final String OBRACE_NEWLINE_INDENTED = CodeStyle.BracePlacement.NEW_LINE_INDENTED.name();
     
     private static Map<String,String> defaults;
     
@@ -217,6 +223,11 @@ public class FmtOptions {
 
 	    { classDeclBracePlacement, OBRACE_SAMELINE },
 	    { methodDeclBracePlacement, OBRACE_SAMELINE },
+	    { ifBracePlacement, OBRACE_SAMELINE },
+	    { forBracePlacement, OBRACE_SAMELINE },
+	    { whileBracePlacement, OBRACE_SAMELINE },
+	    { switchBracePlacement, OBRACE_SAMELINE },
+	    { catchBracePlacement, OBRACE_SAMELINE },
 	    { otherBracePlacement, OBRACE_SAMELINE },
 
             { blankLinesBeforeNamespace, "1"}, //NOI18N
@@ -309,6 +320,7 @@ public class FmtOptions {
 
         private static final ComboItem  bracePlacement[] = new ComboItem[] {
                 new ComboItem( OBRACE_NEWLINE, "LBL_bp_NEWLINE" ), // NOI18N
+		new ComboItem( OBRACE_NEWLINE_INDENTED, "LBL_bp_NEWLINE_INDENTED" ), // NOI18N
                 new ComboItem( OBRACE_SAMELINE, "LBL_bp_SAMELINE" ), // NOI18N
                 new ComboItem( OBRACE_PRESERVE, "LBL_bp_PRESERVE" ), // NOI18N
             };

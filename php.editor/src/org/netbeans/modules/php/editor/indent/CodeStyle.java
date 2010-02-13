@@ -118,6 +118,31 @@ public final class CodeStyle {
         return BracePlacement.valueOf(placement);
     }
 
+    public BracePlacement getIfBracePlacement() {
+        String placement = preferences.get(ifBracePlacement, getDefaultAsString(ifBracePlacement));
+        return BracePlacement.valueOf(placement);
+    }
+
+    public BracePlacement getForBracePlacement() {
+        String placement = preferences.get(forBracePlacement, getDefaultAsString(forBracePlacement));
+        return BracePlacement.valueOf(placement);
+    }
+
+    public BracePlacement getWhileBracePlacement() {
+        String placement = preferences.get(whileBracePlacement, getDefaultAsString(whileBracePlacement));
+        return BracePlacement.valueOf(placement);
+    }
+
+    public BracePlacement getSwitchBracePlacement() {
+        String placement = preferences.get(switchBracePlacement, getDefaultAsString(switchBracePlacement));
+        return BracePlacement.valueOf(placement);
+    }
+
+    public BracePlacement getCatchBracePlacement() {
+        String placement = preferences.get(catchBracePlacement, getDefaultAsString(catchBracePlacement));
+        return BracePlacement.valueOf(placement);
+    }
+
     public BracePlacement getOtherBracePlacement() {
         String placement = preferences.get(otherBracePlacement, getDefaultAsString(otherBracePlacement));
         return BracePlacement.valueOf(placement);
@@ -388,6 +413,7 @@ public final class CodeStyle {
     public enum BracePlacement {
         SAME_LINE,
         NEW_LINE,
+	NEW_LINE_INDENTED,
         PRESERVE_EXISTING
     }
 }

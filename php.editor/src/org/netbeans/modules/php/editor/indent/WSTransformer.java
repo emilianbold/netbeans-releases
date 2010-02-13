@@ -94,7 +94,7 @@ class WSTransformer extends DefaultTreePathVisitor {
     private Collection<CodeRange> unbreakableRanges = new TreeSet<CodeRange>();
     private Collection<Integer> breakPins = new LinkedList<Integer>();
 
-    private final List<PHPTokenId> WS_AND_COMMENT_TOKENS = Arrays.asList(PHPTokenId.PHPDOC_COMMENT_START,
+    protected static List<PHPTokenId> WS_AND_COMMENT_TOKENS = Arrays.asList(PHPTokenId.PHPDOC_COMMENT_START,
             PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.WHITESPACE,
             PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT,
             PHPTokenId.PHP_LINE_COMMENT);
@@ -194,16 +194,26 @@ class WSTransformer extends DefaultTreePathVisitor {
 	    CodeStyle.BracePlacement openingBraceStyle;
 	    if (parent instanceof ClassDeclaration) {
 		openingBraceStyle = CodeStyle.get(context.document()).getClassDeclBracePlacement();
-	    }
-	    else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
+	    } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
 		openingBraceStyle = CodeStyle.get(context.document()).getMethodDeclBracePlacement();
-	    }
-	    else {
+	    } else if (parent instanceof IfStatement) {
+		openingBraceStyle = CodeStyle.get(context.document()).getIfBracePlacement();
+	    } else if (parent instanceof ForStatement || parent instanceof ForEachStatement) {
+		openingBraceStyle = CodeStyle.get(context.document()).getForBracePlacement();
+	    } else if (parent instanceof WhileStatement || parent instanceof DoStatement) {
+		openingBraceStyle = CodeStyle.get(context.document()).getWhileBracePlacement();
+	    } else if (parent instanceof SwitchStatement) {
+		openingBraceStyle = CodeStyle.get(context.document()).getSwitchBracePlacement();
+	    } else if (parent instanceof CatchClause || parent instanceof TryStatement) {
+		openingBraceStyle = CodeStyle.get(context.document()).getCatchBracePlacement();
+	    } else {
 		openingBraceStyle = CodeStyle.get(context.document()).getOtherBracePlacement();
 	    }
 
-            newLineReplacement = CodeStyle.BracePlacement.NEW_LINE == openingBraceStyle ? "\n" : " "; //NOI18N
-            if (CodeStyle.BracePlacement.NEW_LINE != openingBraceStyle && getPath().size() > 0) {
+            newLineReplacement = CodeStyle.BracePlacement.NEW_LINE == openingBraceStyle
+		    || CodeStyle.BracePlacement.NEW_LINE_INDENTED == openingBraceStyle ? "\n" : " "; //NOI18N
+            if (CodeStyle.BracePlacement.NEW_LINE != openingBraceStyle &&
+		    CodeStyle.BracePlacement.NEW_LINE_INDENTED != openingBraceStyle && getPath().size() > 0) {
                 if (parent instanceof ClassDeclaration) {
                     newLineReplacement = CodeStyle.get(context.document()).spaceBeforeClassDeclLeftBrace() ? " " : ""; //NOI18N
                 }
@@ -330,10 +340,10 @@ class WSTransformer extends DefaultTreePathVisitor {
         checkEmptyLinesBefore(node.getStartOffset(), insertLines, true);
 
         // lines after header of class (after {)
+	TokenSequence<PHPTokenId> ts = tokenSequence(node.getStartOffset());
         List<Statement> statements = node.getBody().getStatements();
         if (statements.size() == 0 || !isBlankLinesInteresting(statements.get(0))) {
             insertLines = insertLineBeforeAfter(ElemType.CLASS, ElemType.CLASS_HEADER);
-            TokenSequence<PHPTokenId> ts = tokenSequence(node.getStartOffset());
             ts.move(node.getStartOffset());
             if (ts.moveNext() && ts.moveNext()) {
                 LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_CURLY_OPEN));
@@ -342,10 +352,17 @@ class WSTransformer extends DefaultTreePathVisitor {
         }
 
         // line before end of class (before })
-        insertLines = (statements.size() == 0)
-                ? insertLineBeforeAfter(ElemType.CLASS_HEADER, ElemType.CLASS_BEFORE_END)
-                : insertLineBeforeAfter(astNodeToType(statements.get(statements.size() - 1)), ElemType.CLASS_BEFORE_END);
-        checkEmptyLinesBefore(node.getEndOffset() - 1, insertLines, true);
+	ts = tokenSequence(node.getEndOffset());
+	ts.move(node.getEndOffset());
+	if (ts.movePrevious()) {
+	    LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_CURLY_CLOSE));
+	    if (ts.token().id() == PHPTokenId.PHP_CURLY_CLOSE) {
+		insertLines = (statements.size() == 0)
+			? insertLineBeforeAfter(ElemType.CLASS_HEADER, ElemType.CLASS_BEFORE_END)
+			: insertLineBeforeAfter(astNodeToType(statements.get(statements.size() - 1)), ElemType.CLASS_BEFORE_END);
+		checkEmptyLinesBefore(node.getEndOffset() - 1, insertLines, true);
+	    }
+	}
 
         // lines after class declaration (after })
         ASTNode nextNode = nextNode(node);

@@ -239,6 +239,50 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue176224.php");
     }
 
+    public void testBracePlacement01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatting/blankLines/BracePlacement01.php", options);
+    }
+
+    public void testBracePlacement02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        reformatFileContents("testfiles/formatting/blankLines/BracePlacement02.php", options);
+    }
+
+    public void testBracePlacement03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+	options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+	options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+	options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+	options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+	options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+	options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+	options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+        reformatFileContents("testfiles/formatting/blankLines/BracePlacement03.php", options);
+    }
+
+    public void testAlternativeSyntaxPlacement01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/AlternativeSyntaxPlacement01.php", options);
+    }
+
     // blank lines
     public void testBLClass01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();

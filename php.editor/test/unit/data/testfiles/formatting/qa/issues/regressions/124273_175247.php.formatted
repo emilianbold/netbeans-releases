@@ -4,5 +4,5 @@
 
 <span><strong><?php  $r= 123; ?></strong></span>
     <br/>
-    <?php } ?>
+<?php } ?>
 </body>
