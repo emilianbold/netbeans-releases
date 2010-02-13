@@ -169,7 +169,7 @@ abstract class EntrySupport {
 
                 try {
                     Children.PR.enterReadAccess();
-                    if (this != children.entrySupport) {
+                    if (this != children.getEntrySupport()) {
                         // support was switched while we were waiting for access
                         return new Node[0];
                     }
@@ -650,7 +650,7 @@ abstract class EntrySupport {
 
             if (children.parent != null) {
                 // fire change of nodes
-                if (children.entrySupport == this) {
+                if (children.getEntrySupport() == this) {
                     children.parent.fireSubNodesChange(false, arr, current);
                 }
 
@@ -688,7 +688,7 @@ abstract class EntrySupport {
 
             Node n = children.parent;
 
-            if (n != null && children.entrySupport == this) {
+            if (n != null && children.getEntrySupport() == this) {
                 n.fireSubNodesChange(true, arr, null);
             }
         }
@@ -884,7 +884,7 @@ abstract class EntrySupport {
                     LOGGER.fine("previous array: " + array + " caller: " + caller); // NOI18N
                 }
                 synchronized (LOCK) {
-                    if (array == caller && children.entrySupport == this) {
+                    if (array == caller && children.getEntrySupport() == this) {
                         // really finalized and not reconstructed
                         mustNotifySetEnties = false;
                         array = EMPTY;
@@ -1103,7 +1103,7 @@ abstract class EntrySupport {
                             inited = false;
                             initThread = null;
                             initInProgress = false;
-                            if (children.entrySupport == this) {
+                            if (children.getEntrySupport() == this) {
                                 if (LOGGER.isLoggable(Level.FINER)) {
                                     LOGGER.finer("callRemoveNotify() " + this); // NOI18N
                                 }
@@ -1491,7 +1491,7 @@ abstract class EntrySupport {
          *  @param indices list of integers with indexes that changed
          */
         protected void fireSubNodesChangeIdx(boolean added, int[] idxs, Entry sourceEntry, List<Node> current, List<Node> previous) {
-            if (children.parent != null && children.entrySupport == this) {
+            if (children.parent != null && children.getEntrySupport() == this) {
                 children.parent.fireSubNodesChangeIdx(added, idxs, sourceEntry, current, previous);
             }
         }

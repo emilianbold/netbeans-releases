@@ -46,10 +46,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.Action;
-import junit.framework.AssertionFailedError;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -61,6 +59,11 @@ import org.openide.util.lookup.Lookups;
  */
 public class InterceptionListenerTest extends NbTestCase  {
     private InterceptionListenerImpl iListener;
+    static {
+        MockServices.setServices(InterceptionListenerTest.AnnotationProviderImpl.class);
+    }
+
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         iListener = lookupImpl();
@@ -138,8 +141,21 @@ public class InterceptionListenerTest extends NbTestCase  {
         }
     }
     
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.masterfs.providers.AnnotationProvider.class)
     public static class AnnotationProviderImpl extends AnnotationProvider  {
+        private static int cnt;
+
+        public AnnotationProviderImpl() {
+            cnt++;
+        }
+
+        public static void assertCreated(String msg, boolean reallyCreated) {
+            if (reallyCreated) {
+                assertEquals(msg, 1, cnt);
+            } else {
+                assertEquals(msg, 0, cnt);
+            }
+        }
+
         private InterceptionListenerImpl impl = new InterceptionListenerImpl(this);
         public String annotateName(String name, java.util.Set files) {
             java.lang.StringBuffer sb = new StringBuffer(name);

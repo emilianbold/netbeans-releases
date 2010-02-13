@@ -154,6 +154,7 @@ public class Util {
         });
         pane.addPropertyChangeListener(new PropertyChangeListener() {
 
+            @Override
             public void propertyChange(PropertyChangeEvent event) {
                 // Let the defaultCloseOperation handle the closing
                 // if the user closed the window without selecting a button

@@ -120,7 +120,7 @@ public abstract class FileObject extends Object implements Serializable {
             FileObject peer = target.createFolder(name);
             FileUtil.copyAttributes(this, peer);
             for (FileObject fo : getChildren()) {
-                fo.copy(peer, getName(), getExt());
+                fo.copy(peer, fo.getName(), fo.getExt());
             }
             return peer;
         }
