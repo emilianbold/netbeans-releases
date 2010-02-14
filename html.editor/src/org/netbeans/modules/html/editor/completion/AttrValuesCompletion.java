@@ -141,6 +141,7 @@ public abstract class AttrValuesCompletion {
         static final ImageIcon PACKAGE_ICON =
                 ImageUtilities.loadImageIcon("org/openide/loaders/defaultFolder.gif", false); // NOI18N
 
+        @Override
         public List<HtmlCompletionItem> getValueCompletionItems(Document doc, int offset, String valuePart) {
             List<HtmlCompletionItem> result = new ArrayList<HtmlCompletionItem>();
 
