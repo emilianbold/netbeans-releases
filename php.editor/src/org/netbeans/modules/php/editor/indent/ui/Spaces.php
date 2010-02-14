@@ -19,7 +19,7 @@ public function forExample() {
 }
 
 public function foreachEample() {
-$arr = array(1, 2, 3, 4);
+$arr = array(1, 2, 3, 4, "b"=>5, "a"=>6);
 foreach ($arr as &$value) {
     $value = (int)$value * 2;
 }

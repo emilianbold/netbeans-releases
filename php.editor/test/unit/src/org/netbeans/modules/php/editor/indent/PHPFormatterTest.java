@@ -679,6 +679,12 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceAroundStringConcat01.php", options);
     }
 
+    public void testSpacesAroundKeyValue01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceAroundKeyValueOps, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundKeyValueOp01.php", options);
+    }
+
     public void testSpacesWithinIfParens01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.spaceWithinIfParens, true);

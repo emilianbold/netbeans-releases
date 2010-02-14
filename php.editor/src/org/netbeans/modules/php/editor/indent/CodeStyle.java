@@ -261,6 +261,10 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceAroundTernaryOps, getDefaultAsBoolean(spaceAroundTernaryOps));
     }
 
+    public boolean spaceAroundKeyValueOps() {
+        return preferences.getBoolean(spaceAroundKeyValueOps, getDefaultAsBoolean(spaceAroundKeyValueOps));
+    }
+
     public boolean spaceAroundAssignOps() {
         return preferences.getBoolean(spaceAroundAssignOps, getDefaultAsBoolean(spaceAroundAssignOps));
     }

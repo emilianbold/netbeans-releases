@@ -141,10 +141,10 @@ class WSTransformer extends DefaultTreePathVisitor {
 	    }
 	    else {
 		String text = token.text().toString();
-		if (".".equals(text)) {
+		if (".".equals(text)) { // NOI18N
 		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundStringConcatOps());
 		}
-		else if (",".equals(text)) {
+		else if (",".equals(text)) { // NOI18N
 		    int offset = ts.offset();
 		    replaceSpaceBeforeToken(ts, CodeStyle.get(context.document()).spaceBeforeComma(), null);
 		    ts.move(offset);
@@ -152,6 +152,9 @@ class WSTransformer extends DefaultTreePathVisitor {
 			LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
 			replaceSpaceBeforeToken(ts, CodeStyle.get(context.document()).spaceAfterComma(), null);
 		    }
+		}
+		else if ("=>".equals(text)) { // NOI18N
+		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundKeyValueOps());
 		}
 		else if (ASSIGN_OPERATORS.contains(text)) {
 		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundAssignOps());
