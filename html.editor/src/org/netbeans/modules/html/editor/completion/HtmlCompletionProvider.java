@@ -278,12 +278,18 @@ public class HtmlCompletionProvider implements CompletionProvider {
                         return false;
                     }
 
-                    ts.move(dotPos - 1);
-                    if (ts.moveNext() || ts.movePrevious()) {
-                        if (ts.token().id() == HTMLTokenId.WS) {
-                            return true;
-                        }
+                    int diff = ts.move(dotPos);
+                    if (ts.moveNext() &&
+                            ts.token().id() == HTMLTokenId.WS && //if current token is whitespace
+                            diff == 1 && //and the caret is just after one char of the token
+                            ts.movePrevious() && //then go back and check if the token before is one of following types
+                            (ts.token().id() == HTMLTokenId.TAG_OPEN ||
+                            ts.token().id() == HTMLTokenId.VALUE ||
+                            ts.token().id() == HTMLTokenId.VALUE_CSS ||
+                            ts.token().id() == HTMLTokenId.VALUE_JAVASCRIPT)) {
+                        return true;
                     }
+                    
                 } finally {
                     doc.readUnlock();
                 }
