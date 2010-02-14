@@ -39,15 +39,13 @@
 
 package org.netbeans.modules.web.common.spi;
 
-import java.util.Collection;
-import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 
 /**
- * Provides an ability to get the web roots folder or folders for
- * a web-like project.
+ * Provides an ability to get the web root folder for a file
+ * within web-like project.
  *
- * Instance of this interface must be registered into the global lookup.
+ * Instance of this interface must be registered into project's lookup
  *
  * @author marekfukala
  */
@@ -59,6 +57,6 @@ public interface ProjectWebRootProvider {
      * @return A collection of web roots of the given project or empty list if there is none.
      * The method must not return null!
      */
-    public Collection<FileObject> getWebRoots(Project project);
+    public FileObject getWebRoot(FileObject file);
 
 }
