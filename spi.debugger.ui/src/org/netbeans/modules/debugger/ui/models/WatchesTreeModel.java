@@ -51,9 +51,9 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.spi.viewmodel.ReorderableTreeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
-import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -63,7 +63,7 @@ public class WatchesTreeModel implements ReorderableTreeModel {
     
     private Listener listener;
     private Vector listeners = new Vector ();
-    
+    private final EmptyWatch EMPTY_WATCH = new EmptyWatch();
     
     /** 
      *
@@ -80,13 +80,16 @@ public class WatchesTreeModel implements ReorderableTreeModel {
     public Object[] getChildren (Object parent, int from, int to) 
     throws UnknownTypeException {
         if (parent == ROOT) {
-            Watch[] ws = DebuggerManager.getDebuggerManager ().
+            Object[] wsTemp = DebuggerManager.getDebuggerManager ().
                 getWatches ();
+            Object[] ws = new Object[wsTemp.length + 1];
+            System.arraycopy(wsTemp, 0, ws, 0, wsTemp.length);
+            ws[ws.length - 1] = EMPTY_WATCH;
             if (listener == null)
                 listener = new Listener (this);
             to = Math.min(ws.length, to);
             from = Math.min(ws.length, from);
-            Watch[] fws = new Watch [to - from];
+            Object[] fws = new Object [to - from];
             System.arraycopy (ws, from, fws, 0, to - from);
             return fws;
         } else
@@ -116,6 +119,7 @@ public class WatchesTreeModel implements ReorderableTreeModel {
     public boolean isLeaf (Object node) throws UnknownTypeException {
         if (node == ROOT) return false;
         if (node instanceof Watch) return true;
+        if (node instanceof EmptyWatch) return true;
         throw new UnknownTypeException (node);
     }
 
@@ -243,4 +247,28 @@ public class WatchesTreeModel implements ReorderableTreeModel {
             m.fireWatchPropertyChanged (w, evt.getPropertyName ());
         }
     }
+
+    /**
+     * An item displayed at the end of watches that can be used to enter new watch expressions.
+     */
+    class EmptyWatch {
+
+        public void setExpression(String expr) {
+            String infoStr = NbBundle.getBundle (WatchesTreeModel.class).getString("CTL_WatchesModel_Empty_Watch_Hint");
+            infoStr = "<" + infoStr + ">";
+            if (expr == null || expr.trim().length() == 0 || infoStr.equals(expr)) {
+                return; // cancel action
+            }
+            DebuggerManager.getDebuggerManager().createWatch(expr);
+
+            Vector v = (Vector) listeners.clone ();
+            int i, k = v.size ();
+            for (i = 0; i < k; i++)
+                ((ModelListener) v.get (i)).modelChanged (
+                    new ModelEvent.NodeChanged (WatchesTreeModel.this, EmptyWatch.this)
+                );
+        }
+
+    }
+
 }
