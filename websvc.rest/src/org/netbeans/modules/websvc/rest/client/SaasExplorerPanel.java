@@ -134,36 +134,6 @@ public class SaasExplorerPanel extends JPanel implements ExplorerManager.Provide
             Node saasRootNode = saasView.getSaasView();
             manager.setRootContext(saasRootNode);
         }
-//            //Project[] projects = OpenProjects.getDefault().getOpenProjects();
-//            Children rootChildren = new Children.Array();
-//            AbstractNode explorerSaasRoot = new AbstractNode(rootChildren);
-//            List<Node> projectNodeList = new ArrayList<Node>();
-//            for (Project prj : saasRootNode.get) {
-//                LogicalViewProvider logicalProvider = (LogicalViewProvider)prj.getLookup().lookup(LogicalViewProvider.class);
-//                if (logicalProvider!=null) {
-//                    Node rootNode = logicalProvider.createLogicalView();
-//                    Node restResourcesNode = RESTResourcesView.createRESTResourcesView(prj);
-//                    if (restResourcesNode != null) {
-//                        Children restResources = restResourcesNode.getChildren();
-//                        if (restResources.getNodesCount() > 0) {
-//                            Children children = new Children.Array();
-//                            Node[] resourceNodes = new Node[restResources.getNodes().length];
-//                            int i=0;
-//                            for (Node restResourceNode : restResources.getNodes()) {
-//                                resourceNodes[i++] = new ResourceNode(restResourceNode);
-//                            }
-//                            children.add(resourceNodes);
-//                            projectNodeList.add(new ProjectNode(children, rootNode));
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        Node[] projectNodes = new Node[projectNodeList.size()];
-//        projectNodeList.<Node>toArray(projectNodes);
-//        rootChildren.add(projectNodes);
-//        manager.setRootContext(explorerResourcesRoot);
-        
         // !PW If we preselect a node, this can go away.
         descriptor.setValid(false);
     }
@@ -189,10 +159,17 @@ public class SaasExplorerPanel extends JPanel implements ExplorerManager.Provide
                 Node nodes[] = manager.getSelectedNodes();
                 if(nodes != null && nodes.length > 0 ) {
                     Node node = nodes[0];
-                    if(node.getLookup().lookup(WadlSaasResource.class) != null) {
+                    WadlSaasResource saasResource = node.getLookup().lookup(WadlSaasResource.class);
+                    if(saasResource != null) {
                         // This is a resource node.
+                        if (saasResource.getMethods().size() > 0) {
                         selectedResourceNode = node;
                         descriptor.setValid(true);
+                        } else {
+                            // Contrains no methods.
+                            selectedResourceNode = null;
+                            descriptor.setValid(false);
+                        }
                     } else {
                         // This is not a service node.
                         selectedResourceNode = null;
@@ -202,35 +179,4 @@ public class SaasExplorerPanel extends JPanel implements ExplorerManager.Provide
             }
         }
     }
-    
-//    private class ProjectNode extends AbstractNode {
-//        private Node rootNode;
-//
-//        ProjectNode(Children children, Node rootNode) {
-//            super(children);
-//            this.rootNode=rootNode;
-//            setName(rootNode.getDisplayName());
-//        }
-//
-//        @Override
-//        public Image getIcon(int type) {
-//            return rootNode.getIcon(type);
-//        }
-//
-//        @Override
-//        public Image getOpenedIcon(int type) {
-//            return rootNode.getOpenedIcon(type);
-//        }
-//    }
-
-//    private class ResourceNode extends FilterNode {
-//
-//        private Node resourceNode;
-//
-//        ResourceNode(Node resourceNode) {
-//            super(resourceNode);
-//            this.resourceNode=resourceNode;
-//        }
-//
-//    }
 }

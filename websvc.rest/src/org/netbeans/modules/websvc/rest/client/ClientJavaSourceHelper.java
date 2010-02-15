@@ -81,7 +81,6 @@ import org.netbeans.modules.websvc.rest.model.api.SubResourceLocator;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
-import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -134,7 +133,6 @@ public class ClientJavaSourceHelper {
         if (restServiceDesc != null) {
             String uriTemplate = restServiceDesc.getUriTemplate();
             if (uriTemplate != null) {
-                List<RestMethodDescription> methods =  restServiceDesc.getMethods();
 
                 PathFormat pf = null;
                 if (uriTemplate.length() == 0) { // subresource locator
@@ -159,7 +157,7 @@ public class ClientJavaSourceHelper {
                         JavaSource.forFileObject(targetFo),
                         className,
                         baseURL,
-                        methods,
+                        restServiceDesc,
                         null,
                         pf);
             }
@@ -178,7 +176,7 @@ public class ClientJavaSourceHelper {
                         getClientClassName(saasResource),
                         resourceUri,
                         null,
-                        saasResource.getMethods(),
+                        saasResource,
                         pf);
             }
         }
@@ -188,8 +186,8 @@ public class ClientJavaSourceHelper {
             JavaSource source,
             final String className,
             final String resourceUri,
-            final List<RestMethodDescription> annotatedMethods,
-            final List<WadlSaasMethod> saasMethods,
+            final RestServiceDescription restServiceDesc,
+            final WadlSaasResource saasResource,
             final PathFormat pf) {
         try {
             ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
@@ -200,7 +198,7 @@ public class ClientJavaSourceHelper {
 
                     ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
                     //String className = resourceName+"_JerseyClient"; //NOI18N
-                    ClassTree modifiedTree = addJerseyClientClass(copy, tree, className, resourceUri, annotatedMethods, saasMethods, pf);
+                    ClassTree modifiedTree = addJerseyClientClass(copy, tree, className, resourceUri, restServiceDesc, saasResource, pf);
 
                     copy.rewrite(tree, modifiedTree);
                 }
@@ -217,8 +215,8 @@ public class ClientJavaSourceHelper {
             ClassTree tree,
             String className,
             String resourceURI,
-            List<RestMethodDescription> annotatedMethods,
-            List<WadlSaasMethod> saasMethods,
+            RestServiceDescription restServiceDesc,
+            WadlSaasResource saasResource,
             PathFormat pf) {
 
         TreeMaker maker = copy.getTreeMaker();
@@ -248,7 +246,7 @@ public class ClientJavaSourceHelper {
         modifiersSet.add(Modifier.FINAL);
         fieldModif =  maker.Modifiers(modifiersSet);
         typeTree = maker.Identifier("String"); //NOI18N
-        fieldTree = maker.Variable(fieldModif, "URL_BASE", typeTree, maker.Literal(resourceURI)); //NOI18N
+        fieldTree = maker.Variable(fieldModif, "BASE_URI", typeTree, maker.Literal(resourceURI)); //NOI18N
         modifiedInnerClass = maker.addClassMember(modifiedInnerClass, fieldTree);
 
         // add constructor
@@ -266,23 +264,20 @@ public class ClientJavaSourceHelper {
             }
         }
 
-        String resURI = "URL_BASE"; //NOI18N
+        String resURI = null; //NOI18N
         String subresourceExpr = ""; //NOI18N
         if (isSubresource) {
             subresourceExpr = "    String resourcePath = "+getPathExpression(pf)+";"; //NOI18N
-            resURI += "+\"/\"+resourcePath"; //NOI18N
+            resURI = "resourcePath"; //NOI18N
         } else {
-            String path = getPathExpression(pf);
-            if (path.length() > 0) {
-                resURI += "+\"/\"+"+path; //NOI18N
-            }
+            resURI = getPathExpression(pf); //NOI18N
         }
 
         String body =
                 "{"+ //NOI18N
                 "   client = new "+(clientEl == null ? "com.sun.jersey.api.client.":"")+"Client();"+ //NOI18N
                 subresourceExpr +
-                "   webResource = client.resource("+resURI+");"+ //NOI18N
+                "   webResource = client.resource(BASE_URI).path("+resURI+");"+ //NOI18N
                 "}"; //NOI18N
         MethodTree constructorTree = maker.Constructor (
                 emtyModifier,
@@ -298,7 +293,7 @@ public class ClientJavaSourceHelper {
             body =
                 "{"+ //NOI18N
                 "   String resourcePath = "+getPathExpression(pf)+";"+ //NOI18N
-                "   webResource = client.resource(URL_BASE+\"/\"+resourcePath);"+ //NOI18N
+                "   webResource = client.resource(BASE_URI).path(resourcePath);"+ //NOI18N
                 "}"; //NOI18N
             MethodTree methodTree = maker.Method (
                     methodModifier,
@@ -313,7 +308,8 @@ public class ClientJavaSourceHelper {
         }
 
         // add wrappers for http methods (GET/POST/PUT/DELETE)
-        if (annotatedMethods != null) {
+        if (restServiceDesc != null) {
+            List<RestMethodDescription> annotatedMethods =  restServiceDesc.getMethods();
             for (RestMethodDescription methodDesc : annotatedMethods) {
                 if (methodDesc instanceof HttpMethod) {
                     List<MethodTree> httpMethods = createHttpMethods(copy, (HttpMethod)methodDesc);
@@ -322,8 +318,8 @@ public class ClientJavaSourceHelper {
                     }
                 }
             }
-        } else if (saasMethods != null) {
-            modifiedInnerClass = Wadl2JavaHelper.addHttpMethods(copy, modifiedInnerClass, saasMethods);
+        } else if (saasResource != null) {
+            modifiedInnerClass = Wadl2JavaHelper.addHttpMethods(copy, modifiedInnerClass, saasResource);
         }
 
         // add close()
@@ -503,6 +499,7 @@ public class ClientJavaSourceHelper {
         List<VariableTree> paramList = new ArrayList<VariableTree>();
         if (classParam != null) {
             paramList.add(classParam);
+       
         }
         String bodyParam2 = "";
         if (!RestConstants.DELETE_ANNOTATION.equals(httpMethod.getType()) || requestMimeType != null) {
