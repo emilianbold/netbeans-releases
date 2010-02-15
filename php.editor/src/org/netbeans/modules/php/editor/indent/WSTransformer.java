@@ -165,10 +165,13 @@ class WSTransformer extends DefaultTreePathVisitor {
 		}
 		else if (UNARY_OPERATOS.contains(text)) {
 		    boolean check = false;
+		    int position = ts.offset();
 		    if (ts.moveNext()) {
 			LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
 			if (ts.token().id() != PHPTokenId.PHP_TOKEN) {
 			    check = true;
+			    ts.move(position);
+			    ts.moveNext();
 			}
 		    }
 		    else {
@@ -790,9 +793,9 @@ class WSTransformer extends DefaultTreePathVisitor {
                 replacements.add(new Replacement(ts.offset() + token.length(), 0, " ")); //NOI18N
             } else if (token.id() == PHPTokenId.WHITESPACE && countOfNewLines(token.text()) == 0) {
                 if (space) {
-                    if (token.text().length() > 1) {
+                    //if (token.text().length() > 1) {
                         replacements.add(new Replacement(ts.offset() + token.length(), token.length(), " ")); //NOI18N
-                    }
+                    //}
                 } else {
                     replacements.add(new Replacement(ts.offset() + token.length(), token.length(), "")); //NOI18N
                 }

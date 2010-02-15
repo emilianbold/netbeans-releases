@@ -820,6 +820,24 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterComma04.php", options);
     }
 
+    public void testSpacesBeforeUnaryOps01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundUnaryOps01.php", options);
+    }
+
+    public void testSpacesBeforeUnaryOps02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.spaceWithinIfParens, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundUnaryOps02.php", options);
+    }
+
+    public void testSpacesBeforeUnaryOps03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.spaceWithinIfParens, true);
+	options.put(FmtOptions.spaceAroundUnaryOps, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundUnaryOps03.php", options);
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
