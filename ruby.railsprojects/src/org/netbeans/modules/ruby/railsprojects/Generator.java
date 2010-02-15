@@ -227,4 +227,24 @@ public class Generator {
             return null;
         }
     }
+
+    static final class Script {
+
+        final String script;
+        final List<String> args = new ArrayList<String>();
+
+        public Script(String script) {
+            this.script = script;
+        }
+
+        Script addArgs(String... argsToAdd) {
+            if (argsToAdd == null) {
+                return this;
+            }
+            for (String each : argsToAdd) {
+                args.add(each);
+            }
+            return this;
+        }
+    }
 }
