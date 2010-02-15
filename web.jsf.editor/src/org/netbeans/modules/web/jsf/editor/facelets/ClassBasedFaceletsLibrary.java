@@ -43,22 +43,50 @@ import java.util.Collections;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.WeakListeners;
 
 public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
 
     private final Collection<NamedComponent> components = new ArrayList<NamedComponent>();
-    private final URL libraryDescriptorSourceURL;
+    private final FileObject libraryDescriptorFile;
     private FaceletsLibraryDescriptor libraryDescriptor;
 
-    public ClassBasedFaceletsLibrary(URL libraryDescriptorSourceURL, FaceletsLibrarySupport support, String namespace) {
+    private FileChangeListener FILE_CHANGE_LISTENER = new FileChangeAdapter() {
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            support.libraryChanged(ClassBasedFaceletsLibrary.this);
+        }
+    };
+
+    public ClassBasedFaceletsLibrary(URL libraryDescriptorSourceURL, final FaceletsLibrarySupport support, String namespace) {
         super(support, namespace);
-        if(libraryDescriptorSourceURL == null) {
+        if (libraryDescriptorSourceURL == null) {
             throw new NullPointerException("libraryDescriptorSourceURL cannot be null!"); //NOI18N
         }
-        this.libraryDescriptorSourceURL = libraryDescriptorSourceURL;
+        libraryDescriptorFile = URLMapper.findFileObject(libraryDescriptorSourceURL);
+        if (libraryDescriptorFile == null) {
+            Logger.getAnonymousLogger().info(
+                    String.format("Cannot convert facelets library descriptor's URL %s into a FileObject?!?!",
+                    libraryDescriptorSourceURL.toString())); //NOI18N
+        } else {
+            //listen on the library descriptor for changes and possibly reset libraries cache
+            libraryDescriptorFile.addFileChangeListener(
+                    WeakListeners.create(FileChangeListener.class, FILE_CHANGE_LISTENER, libraryDescriptorFile));
+
+            //parse the descriptor
+            try {
+                libraryDescriptor = FaceletsLibraryDescriptor.create(libraryDescriptorFile);
+            } catch (LibraryDescriptorException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     //for default libraries
@@ -72,29 +100,7 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
 
     public LibraryDescriptor getLibraryDescriptor() {
         LibraryDescriptor ld = support.getJsfSupport().getLibraryDescriptor(getNamespace());
-        if(ld == null) {
-            //Indexed library descriptor cannot be found,
-            //lets create the descriptor from the source url
-            if(libraryDescriptor == null) {
-                FileObject fo = URLMapper.findFileObject(libraryDescriptorSourceURL);
-                if(fo != null) {
-                    try {
-                        libraryDescriptor = FaceletsLibraryDescriptor.create(fo);
-                    } catch (LibraryDescriptorException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                } else {
-                    Logger.getAnonymousLogger().info(
-                            String.format("Cannot convert facelets library descriptor's URL %s into a FileObject?!?!",
-                            libraryDescriptorSourceURL.toString())); //NOI18N
-                }
-
-            }
-            ld = libraryDescriptor;
-        }
-
-        return ld;
-
+        return ld == null ? libraryDescriptor : ld;
     }
 
     public void putConverter(String name, String id) {

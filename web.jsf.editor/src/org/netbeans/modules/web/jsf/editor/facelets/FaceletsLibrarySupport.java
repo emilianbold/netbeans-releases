@@ -149,6 +149,11 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         return jsfSupport;
     }
 
+    //TODO: the method is supposed to refresh JUST the given library
+    public synchronized void libraryChanged(FaceletsLibrary library) {
+        faceletsLibraries = null; //refresh all
+    }
+
     //called by JsfIndexer when scanning finishes
     public synchronized void librariesChanged(Collection<String> librariesNamespaces) {
 	//just check if the library already exist and if not, refresh all libs
