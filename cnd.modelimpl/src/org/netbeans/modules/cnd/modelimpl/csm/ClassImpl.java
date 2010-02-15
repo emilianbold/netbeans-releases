@@ -206,7 +206,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     case CPPTokenTypes.CSM_FIELD:
                         child = token.getFirstChild();
                         if (hasFriendPrefix(child)) {
-                            addFriend(renderFriendClass(token), !isRenderingLocalContext());
+                            try {
+                                addFriend(renderFriendClass(token), !isRenderingLocalContext());
+                            } catch (AstRendererException e) {
+                                DiagnosticExceptoins.register(e);
+                            }
                         } else {
                             if (renderVariable(token, null, null, false)) {
                                 break;
@@ -248,7 +252,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         {
                             child = token.getFirstChild();
                             if (hasFriendPrefix(child)) {
-                                addFriend(renderFriendClass(token), !isRenderingLocalContext());
+                                try {
+                                    addFriend(renderFriendClass(token), !isRenderingLocalContext());
+                                } catch (AstRendererException e) {
+                                    DiagnosticExceptoins.register(e);
+                                }
                             } else {
                                 ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
                                 if (fd != null) {
@@ -371,7 +379,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return false;
         }
 
-        private CsmFriend renderFriendClass(AST ast) {
+        private CsmFriend renderFriendClass(AST ast) throws AstRendererException {
             AST firstChild = ast.getFirstChild();
             AST child = firstChild;
             if (child.getType() == CPPTokenTypes.LITERAL_friend) {
