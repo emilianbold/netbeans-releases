@@ -512,11 +512,15 @@ public abstract class IndexerCache <T> {
             if (props != null) {
                 for (Map.Entry<Object, Object> entry : props.entrySet()) {
                     String indexerName = ((String) entry.getKey()).trim();
-                    int indexerVersion = 0;
+                    int indexerVersion = -1;
                     Set<String> indexerMimeTypes = new HashSet<String>();
                     String[] indexerData = ((String) entry.getValue()).trim().split(","); //NOI18N
                     if (indexerData.length > 0) {
-                        indexerVersion = Integer.parseInt(indexerData[0]);
+                        try {
+                            indexerVersion = Integer.parseInt(indexerData[0]);
+                        } catch (NumberFormatException nfe) {
+                            // ignore
+                        }
                         if (indexerData.length > 1) {
                             for (int i = 1; i < indexerData.length; i++) {
                                 String mimeType = indexerData[i];
