@@ -29,6 +29,8 @@ public final class TargetSelector extends javax.swing.JPanel {
         remoteBtn.setSelected(true);
         username = System.getProperty("user.name");
         host = "";
+        terminalIO.setSelected(true);
+        ptyMode.setSelected(true);
         reenableFields();
     }
 
