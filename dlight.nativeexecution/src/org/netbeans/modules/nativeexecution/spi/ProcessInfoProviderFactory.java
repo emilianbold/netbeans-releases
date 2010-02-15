@@ -36,39 +36,16 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs.processinfo;
+package org.netbeans.modules.nativeexecution.spi;
 
-import java.io.IOException;
-import java.util.concurrent.CancellationException;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.spi.ProcessInfoProviderFactory;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
  * @author ak119685
  */
-@ServiceProviders({
-    @ServiceProvider(service = ProcessInfoProviderFactory.class)
-})
-public class ProcBasedProcessInfoProviderFactory implements ProcessInfoProviderFactory {
+public interface ProcessInfoProviderFactory {
 
-    @Override
-    public ProcessInfoProvider getProvider(ExecutionEnvironment execEnv, int pid) {
-        try {
-            HostInfo hinfo = HostInfoUtils.getHostInfo(execEnv);
-
-            if (hinfo != null && hinfo.getOSFamily() == HostInfo.OSFamily.SUNOS) {
-                return new ProcBasedProcessInfoProvider(execEnv, pid);
-            }
-        } catch (CancellationException ex) {
-        } catch (IOException ex) {
-        }
-
-        return null;
-    }
+    public ProcessInfoProvider getProvider(ExecutionEnvironment env, int pid);
 }

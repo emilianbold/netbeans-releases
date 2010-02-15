@@ -58,9 +58,9 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.ProcessInfo;
-import org.netbeans.modules.nativeexecution.api.ProcessInfoProviderFactory;
+import org.netbeans.modules.nativeexecution.spi.ProcessInfoProviderFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.spi.ProcessInfoProvider;
+import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.openide.util.Lookup;
@@ -157,10 +157,12 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         destroy();
     }
 
+    @Override
     public final ExecutionEnvironment getExecutionEnvironment() {
         return execEnv;
     }
 
+    @Override
     public final int getPID() throws IOException {
         synchronized (this) {
             if (pid == 0) {
@@ -195,6 +197,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
      */
     protected abstract int waitResult() throws InterruptedException;
 
+    @Override
     public final State getState() {
         synchronized (stateLock) {
             return state;
@@ -302,7 +305,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         }
     }
 
-    private final void setState(State state) {
+    private void setState(State state) {
         synchronized (stateLock) {
             if (this.state == state) {
                 return;
@@ -317,9 +320,9 @@ public abstract class AbstractNativeProcess extends NativeProcess {
              * CANCELLED, ERROR and FINISHED are terminal states.
              */
 
-            if (this.state == State.CANCELLED ||
-                    this.state == State.ERROR ||
-                    this.state == State.FINISHED) {
+            if (this.state == State.CANCELLED
+                    || this.state == State.ERROR
+                    || this.state == State.FINISHED) {
                 return;
             }
 
@@ -331,8 +334,10 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 }
 
                 if (!isInterrupted()) {
-                    LOG.finest(this.toString() + " State change: " + // NOI18N
-                            this.state + " -> " + state); // NOI18N
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.finest(String.format("%s: State changed: %s -> %s\n", // NOI18N
+                                this.toString(), this.state, state));
+                    }
                 }
 
                 this.state = state;
@@ -359,7 +364,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         int c = -1;
         pid = 0;
 
-        while (true) {
+        while (!isInterrupted()) {
             c = is.read();
 
             if (c >= '0' && c <= '9') {
@@ -382,6 +387,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
         return provider == null ? new ProcessInfo() {
 
+            @Override
             public long getCreationTimestamp(TimeUnit unit) {
                 return unit.convert(creation_ts, TimeUnit.NANOSECONDS);
             }
@@ -395,6 +401,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
     private void findInfoProvider() {
         Callable<ProcessInfoProvider> callable = new Callable<ProcessInfoProvider>() {
 
+            @Override
             public ProcessInfoProvider call() throws Exception {
                 final Collection<? extends ProcessInfoProviderFactory> factories =
                         Lookup.getDefault().lookupAll(ProcessInfoProviderFactory.class);
