@@ -101,13 +101,13 @@ public class ClientJavaSourceHelper {
         // add REST and Jersey dependencies
         ClassPath cp = ClassPath.getClassPath(targetFo, ClassPath.COMPILE);
         List<Library> restLibs = new ArrayList<Library>();
-        if (cp.findResource("javax/ws/rs/WebApplicationException.class") == null) {
+        if (cp.findResource("javax/ws/rs/WebApplicationException.class") == null) { //NOI18N
             Library lib = LibraryManager.getDefault().getLibrary("restapi"); //NOI18N
             if (lib != null) {
                 restLibs.add(lib);
             }
         }
-        if (cp.findResource("com/sun/jersey/api/clientWebResource.class") == null) {
+        if (cp.findResource("com/sun/jersey/api/clientWebResource.class") == null) { //NOI18N
             Library lib = LibraryManager.getDefault().getLibrary("restlib"); //NOI18N
             if (lib != null) {
                 restLibs.add(lib);
@@ -132,38 +132,37 @@ public class ClientJavaSourceHelper {
 
         RestServiceDescription restServiceDesc = resourceNode.getLookup().lookup(RestServiceDescription.class);
         if (restServiceDesc != null) {
-            List<RestMethodDescription> methods =  restServiceDesc.getMethods();
             String uriTemplate = restServiceDesc.getUriTemplate();
-            PathFormat pf = null;
-            if (uriTemplate.length() == 0) { // subresource locator
-                // find recursively the root resource
-                ResourcePath rootResourcePath = getResourcePath(resourceNode, restServiceDesc.getClassName(), "");
-                uriTemplate = rootResourcePath.getPath();
-                pf = rootResourcePath.getPathFormat();
-            }
-            if (!uriTemplate.startsWith("/")) {
-                uriTemplate = "/"+uriTemplate;
-            }
-            if (uriTemplate.endsWith("/")) {
-                uriTemplate = uriTemplate.substring(0, uriTemplate.length()-1);
-            }
-            // subresource locator is detected by string constant
-            if (pf != null && pf.getArguments().length == 0 && pf.getPattern().length() > 0) {
-                uriTemplate = uriTemplate+"/"+pf.getPattern();
-            }
-            Project prj = resourceNode.getLookup().lookup(Project.class);
-            String resourceUri =
-                    (prj == null ? uriTemplate : getResourceURL(prj, uriTemplate));
+            if (uriTemplate != null) {
+                List<RestMethodDescription> methods =  restServiceDesc.getMethods();
 
-            String className = restServiceDesc.getName()+"_JerseyClient"; //NOI18N
-            // add inner Jersey Client class
-            addJerseyClient(
-                    JavaSource.forFileObject(targetFo),
-                    className,
-                    resourceUri,
-                    methods,
-                    null,
-                    pf);
+                PathFormat pf = null;
+                if (uriTemplate.length() == 0) { // subresource locator
+                    // find recursively the root resource
+                    ResourcePath rootResourcePath = getResourcePath(resourceNode, restServiceDesc.getClassName(), "");
+                    uriTemplate = rootResourcePath.getPath();
+                    pf = rootResourcePath.getPathFormat();
+                } else {
+                    pf = getPathFormat(uriTemplate);
+                }
+                // compute baseURL
+                Project prj = resourceNode.getLookup().lookup(Project.class);
+                String baseURL =
+                        (prj == null ? "" : getBaseURL(prj));
+                if (baseURL.endsWith("/")) {
+                    baseURL = baseURL.substring(0, baseURL.length() - 1);
+                }
+
+                String className = restServiceDesc.getName()+"_JerseyClient"; //NOI18N
+                // add inner Jersey Client class
+                addJerseyClient(
+                        JavaSource.forFileObject(targetFo),
+                        className,
+                        baseURL,
+                        methods,
+                        null,
+                        pf);
+            }
         } else {
             WadlSaasResource saasResource = resourceNode.getLookup().lookup(WadlSaasResource.class);
             if (saasResource != null) {
@@ -173,7 +172,7 @@ public class ClientJavaSourceHelper {
                 }
                 ResourcePath resourcePath = getResourcePath(saasResource);
                 PathFormat pf = resourcePath.getPathFormat();
-                String resourceUri = baseUrl+"/"+resourcePath.getPath();
+                String resourceUri = baseUrl;
                 addJerseyClient(
                         JavaSource.forFileObject(targetFo),
                         getClientClassName(saasResource),
@@ -249,13 +248,13 @@ public class ClientJavaSourceHelper {
         modifiersSet.add(Modifier.FINAL);
         fieldModif =  maker.Modifiers(modifiersSet);
         typeTree = maker.Identifier("String"); //NOI18N
-        fieldTree = maker.Variable(fieldModif, "RESOURCE_URI", typeTree, maker.Literal(resourceURI)); //NOI18N
+        fieldTree = maker.Variable(fieldModif, "URL_BASE", typeTree, maker.Literal(resourceURI)); //NOI18N
         modifiedInnerClass = maker.addClassMember(modifiedInnerClass, fieldTree);
 
         // add constructor
         ModifiersTree emtyModifier = maker.Modifiers(Collections.<Modifier>emptySet());
         TypeElement clientEl = copy.getElements().getTypeElement("com.sun.jersey.api.client.Client"); // NOI18N
-        boolean isSubresource = (pf != null && pf.getArguments().length>0);
+        boolean isSubresource = (pf.getArguments().length>0);
 
         List<VariableTree> paramList = new ArrayList<VariableTree>();
         if (isSubresource) {
@@ -267,8 +266,18 @@ public class ClientJavaSourceHelper {
             }
         }
 
-        String subresourceExpr = (isSubresource ? "    String subresourcePath = "+getPathExpression(pf)+";" : ""); //NOI18N
-        String resURI = (isSubresource ? "RESOURCE_URI+\"/\"+subresourcePath" : "RESOURCE_URI"); //NOI18N
+        String resURI = "URL_BASE"; //NOI18N
+        String subresourceExpr = ""; //NOI18N
+        if (isSubresource) {
+            subresourceExpr = "    String resourcePath = "+getPathExpression(pf)+";"; //NOI18N
+            resURI += "+\"/\"+resourcePath"; //NOI18N
+        } else {
+            String path = getPathExpression(pf);
+            if (path.length() > 0) {
+                resURI += "+\"/\"+"+path; //NOI18N
+            }
+        }
+
         String body =
                 "{"+ //NOI18N
                 "   client = new "+(clientEl == null ? "com.sun.jersey.api.client.":"")+"Client();"+ //NOI18N
@@ -283,17 +292,17 @@ public class ClientJavaSourceHelper {
                 body);
         modifiedInnerClass = maker.addClassMember(modifiedInnerClass, constructorTree);
 
-        // add setSubresourcaPath() method for SubresourceLocators
+        // add setResourcePath() method for SubresourceLocators
         if (isSubresource) {
             ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
             body =
                 "{"+ //NOI18N
-                "   String subresourcePath = "+getPathExpression(pf)+";"+ //NOI18N
-                "   webResource = client.resource(RESOURCE_URI+\"/\"+subresourcePath);"+ //NOI18N
+                "   String resourcePath = "+getPathExpression(pf)+";"+ //NOI18N
+                "   webResource = client.resource(URL_BASE+\"/\"+resourcePath);"+ //NOI18N
                 "}"; //NOI18N
             MethodTree methodTree = maker.Method (
                     methodModifier,
-                    "setSubresourcePath", //NOI18N
+                    "setResourcePath", //NOI18N
                     JavaSourceHelper.createTypeTree(copy, "void"), //NOI18N
                     Collections.<TypeParameterTree>emptyList(),
                     paramList,
@@ -572,7 +581,7 @@ public class ClientJavaSourceHelper {
     }
 
     private static PathFormat getPathFormat(String path) {
-        String p = (path.startsWith("/") ? path.substring(1) : path); //NOI18N
+        String p = normalizePath(path); //NOI18N
         PathFormat pathFormat = new PathFormat();
         StringBuffer buf = new StringBuffer();
         List<String> arguments = new ArrayList<String>();
@@ -623,18 +632,21 @@ public class ClientJavaSourceHelper {
 
     private static String getClientClassName(WadlSaasResource saasResource) {
         String path = saasResource.getResource().getPath();
-        path = path.replace("{", "");
-        path = path.replace("}", "");
-        path = path.replace("/", "_");
-        path = path.replace(".", "_");
-        while (path.startsWith("_")) {
+        int len = path.length();
+        for (int i=0; i<len; i++) {
+            char ch = path.charAt(i);
+            if (!Character.isJavaIdentifierPart(ch)) {
+                path = path.replace(ch, '_'); //NOI18N
+            }
+        }
+        while (path.startsWith("_")) { //NOI18N
             path = path.substring(1);
         }
-        while (path.endsWith("_")) {
+        while (path.endsWith("_")) { //NOI18N
             path = path.substring(0, path.length()-1);
         }
         String saasName = saasResource.getSaas().getDisplayName();
-        saasName = saasName.replace(" ", "_");
+        saasName = saasName.replace(" ", "_"); //NOI18N
 
         if (saasName.length() == 0) {
             saasName = "Resource"; //NOI18N
@@ -644,14 +656,11 @@ public class ClientJavaSourceHelper {
             saasName = saasName.substring(0,1).toUpperCase()+saasName.substring(1);
         }
 
-        return saasName+(path.length() == 0 ? "" : "_"+path)+"_JerseyClient";
+        return saasName+(path.length() == 0 ? "" : "_"+path)+"_JerseyClient"; //NOI18N
     }
 
     private static ResourcePath getResourcePath(Node resourceNode, String resourceClass, String uriTemplate) {
-        String resourceUri = uriTemplate.startsWith("/") ? uriTemplate.substring(1) : uriTemplate; //NOI18N
-        if (resourceUri.endsWith("/")) { //NOI18N
-            resourceUri = resourceUri.substring(0, resourceUri.length()-1);
-        }
+        String resourceUri = normalizePath(uriTemplate);
         Node projectNode = resourceNode.getParentNode();
         if (projectNode != null) {
             for (Node sibling : projectNode.getChildren().getNodes()) {
@@ -663,31 +672,24 @@ public class ClientJavaSourceHelper {
                                 SubResourceLocator resourceLocator = (SubResourceLocator)m;
                                 if (resourceClass.equals(resourceLocator.getReturnType())) {
                                     // detect resource locator uri
-                                    String resourceLocatorUri = resourceLocator.getUriTemplate();
-                                    if (resourceLocatorUri.endsWith("/")) { //NOI18N
-                                        resourceLocatorUri = resourceLocatorUri.substring(0, resourceLocatorUri.length()-1);
-                                    }
-                                    if (resourceLocatorUri.startsWith("/")) { //NOI18N
-                                        resourceLocatorUri = resourceLocatorUri.substring(1);
-                                    }
-
+                                    String resourceLocatorUri = normalizePath(resourceLocator.getUriTemplate());
                                     String parentResourceUri = desc.getUriTemplate();
                                     if (parentResourceUri.length() > 0) {
                                         // found root resource
                                         String subresourceUri = null;
                                         if (resourceLocatorUri.length() > 0) {
                                             if (resourceUri.length() > 0) {
-                                                subresourceUri = resourceLocatorUri+"/"+resourceUri;
+                                                subresourceUri = resourceLocatorUri+"/"+resourceUri; //NOI18N
                                             } else {
                                                 subresourceUri = resourceLocatorUri;
                                             }
                                         } else {
                                             subresourceUri = resourceUri;
                                         }
-                                        PathFormat pf = getPathFormat(subresourceUri);
+                                        PathFormat pf = getPathFormat(normalizePath(parentResourceUri)+"/"+subresourceUri); //NOI18N
                                         return new ResourcePath(pf, parentResourceUri);
                                     } else {
-                                        // searching recursively for
+                                        // searching recursively further
                                         return getResourcePath(sibling, desc.getClassName(), resourceLocatorUri+"/"+uriTemplate); //NOI8N
                                     }
                                 }
@@ -700,7 +702,7 @@ public class ClientJavaSourceHelper {
         return new ResourcePath(getPathFormat(uriTemplate), uriTemplate);
     }
 
-    public static String getResourceURL(Project project, String uri) {
+    public static String getBaseURL(Project project) {
         
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         String serverInstanceID = provider.getServerInstanceID();
@@ -750,7 +752,7 @@ public class ClientJavaSourceHelper {
         }
         return "http://" + hostName + ":" + portNumber + "/" + //NOI18N
                 (contextRoot != null && !contextRoot.equals("") ? contextRoot : "") + //NOI18N
-                "/"+applicationPath + uri; //NOI18N
+                "/"+applicationPath; //NOI18N
     }
 
     static class PathFormat {
