@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,60 +34,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.project;
+package org.netbeans.modules.cnd.remote.build;
 
-import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
-
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 /**
  *
- * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
-public class BuildTestSuite extends CndBaseTestSuite {
+public class RfsSunStudioRemoteBuildTest extends RfsBaseRemoteBuildTestCase {
 
-    public static final String PLATFORMS_SECTION = "remote.platforms";
-    public static final String DEFAULT_SECTION = "remote";
-
-    public BuildTestSuite(Class testClass) {
-        this(testClass.getName(), testClass);
+    public RfsSunStudioRemoteBuildTest(String testName) {
+        super(testName);
     }
 
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public BuildTestSuite(String name, Test... tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
+    public RfsSunStudioRemoteBuildTest(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);       
     }
 
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public BuildTestSuite(String name, Collection<Test> tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
-    }
-
-    public BuildTestSuite() {
-        this("Remote Development", // NOI18N
-             RemoteBuildSamplesTest.class,
-             RemoteBuildMakefileTest.class);
-    }
-
-
-    private BuildTestSuite(String name, Class... testClasses) {
-        super(name, PLATFORMS_SECTION, testClasses);
+    @ForAllEnvironments
+    public void testBuildRfsSampleArgsSunStudio() throws Exception {
+        setDefaultCompilerSet("SunStudio");
+        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_SunStudio_01");
+        clearRemoteSyncRoot();
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
     public static Test suite() {
-        TestSuite suite = new BuildTestSuite();
-        return suite;
+        return new RemoteDevelopmentTestSuite(RfsSunStudioRemoteBuildTest.class);
     }
 }
