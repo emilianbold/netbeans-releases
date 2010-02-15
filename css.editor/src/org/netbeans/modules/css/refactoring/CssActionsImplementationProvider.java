@@ -335,8 +335,12 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	    ResultIterator cssri = WebUtils.getResultIterator(ri, CssLanguage.CSS_MIME_TYPE);
 	    if (cssri != null) {
 		CssParserResult result = (CssParserResult) cssri.getParserResult();
-		CssElementContext context = new CssElementContext.Editor(result, caretOffset, selectionStart, selectionEnd);
-		ui = context.isRefactoringAllowed() ? createRefactoringUI(context) : null;
+                if(result.root() != null) {
+                    //the parser result seems to be quite ok,
+                    //in case of serious parse issue the parse root is null
+                    CssElementContext context = new CssElementContext.Editor(result, caretOffset, selectionStart, selectionEnd);
+                    ui = context.isRefactoringAllowed() ? createRefactoringUI(context) : null;
+                }
 	    }
 	}
 
