@@ -58,6 +58,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.netbeans.modules.web.jsf.editor.facelets.mojarra.ConfigManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -67,6 +69,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -207,7 +210,19 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
     }
 
+    //handle progress
     private Map<String, FaceletsLibrary> findLibraries() {
+        ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(FaceletsLibrarySupport.class, "MSG_ParsingFaceletsLibraries"));
+        progress.start();
+        progress.switchToIndeterminate();
+        try {
+            return _findLibraries();
+        } finally {
+            progress.finish();
+        }
+    }
+
+    private Map<String, FaceletsLibrary> _findLibraries() {
         //use this module classloader
         ClassLoader originalLoader = this.getClass().getClassLoader();
         LOGGER.log(Level.FINE, "Scanning facelets libraries, current classloader class=" + originalLoader.getClass().getName() + ", the used URLClassLoader will also contain following roots:");
