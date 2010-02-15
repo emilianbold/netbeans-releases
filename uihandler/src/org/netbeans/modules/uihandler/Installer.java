@@ -2201,7 +2201,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 if (abut != null) {
                     rptr = (String) abut.getClientProperty("alt");
                 }
-                if ("reportDialog".equals(rptr)&&!errorPage) {
+                if (reportPanel != null && "reportDialog".equals(rptr)&&!errorPage) {
                     EventQueue.invokeLater(new Runnable(){
 
                         public void run() {
