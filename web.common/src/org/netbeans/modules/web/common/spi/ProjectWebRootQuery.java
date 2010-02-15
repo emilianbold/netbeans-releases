@@ -36,12 +36,12 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.common.spi;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Clients uses this class to obtain a  web root for a file within a web-like project.
@@ -54,20 +54,30 @@ public final class ProjectWebRootQuery {
     }
 
     /**
-     * Gets a web root for given file.
+     * Gets a web root for given file residing in a project.
      *
      * @param a file which you want to get a web root for
      * @return a found web root or null
      */
     public static FileObject getWebRoot(FileObject file) {
-        if(file == null) {
+        if (file == null) {
             throw new NullPointerException("The file paramater cannot be null."); //NOI18N
         }
 
         Project project = FileOwnerQuery.getOwner(file);
-        ProjectWebRootProvider provider = project.getLookup().lookup(ProjectWebRootProvider.class);
+        if (project != null) {
+            ProjectWebRootProvider provider = project.getLookup().lookup(ProjectWebRootProvider.class);
+            if (provider != null) {
+                FileObject root = provider.getWebRoot(file);
 
-        return provider != null ? provider.getWebRoot(file) : null;
+                assert FileUtil.isParentOf(root, file) : "ProjectWebRootProvider "
+                        + provider.getClass().getName() + " returned an invalid web root "
+                        + root.getPath() + " which doesn't contain the searched file "
+                        + file.getPath(); //NOI18N
+
+                return root;
+            }
+        }
+        return null;
     }
-
 }

@@ -52,10 +52,12 @@ import org.openide.filesystems.FileObject;
 public interface ProjectWebRootProvider {
 
     /**
+     * Finds a web root for a file.
      *
-     * @param project
-     * @return A collection of web roots of the given project or empty list if there is none.
-     * The method must not return null!
+     * @param file The file you wish to find a web root for.
+     * @return A web root containing the searched file. The returned web root
+     * must contain the searched file. Null is returned if no web root find for
+     * the file.
      */
     public FileObject getWebRoot(FileObject file);
 
