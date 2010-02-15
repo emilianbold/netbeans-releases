@@ -52,13 +52,13 @@ import org.openide.util.Lookup.Item;
 /** A special content implementation that can be passed to AbstractLookup
  * and provides methods for registration of instances and lazy instances.
  * <PRE>
- *      InstanceContent ic = new InstanceContent ();
- *      AbstractLookup al = new AbstractLookup (ic);
+ * {@link InstanceContent} ic = new {@link InstanceContent#InstanceContent() InstanceContent()};
+ * {@link Lookup} lookup = new {@link AbstractLookup#AbstractLookup(org.openide.util.lookup.AbstractLookup.Content) AbstractLookup(ic)};
  *
- *      ic.add (new Object ());
- *      ic.add (new Dimension (...));
+ * ic.{@link #add(java.lang.Object) add(new Object ())};
+ * ic.{@link #add(java.lang.Object) add(new Dimension (...))};
  *
- *      Dimension theDim = (Dimension)al.lookup (Dimension.class);
+ * {@link java.awt.Dimension Dimension} theDim = lookup.lookup ({@link java.awt.Dimension Dimension}.class);
  * </PRE>
  *
  * @author  Jaroslav Tulach
