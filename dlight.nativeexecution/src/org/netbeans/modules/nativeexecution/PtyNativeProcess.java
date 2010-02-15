@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -83,8 +82,6 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
     @Override
     protected void create() throws Throwable {
         ExecutionEnvironment env = info.getExecutionEnvironment();
-
-
         String executable = PtyProcessStartUtility.getInstance().getPath(env);
 
         List<String> newArgs = new ArrayList<String>();
@@ -103,11 +100,9 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
             delegate = new RemoteNativeProcess(info);
         }
 
-        delegate.createAndStart();
+        delegate.create();
 
-
-        ByteArrayInputStream bis = new ByteArrayInputStream((Integer.toString(delegate.getPID())).getBytes());
-        readPID(bis);
+        readPID(delegate.getInputStream());
     }
 
     @Override
@@ -117,36 +112,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
     @Override
     protected int waitResult() throws InterruptedException {
-        if (delegate == null) {
-            return -1;
-        }
-
-        int result = -1;
-        
-        while (true) {
-            // This sleep is to avoid lost interrupted exception...
-            try {
-                Thread.sleep(200);
-                // 200 - to make this check not so often...
-                // actually, to avoid the problem, 1 is OK.
-            } catch (InterruptedException ex) {
-                throw ex;
-            }
-
-            try {
-                result = delegate.exitValue();
-            } catch (IllegalThreadStateException ex) {
-                continue;
-            }
-
-            break;
-        }
-
-        if (getState() == State.CANCELLED) {
-            throw new InterruptedException();
-        }
-
-        return result;
+        return delegate.waitResult();
     }
 
     @Override

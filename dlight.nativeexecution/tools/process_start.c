@@ -146,8 +146,6 @@ int main(int argc, char* argv[]) {
         dup2(pty_fd, 2);
         close(pty_fd);
 
-        printf("Start %s\n", argv[optind]);
-
         if (execvp(argv[optind], &argv[optind]) == -1) {
             printf("ERROR: %s\n", argv[optind]);
             exit(1);
@@ -164,7 +162,7 @@ int main(int argc, char* argv[]) {
         printf("ERROR exec failed -- %s\n", strerror(saved_errno));
     }
 
-    printf("PID %d\n", pid);
+    printf("%d\n", pid);
     // Flush out the PID message before we take away stdout
     fflush(stdout);
 

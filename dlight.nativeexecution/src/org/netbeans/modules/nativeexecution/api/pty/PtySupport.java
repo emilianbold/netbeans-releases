@@ -83,7 +83,7 @@ public final class PtySupport {
         }
 
         throw new UnsupportedOperationException(
-                "No suitable IOConnector implementation found to connect "
+                "No suitable IOConnector implementation found to connect " // NOI18N
                 + io.toString() + " with " + process.toString()); // NOI18N
     }
 
