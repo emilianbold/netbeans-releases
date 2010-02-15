@@ -389,12 +389,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 child = child.getNextSibling();
             }
             CsmClassForwardDeclaration cfd = null;
+            AST qid = null;
             if (child != null &&
                     (child.getType() == CPPTokenTypes.LITERAL_struct ||
                     child.getType() == CPPTokenTypes.LITERAL_class)) {
                 // check if we want to have class forward
                 // we don't want for AA::BB names
-                AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+                qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
                 CharSequence[] nameParts = AstRenderer.getNameTokens(qid);
                 if (nameParts != null && nameParts.length == 1) {
                     // also we don't want for templates references
@@ -414,8 +415,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         ((NamespaceImpl) scope).addDeclaration(cfd);
                     }
                 }
+            } else if (child != null && (child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND)) {
+                //class G;
+                //class X {
+                //  friend G;
+                //};
+                qid = child;
+            } else {
+                // FIXME: is it valid or exceptional branch?
+                qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
             }
-            return new FriendClassImpl(firstChild, cfd, (FileImpl) getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
+            return new FriendClassImpl(firstChild, qid, cfd, (FileImpl) getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
         }
 
         private ClassMemberForwardDeclaration renderClassForwardDeclaration(AST token) {
