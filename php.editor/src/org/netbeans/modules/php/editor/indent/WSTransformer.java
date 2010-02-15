@@ -51,6 +51,8 @@ import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.CastExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
@@ -94,7 +96,7 @@ class WSTransformer extends DefaultTreePathVisitor {
     private Collection<CodeRange> unbreakableRanges = new TreeSet<CodeRange>();
     private Collection<Integer> breakPins = new LinkedList<Integer>();
 
-    private final List<PHPTokenId> WS_AND_COMMENT_TOKENS = Arrays.asList(PHPTokenId.PHPDOC_COMMENT_START,
+    protected static List<PHPTokenId> WS_AND_COMMENT_TOKENS = Arrays.asList(PHPTokenId.PHPDOC_COMMENT_START,
             PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.WHITESPACE,
             PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT,
             PHPTokenId.PHP_LINE_COMMENT);
@@ -140,10 +142,10 @@ class WSTransformer extends DefaultTreePathVisitor {
 	    }
 	    else {
 		String text = token.text().toString();
-		if (".".equals(text)) {
+		if (".".equals(text)) { // NOI18N
 		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundStringConcatOps());
 		}
-		else if (",".equals(text)) {
+		else if (",".equals(text)) { // NOI18N
 		    int offset = ts.offset();
 		    replaceSpaceBeforeToken(ts, CodeStyle.get(context.document()).spaceBeforeComma(), null);
 		    ts.move(offset);
@@ -151,7 +153,9 @@ class WSTransformer extends DefaultTreePathVisitor {
 			LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
 			replaceSpaceBeforeToken(ts, CodeStyle.get(context.document()).spaceAfterComma(), null);
 		    }
-		    System.out.println("comma");
+		}
+		else if ("=>".equals(text)) { // NOI18N
+		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundKeyValueOps());
 		}
 		else if (ASSIGN_OPERATORS.contains(text)) {
 		    checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundAssignOps());
@@ -194,16 +198,26 @@ class WSTransformer extends DefaultTreePathVisitor {
 	    CodeStyle.BracePlacement openingBraceStyle;
 	    if (parent instanceof ClassDeclaration) {
 		openingBraceStyle = CodeStyle.get(context.document()).getClassDeclBracePlacement();
-	    }
-	    else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
+	    } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
 		openingBraceStyle = CodeStyle.get(context.document()).getMethodDeclBracePlacement();
-	    }
-	    else {
+	    } else if (parent instanceof IfStatement) {
+		openingBraceStyle = CodeStyle.get(context.document()).getIfBracePlacement();
+	    } else if (parent instanceof ForStatement || parent instanceof ForEachStatement) {
+		openingBraceStyle = CodeStyle.get(context.document()).getForBracePlacement();
+	    } else if (parent instanceof WhileStatement || parent instanceof DoStatement) {
+		openingBraceStyle = CodeStyle.get(context.document()).getWhileBracePlacement();
+	    } else if (parent instanceof SwitchStatement) {
+		openingBraceStyle = CodeStyle.get(context.document()).getSwitchBracePlacement();
+	    } else if (parent instanceof CatchClause || parent instanceof TryStatement) {
+		openingBraceStyle = CodeStyle.get(context.document()).getCatchBracePlacement();
+	    } else {
 		openingBraceStyle = CodeStyle.get(context.document()).getOtherBracePlacement();
 	    }
 
-            newLineReplacement = CodeStyle.BracePlacement.NEW_LINE == openingBraceStyle ? "\n" : " "; //NOI18N
-            if (CodeStyle.BracePlacement.NEW_LINE != openingBraceStyle && getPath().size() > 0) {
+            newLineReplacement = CodeStyle.BracePlacement.NEW_LINE == openingBraceStyle
+		    || CodeStyle.BracePlacement.NEW_LINE_INDENTED == openingBraceStyle ? "\n" : " "; //NOI18N
+            if (CodeStyle.BracePlacement.NEW_LINE != openingBraceStyle &&
+		    CodeStyle.BracePlacement.NEW_LINE_INDENTED != openingBraceStyle && getPath().size() > 0) {
                 if (parent instanceof ClassDeclaration) {
                     newLineReplacement = CodeStyle.get(context.document()).spaceBeforeClassDeclLeftBrace() ? " " : ""; //NOI18N
                 }
@@ -330,10 +344,10 @@ class WSTransformer extends DefaultTreePathVisitor {
         checkEmptyLinesBefore(node.getStartOffset(), insertLines, true);
 
         // lines after header of class (after {)
+	TokenSequence<PHPTokenId> ts = tokenSequence(node.getStartOffset());
         List<Statement> statements = node.getBody().getStatements();
         if (statements.size() == 0 || !isBlankLinesInteresting(statements.get(0))) {
             insertLines = insertLineBeforeAfter(ElemType.CLASS, ElemType.CLASS_HEADER);
-            TokenSequence<PHPTokenId> ts = tokenSequence(node.getStartOffset());
             ts.move(node.getStartOffset());
             if (ts.moveNext() && ts.moveNext()) {
                 LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_CURLY_OPEN));
@@ -342,10 +356,17 @@ class WSTransformer extends DefaultTreePathVisitor {
         }
 
         // line before end of class (before })
-        insertLines = (statements.size() == 0)
-                ? insertLineBeforeAfter(ElemType.CLASS_HEADER, ElemType.CLASS_BEFORE_END)
-                : insertLineBeforeAfter(astNodeToType(statements.get(statements.size() - 1)), ElemType.CLASS_BEFORE_END);
-        checkEmptyLinesBefore(node.getEndOffset() - 1, insertLines, true);
+	ts = tokenSequence(node.getEndOffset());
+	ts.move(node.getEndOffset());
+	if (ts.movePrevious()) {
+	    LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_CURLY_CLOSE));
+	    if (ts.token().id() == PHPTokenId.PHP_CURLY_CLOSE) {
+		insertLines = (statements.size() == 0)
+			? insertLineBeforeAfter(ElemType.CLASS_HEADER, ElemType.CLASS_BEFORE_END)
+			: insertLineBeforeAfter(astNodeToType(statements.get(statements.size() - 1)), ElemType.CLASS_BEFORE_END);
+		checkEmptyLinesBefore(node.getEndOffset() - 1, insertLines, true);
+	    }
+	}
 
         // lines after class declaration (after })
         ASTNode nextNode = nextNode(node);
@@ -676,6 +697,29 @@ class WSTransformer extends DefaultTreePathVisitor {
 		node.getValue().getEndOffset(),
 		CodeStyle.get(context.document()).spaceWithinForParens());
         super.visit(node);
+    }
+
+    @Override
+    public void visit(ArrayCreation node) {
+	// spaces within
+	if (node.getElements().size() > 0)
+	    checkSpacesWithinParents(
+		    node.getElements().get(0).getStartOffset(),
+		    node.getElements().get(node.getElements().size() - 1).getEndOffset(),
+		    CodeStyle.get(context.document()).spaceWithinArrayDeclParens());
+	super.visit(node);
+    }
+
+    @Override
+    public void visit(ArrayAccess node) {
+	// spaces within
+	if (node.getIndex() != null) {
+	    checkSpacesWithinParents(
+		    node.getIndex().getStartOffset(),
+		    node.getIndex().getEndOffset(),
+		    CodeStyle.get(context.document()).spaceWithinArrayBrackets());
+	}
+	super.visit(node);
     }
 
     private void checkSpaceBetweenCurlyCloseAndToken(int offset, boolean insertSpace,

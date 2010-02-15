@@ -1,12 +1,12 @@
 <?php
 
 class Example {
-    
+
     public function ifExample ($a, $b) {
         if (convert($a) > $b) {
             echo "a is bigger than b";
         } elseif ($a == $b) {
-            echo $a." is equal to ".$b[0];
+            echo $a." is equal to ".$b;
         } else {
             echo $this->property;
         }
@@ -19,9 +19,9 @@ public function forExample() {
 }
 
 public function foreachEample() {
-$arr = array(1, 2, 3, 4, "b"=>5, "a"=>6);
+$arr = array(1, 2, 3, 4);
 foreach ($arr as &$value) {
-    $value = (int)$value * 2;
+    $value = $value * 2;
 }
 }
 
