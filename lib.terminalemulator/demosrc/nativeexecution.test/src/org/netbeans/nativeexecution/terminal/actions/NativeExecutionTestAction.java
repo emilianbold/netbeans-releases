@@ -28,7 +28,7 @@ public final class NativeExecutionTestAction implements ActionListener {
     private static TargetSelector cfgPanel = new TargetSelector();
 
     public void actionPerformed(ActionEvent e) {
-        DialogDescriptor dd = new DialogDescriptor(cfgPanel, "Configure dialog",
+        DialogDescriptor dd = new DialogDescriptor(cfgPanel, "Configure dialog", // NOI18N
                 true, DialogDescriptor.OK_CANCEL_OPTION,
                 DialogDescriptor.OK_OPTION, null);
 
@@ -47,8 +47,6 @@ public final class NativeExecutionTestAction implements ActionListener {
         final boolean runInPty = cfgPanel.isPtyMode();
         final boolean useTerminalIO = cfgPanel.isTerminalIO();
 
-        System.out.println("Executing: " + cmd + " @ " + env.toString());
-
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
 
         // Extract executable and arguments from the line... 
@@ -61,7 +59,7 @@ public final class NativeExecutionTestAction implements ActionListener {
             argsArray = new String[0];
         } else {
             exec = cmd.substring(0, spidx);
-            argsArray = cmd.substring(spidx + 1).split(" +");
+            argsArray = cmd.substring(spidx + 1).split(" +"); // NOI18N
         }
 
         npb.setExecutable(exec).setArguments(argsArray);

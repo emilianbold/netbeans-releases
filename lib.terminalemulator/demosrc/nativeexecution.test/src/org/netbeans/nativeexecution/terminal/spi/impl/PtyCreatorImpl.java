@@ -104,7 +104,9 @@ public class PtyCreatorImpl implements PtyAllocator {
             }
         }
 
-        public final void close() {
+        public final void close() throws IOException {
+            ostream.close();
+            istream.close();
         }
 
         @Override

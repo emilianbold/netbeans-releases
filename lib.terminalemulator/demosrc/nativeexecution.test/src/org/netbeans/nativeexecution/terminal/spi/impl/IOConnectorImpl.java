@@ -5,6 +5,8 @@
 package org.netbeans.nativeexecution.terminal.spi.impl;
 
 import java.awt.Dimension;
+import java.io.IOException;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
@@ -15,6 +17,7 @@ import org.netbeans.modules.terminal.ioprovider.IOResizable;
 import org.netbeans.modules.terminal.ioprovider.TerminalInputOutput;
 import org.netbeans.nativeexecution.terminal.spi.impl.PtyCreatorImpl.PtyImplementation;
 import org.netbeans.terminal.example.TerminalIOProviderSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.lookup.ServiceProvider;
@@ -50,6 +53,8 @@ public class IOConnectorImpl implements IOConnector {
             if (IOResizable.isSupported(io)) {
                 IOResizable.addListener(io, new ResizeListener(impl));
             }
+
+            RequestProcessor.getDefault().post(new Reaper(tio, process, impl));
         }
 
         return true;
@@ -118,6 +123,44 @@ public class IOConnectorImpl implements IOConnector {
             this.cells = new Dimension(cells);
             this.pixels = new Dimension(pixels);
             task.schedule(1000);
+        }
+    }
+
+    private final static class Reaper implements Runnable {
+
+        private final NativeProcess process;
+        private final PtyImplementation pty;
+        private final TerminalInputOutput tio;
+
+        public Reaper(final TerminalInputOutput tio, final NativeProcess process, final PtyImplementation pty) {
+            this.process = process;
+            this.pty = pty;
+            this.tio = tio;
+        }
+
+        @Override
+        public void run() {
+            try {
+                Thread.currentThread().setName("ptysatellite reaper for " + process.getPID()); // NOI18N
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            try {
+                process.waitFor();
+                pty.close();
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        tio.closeInputOutput();
+                    }
+                });
+
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 }
