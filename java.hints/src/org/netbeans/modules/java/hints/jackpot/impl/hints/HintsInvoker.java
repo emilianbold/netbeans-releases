@@ -255,7 +255,7 @@ public class HintsInvoker {
 
         timeLog.put("Bulk Search", bulkEnd - bulkStart);
 
-        errors.addAll(doComputeHints(info, occurringPatterns, patternTests, startAt, patternHints, problems));
+        errors.addAll(doComputeHints(info, occurringPatterns, patternTests, patternHints, problems));
 
         long patternEnd = System.currentTimeMillis();
 
@@ -308,7 +308,7 @@ public class HintsInvoker {
 
             timeLog.put("Bulk Search", bulkEnd - bulkStart);
 
-            errors.addAll(doComputeHints(info, occurringPatterns, patternTests, path, patternHints, problems));
+            errors.addAll(doComputeHints(info, occurringPatterns, patternTests, patternHints, problems));
 
             long patternEnd = System.currentTimeMillis();
 
@@ -341,31 +341,66 @@ public class HintsInvoker {
         }
 
         if (!patternHints.isEmpty()) {
-//            long patternStart = System.currentTimeMillis();
-//
-//            Map<String, List<PatternDescription>> patternTests = computePatternTests(patternHints);
-//
+            long patternStart = System.currentTimeMillis();
+
+            Map<String, List<PatternDescription>> patternTests = computePatternTests(patternHints);
+
+            //pretend that all the patterns occur on all treepaths from the current path
+            //up (probably faster than using BulkSearch over whole file)
+            //TODO: what about machint trees under the current path?
+            Set<TreePath> paths = new HashSet<TreePath>();
+
+            TreePath tp = workOn;
+
+            while (tp != null) {
+                paths.add(tp);
+                tp = tp.getParentPath();
+            }
+
+            Map<String, Collection<TreePath>> occurringPatterns = new HashMap<String, Collection<TreePath>>();
+
+            for (String p : patternTests.keySet()) {
+                occurringPatterns.put(p, paths);
+            }
+
 //            long bulkStart = System.currentTimeMillis();
 //
 //            BulkPattern bulkPattern = BulkSearch.getDefault().create(info, patternTests.keySet());
-//            Map<String, Collection<TreePath>> occurringPatterns = BulkSearch.getDefault().match(info, info.getCompilationUnit(), bulkPattern, timeLog);
+//            Map<String, Collection<TreePath>> occurringPatterns = BulkSearch.getDefault().match(info, new TreePath(info.getCompilationUnit()), bulkPattern, timeLog);
 //
 //            long bulkEnd = System.currentTimeMillis();
 //
+//            Set<Tree> acceptedLeafs = new HashSet<Tree>();
+//
+//            TreePath tp = workOn;
+//
+//            while (tp != null) {
+//                acceptedLeafs.add(tp.getLeaf());
+//                tp = tp.getParentPath();
+//            }
+//
+//            for (Entry<String, Collection<TreePath>> e : occurringPatterns.entrySet()) {
+//                for (Iterator<TreePath> it = e.getValue().iterator(); it.hasNext(); ) {
+//                    if (!acceptedLeafs.contains(it.next().getLeaf())) {
+//                        it.remove();
+//                    }
+//                }
+//            }
+//
 //            timeLog.put("Bulk Search", bulkEnd - bulkStart);
-//
-//            errors.addAll(doComputeHints(info, occurringPatterns, patternTests, startAt, patternHints, problems));
-//
-//            long patternEnd = System.currentTimeMillis();
-//
-//            timeLog.put("Pattern Based Hints", patternEnd - patternStart);
+
+            errors.addAll(doComputeHints(info, occurringPatterns, patternTests, patternHints, problems));
+
+            long patternEnd = System.currentTimeMillis();
+
+            timeLog.put("Pattern Based Hints", patternEnd - patternStart);
         }
 
         return errors;
     }
 
     public List<ErrorDescription> doComputeHints(CompilationInfo info, Map<String, Collection<TreePath>> occurringPatterns, Map<String, List<PatternDescription>> patterns, Map<PatternDescription, List<HintDescription>> patternHints) throws IllegalStateException {
-        return doComputeHints(info, occurringPatterns, patterns, new TreePath(info.getCompilationUnit()), patternHints, new LinkedList<MessageImpl>());
+        return doComputeHints(info, occurringPatterns, patterns, patternHints, new LinkedList<MessageImpl>());
     }
 
     public static Map<String, List<PatternDescription>> computePatternTests(Map<PatternDescription, List<HintDescription>> patternHints) {
@@ -381,7 +416,7 @@ public class HintsInvoker {
         return patternTests;
     }
 
-    private List<ErrorDescription> doComputeHints(CompilationInfo info, Map<String, Collection<TreePath>> occurringPatterns, Map<String, List<PatternDescription>> patterns, TreePath startAt, Map<PatternDescription, List<HintDescription>> patternHints, Collection<? super MessageImpl> problems) throws IllegalStateException {
+    private List<ErrorDescription> doComputeHints(CompilationInfo info, Map<String, Collection<TreePath>> occurringPatterns, Map<String, List<PatternDescription>> patterns, Map<PatternDescription, List<HintDescription>> patternHints, Collection<? super MessageImpl> problems) throws IllegalStateException {
         List<ErrorDescription> errors = new LinkedList<ErrorDescription>();
 
         for (Entry<String, Collection<TreePath>> occ : occurringPatterns.entrySet()) {
