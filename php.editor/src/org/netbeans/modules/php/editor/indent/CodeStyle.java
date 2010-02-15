@@ -377,10 +377,10 @@ public final class CodeStyle {
 //    public boolean spaceWithinBraces() {
 //        return preferences.getBoolean(spaceWithinBraces, getDefaultAsBoolean(spaceWithinBraces));
 //    }
-//
-//    public boolean spaceWithinArrayInitBrackets() {
-//        return preferences.getBoolean(spaceWithinArrayInitBrackets, getDefaultAsBoolean(spaceWithinArrayInitBrackets));
-//    }
+
+    public boolean spaceWithinArrayBrackets() {
+        return preferences.getBoolean(spaceWithinArrayBrackets, getDefaultAsBoolean(spaceWithinArrayBrackets));
+    }
 
     public boolean spaceBeforeComma() {
         return preferences.getBoolean(spaceBeforeComma, getDefaultAsBoolean(spaceBeforeComma));
