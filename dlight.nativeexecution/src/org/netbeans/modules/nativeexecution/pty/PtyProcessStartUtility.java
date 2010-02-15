@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,41 +34,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs.processinfo;
+package org.netbeans.modules.nativeexecution.pty;
 
-import java.io.IOException;
-import java.util.concurrent.CancellationException;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.spi.ProcessInfoProviderFactory;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
+import org.netbeans.modules.nativeexecution.support.HelperUtility;
 
 /**
  *
  * @author ak119685
  */
-@ServiceProviders({
-    @ServiceProvider(service = ProcessInfoProviderFactory.class)
-})
-public class ProcBasedProcessInfoProviderFactory implements ProcessInfoProviderFactory {
+public final class PtyProcessStartUtility extends HelperUtility {
 
-    @Override
-    public ProcessInfoProvider getProvider(ExecutionEnvironment execEnv, int pid) {
-        try {
-            HostInfo hinfo = HostInfoUtils.getHostInfo(execEnv);
+    private final static PtyProcessStartUtility instance = new PtyProcessStartUtility();
 
-            if (hinfo != null && hinfo.getOSFamily() == HostInfo.OSFamily.SUNOS) {
-                return new ProcBasedProcessInfoProvider(execEnv, pid);
-            }
-        } catch (CancellationException ex) {
-        } catch (IOException ex) {
-        }
+    private PtyProcessStartUtility() {
+        super("bin/nativeexecution/$osname-${platform}$_isa/process_start"); // NOI18N
+    }
 
-        return null;
+    public static PtyProcessStartUtility getInstance() {
+        return instance;
     }
 }

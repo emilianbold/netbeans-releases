@@ -39,10 +39,12 @@
 
 INSTALLDIR = /dev/null
 
-#CFLAGS-Windows_XP := -mno-cygwin
-CFLAGS-Linux := -fPIC
-CFLAGS-SunOS := -fPIC
-CFLAGS-Mac_OS_X := -fPIC
+APP_NAME=ptysatellite
+
+#CFLAGS-Windows_XP := -c -mno-cygwin
+CFLAGS-Linux := -c -fPIC
+CFLAGS-SunOS := -c -fPIC
+CFLAGS-Mac_OS_X := -c -fPIC
 
 ifdef 64BITS
     FLAG64 := -m64
@@ -83,23 +85,24 @@ endif
 
 testit :sh= uname -s
 
-DIST=../release/bin/nativeexecution
+DIST=../release/bin/ptysupport
 BUILD=./build
 
 PLATFORM_DIR=$(OSNAME)-$(PLATFORM)
-APP_PATH=${DIST}/${PLATFORM_DIR}
+APP_PATH=${DIST}/${PLATFORM_DIR}/${APP_NAME}
+APP_OUT=${BUILD}/${PLATFORM_DIR}/${APP_NAME}.o
 
-all: check init process_start privp
+all: check init ${APP_PATH}
 
-privp:
-	gcc ${CFLAGS} -o ${APP_PATH}/$@ $@.c
+#appliction:
+${APP_PATH}: ${APP_OUT}
+	gcc ${LDFLAGS_APP} -o ${APP_PATH} ${APP_OUT}
 
-process_start:
-	gcc ${CFLAGS} -o ${APP_PATH}/$@ $@.c
-
+${APP_OUT}: ${APP_NAME}.c
+	gcc ${CFLAGS} -o ${APP_OUT} ${APP_NAME}.c
 
 clean:
-	rm -rf ${APP_PATH} ${DIST}/${PLATFORM_DIR}
+	rm -rf ${BUILD}/${PLATFORM_DIR} ${DIST}/${PLATFORM_DIR}
 
 cleanall:
 	rm -rf ${BUILD} ${DIST}
@@ -116,7 +119,7 @@ install: all
 	fi
 
 init:
-	@mkdir -p ${APP_PATH} ${DIST}/${PLATFORM_DIR}
+	@mkdir -p ${BUILD}/${PLATFORM_DIR} ${DIST}/${PLATFORM_DIR}
 
 check:
 	@if [ -n "$(testit)" ]; \

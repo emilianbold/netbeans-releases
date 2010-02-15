@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,41 +34,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.procfs.processinfo;
+package org.netbeans.modules.nativeexecution.spi.support.pty;
 
-import java.io.IOException;
-import java.util.concurrent.CancellationException;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.spi.ProcessInfoProviderFactory;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
+import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
 
 /**
  *
  * @author ak119685
  */
-@ServiceProviders({
-    @ServiceProvider(service = ProcessInfoProviderFactory.class)
-})
-public class ProcBasedProcessInfoProviderFactory implements ProcessInfoProviderFactory {
+public abstract class PtyImplAccessor {
 
-    @Override
-    public ProcessInfoProvider getProvider(ExecutionEnvironment execEnv, int pid) {
-        try {
-            HostInfo hinfo = HostInfoUtils.getHostInfo(execEnv);
+    private static volatile PtyImplAccessor DEFAULT;
 
-            if (hinfo != null && hinfo.getOSFamily() == HostInfo.OSFamily.SUNOS) {
-                return new ProcBasedProcessInfoProvider(execEnv, pid);
-            }
-        } catch (CancellationException ex) {
-        } catch (IOException ex) {
+    public static void setDefault(PtyImplAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException(
+                    "PtyImplAccessor is already defined"); // NOI18N
         }
 
-        return null;
+        DEFAULT = accessor;
     }
+
+    public static synchronized PtyImplAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
+        }
+
+        try {
+            Class.forName(PtySupport.class.getName(), true,
+                    PtySupport.class.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+        }
+
+        return DEFAULT;
+    }
+
+    public abstract PtyImpl getImpl(Pty pty);
 }
