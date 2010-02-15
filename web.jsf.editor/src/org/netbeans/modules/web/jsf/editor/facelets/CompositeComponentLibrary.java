@@ -220,7 +220,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 for (Map<String, String> attrsMap : model.getExistingInterfaceAttributes()) {
                     String attrname = attrsMap.get("name"); //NOI18N
                     boolean required = Boolean.parseBoolean(attrsMap.get("required")); //NOI18N
-                    String description = getAttributesDescription(model);
+                    String description = getAttributesDescription(model, true);
                     attrs.put(attrname, new Attribute(attrname, description, required));
                 }
 
@@ -232,7 +232,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 sb.append(relativePath);
                 sb.append("</p>");//NOI18N
                 sb.append("<p>");//NOI18N
-                sb.append(getAttributesDescription(model));
+                sb.append(getAttributesDescription(model, false));
                 sb.append("</p>");//NOI18N
                 sb.append("<p style=\"color: red\">" + msgNoTld + "</p>"); //NOI18N
 
@@ -241,10 +241,11 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
             }
         }
 
-        private String getAttributesDescription(CompositeComponentModel model) {
+        private String getAttributesDescription(CompositeComponentModel model, boolean includeNoDescriptorMsg) {
             if(model.getExistingInterfaceAttributes().isEmpty()) {
                 return NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_NO_TAG_ATTRS");//NOI18N
             }
+
 
             StringBuffer sb = new StringBuffer();
             sb.append("<b>");//NOI18N
@@ -253,6 +254,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
             sb.append("<table border=\"1\">"); //NOI18N
 
             for (Map<String, String> descr : model.getExistingInterfaceAttributes()) {
+                //first generate entry for the attribute name
                 sb.append("<tr>"); //NOI18N
                 sb.append("<td>"); //NOI18N
                 sb.append("<div style=\"font-weight: bold\">"); //NOI18N
@@ -260,28 +262,35 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 sb.append(attrname);
                 sb.append("</div>"); //NOI18N
                 sb.append("</td>"); //NOI18N
-                sb.append("<td>"); //NOI18N
 
-                sb.append("<table border=\"0\" padding=\"0\" margin=\"0\" spacing=\"2\">"); //NOI18N
-                for (String key : descr.keySet()) {
-                    if (key.equals("name")) {//NOI18N
-                        continue; //skip name
+                //then for the rest of the attributes, except the "name" atttribute
+                if(descr.size() > 1) {
+                    sb.append("<td>"); //NOI18N
+                    sb.append("<table border=\"0\" padding=\"0\" margin=\"0\" spacing=\"2\">"); //NOI18N
+                    for (String key : descr.keySet()) {
+                        if (key.equals("name")) {//NOI18N
+                            continue; //skip name
+                        }
+                        String val = descr.get(key);
+                        sb.append("<tr><td><b>");//NOI18N
+                        sb.append(key);
+                        sb.append("</b></td><td>");//NOI18N
+                        sb.append(val);
+                        sb.append("</td></tr>");//NOI18N
                     }
-                    String val = descr.get(key);
-                    sb.append("<tr><td><b>");//NOI18N
-                    sb.append(key);
-                    sb.append("</b></td><td>");//NOI18N
-                    sb.append(val);
-                    sb.append("</td></tr>");//NOI18N
+                    sb.append("</table>"); //NOI18N
+
+
+                    sb.append("</td>"); //NOI18N
                 }
-                sb.append("</table>"); //NOI18N
-
-
-                sb.append("</td>"); //NOI18N
                 sb.append("</tr>"); //NOI18N
                 }
             sb.append("</table>"); //NOI18N
 
+            if(includeNoDescriptorMsg) {
+                String msgNoDescriptor = NbBundle.getBundle(CompositeComponentLibrary.class).getString("MSG_NO_DESCRIPTOR"); //NOI18N
+                sb.append("<p style=\"color: red\">" + msgNoDescriptor + "</p>");
+            } //NOI18N
 
             return sb.toString();
         }
