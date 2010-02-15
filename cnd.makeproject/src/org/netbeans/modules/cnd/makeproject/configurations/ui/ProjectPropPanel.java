@@ -124,7 +124,9 @@ public class ProjectPropPanel extends javax.swing.JPanel {
         ((MakeProject) project).setSourceEncoding(encName);
 
         makeConfigurationDescriptor.setSourceRoots(sourceRootChooser.getListData());
-        makeConfigurationDescriptor.setTestRoots(testRootChooser.getListData());
+        if (testRootChooser != null) {
+            makeConfigurationDescriptor.setTestRoots(testRootChooser.getListData());
+        }
         makeConfigurationDescriptor.setFolderVisibilityQuery(ignoreFoldersTextField.getText());
     }
 
