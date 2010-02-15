@@ -68,8 +68,15 @@ public final class ElementGrip {
      * Creates a new instance of ElementGrip
      */
     public ElementGrip(TreePath treePath, CompilationInfo info) {
-        this.delegateElementHandle = TreePathHandle.create(treePath, info);
-        Element elm = info.getTrees().getElement(treePath);
+        this(TreePathHandle.create(treePath, info), info.getTrees().getElement(treePath), info);
+    }
+
+    public ElementGrip(Element elm, CompilationInfo info) {
+        this(TreePathHandle.create(elm, info), elm, info);
+    }
+
+    private ElementGrip(TreePathHandle delegateElementHandle, Element elm, CompilationInfo info) {
+        this.delegateElementHandle = delegateElementHandle;
         this.handle = elm == null ? null : ElementHandle.create(elm);
         if (elm != null) {
             // workaround for issue 171692
