@@ -160,7 +160,9 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 	}
     }
 
+    @Override
     public synchronized void propertyChange(PropertyChangeEvent evt) {
+        //classpath changed, rescan libraries
         faceletsLibraries = null;
     }
 
@@ -298,6 +300,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         }
         faceletTaglibProviders.add(new ConfigurationResourceProvider() {
 
+            @Override
             public Collection<URL> getResources(ServletContext sc) {
                 return urls;
             }
@@ -326,6 +329,7 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
             }
         }
         faceletTaglibProviders.add(new ConfigurationResourceProvider() {
+            @Override
             public Collection<URL> getResources(ServletContext sc) {
                 return libraryURLs;
             }
