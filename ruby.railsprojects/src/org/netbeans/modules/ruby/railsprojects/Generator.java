@@ -201,30 +201,7 @@ public class Generator {
             }
         }
 
-        StringBuilder sb = new StringBuilder();
-
-        try {
-            BufferedReader fr = new BufferedReader(new FileReader(usageFile));
-
-            while (true) {
-                String line = fr.readLine();
-
-                if (line == null) {
-                    break;
-                }
-
-                sb.append(line);
-                sb.append("\n"); // NOI18N
-            }
-
-            if (sb.length() > 0) {
-                return sb.toString();
-            }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-
-        return null;
+        return RailsProjectUtil.asText(usageFile);
     }
 
     String getNameLabel() {
