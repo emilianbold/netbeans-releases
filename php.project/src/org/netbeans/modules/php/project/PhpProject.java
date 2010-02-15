@@ -854,10 +854,8 @@ public class PhpProject implements Project {
 
         @Override
         public FileObject getWebRoot(FileObject file) {
-            return null; //TODO implement
+            return ProjectPropertiesSupport.getWebRootDirectory(PhpProject.this);
         }
-
     }
-
 
 }
