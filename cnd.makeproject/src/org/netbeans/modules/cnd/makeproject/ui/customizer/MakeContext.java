@@ -101,7 +101,7 @@ public class MakeContext {
         return this;
     }
 
-    public MakeContext setSharedItem(SharedItemConfiguration item) {
+    /*package*/MakeContext setSharedItem(SharedItemConfiguration item) {
         this.item = item;
         return this;
     }
@@ -136,7 +136,7 @@ public class MakeContext {
     /**
      * @return the item
      */
-    public SharedItemConfiguration getItem() {
+    /*package*/ SharedItemConfiguration getItem() {
         return item;
     }
 
