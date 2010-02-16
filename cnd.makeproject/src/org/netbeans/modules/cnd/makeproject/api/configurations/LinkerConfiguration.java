@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;

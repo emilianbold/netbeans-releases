@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.configurations;
+package org.netbeans.modules.cnd.makeproject.spi.configurations;
 
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 

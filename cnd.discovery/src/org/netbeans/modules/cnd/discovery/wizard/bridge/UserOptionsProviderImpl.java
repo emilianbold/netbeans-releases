@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.makeproject.api.configurations.AllOptionsProvider;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 

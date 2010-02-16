@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.makeproject.spi.configurations;
 
 import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.makeproject.api.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 
 /**
