@@ -48,8 +48,10 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import javax.swing.JComponent;
@@ -95,7 +97,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
     private final ConfigurationDescriptor projectDescriptor;
     private final Item item;
     private final Folder folder;
-    private final ArrayList<JComponent> controls;
+    private final List<JComponent> controls;
     private CategoryView currentCategoryView;
     private String currentNodeName;
     private Configuration[] configurationItems;
@@ -104,15 +106,15 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
     private MakeContext lastContext;
 
     /** Creates new form MakeCustomizer */
-    public MakeCustomizer(Project project, String preselectedNodeName, ConfigurationDescriptor projectDescriptor, Item item, Folder folder, ArrayList<JComponent> controls) {
+    public MakeCustomizer(Project project, String preselectedNodeName, ConfigurationDescriptor projectDescriptor, Item item, Folder folder, Collection<JComponent> controls) {
         initComponents();
         this.projectDescriptor = projectDescriptor;
-        this.controls = controls;
+        this.controls = new ArrayList<JComponent>(controls);
         this.project = project;
         this.item = item;
         this.folder = folder;
-        controls.add(configurationComboBox);
-        controls.add(configurationsButton);
+        this.controls.add(configurationComboBox);
+        this.controls.add(configurationsButton);
 
         configurationItems = projectDescriptor.getConfs().toArray();
         for (int i = 0; i < configurationItems.length; i++) {
