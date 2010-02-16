@@ -135,7 +135,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                     operation = OPERATIONS_QUEUE.poll();
                 }
             }
-        });
+        }, true);
     }
 
     public void projectOpened() {
@@ -236,6 +236,9 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
      */
     public boolean waitFinished() {
         try {
+            if (!proxyOperationFactory.isEnabled()) {
+                return true;
+            }
             if (COPY_TASK.waitFinished(200)) {
                 return true;
             }
@@ -244,7 +247,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             return true;
         }
         NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
-                NbBundle.getMessage(CopySupport.class, "MSG_CopySupportRunning", project.getName()),
+                NbBundle.getMessage(CopySupport.class, "MSG_CopySupportRunning"),
                 NotifyDescriptor.YES_NO_OPTION);
         return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION;
     }
