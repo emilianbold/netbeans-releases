@@ -97,14 +97,17 @@ else
     TEST_ENV_PARAM := 
 endif
 
-PLATFORM-i386  :=  x86${PLATFORM_64}
-PLATFORM-i686  :=  x86${PLATFORM_64}
-PLATFORM-x86_64  :=  x86${PLATFORM_64}
-PLATFORM-sparc  :=  sparc${PLATFORM_64}
-ifeq (${UNAME_P}, unknown)
-	PLATFORM = ${PLATFORM-${UNAME_M}}
-else
-	PLATFORM = ${PLATFORM-${UNAME_P}}
+# map different values of `uname -p` and/or `uname -m` into standard postfixes
+TMP-i386   :=  x86
+TMP-i686   :=  x86
+TMP-i86pc  :=  x86
+TMP-x86_64 :=  x86
+TMP-sparc  :=  sparc
+TMP-sun4u  :=  sparc
+
+PLATFORM = ${TMP-${UNAME_P}}${PLATFORM_64}
+ifeq (${PLATFORM}, )
+    PLATFORM = ${TMP-${UNAME_M}}${PLATFORM_64}
 endif
 
 testit :sh= uname -s

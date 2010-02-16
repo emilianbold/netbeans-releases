@@ -1029,7 +1029,7 @@ public class AstRenderer {
     }
 
     public static CharSequence getQualifiedName(AST qid) {
-        if (qid != null && qid.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+        if (qid != null && (qid.getType() == CPPTokenTypes.CSM_QUALIFIED_ID || qid.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND)) {
             if (qid.getFirstChild() != null) {
                 StringBuilder sb = new StringBuilder();
                 for (AST namePart = qid.getFirstChild(); namePart != null; namePart = namePart.getNextSibling()) {

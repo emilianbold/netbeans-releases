@@ -206,7 +206,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     case CPPTokenTypes.CSM_FIELD:
                         child = token.getFirstChild();
                         if (hasFriendPrefix(child)) {
-                            addFriend(renderFriendClass(token), !isRenderingLocalContext());
+                            try {
+                                addFriend(renderFriendClass(token), !isRenderingLocalContext());
+                            } catch (AstRendererException e) {
+                                DiagnosticExceptoins.register(e);
+                            }
                         } else {
                             if (renderVariable(token, null, null, false)) {
                                 break;
@@ -248,7 +252,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         {
                             child = token.getFirstChild();
                             if (hasFriendPrefix(child)) {
-                                addFriend(renderFriendClass(token), !isRenderingLocalContext());
+                                try {
+                                    addFriend(renderFriendClass(token), !isRenderingLocalContext());
+                                } catch (AstRendererException e) {
+                                    DiagnosticExceptoins.register(e);
+                                }
                             } else {
                                 ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
                                 if (fd != null) {
@@ -371,7 +379,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return false;
         }
 
-        private CsmFriend renderFriendClass(AST ast) {
+        private CsmFriend renderFriendClass(AST ast) throws AstRendererException {
             AST firstChild = ast.getFirstChild();
             AST child = firstChild;
             if (child.getType() == CPPTokenTypes.LITERAL_friend) {
@@ -381,12 +389,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 child = child.getNextSibling();
             }
             CsmClassForwardDeclaration cfd = null;
+            AST qid = null;
             if (child != null &&
                     (child.getType() == CPPTokenTypes.LITERAL_struct ||
                     child.getType() == CPPTokenTypes.LITERAL_class)) {
                 // check if we want to have class forward
                 // we don't want for AA::BB names
-                AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+                qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
                 CharSequence[] nameParts = AstRenderer.getNameTokens(qid);
                 if (nameParts != null && nameParts.length == 1) {
                     // also we don't want for templates references
@@ -406,8 +415,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         ((NamespaceImpl) scope).addDeclaration(cfd);
                     }
                 }
+            } else if (child != null && (child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND)) {
+                //class G;
+                //class X {
+                //  friend G;
+                //};
+                qid = child;
+            } else {
+                // FIXME: is it valid or exceptional branch?
+                qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
             }
-            return new FriendClassImpl(firstChild, cfd, (FileImpl) getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
+            return new FriendClassImpl(firstChild, qid, cfd, (FileImpl) getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
         }
 
         private ClassMemberForwardDeclaration renderClassForwardDeclaration(AST token) {

@@ -13,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.support.EnvWriter;
 import org.netbeans.modules.nativeexecution.support.Logger;
@@ -32,6 +33,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
         super(info);
     }
 
+    @Override
     protected void create() throws Throwable {
         Throwable exception = null;
         ChannelStreams streams = null;
@@ -192,7 +194,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                 if (cause != null && cause instanceof NullPointerException) {
                     // Jsch bug... retry?
                 } else if ("java.io.InterruptedIOException".equals(message)) { // NOI18N
-                    log.fine("RETRY to open jsch channel in 0.5 seconds [" + retry + "]..."); // NOI18N
+                    log.log(Level.FINE, "RETRY to open jsch channel in 0.5 seconds [%s]...", retry); // NOI18N
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException ex1) {
@@ -200,7 +202,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
                         break;
                     }
                 } else if ("channel is not opened.".equals(message)) { // NOI18N
-                    log.fine("RETRY to open jsch channel in 0.5 seconds [" + retry + "]..."); // NOI18N
+                    log.log(Level.FINE, "RETRY to open jsch channel in 0.5 seconds [%s]...", retry); // NOI18N
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException ex1) {
@@ -213,7 +215,7 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
 
             } catch (NullPointerException npe) {
                 // Jsch bug... retry? ;)
-                }
+            }
         }
 
         throw new IOException("Failed to execute " + command); // NOI18N

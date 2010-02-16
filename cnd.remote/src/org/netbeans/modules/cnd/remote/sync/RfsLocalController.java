@@ -252,28 +252,33 @@ class RfsLocalController implements Runnable {
         } else {
             FileData.FileInfo info = fileData.getFileInfo(file);
             FileState newState;
-            switch(info  == null ? FileState.INITIAL : info.state) {
-                case COPIED:
-                case TOUCHED:
-                    if (info.timestamp == file.lastModified()) {
-                        newState = info.state;
-                    } else {
+            if (file.exists()) {
+                switch(info  == null ? FileState.INITIAL : info.state) {
+                    case COPIED:
+                    case TOUCHED:
+                        if (info.timestamp == file.lastModified()) {
+                            newState = info.state;
+                        } else {
+                            newState = FileState.INITIAL;
+                        }
+                        break;
+                    case ERROR: // fall through
+                    case INITIAL:
                         newState = FileState.INITIAL;
-                    }
-                    break;
-                case ERROR: // fall through
-                case INITIAL:
-                    newState = FileState.INITIAL;
-                    break;
-                case UNCONTROLLED:
-                    newState = info.state;
-                    break;
-                default:
-                    CndUtils.assertTrue(false, "Unexpected state: " + info.state); //NOI18N
-                    return;
+                        break;
+                    case UNCONTROLLED:
+                        newState = info.state;
+                        break;
+                    default:
+                        CndUtils.assertTrue(false, "Unexpected state: " + info.state); //NOI18N
+                        return;
+                }
+            } else {
+                newState = FileState.INEXISTENT;
             }
             CndUtils.assertTrue(newState == FileState.INITIAL || newState == FileState.COPIED 
-                    || newState == FileState.TOUCHED || newState == FileState.UNCONTROLLED,
+                    || newState == FileState.TOUCHED || newState == FileState.UNCONTROLLED
+                    || newState == FileState.INEXISTENT,
                     "State shouldn't be " + newState); //NOI18N
             responseStream.printf("%c %d %s\n", newState.id, file.length(), relPath); // NOI18N
             responseStream.flush(); //TODO: remove?
@@ -298,9 +303,9 @@ class RfsLocalController implements Runnable {
     }
 
     private static void addFileGatheringInfo(List<FileGatheringInfo> filesToFeed, final File file, String remoteFilePathName) {
-        if (file.exists()) {
+        //if (file.exists()) {
             filesToFeed.add(new FileGatheringInfo(file, remoteFilePathName));
-        }
+        //}
     }
 
 
