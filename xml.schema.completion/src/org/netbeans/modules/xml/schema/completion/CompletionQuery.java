@@ -76,16 +76,20 @@ public class CompletionQuery extends AsyncCompletionQuery {
         CompletionResultItem endTagResultItem = CompletionUtil.getEndTagCompletionItem(
             component, (BaseDocument) doc);
         List<CompletionResultItem> completionItems = null;
-
-        if (! support.noCompletion(component) &&
-           (CompletionUtil.canProvideCompletion((BaseDocument) doc))) {
-            completionItems = getCompletionItems(doc, caretOffset);
-        }
-        if (endTagResultItem != null) resultSet.addItem(endTagResultItem);
-        if ((completionItems != null) && (completionItems.size() > 0)) {
-            resultSet.addAllItems(completionItems);
-        } else if (endTagResultItem != null) {
-            endTagResultItem.setExtraPaintGap(-CompletionPaintComponent.DEFAULT_ICON_TEXT_GAP);
+        if (endTagResultItem instanceof TagLastCharResultItem) {
+            //endTagResultItem.setExtraPaintGap(-CompletionPaintComponent.DEFAULT_ICON_TEXT_GAP);
+            resultSet.addItem(endTagResultItem);
+        } else {
+            if (! support.noCompletion(component) &&
+               (CompletionUtil.canProvideCompletion((BaseDocument) doc))) {
+                completionItems = getCompletionItems(doc, caretOffset);
+            }
+            if (endTagResultItem != null) resultSet.addItem(endTagResultItem);
+            if ((completionItems != null) && (completionItems.size() > 0)) {
+                resultSet.addAllItems(completionItems);
+            } else if (endTagResultItem != null) {
+                endTagResultItem.setExtraPaintGap(-CompletionPaintComponent.DEFAULT_ICON_TEXT_GAP);
+            }
         }
         resultSet.finish();
     }
