@@ -113,7 +113,7 @@ public class ConfigurationMakefileWriter {
 
     public void writeMissingMakefiles() {
         Collection<MakeConfiguration> okConfs = getOKConfigurations(false);
-        long xmlFileTimeStamp = new File(projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "configurations.xml").lastModified(); // NOI18N
+        long xmlFileTimeStamp = new File(new File(projectDescriptor.getBaseDir(), MakeConfiguration.NBPROJECT_FOLDER), MakeConfiguration.CONFIGURATIONS_XML).lastModified();
         for (MakeConfiguration conf : okConfs) {
             File file = new File(getMakefilePath(conf));
             if (!file.exists() || file.lastModified() < xmlFileTimeStamp) {
@@ -127,11 +127,11 @@ public class ConfigurationMakefileWriter {
     }
 
     private String getMakefilePath(MakeConfiguration conf) {
-        return projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Makefile-" + conf.getName() + ".mk"; // NOI18N
+        return projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Makefile-" + conf.getName() + ".mk"; // NOI18N
     }
 
     private String getPackageScriptPath(MakeConfiguration conf) {
-        return projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Package-" + conf.getName() + ".bash"; // NOI18N
+        return projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Package-" + conf.getName() + ".bash"; // NOI18N
     }
 
     /**
@@ -197,7 +197,7 @@ public class ConfigurationMakefileWriter {
             }
         }
 
-        File folder = new File(projectDescriptor.getBaseDir() + '/' + "nbproject"); // UNIX path // NOI18N
+        File folder = new File(projectDescriptor.getBaseDir(), MakeConfiguration.NBPROJECT_FOLDER);
         File[] children = folder.listFiles();
         if (children != null) {
             for (int i = 0; i < children.length; i++) {
@@ -230,11 +230,11 @@ public class ConfigurationMakefileWriter {
             is = MakeConfigurationDescriptor.class.getResourceAsStream(resource);
         }
 
-        String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + MakeConfiguration.MAKEFILE_IMPL; // UNIX path // NOI18N
+        String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.MAKEFILE_IMPL; // UNIX path // NOI18N
         try {
             os = new FileOutputStream(outputFileName);
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            ioe.printStackTrace(System.err);
         }
 
         if (is == null || os == null) {
@@ -279,7 +279,7 @@ public class ConfigurationMakefileWriter {
     }
 
     private void writeMakefileConf(MakeConfiguration conf) {
-        String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Makefile-" + conf.getName() + ".mk"; // UNIX path // NOI18N
+        String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Makefile-" + conf.getName() + ".mk"; // UNIX path // NOI18N
 
         FileOutputStream os = null;
         try {
@@ -831,7 +831,7 @@ public class ConfigurationMakefileWriter {
     }
 
     private void writeMakefileVariables(MakeConfigurationDescriptor conf) {
-        String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Makefile-variables.mk"; // UNIX path // NOI18N
+        String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Makefile-variables.mk"; // UNIX path // NOI18N
 
 
         FileOutputStream os = null;
@@ -904,7 +904,7 @@ public class ConfigurationMakefileWriter {
     }
 
     private void writePackagingScript(MakeConfiguration conf) {
-        String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Package-" + conf.getName() + ".bash"; // UNIX path // NOI18N
+        String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Package-" + conf.getName() + ".bash"; // UNIX path // NOI18N
 
         if (conf.getPackagingConfiguration().getFiles().getValue().isEmpty()) {
             // Nothing to do

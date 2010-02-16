@@ -70,7 +70,7 @@ public class ProjectSupport {
     public static Date lastModified(Project project) {
 	FileObject projectFile = null;
 	try {
-	    projectFile = project.getProjectDirectory().getFileObject("nbproject" + File.separator + "Makefile-impl.mk"); // NOI18N
+	    projectFile = project.getProjectDirectory().getFileObject(MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.MAKEFILE_IMPL); // NOI18N
 	}
 	catch (Exception e) {
 	    // happens if project is not a MakeProject
