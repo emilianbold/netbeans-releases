@@ -52,7 +52,12 @@ public class ExceptionsSettingsTest extends NbTestCase {
     public ExceptionsSettingsTest(String testName) {
         super(testName);
     }
-    
+
+    public void testEmpty(){
+        ExceptionsSettings settings = new ExceptionsSettings();
+        assertNotNull(settings.getPasswd());
+    }
+
     public void testUserName() {
         String str = "Moje_Jmeno";
         String previous;

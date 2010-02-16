@@ -36,31 +36,12 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.webmodule;
 
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.ServiceProvider;
+package org.netbeans.modules.cnd.api.model;
 
 /**
- *  Allows to resolve absolute paths in web projects
- *
- * @author marekfukala
+ * 
+ * @author Nick Krasilnikov (http://nnnnnk.name)
  */
-@ServiceProvider(service=ProjectWebRootProvider.class)
-public class WebProjectWebRootProvider implements ProjectWebRootProvider {
-
-    @Override
-    public Collection<FileObject> getWebRoots(Project project) {
-            WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-            if(webModule != null) {
-                return Collections.singletonList(webModule.getDocumentBase());
-            } else {
-                return null;
-            }
-      }
+public interface CsmProgram extends CsmOffsetableDeclaration {
 }

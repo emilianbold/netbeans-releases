@@ -122,21 +122,6 @@ public class PushAction extends ContextAction {
         });
     }
 
-    public static void notifyUpdatedFiles(File repo, List<String> list){
-        // When hg -v output, or hg -v unbundle or hg -v pull is called
-        // the output contains line
-        // getting <file>
-        // for each file updated.
-        //
-        for (String line : list) {
-            if (line.startsWith("getting ")) {
-                String name = line.substring(8);
-                File file = new File (repo, name);
-                Mercurial.getInstance().notifyFileChanged(file);
-            }
-        }
-    }
-
     public static void getDefaultAndPerformPush(File root, OutputLogger logger) {
         // If the repository has no default push path then inform user
         String tmpPushPath = HgRepositoryContextCache.getInstance().getPushDefault(root);
@@ -355,7 +340,7 @@ public class PushAction extends ContextAction {
                         if (bOutStandingUncommittedMerges) {
                             bConfirmMerge = HgUtils.confirmDialog(PushAction.class, "MSG_PUSH_MERGE_CONFIRM_TITLE", "MSG_PUSH_MERGE_UNCOMMITTED_CONFIRM_QUERY"); // NOI18N
                         } else {
-                            notifyUpdatedFiles(pushFile, list);
+                            HgUtils.notifyUpdatedFiles(pushFile, list);
                         }
                     }
                 } else {

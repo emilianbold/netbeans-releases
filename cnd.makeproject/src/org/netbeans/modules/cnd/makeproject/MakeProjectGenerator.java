@@ -96,7 +96,7 @@ public class MakeProjectGenerator {
             } else {
                 projectName = name + baseCount;
             }
-            File projectNameFile = new File(projectFolder + File.separator + projectName);
+            File projectNameFile = new File(projectFolder, projectName);
             if (!projectNameFile.exists()) {
                 break;
             }
@@ -126,7 +126,7 @@ public class MakeProjectGenerator {
     }
 
     public static MakeProject createBlankProject(String projectName, String makefileName, String projectFolder, MakeConfiguration[] confs, boolean open) throws IOException {
-        File projectNameFile = new File(projectFolder + File.separator + projectName);
+        File projectNameFile = new File(projectFolder, projectName);
         if (confs == null) {
             confs = new MakeConfiguration[0];
         }
@@ -252,6 +252,7 @@ public class MakeProjectGenerator {
         }
         Runnable task = new Runnable() {
 
+            @Override
             public void run() {
                 projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders, importantItems, mainFilePath); // FIXUP: need a better check whether logical folder should be ccreated or not.
                 projectDescriptor.save();

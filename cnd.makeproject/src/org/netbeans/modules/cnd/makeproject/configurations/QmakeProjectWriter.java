@@ -68,7 +68,7 @@ public class QmakeProjectWriter {
     /*
      * Project file name is constructed as prefix + confName + suffix.
      */
-    private static final String PROJECT_PREFIX = "nbproject" + File.separator + "qt-"; // NOI18N
+    private static final String PROJECT_PREFIX = MakeConfiguration.NBPROJECT_FOLDER + File.separator + "qt-"; // NOI18N
     private static final String PROJECT_SUFFIX = ".pro"; // NOI18N
 
     /**

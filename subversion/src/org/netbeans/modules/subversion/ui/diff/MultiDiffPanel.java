@@ -597,7 +597,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
 
         if ((saveCookies.length == 0)
                 || SaveBeforeCommitConfirmation.allSaved(saveCookies)) {
-            CommitAction.commit(contextName, context);
+            CommitAction.commit(contextName, context, false);
         }
     }
 

@@ -214,6 +214,10 @@ made subject to such option by the copyright holder.
             </folder>
 
             <folder name="html">
+                <!--<file name="org-netbeans-modules-html-editor-indexing-HtmlIndexer$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"/>
+                </file>
+-->
 
                 <file name="org-netbeans-modules-html-editor-HtmlCaretAwareSourceTask$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>

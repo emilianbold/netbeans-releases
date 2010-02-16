@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,33 +34,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.welcome.ui;
+package org.netbeans.modules.maven.classpath;
 
-import java.awt.event.ActionEvent;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
+import java.util.Arrays;
+import java.util.Collections;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.test.TestFileUtils;
 
-/**
- * Opens Kenai dashboard window.
- *
- * @author S. Aubrecht
- */
-public class KenaiAction extends AbstractAction {
+public class ClassPathProviderImplTest extends NbTestCase {
 
-    public void actionPerformed(ActionEvent e) {
-        WindowManager wm = WindowManager.getDefault();
-        TopComponent tc = wm.findTopComponent("KenaiTopComponent"); //NOI18N
-        if( null != tc ) {
-            tc.open();
-            tc.requestActive();
-        } else {
-            Logger.getLogger(KenaiAction.class.getName()).log(Level.INFO, "Kenai window not found"); //NOI18N
-        }
+    public ClassPathProviderImplTest(String n) {
+        super(n);
     }
+
+    public void testClassPath() throws Exception {
+        clearWorkDir();
+        FileObject d = FileUtil.toFileObject(getWorkDir());
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>1.0-SNAPSHOT</version>" +
+                "<name>Test</name>" +
+                "</project>");
+        FileObject src = FileUtil.createFolder(d, "src/main/java");
+        ClassPath cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
+        assertNotNull(cp);
+        assertEquals(Collections.<FileObject>emptyList(), Arrays.asList(cp.getRoots()));
+    }
+
 }

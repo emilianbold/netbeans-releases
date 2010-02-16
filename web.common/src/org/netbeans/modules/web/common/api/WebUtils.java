@@ -95,12 +95,8 @@ public class WebUtils {
                     }
                 } else {
                     //absolute web path
-                    //find web root
-                    Project p = FileOwnerQuery.getOwner(source);
-                    Collection<FileObject> roots = ProjectWebRootQuery.getWebRoots(p);
-                    if (roots.size() > 0) {
-                        //take first
-                        FileObject webRoot = roots.iterator().next();
+                    FileObject webRoot = ProjectWebRootQuery.getWebRoot(source); //find web root
+                    if(webRoot != null) {
                         //resolve the link relative to the web root
                         FileObject resolved = webRoot.getFileObject(file.getAbsolutePath());
                         if (resolved != null && resolved.isValid()) {

@@ -445,7 +445,7 @@ public class ProjectActionSupport {
             if (project != null) { // paranoidal null checks are better than latent NPE :)
                 FileObject projectDirectory = project.getProjectDirectory();
                 if (projectDirectory != null) {
-                    FileObject nbproject = projectDirectory.getFileObject("nbproject"); // NOI18N
+                    FileObject nbproject = projectDirectory.getFileObject(MakeConfiguration.NBPROJECT_FOLDER); // NOI18N
                     if (nbproject != null) {
                         // I'm more sure in java.io.File.exists() - practice shows that FileObjects might be sometimes cached...
                         File file = FileUtil.toFile(nbproject);

@@ -97,7 +97,7 @@ public class MakeSampleProjectGenerator {
         String mainProject = (String)template.getAttribute("mainProjectLocation"); // NOI18N
         String subProjects = (String)template.getAttribute("subProjectLocations"); // NOI18N
         if (mainProject != null) {
-            File mainProjectLocation = new File(projectLocation.getPath() + File.separator + mainProject);
+            File mainProjectLocation = new File(projectLocation.getPath(), mainProject);
             File[] subProjectLocations = null;
             if (subProjects != null) {
                 Vector<File> subProjectsFiles = new Vector<File>();

@@ -46,6 +46,9 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.csl.api.CompletionProposal;
@@ -57,7 +60,9 @@ import org.netbeans.modules.ruby.elements.CommentElement;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.ruby.platform.gems.Gem;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.openide.util.NbBundle;
 
 final class RubyStringCompleter extends RubyBaseCompleter {
 
@@ -315,6 +320,8 @@ final class RubyStringCompleter extends RubyBaseCompleter {
                                 }
 
                                 return true;
+                            } else if ("gem".equals(text)) {
+                                proposeGems(prefix);
                             } else {
                                 break;
                             }
@@ -346,6 +353,26 @@ final class RubyStringCompleter extends RubyBaseCompleter {
         }
 
         return false;
+    }
+
+    private void proposeGems(String prefix) {
+        Project owner = FileOwnerQuery.getOwner(request.fileObject);
+        if (owner == null) {
+            return;
+        }
+        GemManager gemManager = RubyPlatform.gemManagerFor(owner);
+        if (gemManager == null) {
+            return;
+        }
+        List<Gem> gems = gemManager.getLocalGems();
+        for (Gem gem : gems) {
+            if (gem.getName().startsWith(prefix)) {
+                String versions = NbBundle.getMessage(RubyStringCompleter.class, "InstalledVersions", gem.getInstalledVersionsAsString());
+                KeywordItem item =
+                        new KeywordItem(gem.getName(), versions, anchor, request);
+                propose(item);
+            }
+        }
     }
 
     private boolean completePercentWords() {

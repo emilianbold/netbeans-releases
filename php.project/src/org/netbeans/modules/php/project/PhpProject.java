@@ -82,6 +82,7 @@ import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
+import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -622,7 +623,8 @@ public class PhpProject implements Project {
                 new PhpTemplates(),
                 new PhpSources(this, getHelper(), getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
                 getHelper(),
-                getEvaluator()
+                getEvaluator(),
+                new ProjectWebRootProviderImpl()
                 // ?? getRefHelper()
         });
     }
@@ -847,4 +849,13 @@ public class PhpProject implements Project {
         public void propertiesChanged(AntProjectEvent ev) {
         }
     }
+
+    private final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
+
+        @Override
+        public FileObject getWebRoot(FileObject file) {
+            return ProjectPropertiesSupport.getWebRootDirectory(PhpProject.this);
+        }
+    }
+
 }
