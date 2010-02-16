@@ -54,6 +54,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.rubyproject.queries.RubyProjectEncodingQueryImpl;
 import org.netbeans.modules.ruby.spi.project.support.rake.FilterPropertyProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
@@ -307,6 +308,13 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
             });
         }
     }
+
+    private void reloadGems() {
+        GemManager gemManager = RubyPlatform.gemManagerFor(this);
+        if (gemManager != null) {
+            gemManager.reloadLocalGems(false);
+        }
+    }
     
     private static final class ConfigPropertyProvider extends FilterPropertyProvider implements PropertyChangeListener {
 
@@ -393,6 +401,8 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
         
         protected void projectOpened() {
             open();
+
+            reloadGems();
 
             // Ensure that code coverage is initialized in case it's enabled...
             RubyCoverageProvider provider = RubyCoverageProvider.get(RubyBaseProject.this);

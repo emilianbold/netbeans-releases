@@ -100,7 +100,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         if (platform != null && !reloaded.contains(platform)) {
             GemManager gemManager = platform.getGemManager();
             if (gemManager != null) {
-                gemManager.reloadLocalGems();
+                gemManager.reloadLocalGems(true);
                 reloaded.add(platform);
             }
         }
