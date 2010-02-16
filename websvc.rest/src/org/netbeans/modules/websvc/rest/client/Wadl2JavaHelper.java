@@ -79,14 +79,14 @@ class Wadl2JavaHelper {
         List<WadlSaasMethod> saasMethods = saasResource.getMethods();
         ClassTree modifiedInnerClass = innerClass;
         TreeMaker maker = copy.getTreeMaker();
-        boolean hasRequiredQParams = false;
+        boolean hasMultipleRequiredQParams = false;
         boolean hasOptionalQParams = false;
         QueryParamsInfo globalParams = new QueryParamsInfo(saasResource);
         for (WadlSaasMethod saasMethod : saasMethods) {
             QueryParamsInfo paramsInfo = new QueryParamsInfo(saasMethod);
             paramsInfo.merge(globalParams);
-            if (paramsInfo.hasRequiredParams()) {
-                hasRequiredQParams = true;
+            if (paramsInfo.hasMultipleRequiredParams()) {
+                hasMultipleRequiredQParams = true;
             }
             if (paramsInfo.hasOptionalParams()) {
                 hasOptionalQParams = true;
@@ -96,8 +96,8 @@ class Wadl2JavaHelper {
                 modifiedInnerClass = maker.addClassMember(modifiedInnerClass, httpMethod);
             }
         }
-        if (hasRequiredQParams) {
-            // add new private method
+        if (hasMultipleRequiredQParams) {
+            // add new private method to compute MultivaluedMap
             String mvMapClass = "javax.ws.rs.core.MultivaluedMap"; //NOI18N
             TypeElement mvMapEl = copy.getElements().getTypeElement(mvMapClass);
             String mvType = mvMapEl == null ? mvMapClass : "MultivaluedMap"; //NOI18N
@@ -242,8 +242,6 @@ class Wadl2JavaHelper {
     }
 
     static MethodTree createHttpGETMethod(WorkingCopy copy, WadlSaasMethod saasMethod, HttpMimeType mimeType, boolean multipleMimeTypes, QueryParamsInfo paramsInfo, HeaderParamsInfo headerParamsInfo) {
-        String responseType = null;
-        String path = "";
         String methodName = saasMethod.getName() + (multipleMimeTypes ? "_"+mimeType.name() : ""); //NOI18N
 
         TreeMaker maker = copy.getTreeMaker();
@@ -295,11 +293,8 @@ class Wadl2JavaHelper {
     }
 
     static MethodTree createHttpPOSTMethod(WorkingCopy copy, WadlSaasMethod saasMethod, HttpMimeType requestMimeType, boolean multipleMimeTypes, QueryParamsInfo paramsInfo, HeaderParamsInfo headerParamsInfo) {
-        String requestType = null;
-        String path = "";
         String methodName = saasMethod.getName() + (multipleMimeTypes ? "_"+requestMimeType.name() : ""); //NOI18N
-        Method wadlMethod = saasMethod.getWadlMethod();
-        String methodPrefix = wadlMethod.getName().toLowerCase();
+        String methodPrefix = saasMethod.getWadlMethod().getName().toLowerCase();
 
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
@@ -336,11 +331,15 @@ class Wadl2JavaHelper {
             addQueryAndHeaderParams(maker, paramsInfo, headerParamsInfo, paramList, queryP, queryParamPart, commentBuffer);
         }
 
-        if (!RestConstants.DELETE_ANNOTATION.equals(wadlMethod.getName()) || requestMimeType != null) {
-            VariableTree objectParam = maker.Variable(paramModifier, "requestEntity", maker.Identifier("Object"), null); //NOI18N
-            paramList.add(objectParam);
-            bodyParam2=(bodyParam1.length() > 0 ? ", " : "") + "requestEntity"; //NOI18N
-            commentBuffer.append("@param requestEntity request data");
+        if (requestMimeType != null) {
+            if (requestMimeType == HttpMimeType.FORM) {
+                // PENDING
+            } else {
+                VariableTree objectParam = maker.Variable(paramModifier, "requestEntity", maker.Identifier("Object"), null); //NOI18N
+                paramList.add(objectParam);
+                bodyParam2=(bodyParam1.length() > 0 ? ", " : "") + "requestEntity"; //NOI18N
+                commentBuffer.append("@param requestEntity request data");
+            }
         }
 
         commentBuffer.append("@return response object (instance of responseType class)"); //NOI18N
@@ -382,10 +381,25 @@ class Wadl2JavaHelper {
                     paramList.add(paramTree);
                     commentBuffer.append("@param "+javaIdentifier+" query parameter[REQUIRED]\n"); //NOI18N
                 }
-                ClientJavaSourceHelper.Pair paramPair = getParamList(paramsInfo.getRequiredParams(), paramsInfo.getFixedParams());
-                queryParamPart.append("String[] paramNames = new String[] {"+paramPair.getKey()+"}"); //NOI18N
-                queryParamPart.append("String[] paramValues = new String[] {"+paramPair.getValue()+"}"); //NOI18N
-                queryP.append(".queryParams(getQParams(paramNames, paramValues))"); //NOI18N
+                if (paramsInfo.hasMultipleRequiredParams()) {
+                    ClientJavaSourceHelper.Pair paramPair = getParamList(paramsInfo.getRequiredParams(), paramsInfo.getFixedParams());
+                    queryParamPart.append("String[] paramNames = new String[] {"+paramPair.getKey()+"}"); //NOI18N
+                    queryParamPart.append("String[] paramValues = new String[] {"+paramPair.getValue()+"}"); //NOI18N
+                    queryP.append(".queryParams(getQParams(paramNames, paramValues))"); //NOI18N
+                } else {
+                    List<String> requiredParams = paramsInfo.getRequiredParams();
+                    if (requiredParams.size() > 0) {
+                        String paramName = requiredParams.get(0);
+                        String paramValue = makeJavaIdentifier(requiredParams.get(0));
+                        queryP.append(".queryParam(\""+paramName+"\","+paramValue+")"); //NOI18N"
+                    } else {
+                        Map<String, String> fixedParams = paramsInfo.getFixedParams();
+                        for (String paramName : fixedParams.keySet()) {
+                            String paramValue = fixedParams.get(paramName);
+                            queryP.append(".queryParam(\""+paramName+"\",\""+paramValue+"\")"); //NOI18N"
+                        }
+                    }
+                }
             }
             // add optional params
             if (paramsInfo.hasOptionalParams()) {
@@ -531,6 +545,10 @@ class Wadl2JavaHelper {
                     }
                 }
             }
+        }
+
+        boolean hasMultipleRequiredParams() {
+            return hasRequiredParams && requiredParams.size() + fixedParams.size() > 1;
         }
 
         boolean hasQueryParams() {

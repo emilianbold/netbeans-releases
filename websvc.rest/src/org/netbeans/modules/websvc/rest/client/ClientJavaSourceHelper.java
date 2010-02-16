@@ -95,7 +95,7 @@ import org.openide.util.NbBundle;
  */
 public class ClientJavaSourceHelper {
 
-    public static void generateJerseyClient(Node resourceNode, FileObject targetFo) {
+    public static void generateJerseyClient(Node resourceNode, FileObject targetFo, String className) {
 
         // add REST and Jersey dependencies
         ClassPath cp = ClassPath.getClassPath(targetFo, ClassPath.COMPILE);
@@ -151,7 +151,6 @@ public class ClientJavaSourceHelper {
                     baseURL = baseURL.substring(0, baseURL.length() - 1);
                 }
 
-                String className = restServiceDesc.getName()+"_JerseyClient"; //NOI18N
                 // add inner Jersey Client class
                 addJerseyClient(
                         JavaSource.forFileObject(targetFo),
@@ -173,7 +172,7 @@ public class ClientJavaSourceHelper {
                 String resourceUri = baseUrl;
                 addJerseyClient(
                         JavaSource.forFileObject(targetFo),
-                        getClientClassName(saasResource),
+                        className,
                         resourceUri,
                         null,
                         saasResource,
@@ -502,10 +501,14 @@ public class ClientJavaSourceHelper {
        
         }
         String bodyParam2 = "";
-        if (!RestConstants.DELETE_ANNOTATION.equals(httpMethod.getType()) || requestMimeType != null) {
-            VariableTree objectParam = maker.Variable(paramModifier, "requestEntity", maker.Identifier("Object"), null); //NOI18N
-            paramList.add(objectParam);
-            bodyParam2=(bodyParam1.length() > 0 ? ", " : "") + "requestEntity"; //NOI18N
+        if (requestMimeType != null) {
+            if (requestMimeType == HttpMimeType.FORM) {
+                // PENDING
+            } else {
+                VariableTree objectParam = maker.Variable(paramModifier, "requestEntity", maker.Identifier("Object"), null); //NOI18N
+                paramList.add(objectParam);
+                bodyParam2=(bodyParam1.length() > 0 ? ", " : "") + "requestEntity"; //NOI18N
+            }
         }
         // throws
         ExpressionTree throwsTree = JavaSourceHelper.createTypeTree(copy, "com.sun.jersey.api.client.UniformInterfaceException"); //NOI18N
@@ -627,7 +630,7 @@ public class ClientJavaSourceHelper {
         return s;
     }
 
-    private static String getClientClassName(WadlSaasResource saasResource) {
+    static String getClientClassName(WadlSaasResource saasResource) {
         String path = saasResource.getResource().getPath();
         int len = path.length();
         for (int i=0; i<len; i++) {

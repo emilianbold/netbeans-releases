@@ -74,7 +74,7 @@ public class ResourceToEditorDrop implements ActiveEditorDrop {
                 FileObject targetFo = NbEditorUtilities.getFileObject(targetComponent.getDocument());
                 if (targetFo != null) {
                     // Generate Jersey Client
-                    ClientJavaSourceHelper.generateJerseyClient(resourceNode, targetFo);
+                    ClientJavaSourceHelper.generateJerseyClient(resourceNode, targetFo, serviceDescription.getName()+"_JerseyClient");
                     // logging usage of action
                     Object[] params = new Object[2];
                     params[0] = LogUtils.WS_STACK_JAXRS;
