@@ -233,7 +233,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
         } else if (context instanceof CssElementContext.File) {
             //refactor a file in explorer
             CssElementContext.File fileContext = (CssElementContext.File) context;
-            LOGGER.info("refactor file " + fileContext.getFileObject().getPath()); //NOI18N
+            LOGGER.fine("refactor file " + fileContext.getFileObject().getPath()); //NOI18N
             String newName = refactoring.getNewName();
 
             //a. get all importing files
@@ -306,7 +306,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
         } else if (context instanceof CssElementContext.Folder) {
             //refactor a folder in explorer
             CssElementContext.Folder fileContext = (CssElementContext.Folder) context;
-            LOGGER.info("refactor folder " + fileContext.getFileObject().getPath()); //NOI18N
+            LOGGER.fine("refactor folder " + fileContext.getFileObject().getPath()); //NOI18N
         }
 
         return null;
