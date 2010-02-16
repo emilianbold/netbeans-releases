@@ -76,28 +76,28 @@ public class SuiteCustomizerWindowSystemBranding extends NbPropertyPanel.Suite {
     public void store() {
         BasicBrandingModel branding = getBrandingModel();
         
-        branding.getWsEnableClosingEditors().setValue( Boolean.toString(cbEnableEditorClosing.isSelected() ) );
-        branding.getWsEnableClosingViews().setValue( Boolean.toString(cbEnableViewClosing.isSelected() ) );
-        branding.getWsEnableDragAndDrop().setValue( Boolean.toString(cbEnableDnd.isSelected() ) );
-        branding.getWsEnableFloating().setValue( Boolean.toString(cbEnableFloating.isSelected() ) );
-        branding.getWsEnableMaximization().setValue( Boolean.toString(cbEnableMaximization.isSelected() ) );
-        branding.getWsEnableMinimumSize().setValue( Boolean.toString(cbEnableMinimumSize.isSelected() ) );
-        branding.getWsEnableResizing().setValue( Boolean.toString(cbEnableResizing.isSelected() ) );
-        branding.getWsEnableSliding().setValue( Boolean.toString(cbEnableSliding.isSelected() ) );
+        SplashUISupport.setValue(branding.getWsEnableClosingEditors(), Boolean.toString(cbEnableEditorClosing.isSelected()));
+        SplashUISupport.setValue(branding.getWsEnableClosingViews(), Boolean.toString(cbEnableViewClosing.isSelected()));
+        SplashUISupport.setValue(branding.getWsEnableDragAndDrop(), Boolean.toString(cbEnableDnd.isSelected()));
+        SplashUISupport.setValue(branding.getWsEnableFloating(), Boolean.toString(cbEnableFloating.isSelected()));
+        SplashUISupport.setValue(branding.getWsEnableMaximization(), Boolean.toString(cbEnableMaximization.isSelected()));
+        SplashUISupport.setValue(branding.getWsEnableMinimumSize(), Boolean.toString(cbEnableMinimumSize.isSelected()));
+        SplashUISupport.setValue(branding.getWsEnableResizing(), Boolean.toString(cbEnableResizing.isSelected()));
+        SplashUISupport.setValue(branding.getWsEnableSliding(), Boolean.toString(cbEnableSliding.isSelected()));
     }
     
     
     void refresh() {
         BasicBrandingModel branding = getBrandingModel();
         
-        cbEnableDnd.setSelected(Boolean.parseBoolean(branding.getWsEnableDragAndDrop().getValue()));
-        cbEnableEditorClosing.setSelected(Boolean.parseBoolean(branding.getWsEnableClosingEditors().getValue()));
-        cbEnableFloating.setSelected(Boolean.parseBoolean(branding.getWsEnableFloating().getValue()));
-        cbEnableMaximization.setSelected(Boolean.parseBoolean(branding.getWsEnableMaximization().getValue()));
-        cbEnableMinimumSize.setSelected(Boolean.parseBoolean(branding.getWsEnableMinimumSize().getValue()));
-        cbEnableResizing.setSelected(Boolean.parseBoolean(branding.getWsEnableResizing().getValue()));
-        cbEnableSliding.setSelected(Boolean.parseBoolean(branding.getWsEnableSliding().getValue()));
-        cbEnableViewClosing.setSelected(Boolean.parseBoolean(branding.getWsEnableClosingViews().getValue()));
+        cbEnableDnd.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableDragAndDrop()));
+        cbEnableEditorClosing.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableClosingEditors()));
+        cbEnableFloating.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableFloating()));
+        cbEnableMaximization.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableMaximization()));
+        cbEnableMinimumSize.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableMinimumSize()));
+        cbEnableResizing.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableResizing()));
+        cbEnableSliding.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableSliding()));
+        cbEnableViewClosing.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableClosingViews()));
         
         enableDisableComponents();
         
