@@ -70,7 +70,7 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
         if (projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD) == null) {
             return Collections.<Configuration>emptySet();
         }
-        return projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD).getConfs().getConfsAsCollection();
+        return projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD).getConfs().getConfigurations();
     }
 
     @Override

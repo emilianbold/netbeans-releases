@@ -44,6 +44,7 @@ import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
 import javax.accessibility.AccessibleContext;
@@ -64,11 +65,11 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
     protected JButton[] extraButtons;
     private boolean isChanged = false;
 
-    public ListEditorPanel(List<E> objects) {
+    public ListEditorPanel(Collection<E> objects) {
         this(objects, null);
     }
 
-    public ListEditorPanel(List<E> objects, JButton[] extraButtons) {
+    public ListEditorPanel(Collection<E> objects, JButton[] extraButtons) {
         initComponents();
 
         this.extraButtons = extraButtons;
@@ -100,8 +101,8 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         defaultButton.getAccessibleContext().setAccessibleDescription(getDefaultButtonAD());
 
         if (objects != null) {
-            for (int i = 0; i < objects.size(); i++) {
-                listData.add(objects.get(i));
+            for (E o : objects) {
+                listData.add(o);
             }
         }
         targetList = new JList();

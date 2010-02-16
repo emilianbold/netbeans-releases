@@ -154,16 +154,7 @@ public final class Configurations {
         }
     }
 
-    public List<Configuration> getConfigurtions() {
-        configurationsLock.readLock().lock();
-        try {
-            return new ArrayList<Configuration>(configurations);
-        } finally {
-            configurationsLock.readLock().unlock();
-        }
-    }
-
-    public Collection<Configuration> getConfsAsCollection() {
+    public Collection<Configuration> getConfigurations() {
         Collection<Configuration> collection = new LinkedHashSet<Configuration>();
         configurationsLock.readLock().lock();
         try {

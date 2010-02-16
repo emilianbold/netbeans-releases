@@ -48,9 +48,9 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import javax.swing.JComponent;
@@ -281,7 +281,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     }// </editor-fold>//GEN-END:initComponents
 
     private void configurationsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configurationsButtonActionPerformed
-        MyListEditorPanel configurationsEditor = new MyListEditorPanel(projectDescriptor.getConfs().getConfigurtions());
+        MyListEditorPanel configurationsEditor = new MyListEditorPanel(projectDescriptor.getConfs().getConfigurations());
         JPanel outerPanel = new JPanel();
         outerPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -640,7 +640,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
     private class MyListEditorPanel extends ListEditorPanel<Configuration> {
 
-        public MyListEditorPanel(List<Configuration> objects) {
+        public MyListEditorPanel(Collection<Configuration> objects) {
             super(objects);
             setAllowedToRemoveAll(false);
         }
