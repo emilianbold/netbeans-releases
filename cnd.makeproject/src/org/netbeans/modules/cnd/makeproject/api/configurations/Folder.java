@@ -490,7 +490,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (deletedItems != null) {
                 map = deletedItems.get(item.getPath());
             }
-            Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
+            Configuration[] configurations = configurationDescriptor.getConfs().toArray();
             for (int i = 0; i < configurations.length; i++) {
                 FolderConfiguration folderConfiguration = getFolderConfiguration(configurations[i]);
                 DeletedConfiguration old = null;
@@ -521,7 +521,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (configurationDescriptor.getConfs() == null) {
                 return;
             }
-            Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
+            Configuration[] configurations = configurationDescriptor.getConfs().toArray();
             for (int i = 0; i < configurations.length; i++) {
                 folder.getFolderConfiguration(configurations[i]);
             }
@@ -688,7 +688,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             }
             HashMap<Configuration, DeletedConfiguration> map = new HashMap<Configuration, DeletedConfiguration>();
             deletedItems.put(item.getPath(), map);
-            Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
+            Configuration[] configurations = configurationDescriptor.getConfs().toArray();
             for (int i = 0; i < configurations.length; i++) {
                 DeletedConfiguration del = new DeletedConfiguration();
                 del.ic = item.getItemConfiguration(configurations[i]);
@@ -720,7 +720,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             ret = items.remove(folder);
             if (isProjectFiles()) {
                 // Remove it form all configurations
-                Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
+                Configuration[] configurations = configurationDescriptor.getConfs().toArray();
                 for (int i = 0; i < configurations.length; i++) {
                     configurations[i].removeAuxObject(folder.getId());
                 }
@@ -1064,7 +1064,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             return;
         }
 
-        for (Configuration conf : makeConfigurationDescriptor.getConfs().getConfs()) {
+        for (Configuration conf : makeConfigurationDescriptor.getConfs().toArray()) {
             FolderConfiguration srcFolderConfiguration = src.getFolderConfiguration(conf);
             FolderConfiguration dstFolderConfiguration = getFolderConfiguration(conf);
             if (srcFolderConfiguration != null && dstFolderConfiguration != null) {

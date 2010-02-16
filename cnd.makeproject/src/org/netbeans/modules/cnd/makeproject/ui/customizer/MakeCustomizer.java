@@ -48,6 +48,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -86,17 +87,17 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
-public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provider {
+public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provider {
 
     private Component currentCustomizer;
     private PropertyNode currentConfigurationNode = null;
-    private GridBagConstraints fillConstraints;
-    private Project project;
+    private final GridBagConstraints fillConstraints;
+    private final Project project;
     private DialogDescriptor dialogDescriptor;
-    private ConfigurationDescriptor projectDescriptor;
-    private Item item;
-    private Folder folder;
-    private ArrayList<JComponent> controls;
+    private final ConfigurationDescriptor projectDescriptor;
+    private final Item item;
+    private final Folder folder;
+    private final List<JComponent> controls;
     private CategoryView currentCategoryView;
     private String currentNodeName;
     private Configuration[] configurationItems;
@@ -105,17 +106,17 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     private MakeContext lastContext;
 
     /** Creates new form MakeCustomizer */
-    public MakeCustomizer(Project project, String preselectedNodeName, ConfigurationDescriptor projectDescriptor, Item item, Folder folder, ArrayList<JComponent> controls) {
+    public MakeCustomizer(Project project, String preselectedNodeName, ConfigurationDescriptor projectDescriptor, Item item, Folder folder, Collection<JComponent> controls) {
         initComponents();
         this.projectDescriptor = projectDescriptor;
-        this.controls = controls;
+        this.controls = new ArrayList<JComponent>(controls);
         this.project = project;
         this.item = item;
         this.folder = folder;
-        controls.add(configurationComboBox);
-        controls.add(configurationsButton);
+        this.controls.add(configurationComboBox);
+        this.controls.add(configurationsButton);
 
-        configurationItems = projectDescriptor.getConfs().getConfs();
+        configurationItems = projectDescriptor.getConfs().toArray();
         for (int i = 0; i < configurationItems.length; i++) {
             configurationComboBox.addItem(configurationItems[i]);
         }
@@ -281,7 +282,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     }// </editor-fold>//GEN-END:initComponents
 
     private void configurationsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configurationsButtonActionPerformed
-        MyListEditorPanel configurationsEditor = new MyListEditorPanel(projectDescriptor.getConfs().getConfigurtions());
+        MyListEditorPanel configurationsEditor = new MyListEditorPanel(projectDescriptor);
         JPanel outerPanel = new JPanel();
         outerPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -316,7 +317,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         configurationComboBox.removeActionListener(actionListeners[0]); // assuming one and only one!
         configurationComboBox.removeAllItems();
         configurationComboBox.addActionListener(actionListeners[0]); // assuming one and only one!
-        configurationItems = projectDescriptor.getConfs().getConfs();
+        configurationItems = projectDescriptor.getConfs().toArray();
         for (int i = 0; i < configurationItems.length; i++) {
             configurationComboBox.addItem(configurationItems[i]);
         }
@@ -377,7 +378,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     }
 
     // Private innerclasses ----------------------------------------------------
-    private class CategoryView extends JPanel implements ExplorerManager.Provider {
+    private final class CategoryView extends JPanel implements ExplorerManager.Provider {
 
         private ExplorerManager manager;
         private BeanTreeView btv;
@@ -503,7 +504,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                     JPanel panel = new JPanel();
                     panel.setLayout(new java.awt.GridBagLayout());
                     currentConfigurationNode = (PropertyNode) node;
-                    if (currentConfigurationNode.custumizerStyle() == CustomizerNode.CustomizerStyle.PANEL) {
+                    if (currentConfigurationNode.customizerStyle() == CustomizerNode.CustomizerStyle.PANEL) {
                         panel.add(currentConfigurationNode.getPanel(null), fillConstraints);
                         configurationLabel.setEnabled(false);
                         configurationComboBox.setEnabled(false);
@@ -511,7 +512,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                         configurationComboBox.setVisible(false);
                         allConfigurationComboBox.setVisible(true);
                         allConfigurationComboBox.setEnabled(false);
-                    } else if (currentConfigurationNode.custumizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
+                    } else if (currentConfigurationNode.customizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
                         panel.setBorder(new javax.swing.border.EtchedBorder());
                         PropertySheet propertySheet = new PropertySheet(); // See IZ 105525 for details.
                         DummyNode[] dummyNodes = new DummyNode[selectedConfigurations.length];
@@ -627,7 +628,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         return execEnv;
     }
 
-    private static class DummyNode extends AbstractNode {
+    private static final class DummyNode extends AbstractNode {
 
         public DummyNode(Sheet sheet, String name) {
             super(Children.LEAF);
@@ -638,10 +639,11 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
     }
 
-    private class MyListEditorPanel extends ListEditorPanel<Configuration> {
-
-        public MyListEditorPanel(List<Configuration> objects) {
-            super(objects);
+    private static final class MyListEditorPanel extends ListEditorPanel<Configuration> {
+        final ConfigurationDescriptor projectDescriptor;
+        public MyListEditorPanel(ConfigurationDescriptor descriptor) {
+            super(descriptor.getConfs().getConfigurations());
+            projectDescriptor = descriptor;
             setAllowedToRemoveAll(false);
         }
 
@@ -759,7 +761,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
     }
 
-    private String getString(String s) {
+    private static String getString(String s) {
         return NbBundle.getBundle(MakeCustomizer.class).getString(s);
     }
 }
