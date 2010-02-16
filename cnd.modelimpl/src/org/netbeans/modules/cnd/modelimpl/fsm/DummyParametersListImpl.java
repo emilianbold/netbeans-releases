@@ -37,26 +37,41 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.cnd.modelimpl.fsm;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
 
 /**
- * Allows to resolve absolute paths in php projects
  *
- * @author marekfukala
+ * @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
-@ServiceProvider(service=ProjectWebRootProvider.class)
-public class PhpProjectWebRootProvider implements ProjectWebRootProvider {
+public class DummyParametersListImpl extends ParameterListImpl<DummyParametersListImpl, CsmParameter> {
+
+    public DummyParametersListImpl(CsmFile file, int start, int end, Collection<?>/*<CsmParameter> or <CsmUID<CsmParameter>>*/ parameters) {
+        super(file, start, end, parameters);
+    }
 
     @Override
-    public Collection<FileObject> getWebRoots(Project project) {
-        return Collections.emptyList(); //TODO implement!!!
+    public String toString() {
+        return "Dummy " + super.toString(); // NOI18N
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // persistent
+    @Override
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+    }
+
+    @SuppressWarnings("unchecked")
+    public DummyParametersListImpl(DataInput input) throws IOException {
+        super(input);
     }
 
 }

@@ -107,8 +107,12 @@ public abstract class AttrValuesCompletion {
         map.put(attr, support);
     }
 
+    public static Map<String, AttrValuesCompletion> getSupportsForTag(String tag) {
+        return SUPPORTS.get(tag.toLowerCase(Locale.ENGLISH));
+    }
+
     public static AttrValuesCompletion getSupport(String tag, String attr) {
-        Map<String, AttrValuesCompletion> map = SUPPORTS.get(tag.toLowerCase(Locale.ENGLISH));
+        Map<String, AttrValuesCompletion> map = getSupportsForTag(tag);
         if(map == null) {
             return null;
         } else {
@@ -141,6 +145,7 @@ public abstract class AttrValuesCompletion {
         static final ImageIcon PACKAGE_ICON =
                 ImageUtilities.loadImageIcon("org/openide/loaders/defaultFolder.gif", false); // NOI18N
 
+        @Override
         public List<HtmlCompletionItem> getValueCompletionItems(Document doc, int offset, String valuePart) {
             List<HtmlCompletionItem> result = new ArrayList<HtmlCompletionItem>();
 

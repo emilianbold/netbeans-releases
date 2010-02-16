@@ -230,7 +230,7 @@ public abstract class BaseFileObj extends FileObject {
                 //(especially for many files to be moved)
                 target.refresh(true);
                 result = target.getFileObject(name, ext);
-                assert (result != null);                        
+                assert result != null : "Cannot find " + target + " with " + name + "." + ext;
             }
         } else {
             result = super.move(lock, target, name, ext);

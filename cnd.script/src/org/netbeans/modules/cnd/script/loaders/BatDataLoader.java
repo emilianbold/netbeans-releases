@@ -59,7 +59,7 @@ public final class BatDataLoader extends UniFileLoader {
 
     public BatDataLoader() {
         super("org.netbeans.modules.cnd.script.loaders.ShellDataObject"); // NOI18N
-        getExtensions().addExtension(MIMENames.BAT_MIME_TYPE);
+        getExtensions().addMimeType(MIMENames.BAT_MIME_TYPE);
     }
 
     @Override

@@ -94,13 +94,6 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="400"/>
             </file>
-
-            <file name="kenai_default.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.welcome.ui.KenaiAction"/>
-                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-                <attr name="position" intvalue="500"/>
-            </file>
         </folder>
         
         <folder name="GettingStartedLinksJavaFX">
@@ -127,12 +120,6 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="400"/>
             </file>
 
-            <file name="kenai_default.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.welcome.ui.KenaiAction"/>
-                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-                <attr name="position" intvalue="500"/>
-            </file>
         </folder>
     </folder>
 

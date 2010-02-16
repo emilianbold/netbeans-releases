@@ -92,7 +92,13 @@ public final class RubyPlatformProvider {
 
     }
 
-    private static void ensurePlatformsReady() {
+    /**
+     * Ensures that platforms are ready, i.e. performs platform autodetection
+     * if needed. Displays a progress handle for the process. 
+     * 
+     * Note that this method is blocking.
+     */
+    public static void ensurePlatformsReady() {
         if (!RubyPreferences.isFirstPlatformTouch()) {
             return;
         }

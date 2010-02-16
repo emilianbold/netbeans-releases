@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
@@ -106,7 +107,11 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration {
     }
 
     @Override
-    public String getAllOptions(AbstractCompiler compiler) {
+    public String getAllOptions(Tool tool) {
+        if (!(tool instanceof AbstractCompiler)) {
+            return "";
+        }
+        AbstractCompiler compiler = (AbstractCompiler) tool;
         CCompilerConfiguration master = (CCompilerConfiguration) getMaster();
 
         String options = ""; // NOI18N

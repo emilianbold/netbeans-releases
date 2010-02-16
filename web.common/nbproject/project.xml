@@ -49,7 +49,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.api.web.webmodule</friend>
+                <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.css.editor</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.php.project</friend>
