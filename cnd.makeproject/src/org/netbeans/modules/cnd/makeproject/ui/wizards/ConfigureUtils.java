@@ -73,7 +73,7 @@ public final class ConfigureUtils {
             return null;
         }
         for (String name : pattern) {
-            file = new File(folder+File.separator+name); // NOI18N
+            file = new File(folder, name); // NOI18N
             if (isRunnable(file)){
                 return file.getAbsolutePath();
             }
@@ -106,7 +106,7 @@ public final class ConfigureUtils {
     }
 
     private static String detectCMake(String path){
-        File configure = new File(path+File.separator+"CMakeLists.txt"); // NOI18N
+        File configure = new File(path, "CMakeLists.txt"); // NOI18N
         if (configure.exists()) {
             if (AbstractExecutorRunAction.findTools("cmake") != null) { // NOI18N
                 return configure.getAbsolutePath();
@@ -155,7 +155,7 @@ public final class ConfigureUtils {
             return null;
         }
         for (String name : pattern) {
-            file = new File(folder+File.separator+name); // NOI18N
+            file = new File(folder, name); // NOI18N
             if (file.exists() && file.isFile() && file.canRead()) {
                 return file.getAbsolutePath();
             }

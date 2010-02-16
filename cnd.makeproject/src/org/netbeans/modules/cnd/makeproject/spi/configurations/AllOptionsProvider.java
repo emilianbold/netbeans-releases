@@ -39,10 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.configurations;
+package org.netbeans.modules.cnd.makeproject.spi.configurations;
 
-import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 
 public interface AllOptionsProvider extends Cloneable {
-    public String getAllOptions(AbstractCompiler compiler);
+    public String getAllOptions(Tool tool);
 }
