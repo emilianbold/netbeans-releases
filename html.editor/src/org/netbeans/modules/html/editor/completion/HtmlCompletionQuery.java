@@ -126,6 +126,7 @@ public class HtmlCompletionQuery extends UserTask {
         if(doc != null) {
             final AtomicReference<CompletionResult> result = new AtomicReference<CompletionResult>();
             doc.render(new Runnable() {
+                @Override
                 public void run() {
                     int documentItemOffset = snapshot.getOriginalOffset(embeddedOffset);
                     TokenSequence ts = Utils.getJoinedHtmlSequence(doc, documentItemOffset - 1);

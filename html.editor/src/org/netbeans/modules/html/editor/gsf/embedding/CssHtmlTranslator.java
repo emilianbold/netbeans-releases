@@ -177,11 +177,14 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                                 //XXX we do not support templating code in the value!
                                 //class or id attribute value - generate fake selector with # or . prefix
                                 StringBuilder buf = new StringBuilder();
-                                buf.append("\n ");
-                                buf.append(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(valueCssType) ? "." : "#");
-                                embeddings.add(snapshot.create(buf.toString(), CSS_MIME_TYPE));
-                                embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CSS_MIME_TYPE));
-                                embeddings.add(snapshot.create("{}", CSS_MIME_TYPE));
+                                //#180576 - filter out "illegal" characters from the selector name
+                                if(text.indexOf(".") == -1 && text.indexOf(":") == -1) {
+                                    buf.append("\n ");
+                                    buf.append(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(valueCssType) ? "." : "#");
+                                    embeddings.add(snapshot.create(buf.toString(), CSS_MIME_TYPE));
+                                    embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CSS_MIME_TYPE));
+                                    embeddings.add(snapshot.create("{}", CSS_MIME_TYPE));
+                                }
 
                             } else {
                                 //style attribute value - wrap with a fake selector

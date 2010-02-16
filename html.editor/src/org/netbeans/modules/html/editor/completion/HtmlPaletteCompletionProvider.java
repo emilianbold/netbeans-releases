@@ -84,6 +84,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
     public HtmlPaletteCompletionProvider() {
     }
 
+    @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if ((queryType & COMPLETION_QUERY_TYPE & COMPLETION_ALL_QUERY_TYPE) != 0) {
             return new AsyncCompletionTask(new CCQuery(component.getCaret().getDot()),
@@ -92,6 +93,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
         return null;
     }
 
+    @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         return 0;
     }
@@ -107,11 +109,13 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
             this.creationCaretOffset = caretOffset;
         }
 
+        @Override
         protected void query(final CompletionResultSet resultSet, final Document doc, final int offset) {
             try {
                 synchronized (items) {
                     doc.render(new Runnable() {
 
+                        @Override
                         public void run() {
                             items.clear();
 
@@ -200,6 +204,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
                 final AtomicBoolean retval = new AtomicBoolean();
                 doc.render(new Runnable() {
 
+                    @Override
                     public void run() {
                         try {
                             int offset = component.getCaretPosition();
@@ -233,6 +238,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
                 synchronized (items) {
                     final Document doc = component.getDocument();
                     doc.render(new Runnable() {
+                        @Override
                         public void run() {
                             try {
                                 int offset = component.getCaretPosition();
@@ -311,6 +317,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
             return new ImageIcon(icon);
         }
 
+        @Override
         public void defaultAction(JTextComponent component) {
             try {
                 //first remove the typed prefix
@@ -326,37 +333,46 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
             }
         }
 
+        @Override
         public int getPreferredWidth(Graphics g, Font defaultFont) {
             return CompletionUtilities.getPreferredWidth(getLeftHtmlText(), getRightHtmlText(), g, defaultFont);
         }
 
+        @Override
         public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
             CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(), getRightHtmlText(), g, defaultFont, defaultColor, width, height, selected);
         }
 
+        @Override
         public void processKeyEvent(KeyEvent evt) {
         }
 
+        @Override
         public CompletionTask createDocumentationTask() {
             return null;
         }
 
+        @Override
         public CompletionTask createToolTipTask() {
             return null;
         }
 
+        @Override
         public boolean instantSubstitution(JTextComponent component) {
             return false;
         }
 
+        @Override
         public int getSortPriority() {
             return 1;
         }
 
+        @Override
         public CharSequence getSortText() {
             return category + item;
         }
 
+        @Override
         public CharSequence getInsertPrefix() {
             return getSortText();
         }

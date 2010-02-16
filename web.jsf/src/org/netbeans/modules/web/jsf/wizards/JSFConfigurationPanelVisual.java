@@ -161,6 +161,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                         }
                     }
                     setLibraryModel(items);
+                    updatePreferredLanguages();
                     LOG.finest("Time spent in initLibraries in Runnable = "+(System.currentTimeMillis()-time) +" ms");  //NOI18N
                 }
             }
@@ -574,7 +575,7 @@ private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
 
         if (rbRegisteredLibrary.isSelected()) {
-            if (cbLibraries.getItemCount() <= 0) {
+            if (jsfLibraries == null || jsfLibraries.size() == 0) {
                 controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingJSF")); //NOI18N
                 return false;
             }

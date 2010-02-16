@@ -101,7 +101,11 @@ public class ExceptionsSettings {
             setPasswd(old.toCharArray());
             prefs().remove(passwdProp);
         }
-        return Keyring.read(passwdKey);
+        char[] passwd =  Keyring.read(passwdKey);
+        if (passwd != null){
+            return passwd;
+        }
+        return new char[0];
     }
 
     public void setPasswd(char[] passwd) {
