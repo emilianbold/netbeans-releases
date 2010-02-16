@@ -63,7 +63,6 @@ import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.csl.api.DeleteToNextCamelCasePosition;
 import org.netbeans.modules.csl.api.DeleteToPreviousCamelCasePosition;
-import org.netbeans.modules.csl.api.GsfLanguage;
 import org.netbeans.modules.csl.api.InstantRenameAction;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.NextCamelCasePosition;
@@ -76,8 +75,6 @@ import org.netbeans.modules.csl.api.ToggleBlockCommentAction;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.editor.hyperlink.GoToSupport;
 import org.netbeans.modules.csl.editor.semantic.GoToMarkOccurrencesAction;
-import org.netbeans.modules.csl.spi.CommentHandler;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -158,29 +155,12 @@ public final class CslEditorKit extends NbEditorKit {
     protected Action[] createActions() {
         Action[] superActions = super.createActions();
         Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
-        GsfLanguage gsfLanguage = language.getGsfLanguage();
-
         ArrayList<Action> actions = new ArrayList<Action>(30);
 
         actions.add(new GsfDefaultKeyTypedAction());
         actions.add(new GsfInsertBreakAction());
         actions.add(new GsfDeleteCharAction(deletePrevCharAction, false));
-
-        String lineCommentPrefix = (gsfLanguage != null) ? gsfLanguage.getLineCommentPrefix() : null;
-        if (lineCommentPrefix != null) {
-            actions.add(new CommentAction(lineCommentPrefix));
-            actions.add(new UncommentAction(lineCommentPrefix));
-            actions.add(new ToggleCommentAction(lineCommentPrefix));
-        }
-
-        if(gsfLanguage instanceof DefaultLanguageConfig) {
-            CommentHandler ch = ((DefaultLanguageConfig)gsfLanguage).getCommentHandler();
-            if(ch != null) {
-                actions.add(new ToggleBlockCommentAction(ch));
-            }
-
-        }
-
+        actions.add(new ToggleBlockCommentAction());
         actions.add(new InstantRenameAction());
         actions.add(new GenericGoToDeclarationAction());
         actions.add(new GenericGenerateGoToPopupAction());
