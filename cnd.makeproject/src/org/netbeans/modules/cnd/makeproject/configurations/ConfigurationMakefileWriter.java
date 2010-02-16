@@ -143,7 +143,7 @@ public class ConfigurationMakefileWriter {
         List<MakeConfiguration> ok = new ArrayList<MakeConfiguration>();
         List<MakeConfiguration> noCompilerSet = new ArrayList<MakeConfiguration>();
         List<MakeConfiguration> wrongPlatform = new ArrayList<MakeConfiguration>();
-        Configuration[] confs = projectDescriptor.getConfs().getConfs();
+        Configuration[] confs = projectDescriptor.getConfs().toArray();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration conf = (MakeConfiguration) confs[i];
             if (conf.getDevelopmentHost().isLocalhost() &&
@@ -189,8 +189,8 @@ public class ConfigurationMakefileWriter {
      */
     private void cleanup(Collection<MakeConfiguration> okConfs) {
         List<MakeConfiguration> protectedConfs = new ArrayList<MakeConfiguration>();
-        Configuration[] confs = projectDescriptor.getConfs().getConfs();
-        for (Configuration c : projectDescriptor.getConfs().getConfs()) {
+        Configuration[] confs = projectDescriptor.getConfs().toArray();
+        for (Configuration c : projectDescriptor.getConfs().toArray()) {
             MakeConfiguration conf = (MakeConfiguration)c;
             if (!okConfs.contains(conf)) {
                protectedConfs.add(conf);
@@ -250,8 +250,8 @@ public class ConfigurationMakefileWriter {
 
         // Configurations
         StringBuilder configurations = new StringBuilder();
-        for (int i = 0; i < projectDescriptor.getConfs().getConfs().length; i++) {
-            configurations.append(projectDescriptor.getConfs().getConfs()[i].getName());
+        for (int i = 0; i < projectDescriptor.getConfs().toArray().length; i++) {
+            configurations.append(projectDescriptor.getConfs().toArray()[i].getName());
             configurations.append(" "); // NOI18N
         }
 
@@ -860,7 +860,7 @@ public class ConfigurationMakefileWriter {
         bw.write("CND_BUILDDIR=" + MakeConfiguration.BUILD_FOLDER + "\n"); // NOI18N
         bw.write("CND_DISTDIR=" + MakeConfiguration.DIST_FOLDER + "\n"); // NOI18N
 
-        Configuration[] confs = projectDescriptor.getConfs().getConfs();
+        Configuration[] confs = projectDescriptor.getConfs().toArray();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration makeConf = (MakeConfiguration) confs[i];
             bw.write("# " + makeConf.getName() + " configuration"); // NOI18N

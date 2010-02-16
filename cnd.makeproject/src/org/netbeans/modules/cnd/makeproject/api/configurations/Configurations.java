@@ -145,7 +145,7 @@ public final class Configurations {
     /*
      * Get all configurations
      */
-    public Configuration[] getConfs() {
+    public Configuration[] toArray() {
         configurationsLock.readLock().lock();
         try {
             return configurations.toArray(new Configuration[size()]);

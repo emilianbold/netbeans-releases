@@ -141,7 +141,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
         if (folder != null) {
             // Make sure all FolderConfigurations are created (they are lazyly created)
-            Configuration[] configurations = projectDescriptorProvider.getConfigurationDescriptor().getConfs().getConfs();
+            Configuration[] configurations = projectDescriptorProvider.getConfigurationDescriptor().getConfs().toArray();
             for (int i = 0; i < configurations.length; i++) {
                 folder.getFolderConfiguration(configurations[i]);
             }

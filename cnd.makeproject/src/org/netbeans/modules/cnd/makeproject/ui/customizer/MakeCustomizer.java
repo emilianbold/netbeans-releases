@@ -115,7 +115,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         controls.add(configurationComboBox);
         controls.add(configurationsButton);
 
-        configurationItems = projectDescriptor.getConfs().getConfs();
+        configurationItems = projectDescriptor.getConfs().toArray();
         for (int i = 0; i < configurationItems.length; i++) {
             configurationComboBox.addItem(configurationItems[i]);
         }
@@ -316,7 +316,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         configurationComboBox.removeActionListener(actionListeners[0]); // assuming one and only one!
         configurationComboBox.removeAllItems();
         configurationComboBox.addActionListener(actionListeners[0]); // assuming one and only one!
-        configurationItems = projectDescriptor.getConfs().getConfs();
+        configurationItems = projectDescriptor.getConfs().toArray();
         for (int i = 0; i < configurationItems.length; i++) {
             configurationComboBox.addItem(configurationItems[i]);
         }
