@@ -83,7 +83,7 @@ import org.netbeans.modules.css.editor.PropertyModel;
 import org.netbeans.modules.css.editor.model.HtmlTags;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.indexing.CssIndex;
-import org.netbeans.modules.css.indexing.DependenciesGraph;
+import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
