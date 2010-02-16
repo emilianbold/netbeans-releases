@@ -58,6 +58,7 @@
 
  #include <netinet/in.h>
  #include <arpa/inet.h>
+#include <alloca.h>
 
 #include "rfs_protocol.h"
 #include "rfs_util.h"
@@ -287,6 +288,7 @@ static enum file_state char_to_state(char c) {
         case UNCONTROLLED:
         case MODIFIED:
         case DIRECTORY:
+        case INEXISTENT:
             return c;
         default:
             return -1;
@@ -301,7 +303,6 @@ static int scan_line(const char* buffer, int bufsize, enum file_state *state, in
     if (*state == DIRECTORY) { // directory
         // format is as in printf("D %s", path)
         *path = buffer + 2;
-        *state = DIRECTORY;
         *file_size = 0;
         return true;
     } else {
@@ -370,6 +371,7 @@ static int init_files() {
             success = true;
             break;
         }
+        trace("\tFile init: %s", buffer); // no trailing LF since it's in the buffer
         // remove trailing LF
         char* lf = strchr(buffer, '\n');
         if (lf) {
@@ -404,7 +406,7 @@ static int init_files() {
                         list = tail;
                     }
                 }
-            } else if (state = UNCONTROLLED) {
+            } else if (state = UNCONTROLLED || state == INEXISTENT) {
                 // nothing
             } else {
                 report_error("prodocol error: %s\n", buffer);
@@ -419,13 +421,16 @@ static int init_files() {
                 }
             }
 
-            char real_path[PATH_MAX];
-            if ( realpath(path, real_path)) {
-                add_file_data(real_path, new_state);
+            if (*path == '/') {
+                add_file_data(path, new_state);
             } else {
-                report_unresolved_path(path);
+                char real_path [PATH_MAX];
+                if (realpath(path, real_path)) {
+                    add_file_data(real_path, new_state);
+                } else {
+                    report_unresolved_path(path);
+                }
             }
-
         }
     }
     stop_adding_file_data();
