@@ -132,10 +132,26 @@ public class CssIndexer extends EmbeddingIndexer {
 
         @Override
         public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
+            try {
+                IndexingSupport is = IndexingSupport.getInstance(context);
+                for(Indexable i : deleted) {
+                    is.removeDocuments(i);
+                }
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, null, ioe);
+            }
         }
 
         @Override
         public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
+            try {
+                IndexingSupport is = IndexingSupport.getInstance(context);
+                for(Indexable i : dirty) {
+                    is.markDirtyDocuments(i);
+                }
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, null, ioe);
+            }
         }
 
         @Override
