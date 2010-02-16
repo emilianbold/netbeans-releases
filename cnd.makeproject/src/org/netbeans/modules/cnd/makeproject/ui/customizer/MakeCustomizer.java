@@ -378,7 +378,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
     }
 
     // Private innerclasses ----------------------------------------------------
-    private class CategoryView extends JPanel implements ExplorerManager.Provider {
+    private final class CategoryView extends JPanel implements ExplorerManager.Provider {
 
         private ExplorerManager manager;
         private BeanTreeView btv;

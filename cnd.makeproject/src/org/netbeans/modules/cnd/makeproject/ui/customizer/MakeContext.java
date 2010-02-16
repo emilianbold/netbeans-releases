@@ -143,7 +143,7 @@ public class MakeContext {
     /**
      * @return the folder
      */
-    public Folder getFolder() {
+    /*package*/ Folder getFolder() {
         return folder;
     }
 

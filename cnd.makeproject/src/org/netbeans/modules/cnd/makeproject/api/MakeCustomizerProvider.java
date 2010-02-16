@@ -222,7 +222,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     }
 
     /** Listens to the actions on the Customizer's option buttons */
-    private class OptionListener implements ActionListener {
+    private final class OptionListener implements ActionListener {
 
         private Project project;
         private ConfigurationDescriptor projectDescriptor;
