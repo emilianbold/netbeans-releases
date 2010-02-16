@@ -38,6 +38,10 @@
  */
 package org.netbeans.modules.nativeexecution.spi.pty;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 /**
  *
  * @author ak119685
@@ -45,4 +49,10 @@ package org.netbeans.modules.nativeexecution.spi.pty;
 public interface PtyImpl {
 
     public String getSlaveName();
+
+    public InputStream getInputStream();
+
+    public OutputStream getOutputStream();
+
+    public void close() throws IOException;
 }

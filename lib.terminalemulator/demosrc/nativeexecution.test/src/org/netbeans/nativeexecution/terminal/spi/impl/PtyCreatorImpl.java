@@ -104,6 +104,7 @@ public class PtyCreatorImpl implements PtyAllocator {
             }
         }
 
+        @Override
         public final void close() throws IOException {
             ostream.close();
             istream.close();
@@ -114,10 +115,12 @@ public class PtyCreatorImpl implements PtyAllocator {
             return tty + " (" + pid + ")";
         }
 
+        @Override
         public InputStream getInputStream() {
             return istream;
         }
 
+        @Override
         public OutputStream getOutputStream() {
             return ostream;
         }
