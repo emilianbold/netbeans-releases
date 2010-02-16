@@ -21,7 +21,6 @@ import org.netbeans.lib.richexecution.PtyExecutor;
 import org.netbeans.lib.terminalemulator.StreamTerm;
 
 import org.netbeans.modules.terminal.ioprovider.IOEmulation;
-import org.netbeans.modules.terminal.ioprovider.IOExecution;
 import org.netbeans.modules.terminal.ioprovider.IOResizable;
 import org.netbeans.modules.terminal.ioprovider.TerminalInputOutput;
 
@@ -110,65 +109,59 @@ public final class TerminalIOProviderSupport {
         }
         */
 
-        if (IOExecution.isSupported(io)) {
-            Program program = new Command(cmd);
-            IOExecution.execute(io, program);
+	//
+	// Create a pty, handle window size changes
+	//
+	final Pty pty;
+	try {
+	    pty = Pty.create(Pty.Mode.REGULAR);
+	} catch (PtyException ex) {
+	    Exceptions.printStackTrace(ex);
+	    return;
+	}
 
-        } else {
-            //
-            // Create a pty, handle window size changes
-            //
-            final Pty pty;
-            try {
-                pty = Pty.create(Pty.Mode.REGULAR);
-            } catch (PtyException ex) {
-                Exceptions.printStackTrace(ex);
-                return;
-            }
+	if (IOResizable.isSupported(io)) {
+	    IOResizable.addListener(io, new IOResizable.Listener() {
+		public void sizeChanged(Dimension cells, Dimension pixels) {
+		    pty.masterTIOCSWINSZ(cells.height, cells.width,
+					 pixels.height, pixels.width);
+		}
+	    });
+	}
 
-	    if (IOResizable.isSupported(io)) {
-		IOResizable.addListener(io, new IOResizable.Listener() {
-		    public void sizeChanged(Dimension cells, Dimension pixels) {
-                        pty.masterTIOCSWINSZ(cells.height, cells.width,
-                                             pixels.height, pixels.width);
-		    }
-		});
-	    }
+	//
+	// Create a program and process
+	//
+	Program program = new Command(cmd);
+	Map<String, String> env = program.environment();
+	if (IOEmulation.isSupported(io)) {
+	    env.put("TERM", IOEmulation.getEmulation(io));
+	} else {
+	    env.put("TERM", "dumb");
+	}
 
-            //
-            // Create a program and process
-            //
-            Program program = new Command(cmd);
-	    Map<String, String> env = program.environment();
-	    if (IOEmulation.isSupported(io)) {
-                env.put("TERM", IOEmulation.getEmulation(io));
-	    } else {
-                env.put("TERM", "dumb");
-	    }
+	PtyExecutor executor = new PtyExecutor();
+	executor.start(program, pty);
 
-            PtyExecutor executor = new PtyExecutor();
-            executor.start(program, pty);
+	//
+	// connect them up
+	//
 
-            //
-            // connect them up
-            //
+	// Hmm, what's the difference between the PtyProcess io streams
+	// and the Pty's io streams?
+	// Nothing.
+	OutputStream pin = pty.getOutputStream();
+	InputStream pout = pty.getInputStream();
 
-            // Hmm, what's the difference between the PtyProcess io streams
-            // and the Pty's io streams?
-            // Nothing.
-            OutputStream pin = pty.getOutputStream();
-            InputStream pout = pty.getInputStream();
-
-            boolean implicit = false;
-            if (implicit) {
-		StreamTerm term = (tio != null)? tio.term(): null;
-		if (term != null)
-		    term.connect(pin, pout, null);
-		else
-		    startShuttle(io, pin, pout);
-            } else {
+	boolean implicit = false;
+	if (implicit) {
+	    StreamTerm term = (tio != null)? tio.term(): null;
+	    if (term != null)
+		term.connect(pin, pout, null);
+	    else
 		startShuttle(io, pin, pout);
-            }
-        }
+	} else {
+	    startShuttle(io, pin, pout);
+	}
     }
 }
