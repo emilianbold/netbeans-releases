@@ -171,7 +171,6 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration {
     
     public String getIncludeDirectoriesOptions(CompilerSet cs) {
         CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
-        cs.getCompilerFlavor().getToolchainDescriptor().getC().getUserIncludeFlag();
         OptionToString visitor = new OptionToString(cs, getUserIncludeFlag(cs));
         StringBuilder options = new StringBuilder(getIncludeDirectories().toString(visitor));
         options.append(' '); // NOI18N
