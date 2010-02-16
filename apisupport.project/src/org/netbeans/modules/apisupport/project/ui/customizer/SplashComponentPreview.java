@@ -58,6 +58,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 
 /**
@@ -73,7 +74,7 @@ class SplashComponentPreview extends JLabel {
     
     private boolean draw_bar;
     
-    protected Image image;
+    @NullAllowed Image image;
     private Rectangle dirty = new Rectangle();
     private String text;
     private Rectangle rect = new Rectangle();
@@ -111,9 +112,8 @@ class SplashComponentPreview extends JLabel {
         fm = getFontMetrics(font);
     }
     
-    void setSplashImageIcon(final URL url) {
-        ImageIcon imgIcon = new ImageIcon(url);
-        this.image = imgIcon.getImage();
+    void setSplashImageIcon(final @NullAllowed URL url) {
+        this.image = url != null ? new ImageIcon(url).getImage() : null;
         //this.image = image.getScaledInstance(398, 299, Image.SCALE_DEFAULT);
     }
     
@@ -348,8 +348,8 @@ class SplashComponentPreview extends JLabel {
         }
     }
     
-    public Dimension getPreferredSize() {
-        return new Dimension(image.getWidth(null), image.getHeight(null));
+    public @Override Dimension getPreferredSize() {
+        return image != null ? new Dimension(image.getWidth(null), image.getHeight(null)) : super.getPreferredSize();
     }
     
     /*public boolean isOpaque() {
