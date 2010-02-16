@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.java.hints.bugs;
 
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -142,7 +143,28 @@ public class EqualsHint {
     public static ErrorDescription incompatibleEquals(HintContext ctx) {
         TreePath ths = ctx.getVariables().get("$this");
         TreePath par = ctx.getVariables().get("$par");
-        TypeMirror thsType = ctx.getInfo().getTrees().getTypeMirror(ths);
+        TypeMirror thsType;
+
+        if (ths != null) {
+            thsType = ctx.getInfo().getTrees().getTypeMirror(ths);
+        } else {
+            TreePath cls = ctx.getPath();
+
+            while (cls != null && cls.getLeaf().getKind() != Kind.CLASS) {
+                cls = cls.getParentPath();
+            }
+
+            if (cls == null) {
+                return null;
+            }
+
+            thsType = ctx.getInfo().getTrees().getTypeMirror(cls);
+
+            if (thsType == null || thsType.getKind() != TypeKind.DECLARED) {
+                return null;
+            }
+        }
+        
         TypeMirror parType = ctx.getInfo().getTrees().getTypeMirror(par);
         if (ctx.getPreferences().getBoolean(ERASURE_PREFS_KEY, ERASURE_PREFS_DEFAULT)) {
             Types types = ctx.getInfo().getTypes();
