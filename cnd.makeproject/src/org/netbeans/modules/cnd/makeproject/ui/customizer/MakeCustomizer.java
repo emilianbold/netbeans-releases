@@ -503,7 +503,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                     JPanel panel = new JPanel();
                     panel.setLayout(new java.awt.GridBagLayout());
                     currentConfigurationNode = (PropertyNode) node;
-                    if (currentConfigurationNode.custumizerStyle() == CustomizerNode.CustomizerStyle.PANEL) {
+                    if (currentConfigurationNode.customizerStyle() == CustomizerNode.CustomizerStyle.PANEL) {
                         panel.add(currentConfigurationNode.getPanel(null), fillConstraints);
                         configurationLabel.setEnabled(false);
                         configurationComboBox.setEnabled(false);
@@ -511,7 +511,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                         configurationComboBox.setVisible(false);
                         allConfigurationComboBox.setVisible(true);
                         allConfigurationComboBox.setEnabled(false);
-                    } else if (currentConfigurationNode.custumizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
+                    } else if (currentConfigurationNode.customizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
                         panel.setBorder(new javax.swing.border.EtchedBorder());
                         PropertySheet propertySheet = new PropertySheet(); // See IZ 105525 for details.
                         DummyNode[] dummyNodes = new DummyNode[selectedConfigurations.length];

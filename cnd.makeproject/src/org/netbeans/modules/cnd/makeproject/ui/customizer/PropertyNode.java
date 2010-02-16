@@ -52,9 +52,9 @@ import org.openide.util.HelpCtx;
 /**
  * Node to be used for configuration
  */
-class PropertyNode extends AbstractNode implements HelpCtx.Provider {
+final class PropertyNode extends AbstractNode implements HelpCtx.Provider {
 
-    private CustomizerNode description;
+    private final CustomizerNode description;
 
     public PropertyNode(CustomizerNode description) {
         super(description.getChildren() == null ? Children.LEAF : new PropertyNodeChildren(description.getChildren()));
@@ -64,7 +64,7 @@ class PropertyNode extends AbstractNode implements HelpCtx.Provider {
         this.description = description;
     }
 
-    public CustomizerNode.CustomizerStyle custumizerStyle() {
+    public CustomizerNode.CustomizerStyle customizerStyle() {
         return description.customizerStyle();
     }
 

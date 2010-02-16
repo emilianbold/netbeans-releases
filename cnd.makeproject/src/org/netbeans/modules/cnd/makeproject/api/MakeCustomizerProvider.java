@@ -46,7 +46,6 @@ import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -72,6 +71,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /** Customization of Make project
+ * shows dialog
  */
 public class MakeCustomizerProvider implements CustomizerProvider {
 
@@ -86,7 +86,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     public static final String COMMAND_APPLY = "APPLY";  // NOI18N
     private DialogDescriptor dialogDescriptor;
     private Map<Project, Dialog> customizerPerProject = new WeakHashMap<Project, Dialog>(); // Is is weak needed here?
-    private ConfigurationDescriptorProvider projectDescriptorProvider;
+    private final ConfigurationDescriptorProvider projectDescriptorProvider;
     private String currentCommand;
     private final Set<ActionListener> actionListenerList = new HashSet<ActionListener>();
 
@@ -305,12 +305,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         }
     }
     /** Look up i18n strings here */
-    private static ResourceBundle bundle;
-
     private static String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(MakeCustomizerProvider.class);
-        }
-        return bundle.getString(s);
+        return NbBundle.getBundle(MakeCustomizerProvider.class).getString(s);
     }
 }
