@@ -116,14 +116,14 @@ public class ContactListCellRenderer extends javax.swing.JPanel implements ListC
             boolean cellHasFocus) {
         buddyLabel.setText(value.toString());
         ContactListItem item = (ContactListItem) value;
-        buddyLabel.setBorder(new EmptyBorder(0,item.getIcon()==null?19:0,0,0));
+        buddyLabel.setBorder(new EmptyBorder(0,item.getIcon()==null?22:3,0,0));
         buddyLabel.setIcon(item.getIcon());
         if (item.hasMessages()) {
             messageLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true)); // NOI18N
-            messageLabel.setBorder(new EmptyBorder(0,3,0,0));
+            messageLabel.setBorder(new EmptyBorder(0,3,0,3));
         } else {
             messageLabel.setIcon(null);
-            messageLabel.setBorder(new EmptyBorder(0,3,16,16));
+            messageLabel.setBorder(new EmptyBorder(0,3,16,19));
         }
         if (KenaiManager.getDefault().getKenais().size()>1) {
             kenaiName.setText(item.getKenaiName());

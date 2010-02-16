@@ -44,7 +44,9 @@ import java.awt.Font;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 
 /**
  *
@@ -69,6 +71,7 @@ public class KenaiListRenderer implements ListCellRenderer {
                                        boolean cellHasFocus) {
 
         JLabel ret = new JLabel();
+        ret.setBorder(new EmptyBorder(1,1,1,1));
         ret.setOpaque(true);
 
         if (value instanceof Kenai) {
@@ -86,7 +89,7 @@ public class KenaiListRenderer implements ListCellRenderer {
             ret.setBackground(list.getSelectionBackground());
             ret.setForeground(list.getSelectionForeground());
         } else {
-            ret.setBackground(list.getBackground());
+            ret.setBackground(ColorManager.getDefault().getDefaultBackground());
             ret.setForeground(list.getForeground());
         }
         return ret;
