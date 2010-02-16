@@ -46,7 +46,6 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.NbBundle;
 
-import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.event.ActionEvent;
@@ -54,6 +53,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import org.netbeans.modules.javacard.common.GuiUtils;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 
 /**
@@ -61,19 +65,28 @@ import org.openide.util.HelpCtx;
  *
  * @author Tim Boudreau
  */
-public class SecurityCustomizer extends javax.swing.JPanel implements DocumentListener, FocusListener, ActionListener {
-    private Category cat;
+public class SecurityCustomizer extends JPanel implements DocumentListener, FocusListener, ActionListener {
 
+    private Category cat;
+    private final JComponent[] enableDisable;
     L l = new L();
+    private JCProjectProperties props;
+
     /** Creates new form Security */
     public SecurityCustomizer(JCProjectProperties props, Category cat) {
+        this.props = props;
         initComponents();
+        enableDisable = new JComponent[]{
+                    aliasPasswordLabel, aliasPasswordField, browseButton,
+                    keystorePasswordLabel, keystorePasswordField, keystoreAliasLabel,
+                    keystoreAliasField, keystoreField
+                };
         this.cat = cat;
         keystoreField.setDocument(props.KEYSTORE_DOCUMENT);
-        keystoreAliasField.setDocument (props.KEYSTORE_ALIAS_DOCUMENT);
-        keystorePasswordField.setDocument (props.KEYSTORE_PASSWORD_DOCUMENT);
-        aliasPasswordField.setDocument (props.KEYSTORE_ALIAS_PASSWORD_DOCUMENT);
-        signButton.setModel (props.SIGN_JAR_BUTTON_MODEL);
+        keystoreAliasField.setDocument(props.KEYSTORE_ALIAS_DOCUMENT);
+        keystorePasswordField.setDocument(props.KEYSTORE_PASSWORD_DOCUMENT);
+        aliasPasswordField.setDocument(props.KEYSTORE_ALIAS_PASSWORD_DOCUMENT);
+        signButton.setModel(props.SIGN_JAR_BUTTON_MODEL);
         keystoreField.getDocument().addDocumentListener(this);
         keystoreField.addFocusListener(this);
         signButton.addActionListener(l);
@@ -83,10 +96,11 @@ public class SecurityCustomizer extends javax.swing.JPanel implements DocumentLi
         l.actionPerformed(null);
         updateState();
         HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.BuildSecurityPanel"); //NOI18N
+        GuiUtils.prepareContainer(this);
     }
 
     void updateState() {
-        File f = new File (keystoreField.getText());
+        File f = new File(keystoreField.getText());
         if (signButton.isSelected()) {
             if (f.exists() && f.isFile() && f.canRead()) {
                 cat.setValid(true);
@@ -223,22 +237,23 @@ public class SecurityCustomizer extends javax.swing.JPanel implements DocumentLi
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         String curr = keystoreField.getText();
-        File file = new File (curr).getParentFile();
+        File file = new File(curr).getParentFile();
+        if (file == null) {
+            file = FileUtil.toFile(props.getProject().getProjectDirectory());
+        }
         FileChooserBuilder b = new FileChooserBuilder(SecurityCustomizer.class).setTitle(
-                NbBundle.getMessage(SecurityCustomizer.class,"BROWSE_FOR_KEYSTORE")).
+                NbBundle.getMessage(SecurityCustomizer.class, "BROWSE_FOR_KEYSTORE")).
                 setFilesOnly(true);
         if (file.exists() && file.isDirectory()) {
             b.setDefaultWorkingDirectory(file);
         }
-        File f; 
+        File f;
         if ((f = b.showOpenDialog()) != null) {
             if (!new File(curr).equals(f)) {
                 keystoreField.setText(f.getAbsolutePath());
             }
         }
     }//GEN-LAST:event_browseButtonActionPerformed
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPasswordField aliasPasswordField;
     private javax.swing.JLabel aliasPasswordLabel;
@@ -274,10 +289,12 @@ public class SecurityCustomizer extends javax.swing.JPanel implements DocumentLi
     }
 
     private class L implements ActionListener {
+
         public void actionPerformed(ActionEvent e) {
-            keystoreLabel.setEnabled(signButton.isSelected());
-            browseButton.setEnabled(signButton.isSelected());
-            keystoreField.setEnabled(signButton.isSelected());
+            boolean en = signButton.isSelected();
+            for (JComponent jc : enableDisable) {
+                jc.setEnabled(en);
+            }
             updateState();
         }
     }
