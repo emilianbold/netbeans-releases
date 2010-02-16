@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.CastExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
@@ -115,7 +116,7 @@ class WSTransformer extends DefaultTreePathVisitor {
 	    );
     private final List<String> BINARY_OPERATORS =  Arrays.asList(
 	    "+", "-", "*", "/", "<", ">", "<>", "<=", ">=", "==", "===", //NOI18N
-	    "%", "&", "|", "^", "~", "<<", ">>", "!=", "!==", ".", "&&", "||"
+	    "%", "&", "|", "^", "~", "<<", ">>", "!=", "!==", ".", "&&", "||" //NOI18N
 	    );
     private final List<String> UNARY_OPERATOS = Arrays.asList(
 	    "++", "--", "!" //NOI8N
@@ -626,6 +627,28 @@ class WSTransformer extends DefaultTreePathVisitor {
 		node.getCondition().getStartOffset(),
 		node.getCondition().getEndOffset(),
 		CodeStyle.get(context.document()).spaceWithinIfParens());
+    }
+
+    @Override
+    public void visit(ConditionalExpression node) {
+	boolean space = CodeStyle.get(context.document()).spaceAroundTernaryOps();
+	TokenSequence<PHPTokenId> ts = tokenSequence(node.getCondition().getEndOffset());
+        ts.move(node.getCondition().getEndOffset());
+        if (ts.movePrevious() && ts.moveNext()) {
+	    LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
+	    if (ts.token().id() == PHPTokenId.PHP_TOKEN && "?".equals(ts.token().text().toString())) {
+		checkSpaceAroundToken(ts, space);
+	    }
+	}
+	ts.move(node.getIfTrue().getEndOffset());
+        if (ts.movePrevious() && ts.moveNext()) {
+	    LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
+	    if (ts.token().id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString())) {
+		checkSpaceAroundToken(ts, space);
+	    }
+	}
+
+	super.visit(node);
     }
 
     @Override

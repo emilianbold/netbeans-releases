@@ -531,10 +531,7 @@ public class VariablesModel extends ViewModelSupport
                 VariableNode node, Collection<ModelEvent> events )
         {
             AbstractVariableNode newNode = (AbstractVariableNode)node;
-            boolean hasChanged = false;
-            
-            assert getFullName().equals(node.getFullName());
-
+            boolean hasChanged = false;            
             /*
              * Always update property.
              */

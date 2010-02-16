@@ -679,6 +679,24 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceAroundStringConcat01.php", options);
     }
 
+    public void testSpacesAroundTernaryOp01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceAroundTernaryOps, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundTernaryOp01.php", options);
+    }
+
+    public void testSpacesAroundTernaryOp02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceAroundTernaryOps, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundTernaryOp02.php", options);
+    }
+
+    public void testSpacesAroundTernaryOp03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceAroundTernaryOps, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundTernaryOp03.php", options);
+    }
+
     public void testSpacesAroundKeyValue01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.spaceAroundKeyValueOps, false);

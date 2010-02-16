@@ -65,7 +65,7 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
     public CssRenameRefactoringUI(CssElementContext context) {
 	this.context = context;
         this.extraInfo = new CssRefactoringExtraInfo();
-	this.refactoring = new RenameRefactoring(Lookups.fixed(context, extraInfo));
+	this.refactoring = new RenameRefactoring(Lookups.fixed(context.getFileObject(), context, extraInfo));
     }
 
     public String getName() {

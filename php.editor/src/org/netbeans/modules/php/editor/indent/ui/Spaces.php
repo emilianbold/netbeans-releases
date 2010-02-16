@@ -10,6 +10,7 @@ class Example {
         } else {
             echo $this->property;
         }
+	$result = $a < $b ? $a : $b;
     }
 
 public function forExample() {

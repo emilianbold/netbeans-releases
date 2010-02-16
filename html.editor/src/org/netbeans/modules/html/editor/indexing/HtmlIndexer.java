@@ -36,16 +36,16 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.indexing;
+package org.netbeans.modules.html.editor.indexing;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.css.gsf.CssLanguage;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.indexing.CssFileModel.Entry;
+import org.netbeans.modules.html.editor.api.HtmlKit;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.indexing.HtmlFileModel.Entry;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -58,23 +58,17 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
- * Css content indexer
+ * HTML content indexer
  *
  * @author mfukala@netbeans.org
  */
-public class CssIndexer extends EmbeddingIndexer {
+public class HtmlIndexer extends EmbeddingIndexer {
 
-    private static final Logger LOGGER = Logger.getLogger(CssIndexer.class.getSimpleName());
+    private static final Logger LOGGER = Logger.getLogger(HtmlIndexer.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
-    static final String IMPORTS_KEY = "imports"; //NOI18N
-    static final String IDS_KEY = "ids"; //NOI18N
-    static final String CLASSES_KEY = "classes"; //NOI18N
-    static final String HTML_ELEMENTS_KEY = "htmlElements"; //NOI18N
+    static final String REFERS_KEY = "imports"; //NOI18N
 
-//    static {
-//	LOG.setLevel(Level.ALL);
-//    }
     @Override
     protected void index(Indexable indexable, Result parserResult, Context context) {
         try {
@@ -83,15 +77,12 @@ public class CssIndexer extends EmbeddingIndexer {
                 LOGGER.log(Level.FINE, "indexing " + fo.getPath()); //NOI18N
             }
 
-            CssFileModel model = new CssFileModel((CssParserResult) parserResult);
+            HtmlFileModel model = new HtmlFileModel((HtmlParserResult)parserResult);
             if (!model.isEmpty()) {
                 IndexingSupport support = IndexingSupport.getInstance(context);
                 IndexDocument document = support.createDocument(indexable);
                 
-                storeEntries(model.getIds(), document, IDS_KEY);
-                storeEntries(model.getClasses(), document, CLASSES_KEY);
-                storeEntries(model.getHtmlElements(), document, HTML_ELEMENTS_KEY);
-                storeEntries(model.getImports(), document, IMPORTS_KEY);
+                storeEntries(model.getReferences(), document, REFERS_KEY);
 
                 support.addDocument(document);
             }
@@ -100,7 +91,7 @@ public class CssIndexer extends EmbeddingIndexer {
             Exceptions.printStackTrace(ex);
         }
     }
-
+ 
     private void storeEntries(Collection<Entry> entries, IndexDocument doc, String key) {
         if (!entries.isEmpty()) {
             StringBuffer sb = new StringBuffer();
@@ -118,13 +109,13 @@ public class CssIndexer extends EmbeddingIndexer {
 
     public static class Factory extends EmbeddingIndexerFactory {
 
-        static final String NAME = "css"; //NOI18N
+        static final String NAME = "html"; //NOI18N
         static final int VERSION = 1;
 
         @Override
         public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
             if (isIndexable(snapshot)) {
-                return new CssIndexer();
+                return new HtmlIndexer();
             } else {
                 return null;
             }
@@ -166,7 +157,7 @@ public class CssIndexer extends EmbeddingIndexer {
 
         private boolean isIndexable(Snapshot snapshot) {
             //index all files possibly containing css
-            return CssLanguage.CSS_MIME_TYPE.equals(snapshot.getMimeType());
+            return HtmlKit.HTML_MIME_TYPE.equals(snapshot.getMimeType());
         }
     }
 }

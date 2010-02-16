@@ -107,8 +107,12 @@ public abstract class AttrValuesCompletion {
         map.put(attr, support);
     }
 
+    public static Map<String, AttrValuesCompletion> getSupportsForTag(String tag) {
+        return SUPPORTS.get(tag.toLowerCase(Locale.ENGLISH));
+    }
+
     public static AttrValuesCompletion getSupport(String tag, String attr) {
-        Map<String, AttrValuesCompletion> map = SUPPORTS.get(tag.toLowerCase(Locale.ENGLISH));
+        Map<String, AttrValuesCompletion> map = getSupportsForTag(tag);
         if(map == null) {
             return null;
         } else {
