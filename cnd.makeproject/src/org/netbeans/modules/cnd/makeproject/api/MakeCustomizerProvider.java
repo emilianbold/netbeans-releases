@@ -95,6 +95,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         this.projectDescriptorProvider = projectDescriptorProvider;
     }
 
+    @Override
     public void showCustomizer() {
         showCustomizer(null, null, null);
     }
@@ -118,6 +119,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         }
         RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
 
+            @Override
             public void run() {
                 showCustomizerWorker(preselectedNodeName, item, folder);
             }
@@ -237,6 +239,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
             this.item = item;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             currentCommand = e.getActionCommand();
 
