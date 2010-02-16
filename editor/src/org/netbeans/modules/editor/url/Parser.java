@@ -126,7 +126,7 @@ public final class Parser {
             lastURLStart = (-1);
         }
 
-        if (lastURLStart != (-1)) {
+        if (lastURLStart != (-1) && state == 5) {
             result.add(new int[] {lastURLStart, text.length()});
         }
         

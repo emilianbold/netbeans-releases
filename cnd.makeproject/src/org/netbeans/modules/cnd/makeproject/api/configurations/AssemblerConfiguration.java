@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -102,7 +103,11 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration {
     }
 
     @Override
-    public String getAllOptions(AbstractCompiler compiler) {
+    public String getAllOptions(Tool tool) {
+        if (!(tool instanceof AbstractCompiler)) {
+            return "";
+        }
+        AbstractCompiler compiler = (AbstractCompiler) tool;
         AssemblerConfiguration master = (AssemblerConfiguration) getMaster();
 
         String options = ""; // NOI18N

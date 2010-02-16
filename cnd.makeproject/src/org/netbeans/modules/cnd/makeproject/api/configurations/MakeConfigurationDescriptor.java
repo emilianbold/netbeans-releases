@@ -128,7 +128,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         rootFolder = new Folder(this, null, "root", "root", true); // NOI18N
         projectItems = new HashMap<String, Item>();
         setModified();
-        ToolsPanelSupport.addCompilerSetModifiedListener(this);
+        ToolsPanelSupport.addCompilerSetModifiedListener(MakeConfigurationDescriptor.this);
     }
 
     /*
@@ -688,12 +688,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         // Check metadata files are writable
         Vector<String> metadataFiles = new Vector<String>();
         Vector<String> notOkFiles = new Vector<String>();
-        metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "project.xml"); // NOI18N
-        metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "configurations.xml"); // NOI18N
-        metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "Makefile-impl.mk"); // NOI18N
+        metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.PROJECT_XML); // NOI18N
+        metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.CONFIGURATIONS_XML); // NOI18N
+        metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.MAKEFILE_IMPL); // NOI18N
         Configuration[] confs = getConfs().getConfs();
         for (int i = 0; i < confs.length; i++) {
-            metadataFiles.add(getBaseDir() + File.separator + "nbproject" + File.separator + "Makefile-" + confs[i].getName() + ".mk"); // NOI18N
+            metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER + File.separator + "Makefile-" + confs[i].getName() + ".mk"); // NOI18N
         } // NOI18N
         boolean allOk = true;
         for (int i = 0; i < metadataFiles.size(); i++) {

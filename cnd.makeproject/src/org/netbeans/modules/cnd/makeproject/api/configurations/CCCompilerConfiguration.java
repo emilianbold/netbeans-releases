@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -117,7 +118,11 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
     }
     
     @Override
-    public String getAllOptions(AbstractCompiler compiler) {
+    public String getAllOptions(Tool tool) {
+        if (!(tool instanceof AbstractCompiler)) {
+            return "";
+        }
+        AbstractCompiler compiler = (AbstractCompiler) tool;
         CCCompilerConfiguration master;
         
         StringBuilder options = new StringBuilder();

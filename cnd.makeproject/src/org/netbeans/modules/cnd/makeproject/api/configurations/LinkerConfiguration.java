@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
@@ -53,6 +54,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.openide.DialogDisplayer;
@@ -316,7 +318,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 
     // Interface OptionsProvider
     @Override
-    public String getAllOptions(AbstractCompiler compiler) {
+    public String getAllOptions(Tool tool) {
         String options = getBasicOptions() + " "; // NOI18N
         options += getLibraryItems() + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
@@ -407,7 +409,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
     private final class AdditionalDependenciesOptions implements AllOptionsProvider {
 
         @Override
-        public String getAllOptions(AbstractCompiler compiler) {
+        public String getAllOptions(Tool tool) {
             String options = ""; // NOI18N
             options += additionalDependencies.getPreDefined();
             return CppUtils.reformatWhitespaces(options);

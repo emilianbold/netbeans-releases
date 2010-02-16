@@ -561,16 +561,20 @@ public final class GemManager {
 
     /**
      * Attempts to asynchronously reload local gems (gives up if
-     * can't acquire the lock for local gems in 5 secs).
+     * can't acquire the lock for local gems in 10 secs).
+     * 
+     * @param force forces reloading if true.
      */
-    public void reloadLocalGems() {
+    public void reloadLocalGems(final boolean force) {
         RELOAD_EXECUTOR.submit(new Runnable() {
             @Override
             public void run() {
                 try {
-                    final int timeout = 5;
+                    final int timeout = 10;
                     if (runnerLocalLock.tryLock(timeout, TimeUnit.SECONDS)) {
-                        resetLocal();
+                        if (force) {
+                            resetLocal();
+                        }
                         reloadLocalIfNeeded();
                     } else {
                         LOGGER.info("Could not retrieve lock for reloading " +

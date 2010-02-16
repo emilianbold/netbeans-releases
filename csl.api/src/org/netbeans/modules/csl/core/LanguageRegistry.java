@@ -62,9 +62,9 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
@@ -285,7 +285,12 @@ public final class LanguageRegistry implements Iterable<Language> {
         synchronized (this) {
             if (cacheDirty) {
                 cacheDirty = false;
-                FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
+                FileSystem sfs;
+                try {
+                    sfs = FileUtil.getConfigRoot().getFileSystem();
+                } catch (FileStateInvalidException fse) {
+                    throw new IllegalStateException(fse);
+                }
                 languagesCache = readSfs(sfs, languagesCache, refreshLoader);
                 if (sfsTracker == null) {
                     // First time we run do the cleanup

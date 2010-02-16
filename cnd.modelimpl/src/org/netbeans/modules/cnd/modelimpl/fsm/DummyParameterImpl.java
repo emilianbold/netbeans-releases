@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,51 +37,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 
 package org.netbeans.modules.cnd.modelimpl.fsm;
 
-import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.modelimpl.csm.MutableDeclarationsContainer;
-import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.parser.FortranParserEx;
+import org.netbeans.modules.cnd.modelimpl.csm.*;
+import org.netbeans.modules.cnd.api.model.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 /**
- *
- * @author nk220367
+ * Implements CsmParameter
+ * @author Vladimir Kvashin
  */
-public class DataRenderer {
+public class DummyParameterImpl extends VariableImpl<CsmParameter> implements CsmParameter {
 
-    private final FileImpl file;
-
-    public DataRenderer(FileImpl fileImpl) {
-        this.file = fileImpl;
+    public DummyParameterImpl(CsmFile file, int startOffset, int endOffset,String name, CsmScope scope) {
+        super(file, startOffset, endOffset, null, name, scope, false, false, false);
     }
 
-    public void render(List<Object> objs) {
-        render(objs, (NamespaceImpl) file.getProject().getGlobalNamespace(), file);
+    public boolean isVarArgs() {
+        return false;
     }
 
-    public void render(List<Object> objs, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
-        if (objs == null) {
-            return;
+    @Override
+    public CharSequence getDisplayText() {
+        return super.getName();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of SelfPersistent
+    
+    @Override
+    public void write(DataOutput output) throws IOException {
+        super.write(output);      
+        // write UID for unnamed parameter
+        if (getName().length() == 0) {
+            super.writeUID(output);
         }
-        for (Object object : objs) {
-            if(object instanceof FortranParserEx.ProgramData) {
-                FortranParserEx.ProgramData data = (FortranParserEx.ProgramData) object;
-                CsmFunction fun = new ProgramImpl(data.name, file, data.startOffset, data.endOffset, null, currentNamespace);
-                
-                container.addDeclaration(fun);
-                currentNamespace.addDeclaration(fun);
-            }
-        }
-    }
-
-
+    }  
+    
+    public DummyParameterImpl(DataInput input) throws IOException {
+        super(input);
+        // restore UID for unnamed parameter
+        if (getName().length() == 0) {
+            super.readUID(input);
+        }        
+    } 
 }

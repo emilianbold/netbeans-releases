@@ -313,6 +313,15 @@ public class MercurialInterceptor extends VCSInterceptor {
         hgFolderEventsHandler.refreshHgFolderTimestamp(hgFolder, hgFolder.lastModified());
     }
 
+    /**
+     * Returns a set of known repository roots (those visible or open in IDE)
+     * @param repositoryRoot
+     * @return
+     */
+    Set<File> getSeenRoots (File repositoryRoot) {
+        return hgFolderEventsHandler.getSeenRoots(repositoryRoot);
+    }
+
     private class RefreshTask implements Runnable {
         public void run() {
             Thread.interrupted();

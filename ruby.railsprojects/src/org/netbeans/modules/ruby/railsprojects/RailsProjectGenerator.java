@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -56,6 +57,8 @@ import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectPropert
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.ruby.RubyUtils;
@@ -144,6 +147,14 @@ public class RailsProjectGenerator {
             desc.addStandardRecognizers();
             desc.addErrConvertor(convertor);
             desc.addOutConvertor(convertor);
+            desc.setOutProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+
+                @Override
+                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                    return InputProcessors.ansiStripping(defaultProcessor);
+                }
+            });
+
 
             RubyProcessCreator rpc = new RubyProcessCreator(desc);
 

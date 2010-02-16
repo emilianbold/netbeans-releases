@@ -77,6 +77,7 @@ import org.netbeans.modules.diff.PatchAction;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.options.AnnotationColorProvider;
 import org.netbeans.modules.subversion.ui.cleanup.CleanupAction;
+import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -425,6 +426,7 @@ public class Annotator {
             actions.add(SystemAction.get(IgnoreAction.class));
             actions.add(null);
             actions.add(SystemAction.get(CleanupAction.class));
+            actions.add(SystemAction.get(VersioningInfoAction.class));
             actions.add(SystemAction.get(SvnPropertiesAction.class));
         } else {
             ResourceBundle loc = NbBundle.getBundle(Annotator.class);
@@ -470,8 +472,11 @@ public class Annotator {
                                 SystemAction.get(CleanupAction.class),
                                 loc.getString("CTL_PopupMenuItem_Cleanup"), context));
                 actions.add(SystemActionBridge.createAction(
+                                SystemAction.get(VersioningInfoAction.class),
+                                loc.getString("CTL_PopupMenuItem_VersioningInfo"), context));
+                actions.add(SystemActionBridge.createAction(
                                 SystemAction.get(SvnPropertiesAction.class),
-                                loc.getString("CTL_PopupMenuItem_Properties"), context));actions.add(null);
+                                loc.getString("CTL_PopupMenuItem_Properties"), context));
             }
         }
         return actions.toArray(new Action[actions.size()]);

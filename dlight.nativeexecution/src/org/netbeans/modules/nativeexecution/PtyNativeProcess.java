@@ -47,7 +47,10 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
 import org.netbeans.modules.nativeexecution.pty.PtyProcessStartUtility;
+import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
+import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -56,6 +59,7 @@ import org.openide.util.Exceptions;
 public final class PtyNativeProcess extends AbstractNativeProcess {
 
     private final Pty pty;
+    private final PtyImpl ptyImpl;
     private AbstractNativeProcess delegate = null;
 
     public PtyNativeProcess(NativeProcessInfo info) {
@@ -73,6 +77,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         }
 
         pty = _pty;
+        ptyImpl = PtyImplAccessor.getDefault().getImpl(pty);
     }
 
     public Pty getPty() {
@@ -103,6 +108,8 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         delegate.create();
 
         readPID(delegate.getInputStream());
+
+        RequestProcessor.getDefault().post(new Reaper());
     }
 
     @Override
@@ -117,12 +124,12 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
     @Override
     public OutputStream getOutputStream() {
-        return delegate.getOutputStream();
+        return ptyImpl.getOutputStream();
     }
 
     @Override
     public InputStream getInputStream() {
-        return delegate.getInputStream();
+        return ptyImpl.getInputStream();
     }
 
     @Override
@@ -134,5 +141,29 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
                 return -1;
             }
         };
+    }
+
+    private final class Reaper implements Runnable {
+
+        @Override
+        public void run() {
+
+            try {
+                Thread.currentThread().setName("Reaper for " + getPID()); // NOI18N
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            try {
+                waitFor();
+            } catch (InterruptedException ex) {
+            }
+
+            try {
+                ptyImpl.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 }

@@ -48,6 +48,8 @@ CFLAGS-Mac_OS_X := -c -fPIC
 
 ifdef 64BITS
     FLAG64 := -m64
+else
+    FLAG64 := -m32
 endif
 
 # The following sets UNAME_S to a platform dependent string. Since
@@ -65,7 +67,7 @@ ifeq (Darwin,$(UNAME_S))
 	OSNAME = Mac_OS_X
 endif
 
-CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG64}
+CFLAGS := ${CFLAGS-${OSNAME}}
 
 ifdef 64BITS
     PLATFORM_64 := _64
@@ -96,10 +98,10 @@ all: check init ${APP_PATH}
 
 #appliction:
 ${APP_PATH}: ${APP_OUT}
-	gcc ${LDFLAGS_APP} -o ${APP_PATH} ${APP_OUT}
+	gcc ${LDFLAGS_APP} ${FLAG64} -o ${APP_PATH} ${APP_OUT}
 
 ${APP_OUT}: ${APP_NAME}.c
-	gcc ${CFLAGS} -o ${APP_OUT} ${APP_NAME}.c
+	gcc ${CFLAGS} ${FLAG64} -o ${APP_OUT} ${APP_NAME}.c
 
 clean:
 	rm -rf ${BUILD}/${PLATFORM_DIR} ${DIST}/${PLATFORM_DIR}

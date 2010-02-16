@@ -46,6 +46,7 @@ import org.netbeans.modules.versioning.util.CollectionUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.util.WeakListeners;
 
 /**
  * Lookup to be used for {@code DiffTopComponent}s.
@@ -59,6 +60,7 @@ public class DiffLookup extends SimpleLookup implements PropertyChangeListener {
     private EditorCookie.Observable observableEditorCookie;
     private Object[] withoutSaveCookie;
     private Object[] withSaveCookie;
+    private PropertyChangeListener weakList;
 
     public DiffLookup() {
         super();
@@ -122,11 +124,11 @@ public class DiffLookup extends SimpleLookup implements PropertyChangeListener {
         synchronized (dataSetLock) {
             Object[] newData;
             if (observableEditorCookie != null) {
-                observableEditorCookie.removePropertyChangeListener(this);
+                observableEditorCookie.removePropertyChangeListener(weakList);
             }
             this.observableEditorCookie = editorCookie;
             if (observableEditorCookie != null) {
-                observableEditorCookie.addPropertyChangeListener(this);
+                observableEditorCookie.addPropertyChangeListener(weakList = WeakListeners.propertyChange(this, observableEditorCookie));
             }
 
             if (observableEditorCookie == null) {
@@ -150,7 +152,6 @@ public class DiffLookup extends SimpleLookup implements PropertyChangeListener {
         Object source = evt.getSource();
         synchronized (dataSetLock) {
             if (source != observableEditorCookie) {
-                assert false;
                 return;
             }
             setDataImpl(observableEditorCookie.isModified()

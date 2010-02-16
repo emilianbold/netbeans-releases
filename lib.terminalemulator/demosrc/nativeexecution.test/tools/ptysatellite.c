@@ -66,12 +66,12 @@ static int pts_open(int masterfd) {
         return -1;
     }
 #else
-/*
-    struct termios termios_p;
-    tcgetattr(slavefd, &termios_p);
-    cfmakeraw(&termios_p);
-    tcsetattr(slavefd, TCSANOW, &termios_p);
-*/
+    /*
+        struct termios termios_p;
+        tcgetattr(slavefd, &termios_p);
+        cfmakeraw(&termios_p);
+        tcsetattr(slavefd, TCSANOW, &termios_p);
+     */
 #endif
 
     return slavefd;
@@ -89,10 +89,18 @@ static void loop(int master_fd) {
     fds[1].events = POLLIN;
     fds[1].revents = 0;
 
+    int poll_result;
+
     for (;;) {
-        if (poll((struct pollfd*) & fds, 2, /*INFTIM*/ -1) == -1) {
+        poll_result = poll((struct pollfd*) & fds, 2, /*INFTIM*/ -1);
+
+        if (poll_result == -1) {
             printf("ERROR: poll failed\n");
             exit(1);
+        }
+
+        if (fds[0].revents & POLLHUP || fds[1].revents & POLLHUP) {
+            break;
         }
 
         if (fds[0].revents & POLLIN) {

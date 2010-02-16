@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
