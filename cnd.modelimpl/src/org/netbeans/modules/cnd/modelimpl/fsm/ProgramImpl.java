@@ -77,7 +77,7 @@ import org.openide.util.Exceptions;
  * @author Dmitriy Ivanov, Vladimir Kvashin
  */
 public class ProgramImpl<T> extends OffsetableDeclarationBase<T>
-        implements CsmFunctionDefinition, Disposable, RawNamable {
+        implements CsmProgram, CsmFunctionDefinition, Disposable, RawNamable {
 
     private final CharSequence name;
     private final CharSequence[] rawName;
@@ -118,11 +118,11 @@ public class ProgramImpl<T> extends OffsetableDeclarationBase<T>
     }
 
     public CsmFunctionDefinition getDefinition() {
-        return null;
+        return this;
     }
 
     public CsmFunction getDeclaration() {
-        return null;
+        return this;
     }
 
     public boolean isOperator() {
