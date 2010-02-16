@@ -109,6 +109,7 @@ public class DevelopmentHostCustomizer extends JPanel implements VetoableChangeL
         if (env.equals(oldExecEnv)) {
             return;
         }
+        cacheManager.applyChanges();
         dhconf.setHost(env);
 //        if (!dhconf.isConfigured()) {
 //            ExecutionEnvironment execEnv = dhconf.getExecutionEnvironment();
