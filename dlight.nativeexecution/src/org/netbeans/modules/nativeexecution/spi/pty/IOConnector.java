@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,24 +34,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.spi;
+package org.netbeans.modules.nativeexecution.spi.pty;
 
-import org.netbeans.modules.nativeexecution.api.ProcessInfo;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
+import org.openide.windows.InputOutput;
 
 /**
  *
  * @author ak119685
  */
-public interface ProcessInfoProvider {
-    /**
-     * Returns information about the process (see ProcessInfo);
-     * This method may *block* current thread for some time
-     *
-     * May return null
-     * 
-     * @return ProcessInfo or null if no info is available.
-     */
-    public ProcessInfo getProcessInfo();
+public interface IOConnector {
+
+    public boolean connect(InputOutput io, NativeProcess process);
+
+    public boolean connect(InputOutput io, Pty pty);
 }
