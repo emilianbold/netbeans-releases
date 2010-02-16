@@ -66,6 +66,9 @@ implements ExplorerManager.Provider {
 
     @Override
     public String getName() {
+        if (panel == null || panel.settings == null) {
+            return "";
+        }
         return panel.settings.getStep(1);
     }
 

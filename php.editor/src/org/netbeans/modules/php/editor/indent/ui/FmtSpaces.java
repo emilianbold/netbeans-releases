@@ -257,6 +257,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
                 new Item(spaceAroundBinaryOps),
                 new Item(spaceAroundTernaryOps),
 		new Item(spaceAroundStringConcatOps),
+		new Item(spaceAroundKeyValueOps),
                 new Item(spaceAroundAssignOps),
 		new Item(spaceAroundObjectOps)),
             
@@ -286,10 +287,11 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
                 new Item(spaceWithinSwitchParens),
                 new Item(spaceWithinCatchParens),
 //                new Item(spaceWithinSynchronizedParens),
-                new Item(spaceWithinTypeCastParens)
+		new Item(spaceWithinArrayDeclParens),
+                new Item(spaceWithinTypeCastParens),
 //                new Item(spaceWithinAnnotationParens),
 //                new Item(spaceWithinBraces),
-//                new Item(spaceWithinArrayInitBrackets)
+                new Item(spaceWithinArrayBrackets)
 		),
                     
                 

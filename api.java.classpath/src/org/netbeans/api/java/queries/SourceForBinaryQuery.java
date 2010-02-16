@@ -43,16 +43,15 @@ package org.netbeans.api.java.queries;
 
 import java.net.URL;
 import java.util.Arrays;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.java.classpath.SimplePathResourceImplementation;
 import org.netbeans.modules.java.queries.SFBQImpl2Result;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -85,7 +84,8 @@ public class SourceForBinaryQuery {
      * @return a result object encapsulating the answer (never null)
      */
     public static Result findSourceRoots (URL binaryRoot) {
-        checkPreconditions (binaryRoot);
+        // XXX consider deleting since ClassPath ctor now checks these things and that is most common URL source
+        SimplePathResourceImplementation.verify(binaryRoot, null);
         for (SourceForBinaryQueryImplementation impl : implementations.allInstances()) {
             Result result = impl.findSourceRoots(binaryRoot);
             if (result != null) {
@@ -110,7 +110,8 @@ public class SourceForBinaryQuery {
      * @since 1.15
      */
     public static Result2 findSourceRoots2 (URL binaryRoot) {
-        checkPreconditions (binaryRoot);
+        // XXX as above, consider deleting
+        SimplePathResourceImplementation.verify(binaryRoot, null);
         for (SourceForBinaryQueryImplementation impl : implementations.allInstances()) {
             Result2 result = null;
             if (impl instanceof SourceForBinaryQueryImplementation2) {
@@ -136,17 +137,7 @@ public class SourceForBinaryQuery {
         return EMPTY_RESULT2;
         
     }
-    
-    private static void checkPreconditions (final URL binaryRoot) {
-        if (FileUtil.isArchiveFile(binaryRoot)) {
-            throw new IllegalArgumentException("File URL pointing to " + // NOI18N
-                "JAR is not valid classpath entry. Use jar: URL. Was: "+binaryRoot); // NOI18N
-        }
-        if (!binaryRoot.toExternalForm().endsWith("/")) {
-            throw new IllegalArgumentException ("Folder URL must end with '/'. Was: "+binaryRoot);
-        }
-    }
-    
+
     /**
      * Result of finding sources, encapsulating the answer as well as the
      * ability to listen to it.

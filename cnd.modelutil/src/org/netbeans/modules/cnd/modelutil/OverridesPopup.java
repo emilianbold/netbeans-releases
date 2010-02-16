@@ -147,6 +147,33 @@ public class OverridesPopup extends JPanel implements FocusListener {
                 }
             }
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Item other = (Item) obj;
+            if (this.declaration != other.declaration && (this.declaration == null || !this.declaration.getQualifiedName().equals(other.declaration.getQualifiedName()))) {
+                return false;
+            }
+            if (this.kind != other.kind && (this.kind == null || !this.kind.equals(other.kind))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 97 * hash + (this.declaration != null ? this.declaration.getQualifiedName().hashCode() : 0);
+            hash = 97 * hash + (this.kind != null ? this.kind.hashCode() : 0);
+            return hash;
+        }
+
     }
 
     private static class RenderComponent extends JLabel {
@@ -195,11 +222,7 @@ public class OverridesPopup extends JPanel implements FocusListener {
         }
 
         public @Override void paintComponent(Graphics g) {
-            if (selected) {
-                super.paintComponent(g);
-            } else {
-                super.paintComponent(g);
-            }
+            super.paintComponent(g);
             if (item.kind == Kind.MAIN) {
                 g.setColor(Color.gray);
                 int h = getHeight();

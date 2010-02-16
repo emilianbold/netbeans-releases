@@ -105,7 +105,11 @@ public class WatchesActionsProvider implements NodeActionsProvider {
                 return true;
             }
             public void perform (Object[] nodes) {
-                customize ((Watch) nodes [0]);
+                if (nodes[0] instanceof WatchesTreeModel.EmptyWatch) {
+                    customize ((WatchesTreeModel.EmptyWatch) nodes[0]);
+                } else {
+                    customize ((Watch) nodes[0]);
+                }
             }
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
@@ -127,6 +131,11 @@ public class WatchesActionsProvider implements NodeActionsProvider {
                 null,
                 CUSTOMIZE_ACTION
             };
+        if (node instanceof WatchesTreeModel.EmptyWatch) {
+            return new Action [] {
+                CUSTOMIZE_ACTION
+            };
+        }
         throw new UnknownTypeException (node);
     }
     
@@ -135,6 +144,10 @@ public class WatchesActionsProvider implements NodeActionsProvider {
             return;
         if (node instanceof Watch) {
             customize ((Watch) node);
+            return;
+        }
+        if (node instanceof WatchesTreeModel.EmptyWatch) {
+            customize ((WatchesTreeModel.EmptyWatch) node);
             return;
         }
         throw new UnknownTypeException (node);
@@ -164,4 +177,23 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         if (dd.getValue() != org.openide.DialogDescriptor.OK_OPTION) return;
         w.setExpression(wp.getExpression());
     }
+
+    private static void customize (WatchesTreeModel.EmptyWatch w) {
+
+        WatchPanel wp = new WatchPanel("");
+        JComponent panel = wp.getPanel();
+
+        org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
+            panel,
+            NbBundle.getMessage(WatchesActionsProvider.class, "CTL_WatchDialog_Title", "")
+        );
+        dd.setHelpCtx(new HelpCtx("debug.add.watch"));
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
+        dialog.dispose();
+
+        if (dd.getValue() != org.openide.DialogDescriptor.OK_OPTION) return;
+        w.setExpression(wp.getExpression());
+    }
+
 }

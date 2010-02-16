@@ -48,8 +48,8 @@ import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.editor.LexerUtils;
+import org.netbeans.modules.css.gsf.CssLanguage;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -61,6 +61,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -212,7 +213,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	if (fo == null) {
 	    return false;
 	}
-	if (Css.CSS_MIME_TYPE.equals(fo.getMIMEType())) { //NOI18N
+	if (CssLanguage.CSS_MIME_TYPE.equals(fo.getMIMEType())) { //NOI18N
 	    return true;
 	}
 
@@ -275,7 +276,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	    Collection<CssParserResult> results = new ArrayList<CssParserResult>();
 	    Snapshot snapshot = resultIterator.getSnapshot();
 	    try {
-		if (Css.CSS_MIME_TYPE.equals(snapshot.getMimeType())) {
+		if (CssLanguage.CSS_MIME_TYPE.equals(snapshot.getMimeType())) {
 		    results.add((CssParserResult) resultIterator.getParserResult());
 		    return;
 		}
@@ -331,11 +332,15 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 
         @Override
 	public void run(ResultIterator ri) throws ParseException {
-	    ResultIterator cssri = Css.getResultIterator(ri, Css.CSS_MIME_TYPE);
+	    ResultIterator cssri = WebUtils.getResultIterator(ri, CssLanguage.CSS_MIME_TYPE);
 	    if (cssri != null) {
 		CssParserResult result = (CssParserResult) cssri.getParserResult();
-		CssElementContext context = new CssElementContext.Editor(result, caretOffset, selectionStart, selectionEnd);
-		ui = context.isRefactoringAllowed() ? createRefactoringUI(context) : null;
+                if(result.root() != null) {
+                    //the parser result seems to be quite ok,
+                    //in case of serious parse issue the parse root is null
+                    CssElementContext context = new CssElementContext.Editor(result, caretOffset, selectionStart, selectionEnd);
+                    ui = context.isRefactoringAllowed() ? createRefactoringUI(context) : null;
+                }
 	    }
 	}
 

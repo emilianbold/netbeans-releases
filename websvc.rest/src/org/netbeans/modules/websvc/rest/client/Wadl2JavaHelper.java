@@ -236,9 +236,10 @@ class Wadl2JavaHelper {
             // add required params
             if (paramsInfo.hasRequiredParams()) {
                 for (String requiredParam : paramsInfo.getRequiredParams()) {
-                    VariableTree paramTree = maker.Variable(paramModifier, requiredParam, maker.Identifier("String"), null); //NOI18N
+                    String javaIdentifier = makeJavaIdentifier(requiredParam);
+                    VariableTree paramTree = maker.Variable(paramModifier, javaIdentifier, maker.Identifier("String"), null); //NOI18N
                     paramList.add(paramTree);
-                    commentBuffer.append("@param "+requiredParam+" query parameter[REQUIRED]\n"); //NOI18N
+                    commentBuffer.append("@param "+javaIdentifier+" query parameter[REQUIRED]\n"); //NOI18N
                 }
                 ClientJavaSourceHelper.Pair paramPair = getParamList(paramsInfo.getRequiredParams(), paramsInfo.getFixedParams());
                 queryParamPart.append("String[] paramNames = new String[] {"+paramPair.getKey()+"}"); //NOI18N
@@ -299,7 +300,7 @@ class Wadl2JavaHelper {
                 paramValues.append(",");
             }
             paramNames.append("\""+p+"\"");
-            paramValues.append(p);
+            paramValues.append(makeJavaIdentifier(p));
         }
         for (String p : fixedParams.keySet()) {
             if (first) {
@@ -314,6 +315,23 @@ class Wadl2JavaHelper {
         }
 
         return new ClientJavaSourceHelper.Pair(paramNames.toString(),paramValues.toString());
+    }
+
+    private static String makeJavaIdentifier(String s) {
+        int len = s.length();
+        String result = s;
+        for (int i=0; i<len; i++) {
+            char ch = result.charAt(i);
+            if (!Character.isJavaIdentifierPart(ch)) {
+                result = result.replace(ch, '_');
+            }
+        }
+        if (len>0) {
+            if (!Character.isJavaIdentifierStart(result.charAt(0))) {
+                result = "_"+result;
+            }
+        }
+        return result;
     }
 
     static class SaasParamsInfo {

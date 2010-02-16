@@ -108,7 +108,7 @@ public final class ContextKnowledge {
 
     RubyType getType(final String symbol) {
         RubyType type = typesForSymbols.get(symbol);
-        return type == null ? RubyType.createUnknown() : type;
+        return type == null ? RubyType.unknown() : type;
     }
 
     RubyType getType(final Node node) {
@@ -150,7 +150,7 @@ public final class ContextKnowledge {
     static RubyType getTypesForSymbol(
             final Map<String, RubyType> typeForSymbol, final String name) {
         RubyType type = typeForSymbol.get(name);
-        return type == null ? RubyType.createUnknown() : type;
+        return type == null ? RubyType.unknown() : type;
     }
 
     int getAstOffset() {

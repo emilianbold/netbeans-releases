@@ -55,6 +55,7 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.WebUtils;
 
 /**
  * Creates CSS virtual source for html sources.
@@ -176,11 +177,14 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                                 //XXX we do not support templating code in the value!
                                 //class or id attribute value - generate fake selector with # or . prefix
                                 StringBuilder buf = new StringBuilder();
-                                buf.append("\n ");
-                                buf.append(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(valueCssType) ? "." : "#");
-                                embeddings.add(snapshot.create(buf.toString(), CSS_MIME_TYPE));
-                                embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CSS_MIME_TYPE));
-                                embeddings.add(snapshot.create("{}", CSS_MIME_TYPE));
+                                //#180576 - filter out "illegal" characters from the selector name
+                                if(text.indexOf(".") == -1 && text.indexOf(":") == -1) {
+                                    buf.append("\n ");
+                                    buf.append(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(valueCssType) ? "." : "#");
+                                    embeddings.add(snapshot.create(buf.toString(), CSS_MIME_TYPE));
+                                    embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CSS_MIME_TYPE));
+                                    embeddings.add(snapshot.create("{}", CSS_MIME_TYPE));
+                                }
 
                             } else {
                                 //style attribute value - wrap with a fake selector
@@ -193,7 +197,7 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                             }
                         } else if (id == HTMLTokenId.VALUE) {
                             if (isLinkTag && HREF_ATTR_NAME.equals(currentAttributeName.toLowerCase(Locale.ENGLISH))) {
-                                String unquotedValue = Utils.unquotedValue(t.text().toString().toString());
+                                String unquotedValue = WebUtils.unquotedValue(t.text().toString().toString());
                                 //found href value, generate virtual css import
                                 StringBuilder buf = new StringBuilder();
                                 buf.append("@import \""); //NOI18N

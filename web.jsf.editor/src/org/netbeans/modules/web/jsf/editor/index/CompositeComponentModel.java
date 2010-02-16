@@ -175,28 +175,33 @@ public class CompositeComponentModel extends JsfPageModel {
     private static FileObject getResourcesDirectory(FileObject file) {
         WebModule wm = WebModule.getWebModule(file);
         if (wm != null) {
-            //we are in webmodule
+            //check webmodule's resources folder
             FileObject docRoot = wm.getDocumentBase();
             if(docRoot != null) { //document root may be null if the folder is deleted
-                return getChild(docRoot, RESOURCES_FOLDER_NAME);
-            }
-        } else {
-            //out of a webmodule, means in a library archive
-            //just check if the parent's parent directory is resources and then META-INF
-            FileObject folder = file;
-            do {
-                if (folder.getName().equalsIgnoreCase("resources")) {
-                    //check if its parent is META-INF
-                    FileObject parent = folder.getParent();
-                    if (parent != null && parent.getNameExt().startsWith("META-INF")) {
-                        //the folder seems to be the right resources folder
-                        return folder;
-                    }
+                FileObject resourcesFolder = getChild(docRoot, RESOURCES_FOLDER_NAME);
+                //check if the file is a descendant of the resources folder
+                if(resourcesFolder != null && FileUtil.isParentOf(resourcesFolder, file)) {
+                    return resourcesFolder;
                 }
-                folder = folder.getParent();
-            } while (folder != null);
-
+            }
         }
+        
+        //check project's sources - META-INF.*/resources
+        //just check if the parent's parent directory is resources and then META-INF
+        FileObject folder = file;
+        do {
+            if (folder.getName().equalsIgnoreCase("resources")) {
+                //check if its parent is META-INF
+                FileObject parent = folder.getParent();
+                if (parent != null && parent.getNameExt().startsWith("META-INF")) {
+                    //the folder seems to be the right resources folder
+                    return folder;
+                }
+            }
+            folder = folder.getParent();
+        } while (folder != null);
+
+
         return null;
     }
 

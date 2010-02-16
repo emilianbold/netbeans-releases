@@ -288,6 +288,9 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
     private boolean submitFieldOrMethodOrClassBreakpoint(String className, String fieldName,
                                                          String methodName, String methodSignature,
                                                          String url, int line) {
+        if (className == null) {
+            return false;   // Can not do anything without the class name
+        }
         // 2) find and remove existing line breakpoint
         JPDABreakpoint b;
         if (fieldName != null) {

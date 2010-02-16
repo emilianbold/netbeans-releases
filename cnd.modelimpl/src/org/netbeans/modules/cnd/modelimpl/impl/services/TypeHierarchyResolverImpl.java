@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,13 +52,20 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
@@ -73,12 +82,20 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
 
     @Override
     public Collection<CsmReference> getSubTypes(CsmClass referencedClass, boolean directSubtypesOnly) {
-        HierarchyModelImpl model = new HierarchyModelImpl(referencedClass, true, true, !directSubtypesOnly);
-        Set<CsmClass> set = model.getModel().get(referencedClass);
+        CsmFile file = referencedClass.getContainingFile();
+        long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
+        CsmProject project = file.getProject();
+        Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> fullMap = getOrCreateFullMap(project, fileVersion);
+        HierarchyModelImpl model = new HierarchyModelImpl(fullMap, referencedClass, !directSubtypesOnly);
+        CsmUID<CsmClass> referencedClassUID = UIDs.get(referencedClass);
+        Set<CsmUID<CsmClass>> set = model.getModel().get(referencedClassUID);
         if (set != null){
             List<CsmReference> res = new ArrayList<CsmReference>();
-            for (CsmClass cls : set){
-                res.add(CsmReferenceSupport.createObjectReference(cls));
+            for (CsmUID<CsmClass> clsUID : set){
+                CsmClass cls = clsUID.getObject();
+                if (cls != null) {
+                    res.add(CsmReferenceSupport.createObjectReference(cls));
+                }
             }
             return res;
         }
@@ -86,40 +103,35 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
     }
 
     private static final class HierarchyModelImpl {
-        private Map<CsmClass,Set<CsmClass>> myMap;
+        private Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> myMap;
     
-        public HierarchyModelImpl(CsmClass cls, boolean subDirection, boolean plain, boolean recursive) {
-            if (subDirection) {
-                myMap = buildSubHierarchy(cls);
-            } else {
-                myMap = buildSuperHierarchy(cls);
-            }
+        public HierarchyModelImpl(Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> fullMap, CsmClass cls, boolean recursive) {
+            CsmUID<CsmClass> clsUID = UIDs.get(cls);
+            myMap = Collections.unmodifiableMap(fullMap);
             if (!recursive) {
-                Set<CsmClass> result = myMap.get(cls);
+                Set<CsmUID<CsmClass>> result = myMap.get(clsUID);
                 if (result == null){
-                    result = new HashSet<CsmClass>();
+                    result = new HashSet<CsmUID<CsmClass>>();
                 }
-                myMap = new HashMap<CsmClass,Set<CsmClass>>();
-                myMap.put(cls,result);
+                myMap = new HashMap<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>>();
+                myMap.put(clsUID,result);
             }
-            if (plain) {
-                Set<CsmClass> result = new HashSet<CsmClass>();
-                gatherList(cls, result, myMap);
-                myMap = new HashMap<CsmClass,Set<CsmClass>>();
-                myMap.put(cls,result);
-            }
+            Set<CsmUID<CsmClass>> result = new HashSet<CsmUID<CsmClass>>();
+            gatherList(clsUID, result, myMap);
+            myMap = new HashMap<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>>();
+            myMap.put(clsUID,result);
         }
-    
-        public Map<CsmClass,Set<CsmClass>> getModel(){
+
+        public Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> getModel(){
             return myMap;
         }
 
-        private void gatherList(CsmClass cls, Set<CsmClass> result, Map<CsmClass,Set<CsmClass>> map){
-            Set<CsmClass> set = map.get(cls);
+        private static void gatherList(CsmUID<CsmClass> cls, Set<CsmUID<CsmClass>> result, final Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> map){
+            Set<CsmUID<CsmClass>> set = map.get(cls);
             if (set == null) {
                 return;
             }
-            for(CsmClass c : set){
+            for(CsmUID<CsmClass> c : set){
                 if (!result.contains(c)) {
                     result.add(c);
                     gatherList(c, result, map);
@@ -127,81 +139,102 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
             }
         }
 
-        private Map<CsmClass,Set<CsmClass>> buildSuperHierarchy(CsmClass cls){
-            HashMap<CsmClass,Set<CsmClass>> aMap = new HashMap<CsmClass,Set<CsmClass>>();
+        private Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> buildSuperHierarchy(CsmClass cls){
+            HashMap<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> aMap = new HashMap<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>>();
             buildSuperHierarchy(cls, aMap);
             return aMap;
         }
     
-        private void buildSuperHierarchy(CsmClass cls, Map<CsmClass,Set<CsmClass>> map){
-            Set<CsmClass> back = map.get(cls);
+        private void buildSuperHierarchy(CsmClass cls, Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> map){
+            CsmUID<CsmClass> clsUID = UIDs.get(cls);
+            Set<CsmUID<CsmClass>> back = map.get(clsUID);
             if (back != null) {
                 return;
             }
-            back = new HashSet<CsmClass>();
-            map.put(cls, back);
+            back = new HashSet<CsmUID<CsmClass>>();
+            map.put(clsUID, back);
             Collection<CsmInheritance> list = cls.getBaseClasses();
             if (list != null && list.size() >0){
                 for(CsmInheritance inh : list){
                     CsmClass c = getClassDeclaration(inh);
                     if (c != null) {
-                        back.add(c);
+                        CsmUID<CsmClass> cUID = UIDs.get(c);
+                        back.add(cUID);
                         buildSuperHierarchy(c, map);
                     }
                 }
             }
         }
-    
-        private Map<CsmClass,Set<CsmClass>> buildSubHierarchy(CsmClass cls){
-            HashMap<CsmClass,Set<CsmClass>> aMap = new HashMap<CsmClass,Set<CsmClass>>();
-            CsmProject prj = cls.getContainingFile().getProject();
-            buildSubHierarchy(prj.getGlobalNamespace(), aMap);
-            return aMap;
-        }
-    
-        private void buildSubHierarchy(CsmNamespace ns, Map<CsmClass,Set<CsmClass>> map){
-            for(Iterator it = ns.getNestedNamespaces().iterator(); it.hasNext();){
-                buildSubHierarchy((CsmNamespace)it.next(), map);
-            }
-            for(Iterator it = ns.getDeclarations().iterator(); it.hasNext();){
-                CsmDeclaration decl = (CsmDeclaration)it.next();
-                if (CsmKindUtilities.isClass(decl)){
-                    buildSubHierarchy(map, (CsmClass)decl);
-                }
-            }
-        }
+    }
 
-        private CsmClass getClassDeclaration(CsmInheritance inh){
-            CsmClass c = CsmInheritanceUtilities.getCsmClass(inh);
-            if (CsmKindUtilities.isInstantiation(c)) {
-                CsmDeclaration d = ((CsmInstantiation)c).getTemplateDeclaration();
-                if (CsmKindUtilities.isClass(d)){
-                    c = (CsmClass) d;
-                }
-            }
-            return c;
+    private static Map<CsmUID<CsmProject>, Reference<Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>>>> cache = new HashMap<CsmUID<CsmProject>, Reference<Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>>>>();
+    private static long lastVersion = -1;
+    private synchronized Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>> getOrCreateFullMap(CsmProject project, long version) {
+        if (lastVersion != version) {
+            cache.clear();
         }
+        lastVersion = version;
+        CsmUID<CsmProject> prjUID = UIDs.get(project);
+        Reference<Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>>> outRef = cache.get(prjUID);
+        Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>> out = (outRef == null) ? null : outRef.get();
+        if (out == null) {
+            out = new HashMap<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>>();
+            buildSubHierarchy(project.getGlobalNamespace(), out);
+            cache.put(prjUID, new SoftReference<Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>>>(out));
+        }
+        return out;
+    }
 
-        private void buildSubHierarchy(final Map<CsmClass, Set<CsmClass>> map, final CsmClass cls) {
-            Collection<CsmInheritance> list = cls.getBaseClasses();
-            if (list != null && list.size() >0){
-                for(CsmInheritance inh : list){
-                    CsmClass c = getClassDeclaration(inh);
-                    if (c != null) {
-                        Set<CsmClass> back = map.get(c);
-                        if (back == null){
-                            back = new HashSet<CsmClass>();
-                            map.put(c,back);
-                        }
-                        back.add(cls);
+    ///////// common /////////////////
+
+    private static CsmFilter getClassFilter() {
+        return CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.CLASS, CsmDeclaration.Kind.STRUCT);
+    }
+
+    private static CsmClass getClassDeclaration(CsmInheritance inh){
+        CsmClass c = CsmInheritanceUtilities.getCsmClass(inh);
+        if (CsmKindUtilities.isInstantiation(c)) {
+            CsmDeclaration d = ((CsmInstantiation)c).getTemplateDeclaration();
+            if (CsmKindUtilities.isClass(d)){
+                c = (CsmClass) d;
+            }
+        }
+        return c;
+    }
+    
+    ///////// sub hierarchy ///////////
+    private static void buildSubHierarchy(CsmNamespace ns, Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> map){
+        for(Iterator it = ns.getNestedNamespaces().iterator(); it.hasNext();){
+            buildSubHierarchy((CsmNamespace)it.next(), map);
+        }
+        Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(ns, getClassFilter());
+        while (declarations.hasNext()) {
+            CsmClass decl = (CsmClass)declarations.next();
+            buildSubHierarchy(map, decl);
+        }
+    }
+
+    private static void buildSubHierarchy(final Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>> map, final CsmClass cls) {
+        Collection<CsmInheritance> list = cls.getBaseClasses();
+        CsmUID<CsmClass> clsUID = UIDs.get(cls);
+        if (list != null && list.size() >0){
+            for(CsmInheritance inh : list){
+                CsmClass c = getClassDeclaration(inh);
+                if (c != null) {
+                    CsmUID<CsmClass> cUID = UIDs.get(c);
+                    Set<CsmUID<CsmClass>> back = map.get(cUID);
+                    if (back == null){
+                        back = new HashSet<CsmUID<CsmClass>>();
+                        map.put(cUID,back);
                     }
+                    back.add(clsUID);
                 }
             }
-            for(CsmMember member : cls.getMembers()){
-                if (CsmKindUtilities.isClass(member)){
-                    buildSubHierarchy(map, (CsmClass)member);
-                }
-            }
+        }
+        Iterator<CsmMember> classMembers = CsmSelect.getClassMembers(cls, getClassFilter());
+        while (classMembers.hasNext()) {
+            CsmClass member = (CsmClass)classMembers.next();
+            buildSubHierarchy(map, member);
         }
     }
 }
