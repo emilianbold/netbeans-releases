@@ -27,9 +27,9 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="filterCombo" alignment="0" pref="247" max="32767" attributes="0"/>
+          <Component id="filterCombo" alignment="0" pref="249" max="32767" attributes="0"/>
           <Component id="searchPanel" alignment="0" max="32767" attributes="0"/>
-          <Component id="contactListScrollPane" alignment="0" pref="247" max="32767" attributes="0"/>
+          <Component id="contactListScrollPane" alignment="0" pref="249" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -65,6 +65,9 @@
       <SubComponents>
         <Component class="javax.swing.JList" name="contactJList">
           <Properties>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="ColorManager.getDefault().getDefaultBackground()" type="code"/>
+            </Property>
             <Property name="nextFocusableComponent" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="searchField"/>
             </Property>

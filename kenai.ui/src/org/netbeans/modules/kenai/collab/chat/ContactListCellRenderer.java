@@ -51,6 +51,7 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.kenai.api.KenaiManager;
+import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 import org.openide.awt.HtmlRenderer;
 import org.openide.util.ImageUtilities;
 
@@ -140,13 +141,14 @@ public class ContactListCellRenderer extends javax.swing.JPanel implements ListC
             kenaiName.setBackground(list.getSelectionBackground());
             kenaiName.setForeground(list.getSelectionForeground());
         } else {
-            this.setBackground(list.getBackground());
+            Color bg = ColorManager.getDefault().getDefaultBackground();
+            this.setBackground(bg);
             this.setForeground(list.getForeground());
-            buddyLabel.setBackground(list.getBackground());
+            buddyLabel.setBackground(bg);
             buddyLabel.setForeground(list.getForeground());
-            messageLabel.setBackground(list.getBackground());
+            messageLabel.setBackground(bg);
             messageLabel.setForeground(list.getForeground());
-            kenaiName.setBackground(list.getBackground());
+            kenaiName.setBackground(bg);
             kenaiName.setForeground(Color.gray);
         }
         this.setPreferredSize(new Dimension(10, getPreferredSize().height));
