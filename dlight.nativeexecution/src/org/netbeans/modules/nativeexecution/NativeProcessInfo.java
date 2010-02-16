@@ -48,6 +48,7 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
 import org.openide.util.Utilities;
 
 /**
@@ -69,6 +70,8 @@ public final class NativeProcessInfo {
     private boolean x11forwarding;
     private boolean suspend;
     private Collection<ChangeListener> listeners = null;
+    private Pty pty = null;
+    private boolean runInPty;
 
     public NativeProcessInfo(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
@@ -163,6 +166,14 @@ public final class NativeProcessInfo {
         }
     }
 
+    public List<String> getArguments() {
+        return arguments;
+    }
+
+    public String getExecutable() {
+        return executable;
+    }
+
     public List<String> getCommand() {
         if (executable == null && commandLine == null) {
             return null;
@@ -227,7 +238,6 @@ public final class NativeProcessInfo {
          * The magic below is all about making run/debug act identically in case
          * of ExternalTerminal
          */
-
         if (commandLine != null) {
             return commandLine;
         }
@@ -311,5 +321,25 @@ public final class NativeProcessInfo {
 
     public MacroMap getEnvironment() {
         return environment;
+    }
+
+    public void setPty(Pty pty) {
+        this.pty = pty;
+        runInPty = (pty != null);
+    }
+
+    public Pty getPty() {
+        return pty;
+    }
+
+    public void setPtyMode(boolean ptyMode) {
+        this.runInPty = ptyMode;
+        if (!ptyMode) {
+            pty = null;
+        }
+    }
+
+    public boolean isPtyMode() {
+        return runInPty || getPty() != null;
     }
 }

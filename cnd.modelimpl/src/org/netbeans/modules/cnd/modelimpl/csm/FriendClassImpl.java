@@ -72,11 +72,14 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     private CsmUID<CsmClass> friendUID;
     private TemplateDescriptor templateDescriptor = null;
     
-    public FriendClassImpl(AST ast, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) {
+    public FriendClassImpl(AST ast, AST qid, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) throws AstRendererException {
         super(ast, file);
         this.parentUID = UIDs.get(parent);
-        AST qid = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
-        name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
+        qid = (qid != null) ? qid : AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+        if (qid == null) {
+            throw new AstRendererException(file, getStartOffset(), "Invalid friend class declaration."); // NOI18N
+        }
+        name = QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
         classForwardUID = UIDCsmConverter.declarationToUID(cfd);
         AST templateParams = AstUtil.findSiblingOfType(ast, CPPTokenTypes.LITERAL_template);

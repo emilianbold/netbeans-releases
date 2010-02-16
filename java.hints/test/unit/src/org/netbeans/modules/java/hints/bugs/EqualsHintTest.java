@@ -107,6 +107,12 @@ public class EqualsHintTest extends TestBase {
                             "package test; public class Test{ public void test() {int[] a = null; boolean b = a.equals(aa);}}");
     }
 
+    public void testNoThis() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Test { public boolean test(Integer o) {return equals(o);}}",
+                            "0:73-0:79:verifier:IE");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();
