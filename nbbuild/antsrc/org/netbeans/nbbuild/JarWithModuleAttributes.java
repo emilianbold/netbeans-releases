@@ -203,8 +203,16 @@ public class JarWithModuleAttributes extends Jar {
                             }
                         } else {
                             int[] version = parseDecimal(one.substring(great + 1).trim(), 3);
+                            int slash = one.indexOf('/');
+                            String cnb;
+                            if (slash >= 0) {
+                                cnb = one.substring(0, slash).trim();
+                                version[0] += 100 * Integer.parseInt(one.substring(slash + 1, great).trim());
+                            } else {
+                                cnb = one.substring(0, great).trim();
+                            }
                             int nextMajor = version[0] + 1;
-                            sb.append(one.substring(0, great).trim()).append(";bundle-version=\"[");
+                            sb.append(cnb).append(";bundle-version=\"[");
                             String conditionalDot = "";
                             for (int i = 0; i < version.length; i++) {
                                 sb.append(conditionalDot);

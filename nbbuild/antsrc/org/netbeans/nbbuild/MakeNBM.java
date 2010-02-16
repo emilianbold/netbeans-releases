@@ -330,7 +330,6 @@ public class MakeNBM extends Task {
     private FileSet executablesSet;
     private boolean usePack200;
     private String pack200excludes;
-    private final static Packer packer = Pack200.newPacker();
 
     /** Try to find and create localized info.xml files */
     public void setLocales(String s) {
@@ -875,7 +874,7 @@ public class MakeNBM extends Task {
            FileOutputStream fos = new FileOutputStream(targetFile);
            try {
                OutputStream outputStream = new GZIPOutputStream(fos);
-               packer.pack(jarFile, outputStream);
+               Pack200.newPacker().pack(jarFile, outputStream);
                outputStream.close();
                return true;
            } finally {

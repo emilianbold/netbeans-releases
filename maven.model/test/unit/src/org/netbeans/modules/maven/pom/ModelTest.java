@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.maven.pom;
 
-import hidden.org.codehaus.plexus.util.IOUtil;
 import hidden.org.codehaus.plexus.util.StringOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -76,9 +75,10 @@ import org.openide.filesystems.FileUtil;
  *
  * @author mkleint
  */
-public class NewEmptyJUnitTest extends TestCase {
+public class ModelTest extends TestCase {
 
-    public NewEmptyJUnitTest() {
+    public ModelTest(String name) {
+        super(name);
     }
 
     public void testModelWrite() throws Exception {
