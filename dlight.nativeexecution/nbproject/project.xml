@@ -193,16 +193,19 @@
                 <friend>org.netbeans.modules.dlight.msa</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.procfs</friend>
+                <friend>org.netbeans.modules.dlight.remote</friend>
                 <friend>org.netbeans.modules.dlight.spi</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.tools</friend>
                 <friend>org.netbeans.modules.dlight.util</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
-                <friend>org.netbeans.modules.dlight.remote</friend>
-                <package>org.netbeans.modules.cnd.api.execution</package>
+                <friend>org.netbeans.nativeexecution.terminal</friend>
                 <package>org.netbeans.modules.nativeexecution.api</package>
+                <package>org.netbeans.modules.nativeexecution.api.pty</package>
                 <package>org.netbeans.modules.nativeexecution.api.util</package>
                 <package>org.netbeans.modules.nativeexecution.spi</package>
+                <package>org.netbeans.modules.nativeexecution.spi.pty</package>
+                <package>org.netbeans.modules.nativeexecution.spi.support.pty</package>
             </friend-packages>
         </data>
     </configuration>

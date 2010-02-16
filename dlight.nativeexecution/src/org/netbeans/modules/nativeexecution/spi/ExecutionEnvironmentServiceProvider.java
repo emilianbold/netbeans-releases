@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,17 +34,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.api;
+package org.netbeans.modules.nativeexecution.spi;
 
-import org.netbeans.modules.nativeexecution.spi.ProcessInfoProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
+ * A generic interface for some service that can be applicable to an
+ * ExecutionEnvironment
  *
  * @author ak119685
  */
-public interface ProcessInfoProviderFactory {
+public interface ExecutionEnvironmentServiceProvider {
 
-    public ProcessInfoProvider getProvider(ExecutionEnvironment env, int pid);
+    public boolean isApplicable(ExecutionEnvironment env);
 }
