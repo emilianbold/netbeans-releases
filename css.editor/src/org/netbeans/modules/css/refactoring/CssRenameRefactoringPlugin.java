@@ -54,6 +54,7 @@ import org.netbeans.modules.css.indexing.CssFileModel;
 import org.netbeans.modules.css.indexing.CssFileModel.Entry;
 import org.netbeans.modules.css.indexing.CssIndex;
 import org.netbeans.modules.css.indexing.DependenciesGraph;
+import org.netbeans.modules.css.indexing.DependenciesGraph.Node;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.parsing.api.Source;
@@ -107,6 +108,11 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
     public Problem prepare(final RefactoringElementsBag refactoringElements) {
         Lookup lookup = refactoring.getRefactoringSource();
         CssElementContext context = lookup.lookup(CssElementContext.class);
+        CssProjectSupport sup = CssProjectSupport.findFor(context.getFileObject());
+        if (sup == null) {
+            return null;
+        }
+        CssIndex index = sup.getIndex();
 
         if (context instanceof CssElementContext.Editor) {
             //find all occurances of selected element in (and only in) THIS file.
@@ -115,11 +121,6 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             SimpleNode element = econtext.getElement();
             String elementImage = element.image();
 
-            CssProjectSupport sup = CssProjectSupport.findFor(context.getFileObject());
-            if (sup == null) {
-                return null;
-            }
-            CssIndex index = sup.getIndex();
             ModificationResult modificationResult = new ModificationResult();
             if (element.kind() == CssParserTreeConstants.JJT_CLASS
                     || element.kind() == CssParserTreeConstants.JJTHASH) {
@@ -135,9 +136,9 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
                 //refactor all occurances support
                 CssRefactoringExtraInfo extraInfo =
-                    lookup.lookup(CssRefactoringExtraInfo.class);
+                        lookup.lookup(CssRefactoringExtraInfo.class);
 
-                if(extraInfo == null || !extraInfo.isRefactorAll()) {
+                if (extraInfo == null || !extraInfo.isRefactorAll()) {
                     //if the "refactor all occurances" checkbox hasn't been
                     //selected the occurances must be searched only in the related files
 
@@ -147,7 +148,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                     //now we have a list of files which contain the given class or id and are
                     //related to the base file
                 }
-                
+
                 if (LOG) {
                     LOGGER.fine("Refactoring element " + element.image() + " in file " + context.getFileObject().getPath()); //NOI18N
                     LOGGER.fine("Involved files declaring the element " + element.image() + ":"); //NOI18N
@@ -186,10 +187,9 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                                         editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),
                                         entry.getName(),
                                         newName,
-                                        related ? 
-                                            NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Selector") :
-                                            NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Unrelated_Selector")
-                                            )); //NOI18N
+                                        related
+                                        ? NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Selector")
+                                        : NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Unrelated_Selector"))); //NOI18N
                             }
                         }
                         modificationResult.addDifferences(file, diffs);
@@ -205,14 +205,14 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                 CssFileModel model = new CssFileModel(econtext.getParserResult());
                 List<Difference> diffs = new ArrayList<Difference>();
                 CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(context.getFileObject());
-                for(Entry entry : model.getHtmlElements()) {
-                    if(entry.isValidInSourceDocument() && elementImage.equals(entry.getName())) {
+                for (Entry entry : model.getHtmlElements()) {
+                    if (entry.isValidInSourceDocument() && elementImage.equals(entry.getName())) {
                         diffs.add(new Difference(Difference.Kind.CHANGE,
-                                        editor.createPositionRef(entry.getDocumentRange().getStart(), Bias.Forward),
-                                        editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),
-                                        entry.getName(),
-                                        refactoring.getNewName(),
-                                        NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Selector"))); //NOI18N
+                                editor.createPositionRef(entry.getDocumentRange().getStart(), Bias.Forward),
+                                editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),
+                                entry.getName(),
+                                refactoring.getNewName(),
+                                NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Selector"))); //NOI18N
                     }
                 }
                 modificationResult.addDifferences(context.getFileObject(), diffs);
@@ -233,11 +233,80 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
         } else if (context instanceof CssElementContext.File) {
             //refactor a file in explorer
             CssElementContext.File fileContext = (CssElementContext.File) context;
-            LOGGER.info("refactor file " + fileContext.getFileObject().getPath()); //NOI18N
+            LOGGER.fine("refactor file " + fileContext.getFileObject().getPath()); //NOI18N
+            String newName = refactoring.getNewName();
+
+            //a. get all importing files
+            //b. rename the references
+            //c. rename the file itself - done via default rename plugin
+            DependenciesGraph deps = index.getDependencies(context.getFileObject());
+            Collection<Node> refering = deps.getSourceNode().getReferingNodes();
+            ModificationResult modificationResult = new ModificationResult();
+            for (Node ref : refering) {
+                FileObject file = ref.getFile();
+                try {
+                    Source source;
+                    CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(file);
+                    //prefer using editor
+                    //XXX this approach doesn't match the dependencies graph
+                    //which is made strictly upon the index data
+                    if (editor != null && editor.isModified()) {
+                        source = Source.create(editor.getDocument());
+                    } else {
+                        source = Source.create(file);
+                    }
+
+                    CssFileModel model = new CssFileModel(source);
+
+                    List<Difference> diffs = new ArrayList<Difference>();
+                    for (Entry entry : model.getImports()) {
+                        String imp = entry.getName(); //unquoted
+                        FileObject resolvedFileObject = WebUtils.resolve(file, imp);
+                        if (resolvedFileObject != null && resolvedFileObject.equals(fileContext.getFileObject())) {
+                            //the import refers to me - lets refactor it
+                            if (entry.isValidInSourceDocument()) {
+                                //new relative path creation
+                                String newImport;
+                                String extension = context.getFileObject().getExt(); //use the same extension as source file (may not be .css)
+                                int slashIndex = imp.lastIndexOf('/'); //NOI18N
+                                if (slashIndex != -1) {
+                                    newImport = imp.substring(0, slashIndex) + "/" + newName + "." + extension; //NOI18N
+                                } else {
+                                    newImport = newName + "." + extension; //NOI18N
+                                }
+
+                                diffs.add(new Difference(Difference.Kind.CHANGE,
+                                        editor.createPositionRef(entry.getDocumentRange().getStart(), Bias.Forward),
+                                        editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),
+                                        entry.getName(),
+                                        newImport,
+                                        NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Modify_Css_File_Import"))); //NOI18N
+                            }
+                        }
+                    }
+
+                    modificationResult.addDifferences(file, diffs);
+
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+            }
+
+            refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(modificationResult)));
+
+            for (FileObject fo : modificationResult.getModifiedFileObjects()) {
+                for (Difference diff : modificationResult.getDifferences(fo)) {
+                    refactoringElements.add(refactoring, DiffElement.create(diff, fo, modificationResult));
+
+                }
+            }
+
+
         } else if (context instanceof CssElementContext.Folder) {
             //refactor a folder in explorer
             CssElementContext.Folder fileContext = (CssElementContext.Folder) context;
-            LOGGER.info("refactor folder " + fileContext.getFileObject().getPath()); //NOI18N
+            LOGGER.fine("refactor folder " + fileContext.getFileObject().getPath()); //NOI18N
         }
 
         return null;

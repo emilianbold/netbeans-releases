@@ -102,14 +102,14 @@
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
                         <attr name="position" intvalue="1300"/>
                     </file>
-                    <file name="RenameAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
-                        <attr name="position" intvalue="800"/>
-                    </file>
                     <file name="RefactoringWhereUsed.shadow">
                         <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringWhereUsed.instance"/>
-                        <attr name="position" intvalue="850"/>
+                        <attr name="position" intvalue="800"/>
                     </file>
+                    <file name="RefactoringAll.shadow">
+			<attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringAll.instance"/>
+			<attr name="position" intvalue="850"/>
+		    </file>
                     <file name="org-openide-actions-SaveAsTemplateAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
                         <attr name="position" intvalue="1000"/>

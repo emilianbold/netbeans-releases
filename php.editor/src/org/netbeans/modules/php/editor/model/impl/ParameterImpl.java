@@ -144,7 +144,7 @@ public class ParameterImpl implements Parameter {
 
         for (int i = 0; i < inStr.length(); i++) {
             if ((inStr.charAt(i) == ':') || (inStr.charAt(i) == '|') ||//NOI18N
-                    (inStr.charAt(i) == ';') ||  isEncodedChar(i, inStr)) {//NOI18N
+                    (inStr.charAt(i) == ';') || (inStr.charAt(i) == ',') ||  isEncodedChar(i, inStr)) {//NOI18N
                 outStr.append(encodeChar(inStr.charAt(i)));
 
                 continue;
