@@ -53,6 +53,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.rubyproject.queries.RubyProjectEncodingQueryImpl;
@@ -399,9 +400,10 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
 
         ProjectOpenedHookImpl() {}
         
+        @Override
         protected void projectOpened() {
+            RubyPlatformProvider.ensurePlatformsReady();
             open();
-
             reloadGems();
 
             // Ensure that code coverage is initialized in case it's enabled...
