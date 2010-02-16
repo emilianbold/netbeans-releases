@@ -794,11 +794,6 @@ public final class ClassPath {
         }
 
         Entry(URL url, FilteringPathResourceImplementation filter) {
-            if (url == null)
-                throw new IllegalArgumentException ();
-            if ("jar".equals (url.getProtocol ()) && //NOI18N
-                FileUtil.getArchiveFile (url) == null
-            ) throw new IllegalArgumentException ("Invalid URL: " + url);
             this.url = url;
             this.filter = filter;
         }
