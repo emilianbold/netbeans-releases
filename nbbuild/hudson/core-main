@@ -47,6 +47,9 @@ if [ "$action" = "build" ]; then
     testmodule keyring
     testmodule masterfs
     testmodule maven
+    testmodule maven.embedder
+    testmodule maven.indexer
+    testmodule maven.model
     testmodule nbjunit
     testmodule o.apache.tools.ant.module
     testmodule o.n.bootstrap
