@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,36 +34,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.nativeexecution.pty;
 
-package org.netbeans.modules.cnd.remote.sync;
-
-import org.netbeans.modules.cnd.remote.project.RemoteBuildTestBase;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.support.HelperUtility;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author ak119685
  */
-public abstract class RfsBaseRemoteBuildTestCase extends RemoteBuildTestBase {
+public final class PtyProcessStartUtility extends HelperUtility {
 
-    static {
-        System.setProperty("cnd.remote.fs", "true");
-        System.setProperty("cnd.remote.scp", "true");
+    private final static PtyProcessStartUtility instance = new PtyProcessStartUtility();
+
+    private PtyProcessStartUtility() {
+        super("bin/nativeexecution/$osname-${platform}$_isa/process_start"); // NOI18N
     }
 
-    public RfsBaseRemoteBuildTestCase(String testName) {
-        super(testName);
-    }
-
-    public RfsBaseRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);       
-    }
-
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        setupHost("rfs");
+    public static PtyProcessStartUtility getInstance() {
+        return instance;
     }
 }

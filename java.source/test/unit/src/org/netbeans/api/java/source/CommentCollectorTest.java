@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 1997-2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 1997-2010 Sun Microsystems, Inc.
  */
 package org.netbeans.api.java.source;
 
@@ -46,6 +46,7 @@ import org.openide.filesystems.FileUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import org.netbeans.modules.java.source.usages.IndexUtil;
 
 /**
  * @author Rastislav Komara (<a href="mailto:moonko@netbeans.orgm">RKo</a>)
@@ -62,6 +63,18 @@ public class CommentCollectorTest extends NbTestCase {
         return suite;
     }
 
+    private File work;
+
+    @Override
+    protected void setUp() throws Exception {
+        File wd = getWorkDir();
+        FileObject cache = FileUtil.createFolder(new File(wd, "cache"));
+        IndexUtil.setCacheFolder(FileUtil.toFile(cache));
+        work = new File(wd, "work");
+        work.mkdirs();
+        
+        super.setUp();
+    }
 
     /**
      * Constructs a test case with the given name.
@@ -80,7 +93,7 @@ public class CommentCollectorTest extends NbTestCase {
 
     @Test
     public void testCollector() throws Exception {
-        File testFile = new File(getWorkDir(), "Test.java");
+        File testFile = new File(work, "Test.java");
         final String origin = "/** (COMM1) This comment belongs before class */\n" +
                 "public class Clazz {\n" +
                 "\n\n\n//TODO: (COMM2) This is just right under class (inside)" +
@@ -161,7 +174,7 @@ public class CommentCollectorTest extends NbTestCase {
 
 
     public void testMethod() throws Exception {
-        File testFile = new File(getWorkDir(), "Test.java");
+        File testFile = new File(work, "Test.java");
         String origin = "\n" +
                 "import java.io.File;\n" +
                 "\n" +
@@ -214,7 +227,7 @@ public class CommentCollectorTest extends NbTestCase {
     }
 
     public void testMethod2() throws Exception {
-        File testFile = new File(getWorkDir(), "Test.java");
+        File testFile = new File(work, "Test.java");
         final String origin =
                 "public class Origin {\n" +
                         "    /** * comment * @return 1 */\n" +
@@ -277,7 +290,7 @@ public class CommentCollectorTest extends NbTestCase {
     }
 
     public void testVariable() throws Exception {
-        File testFile = new File(getWorkDir(), "Test.java");
+        File testFile = new File(work, "Test.java");
         final String origin =
                        "package test;\n" +
                        "public abstract class Test {\n" +
