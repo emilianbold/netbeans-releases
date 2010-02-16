@@ -239,6 +239,50 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue176224.php");
     }
 
+    public void testBracePlacement01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatting/blankLines/BracePlacement01.php", options);
+    }
+
+    public void testBracePlacement02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+	options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        reformatFileContents("testfiles/formatting/blankLines/BracePlacement02.php", options);
+    }
+
+    public void testBracePlacement03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+	options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+	options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+	options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+	options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+	options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+	options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+	options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+        reformatFileContents("testfiles/formatting/blankLines/BracePlacement03.php", options);
+    }
+
+    public void testAlternativeSyntaxPlacement01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/AlternativeSyntaxPlacement01.php", options);
+    }
+
     // blank lines
     public void testBLClass01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
@@ -635,6 +679,12 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceAroundStringConcat01.php", options);
     }
 
+    public void testSpacesAroundKeyValue01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceAroundKeyValueOps, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundKeyValueOp01.php", options);
+    }
+
     public void testSpacesWithinIfParens01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.spaceWithinIfParens, true);
@@ -694,6 +744,42 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceWithinTypeCastParens02.php", options);
     }
 
+    public void testSpacesWithinArrayDeclParens01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinArrayDeclParens, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinArrayDeclParens01.php", options);
+    }
+
+    public void testSpacesWithinArrayDeclParens02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinArrayDeclParens, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinArrayDeclParens02.php", options);
+    }
+
+    public void testSpacesWithinArrayBrackets01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinArrayBrackets, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinArrayBrackets01.php", options);
+    }
+
+    public void testSpacesWithinArrayBrackets02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinArrayBrackets, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinArrayBrackets02.php", options);
+    }
+
+    public void testSpacesWithinArrayBrackets03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinArrayBrackets, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinArrayBrackets03.php", options);
+    }
+
+    public void testSpacesWithinArrayBrackets04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceWithinArrayBrackets, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinArrayBrackets04.php", options);
+    }
+    
     public void testSpacesAfterTypeCast01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.spaceAfterTypeCast, false);
@@ -732,6 +818,24 @@ public class PHPFormatterTest extends PHPTestBase {
         options.put(FmtOptions.spaceBeforeComma, true);
 	options.put(FmtOptions.spaceAfterComma, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterComma04.php", options);
+    }
+
+    public void testSpacesBeforeUnaryOps01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundUnaryOps01.php", options);
+    }
+
+    public void testSpacesBeforeUnaryOps02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.spaceWithinIfParens, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundUnaryOps02.php", options);
+    }
+
+    public void testSpacesBeforeUnaryOps03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.spaceWithinIfParens, true);
+	options.put(FmtOptions.spaceAroundUnaryOps, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceAroundUnaryOps03.php", options);
     }
 
     private void reformatFileContents(String file) throws Exception {

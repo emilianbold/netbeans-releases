@@ -105,6 +105,11 @@ public class FmtOptions {
 
     public static final String classDeclBracePlacement = "classDeclBracePlacement"; //NOI18N
     public static final String methodDeclBracePlacement = "methodDeclBracePlacement"; //NOI18N
+    public static final String ifBracePlacement = "ifBracePlacement"; //NOI18N
+    public static final String forBracePlacement = "forBracePlacement"; //NOI18N
+    public static final String whileBracePlacement = "whileBracePlacement"; //NOI18N
+    public static final String switchBracePlacement = "switchBracePlacement"; //NOI18N
+    public static final String catchBracePlacement = "catchBracePlacement"; //NOI18N
     public static final String otherBracePlacement = "otherBracePlacement"; //NOI18N
 
     public static final String blankLinesBeforeNamespace = "blankLinesBeforeNamespace"; //NOI18N
@@ -136,6 +141,7 @@ public class FmtOptions {
     public static final String spaceAroundTernaryOps = "spaceAroundTernaryOps"; //NOI18N
     public static final String spaceAroundStringConcatOps = "spaceAroundStringConcatOps"; //NOI18N
     public static final String spaceAroundAssignOps = "spaceAroundAssignOps"; //NOI18N
+    public static final String spaceAroundKeyValueOps = "spaceAroundKeyValueOps"; //NOI18N
     public static final String spaceAroundObjectOps = "spaceAroundObjectOps"; //NOI18N
     public static final String spaceBeforeClassDeclLeftBrace = "spaceBeforeClassDeclLeftBrace"; //NOI18N
     public static final String spaceBeforeMethodDeclLeftBrace = "spaceBeforeMethodDeclLeftBrace"; //NOI18N
@@ -151,6 +157,7 @@ public class FmtOptions {
 //    public static final String spaceBeforeStaticInitLeftBrace = "spaceBeforeStaticInitLeftBrace"; //NOI18N
 //    public static final String spaceBeforeArrayInitLeftBrace = "spaceBeforeArrayInitLeftBrace"; //NOI18N
 //    public static final String spaceWithinParens = "spaceWithinParens"; //NOI18N
+    public static final String spaceWithinArrayDeclParens = "spaceWithinArrayDeclParens"; //NOI18N
     public static final String spaceWithinMethodDeclParens = "spaceWithinMethodDeclParens"; //NOI18N
     public static final String spaceWithinMethodCallParens = "spaceWithinMethodCallParens"; //NOI18N
     public static final String spaceWithinIfParens = "spaceWithinIfParens"; //NOI18N
@@ -162,7 +169,7 @@ public class FmtOptions {
     public static final String spaceWithinTypeCastParens = "spaceWithinTypeCastParens"; //NOI18N
 //    public static final String spaceWithinAnnotationParens = "spaceWithinAnnotationParens"; //NOI18N
 //    public static final String spaceWithinBraces = "spaceWithinBraces"; //NOI18N
-//    public static final String spaceWithinArrayInitBrackets = "spaceWithinArrayInitBrackets"; //NOI18N
+    public static final String spaceWithinArrayBrackets = "spaceWithinArrayBrackets"; //NOI18N
     public static final String spaceBeforeComma = "spaceBeforeComma"; //NOI18N
     public static final String spaceAfterComma = "spaceAfterComma"; //NOI18N
 //    public static final String spaceBeforeSemi = "spaceBeforeSemi"; //NOI18N
@@ -196,6 +203,7 @@ public class FmtOptions {
     public static final String OBRACE_NEWLINE = CodeStyle.BracePlacement.NEW_LINE.name();
     public static final String OBRACE_SAMELINE = CodeStyle.BracePlacement.SAME_LINE.name();
     public static final String OBRACE_PRESERVE = CodeStyle.BracePlacement.PRESERVE_EXISTING.name();
+    public static final String OBRACE_NEWLINE_INDENTED = CodeStyle.BracePlacement.NEW_LINE_INDENTED.name();
     
     private static Map<String,String> defaults;
     
@@ -217,6 +225,11 @@ public class FmtOptions {
 
 	    { classDeclBracePlacement, OBRACE_SAMELINE },
 	    { methodDeclBracePlacement, OBRACE_SAMELINE },
+	    { ifBracePlacement, OBRACE_SAMELINE },
+	    { forBracePlacement, OBRACE_SAMELINE },
+	    { whileBracePlacement, OBRACE_SAMELINE },
+	    { switchBracePlacement, OBRACE_SAMELINE },
+	    { catchBracePlacement, OBRACE_SAMELINE },
 	    { otherBracePlacement, OBRACE_SAMELINE },
 
             { blankLinesBeforeNamespace, "1"}, //NOI18N
@@ -247,6 +260,7 @@ public class FmtOptions {
             { spaceAroundBinaryOps, TRUE},
             { spaceAroundTernaryOps, TRUE},
 	    { spaceAroundStringConcatOps, TRUE},
+	    { spaceAroundKeyValueOps, TRUE},
             { spaceAroundAssignOps, TRUE},
 	    { spaceAroundObjectOps, FALSE},
             { spaceBeforeClassDeclLeftBrace, TRUE},
@@ -263,6 +277,7 @@ public class FmtOptions {
 //            { spaceBeforeStaticInitLeftBrace, TRUE},
 //            { spaceBeforeArrayInitLeftBrace, FALSE},
 //            { spaceWithinParens, FALSE},
+	    { spaceWithinArrayDeclParens, FALSE},
             { spaceWithinMethodDeclParens, FALSE},
             { spaceWithinMethodCallParens, FALSE},
             { spaceWithinIfParens, FALSE},
@@ -274,7 +289,7 @@ public class FmtOptions {
             { spaceWithinTypeCastParens, FALSE},
 //            { spaceWithinAnnotationParens, FALSE},
 //            { spaceWithinBraces, FALSE},
-//            { spaceWithinArrayInitBrackets, FALSE},
+            { spaceWithinArrayBrackets, FALSE},
             { spaceBeforeComma, FALSE},
             { spaceAfterComma, TRUE},
 //            { spaceBeforeSemi, FALSE},
@@ -309,6 +324,7 @@ public class FmtOptions {
 
         private static final ComboItem  bracePlacement[] = new ComboItem[] {
                 new ComboItem( OBRACE_NEWLINE, "LBL_bp_NEWLINE" ), // NOI18N
+		new ComboItem( OBRACE_NEWLINE_INDENTED, "LBL_bp_NEWLINE_INDENTED" ), // NOI18N
                 new ComboItem( OBRACE_SAMELINE, "LBL_bp_SAMELINE" ), // NOI18N
                 new ComboItem( OBRACE_PRESERVE, "LBL_bp_PRESERVE" ), // NOI18N
             };

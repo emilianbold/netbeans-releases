@@ -36,17 +36,15 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.common.spi;
 
-import java.util.Collection;
-import java.util.LinkedList;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Clients uses this class to obtain a list of web roots for a web-like project instance.
+ * Clients uses this class to obtain a  web root for a file within a web-like project.
  *
  * @author marekfukala
  */
@@ -56,18 +54,30 @@ public final class ProjectWebRootQuery {
     }
 
     /**
-     * Gets a collection of web roots for given project
+     * Gets a web root for given file residing in a project.
      *
-     * @param project Project instance
-     * @return Collection of FileObjects representing web roots of the given project.
+     * @param a file which you want to get a web root for
+     * @return a found web root or null
      */
-    public static Collection<FileObject> getWebRoots(Project project) {
-        Collection<? extends ProjectWebRootProvider> providers = Lookup.getDefault().lookupAll(ProjectWebRootProvider.class);
-        Collection<FileObject> roots = new LinkedList<FileObject>();
-        for(ProjectWebRootProvider provider : providers) {
-            roots.addAll(provider.getWebRoots(project));
+    public static FileObject getWebRoot(FileObject file) {
+        if (file == null) {
+            throw new NullPointerException("The file paramater cannot be null."); //NOI18N
         }
-        return roots;
-    }
 
+        Project project = FileOwnerQuery.getOwner(file);
+        if (project != null) {
+            ProjectWebRootProvider provider = project.getLookup().lookup(ProjectWebRootProvider.class);
+            if (provider != null) {
+                FileObject root = provider.getWebRoot(file);
+
+                assert FileUtil.isParentOf(root, file) : "ProjectWebRootProvider "
+                        + provider.getClass().getName() + " returned an invalid web root "
+                        + root.getPath() + " which doesn't contain the searched file "
+                        + file.getPath(); //NOI18N
+
+                return root;
+            }
+        }
+        return null;
+    }
 }

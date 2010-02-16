@@ -41,6 +41,7 @@ package org.netbeans.modules.java.hints;
 
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.Map;
 import javax.lang.model.element.Element;
@@ -91,8 +92,8 @@ public class LeakingThisInConstructor {
     public static ErrorDescription hintOnAssignment(HintContext ctx) {
         Map<String,TreePath> variables = ctx.getVariables ();
         TreePath thisPath = variables.get ("$this"); // NOI18N
-        Element e = ctx.getInfo().getTrees().getElement(thisPath);
-        if (e == null || !e.getSimpleName().contentEquals(THIS_KEYWORD)) {
+        if (   thisPath.getLeaf().getKind() != Kind.IDENTIFIER
+            || !((IdentifierTree) thisPath.getLeaf()).getName().contentEquals(THIS_KEYWORD)) {
             return null;
         }
         if (!isInConstructor(ctx)) {

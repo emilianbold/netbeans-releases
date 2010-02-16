@@ -84,7 +84,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 @SupportedAnnotationTypes("org.netbeans.modules.java.hints.jackpot.code.spi.*")
-@ServiceProvider(service=Processor.class)
+//@ServiceProvider(service=Processor.class)
 public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
     
     private static final Logger LOG = Logger.getLogger(JavaHintsAnnotationProcessor.class.getName());

@@ -118,6 +118,31 @@ public final class CodeStyle {
         return BracePlacement.valueOf(placement);
     }
 
+    public BracePlacement getIfBracePlacement() {
+        String placement = preferences.get(ifBracePlacement, getDefaultAsString(ifBracePlacement));
+        return BracePlacement.valueOf(placement);
+    }
+
+    public BracePlacement getForBracePlacement() {
+        String placement = preferences.get(forBracePlacement, getDefaultAsString(forBracePlacement));
+        return BracePlacement.valueOf(placement);
+    }
+
+    public BracePlacement getWhileBracePlacement() {
+        String placement = preferences.get(whileBracePlacement, getDefaultAsString(whileBracePlacement));
+        return BracePlacement.valueOf(placement);
+    }
+
+    public BracePlacement getSwitchBracePlacement() {
+        String placement = preferences.get(switchBracePlacement, getDefaultAsString(switchBracePlacement));
+        return BracePlacement.valueOf(placement);
+    }
+
+    public BracePlacement getCatchBracePlacement() {
+        String placement = preferences.get(catchBracePlacement, getDefaultAsString(catchBracePlacement));
+        return BracePlacement.valueOf(placement);
+    }
+
     public BracePlacement getOtherBracePlacement() {
         String placement = preferences.get(otherBracePlacement, getDefaultAsString(otherBracePlacement));
         return BracePlacement.valueOf(placement);
@@ -236,6 +261,10 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceAroundTernaryOps, getDefaultAsBoolean(spaceAroundTernaryOps));
     }
 
+    public boolean spaceAroundKeyValueOps() {
+        return preferences.getBoolean(spaceAroundKeyValueOps, getDefaultAsBoolean(spaceAroundKeyValueOps));
+    }
+
     public boolean spaceAroundAssignOps() {
         return preferences.getBoolean(spaceAroundAssignOps, getDefaultAsBoolean(spaceAroundAssignOps));
     }
@@ -337,6 +366,10 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceWithinTypeCastParens, getDefaultAsBoolean(spaceWithinTypeCastParens));
     }
 
+    public boolean spaceWithinArrayDeclParens() {
+        return preferences.getBoolean(spaceWithinArrayDeclParens, getDefaultAsBoolean(spaceWithinArrayDeclParens));
+    }
+
 //    public boolean spaceWithinAnnotationParens() {
 //        return preferences.getBoolean(spaceWithinAnnotationParens, getDefaultAsBoolean(spaceWithinAnnotationParens));
 //    }
@@ -344,10 +377,10 @@ public final class CodeStyle {
 //    public boolean spaceWithinBraces() {
 //        return preferences.getBoolean(spaceWithinBraces, getDefaultAsBoolean(spaceWithinBraces));
 //    }
-//
-//    public boolean spaceWithinArrayInitBrackets() {
-//        return preferences.getBoolean(spaceWithinArrayInitBrackets, getDefaultAsBoolean(spaceWithinArrayInitBrackets));
-//    }
+
+    public boolean spaceWithinArrayBrackets() {
+        return preferences.getBoolean(spaceWithinArrayBrackets, getDefaultAsBoolean(spaceWithinArrayBrackets));
+    }
 
     public boolean spaceBeforeComma() {
         return preferences.getBoolean(spaceBeforeComma, getDefaultAsBoolean(spaceBeforeComma));
@@ -388,6 +421,7 @@ public final class CodeStyle {
     public enum BracePlacement {
         SAME_LINE,
         NEW_LINE,
+	NEW_LINE_INDENTED,
         PRESERVE_EXISTING
     }
 }
