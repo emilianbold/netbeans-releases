@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,61 +34,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.nativeexecution.api;
 
-package org.netbeans.modules.cnd.remote.sync;
-
-import java.util.Collection;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
- * @author Sergey Grinev
+ * @author ak119685
  */
-public class RfsBuildTestSuite extends CndBaseTestSuite {
-
-    public static final String PLATFORMS_SECTION = "remote.platforms";
-    public static final String DEFAULT_SECTION = "remote";
-
-    public RfsBuildTestSuite(Class testClass) {
-        this(testClass.getName(), testClass);
-    }
-
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public RfsBuildTestSuite(String name, Test... tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
-    }
-
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public RfsBuildTestSuite(String name, Collection<Test> tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
-    }
-
-    public RfsBuildTestSuite() {
-        this("Remote Development", // NOI18N
-             //HostSetupTestCase.class,
-             RfsGnuRemoteBuildTest.class,
-             RfsSunStudioRemoteBuildTest.class);
-    }
-
-
-    private RfsBuildTestSuite(String name, Class... testClasses) {
-        super(name, PLATFORMS_SECTION, testClasses);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new RfsBuildTestSuite();
-        return suite;
-    }
+public interface ProcessInfoProvider {
+    /**
+     * Returns information about the process (see ProcessInfo);
+     * This method may *block* current thread for some time
+     *
+     * May return null
+     * 
+     * @return ProcessInfo or null if no info is available.
+     */
+    public ProcessInfo getProcessInfo();
 }

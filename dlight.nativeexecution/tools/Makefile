@@ -39,12 +39,10 @@
 
 INSTALLDIR = /dev/null
 
-APP_NAME=privp
-
-#CFLAGS-Windows_XP := -c -mno-cygwin
-CFLAGS-Linux := -c -fPIC
-CFLAGS-SunOS := -c -fPIC
-CFLAGS-Mac_OS_X := -c -fPIC
+#CFLAGS-Windows_XP := -mno-cygwin
+CFLAGS-Linux := -fPIC
+CFLAGS-SunOS := -fPIC
+CFLAGS-Mac_OS_X := -fPIC
 
 ifdef 64BITS
     FLAG64 := -m64
@@ -89,20 +87,19 @@ DIST=../release/bin/nativeexecution
 BUILD=./build
 
 PLATFORM_DIR=$(OSNAME)-$(PLATFORM)
-APP_PATH=${DIST}/${PLATFORM_DIR}/${APP_NAME}
-APP_OUT=${BUILD}/${PLATFORM_DIR}/${APP_NAME}.o
+APP_PATH=${DIST}/${PLATFORM_DIR}
 
-all: check init ${APP_PATH}
+all: check init process_start privp
 
-#appliction:
-${APP_PATH}: ${APP_OUT}
-	gcc ${LDFLAGS_APP} -o ${APP_PATH} ${APP_OUT}
+privp:
+	gcc ${CFLAGS} -o ${APP_PATH}/$@ $@.c
 
-${APP_OUT}: ${APP_NAME}.c
-	gcc ${CFLAGS} -o ${APP_OUT} ${APP_NAME}.c
+process_start:
+	gcc ${CFLAGS} -o ${APP_PATH}/$@ $@.c
+
 
 clean:
-	rm -rf ${BUILD}/${PLATFORM_DIR} ${DIST}/${PLATFORM_DIR}
+	rm -rf ${APP_PATH} ${DIST}/${PLATFORM_DIR}
 
 cleanall:
 	rm -rf ${BUILD} ${DIST}
@@ -119,7 +116,7 @@ install: all
 	fi
 
 init:
-	@mkdir -p ${BUILD}/${PLATFORM_DIR} ${DIST}/${PLATFORM_DIR}
+	@mkdir -p ${APP_PATH} ${DIST}/${PLATFORM_DIR}
 
 check:
 	@if [ -n "$(testit)" ]; \

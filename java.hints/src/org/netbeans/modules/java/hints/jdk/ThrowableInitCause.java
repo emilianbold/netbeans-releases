@@ -75,18 +75,33 @@ public class ThrowableInitCause {
     public static final boolean STRICT_DEFAULT = false;
 
     @TriggerPatterns({
-        @TriggerPattern(value="throw ($exc) new $exc($str).initCause($del);",
+        @TriggerPattern(value="($exc) new $exc($str).initCause($del)",
                         constraints={@Constraint(variable="$str", type="java.lang.String"),
                                      @Constraint(variable="$del", type="java.lang.Throwable")}),
+        @TriggerPattern(value="($exc) new $exc().initCause($del)",
+                        constraints={@Constraint(variable="$del", type="java.lang.Throwable")})
+    })
+    public static ErrorDescription expression(HintContext ctx) {
+        return initCause(ctx, false);
+    }
+
+    @TriggerPatterns({
         @TriggerPattern(value="$exc $excVar = new $exc($str); $excVar.initCause($del); throw $excVar;",
                         constraints={@Constraint(variable="$str", type="java.lang.String"),
                                      @Constraint(variable="$del", type="java.lang.Throwable")}),
-        @TriggerPattern(value="throw ($exc) new $exc().initCause($del);",
-                        constraints={@Constraint(variable="$del", type="java.lang.Throwable")}),
+        @TriggerPattern(value="final $exc $excVar = new $exc($str); $excVar.initCause($del); throw $excVar;",
+                        constraints={@Constraint(variable="$str", type="java.lang.String"),
+                                     @Constraint(variable="$del", type="java.lang.Throwable")}),
         @TriggerPattern(value="$exc $excVar = new $exc(); $excVar.initCause($del); throw $excVar;",
+                        constraints={@Constraint(variable="$del", type="java.lang.Throwable")}),
+        @TriggerPattern(value="final $exc $excVar = new $exc(); $excVar.initCause($del); throw $excVar;",
                         constraints={@Constraint(variable="$del", type="java.lang.Throwable")})
     })
-    public static ErrorDescription initCause(HintContext ctx) {
+    public static ErrorDescription variable(HintContext ctx) {
+        return initCause(ctx, true);
+    }
+
+    private static ErrorDescription initCause(HintContext ctx, boolean toThrow) {
         TypeElement throwable = ctx.getInfo().getElements().getTypeElement("java.lang.Throwable");
 
         if (throwable == null) return null;
@@ -116,7 +131,7 @@ public class ThrowableInitCause {
                                 || (    MatcherUtilities.matches(ctx, str, "$del.getLocalizedMessage()")
                                     && !ctx.getPreferences().getBoolean(STRICT_KEY, STRICT_DEFAULT)))
             || (str == null && !ctx.getPreferences().getBoolean(STRICT_KEY, STRICT_DEFAULT)))) {
-            target = "throw new $exc($del);";
+            target = "new $exc($del)";
         } else {
             TypeElement jlString = ctx.getInfo().getElements().getTypeElement("java.lang.String");
 
@@ -125,10 +140,14 @@ public class ThrowableInitCause {
             constrParams.add(jlString.asType());
 
             if (str != null) {
-                target = "throw new $exc($str, $del);";
+                target = "new $exc($str, $del)";
             } else {
-                target = "throw new $exc(null, $del);"; //TODO: might lead to incompilable code (for overloaded constructors)
+                target = "new $exc(null, $del)"; //TODO: might lead to incompilable code (for overloaded constructors)
             }
+        }
+
+        if (toThrow) {
+            target = "throw " + target + ";";
         }
 
         TreePath del = ctx.getVariables().get("$del");

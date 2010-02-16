@@ -55,6 +55,9 @@ public enum FileState {
     /** Is not controlled  */
     UNCONTROLLED('u'),
 
+    /** The file does not exist on local host (although belongs to the project) */
+    INEXISTENT('n'),
+
     /** Error occured when touching or copying */
     ERROR('e');
 

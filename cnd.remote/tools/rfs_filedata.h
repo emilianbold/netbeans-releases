@@ -62,7 +62,10 @@ enum file_state {
 
     ERROR = 'e',
     DIRECTORY = 'D',
-    PENDING = 'p'
+    PENDING = 'p',
+    
+    /** The file does not exist on local host (although belongs to the project) */
+    INEXISTENT = 'n',
 };
 
 typedef struct file_data {
