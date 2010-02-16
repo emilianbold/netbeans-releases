@@ -36,23 +36,12 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.spi.pty;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+package org.netbeans.modules.cnd.api.model;
 
 /**
- *
- * @author ak119685
+ * 
+ * @author Nick Krasilnikov (http://nnnnnk.name)
  */
-public interface PtyImpl {
-
-    public String getSlaveName();
-
-    public InputStream getInputStream();
-
-    public OutputStream getOutputStream();
-
-    public void close() throws IOException;
+public interface CsmProgram extends CsmOffsetableDeclaration {
 }

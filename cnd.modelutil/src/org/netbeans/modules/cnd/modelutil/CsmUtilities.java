@@ -905,34 +905,36 @@ public class CsmUtilities {
      */
     public static String getSignature(CsmFunction fun, boolean showParamNames) {
         StringBuilder sb = new StringBuilder(CsmKindUtilities.isTemplate(fun) ? ((CsmTemplate) fun).getDisplayName() : fun.getName());
-        sb.append('(');
-        boolean addComma = false;
-        for (Iterator<CsmParameter> iter = fun.getParameters().iterator(); iter.hasNext();) {
-            CsmParameter par = iter.next();
-            if (addComma) {
-                sb.append(", "); // NOI18N
+        if (!CsmKindUtilities.isProgram(fun)) {
+            sb.append('(');
+            boolean addComma = false;
+            for (Iterator<CsmParameter> iter = fun.getParameters().iterator(); iter.hasNext();) {
+                CsmParameter par = iter.next();
+                if (addComma) {
+                    sb.append(", "); // NOI18N
 
-            } else {
-                addComma = true;
-            }
-            if (showParamNames) {
-                sb.append(par.getDisplayText());
-            } else {
-                CsmType type = par.getType();
-                if (type != null) {
-                    sb.append(type.getText());
-                //sb.append(' ');
-                } else if (par.isVarArgs()) {
-                    sb.append("..."); // NOI18N
+                } else {
+                    addComma = true;
+                }
+                if (showParamNames) {
+                    sb.append(par.getDisplayText());
+                } else {
+                    CsmType type = par.getType();
+                    if (type != null) {
+                        sb.append(type.getText());
+                        //sb.append(' ');
+                    } else if (par.isVarArgs()) {
+                        sb.append("..."); // NOI18N
 
+                    }
                 }
             }
-        }
-        sb.append(')');
-        if (CsmKindUtilities.isMethodDeclaration(fun)) {
-            if (((CsmMethod) fun).isConst()) {
-                sb.append(" const"); // NOI18N
+            sb.append(')');
+            if (CsmKindUtilities.isMethodDeclaration(fun)) {
+                if (((CsmMethod) fun).isConst()) {
+                    sb.append(" const"); // NOI18N
 
+                }
             }
         }
         // TODO: as soon as we extract APTStringManager into a separate module,

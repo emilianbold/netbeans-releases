@@ -57,8 +57,8 @@ public class APTFortranFilter extends APTBaseLanguageFilter {
     private Map<Integer,Integer> filter = new HashMap<Integer,Integer>();
 
     public APTFortranFilter() {
-        initialize();
         setCaseInsensitive(true);
+        initialize();
     }
 
     @Override
@@ -207,32 +207,6 @@ public class APTFortranFilter extends APTBaseLanguageFilter {
         filter("LEN", APTTokenTypes.T_LEN); // NOI18N
 
         filter("BIND", APTTokenTypes.T_BIND); // NOI18N
-
-
-
-
-
-
-
-
-        filter("print", APTTokenTypes.T_PRINT); // NOI18N
-        filter("program", APTTokenTypes.T_PROGRAM); // NOI18N
-        filter("end", APTTokenTypes.T_END); // NOI18N
-        filter("integer", APTTokenTypes.T_INTEGER); // NOI18N
-        filter("subroutine", APTTokenTypes.T_SUBROUTINE); // NOI18N
-
-
-        filter("__t_assignment_stmt__", APTTokenTypes.T_ASSIGNMENT_STMT); // NOI18N
-
-
-
-
-
-
-
-
-
-
 
 
 

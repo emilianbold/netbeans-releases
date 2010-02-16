@@ -45,7 +45,7 @@ import java.beans.PropertyEditorSupport;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.OptionsConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.AllOptionsProvider;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.openide.explorer.propertysheet.ExPropertyEditor;

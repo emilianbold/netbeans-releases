@@ -84,7 +84,9 @@ import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.VariableDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.VariableImpl;
+import org.netbeans.modules.cnd.modelimpl.fsm.ModuleImpl;
 import org.netbeans.modules.cnd.modelimpl.fsm.ProgramImpl;
+import org.netbeans.modules.cnd.modelimpl.fsm.SubroutineImpl;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -257,6 +259,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = TEMPLATE_PARAMETER_IMPL;
         } else if (object instanceof ProgramImpl) {
             aHandler = PROGRAM_IMPL;
+        } else if (object instanceof SubroutineImpl) {
+            aHandler = SUBROUTINE_IMPL;
+        } else if (object instanceof ModuleImpl) {
+            aHandler = MODULE_IMPL;
         } else {
             throw new IllegalArgumentException("instance of unknown class " + object.getClass().getName());  //NOI18N
         }
@@ -475,6 +481,13 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new ProgramImpl(stream);
                 break;
 
+            case SUBROUTINE_IMPL:
+                obj = new SubroutineImpl(stream);
+                break;
+
+            case MODULE_IMPL:
+                obj = new ModuleImpl(stream);
+                break;
 
             default:
                 throw new IllegalArgumentException("unknown handler" + handler);  //NOI18N
@@ -570,8 +583,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     // fortran
 
     private static final int PROGRAM_IMPL                  = TEMPLATE_PARAMETER_IMPL + 1;
+    private static final int SUBROUTINE_IMPL               = PROGRAM_IMPL + 1;
+    private static final int MODULE_IMPL                   = SUBROUTINE_IMPL + 1;
 
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX        
-    public static final int LAST_INDEX = PROGRAM_IMPL;
+    public static final int LAST_INDEX = MODULE_IMPL;
 }
