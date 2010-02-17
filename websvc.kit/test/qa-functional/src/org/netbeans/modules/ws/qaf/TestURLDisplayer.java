@@ -80,7 +80,7 @@ public final class TestURLDisplayer extends URLDisplayer {
             Object result = Lookup.getDefault().lookup(URLDisplayer.class);
             // check the instance
             if (!result.getClass().equals(TestURLDisplayer.class)) {
-                throw new JemmyException("URL displayer registration failed" + result.getClass());
+                throw new JemmyException("URL displayer registration failed " + result.getClass());
             }
             instance = (TestURLDisplayer) result;
         }
