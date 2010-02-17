@@ -72,12 +72,12 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         this.project = project;
     }
     
-    public Node createLogicalView() {
+    public @Override Node createLogicalView() {
         return new RootNode(project);
     }
     
     /** cf. #45952 */
-    public Node findPath(Node root, Object target) {
+    public @Override Node findPath(Node root, Object target) {
         if (root.getLookup().lookup(NbModuleProject.class) != project) {
             // Not intended for this project. Should not normally happen anyway.
             return null;
@@ -89,7 +89,8 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             try {
                 file = DataObject.find((FileObject) target);
             } catch (DataObjectNotFoundException e) {
-                throw new AssertionError(e);
+                // #158131: might have tried unsuccessfully to delete, etc.
+                return null;
             }
         } else if (target instanceof DataObject) {
             file = (DataObject) target;
@@ -136,11 +137,9 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             setDisplayName(pi.getDisplayName());
             setShortDescription(NbBundle.getMessage(ModuleLogicalView.class, "HINT_project_root_node", FileUtil.getFileDisplayName(project.getProjectDirectory())));
             pi.addPropertyChangeListener(new PropertyChangeListener() {
-
-                public void propertyChange(final PropertyChangeEvent evt) {
+                public @Override void propertyChange(final PropertyChangeEvent evt) {
                     ImportantFilesNodeFactory.getNodesSyncRP().post(new Runnable() {
-
-                        public void run() {
+                        public @Override void run() {
                             if (ProjectInformation.PROP_DISPLAY_NAME.equals(evt.getPropertyName())) {
                                 RootNode.this.setDisplayName((String) evt.getNewValue());
                             } else if (ProjectInformation.PROP_NAME.equals(evt.getPropertyName())) {
