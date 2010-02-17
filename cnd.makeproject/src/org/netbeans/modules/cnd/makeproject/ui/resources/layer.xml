@@ -330,6 +330,11 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="100"/>
                         <attr name="misplaced.action.allowed" boolvalue="true"/>
                     </file>
+                    <file name="DebugDialogAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.DebugDialogAction"/>
+                        <attr name="position" intvalue="110"/>
+                        <attr name="misplaced.action.allowed" boolvalue="true"/>
+                    </file>
                     <file name="Separator0.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="200"/>
