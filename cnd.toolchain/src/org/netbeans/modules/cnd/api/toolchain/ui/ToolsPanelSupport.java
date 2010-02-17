@@ -52,7 +52,7 @@ import org.openide.util.WeakSet;
  */
 public class ToolsPanelSupport {
     private static CompilerSet currentCompilerSet;
-    private static final ToolsCacheManagerImpl cacheManager = (ToolsCacheManagerImpl) ToolsCacheManager.get();
+    private static final ToolsCacheManagerImpl cacheManager = (ToolsCacheManagerImpl) ToolsCacheManager.createInstance();
 
     public static ToolsCacheManager getToolsCacheManager() {
         return cacheManager;
