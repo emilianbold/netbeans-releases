@@ -42,7 +42,6 @@ package org.netbeans.modules.javacard.project;
 
 import java.awt.EventQueue;
 import java.awt.Image;
-import org.netbeans.api.project.*;
 import org.netbeans.modules.javacard.spi.ActionNames;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
@@ -52,7 +51,6 @@ import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
-import org.openide.filesystems.*;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -61,13 +59,32 @@ import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
-import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.Set;
+import javax.swing.Action;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.spi.actions.Single;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileStatusEvent;
+import org.openide.filesystems.FileStatusListener;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 
 class JCLogicalViewProvider implements LogicalViewProvider {
@@ -198,23 +215,23 @@ class JCLogicalViewProvider implements LogicalViewProvider {
                         ActionNames.COMMAND_JC_DELETE,
                         bundle.getString("LBL_JCDelete_Action_Name"), null)); //NOI18N
             }
+            actions.add(ProjectSensitiveActions.projectCommandAction(
+                    ActionNames.COMMAND_JC_UNLOAD,
+                    bundle.getString("LBL_JCUnload_Action_Name"), null)); //NOI18N
+            actions.add(null);
             if(project.kind().isClassic()) {
                     actions.add(ProjectSensitiveActions.projectCommandAction(
                             ActionNames.COMMAND_JC_GENPROXY,
                             bundle.getString("LBL_JCGenProxy_Action_Name"), null)); //NOI18N
                     actions.add(null);
             }
-            actions.add(ProjectSensitiveActions.projectCommandAction(
-                    ActionNames.COMMAND_JC_UNLOAD,
-                    bundle.getString("LBL_JCUnload_Action_Name"), null)); //NOI18N
-            actions.add(null);
             if (!project.kind().isLibrary()) {
                 actions.add(ProjectSensitiveActions.projectCommandAction(
                         ActionProvider.COMMAND_RUN,
                         bundle.getString("LBL_RunAction_Name"), null)); //NOI18N
-//            actions.add(ProjectSensitiveActions.projectCommandAction(
-//                    ActionProvider.COMMAND_DEBUG,
-//                    bundle.getString("LBL_DebugAction_Name"), null)); //NOI18N
+            actions.add(ProjectSensitiveActions.projectCommandAction(
+                    ActionProvider.COMMAND_DEBUG,
+                    bundle.getString("LBL_DebugAction_Name"), null)); //NOI18N
             }
 //            actions.add(CommonProjectActions.setProjectConfigurationAction());
             actions.add(null);

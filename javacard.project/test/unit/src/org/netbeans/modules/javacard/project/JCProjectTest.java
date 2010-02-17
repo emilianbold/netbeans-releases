@@ -118,6 +118,29 @@ public class JCProjectTest extends AbstractJCProjectTest {
                 eval.getProperty(ProjectPropertyNames.PROJECT_PROP_ACTIVE_DEVICE));
     }
 
+    public void testClasspathIdentityDoesNotChange() throws Exception {
+        ClassPathProvider prov = project.getLookup().lookup(ClassPathProvider.class);
+        ClassPath pth = prov.findClassPath(null, ClassPath.SOURCE);
+        assertNotNull (pth);
+        assertEquals(pth, prov.findClassPath(null, ClassPath.SOURCE));
+        assertSame ("Classpath identity changed w/o reason",pth, prov.findClassPath(null, ClassPath.SOURCE));
+
+        pth = prov.findClassPath(null, ClassPath.BOOT);
+        assertNotNull (pth);
+        assertEquals(pth, prov.findClassPath(null, ClassPath.BOOT));
+        assertSame ("Classpath identity changed w/o reason",pth, prov.findClassPath(null, ClassPath.BOOT));
+
+        pth = prov.findClassPath(null, ClassPath.COMPILE);
+        assertNotNull (pth);
+        assertEquals(pth, prov.findClassPath(null, ClassPath.COMPILE));
+        assertSame ("Classpath identity changed w/o reason",pth, prov.findClassPath(null, ClassPath.COMPILE));
+
+        pth = prov.findClassPath(null, ClassPath.EXECUTE);
+        assertNotNull (pth);
+        assertEquals(pth, prov.findClassPath(null, ClassPath.EXECUTE));
+        assertSame ("Classpath identity changed w/o reason",pth, prov.findClassPath(null, ClassPath.EXECUTE));
+    }
+
     public void testPropertyEvaluatorSanity() {
         FileObject fo = project.getProjectDirectory().getFileObject("nbproject/project.properties");
         File f = FileUtil.toFile (fo);
@@ -130,7 +153,6 @@ public class JCProjectTest extends AbstractJCProjectTest {
     }
 
     public void testDependencies() throws Exception {
-        System.out.println("testDependencies");
         FileObject srcDir = project.getProjectDirectory().getFileObject("src");
         assertNotNull(srcDir);
 
@@ -185,14 +207,12 @@ public class JCProjectTest extends AbstractJCProjectTest {
         assertNotNull (clazz);
 
         String cp = project.getClasspathClosureAsString();
-        System.err.println("Classpath Closure String:" + cp);
         assertNotNull (cp);
         assertTrue (cp.length() > 0);
         assertEquals (fakeLib, new File(cp));
     }
 
     public void testAntArtifactProvider() throws Exception {
-        System.out.println("testAntArtifactProvider");
         AntArtifactProvider prov = project.getLookup().lookup(AntArtifactProvider.class);
         assertNotNull (prov);
         boolean jarFound = false;
@@ -202,7 +222,6 @@ public class JCProjectTest extends AbstractJCProjectTest {
                 URI[] uris = a.getArtifactLocations();
                 assertNotNull (uris);
                 assertEquals (1, uris.length);
-                System.err.println("URI:  " + uris[0]);
                 File f = new File (uris[0]);
                 File f2 = new File (FileUtil.toFile (project.getProjectDirectory()), "dist" + File.separatorChar + "CapProject.cap");
                 assertEquals (f, f2);
