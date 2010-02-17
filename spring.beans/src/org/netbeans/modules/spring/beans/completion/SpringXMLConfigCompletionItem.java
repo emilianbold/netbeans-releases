@@ -159,7 +159,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     public static SpringXMLConfigCompletionItem createBeanNameItem(int substitutionOffset, String text, int sortPriority) {
         return new BeanNameItem(substitutionOffset, text, sortPriority);
     }
-    
+
     protected int substitutionOffset;
     
     protected SpringXMLConfigCompletionItem(int substitutionOffset) {
@@ -241,7 +241,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     protected ImageIcon getIcon() {
         return null;
     }
-    
+
     private static class BeanRefItem extends SpringXMLConfigCompletionItem {
 
         private static final String CLASS_COLOR = "<font color=#808080>"; //NOI18N

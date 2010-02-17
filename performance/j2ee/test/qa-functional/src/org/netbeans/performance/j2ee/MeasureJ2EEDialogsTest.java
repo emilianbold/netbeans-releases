@@ -66,7 +66,7 @@ public class MeasureJ2EEDialogsTest {
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2EEProjectPropertiesTest.class)
         .addTest(InvokeSBActionTest.class)
         .addTest(SelectJ2EEModuleDialogTest.class)
-        .enableModules(".*").clusters("websvccommon[0-9]|webcommon[0-9]|xml[0-9]|enterprise[0-9]").reuseUserDir(true)));
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;
     }
