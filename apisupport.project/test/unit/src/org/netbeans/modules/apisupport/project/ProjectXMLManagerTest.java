@@ -286,7 +286,7 @@ public class ProjectXMLManagerTest extends TestBase {
         try {
             testingPXM.getDirectDependencies();
             fail("IllegalStateException was expected");
-        } catch (IllegalStateException ise) {
+        } catch (IOException x) {
             // OK, expected exception was thrown
         }
     }
