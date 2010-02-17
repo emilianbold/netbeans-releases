@@ -36,18 +36,28 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.spi.pty;
 
-import java.io.IOException;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.spi.ExecutionEnvironmentServiceProvider;
+package org.netbeans.modules.apisupport.project.layers;
+
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 
 /**
- * SPI for allocating unconnected ptys
+ * MIME Resolver to recognize 'hidden' files in XML layers.
  * 
- * @author ak119685
+ * @author S. Aubrecht
  */
-public interface PtyAllocator extends ExecutionEnvironmentServiceProvider {
+@org.openide.util.lookup.ServiceProvider(service=MIMEResolver.class)
+public class HiddenFilesResolver extends MIMEResolver {
 
-    public PtyImpl allocate(ExecutionEnvironment env) throws IOException;
+    public static final String MIME_TYPE = "application/x-netbeans-hidden"; //NOI18N
+    public HiddenFilesResolver() {
+        super( MIME_TYPE );
+    }
+    @Override
+    public String findMIMEType(FileObject fo) {
+        if( fo.getNameExt().endsWith(LayerUtils.HIDDEN) )
+            return MIME_TYPE;
+        return null;
+    }
 }

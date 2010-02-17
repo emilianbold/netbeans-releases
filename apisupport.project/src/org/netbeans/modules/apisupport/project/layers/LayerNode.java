@@ -227,6 +227,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
         class BadgingMergedFileSystem extends LayerFileSystem {
             public BadgingMergedFileSystem() {
                 super(new FileSystem[] {base}, cp);
+                setPropagateMasks(true);
                 status.addFileStatusListener(new FileStatusListener() {
                     public void annotationChanged(FileStatusEvent ev) {
                         fireFileStatusChanged(ev);
@@ -272,6 +273,13 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                             Util.err.notify(ErrorManager.INFORMATIONAL, e);
                             htmlLabel = nonHtmlLabel;
                         }
+                        boolean deleted = false;
+                        for( FileObject fo : files ) {
+                            if( fo.getNameExt().endsWith(LayerUtils.HIDDEN) ) {
+                                deleted = true;
+                                break;
+                            }
+                        }
                         if (highlighted != null) {
                             // Boldface resources which do come from this project.
                             boolean local = false;
@@ -286,6 +294,9 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                             if (local) {
                                 htmlLabel = "<b>" + htmlLabel + "</b>"; // NOI18N
                             }
+                        }
+                        if( deleted ) {
+                            htmlLabel = "<s>" + htmlLabel + "</s>"; //NOI18N
                         }
                         return htmlLabel;
                     }
