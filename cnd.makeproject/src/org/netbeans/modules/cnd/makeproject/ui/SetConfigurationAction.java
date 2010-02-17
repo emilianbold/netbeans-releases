@@ -109,7 +109,7 @@ public class SetConfigurationAction extends AbstractAction implements Presenter.
 	ConfigurationDescriptor projectDescriptor = pdp.getConfigurationDescriptor();
 	Configuration[] confs = null;
         if (projectDescriptor != null && projectDescriptor.getState() != State.READING) {
-            confs = projectDescriptor.getConfs().getConfs();
+            confs = projectDescriptor.getConfs().toArray();
             // Fill menu with items
             for ( int i = 0; i < confs.length; i++ ) {
                 JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(confs[i].getName(), confs[i].isDefault());
