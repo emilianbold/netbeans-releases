@@ -158,7 +158,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public void clean() {
         Configurations confs = getConfs();
         if (confs != null) {
-            for (Configuration conf : confs.getConfs()) {
+            for (Configuration conf : confs.toArray()) {
                 if (conf != null) {
                     conf.setAuxObjects(Collections.<ConfigurationAuxObject>emptyList());
                 }
@@ -533,7 +533,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     @Override
     public void assign(ConfigurationDescriptor clonedConfigurationDescriptor) {
-        Configuration[] clonedConfs = clonedConfigurationDescriptor.getConfs().getConfs();
+        Configuration[] clonedConfs = clonedConfigurationDescriptor.getConfs().toArray();
         Configuration[] newConfs = new Configuration[clonedConfs.length];
         setBaseDir(clonedConfigurationDescriptor.getBaseDir());
 
@@ -585,7 +585,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         //System.out.println("setModified - " + modified);
         this.modified = modified;
         if (modified && getConfs() != null) {
-            Configuration[] confs = getConfs().getConfs();
+            Configuration[] confs = getConfs().toArray();
             for (int i = 0; i < confs.length; i++) {
                 ((MakeConfiguration) confs[i]).setRequiredLanguagesDirty(true);
             }
@@ -594,7 +594,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     public void refreshRequiredLanguages() {
         if (getConfs() != null) {
-            Configuration[] confs = getConfs().getConfs();
+            Configuration[] confs = getConfs().toArray();
             for (int i = 0; i < confs.length; i++) {
                 ((MakeConfiguration) confs[i]).reCountLanguages(this);
             }
@@ -666,7 +666,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
 
         // First check all configurations aux objects if they have changed
-        Configuration[] configurations = getConfs().getConfs();
+        Configuration[] configurations = getConfs().toArray();
         for (int i = 0; i < configurations.length; i++) {
             Configuration conf = configurations[i];
             ConfigurationAuxObject[] auxObjects = conf.getAuxObjects();
@@ -691,7 +691,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.PROJECT_XML); // NOI18N
         metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.CONFIGURATIONS_XML); // NOI18N
         metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.MAKEFILE_IMPL); // NOI18N
-        Configuration[] confs = getConfs().getConfs();
+        Configuration[] confs = getConfs().toArray();
         for (int i = 0; i < confs.length; i++) {
             metadataFiles.add(getBaseDir() + File.separator + MakeConfiguration.NBPROJECT_FOLDER + File.separator + "Makefile-" + confs[i].getName() + ".mk"); // NOI18N
         } // NOI18N
@@ -837,7 +837,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public Set<String> getSubprojectLocations() {
         Set<String> subProjects = new HashSet<String>();
 
-        Configuration[] confs = getConfs().getConfs();
+        Configuration[] confs = getConfs().toArray();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
             LibrariesConfiguration librariesConfiguration = null;

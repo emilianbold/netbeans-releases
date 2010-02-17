@@ -146,7 +146,7 @@ public class MakeSources implements Sources, AntProjectListener {
             
             // Add buildfolder from makefile projects to sources. See IZ 90190.
             if (epd.getVersion() < 41) {
-                Configuration[] confs = epd.getConfs().getConfs();
+                Configuration[] confs = epd.getConfs().toArray();
                 for (int i = 0; i < confs.length; i++) {
                     MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
                     if (makeConfiguration.isMakefileConfiguration()) {

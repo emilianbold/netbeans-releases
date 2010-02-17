@@ -942,7 +942,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             List<MakeArtifact> artifacts = new ArrayList<MakeArtifact>();
 
             MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-            Configuration[] confs = projectDescriptor.getConfs().getConfs();
+            Configuration[] confs = projectDescriptor.getConfs().toArray();
 
 //            String projectLocation = null;
 //            int configurationType = 0;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,37 +34,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.remote.support;
 
-package org.netbeans.modules.cnd.makeproject.ui.customizer;
+import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
+public class RemoteLogger {
 
-/**
- *
- * @author Alexander Simon
- */
-/*package*/final class SharedItemConfiguration {
-    private final Map<Configuration, ItemConfiguration> itemConfigurations = new HashMap<Configuration, ItemConfiguration>();
-    private final Item item;
+    private static java.util.logging.Logger instance =
+            java.util.logging.Logger.getLogger("remote.support.logger"); // NOI18N
+    
+    private static boolean assertionsEnabled = false;
 
-    public SharedItemConfiguration(Item item){
-        this.item = item;
+    static {
+        assert (assertionsEnabled = true);
     }
 
-    public ItemConfiguration getItemConfiguration(Configuration configuration) {
-        ItemConfiguration res = itemConfigurations.get(configuration);
-        if (res == null) {
-            res = new ProxyItemConfiguration(configuration, item);
-            itemConfigurations.put(configuration, res);
-            ItemConfiguration old = (ItemConfiguration) configuration.removeAuxObject(res);
-            configuration.addAuxObject(res);
+    private RemoteLogger() {}
+
+
+    public static java.util.logging.Logger getInstance() {
+        return instance;
+    }
+
+    public static void assertTrue(boolean value) {
+        if (assertionsEnabled && !value) {
+            String message = "Assertion error"; //NOI18N
+            instance.log(Level.SEVERE, message, new Exception(message));
         }
-        return res;
+    }
+
+    public static void assertTrue(boolean value, String message) {
+        if (assertionsEnabled && !value) {
+            instance.log(Level.SEVERE, message, new Exception(message));
+        }
+    }
+
+    public static void assertFalse(boolean value) {
+        if (assertionsEnabled && value) {
+            String message = "Assertion error"; //NOI18N
+            instance.log(Level.SEVERE, message, new Exception(message));
+        }
+    }
+
+    public static void assertFalse(boolean value, String message) {
+        if (assertionsEnabled && value) {
+            instance.log(Level.SEVERE, message, new Exception(message));
+        }
+    }
+
+    public static final void assertNonUiThread(String message) {
+        if (assertionsEnabled && SwingUtilities.isEventDispatchThread()) {
+            instance.log(Level.SEVERE, message, new Exception(message));
+        }
+    }
+
+    public static final void assertNonUiThread() {
+        assertNonUiThread("Should not be called from UI thread"); //NOI18N
     }
 }
