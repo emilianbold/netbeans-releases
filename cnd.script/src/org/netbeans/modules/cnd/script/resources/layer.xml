@@ -359,6 +359,13 @@
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit"/>
                 </file>
 
+                <folder name="HyperlinkProviders">
+                    <file name="MakefileHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.editor.MakefileHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                    </file>
+                </folder>
+
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="codeTemplates.xml" url="makefileCodeTemplates.xml"/>
