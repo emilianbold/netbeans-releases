@@ -47,11 +47,14 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.web.common.api.DependenciesGraph;
+import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -65,10 +68,26 @@ public class HtmlIndex {
 
     private static final Logger LOGGER = Logger.getLogger(HtmlIndex.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
+    private static final Map<Project, HtmlIndex> INDEXES = new WeakHashMap<Project, HtmlIndex>();
 
-    public static HtmlIndex create(Project project) throws IOException {
-        return new HtmlIndex(project);
+    /**
+     * Returns per-project cached instance of HtmlIndex
+     * 
+     */
+    public static HtmlIndex get(Project project) throws IOException {
+        if(project == null) {
+            throw new NullPointerException();
+        }
+        synchronized (INDEXES) {
+            HtmlIndex index = INDEXES.get(project);
+            if(index == null) {
+                index = new HtmlIndex(project);
+                INDEXES.put(project, index);
+            }
+            return index;
+        }
     }
+
     private final QuerySupport querySupport;
 
     /** Creates a new instance of JsfIndex */
@@ -103,83 +122,83 @@ public class HtmlIndex {
 
         return Collections.emptyList();
     }
-//
-//    /**
-//     * Gets all 'related' files to the given css file object.
-//     *
-//     * @param cssFile
-//     * @return a collection of all files which either imports or are imported
-//     * by the given cssFile both directly and indirectly (transitive relation)
-//     */
-//    public DependenciesGraph getDependencies(FileObject cssFile) {
-//        try {
-//            DependenciesGraph deps = new DependenciesGraph(cssFile);
-//            Collection<? extends IndexResult> results = querySupport.query(HtmlIndexer.REFERS_KEY, "", QuerySupport.Kind.PREFIX, HtmlIndexer.REFERS_KEY);
-//
-//            //todo: performance - cache and incrementally update the maps?!?!
-//            //create map of refering files to the peers and second map vice versa
-//            Map<FileObject, Collection<FileObject>> source2dests = new HashMap<FileObject, Collection<FileObject>>();
-//            Map<FileObject, Collection<FileObject>> dest2sources = new HashMap<FileObject, Collection<FileObject>>();
-//            for (IndexResult result : results) {
-//                String importsValue = result.getValue(HtmlIndexer.REFERS_KEY);
-//                FileObject file = result.getFile();
-//                Collection<String> imports = decodeListValue(importsValue);
-//                Collection<FileObject> imported = new HashSet<FileObject>();
-//                for (String importedFileName : imports) {
-//                    //resolve the file
-//                    FileObject resolvedFileObject = WebUtils.resolve(file, importedFileName);
-//                    if (resolvedFileObject != null) {
-//                        imported.add(resolvedFileObject);
-//                        //add reverse dependency
-//                        Collection<FileObject> sources = dest2sources.get(resolvedFileObject);
-//                        if(sources == null) {
-//                            sources = new HashSet<FileObject>();
-//                            dest2sources.put(resolvedFileObject, sources);
-//                        }
-//                        sources.add(file);
-//                    }
-//                }
-//                source2dests.put(file, imported);
-//            }
-//
-//            resolveDependencies(deps.getSourceNode(), source2dests, dest2sources);
-//
-//            return deps;
-//
-//        } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-//
-//        return null;
-//    }
-//
-//
-//    private void resolveDependencies(Node base, Map<FileObject, Collection<FileObject>> source2dests, Map<FileObject, Collection<FileObject>> dest2sources) {
-//        FileObject baseFile = base.getFile();
-//        Collection<FileObject> destinations = source2dests.get(baseFile);
-//        if (destinations != null) {
-//            //process destinations (file this one refers to)
-//            for(FileObject destination : destinations) {
-//                Node node = base.getDependencyGraph().getNode(destination);
-//                if(base.addReferedNode(node)) {
-//                    //recurse only if we haven't been there yet
-//                    resolveDependencies(node, source2dests, dest2sources);
-//                }
-//            }
-//        }
-//        Collection<FileObject> sources = dest2sources.get(baseFile);
-//        if(sources != null) {
-//            //process sources (file this one is refered by)
-//            for(FileObject source : sources) {
-//                Node node = base.getDependencyGraph().getNode(source);
-//                if(base.addReferingNode(node)) {
-//                    //recurse only if we haven't been there yet
-//                    resolveDependencies(node, source2dests, dest2sources);
-//                }
-//            }
-//        }
-//
-//    }
+
+    /**
+     * Gets all 'related' files to the given html file object.
+     *
+     * @param htmlFile
+     * @return a collection of all files which either imports or are imported
+     * by the given htmlFile both directly and indirectly (transitive relation)
+     */
+    public DependenciesGraph getDependencies(FileObject htmlFile) {
+        try {
+            DependenciesGraph deps = new DependenciesGraph(htmlFile);
+            Collection<? extends IndexResult> results = querySupport.query(HtmlIndexer.REFERS_KEY, "", QuerySupport.Kind.PREFIX, HtmlIndexer.REFERS_KEY);
+
+            //todo: performance - cache and incrementally update the maps?!?!
+            //create map of refering files to the peers and second map vice versa
+            Map<FileObject, Collection<FileObject>> source2dests = new HashMap<FileObject, Collection<FileObject>>();
+            Map<FileObject, Collection<FileObject>> dest2sources = new HashMap<FileObject, Collection<FileObject>>();
+            for (IndexResult result : results) {
+                String importsValue = result.getValue(HtmlIndexer.REFERS_KEY);
+                FileObject file = result.getFile();
+                Collection<String> imports = decodeListValue(importsValue);
+                Collection<FileObject> imported = new HashSet<FileObject>();
+                for (String importedFileName : imports) {
+                    //resolve the file
+                    FileObject resolvedFileObject = WebUtils.resolve(file, importedFileName);
+                    if (resolvedFileObject != null) {
+                        imported.add(resolvedFileObject);
+                        //add reverse dependency
+                        Collection<FileObject> sources = dest2sources.get(resolvedFileObject);
+                        if(sources == null) {
+                            sources = new HashSet<FileObject>();
+                            dest2sources.put(resolvedFileObject, sources);
+                        }
+                        sources.add(file);
+                    }
+                }
+                source2dests.put(file, imported);
+            }
+
+            resolveDependencies(deps.getSourceNode(), source2dests, dest2sources);
+
+            return deps;
+
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return null;
+    }
+
+
+    private void resolveDependencies(Node base, Map<FileObject, Collection<FileObject>> source2dests, Map<FileObject, Collection<FileObject>> dest2sources) {
+        FileObject baseFile = base.getFile();
+        Collection<FileObject> destinations = source2dests.get(baseFile);
+        if (destinations != null) {
+            //process destinations (file this one refers to)
+            for(FileObject destination : destinations) {
+                Node node = base.getDependencyGraph().getNode(destination);
+                if(base.addReferedNode(node)) {
+                    //recurse only if we haven't been there yet
+                    resolveDependencies(node, source2dests, dest2sources);
+                }
+            }
+        }
+        Collection<FileObject> sources = dest2sources.get(baseFile);
+        if(sources != null) {
+            //process sources (file this one is refered by)
+            for(FileObject source : sources) {
+                Node node = base.getDependencyGraph().getNode(source);
+                if(base.addReferingNode(node)) {
+                    //recurse only if we haven't been there yet
+                    resolveDependencies(node, source2dests, dest2sources);
+                }
+            }
+        }
+
+    }
 
 
     //each list value is terminated by semicolon
