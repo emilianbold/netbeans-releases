@@ -153,6 +153,7 @@ public class ProjectActionSupport {
     private InputOutput mainTab = null;
     private HandleEvents mainTabHandler = null;
     private ArrayList<String> tabNames = new ArrayList<String>();
+    private final Object lock = new Object();
 
     private final class HandleEvents implements ExecutionListener {
 
@@ -165,7 +166,6 @@ public class ProjectActionSupport {
         private RerunAction ra = null;
         private List<BuildAction> additional;
         private ProgressHandle progressHandle = null;
-        private final Object lock = new Object();
         private final ProjectActionHandler customHandler;
         private ProjectActionHandler currentHandler = null;
 
