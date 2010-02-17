@@ -286,25 +286,25 @@ import org.openide.util.NbBundle;
 
                         if (option.getOperation() == null){
                             members.add(maker.Method(
-                                     maker.Modifiers(EnumSet.of(Modifier.PUBLIC, Modifier.ABSTRACT)),
-                                     option.getMethodName(),
-                                     returnType,
-                                     Collections.EMPTY_LIST,
-                                     vars,
-                                     (List<ExpressionTree>)Collections.EMPTY_LIST,
-                                     (BlockTree)null,
-                                     null));
+                                    maker.Modifiers(option.getModifiers()),
+                                    option.getMethodName(),
+                                    returnType,
+                                    Collections.EMPTY_LIST,
+                                    vars,
+                                    (List<ExpressionTree>)Collections.EMPTY_LIST,
+                                    (BlockTree)null,
+                                 null));
                         } else {
                             members.add(maker.Method(
-                                     genUtils.createModifiers(Modifier.PUBLIC),
-                                     option.getMethodName(),
-                                     returnType,
-                                     (List<TypeParameterTree>)Collections.EMPTY_LIST,
-                                     vars,
-                                     (List<ExpressionTree>)Collections.EMPTY_LIST,
-                                     "{" + option.getCallLines("getEntityManager()", entityClassVar, PersistenceUtils.getJPAVersion(project)) + "}", //NOI18N
-                                     null));
-                        }
+                                    maker.Modifiers(option.getModifiers()),
+                                    option.getMethodName(),
+                                    returnType,
+                                    (List<TypeParameterTree>)Collections.EMPTY_LIST,
+                                    vars,
+                                    (List<ExpressionTree>)Collections.EMPTY_LIST,
+                                    "{" + option.getCallLines("getEntityManager()", entityClassVar, PersistenceUtils.getJPAVersion(project)) + "}", //NOI18N
+                                    null));
+                    }
                     }
 
                     ClassTree newClassTree = maker.Class(
@@ -412,6 +412,7 @@ import org.openide.util.NbBundle;
         getEMOptions.setMethodName("getEntityManager"); //NOI18N
         getEMOptions.setOperation(GenerationOptions.Operation.GET_EM);
         getEMOptions.setReturnType("javax.persistence.EntityManager");//NOI18N
+        getEMOptions.setModifiers(EnumSet.of(Modifier.PROTECTED));
 
         return Arrays.<GenerationOptions>asList(getEMOptions);
     }
@@ -422,6 +423,7 @@ import org.openide.util.NbBundle;
         GenerationOptions getEMOptions = new GenerationOptions();
         getEMOptions.setMethodName("getEntityManager"); //NOI18N
         getEMOptions.setReturnType("javax.persistence.EntityManager");//NOI18N
+        getEMOptions.setModifiers(EnumSet.of(Modifier.PROTECTED, Modifier.ABSTRACT));
 
         //implemented methods
         GenerationOptions createOptions = new GenerationOptions();

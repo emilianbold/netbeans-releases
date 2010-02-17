@@ -42,6 +42,11 @@
 package org.netbeans.modules.j2ee.persistence.action;
 
 import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
+import javax.lang.model.element.Modifier;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 
 /**
@@ -115,7 +120,8 @@ public final class GenerationOptions {
     private String parameterName;
     private String parameterType;
     private String queryAttribute;
-    
+    private Set<Modifier> modifiers = EnumSet.of(Modifier.PUBLIC);
+
     /** Creates a new instance of GenerationOptions */
     public GenerationOptions() {
     }
@@ -151,6 +157,15 @@ public final class GenerationOptions {
     public String getReturnType() {
         return returnType;
     }
+
+    public Set<Modifier> getModifiers() {
+        return modifiers;
+    }
+
+    public void setModifiers(Set<Modifier> modifiers) {
+        this.modifiers = new HashSet<Modifier>(modifiers);
+    }
+
 
     public String getCallLines(){
         return getCallLines(null, null);

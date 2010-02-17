@@ -48,10 +48,12 @@ import org.netbeans.modules.nativeexecution.spi.pty.IOConnector;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyAllocator;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
 import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
 /**
+ * An utility class for pty-related stuff...
  *
  * @author ak119685
  */
@@ -64,6 +66,14 @@ public final class PtySupport {
     private PtySupport() {
     }
 
+    /**
+     * This method returns a Pty that is currently associated with the process
+     * (if any).
+     *
+     * @param process - process to get pty of
+     * @return Pty that is currently associated with the process or <tt>null</tt>
+     * if ptocess was started in non-pty mode.
+     */
     public static Pty getPty(NativeProcess process) {
         if (!(process instanceof PtyNativeProcess)) {
             return null;
@@ -72,22 +82,56 @@ public final class PtySupport {
         return ((PtyNativeProcess) process).getPty();
     }
 
-    public static void connect(InputOutput io, NativeProcess process) {
+    /**
+     * Connects process' IO streams with the specified InputOutput.
+     * 
+     * @param io - <tt>InputOutput</tt> to connect process' IO with
+     * @param process - the process which should be connected with the io
+     *
+     * @return <tt>true</tt> if operation was successfull. <tt>false</tt> otherwise.
+     */
+    public static boolean connect(InputOutput io, NativeProcess process) {
         Collection<? extends IOConnector> connectors =
                 Lookup.getDefault().lookupAll(IOConnector.class);
 
         for (IOConnector connector : connectors) {
             if (connector.connect(io, process)) {
-                return;
+                return true;
             }
         }
 
-        throw new UnsupportedOperationException(
-                "No suitable IOConnector implementation found to connect " // NOI18N
-                + io.toString() + " with " + process.toString()); // NOI18N
+        return false;
     }
 
-    public static Pty allocate(ExecutionEnvironment env) throws IOException {
+    /**
+     * Connects pty's IO streams (master side) with the specified <tt>InputOutput</tt>.
+     * So that IO of the process that will do input/output to the specified pty'
+     * slave will go to the specified <tt>InputOutput</tt>.
+     *
+     * @param io - <tt>InputOutput</tt> to connect pty's IO with
+     * @param pty - the pty to connect InputOutput with
+     *
+     * @return <tt>true</tt> if operation was successfull. <tt>false</tt> otherwise.
+     */
+    public static boolean connect(InputOutput io, Pty pty) {
+        Collection<? extends IOConnector> connectors =
+                Lookup.getDefault().lookupAll(IOConnector.class);
+
+        for (IOConnector connector : connectors) {
+            if (connector.connect(io, pty)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Allocates a new 'unconnected' pty
+     * @param env - environmant in which a pty should be allocated
+     * @return newly allocated pty or <tt>null</tt> if allocation failed
+     */
+    public static Pty allocate(ExecutionEnvironment env) {
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
             throw new IllegalStateException();
         }
@@ -97,7 +141,14 @@ public final class PtySupport {
 
         for (PtyAllocator creator : creators) {
             if (creator.isApplicable(env)) {
-                PtyImpl pty = creator.allocate(env);
+                PtyImpl pty = null;
+
+                try {
+                    pty = creator.allocate(env);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
                 if (pty != null) {
                     return new Pty(pty);
                 }
@@ -107,6 +158,11 @@ public final class PtySupport {
         return null;
     }
 
+    /**
+     * A class that represents a pty
+     * @see PtySupport.allocate(ExecutionEnvironment)
+     * @see PtySupport.getPty(NativeProcess)
+     */
     public final static class Pty {
 
         private final PtyImpl impl;
@@ -115,8 +171,26 @@ public final class PtySupport {
             this.impl = impl;
         }
 
+        /**
+         * Returns the name that can be used to connect to the slave side of
+         * the pseudo-terminal (as tty(1))
+         *
+         * @return user's terminal name
+         */
         public String getSlaveName() {
             return impl.getSlaveName();
+        }
+
+        /**
+         * Closes the pty. It is responsibility of user to close the pty if
+         * it was allocated directly. If a pty was allocated indirectly (while
+         * starting a process in a pty mode, closure of the pty is done
+         * automatically).
+         *
+         * @throws IOException in case close failed.
+         */
+        public void close() throws IOException {
+            impl.close();
         }
     }
 
