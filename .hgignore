@@ -20,6 +20,7 @@ derby\.log
 ^\.externalToolBuilders/.*$
 ^hs_err_pid[0-9]*\.log
 ^[^/]+/external/[^/]+\.(zip|jar|gz|bz2|gem|dll|xpi)$
+^apisupport.osgidemo/osgidemo/netbinox/.*$
 ^o.apache.tools.ant.module/external/lib$
 ^classfile/\.nbintdb$
 ^classfile/classfile\.jar$

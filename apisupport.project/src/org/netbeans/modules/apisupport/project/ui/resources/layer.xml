@@ -355,4 +355,18 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="Loaders">
+        <folder name="application">
+            <folder name="x-netbeans-hidden">
+                <folder name="Factories">
+                    <file name="HiddenDataLoader.instance">
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif"/>
+                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.apisupport.project.layers.HiddenDataObject"/>
+                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
+                        <attr name="mimeType" stringvalue="application/x-netbeans-hidden"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
