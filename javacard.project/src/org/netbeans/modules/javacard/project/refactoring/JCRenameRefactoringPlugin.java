@@ -113,9 +113,6 @@ public class JCRenameRefactoringPlugin implements RefactoringPlugin {
         Problem problem = null;
 
         if (semafor.get() == null) {
-            Lookup lookup = refactoring.getRefactoringSource();
-            Collection<Object> res =
-                    (Collection<Object>) lookup.lookupAll(Object.class);
             problem = importantFilesRenameRefactoring.prepare(elems);
         }
         return problem;

@@ -150,9 +150,11 @@ public class ImportantFilesRenameRefactoring implements RefactoringPlugin {
     }
 
     public Problem prepare(RefactoringElementsBag elements) {
-        return refactoringPlugin != null
-                ? refactoringPlugin.prepare(elements)
-                : null;
+        Problem result = null;
+        if (refactoringPlugin != null) {
+            result = refactoringPlugin.prepare(elements);
+        }
+        return result;
     }
 
     private String getResourceName(FileObject fileOrFolder) {
@@ -169,26 +171,28 @@ public class ImportantFilesRenameRefactoring implements RefactoringPlugin {
     // Rename the class
     private Problem prepareClassRenaming(RefactoringElementsBag elements, String oldNamePrefix, String newNamePrefix) {
         Problem p = prepareClassRenamingForJavaCardXML(elements, oldNamePrefix, newNamePrefix);
-        if (p != null) {
-            ProjectKind kind= project.kind();
-            switch (kind) {
-                case WEB:
-                    p = prepareClassRenamingForWebXML(elements, oldNamePrefix, newNamePrefix);
-                    break;
-                case EXTENDED_APPLET :
-                case CLASSIC_APPLET:
-                    //XXX this note was in the original source;  also should apply to deployment.xml
-                    // JC-FIXME: for extended applet projects apply rename on applet.xml
-                    p = prepareClassRenamingForAppletXML(elements, oldNamePrefix, newNamePrefix);
-                    break;
-                case CLASSIC_LIBRARY:
-                case EXTENSION_LIBRARY:
-                    break;
-                default :
-                    throw new AssertionError();
-            }
+        Problem pp = null;
+        ProjectKind kind= project.kind();
+        switch (kind) {
+            case WEB:
+                pp = prepareClassRenamingForWebXML(elements, oldNamePrefix, newNamePrefix);
+                break;
+            case EXTENDED_APPLET :
+            case CLASSIC_APPLET:
+                //XXX this note was in the original source;  also should apply to deployment.xml
+                // JC-FIXME: for extended applet projects apply rename on applet.xml
+                pp = prepareClassRenamingForAppletXML(elements, oldNamePrefix, newNamePrefix);
+                break;
+            case CLASSIC_LIBRARY:
+            case EXTENSION_LIBRARY:
+                break;
+            default :
+                throw new AssertionError();
         }
-        return p;
+        if (p != null && pp != null) {
+            p.setNext(pp);
+        }
+        return p == null ? pp : p;
     }
 
     private Problem prepareClassRenamingForAppletXML(RefactoringElementsBag elements,
