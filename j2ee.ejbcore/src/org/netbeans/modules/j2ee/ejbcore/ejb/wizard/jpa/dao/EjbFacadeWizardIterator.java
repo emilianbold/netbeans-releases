@@ -332,18 +332,7 @@ import org.openide.util.NbBundle;
         }
         final FileObject facade = GenerationUtils.createClass(targetFolder, entitySimpleName + FACADE_SUFFIX, null);
         createdFiles.add(facade);
-        // add the @stateless annotation
-        JavaSource source = JavaSource.forFileObject(facade);
-        source.runModificationTask(new Task<WorkingCopy>(){
-            public void run(WorkingCopy parameter) throws Exception {
-                parameter.toPhase(Phase.RESOLVED);
-                ClassTree classTree = SourceUtils.getPublicTopLevelTree(parameter);
-                assert classTree != null;
-                GenerationUtils genUtils = GenerationUtils.newInstance(parameter);
-                AnnotationTree stateless = genUtils.createAnnotation(EJB_STATELESS);
-                parameter.rewrite(classTree, genUtils.addAnnotation(classTree, stateless));
-            }
-        }).commit();
+
 
         // generate methods for the facade
         EntityManagerGenerator generator = new EntityManagerGenerator(facade, entityFQN);
@@ -368,14 +357,16 @@ import org.openide.util.NbBundle;
             createdFiles.add(remote);
         }
 
+        // add the @stateless annotation
         // add implements and extends clauses to the facade
-        source.runModificationTask(new Task<WorkingCopy>() {
-
+        JavaSource source = JavaSource.forFileObject(facade);
+        source.runModificationTask(new Task<WorkingCopy>(){
             public void run(WorkingCopy parameter) throws Exception {
                 parameter.toPhase(Phase.RESOLVED);
                 ClassTree classTree = SourceUtils.getPublicTopLevelTree(parameter);
                 assert classTree != null;
                 GenerationUtils genUtils = GenerationUtils.newInstance(parameter);
+
                 TreeMaker maker = parameter.getTreeMaker();
                 ClassTree newClassTree = classTree;
                 if (hasLocal){
@@ -395,7 +386,9 @@ import org.openide.util.NbBundle;
                         Collections.EMPTY_LIST,
                         "{super(" + entitySimpleName + ".class);}");            //NOI18N
                 newClassTree = maker.addClassMember(newClassTree, constructor);
-                parameter.rewrite(classTree, newClassTree);
+
+                AnnotationTree stateless = genUtils.createAnnotation(EJB_STATELESS);
+                parameter.rewrite(classTree, genUtils.addAnnotation(newClassTree, stateless));
             }
         }).commit();
 
@@ -575,11 +568,13 @@ import org.openide.util.NbBundle;
                 ClassTree modifiedClass = original;
                 TreeMaker make = copy.getTreeMaker();
                 for (GenerationOptions each : options) {
-                    MethodTree method = make.Method(make.Modifiers(Collections.<Modifier>emptySet()),
+                    if (each.getModifiers().size() == 1 && each.getModifiers().contains(Modifier.PUBLIC)){
+                        MethodTree method = make.Method(make.Modifiers(Collections.<Modifier>emptySet()),
                             each.getMethodName(), utils.createType(each.getReturnType(), typeElement),
                             Collections.<TypeParameterTree>emptyList(), getParameterList(each, make, utils, typeElement),
                             Collections.<ExpressionTree>emptyList(), (BlockTree) null, null);
-                    modifiedClass = make.addClassMember(modifiedClass, method);
+                        modifiedClass = make.addClassMember(modifiedClass, method);
+                    }
                 }
                 copy.rewrite(original, modifiedClass);
             }
