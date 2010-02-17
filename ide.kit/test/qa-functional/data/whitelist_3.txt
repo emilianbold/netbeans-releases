@@ -7112,3 +7112,10 @@ org.openide.util.NbPreferences$Provider
 org.openide.util.actions.ActionPresenterProvider
 org.openide.util.lookup.implspi.NamedServicesProvider
 org.openide.windows.RetainLocation
+
+# classes loaded to make VersioningAnnotator asynchronous and much more responsive
+# permitted in #180830
+org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache
+org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache$AnnotationRefreshTask
+org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache$Item
+org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache$ItemKey
