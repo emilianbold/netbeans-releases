@@ -43,7 +43,9 @@ import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
 import org.openide.windows.InputOutput;
 
 /**
- *
+ * SPI for connecting <tt>InputOutput</tt> with a nativeprocess/pty
+ * 
+ * @see PtySupport
  * @author ak119685
  */
 public interface IOConnector {
