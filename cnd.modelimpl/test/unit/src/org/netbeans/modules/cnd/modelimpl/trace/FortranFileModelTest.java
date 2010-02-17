@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,46 +34,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.api.toolchain.ui;
 
-import java.util.Collection;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManagerImpl;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+package org.netbeans.modules.cnd.modelimpl.trace;
 
 /**
  *
- * @author Sergey Grinev
+ * @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
-public abstract class ToolsCacheManager {
+public class FortranFileModelTest extends TraceModelTestBase {
 
-    public abstract ServerUpdateCache getServerUpdateCache();
-
-    public abstract void setHosts(Collection<? extends ServerRecord> list);
-
-    public abstract CompilerSetManager getCompilerSetManagerCopy(ExecutionEnvironment env, boolean initialize);
-
-    public abstract void addCompilerSetManager(CompilerSetManager newCsm);
-
-    public abstract void setDefaultRecord(ServerRecord defaultRecord);
-
-    public abstract void applyChanges();
-
-    public static ToolsCacheManager createInstance(){
-        return createInstance(false);
+    public FortranFileModelTest(String testName) {
+        super(testName);
     }
 
-    public static ToolsCacheManager createInstance(boolean initialize){
-        return new ToolsCacheManagerImpl(initialize);
+    @Override
+    protected void setUp() throws Exception {
+        System.setProperty("parser.report.errors", "true");
+        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
+        super.setUp();
     }
 
-    protected ToolsCacheManager() {
-        if (!getClass().equals(ToolsCacheManagerImpl.class)) {
-            throw new UnsupportedOperationException("this class can not be overriden by clients"); // NOI18N
-        }
+    @Override
+    protected void postSetUp() {
+        // init flags needed for file model tests
+        getTraceModel().setDumpModel(true);
+        getTraceModel().setDumpPPState(true);
     }
+
+    public void testFile1() throws Exception {
+        performTest("file1.f"); // NOI18N
+    }
+
+    public void testFile2() throws Exception {
+        performTest("file2.f"); // NOI18N
+    }
+
 }
