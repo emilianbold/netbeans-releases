@@ -340,10 +340,8 @@ public class JCProjectActionProvider implements ActionProvider {
             targets.add("clean");
             targets.add("build");
         } else if (COMMAND_DEBUG.equals(command)) {
-            targets.add("build");
             targets.add("run-for-debug");
         } else if (COMMAND_RUN.equals(command)) {
-            targets.add("build");
             Card card = project.getCard();
             if (card == null) {
                 return new String[0];
@@ -386,7 +384,8 @@ public class JCProjectActionProvider implements ActionProvider {
         } else if (ActionNames.COMMAND_JC_GENPROXY.equals(command)) {
             targets.add("generate-sio-proxies"); //NOI18N
         }
-        return targets.toArray(new String[targets.size()]);
+        String[] result = targets.toArray(new String[targets.size()]);
+        return result;
     }
 
     private final class DebugProxyProcessLauncher implements Runnable {
