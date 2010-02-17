@@ -335,11 +335,14 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
     private static void registerContextMenu(LayerBuilder b, String mimeType, Map<String, ExecutableElement> methods) {
         File f;
 
-        if (methods.containsKey("getInstantRenamer")) { //NOI18N
-            f = b.file("Editors/" + mimeType + "/Popup/in-place-refactoring"); //NOI18N
-            f.position(680);
-            f.write();
-        }
+// XXX: removed due to #180501, CSL pluguns now ought to reguster this action manually; this is
+// to give plugins control over what action (in-place-refactoring vs. full rename refactorig) is registered
+//        if (methods.containsKey("getInstantRenamer")) { //NOI18N
+//            f = b.file("Editors/" + mimeType + "/Popup/in-place-refactoring"); //NOI18N
+//            f.position(680);
+//            f.write();
+//        }
+
 //
 //        Element mimeFolder = mkdirs(doc, "Editors/" + mimeType); // NOI18N
 //

@@ -226,10 +226,7 @@ public final class ProjectXMLManager {
                 continue;
             }
             if (!_directDeps.add(depToAdd)) {
-                String errMessage = "Corrupted project metadata (project.xml). " + // NOI18N
-                        "Duplicate dependency entry found: " + depToAdd; // NOI18N
-                Util.err.log(ErrorManager.WARNING, errMessage);
-                throw new IllegalStateException(errMessage);
+                throw new IOException("#175879: corrupted metadata in " + project + "; duplicate dep found: " + depToAdd);
             }
             if (findElement(depEl, ProjectXMLManager.RUN_DEPENDENCY) == null) {
                 continue;

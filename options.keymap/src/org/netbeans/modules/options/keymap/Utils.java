@@ -43,7 +43,6 @@ package org.netbeans.modules.options.keymap;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
-import org.openide.ErrorManager;
 import org.openide.util.Utilities;
 
 
@@ -93,7 +92,7 @@ class Utils {
     
     static String getKeyStrokeAsText (KeyStroke keyStroke) {
         int modifiers = keyStroke.getModifiers ();
-        StringBuffer sb = new StringBuffer ();
+        StringBuilder sb = new StringBuilder ();
         if ((modifiers & InputEvent.CTRL_DOWN_MASK) > 0)
             sb.append ("Ctrl+");
         if ((modifiers & InputEvent.ALT_DOWN_MASK) > 0)

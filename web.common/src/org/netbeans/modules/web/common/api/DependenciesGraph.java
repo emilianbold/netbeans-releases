@@ -37,7 +37,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.indexing;
+package org.netbeans.modules.web.common.api;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -50,10 +50,7 @@ import org.openide.filesystems.FileObject;
 /**
  * bidirectional dependencies graph
  *
- * The aim of the class is to store a map of dependencies among css file
- * originaly created based on index information which can be later corrected
- * based on the parse results from opened files (if the structural information
- * from the parser result differs from the stored index data (file unsaved))
+ * The aim of the class is to store a map of dependencies among files in a web like project.
  *
  * @author marekfukala
  */
@@ -64,7 +61,7 @@ public class DependenciesGraph {
     private Map<FileObject, Node> file2node = new HashMap<FileObject, Node>();
     private Node sourceNode;
 
-    DependenciesGraph(FileObject source) {
+    public DependenciesGraph(FileObject source) {
         this.sourceNode = new Node(source);
     }
 
