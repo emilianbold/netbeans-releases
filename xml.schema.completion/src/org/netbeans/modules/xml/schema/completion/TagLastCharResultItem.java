@@ -55,9 +55,9 @@ public class TagLastCharResultItem extends CompletionResultItem {
 
     private int endTagSortPriority = -1;
 
-    public TagLastCharResultItem(TokenSequence tokenSequence) {
+    public TagLastCharResultItem(String tagName, TokenSequence tokenSequence) {
         super(null, null);
-        this.itemText = "";
+        this.itemText = tagName;
         setTokenSequence(tokenSequence);
     }
 
