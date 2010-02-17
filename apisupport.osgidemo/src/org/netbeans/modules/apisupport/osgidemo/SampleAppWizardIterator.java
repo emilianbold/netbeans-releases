@@ -64,7 +64,9 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -130,6 +132,12 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
             if (ProjectManager.getDefault().isProject(subfolder)) {
                 resultSet.add(subfolder);
             }
+        }
+
+        Project p = ProjectManager.getDefault().findProject(dir);
+        if (netbinox && p != null) {
+            ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
+            ap.invokeAction(ActionProvider.COMMAND_CLEAN, p.getLookup());
         }
         
         File parent = dirF.getParentFile();
