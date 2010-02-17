@@ -2763,12 +2763,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                 Controller controller = (Controller)IndexingController.getDefault();
                 synchronized (controller) {
-                    Map<URL,List<URL>> nextRoots2Deps = new HashMap<URL, List<URL>>();
+                    Map<URL, List<URL>> nextRoots2Deps = new HashMap<URL, List<URL>>();
                     nextRoots2Deps.putAll(depCtx.initialRoots2Deps);
                     nextRoots2Deps.keySet().removeAll(depCtx.oldRoots);
                     nextRoots2Deps.putAll(depCtx.newRoots2Deps);
                     controller.roots2Dependencies = Collections.unmodifiableMap(nextRoots2Deps);
-                    Map<URL,List<URL>> nextBinRoots2Deps = new HashMap<URL, List<URL>>();
+                    Map<URL, List<URL>> nextBinRoots2Deps = new HashMap<URL, List<URL>>();
                     nextBinRoots2Deps.putAll(depCtx.initialBinaries2InvDeps);
                     nextBinRoots2Deps.keySet().removeAll(depCtx.oldBinaries);
                     nextBinRoots2Deps.putAll(depCtx.newBinaries2InvDeps);
@@ -2867,8 +2867,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             //as it was set to optimistic value (supposed that all is scanned).
             Controller controller = (Controller)IndexingController.getDefault();
             synchronized (controller) {
-                controller.roots2Dependencies = Collections.unmodifiableMap(scannedRoots2Dependencies);
-                controller.binRoots2Dependencies = Collections.unmodifiableMap(scannedBinaries2InvDependencies);
+                controller.roots2Dependencies = Collections.unmodifiableMap(new HashMap<URL, List<URL>>(scannedRoots2Dependencies));
+                controller.binRoots2Dependencies = Collections.unmodifiableMap(new HashMap<URL, List<URL>>(scannedBinaries2InvDependencies));
             }
 
             notifyRootsRemoved (depCtx.oldBinaries, depCtx.oldRoots);

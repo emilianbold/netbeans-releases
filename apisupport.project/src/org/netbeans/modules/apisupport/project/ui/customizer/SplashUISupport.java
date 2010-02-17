@@ -69,6 +69,9 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultFormatter;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.apisupport.project.suite.BrandingSupport.BundleKey;
 import org.openide.util.NbBundle;
 
 /**
@@ -104,8 +107,15 @@ class SplashUISupport {
         }
         return new Rectangle(x,y,width,height);
     }
+
+    static Rectangle bundleKeyToBounds(@NullAllowed BundleKey bk) throws NumberFormatException {
+        return bk != null ? stringToBounds(bk.getValue()) : new Rectangle();
+    }
     
-    static String boundsToString(final Rectangle  bounds) throws NumberFormatException {
+    static String boundsToString(final Rectangle  bounds) {
+        if (bounds == null) {
+            return "";
+        }
         StringBuffer sb = new StringBuffer();
         sb.append(String.valueOf(bounds.x)).append(",");//NOI18N
         sb.append(String.valueOf(bounds.y)).append(",");//NOI18N
@@ -117,17 +127,39 @@ class SplashUISupport {
     static Color stringToColor(final String color) throws NumberFormatException {
         return new Color(Integer.decode(color).intValue());
     }
+
+    static Color bundleKeyToColor(@NullAllowed BundleKey bk) throws NumberFormatException {
+        return bk != null ? stringToColor(bk.getValue()) : Color.BLACK;
+    }
     
-    static String colorToString(final Color  color) throws NumberFormatException {
+    static String colorToString(final Color  color) {
         return "0x" + Integer.toString((~0xff000000 & color.getRGB()), 16).toUpperCase(Locale.ENGLISH); // NOI18N
     }
     
     static int stringToInteger(final String integer) throws NumberFormatException {
         return Integer.decode(integer).intValue();
     }
+
+    static int bundleKeyToInteger(@NullAllowed BundleKey bk) throws NumberFormatException {
+        return bk != null ? stringToInteger(bk.getValue()) : 0;
+    }
     
-    static String integerToString(final int  integer) throws NumberFormatException {
+    static String integerToString(final int  integer) {
         return Integer.toString(integer, 10);
+    }
+
+    static String numberToString(@NullAllowed Number n) {
+        return n != null ? integerToString(n.intValue()) : "";
+    }
+
+    static boolean bundleKeyToBoolean(@NullAllowed BundleKey bk) {
+        return bk != null ? Boolean.parseBoolean(bk.getValue()) : false;
+    }
+
+    static void setValue(@NullAllowed BundleKey bk, @NonNull String value) {
+        if (bk != null) {
+            bk.setValue(value);
+        }
     }
     
     static JFormattedTextField getIntegerField() {

@@ -277,7 +277,7 @@ public class MakeJNLP extends Task {
             }
             
             JarFile theJar = new JarFile(jar);
-            String codenamebase = theJar.getManifest().getMainAttributes().getValue("OpenIDE-Module");
+            String codenamebase = JarWithModuleAttributes.extractCodeName(theJar.getManifest().getMainAttributes());
             if (codenamebase == null) {
                 throw new BuildException("Not a NetBeans Module: " + jar);
             }

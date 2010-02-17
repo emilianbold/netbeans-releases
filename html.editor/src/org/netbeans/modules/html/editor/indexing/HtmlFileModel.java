@@ -126,7 +126,7 @@ public class HtmlFileModel {
     private void init() {
         AstNode root = parserResult.root();
         if(root != null) {
-            AstNodeUtils.visitChildren(root, new ReferencesSearch());
+            AstNodeUtils.visitChildren(root, new ReferencesSearch(), AstNode.NodeType.OPEN_TAG);
         } //else completely broken source, no parser result
     }
 
@@ -196,7 +196,9 @@ public class HtmlFileModel {
 
         @Override
         public String toString() {
-            return "Entry["+ (!isValidInSourceDocument() ? "INVALID! " : "") + getName() + "; " + getRange().getStart() + " - " + getRange().getEnd() + "]";//NOI18N
+            return "Entry["+ (!isValidInSourceDocument() ? "INVALID! " : "") + 
+                    getName() + "; " + getRange().getStart() + " - " +
+                    getRange().getEnd() + "]";//NOI18N
         }
     }
 
@@ -212,7 +214,10 @@ public class HtmlFileModel {
                     AttrValuesCompletion avc = completions.get(attr.name());
                     if(AttrValuesCompletion.FILE_NAME_SUPPORT == avc) {
                         //found file reference
-                        
+                        getReferencesCollectionInstance().add(
+                                createEntry(attr.unquotedValue(),
+                                new OffsetRange(attr.unqotedValueOffset(),
+                                attr.unqotedValueOffset() + attr.unquotedValue().length())));
                     }
                 }
             }
