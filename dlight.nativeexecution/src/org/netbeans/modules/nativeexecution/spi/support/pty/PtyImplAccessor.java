@@ -43,7 +43,11 @@ import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
 
 /**
+ * This is a supporting class for SPI implementators to
+ * get access to PtyImpl of Pty API objects
  *
+ * @see Pty
+ * @see PtyImpl
  * @author ak119685
  */
 public abstract class PtyImplAccessor {
