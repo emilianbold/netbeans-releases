@@ -336,6 +336,14 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         refresh();
     }//GEN-LAST:event_configurationComboBoxActionPerformed
 
+    public String getCurrentNodeName() {
+        return currentNodeName;
+    }
+
+    public MakeContext getLastContext() {
+        return lastContext;
+    }
+
     public void refresh() {
         if (currentCategoryView != null) {
             String selectedNodeName = currentNodeName;

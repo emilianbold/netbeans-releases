@@ -46,6 +46,7 @@ import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
+import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDescriptor;
@@ -89,6 +91,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     private Map<Project, Dialog> customizerPerProject = new WeakHashMap<Project, Dialog>(); // Is is weak needed here?
     private final ConfigurationDescriptorProvider projectDescriptorProvider;
     private String currentCommand;
+    private final Map<MakeContext.Kind, String> lastCurrentNodeName = new EnumMap<MakeContext.Kind, String>(MakeContext.Kind.class);
     private final Set<ActionListener> actionListenerList = new HashSet<ActionListener>();
 
     public MakeCustomizerProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
@@ -98,15 +101,15 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
     @Override
     public void showCustomizer() {
-        showCustomizer(null, null, null);
+        showCustomizer(lastCurrentNodeName.get(MakeContext.Kind.Project), null, null);
     }
 
     public void showCustomizer(Item item) {
-        showCustomizer(null, item, null);
+        showCustomizer(lastCurrentNodeName.get(MakeContext.Kind.Item), item, null);
     }
 
     public void showCustomizer(Folder folder) {
-        showCustomizer(null, null, folder);
+        showCustomizer(lastCurrentNodeName.get(MakeContext.Kind.Folder), null, folder);
     }
 
     public void showCustomizer(String preselectedNodeName) {
@@ -216,6 +219,11 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         customizerPerProject.put(project, dialog);
         currentCommand = COMMAND_CANCEL;
         dialog.setVisible(true);
+        MakeContext lastContext = innerPane.getLastContext();
+        String nodeName = innerPane.getCurrentNodeName();
+        if (lastContext != null) {
+            lastCurrentNodeName.put(lastContext.getKind(), nodeName);
+        }
         if (currentCommand.equals(COMMAND_CANCEL)) {
             fireActionEvent(new ActionEvent(project, 0, currentCommand));
         }
