@@ -40,7 +40,6 @@
 package org.netbeans.modules.maven.apisupport;
 
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
@@ -53,7 +52,7 @@ import org.openide.util.Lookup;
  *
  * @author Dafe Simonek
  */
-@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", position=350)
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", position=360)
 public class PackagesPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
     @Override
