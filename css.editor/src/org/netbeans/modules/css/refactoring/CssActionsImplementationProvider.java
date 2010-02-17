@@ -92,7 +92,7 @@ import org.openide.windows.TopComponent;
  *
  * @author marekfukala
  */
-@ServiceProvider(service = ActionsImplementationProvider.class)
+@ServiceProvider(service = ActionsImplementationProvider.class, position=1033)
 public class CssActionsImplementationProvider extends ActionsImplementationProvider {
 
     private static final Logger LOG = Logger.getLogger(CssActionsImplementationProvider.class.getName());
