@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -384,7 +385,7 @@ public final class SuiteProperties extends ModuleProperties {
         return moduleListModel;
     }
     
-    public BasicBrandingModel getBrandingModel() {
+    public @NonNull BasicBrandingModel getBrandingModel() {
         return brandingModel;
     }
 

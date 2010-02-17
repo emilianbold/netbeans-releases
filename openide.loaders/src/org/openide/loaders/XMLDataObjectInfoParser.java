@@ -233,7 +233,7 @@ implements FileChangeListener, LexicalHandler, LookupListener {
                 try {
                     in = myFileObject.getInputStream();
                 } catch (IOException ex) {
-                    warning(ex, "I/O exception while openning xml.");
+                    warning(ex, "I/O exception while opening " + myFileObject);
                     return NULL;
                 }
                 try {
@@ -376,7 +376,7 @@ implements FileChangeListener, LexicalHandler, LookupListener {
     }
 
     public void warning(Throwable ex, String annotation) {
-        XMLDataObject.ERR.log(Level.WARNING, annotation, ex);
+        XMLDataObject.ERR.log(Level.INFO, annotation, ex);
     }
 
     public void startDTD(String root, String pID, String sID) throws SAXException {
