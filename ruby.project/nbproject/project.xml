@@ -439,6 +439,7 @@
                 <friend>org.netbeans.modules.ruby.rspec</friend>
                 <friend>org.netbeans.modules.ruby.testrunner</friend>
                 <package>org.netbeans.modules.ruby.rubyproject</package>
+                <package>org.netbeans.modules.ruby.rubyproject.bundler</package>
                 <package>org.netbeans.modules.ruby.rubyproject.queries</package>
                 <package>org.netbeans.modules.ruby.rubyproject.rake</package>
                 <package>org.netbeans.modules.ruby.rubyproject.spi</package>
