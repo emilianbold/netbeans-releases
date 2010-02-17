@@ -83,7 +83,7 @@ public class DevelopmentHostCustomizer extends JPanel implements VetoableChangeL
         this.propertyEnv = propertyEnv;
         this.oldExecEnv = (dhconf == null) ? null : dhconf.getExecutionEnvironment();
         this.selectedEnv = new AtomicReference<ExecutionEnvironment>(this.oldExecEnv);
-        this.cacheManager = ToolsCacheManager.get(true);
+        this.cacheManager = ToolsCacheManager.createInstance(true);
         this.setLayout(new BorderLayout());
         JComponent component = ServerListUIEx.getServerListComponent(cacheManager, selectedEnv);
         add(component, BorderLayout.CENTER);
@@ -110,7 +110,7 @@ public class DevelopmentHostCustomizer extends JPanel implements VetoableChangeL
             return;
         }
         cacheManager.applyChanges();
-        dhconf.setHost(env);
+        dhconf.setHost(env, true);
 //        if (!dhconf.isConfigured()) {
 //            ExecutionEnvironment execEnv = dhconf.getExecutionEnvironment();
 //            final ServerRecord record = ServerList.get(execEnv);
