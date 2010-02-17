@@ -47,15 +47,19 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DropMode;
@@ -90,10 +94,13 @@ public final class FolderList extends javax.swing.JPanel {
     public static final String PROP_FILES = "files";    //NOI18N
     public static final String PROP_LAST_USED_DIR = "lastUsedDir";  //NOI18N
 
+    private static final Pattern TESTS_RE = Pattern.compile(".*test.*",Pattern.CASE_INSENSITIVE);   //NOI18N
+
     private String fcMessage;
     private File projectFolder;
     private File lastUsedFolder;
     private FolderList relatedFolderList;
+    private FileFilter relatedFolderFilter;
 
     /** Creates new form FolderList */
     public FolderList (String label, char mnemonic, String accessibleDesc, String fcMessage,
@@ -122,10 +129,21 @@ public final class FolderList extends javax.swing.JPanel {
         this.removeButton.setMnemonic (removeButtonMnemonic);
         this.removeButton.setEnabled(false);
     }
-    
+
     public void setRelatedFolderList (FolderList relatedFolderList) {
+        setRelatedFolderList(relatedFolderList, null);
+    }
+
+    /**
+     * Sets the related {@link FolderList} used to verify duplicates and filter used to
+     * move the recognized folders into the related {@link FolderList}
+     * @param relatedFolderList the related {@link FolderList}
+     * @param relatedFolderFilter filder used to reparent the recognized {@link File} or null
+     */
+    public void setRelatedFolderList (FolderList relatedFolderList, FileFilter relatedFolderFilter) {
         this.relatedFolderList = relatedFolderList;
-    }    
+        this.relatedFolderFilter = relatedFolderFilter;
+    }
 
     public File[] getFiles () {
         Object[] files = ((DefaultListModel)this.roots.getModel()).toArray();
@@ -289,31 +307,22 @@ public final class FolderList extends javax.swing.JPanel {
             final ScanTask task = new ScanTask();
             ProgressUtils.showProgressDialogAndRun(task, NbBundle.getMessage(FolderList.class, "TXT_SearchingSourceRoots"), false);
             final List<File> toAdd = toAddRef.get();
-            final File[] toAddArr = toAdd == null ? files : toAdd.toArray(new File[toAdd.size()]);
-            int[] indecesToSelect = new int[toAddArr.length];
-            DefaultListModel model = (DefaultListModel)this.roots.getModel();
-            Set<File> invalidRoots = new HashSet<File>();
-            File[] relatedFolders = this.relatedFolderList == null ?
-                new File[0] : this.relatedFolderList.getFiles();
-            for (int i=0, index=model.size(); i<toAddArr.length; i++) {
-                File normalizedFile = toAddArr[i];
-                if (!isValidRoot(normalizedFile, relatedFolders, this.projectFolder)) {
-                    invalidRoots.add (normalizedFile);
-                }
-                else {
-                    int pos = model.indexOf (normalizedFile);
-                    if (pos == -1) {
-                        model.addElement (normalizedFile);
-                        indecesToSelect[i] = index;
+            final List<File> related = new LinkedList<File>();
+            if (relatedFolderList != null && relatedFolderFilter != null) {
+                for (Iterator<File> it = toAdd.iterator(); it.hasNext(); ) {
+                    File f = it.next();
+                    if (relatedFolderFilter.accept(f)) {
+                        it.remove();
+                        related.add(f);
                     }
-                    else {
-                        indecesToSelect[i] = pos;
-                    }
-                    index++;
                 }
             }
-            this.roots.setSelectedIndices(indecesToSelect);
-            this.firePropertyChange(PROP_FILES, null, null);
+            final File[] toAddArr = toAdd == null ? files : toAdd.toArray(new File[toAdd.size()]);
+            Set<File> invalidRoots = new HashSet<File>();
+            addFiles(toAddArr, invalidRoots);
+            if (!related.isEmpty()) {
+                relatedFolderList.addFiles(related.toArray(new File[related.size()]), invalidRoots);
+            }
             File cd = chooser.getCurrentDirectory();
             if (cd != null) {
                 this.setLastUsedDir(FileUtil.normalizeFile(cd));
@@ -323,6 +332,33 @@ public final class FolderList extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_addButtonActionPerformed
+
+
+    private void addFiles (final File[] toAddArr, final Set<? super File> invalidRoots) {
+        final int[] indecesToSelect = new int[toAddArr.length];
+        final DefaultListModel model = (DefaultListModel)this.roots.getModel();
+        final File[] relatedFolders = this.relatedFolderList == null ?
+            new File[0] : this.relatedFolderList.getFiles();
+        for (int i=0, index=model.size(); i<toAddArr.length; i++) {
+            File normalizedFile = toAddArr[i];
+            if (!isValidRoot(normalizedFile, relatedFolders, this.projectFolder)) {
+                invalidRoots.add (normalizedFile);
+            }
+            else {
+                int pos = model.indexOf (normalizedFile);
+                if (pos == -1) {
+                    model.addElement (normalizedFile);
+                    indecesToSelect[i] = index;
+                }
+                else {
+                    indecesToSelect[i] = pos;
+                }
+                index++;
+            }
+        }
+        this.roots.setSelectedIndices(indecesToSelect);
+        this.firePropertyChange(PROP_FILES, null, null);
+    }
 
     private static File[] normalizeFiles(final File... files) {
         for (int i=0; i< files.length; i++) {
@@ -365,7 +401,16 @@ public final class FolderList extends javax.swing.JPanel {
         }
         return true;
     }
-    
+
+    public static FileFilter testRootsFilter () {
+        return new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return TESTS_RE.matcher(pathname.getName()).matches();
+            }
+        };
+    }
+
     private static boolean contains (File folder, File[] roots) {
         String path = folder.getAbsolutePath ();
         for (int i=0; i<roots.length; i++) {

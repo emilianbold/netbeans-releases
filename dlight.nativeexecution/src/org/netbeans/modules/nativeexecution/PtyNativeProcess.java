@@ -62,18 +62,18 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
     private final PtyImpl ptyImpl;
     private AbstractNativeProcess delegate = null;
 
-    public PtyNativeProcess(NativeProcessInfo info) {
+    public PtyNativeProcess(NativeProcessInfo info) throws IOException {
         super(info);
 
         ExecutionEnvironment env = info.getExecutionEnvironment();
         Pty _pty = info.getPty();
 
         if (_pty == null) {
-            try {
-                _pty = PtySupport.allocate(env);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            _pty = PtySupport.allocate(env);
+        }
+
+        if (_pty == null) {
+            throw new IOException("Unable to allocate a pty for the process " + info.getExecutable()); // NOI18N
         }
 
         pty = _pty;
