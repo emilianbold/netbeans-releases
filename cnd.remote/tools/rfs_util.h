@@ -64,16 +64,16 @@ static void report_unresolved_path(const char* path) {
 }
 
 
-#define trace(...) if (trace_flag) _trace(__VA_ARGS__)
+#define trace(...) if (trace_flag) { _trace(__VA_ARGS__); }
 void _trace(const char *format, ...);
 
-#define trace_startup(prefix, env_var, binary) if (trace_flag) _trace_startup(prefix, env_var, binary)
+#define trace_startup(prefix, env_var, binary) if (trace_flag) { _trace_startup(prefix, env_var, binary); }
 void _trace_startup(const char* prefix, const char* env_var, const char* binary);
 
-#define trace_shutdown() if (trace_flag) _trace_shutdown()
+#define trace_shutdown() if (trace_flag) { _trace_shutdown(); }
 void _trace_shutdown();
 
-#define trace_unresolved_path(path) if (trace_flag) _trace_unresolved_path(path)
+#define trace_unresolved_path(path) if (trace_flag) { _trace_unresolved_path(path); }
 static void _trace_unresolved_path(const char* path) {
     if (trace_flag) {
         char pwd[PATH_MAX];
@@ -82,7 +82,7 @@ static void _trace_unresolved_path(const char* path) {
     }
 }
 
-#define dbg_sleep(time) if (trace_flag) _dbg_sleep(time)
+#define dbg_sleep(time) if (trace_flag) { _dbg_sleep(time); }
 static void _dbg_sleep(int time) {
     if (trace_flag) {
         trace("Sleeping %d sec...\n", time);
