@@ -227,6 +227,9 @@ public abstract class CompletionResultItem implements CompletionItem {
         tokenSequence.moveNext();
         Token token = tokenSequence.token();
         boolean isTextTag = CompletionUtil.isTextTag(token);
+        if ((! isTextTag) && tokenSequence.movePrevious()) {
+            token = tokenSequence.token();
+        }
         if (! (isTextTag || CompletionUtil.isEndTagPrefix(token) ||
             CompletionUtil.isTagFirstChar(token))) {
             return primaryText;
