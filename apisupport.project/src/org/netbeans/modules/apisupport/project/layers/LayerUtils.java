@@ -109,6 +109,11 @@ public class LayerUtils {
     private static final Collection<FileSystem> EMPTY_FS_COL = new ArrayList<FileSystem>();
 
     private LayerUtils() {}
+
+    /**
+     * Suffix of hidden files.
+     */
+    public static final String HIDDEN = "_hidden"; //NOI18N
     
     /**
      * Translates nbres: into nbrescurr: for internal use.
