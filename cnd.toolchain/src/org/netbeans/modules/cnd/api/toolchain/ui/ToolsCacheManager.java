@@ -64,7 +64,11 @@ public abstract class ToolsCacheManager {
     public abstract void applyChanges();
 
     public static ToolsCacheManager get(){
-        return new ToolsCacheManagerImpl();
+        return get(false);
+    }
+
+    public static ToolsCacheManager get(boolean initialize){
+        return new ToolsCacheManagerImpl(initialize);
     }
 
     protected ToolsCacheManager() {
