@@ -799,9 +799,7 @@ public class CompletionUtil {
             TokenHierarchy tokenHierarchy = TokenHierarchy.get(document);
             TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
 
-            if (isTagIncomplete(caretPos, tokenSequence)) {
-                return (new TagLastCharResultItem(tokenSequence));
-            }
+            String incompleteTagName = findIncompleteTagName(caretPos, tokenSequence);
             if (isCaretInsideTag(caretPos, tokenSequence)) return null;
 
             boolean beforeUnclosedStartTagFound = isUnclosedStartTagFoundBefore(
@@ -816,9 +814,14 @@ public class CompletionUtil {
                 tokenSequence, startTagName);
             if (closingTagFound) return null;
 
-            CompletionResultItem endTagCompletionItem = new EndTagResultItem(
-                startTagName, tokenSequence);
-            return endTagCompletionItem;
+            CompletionResultItem resultItem;
+            if ((incompleteTagName != null) && 
+                (! startTagName.startsWith(incompleteTagName))) {
+                resultItem = new TagLastCharResultItem(incompleteTagName, tokenSequence);
+            } else {
+                resultItem = new EndTagResultItem(startTagName, tokenSequence);
+            }
+            return resultItem;
         } catch(Exception e) {
             _logger.log(Level.WARNING,
                 e.getMessage() == null ? e.getClass().getName() : e.getMessage(), e);
@@ -862,11 +865,12 @@ public class CompletionUtil {
         return startTagFound;
     }
 
-    private static boolean isTagIncomplete(int caretPos, TokenSequence tokenSequence) {
-        if (! isTokenSequenceUsable(tokenSequence)) return false;
+    private static String findIncompleteTagName(int caretPos, TokenSequence tokenSequence) {
+        if (! isTokenSequenceUsable(tokenSequence)) return null;
 
         boolean tagFirstCharFound = false;
         Token token = null;
+        String incompleteTagName = null;
 
         tokenSequence.move(caretPos);
         tokenSequence.moveNext();
@@ -880,15 +884,16 @@ public class CompletionUtil {
                 if (tokenText.startsWith(TAG_FIRST_CHAR)) {
                     if (tokenSequence.offset() < caretPos) {
                         tagFirstCharFound = true;
+                        incompleteTagName = getTokenTagName(token);
                         break;
                     }
                 } else {
-                    return false;
+                    return null;
                 }
             }
         } while (tokenSequence.movePrevious());
 
-        if (! tagFirstCharFound) return false;
+        if (! tagFirstCharFound) return null;
 
         tokenSequence.move(caretPos);
         while (tokenSequence.moveNext()) {
@@ -899,13 +904,13 @@ public class CompletionUtil {
                 if ((tokenText == null) || tokenText.isEmpty()) continue;
 
                 if (tokenText.contains(TAG_LAST_CHAR)) {
-                    return false;
+                    return null;
                 } else {
-                    return true;
+                    return incompleteTagName;
                 }
             }
         }
-        return true;
+        return incompleteTagName;
     }
 
     private static boolean isClosingEndTagFoundAfter(int caretPos,
