@@ -68,7 +68,6 @@ import org.openide.util.NbPreferences;
 public class AutoupdateCatalogFactory {
     private static final Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.updateproviders.AutoupdateCatalogFactory");
     
-    /** Creates a new instance of CreateNewUpdatesProvider */
     private AutoupdateCatalogFactory () {
     }
     
@@ -87,23 +86,26 @@ public class AutoupdateCatalogFactory {
     
     public static UpdateProvider createUpdateProvider (FileObject fo) {
         String sKey = (String) fo.getAttribute ("url_key"); // NOI18N
-        String remoteBundleName = (String) fo.getAttribute ("SystemFileSystem.localizingBundle"); // NOI18N
-        assert remoteBundleName != null : "remoteBundleName should found in fo: " + fo;
-        
-        ResourceBundle bundle = NbBundle.getBundle (remoteBundleName);
-        URL url = null;
+        URL url;
+        String name;
         if (sKey != null) {
+            err.log(Level.WARNING, "{0}: url_key attribute deprecated in favor of url", fo.getPath());
+            String remoteBundleName = (String) fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
+            assert remoteBundleName != null : "remoteBundleName should found in fo: " + fo;
+            ResourceBundle bundle = NbBundle.getBundle(remoteBundleName);
             String localizedValue = null;
             try {
                 localizedValue = bundle.getString (sKey);
                 url = new URL (localizedValue);
             } catch (MissingResourceException mre) {
                 assert false : bundle + " should contain key " + sKey;
+                return null;
             } catch (MalformedURLException urlex) {
                 assert false : "MalformedURLException when parsing name " + localizedValue;
+                return null;
             }
+            name = sKey;
         } else {
-            assert false : "url attrib ute is not supported.";
             Object o = fo.getAttribute("url"); // NOI18N
             try {
                 if (o instanceof String) {
@@ -113,14 +115,16 @@ public class AutoupdateCatalogFactory {
                 }
             } catch (MalformedURLException urlex) {
                 err.log (Level.INFO, urlex.getMessage (), urlex);
+                return null;
             }
+            name = fo.getName();
         }
         url = modifyURL (url);
         String categoryName = (String) fo.getAttribute ("category"); // NOI18N    
         CATEGORY category = (categoryName != null) ? CATEGORY.valueOf(categoryName) : CATEGORY.COMMUNITY;
-        AutoupdateCatalogProvider au_catalog = new AutoupdateCatalogProvider (sKey, displayName (fo), url, category);
+        AutoupdateCatalogProvider au_catalog = new AutoupdateCatalogProvider(name, displayName(fo), url, category);
         
-        Preferences providerPreferences = getPreferences ().node (sKey);
+        Preferences providerPreferences = getPreferences().node(name);
         providerPreferences.put (ORIGINAL_URL, url.toExternalForm ());
         providerPreferences.put (ORIGINAL_DISPLAY_NAME, au_catalog.getDisplayName ());
         providerPreferences.put (ORIGINAL_CATEGORY_NAME, au_catalog.getCategory().name());        
