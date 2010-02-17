@@ -42,50 +42,56 @@ package org.netbeans.modules.remote.api;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.NotImplementedException;
+import org.netbeans.modules.remote.support.ServerListImpl;
+import org.openide.util.Utilities;
 
 /**
- *
+ * Stores the list of hosts;
+ * each host is represented by ServerRecord instance
  * @author Vladimir Kvashin
  */
 public final class ServerList {
 
-    public  static final String PROP_DEFAULT_RECORD = "DEFAULT_RECORD"; //NOI18N
-    public  static final String PROP_RECORD_LIST = "RECORD_LIST"; //NOI18N
-    
-    /** Just prevents external creation */
-    private ServerList() {}
+    public static final String PROP_DEFAULT_RECORD = "DEFAULT_RECORD"; //NOI18N
+    public static final String PROP_RECORD_LIST = "RECORD_LIST"; //NOI18N
 
-    public static Collection<? extends ServerRecord> getRecords() {
-        throw new NotImplementedException();
+    public static Collection<ServerRecord> getRecords() {
+        return ServerListImpl.getDefault().getRecords();
     }
 
     public static ServerRecord get(ExecutionEnvironment env) {
-        throw new NotImplementedException();
+        return ServerListImpl.getDefault().get(env);
     }
 
     public static ServerRecord getDefaultRecord() {
-        throw new NotImplementedException();
+        return ServerListImpl.getDefault().getDefaultRecord();
     }
 
     public static void setDefaultRecord(ServerRecord defaultRecord) {
-        throw new NotImplementedException();
+        ServerListImpl.getDefault().setDefaultRecord(defaultRecord);
     }
 
-    /** 
+    public static void addPropertyChangeListener(PropertyChangeListener listener) {
+        ServerListImpl.getDefault().addPropertyChangeListener(listener);
+    }
+
+    public static void removePropertyChangeListener(PropertyChangeListener listener) {
+        ServerListImpl.getDefault().removePropertyChangeListener(listener);
+    }
+
+    /**
      * Gets record that is currently selected in the UI
      * (e.g. in explorer that shows servers),
      * or default record if nothing is currently selected
      */
     public static ServerRecord getActiveRecord() {
-        throw new NotImplementedException();
+        ServerRecord record = Utilities.actionsGlobalContext().lookup(ServerRecord.class);
+        if (record == null) {
+            record = getDefaultRecord();
+        }
+        return record;
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        throw new NotImplementedException();
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        throw new NotImplementedException();
+    private ServerList() {
     }
 }

@@ -271,7 +271,7 @@ public final class MakeActionProvider implements ActionProvider {
 
         final List<MakeConfiguration> confs = new ArrayList<MakeConfiguration>();
         if (command.equals(COMMAND_BATCH_BUILD)) {
-            BatchConfigurationSelector batchConfigurationSelector = new BatchConfigurationSelector(project, pd.getConfs().getConfs());
+            BatchConfigurationSelector batchConfigurationSelector = new BatchConfigurationSelector(project, pd.getConfs().toArray());
             String batchCommand = batchConfigurationSelector.getCommand();
             Configuration[] confsArray = batchConfigurationSelector.getSelectedConfs();
             if (batchCommand == null || confsArray == null || confsArray.length == 0) {
