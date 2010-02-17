@@ -82,6 +82,7 @@ class SampleAppWarningVisual extends javax.swing.JPanel {
             }
         });
 
+        readLicense.setMnemonic(Integer.parseInt(org.openide.util.NbBundle.getMessage(SampleAppWarningVisual.class, "SampleAppWarningVisual.readLicense.textIndex", new Object[] {})));
         readLicense.setText(org.openide.util.NbBundle.getMessage(SampleAppWarningVisual.class, "SampleAppWarningVisual.readLicense.text", new Object[] {})); // NOI18N
         readLicense.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

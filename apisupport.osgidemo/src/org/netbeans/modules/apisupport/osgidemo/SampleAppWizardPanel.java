@@ -98,7 +98,7 @@ class SampleAppWizardPanel implements WizardDescriptor.Panel,
     protected final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {

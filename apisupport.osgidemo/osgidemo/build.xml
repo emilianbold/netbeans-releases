@@ -6,9 +6,9 @@
     <description>Builds the module suite osgi-suite.</description>
     <import file="nbproject/build-impl.xml"/>
 
-    <target name="-init" depends="-download-netbinox,suite.-init"/>
+    <target name="-init" depends="-download-netbinox"/>
 
-    <target name="-download-netbinox" if="netbinox.updatecenter.url">
+    <target name="-download-netbinox" depends="suite.-init" if="netbinox.updatecenter.url">
         <autoupdate todir="netbinox" updatecenter="${netbinox.updatecenter.url}">
             <modules includes=".*" clusters="netbinox[0-9]*"/>
         </autoupdate>

@@ -47,11 +47,20 @@ made subject to such option by the copyright holder.
             <folder name="Samples">
                 <folder name="ApiSupport">
                     <file name="EquinoxDemo.zip" url="EquinoxDemo.zip">
-                        <attr name="position" intvalue="9900"/>
+                        <attr name="position" intvalue="99900"/>
                         <attr name="iconBase" stringvalue="org/netbeans/modules/apisupport/osgidemo/bundle.png"/>
                         <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.osgidemo.Bundle#SampleAppFile"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.osgidemo.SampleAppWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/osgidemo/SampleAppDescription.html"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="netbinox" stringvalue="true"/>
+                    </file>
+                    <file name="FelixDemo.zip" url="EquinoxDemo.zip">
+                        <attr name="position" intvalue="99800"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/apisupport/osgidemo/bundle.png"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.osgidemo.Bundle#SampleFelixFile"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.osgidemo.SampleAppWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/osgidemo/SampleFelixDescription.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
                 </folder>

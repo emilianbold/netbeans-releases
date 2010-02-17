@@ -64,6 +64,9 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="readLicense">
       <Properties>
+        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nIntegerEditor">
+          <ResourceString bundle="org/netbeans/modules/apisupport/osgidemo/Bundle.properties" key="SampleAppWarningVisual.readLicense.textIndex" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/apisupport/osgidemo/Bundle.properties" key="SampleAppWarningVisual.readLicense.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})"/>
         </Property>

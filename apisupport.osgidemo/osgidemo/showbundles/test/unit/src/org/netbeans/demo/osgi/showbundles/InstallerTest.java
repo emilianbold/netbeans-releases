@@ -69,8 +69,8 @@ public class InstallerTest extends NbTestCase {
         Children ch = Installer.createBundleChildren();
         List<Node> arr = ch.snapshot();
         String bundleName;
-        // <#if ! netbinox? >
-        bundleName = "org.apache.felix";
+        // <#if !netbinox?? >
+        bundleName = "org.apache.felix.framework";
         // <#else>
         bundleName = "org.eclipse.osgi";
         // </#if>

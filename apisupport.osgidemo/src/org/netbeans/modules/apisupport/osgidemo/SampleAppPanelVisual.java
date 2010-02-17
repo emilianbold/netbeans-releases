@@ -148,7 +148,6 @@ public class SampleAppPanelVisual extends JPanel implements DocumentListener {
     
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
             JFileChooser chooser = new JFileChooser();
-            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setDialogTitle(org.openide.util.NbBundle.getMessage(SampleAppPanelVisual.class, "SampleAppPanelVisual.select_project_location"));
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             String path = this.projectLocationTextField.getText();

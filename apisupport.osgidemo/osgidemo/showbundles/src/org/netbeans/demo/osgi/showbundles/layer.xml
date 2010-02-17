@@ -15,6 +15,7 @@
         <folder name="Window">
             <file name="ShowBundlesAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-demo-osgi-showbundles-ShowBundlesAction.instance"/>
+                <attr name="position" intvalue="109"/>
             </file>
         </folder>
     </folder>

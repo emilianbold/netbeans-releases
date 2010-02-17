@@ -44,19 +44,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Invokes various Ant targets over osgidemo sample in equinox mode.
+ * Invokes various Ant targets over osgidemo sample in felix mode.
  *
  * @author Tomas Musil
  */
-public class BuildEquinoxSampleApplicationTest extends BuildSampleApplicationBase {
-    public BuildEquinoxSampleApplicationTest(String testName) {
+public class BuildFelixSampleApplicationTest extends BuildSampleApplicationBase {
+    public BuildFelixSampleApplicationTest(String testName) {
         super(testName);
     }
 
     @Override
     protected Map<String, Object> params() {
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("netbinox", "true");
         return map;
     }
 }

@@ -44,13 +44,24 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
@@ -68,36 +79,47 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
+    private final boolean netbinox;
     
-    public SampleAppWizardIterator() {}
+    public SampleAppWizardIterator(boolean netbinox) {
+        this.netbinox = netbinox;
+    }
     
-    public static SampleAppWizardIterator createIterator() {
-        return new SampleAppWizardIterator();
+    public static SampleAppWizardIterator createIterator(Map<?,?> params) {
+        return new SampleAppWizardIterator(params.containsKey("netbinox")); // NOI18N
     }
     
     private WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[] {
-            new SampleAppWizardPanel(),
-            new SampleAppWarningPanel()
-        };
+        List<WizardDescriptor.Panel<?>> arr = new ArrayList<WizardDescriptor.Panel<?>>();
+        arr.add(new SampleAppWizardPanel());
+        if (netbinox) {
+            arr.add(new SampleAppWarningPanel());
+        }
+        return arr.toArray(new WizardDescriptor.Panel[0]);
     }
     
     private String[] createSteps() {
-        return new String[] {
-            NbBundle.getMessage(SampleAppWizardIterator.class, "LBL_CreateProjectStep"),
-            NbBundle.getMessage(SampleAppWizardIterator.class, "LBL_DownloadStep")
-        };
+        List<String> arr = new ArrayList<String>();
+        arr.add(NbBundle.getMessage(SampleAppWizardIterator.class, "LBL_CreateProjectStep"));
+        if (netbinox) {
+            arr.add(NbBundle.getMessage(SampleAppWizardIterator.class, "LBL_DownloadStep"));
+        }
+        return arr.toArray(new String[0]);
     }
     
     @Override
     public Set/*<FileObject>*/ instantiate() throws IOException {
-        Set resultSet = new LinkedHashSet();
+        Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
         File dirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
         dirF.mkdirs();
         
         FileObject template = Templates.getTemplate(wiz);
         FileObject dir = FileUtil.toFileObject(dirF);
-        unZipFile(template.getInputStream(), dir);
+        Map<String,Object> params = new HashMap<String, Object>();
+        if (netbinox) {
+            params.put("netbinox", "true"); // NOI18N
+        }
+        unZipFile(null, template.getInputStream(), params, dir);
         
         // Always open top dir as a project:
         resultSet.add(dir);
@@ -192,8 +214,8 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
     public final void addChangeListener(ChangeListener l) {}
     @Override
     public final void removeChangeListener(ChangeListener l) {}
-    
-    private static void unZipFile(InputStream source, FileObject projectRoot) throws IOException {
+
+    static void unZipFile(FileObject template, InputStream source, Map<String,Object> params, FileObject projectRoot) throws IOException {
         try {
             ZipInputStream str = new ZipInputStream(source);
             ZipEntry entry;
@@ -202,9 +224,40 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
                     FileUtil.createFolder(projectRoot, entry.getName());
                 } else {
                     FileObject fo = FileUtil.createData(projectRoot, entry.getName());
+                    String mime = fo.getMIMEType();
                     OutputStream out = fo.getOutputStream();
                     try {
-                        FileUtil.copy(str, out);
+                        if (mime.startsWith("text/")) {
+                            StringBuilder sb = new StringBuilder();
+                            for (;;) {
+                                int r = str.read();
+                                if (r == -1) {
+                                    break;
+                                }
+                                if (r == '$') {
+                                    sb.append("${r\"$\"}");
+                                } else {
+                                    sb.append((char)r);
+                                }
+                            }
+                            ScriptEngineManager m = new ScriptEngineManager();
+                            ScriptEngine engine = m.getEngineByName("FreeMarker");
+                            assert engine != null : "FreeMarker engine needs to be present";
+                            engine.getBindings(ScriptContext.ENGINE_SCOPE).putAll(params);
+                            if (template != null) {
+                                engine.getContext().setAttribute("org.openide.filesystems.FileObject", template, ScriptContext.ENGINE_SCOPE); // NOI18N
+                            }
+                            Writer w = new OutputStreamWriter(out, "UTF-8");
+                            engine.getContext().setWriter(w);
+                            try {
+                                engine.eval(sb.toString());
+                            } catch (ScriptException ex) {
+                               throw new IOException(sb.toString(), ex);
+                            }
+                            w.flush();
+                        } else {
+                            FileUtil.copy(str, out);
+                        }
                     } finally {
                         out.close();
                     }
