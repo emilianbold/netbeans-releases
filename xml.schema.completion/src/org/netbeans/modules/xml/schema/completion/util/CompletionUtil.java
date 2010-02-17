@@ -798,6 +798,10 @@ public class CompletionUtil {
             
             TokenHierarchy tokenHierarchy = TokenHierarchy.get(document);
             TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+
+            if (isTagIncomplete(caretPos, tokenSequence)) {
+                return (new TagLastCharResultItem(tokenSequence));
+            }
             if (isCaretInsideTag(caretPos, tokenSequence)) return null;
 
             boolean beforeUnclosedStartTagFound = isUnclosedStartTagFoundBefore(
@@ -856,6 +860,52 @@ public class CompletionUtil {
             }
         }
         return startTagFound;
+    }
+
+    private static boolean isTagIncomplete(int caretPos, TokenSequence tokenSequence) {
+        if (! isTokenSequenceUsable(tokenSequence)) return false;
+
+        boolean tagFirstCharFound = false;
+        Token token = null;
+
+        tokenSequence.move(caretPos);
+        tokenSequence.moveNext();
+        do {
+            token = tokenSequence.token();
+            TokenId tokenID = token.id();
+            if (tokenID.equals(XMLTokenId.TAG)) {
+                String tokenText = token.text().toString();
+                if ((tokenText == null) || tokenText.isEmpty()) continue;
+
+                if (tokenText.startsWith(TAG_FIRST_CHAR)) {
+                    if (tokenSequence.offset() < caretPos) {
+                        tagFirstCharFound = true;
+                        break;
+                    }
+                } else {
+                    return false;
+                }
+            }
+        } while (tokenSequence.movePrevious());
+
+        if (! tagFirstCharFound) return false;
+
+        tokenSequence.move(caretPos);
+        while (tokenSequence.moveNext()) {
+            token = tokenSequence.token();
+            TokenId tokenID = token.id();
+            if (tokenID.equals(XMLTokenId.TAG)) {
+                String tokenText = token.text().toString();
+                if ((tokenText == null) || tokenText.isEmpty()) continue;
+
+                if (tokenText.contains(TAG_LAST_CHAR)) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        }
+        return true;
     }
 
     private static boolean isClosingEndTagFoundAfter(int caretPos,

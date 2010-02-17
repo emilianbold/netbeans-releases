@@ -59,7 +59,7 @@ import java.util.logging.Level;
  * 
  * @author Maros Sandor
  */
-class DiffNode extends AbstractNode {
+public class DiffNode extends AbstractNode {
     
     static final String COLUMN_NAME_NAME = "name";
     static final String COLUMN_NAME_PROPERTY = "property";
@@ -70,7 +70,7 @@ class DiffNode extends AbstractNode {
     private String          htmlDisplayName;
     private int displayStatuses;
     
-    public DiffNode(Setup setup, int displayStatuses) {
+    DiffNode(Setup setup, int displayStatuses) {
         super(Children.LEAF, Lookups.singleton(setup));
         this.setup = setup;
         this.displayStatuses = displayStatuses;
@@ -96,7 +96,7 @@ class DiffNode extends AbstractNode {
         return htmlDisplayName;
     }
     
-    public Setup getSetup() {
+    Setup getSetup() {
         return setup;
     }
 

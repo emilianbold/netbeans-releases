@@ -49,9 +49,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
  *
  * @author Alexander Simon
  */
-public class SharedItemConfiguration {
-    private Map<Configuration, ItemConfiguration> itemConfigurations = new HashMap<Configuration, ItemConfiguration>();
-    private Item item;
+/*package*/final class SharedItemConfiguration {
+    private final Map<Configuration, ItemConfiguration> itemConfigurations = new HashMap<Configuration, ItemConfiguration>();
+    private final Item item;
 
     public SharedItemConfiguration(Item item){
         this.item = item;

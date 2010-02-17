@@ -86,6 +86,7 @@ import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.io.File;
 import java.util.logging.Level;
+import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
 import org.netbeans.modules.versioning.util.SortedTable;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 
@@ -433,6 +434,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
            actionString("CTL_PopupMenuItem_Unignore") : // NOI18N
            actionString("CTL_PopupMenuItem_Ignore")); // NOI18N
         item = menu.add(ignoreAction);
+        Mnemonics.setLocalizedText(item, item.getText());
+        Action infoAction = new SystemActionBridge(SystemAction.get(VersioningInfoAction.class), actionString("CTL_PopupMenuItem_VersioningInfo")); // NOI18N
+        item = menu.add(infoAction);
         Mnemonics.setLocalizedText(item, item.getText());
 
         return menu;

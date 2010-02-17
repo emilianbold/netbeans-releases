@@ -48,8 +48,8 @@ import java.awt.Component;
 import java.awt.Font;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 
 /**
  *
@@ -63,6 +63,7 @@ public class FilterRenderer extends javax.swing.JPanel implements ListCellRender
         setOpaque(true);
         groupLabel.setOpaque(true);
         groupLabel.setFont(groupLabel.getFont().deriveFont(Font.BOLD));
+        setBorder(new EmptyBorder(1,1,1,1));
     }
 
     /** This method is called from within the constructor to
@@ -91,16 +92,18 @@ public class FilterRenderer extends javax.swing.JPanel implements ListCellRender
         if (value!=null) {
         groupLabel.setText(value.toString());
         FilterItem item = (FilterItem) value;
-        groupLabel.setBorder(new EmptyBorder(0,item.getIcon()==null?19:0,0,0));
+        groupLabel.setBorder(new EmptyBorder(0,item.getIcon()==null?22:3,0,0));
         groupLabel.setIcon(item.getIcon());
         }
         groupLabel.setOpaque(isSelected);
         if (isSelected) {
-            groupLabel.setBackground(UIManager.getColor("ComboBox.selectionBackground")); // NOI18N
-            groupLabel.setForeground(UIManager.getColor("ComboBox.selectionForeground")); // NOI18N
+            groupLabel.setBackground(list.getSelectionBackground()); // NOI18N
+            groupLabel.setForeground(list.getSelectionForeground()); // NOI18N
+            this.setBackground(list.getSelectionBackground());
         } else {
-            groupLabel.setBackground(UIManager.getColor("ComboBox.background")); // NOI18N
-            groupLabel.setForeground(UIManager.getColor("ComboBox.foreground")); // NOI18N
+            groupLabel.setBackground(ColorManager.getDefault().getDefaultBackground()); // NOI18N
+            groupLabel.setForeground(list.getForeground()); // NOI18N
+            this.setBackground(ColorManager.getDefault().getDefaultBackground());
         }
         return this;
     }

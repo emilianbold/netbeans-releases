@@ -1922,6 +1922,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 offset += len;
                 len = 0;
             }
+            final boolean lpar = "(".equals(toAdd); //NOI18N
             final int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
             if (semiPos > -2)
                 toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
@@ -1974,7 +1975,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
             final String text2 = text;
             final int length = len;
             final int offset2 = offset;
-            final String toAdd2 = toAdd;
             final Position[] position = new Position [1];
             doc.runAtomic (new Runnable () {
                 public void run () {
@@ -1991,7 +1991,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         }
                         if (semiPosition != null)
                             doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
-                        else if (!isAbstract && params.isEmpty() && "(".equals(toAdd2)) //NOI18N
+                        else if (!isAbstract && params.isEmpty() && lpar)
                             c.setCaretPosition(c.getCaretPosition() - 1);
                     } catch (BadLocationException e) {
                     }
@@ -2126,6 +2126,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd) {
+            final boolean lpar = "(".equals(toAdd); //NOI18N
             final int[] offset2 = new int[] {offset + len};
             len = 0;
             final int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
@@ -2176,7 +2177,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             final Position[] position = new Position [1];
             final String text2 = text;
-            final String toAdd2 = toAdd;
             final int length = len;
             doc.runAtomic (new Runnable () {
                 public void run () {
@@ -2189,7 +2189,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         position [0] = doc.createPosition(offset2 [0]);
                         if (semiPosition != null)
                             doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
-                        else if (!isAbstract && "(".equals(toAdd2)) //NOI18N
+                        else if (!isAbstract && lpar)
                             c.setCaretPosition(c.getCaretPosition() - 1);
                     } catch (BadLocationException e) {
                     }

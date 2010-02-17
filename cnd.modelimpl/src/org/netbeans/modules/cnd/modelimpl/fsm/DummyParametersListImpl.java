@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,33 +34,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.welcome.ui;
+package org.netbeans.modules.cnd.modelimpl.fsm;
 
-import java.awt.event.ActionEvent;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Collection;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
 
 /**
- * Opens Kenai dashboard window.
  *
- * @author S. Aubrecht
+ * @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
-public class KenaiAction extends AbstractAction {
+public class DummyParametersListImpl extends ParameterListImpl<DummyParametersListImpl, CsmParameter> {
 
-    public void actionPerformed(ActionEvent e) {
-        WindowManager wm = WindowManager.getDefault();
-        TopComponent tc = wm.findTopComponent("KenaiTopComponent"); //NOI18N
-        if( null != tc ) {
-            tc.open();
-            tc.requestActive();
-        } else {
-            Logger.getLogger(KenaiAction.class.getName()).log(Level.INFO, "Kenai window not found"); //NOI18N
-        }
+    public DummyParametersListImpl(CsmFile file, int start, int end, Collection<?>/*<CsmParameter> or <CsmUID<CsmParameter>>*/ parameters) {
+        super(file, start, end, parameters);
     }
+
+    @Override
+    public String toString() {
+        return "Dummy " + super.toString(); // NOI18N
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // persistent
+    @Override
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+    }
+
+    @SuppressWarnings("unchecked")
+    public DummyParametersListImpl(DataInput input) throws IOException {
+        super(input);
+    }
+
 }

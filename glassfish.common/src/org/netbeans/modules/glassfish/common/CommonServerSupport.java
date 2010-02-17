@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -59,6 +59,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -197,8 +198,19 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return properties.get(USERNAME_ATTR);
     }
     
+    @Override
     public String getPassword() {
-        return properties.get(PASSWORD_ATTR);
+        String retVal = properties.get(PASSWORD_ATTR);
+        String key = properties.get(URL_ATTR);
+        char[] retChars = Keyring.read(key);
+        if (null == retChars || retChars.length < 1 || !GlassfishModule.PASSWORD_CONVERTED_FLAG.equals(retVal)) {
+            retChars = retVal.toCharArray();
+            Keyring.save(key, retChars, "a Glassfish/SJSAS passord");
+            properties.put(PASSWORD_ATTR, GlassfishModule.PASSWORD_CONVERTED_FLAG) ;
+        } else {
+            retVal = String.copyValueOf(retChars);
+        }
+        return retVal;
     }
     
     public String getAdminPort() {

@@ -18,6 +18,7 @@
         <ext name="ksh"/>
         <ext name="sh"/>
         <ext name="zsh"/>
+        <ext name="pl"/>
         <resolver mime="text/sh"/>
     </file>
     <file>

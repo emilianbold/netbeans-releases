@@ -457,14 +457,20 @@ public final class ExecutionService {
      * @param inputOutput output window to configure
      */
     private void configureInputOutput(InputOutput inputOutput) {
-        try {
-            inputOutput.getOut().reset();
-        } catch (IOException exc) {
-            LOGGER.log(Level.INFO, null, exc);
+        if (inputOutput == InputOutput.NULL) {
+            return;
         }
 
-        // Note - do this AFTER the reset() call above; if not, weird bugs occur
-        inputOutput.setErrSeparated(false);
+        if (descriptor.getInputOutput() == null || !descriptor.noReset()) {
+            try {
+                inputOutput.getOut().reset();
+            } catch (IOException exc) {
+                LOGGER.log(Level.INFO, null, exc);
+            }
+
+            // Note - do this AFTER the reset() call above; if not, weird bugs occur
+            inputOutput.setErrSeparated(false);
+        }
 
         // Open I/O window now. This should probably be configurable.
         if (descriptor.isFrontWindow()) {

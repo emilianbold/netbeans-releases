@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
-import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Sheet;
@@ -72,6 +71,9 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 public class MakeConfiguration extends Configuration {
+    public static final String NBPROJECT_FOLDER = "nbproject"; // NOI18N
+    public static final String PROJECT_XML = "project.xml"; // NOI18N
+    public static final String CONFIGURATIONS_XML = "configurations.xml"; // NOI18N
 
     public static final String MAKEFILE_IMPL = "Makefile-impl.mk"; // NOI18N
     public static final String BUILD_FOLDER = "build"; // NOI18N

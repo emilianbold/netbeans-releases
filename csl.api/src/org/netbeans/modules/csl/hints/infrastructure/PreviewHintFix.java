@@ -97,12 +97,11 @@ final class PreviewHintFix implements EnhancedFix {
         OffsetRange range = new OffsetRange(0, oldDoc.getLength());
         String oldSource = oldDoc.getText(range.getStart(), range.getEnd());
 
-        BaseDocument newDoc = new BaseDocument(null, false);
+        String mimeType = (String) oldDoc.getProperty("mimeType"); //NOI18N
+        BaseDocument newDoc = new BaseDocument(false, mimeType);
 
         Language language = (Language) oldDoc.getProperty(Language.class);
         newDoc.putProperty(Language.class, language);
-        String mimeType = (String) oldDoc.getProperty("mimeType");
-        newDoc.putProperty("mimeType", mimeType);
         newDoc.insertString(0, oldSource, null);
         edits.applyToDocument(newDoc);
         String newSource = newDoc.getText(0, newDoc.getLength());

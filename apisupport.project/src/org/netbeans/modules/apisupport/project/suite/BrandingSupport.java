@@ -54,9 +54,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -65,6 +67,7 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
 
 /**
@@ -455,7 +458,7 @@ public final class BrandingSupport {
     
     private void loadLocalizedBundlesFromPlatform(final ModuleEntry moduleEntry,
             final String bundleEntry, final Set<String> keys, final Set<BundleKey> bundleKeys) throws IOException {
-        EditableProperties p = new EditableProperties();
+        Properties p = new Properties();
         JarFile module = new JarFile(moduleEntry.getJarLocation());
         JarEntry je = module.getJarEntry(bundleEntry);
         InputStream is = module.getInputStream(je);
@@ -466,7 +469,7 @@ public final class BrandingSupport {
         } finally {
             is.close();
         }
-        for (String key : p.keySet()) {
+        for (String key : NbCollections.checkedMapByFilter(p, String.class, String.class, true).keySet()) {
             if (keys.contains(key)) {
                 String value = p.getProperty(key);
                 bundleKeys.add(new BundleKey(moduleEntry, bundle, key, value));
@@ -489,12 +492,13 @@ public final class BrandingSupport {
     public final class BundleKey {
         private final File brandingBundle;
         private final ModuleEntry moduleEntry;
-        private final String key;
-        private String value;
+        private final @NonNull String key;
+        private @NonNull String value;
         private boolean modified = false;
         
         private BundleKey(final ModuleEntry moduleEntry, final File brandingBundle, final String key, final String value) {
             this.moduleEntry = moduleEntry;
+            assert key != null && value != null;
             this.key = key;
             this.value = value;
             this.brandingBundle = brandingBundle;
@@ -508,15 +512,16 @@ public final class BrandingSupport {
             return moduleEntry;
         }
         
-        public String getKey() {
+        public @NonNull String getKey() {
             return key;
         }
         
-        public String getValue() {
+        public @NonNull String getValue() {
             return value;
         }
         
-        public void setValue(final String value) {
+        public void setValue(@NonNull String value) {
+            assert value != null;
             if (!this.value.equals(value)) {
                 modified = true;
             }

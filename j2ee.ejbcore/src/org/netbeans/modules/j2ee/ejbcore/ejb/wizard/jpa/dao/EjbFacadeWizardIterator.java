@@ -286,25 +286,25 @@ import org.openide.util.NbBundle;
 
                         if (option.getOperation() == null){
                             members.add(maker.Method(
-                                     maker.Modifiers(EnumSet.of(Modifier.PUBLIC, Modifier.ABSTRACT)),
-                                     option.getMethodName(),
-                                     returnType,
-                                     Collections.EMPTY_LIST,
-                                     vars,
-                                     (List<ExpressionTree>)Collections.EMPTY_LIST,
-                                     (BlockTree)null,
-                                     null));
+                                    maker.Modifiers(option.getModifiers()),
+                                    option.getMethodName(),
+                                    returnType,
+                                    Collections.EMPTY_LIST,
+                                    vars,
+                                    (List<ExpressionTree>)Collections.EMPTY_LIST,
+                                    (BlockTree)null,
+                                 null));
                         } else {
                             members.add(maker.Method(
-                                     genUtils.createModifiers(Modifier.PUBLIC),
-                                     option.getMethodName(),
-                                     returnType,
-                                     (List<TypeParameterTree>)Collections.EMPTY_LIST,
-                                     vars,
-                                     (List<ExpressionTree>)Collections.EMPTY_LIST,
-                                     "{" + option.getCallLines("getEntityManager()", entityClassVar, PersistenceUtils.getJPAVersion(project)) + "}", //NOI18N
-                                     null));
-                        }
+                                    maker.Modifiers(option.getModifiers()),
+                                    option.getMethodName(),
+                                    returnType,
+                                    (List<TypeParameterTree>)Collections.EMPTY_LIST,
+                                    vars,
+                                    (List<ExpressionTree>)Collections.EMPTY_LIST,
+                                    "{" + option.getCallLines("getEntityManager()", entityClassVar, PersistenceUtils.getJPAVersion(project)) + "}", //NOI18N
+                                    null));
+                    }
                     }
 
                     ClassTree newClassTree = maker.Class(
@@ -332,18 +332,7 @@ import org.openide.util.NbBundle;
         }
         final FileObject facade = GenerationUtils.createClass(targetFolder, entitySimpleName + FACADE_SUFFIX, null);
         createdFiles.add(facade);
-        // add the @stateless annotation
-        JavaSource source = JavaSource.forFileObject(facade);
-        source.runModificationTask(new Task<WorkingCopy>(){
-            public void run(WorkingCopy parameter) throws Exception {
-                parameter.toPhase(Phase.RESOLVED);
-                ClassTree classTree = SourceUtils.getPublicTopLevelTree(parameter);
-                assert classTree != null;
-                GenerationUtils genUtils = GenerationUtils.newInstance(parameter);
-                AnnotationTree stateless = genUtils.createAnnotation(EJB_STATELESS);
-                parameter.rewrite(classTree, genUtils.addAnnotation(classTree, stateless));
-            }
-        }).commit();
+
 
         // generate methods for the facade
         EntityManagerGenerator generator = new EntityManagerGenerator(facade, entityFQN);
@@ -368,14 +357,16 @@ import org.openide.util.NbBundle;
             createdFiles.add(remote);
         }
 
+        // add the @stateless annotation
         // add implements and extends clauses to the facade
-        source.runModificationTask(new Task<WorkingCopy>() {
-
+        JavaSource source = JavaSource.forFileObject(facade);
+        source.runModificationTask(new Task<WorkingCopy>(){
             public void run(WorkingCopy parameter) throws Exception {
                 parameter.toPhase(Phase.RESOLVED);
                 ClassTree classTree = SourceUtils.getPublicTopLevelTree(parameter);
                 assert classTree != null;
                 GenerationUtils genUtils = GenerationUtils.newInstance(parameter);
+
                 TreeMaker maker = parameter.getTreeMaker();
                 ClassTree newClassTree = classTree;
                 if (hasLocal){
@@ -395,7 +386,9 @@ import org.openide.util.NbBundle;
                         Collections.EMPTY_LIST,
                         "{super(" + entitySimpleName + ".class);}");            //NOI18N
                 newClassTree = maker.addClassMember(newClassTree, constructor);
-                parameter.rewrite(classTree, newClassTree);
+
+                AnnotationTree stateless = genUtils.createAnnotation(EJB_STATELESS);
+                parameter.rewrite(classTree, genUtils.addAnnotation(newClassTree, stateless));
             }
         }).commit();
 
@@ -412,6 +405,7 @@ import org.openide.util.NbBundle;
         getEMOptions.setMethodName("getEntityManager"); //NOI18N
         getEMOptions.setOperation(GenerationOptions.Operation.GET_EM);
         getEMOptions.setReturnType("javax.persistence.EntityManager");//NOI18N
+        getEMOptions.setModifiers(EnumSet.of(Modifier.PROTECTED));
 
         return Arrays.<GenerationOptions>asList(getEMOptions);
     }
@@ -422,6 +416,7 @@ import org.openide.util.NbBundle;
         GenerationOptions getEMOptions = new GenerationOptions();
         getEMOptions.setMethodName("getEntityManager"); //NOI18N
         getEMOptions.setReturnType("javax.persistence.EntityManager");//NOI18N
+        getEMOptions.setModifiers(EnumSet.of(Modifier.PROTECTED, Modifier.ABSTRACT));
 
         //implemented methods
         GenerationOptions createOptions = new GenerationOptions();
@@ -573,11 +568,13 @@ import org.openide.util.NbBundle;
                 ClassTree modifiedClass = original;
                 TreeMaker make = copy.getTreeMaker();
                 for (GenerationOptions each : options) {
-                    MethodTree method = make.Method(make.Modifiers(Collections.<Modifier>emptySet()),
+                    if (each.getModifiers().size() == 1 && each.getModifiers().contains(Modifier.PUBLIC)){
+                        MethodTree method = make.Method(make.Modifiers(Collections.<Modifier>emptySet()),
                             each.getMethodName(), utils.createType(each.getReturnType(), typeElement),
                             Collections.<TypeParameterTree>emptyList(), getParameterList(each, make, utils, typeElement),
                             Collections.<ExpressionTree>emptyList(), (BlockTree) null, null);
-                    modifiedClass = make.addClassMember(modifiedClass, method);
+                        modifiedClass = make.addClassMember(modifiedClass, method);
+                    }
                 }
                 copy.rewrite(original, modifiedClass);
             }

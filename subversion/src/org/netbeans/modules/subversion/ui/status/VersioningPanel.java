@@ -338,7 +338,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      */ 
     private void onCommitAction() {
         LifecycleManager.getDefault().saveAll();            
-        CommitAction.commit(parentTopComponent.getContentTitle(), context);
+        CommitAction.commit(parentTopComponent.getContentTitle(), context, false);
     }
     
     /**

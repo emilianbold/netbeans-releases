@@ -1127,7 +1127,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 return getMessage("LBL_SuiteProject");
             if (nbmp.getModuleType() == NbModuleProvider.STANDALONE)
                 return getMessage("LBL_StandaloneProject");
-            assert false : "Shouldn't contain NB.org module or suite component project";
+            Logger.getLogger(SuiteCustomizerLibraries.class.getName()).log(Level.WARNING,
+                    "#166594: {0} should not contain NB.org module or suite component project", ci);
             return null;
         }
 
