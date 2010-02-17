@@ -320,7 +320,9 @@ public final class NativeProcessBuilder implements Callable<Process> {
 
     /**
      * Configure whether process starts in a prseudo-terminal or not.
-     * @param usePty
+     * 
+     * @param usePty - if true, process builder will start the process in
+     * a pty mode
      * @return this
      */
     public NativeProcessBuilder setUsePty(boolean usePty) {
