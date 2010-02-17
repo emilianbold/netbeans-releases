@@ -69,10 +69,7 @@ import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.Pack200;
-import java.util.jar.Pack200.Packer;
 import java.util.zip.CRC32;
-import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -865,27 +862,44 @@ public class MakeNBM extends Task {
         return signatureFilePresent && signatureInfoPresent;
     }
 
-   private boolean pack200(final File sourceFile, final File targetFile) throws IOException {
-       JarFile jarFile = new JarFile(sourceFile);
-       try {
-           if (isSigned(jarFile)) {
-               return false;
-           }
-           FileOutputStream fos = new FileOutputStream(targetFile);
-           try {
-               OutputStream outputStream = new GZIPOutputStream(fos);
-               Pack200.newPacker().pack(jarFile, outputStream);
-               outputStream.close();
-               return true;
-           } finally {
-               fos.close();
-               targetFile.setLastModified(sourceFile.lastModified());
-           }
-       } finally {
-           jarFile.close();
-       }
+    public static boolean isWindows() {
+        String os = System.getProperty("os.name"); // NOI18N
+        return (os != null && os.toLowerCase().startsWith("windows"));//NOI18N
     }
 
+    private boolean pack200(final File sourceFile, final File targetFile) throws IOException {
+        JarFile jarFile = new JarFile(sourceFile);
+        try {
+            if (isSigned(jarFile)) {
+                return false;
+            }
+
+            try {
+                String pack200Executable = new File(System.getProperty("java.home"),
+                        "bin/pack200" + (isWindows() ? ".exe" : "")).getAbsolutePath();
+
+                ProcessBuilder pb = new ProcessBuilder(
+                        pack200Executable,
+                        targetFile.getAbsolutePath(),
+                        sourceFile.getAbsolutePath());
+                
+                pb.directory(sourceFile.getParentFile());
+                int result;
+                Process process = pb.start();
+                result = process.waitFor();
+                process.destroy();
+                return result == 0;
+            } catch (InterruptedException e) {
+                return false;
+            } finally {
+                if (targetFile.exists())  {
+                    targetFile.setLastModified(sourceFile.lastModified());
+                }
+            }
+        } finally {
+            jarFile.close();
+        }
+    }
 
     private Document createInfoXml(final Attributes attr) throws BuildException {
         DOMImplementation domimpl;
