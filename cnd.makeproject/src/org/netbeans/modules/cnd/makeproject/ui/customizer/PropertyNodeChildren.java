@@ -51,7 +51,7 @@ import org.openide.nodes.Node;
 /**
  * Children used for configuration
  */
-class PropertyNodeChildren extends Children.Keys<CustomizerNode> {
+final class PropertyNodeChildren extends Children.Keys<CustomizerNode> {
 
     private Collection<CustomizerNode> descriptions;
 

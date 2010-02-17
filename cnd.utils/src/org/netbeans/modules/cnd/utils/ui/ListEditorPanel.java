@@ -44,6 +44,7 @@ import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
 import javax.accessibility.AccessibleContext;
@@ -64,11 +65,11 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
     protected JButton[] extraButtons;
     private boolean isChanged = false;
 
-    public ListEditorPanel(List<E> objects) {
+    public ListEditorPanel(Collection<E> objects) {
         this(objects, null);
     }
 
-    public ListEditorPanel(List<E> objects, JButton[] extraButtons) {
+    public ListEditorPanel(Collection<E> objects, JButton[] extraButtons) {
         initComponents();
 
         this.extraButtons = extraButtons;
@@ -100,8 +101,8 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         defaultButton.getAccessibleContext().setAccessibleDescription(getDefaultButtonAD());
 
         if (objects != null) {
-            for (int i = 0; i < objects.size(); i++) {
-                listData.add(objects.get(i));
+            for (E o : objects) {
+                listData.add(o);
             }
         }
         targetList = new JList();
@@ -155,7 +156,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         checkSelection();
     }
 
-    public void addExtraButton(JButton button, int index) {
+    public final void addExtraButton(JButton button, int index) {
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -177,95 +178,95 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         return listLabel;
     }
 
-    public String getListLabelText() {
+    protected String getListLabelText() {
         return getString("TARGET_EDITOR_LIST_LBL");
     }
 
-    public char getListLabelMnemonic() {
+    protected char getListLabelMnemonic() {
         return getString("TARGET_EDITOR_LIST_MNEMONIC").toCharArray()[0];
     }
 
-    public String getAddButtonText() {
+    protected String getAddButtonText() {
         return getString("TARGET_EDITOR_ADD_BUTTON_LBL");
     }
 
-    public char getAddButtonMnemonics() {
+    protected char getAddButtonMnemonics() {
         return getString("TARGET_EDITOR_ADD_BUTTON_MNEMONIC").toCharArray()[0];
     }
 
-    public String getAddButtonAD() {
+    protected String getAddButtonAD() {
         return getString("TARGET_EDITOR_ADD_BUTTON_AD");
     }
 
-    public String getCopyButtonText() {
+    protected String getCopyButtonText() {
         return getString("TARGET_EDITOR_COPY_BUTTON_LBL");
     }
 
-    public char getCopyButtonMnemonics() {
+    protected char getCopyButtonMnemonics() {
         return getString("TARGET_EDITOR_COPY_BUTTON_MNEMONIC").toCharArray()[0];
     }
 
-    public String getCopyButtonAD() {
+    protected String getCopyButtonAD() {
         return getString("TARGET_EDITOR_COPY_BUTTON_AD");
     }
 
-    public String getRenameButtonText() {
+    protected String getRenameButtonText() {
         return getString("TARGET_EDITOR_RENAME_BUTTON_LBL");
     }
 
-    public char getRenameButtonMnemonics() {
+    protected char getRenameButtonMnemonics() {
         return getString("TARGET_EDITOR_RENAME_BUTTON_MNEMONIC").toCharArray()[0];
     }
 
-    public String getRenameButtonAD() {
+    protected String getRenameButtonAD() {
         return getString("TARGET_EDITOR_RENAME_BUTTON_AD");
     }
 
-    public String getRemoveButtonText() {
+    protected String getRemoveButtonText() {
         return getString("TARGET_EDITOR_REMOVE_BUTTON_LBL");
     }
 
-    public char getRemoveButtonMnemonics() {
+    protected char getRemoveButtonMnemonics() {
         return getString("TARGET_EDITOR_REMOVE_BUTTON_MNEMONIC").toCharArray()[0];
     }
 
-    public String getRemoveButtonAD() {
+    protected String getRemoveButtonAD() {
         return getString("TARGET_EDITOR_REMOVE_BUTTON_AD");
     }
 
-    public String getUpButtonText() {
+    protected String getUpButtonText() {
         return getString("TARGET_EDITOR_UP_BUTTON_LBL");
     }
 
-    public char getUpButtonMnemonics() {
+    protected char getUpButtonMnemonics() {
         return getString("TARGET_EDITOR_UP_BUTTON_MNEMONIC").toCharArray()[0];
     }
 
-    public String getUpButtonAD() {
+    protected String getUpButtonAD() {
         return getString("TARGET_EDITOR_UP_BUTTON_AD");
     }
 
-    public String getDownButtonText() {
+    protected String getDownButtonText() {
         return getString("TARGET_EDITOR_DOWN_BUTTON_LBL");
     }
 
-    public char getDownButtonMnemonics() {
+    protected char getDownButtonMnemonics() {
         return getString("TARGET_EDITOR_DOWN_BUTTON_MNEMONIC").toCharArray()[0];
     }
 
-    public String getDownButtonAD() {
+    protected String getDownButtonAD() {
         return getString("TARGET_EDITOR_DOWN_BUTTON_AD");
     }
 
-    public String getDefaultButtonText() {
+    protected String getDefaultButtonText() {
         return getString("TARGET_EDITOR_DEFAULT_BUTTON_LBL");
     }
 
-    public char getDefaultButtonMnemonics() {
+    protected char getDefaultButtonMnemonics() {
         return getString("TARGET_EDITOR_DEFAULT_BUTTON_MNEMONIC").toCharArray()[0];
     }
 
-    public String getDefaultButtonAD() {
+    protected String getDefaultButtonAD() {
         return getString("TARGET_EDITOR_DEFAULT_BUTTON_AD");
     }
 
@@ -700,7 +701,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
     }
 
     public void addObjectsAction(List<E> listToAdd) {
-        if (listToAdd == null || listToAdd.size() == 0) {
+        if (listToAdd == null || listToAdd.isEmpty()) {
             return;
         }
         // Update gui
@@ -768,6 +769,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
 
     private class TargetSelectionListener implements ListSelectionListener {
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getValueIsAdjusting()) {
                 return;

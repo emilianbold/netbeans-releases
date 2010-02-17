@@ -40,10 +40,8 @@
  */
 package org.netbeans.modules.javacard.project;
 
-import java.net.UnknownHostException;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.spi.ActionNames;
 import org.netbeans.spi.project.ActionProvider;
@@ -56,8 +54,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.ConnectException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -66,8 +62,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
 import org.netbeans.modules.javacard.JCUtil;
 import org.netbeans.modules.javacard.api.RunMode;
@@ -90,8 +84,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TaskListener;
-import org.openide.windows.InputOutput;
-
 
 public class JCProjectActionProvider implements ActionProvider {
 
@@ -281,14 +273,6 @@ public class JCProjectActionProvider implements ActionProvider {
                 }
                 
                 if (run) {
-//                    ExecutorTask task = ActionUtils.runTarget(buildFo, targetNames, props);
-//                    OnAntProcessFinishedListener l = new OnAntProcessFinishedListener(project.getPlatform(), card);
-//                    task.addTaskListener(l);
-//                    if (debug) {
-//                        //XXX should not need to do this asynchronously
-//                        RequestProcessor.getDefault().post(
-//                                new DebugProxyProcessLauncher(task.getInputOutput(), l));
-//                    }
                     final String[] tNames = targetNames;
                     final Properties p = props;
                     RequestProcessor.getDefault().post(new Runnable() {
@@ -356,10 +340,8 @@ public class JCProjectActionProvider implements ActionProvider {
             targets.add("clean");
             targets.add("build");
         } else if (COMMAND_DEBUG.equals(command)) {
-            targets.add("build");
             targets.add("run-for-debug");
         } else if (COMMAND_RUN.equals(command)) {
-            targets.add("build");
             Card card = project.getCard();
             if (card == null) {
                 return new String[0];
@@ -402,7 +384,8 @@ public class JCProjectActionProvider implements ActionProvider {
         } else if (ActionNames.COMMAND_JC_GENPROXY.equals(command)) {
             targets.add("generate-sio-proxies"); //NOI18N
         }
-        return targets.toArray(new String[targets.size()]);
+        String[] result = targets.toArray(new String[targets.size()]);
+        return result;
     }
 
     private final class DebugProxyProcessLauncher implements Runnable {
@@ -419,7 +402,7 @@ public class JCProjectActionProvider implements ActionProvider {
                 StopCapability stopper = card.getCapability(StopCapability.class);
                 if (card.getState().isRunning() && stopper != null) {
                     StatusDisplayer.getDefault().setStatusText(
-                            NbBundle.getMessage(JCProjectActionProvider.class, "MSG_STOPPING_SERVER"));
+                            NbBundle.getMessage(JCProjectActionProvider.class, "MSG_STOPPING_SERVER")); //NOI18N
                     stopper.stop().await();
                 }
                 StartCapability starter = card.getCapability(StartCapability.class);
@@ -428,7 +411,7 @@ public class JCProjectActionProvider implements ActionProvider {
                     Condition c = starter.start(RunMode.DEBUG, project);
                     assert c != null;
                     StatusDisplayer.getDefault().setStatusText(
-                            NbBundle.getMessage(JCProjectActionProvider.class, "MSG_WAIT_FOR_SERVER"));
+                            NbBundle.getMessage(JCProjectActionProvider.class, "MSG_WAIT_FOR_SERVER")); //NOI18N
                     c.await(30000, TimeUnit.MILLISECONDS);
                 }
                 //XXX move this stuff into a DebugCapability or something
@@ -478,7 +461,6 @@ public class JCProjectActionProvider implements ActionProvider {
          * @return an error message on failure, null on success
          */
         private String waitForPort(String host, int attachPort) {
-            System.err.println("Waiting for " + host + ":" + attachPort);
             try {
                 //Debug proxy seems to need some time to recover
                 //before it will not reject another connection

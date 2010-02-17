@@ -577,23 +577,28 @@ public final class GeneratorUtilities {
         MethodTree prototype = createMethod(type, element);
         ModifiersTree mt = prototype.getModifiers();
 
-        //add @Override annotation:
-        SpecificationVersion thisFOVersion = new SpecificationVersion(SourceLevelQuery.getSourceLevel(copy.getFileObject()));
-        SpecificationVersion version15 = new SpecificationVersion("1.5"); //NOI18N
+        if (supportsOverride(copy)) {
+            //add @Override annotation:
+            SpecificationVersion thisFOVersion = new SpecificationVersion(SourceLevelQuery.getSourceLevel(copy.getFileObject()));
+            SpecificationVersion version15 = new SpecificationVersion("1.5"); //NOI18N
+            if (thisFOVersion.compareTo(version15) >= 0) {
+                boolean generate = true;
 
-        if (thisFOVersion.compareTo(version15) >= 0) {
-            boolean generate = true;
+                if (thisFOVersion.compareTo(version15) == 0) {
+                    generate = !element.getEnclosingElement().getKind().isInterface();
+                }
 
-            if (thisFOVersion.compareTo(version15) == 0) {
-                generate = !element.getEnclosingElement().getKind().isInterface();
-            }
-
-            if (generate) {
-               mt = make.addModifiersAnnotation(prototype.getModifiers(), make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList()));
+                if (generate) {
+                   mt = make.addModifiersAnnotation(prototype.getModifiers(), make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList()));
+                }
             }
         }
 
         return make.Method(mt, prototype.getName(), prototype.getReturnType(), prototype.getTypeParameters(), prototype.getParameters(), prototype.getThrows(), body, null);
+    }
+
+    private static boolean supportsOverride(CompilationInfo info) {
+        return info.getElements().getTypeElement("java.lang.Override") != null;
     }
 
     private static StringBuilder getCapitalizedName(CharSequence cs) {

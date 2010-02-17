@@ -37,34 +37,29 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.ui.customizer;
+package org.netbeans.modules.autoupdate.updateprovider;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
+import java.net.URL;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.autoupdate.UpdateProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-/**
- *
- * @author Alexander Simon
- */
-/*package*/final class SharedItemConfiguration {
-    private final Map<Configuration, ItemConfiguration> itemConfigurations = new HashMap<Configuration, ItemConfiguration>();
-    private final Item item;
+public class AutoupdateCatalogFactoryTest extends NbTestCase {
 
-    public SharedItemConfiguration(Item item){
-        this.item = item;
+    public AutoupdateCatalogFactoryTest(String n) {
+        super(n);
     }
 
-    public ItemConfiguration getItemConfiguration(Configuration configuration) {
-        ItemConfiguration res = itemConfigurations.get(configuration);
-        if (res == null) {
-            res = new ProxyItemConfiguration(configuration, item);
-            itemConfigurations.put(configuration, res);
-            ItemConfiguration old = (ItemConfiguration) configuration.removeAuxObject(res);
-            configuration.addAuxObject(res);
-        }
-        return res;
+    public void testCreateUpdateProvider() throws Exception {
+        FileObject f = FileUtil.getConfigRoot().createData("whatever.instance");
+        f.setAttribute("url", "file:/wherever.xml");
+        f.setAttribute("displayName", "Whatever");
+        UpdateProvider up = AutoupdateCatalogFactory.createUpdateProvider(f);
+        assertEquals("whatever", up.getName());
+        assertEquals("Whatever", up.getDisplayName());
+        assertEquals(AutoupdateCatalogProvider.class, up.getClass());
+        assertEquals(new URL("file:/wherever.xml"), ((AutoupdateCatalogProvider) up).getUpdateCenterURL());
     }
+
 }
