@@ -76,6 +76,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -179,6 +180,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
                     bd.readUnlock();
                 }
                 
+            } else {
+                return true; //we are on non js or json file
             }
         }
         
@@ -452,19 +455,13 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         protected abstract RefactoringUI createRefactoringUI(FileObject[] selectedElement, Collection<JsElementCtx> handles);
     }    
     
-    static boolean isFromEditor(EditorCookie ec) {
+     private static boolean isFromEditor(EditorCookie ec) {
         if (ec != null && ec.getOpenedPanes() != null) {
-            // This doesn't seem to work well - a lot of the time, I'm right clicking
-            // on the editor and it still has another activated view (this is on the mac)
-            // and as a result does file-oriented refactoring rather than the specific
-            // editor node...
-            //            TopComponent activetc = TopComponent.getRegistry().getActivated();
-            //            if (activetc instanceof CloneableEditorSupport.Pane) {
-            //
-            return true;
-            //            }
+            TopComponent activetc = TopComponent.getRegistry().getActivated();
+            if (activetc instanceof CloneableEditorSupport.Pane) {
+                return true;
+            }
         }
-
         return false;
     }
 }
