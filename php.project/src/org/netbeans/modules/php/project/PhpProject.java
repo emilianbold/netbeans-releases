@@ -869,10 +869,10 @@ public class PhpProject implements Project {
         }
     }
 
-    private static final class PhpSearchInfo implements SearchInfo, PropertyChangeListener {
+    private static final class PhpSearchInfo implements SearchInfo.Files, PropertyChangeListener {
         private final PhpProject project;
         // @GuardedBy(this)
-        private SearchInfo delegate = null;
+        private SearchInfo.Files delegate = null;
 
         private PhpSearchInfo(PhpProject project) {
             this.project = project;
@@ -887,8 +887,11 @@ public class PhpProject implements Project {
             return phpSearchInfo;
         }
 
-        private SearchInfo createDelegate() {
-            return SearchInfoFactory.createSearchInfo(getSourceFileObjects(), true, new FileObjectFilter[] {project.getFileObjectFilter()});
+        private SearchInfo.Files createDelegate() {
+            SearchInfo searchInfo = SearchInfoFactory.createSearchInfo(getSourceFileObjects(), true, new FileObjectFilter[]{project.getFileObjectFilter()});
+            // XXX ugly, see #178634 for more info
+            assert searchInfo instanceof SearchInfo.Files : "Unknown type: " + searchInfo.getClass().getName();
+            return (SearchInfo.Files) searchInfo;
         }
 
         @Override
@@ -899,6 +902,11 @@ public class PhpProject implements Project {
         @Override
         public synchronized Iterator<DataObject> objectsToSearch() {
             return delegate.objectsToSearch();
+        }
+
+        @Override
+        public Iterator<FileObject> filesToSearch() {
+            return delegate.filesToSearch();
         }
 
         private FileObject[] getSourceFileObjects() {
