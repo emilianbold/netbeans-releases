@@ -77,6 +77,17 @@ made subject to such option by the copyright holder.
         </makeosgi>
     </target>
 
+    <target name="obr" depends="init">
+        <taskdef name="bindex" classname="org.osgi.impl.bundle.bindex.ant.BindexTask">
+            <classpath>
+                <fileset dir="${harness.dir}/antlib" includes="bindex*.jar"/>
+            </classpath>
+        </taskdef>
+        <bindex repositoryfile="${osgi.dest.dir}/repository.xml" quiet="true" root="${osgi.dest.dir}">
+            <fileset dir="${osgi.dest.dir}" includes="*.jar"/>
+        </bindex>
+    </target>
+
     <target name="run" depends="init">
         <!-- XXX Felix cache does not seem to work correctly, uses stale JARs; and org.osgi.framework.storage.clean=onFirstInit broken too: -->
         <delete dir="${osgi.cache.dir}"/>

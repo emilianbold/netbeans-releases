@@ -165,12 +165,6 @@ public class BreakpointGroup {
         List<BreakpointGroup> parentGroups = new ArrayList<BreakpointGroup>();
         List<BreakpointGroup> rootGroups = new ArrayList<BreakpointGroup>();
 
-        Set<Project> openProjects;
-        if (openProjectsOnly) {
-            openProjects = new HashSet<Project>(Arrays.asList(OpenProjects.getDefault().getOpenProjects()));
-        } else {
-            openProjects = null;
-        }
         Set<Project> sessionProjects;
         if (sessionProjectsOnly) {
             // TODO: Perhaps, better, ask for the session breakpoints somehow directly
@@ -187,7 +181,7 @@ public class BreakpointGroup {
                 if (bprops.isHidden()) {
                     continue;
                 }
-                if (openProjects != null && !contains(openProjects, bprops.getProjects())) {
+                if (openProjectsOnly && !isOpened(bprops.getProjects())) {
                     continue;
                 }
                 if (sessionProjects != null && !contains(sessionProjects, bprops.getProjects())) {
@@ -378,6 +372,19 @@ public class BreakpointGroup {
         groupsAndBreakpoints.addAll(groups);
         groupsAndBreakpoints.addAll(breakpoints);
         return groupsAndBreakpoints.toArray();
+    }
+
+    private static boolean isOpened(Project[] projects) {
+        if (projects != null && projects.length > 0) {
+            for (Project p : projects) {
+                if (OpenProjects.getDefault().isProjectOpen(p)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return true;
+        }
     }
 
     private static boolean contains(Set<Project> openProjects, Project[] projects) {

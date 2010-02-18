@@ -519,6 +519,12 @@ Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distributi
         </ant>
     </target>
 
+    <target name="build-osgi-obr" depends="build-osgi" description="Creates an OSGi bundle repository from this suite.">
+        <ant antfile="${harness.dir}/osgi.xml" target="obr">
+            <reference refid="cluster.path.id"/>
+        </ant>
+    </target>
+
     <target name="run-osgi" depends="build-osgi" description="Runs this suite in an OSGi container.">
         <ant antfile="${harness.dir}/osgi.xml" target="run">
             <reference refid="cluster.path.id"/>
