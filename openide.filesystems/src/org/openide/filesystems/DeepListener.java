@@ -42,6 +42,7 @@ package org.openide.filesystems;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.openide.util.Utilities;
@@ -182,7 +183,7 @@ implements FileChangeListener, Runnable {
         return hash;
     }
 
-    private Set<FileEvent> delivered = new WeakSet<FileEvent>();
+    private Set<FileEvent> delivered = Collections.synchronizedSet(new WeakSet<FileEvent>());
     private FileChangeListener get(FileEvent fe, boolean fromHolder) {
         if (removed) {
             return null;
