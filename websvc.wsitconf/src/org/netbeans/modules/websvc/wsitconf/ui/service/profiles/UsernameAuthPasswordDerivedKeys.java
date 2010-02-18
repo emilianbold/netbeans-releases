@@ -192,7 +192,7 @@ public class UsernameAuthPasswordDerivedKeys extends ProfileBaseForm {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(protectTokensChBox, org.openide.util.NbBundle.getMessage(UsernameAuthPasswordDerivedKeys.class, "LBL_RequireSigConfirmation")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(protectTokensChBox, org.openide.util.NbBundle.getMessage(UsernameAuthPasswordDerivedKeys.class, "LBL_ProtectTokens")); // NOI18N
         protectTokensChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         protectTokensChBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
