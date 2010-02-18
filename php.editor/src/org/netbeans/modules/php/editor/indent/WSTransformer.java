@@ -137,9 +137,27 @@ class WSTransformer extends DefaultTreePathVisitor {
 
 	while (ts.moveNext()) {
 	    token = LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_OPERATOR, 
-		    PHPTokenId.PHP_OBJECT_OPERATOR));
+		    PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_INSTANCEOF));
 	    if (token.id() == PHPTokenId.PHP_OBJECT_OPERATOR) {
 		checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundObjectOps());
+	    }
+	    else if (token.id() == PHPTokenId.PHP_INSTANCEOF) {
+		// always keep 1 space around
+		checkSpaceAroundToken(ts, true);
+	    }
+	    else if (token.id() == PHPTokenId.PHP_SEMICOLON) {
+		replaceSpaceBeforeToken(ts, CodeStyle.get(context.document()).spaceBeforeSemi(), null);
+		LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_SEMICOLON));
+		if (ts.moveNext() && ts.token().id() == PHPTokenId.WHITESPACE
+			&& !textContainsBreak(ts.token().text())
+			&& ts.moveNext()
+			&& !(ts.token().id() == PHPTokenId.WHITESPACE
+			|| isComment(ts.token()))) {
+		    int offset = ts.offset();
+		    replaceSpaceBeforeToken(ts, CodeStyle.get(context.document()).spaceAfterSemi(), null);
+		    ts.move(offset);
+		    ts.moveNext();
+		}
 	    }
 	    else {
 		String text = token.text().toString();
