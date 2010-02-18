@@ -108,7 +108,9 @@ public abstract class BaseFileObj extends FileObject {
        
     @Override
     public final String toString() {
-        return getFileName().toString();
+        String mineHex = Integer.toHexString(System.identityHashCode(this));
+        String fnHex = Integer.toHexString(System.identityHashCode(getFileName()));
+        return "MasterFileObject[" + getFileName().toString() + "@" + fnHex + ":" + mineHex + ",valid=" + isValid() + "]"; // NOI18N
     }
 
     @Override

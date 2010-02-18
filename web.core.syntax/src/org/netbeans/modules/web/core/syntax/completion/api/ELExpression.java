@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.web.core.syntax.completion.api;
 
+import javax.lang.model.type.WildcardType;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,6 +69,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -796,7 +799,8 @@ public class ELExpression {
                     //we cannot resolve methods of the iterable type itself,
                     //just type of its items
                     if(isResolvedExpression()) {
-                        TypeMirror typeParameter = extractTypeParameter(controller, lastKnownType, Iterable.class);
+//                        TypeMirror typeParameter = extractTypeParameter(controller, lastKnownType, Iterable.class);
+                        TypeMirror typeParameter = getIterableGenericType(controller, lastKnownType);
                         if(typeParameter != null) {
                             lastFoundType = lastKnownType = typeParameter;
                         }
@@ -934,17 +938,19 @@ public class ELExpression {
             //resolved expressions (iterating components) handling
             //and finally process the found type for its type parameter
             if(isResolvedExpression()) {
-                TypeMirror typeParam = extractTypeParameter(controller, lastFoundType, Iterable.class);
+//                TypeMirror typeParam = extractTypeParameter(controller, lastFoundType, Iterable.class);
+                TypeMirror typeParam = getIterableGenericType(controller, lastFoundType);
                 lastFoundType = typeParam != null ? typeParam : lastFoundType;
             }
             return lastFoundType;
         }
 
         private TypeMirror extractTypeParameter(CompilationInfo controller, TypeMirror lastKnownType, Class clazz) {
-            if (controller.getTypes().isAssignable(
-                    controller.getTypes().erasure(lastKnownType),
-                    controller.getElements().getTypeElement(
-                    clazz.getCanonicalName()).asType())) {
+            TypeMirror erasedLastKnownType = controller.getTypes().erasure(lastKnownType);
+            TypeMirror clazzTypeMirror = controller.getElements().getTypeElement(clazz.getCanonicalName()).asType();
+            TypeMirror erasedClazzTypeMirror = controller.getTypes().erasure(clazzTypeMirror);
+            
+            if (controller.getTypes().isAssignable(erasedLastKnownType, erasedClazzTypeMirror)) {
                 if (lastKnownType instanceof DeclaredType) {
                     List<? extends TypeMirror> typeArguments =
                             ((DeclaredType) lastKnownType).getTypeArguments();
@@ -1082,9 +1088,13 @@ public class ELExpression {
         }
 
         public void run(CompilationController controller) throws Exception {
+            if(beanType == null) {
+                return ;
+            }
             controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             
-            TypeElement bean = getTypePreceedingCaret(controller);
+//            TypeElement bean = getTypePreceedingCaret(controller);
+            TypeElement bean = controller.getElements().getTypeElement(beanType);
 
             if (bean != null) {
                 myQName = bean.getQualifiedName().toString();
@@ -1174,4 +1184,98 @@ public class ELExpression {
     public String getReplace() {
         return replace;
     }
+
+    //copied from java.hints module org.netbeans.modules.java.hints.errors.Utilities class >>>
+    /**
+     *
+     * @param info context {@link CompilationInfo}
+     * @param iterable tested {@link TreePath}
+     * @return generic type of an {@link Iterable} or {@link ArrayType} at a TreePath
+     */
+    private static TypeMirror getIterableGenericType(CompilationInfo info, TypeMirror iterableType) {
+        if(iterableType == null) {
+            return null;
+        }
+        TypeElement iterableElement = info.getElements().getTypeElement("java.lang.Iterable"); //NOI18N
+        if (iterableElement == null) {
+            return null;
+        }
+        TypeMirror designedType = null;
+        if (iterableType.getKind() == TypeKind.DECLARED) {
+            DeclaredType declaredType = (DeclaredType) iterableType;
+            if (!info.getTypes().isSubtype(info.getTypes().erasure(declaredType), info.getTypes().erasure(iterableElement.asType()))) {
+                return null;
+            }
+            ExecutableElement iteratorMethod = (ExecutableElement) iterableElement.getEnclosedElements().get(0);
+            ExecutableType iteratorMethodType = (ExecutableType) info.getTypes().asMemberOf(declaredType, iteratorMethod);
+            List<? extends TypeMirror> typeArguments = ((DeclaredType) iteratorMethodType.getReturnType()).getTypeArguments();
+            if (!typeArguments.isEmpty()) {
+                designedType = typeArguments.get(0);
+            }
+        } else if (iterableType.getKind() == TypeKind.ARRAY) {
+            designedType = ((ArrayType) iterableType).getComponentType();
+        }
+        if (designedType == null) {
+            return null;
+        }
+        return resolveCapturedType(info, designedType);
+    }
+
+    private static TypeMirror resolveCapturedType(CompilationInfo info, TypeMirror tm) {
+        TypeMirror type = resolveCapturedTypeInt(info, tm);
+
+        if (type.getKind() == TypeKind.WILDCARD) {
+            TypeMirror tmirr = ((WildcardType) type).getExtendsBound();
+            if (tmirr != null)
+                return tmirr;
+            else { //no extends, just '?'
+                return info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+            }
+
+        }
+
+        return type;
+    }
+
+    private static TypeMirror resolveCapturedTypeInt(CompilationInfo info, TypeMirror tm) {
+        TypeMirror orig = SourceUtils.resolveCapturedType(tm);
+
+        if (orig != null) {
+            if (orig.getKind() == TypeKind.WILDCARD) {
+                TypeMirror extendsBound = ((WildcardType) orig).getExtendsBound();
+                TypeMirror rct = SourceUtils.resolveCapturedType(extendsBound != null ? extendsBound : ((WildcardType) orig).getSuperBound());
+                if (rct != null) {
+                    return rct;
+                }
+            }
+            return orig;
+        }
+
+        if (tm.getKind() == TypeKind.DECLARED) {
+            DeclaredType dt = (DeclaredType) tm;
+            List<TypeMirror> typeArguments = new LinkedList<TypeMirror>();
+
+            for (TypeMirror t : dt.getTypeArguments()) {
+                typeArguments.add(resolveCapturedTypeInt(info, t));
+            }
+
+            final TypeMirror enclosingType = dt.getEnclosingType();
+            if (enclosingType.getKind() == TypeKind.DECLARED) {
+                return info.getTypes().getDeclaredType((DeclaredType) enclosingType, (TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
+            } else {
+                return info.getTypes().getDeclaredType((TypeElement) dt.asElement(), typeArguments.toArray(new TypeMirror[0]));
+            }
+        }
+
+        if (tm.getKind() == TypeKind.ARRAY) {
+            ArrayType at = (ArrayType) tm;
+
+            return info.getTypes().getArrayType(resolveCapturedTypeInt(info, at.getComponentType()));
+        }
+
+        return tm;
+    }
+
+    //<<< eof copy
+    
 }
