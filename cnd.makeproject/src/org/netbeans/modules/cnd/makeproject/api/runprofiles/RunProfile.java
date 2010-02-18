@@ -106,10 +106,12 @@ public class RunProfile implements ConfigurationAuxObject {
     public static final int CONSOLE_TYPE_DEFAULT = 0;
     public static final int CONSOLE_TYPE_EXTERNAL = 1;
     public static final int CONSOLE_TYPE_OUTPUT_WINDOW = 2;
+    public static final int CONSOLE_TYPE_INTERNAL = 3;
     private static final String[] consoleTypeNames = {
         getString("ConsoleType_Default"), // NOI18N
         getString("ConsoleType_External"), // NOI18N
         getString("ConsoleType_Output"), // NOI18N
+        getString("ConsoleType_Internal"), // NOI18N
     };
     private IntConfiguration consoleType;
     private IntConfiguration terminalType;
@@ -409,9 +411,7 @@ public class RunProfile implements ConfigurationAuxObject {
     public String[] getArgv(String ex) {
         String[] argsArrayShifted = new String[getArgsArray().length + 1];
         argsArrayShifted[0] = ex;
-        for (int i = 0; i < getArgsArray().length; i++) {
-            argsArrayShifted[i + 1] = getArgsArray()[i];
-        }
+        System.arraycopy(getArgsArray(), 0, argsArrayShifted, 1, getArgsArray().length);
         return argsArrayShifted;
     }
 
@@ -685,15 +685,15 @@ public class RunProfile implements ConfigurationAuxObject {
         return p;
     }
 
-    public Sheet getSheet(boolean isRemote) {
-        return createSheet(isRemote);
+    public Sheet getSheet(boolean disableConsoleTypeSelection) {
+        return createSheet(disableConsoleTypeSelection);
     }
 
     public Sheet getSheet() {
         return createSheet(false);
     }
 
-    private Sheet createSheet(boolean isRemote) {
+    private Sheet createSheet(boolean disableConsoleTypeSelection) {
         Sheet sheet = new Sheet();
 
         Sheet.Set set = new Sheet.Set();
@@ -710,7 +710,7 @@ public class RunProfile implements ConfigurationAuxObject {
         final IntNodeProp terminalTypeNP = new IntNodeProp(getTerminalType(), true, null,
                 getString("TerminalType_LBL"), getString("TerminalType_HINT")); // NOI18N
         set.put(terminalTypeNP);
-        if (isRemote) {
+        if (disableConsoleTypeSelection) {
             terminalTypeNP.setCanWrite(false);
             consoleTypeNP.setCanWrite(false);
         } else {
