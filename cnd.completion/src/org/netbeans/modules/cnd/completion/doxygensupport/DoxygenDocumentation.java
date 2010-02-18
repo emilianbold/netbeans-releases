@@ -95,6 +95,7 @@ public class DoxygenDocumentation {
                     }
                     lineEnd.clear();
                     output.append(t.image);
+                    output.append("</p><p>\n"); // NOI18N
                     break;
                 case PAR_END:
                     for (String s : wordEnd) {//should be empty...
