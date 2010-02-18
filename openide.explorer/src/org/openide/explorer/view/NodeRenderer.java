@@ -113,6 +113,7 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
      * or a <code>VisualizerNode</code>.
      * @return component to draw the value
      */
+    @Override
     public Component getTreeCellRendererComponent(
         JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus
     ) {
@@ -146,6 +147,7 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
     /** This is the only method defined by <code>ListCellRenderer</code>.  We just
      * reconfigure the <code>Jlabel</code> each time we're called.
      */
+    @Override
     public Component getListCellRendererComponent(
         JList list, Object value, int index, boolean sel, boolean cellHasFocus
     ) {
@@ -174,9 +176,9 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
         //do some hacks to make it look focused for TreeTableView
         int iconWidth = configureFrom(renderer, list, false, sel, vis);
 
-        boolean bigIcons = this.bigIcons || list instanceof ListPane;
+        boolean bi = this.bigIcons || list instanceof ListPane;
 
-        if (bigIcons) {
+        if (bi) {
             renderer.setCentered(true);
         } else {
             //Indent elements in a ListView/ChoiceView relative to their position
@@ -228,9 +230,15 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
 
     /** Utility method to find a visualizer node for the object passed to
      * any of the cell renderer methods as the value */
-    private static final VisualizerNode findVisualizerNode(Object value) {
-        VisualizerNode vis = (value instanceof Node) ? VisualizerNode.getVisualizer(null, (Node) value)
-                                                     : (VisualizerNode) value;
+    private static VisualizerNode findVisualizerNode(Object value) {
+        VisualizerNode vis;
+        if (value instanceof Node) {
+            vis = VisualizerNode.getVisualizer(null, (Node)value);
+        } else if (value instanceof VisualizerNode) {
+            vis = (VisualizerNode)value;
+        } else {
+            throw new ClassCastException("Unexpected value: " + value);
+        }
 
         if (vis == null) {
             vis = VisualizerNode.EMPTY;
