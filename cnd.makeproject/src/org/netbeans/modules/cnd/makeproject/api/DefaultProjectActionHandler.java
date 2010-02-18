@@ -267,6 +267,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     .inputOutput(io)
                     .outLineBased(true)
                     .showProgress(true)
+                    .noReset(true)
                     .postExecution(processChangeListener)
                     .errConvertorFactory(processChangeListener)
                     .outConvertorFactory(processChangeListener);
