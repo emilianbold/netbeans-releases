@@ -45,16 +45,14 @@
 
 package org.netbeans.modules.maven.apisupport;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import javax.swing.ComboBoxModel;
+import java.util.SortedSet;
+import java.util.TreeMap;
 import javax.xml.namespace.QName;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
@@ -66,7 +64,6 @@ import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.spi.customizer.SelectedItemsTablePersister;
-import org.netbeans.spi.java.project.support.ui.PackageView;
 
 /**
  * Panel showing list of public packages for a module, also implements
@@ -140,14 +137,19 @@ public class PublicPackagesPanel extends javax.swing.JPanel implements SelectedI
 
     @Override
     public Map<String, Boolean> read() {
-        Map<String, Boolean> pkgMap = new HashMap<String, Boolean>();
+        Map<String, Boolean> pkgMap = new TreeMap<String, Boolean>();
 
-        SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        /*SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (groups != null && groups.length > 0) {
             ComboBoxModel cbm = PackageView.createListView(groups[0]);
             for (int i = 0; i < cbm.getSize(); i++) {
                 pkgMap.put(cbm.getElementAt(i).toString(), Boolean.FALSE);
             }
+        }*/
+
+        SortedSet<String> packageNames = FileUtilities.getPackageNames(project);
+        for (String pkgName : packageNames) {
+            pkgMap.put(pkgName, Boolean.FALSE);
         }
 
         String[] publicPkgs = PluginPropertyUtils.getPluginPropertyList(project,
