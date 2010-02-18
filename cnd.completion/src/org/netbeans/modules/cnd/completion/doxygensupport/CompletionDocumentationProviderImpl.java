@@ -38,12 +38,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.pelmel.cnd.completion;
+package org.netbeans.modules.cnd.completion.doxygensupport;
 
 import java.net.URL;
 import javax.swing.Action;
 import javax.swing.text.Document;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
@@ -53,6 +52,7 @@ import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -92,7 +92,9 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
             if (documentation == null) {
                 StringBuilder w = new StringBuilder();
 
-                w.append("<html><body><p>No documentation found.</p>"); // NOI18N FIXUP
+                w.append("<html><body><p>"); // NOI18N
+                w.append(getString("NO_DOC_FOUND")); // NOI18N
+                w.append("</p>"); // NOI18N
                 w.append(ManDocumentation.constructWarning(obj));
                 documentation = new EmptyCompletionDocumentationImpl(w.toString());
             }
@@ -129,4 +131,7 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
         }
     }
 
+    private static String getString(String s) {
+        return NbBundle.getBundle(CompletionDocumentationProviderImpl.class).getString(s);
+    }
 }

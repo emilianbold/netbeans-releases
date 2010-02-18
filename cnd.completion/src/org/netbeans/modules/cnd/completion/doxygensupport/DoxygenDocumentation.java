@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.pelmel.cnd.completion;
+package org.netbeans.modules.cnd.completion.doxygensupport;
 
 import java.net.URL;
 import java.util.Collection;

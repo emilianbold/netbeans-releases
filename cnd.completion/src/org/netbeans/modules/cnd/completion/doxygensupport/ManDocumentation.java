@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.pelmel.cnd.completion;
+package org.netbeans.modules.cnd.completion.doxygensupport;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -137,11 +138,15 @@ public class ManDocumentation {
             StringBuilder w = new StringBuilder();
 
             if (resolvePath(manPageRelativePath("printf", 3)) == null) { // NOI18N
-                w.append("<p>Manual pages do not seem to be installed.</p>\n"); // NOI18N // FIXUP
+                w.append("<p>"); // NOI18N
+                w.append(getString("MAN_NOT_INSTALLED")); // NOI18N
+                w.append("</p>\n"); // NOI18N
             }
 
             if (!new File("/usr/bin/man2html").exists() /*TODO: should be canExecute()*/) { // NOI18N
-                w.append("<p><tt>man2html</tt> is required for man documentation, but is not installed.</p>\n"); // NOI18N // FIXUP
+                w.append("<p><tt>man2html</tt> "); // NOI18N
+                w.append(getString("IS_REQUIRED")); // NOI18N
+                w.append("</p>\n"); // NOI18N
             }
 
             return w.toString();
@@ -394,5 +399,9 @@ public class ManDocumentation {
         public Action getGotoSourceAction() {
             return null;
         }
+    }
+
+    private static String getString(String s) {
+        return NbBundle.getBundle(ManDocumentation.class).getString(s);
     }
 }
