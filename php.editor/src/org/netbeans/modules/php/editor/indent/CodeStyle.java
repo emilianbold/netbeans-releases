@@ -390,14 +390,14 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceAfterComma, getDefaultAsBoolean(spaceAfterComma));
     }
 
-//    public boolean spaceBeforeSemi() {
-//        return preferences.getBoolean(spaceBeforeSemi, getDefaultAsBoolean(spaceBeforeSemi));
-//    }
-//
-//    public boolean spaceAfterSemi() {
-//        return preferences.getBoolean(spaceAfterSemi, getDefaultAsBoolean(spaceAfterSemi));
-//    }
-//
+    public boolean spaceBeforeSemi() {
+        return preferences.getBoolean(spaceBeforeSemi, getDefaultAsBoolean(spaceBeforeSemi));
+    }
+
+    public boolean spaceAfterSemi() {
+        return preferences.getBoolean(spaceAfterSemi, getDefaultAsBoolean(spaceAfterSemi));
+    }
+
 //    public boolean spaceBeforeColon() {
 //        return preferences.getBoolean(spaceBeforeColon, getDefaultAsBoolean(spaceBeforeColon));
 //    }
