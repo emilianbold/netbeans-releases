@@ -137,6 +137,7 @@ public class JsfElCompletionProvider implements CompletionProvider {
 
                         break;
                     case JsfElExpression.EL_JSF_BEAN:
+                    case JsfElExpression.EL_JSF_BEAN_REFERENCE:
                         List<CompletionItem> items = elExpr.getPropertyCompletionItems(
                                 elExpr.getObjectClass(), anchor);
                         complItems.addAll(items);
@@ -148,15 +149,6 @@ public class JsfElCompletionProvider implements CompletionProvider {
                         List<CompletionItem> bitems = elExpr.getPropertyKeysCompletionItems(
                                 elExpr.getBundleName(), anchor, elExpr.getReplace());
                         complItems.addAll(bitems);
-                        break;
-                    case JsfElExpression.EL_JSF_BEAN_REFERENCE:
-                        List<CompletionItem> ref_items = elExpr.
-                            getPropertyCompletionItems(elExpr.getObjectClass(), 
-                                    anchor);
-                        complItems.addAll(ref_items);
-                        ref_items = elExpr.getMethodCompletionItems(
-                                elExpr.getObjectClass(), anchor);
-                        complItems.addAll(ref_items);
                         break;
                     case JsfElExpression.EL_COMPOSITE_COMPONENT:
                         complItems.addAll(elExpr.getCompositeComponentItems(anchor));
