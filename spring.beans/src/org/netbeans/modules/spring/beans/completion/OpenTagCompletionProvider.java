@@ -48,7 +48,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.spring.api.SpringUtilities;
+import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.netbeans.modules.spring.beans.index.SpringIndex;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
@@ -83,29 +85,42 @@ public class OpenTagCompletionProvider extends CompletionModelProvider{
         if (!context.getCompletionType().equals(CompletionContext.CompletionType.COMPLETION_TYPE_ELEMENT))
             return Collections.EMPTY_LIST;
 
+        BaseDocument doc = context.getBaseDocument();
+        String mime = (String) doc.getProperty(BaseDocument.MIME_TYPE_PROP);
+        if (!SpringConstants.CONFIG_MIME_TYPE.equals(mime)) {
+            return Collections.EMPTY_LIST;
+        }
+
         List <CompletionModel> models =  new ArrayList<CompletionModel>();
         FileObject primaryFile = context.getPrimaryFile();
-        String version = findVersion(primaryFile);
-        LOGGER.log(Level.FINE, "Spring jars version="+version); //NOI18N
-        
-        if (declaredNamespaces == null)
-            declaredNamespaces = context.getDeclaredNamespaces();
-        Map<String, FileObject> map = new SpringIndex(primaryFile).getAllSpringLibraryDescriptors();
+        ClassPath cp = ClassPath.getClassPath(primaryFile, ClassPath.COMPILE);
+        FileObject resource = cp.findResource(SpringUtilities.SPRING_CLASS_NAME.replace('.', '/')+".class");
+        if ( resource != null ) {
+            FileObject ownerRoot = cp.findOwnerRoot(resource);
+            String version = findVersion(ownerRoot);
+            LOGGER.log(Level.FINE, "Spring jars version="+version); //NOI18N
 
-        for (String namespace: map.keySet()) {
-            if (!declaredNamespaces.containsValue(namespace)) {
-                FileObject file = map.get(namespace);
-                String fVersion = parseVersion(file);
-                if (version.startsWith(fVersion)) {
-                    ModelSource source = Utilities.getModelSource(file, true);
-                    SchemaModel model = SchemaModelFactory.getDefault().getModel(source);
-                    CompletionModel completionModel = new OpenTagCompletionModel(generatePrefix(namespace), model);
-                    models.add(completionModel);
+            if (declaredNamespaces == null)
+                declaredNamespaces = context.getDeclaredNamespaces();
+            Map<String, FileObject> map = new SpringIndex(primaryFile).getAllSpringLibraryDescriptors();
+
+            for (String namespace: map.keySet()) {
+                if (!declaredNamespaces.containsValue(namespace)) {
+                    FileObject file = map.get(namespace);
+                    String fVersion = parseVersion(file);
+                    if (version.startsWith(fVersion)) {
+                        ModelSource source = Utilities.getModelSource(file, true);
+                        SchemaModel model = SchemaModelFactory.getDefault().getModel(source);
+                        CompletionModel completionModel = new OpenTagCompletionModel(generatePrefix(namespace), model);
+                        models.add(completionModel);
+                    }
                 }
             }
+            usedPrefixes.clear();
+            return models;
+        } else {
+            return Collections.EMPTY_LIST;
         }
-        usedPrefixes.clear();
-        return models;
 
     }
 
@@ -115,16 +130,8 @@ public class OpenTagCompletionProvider extends CompletionModelProvider{
         return version;
     }
 
-    private String findVersion(FileObject classpathRoot) {
-        ClassPath cp = ClassPath.getClassPath(classpathRoot, ClassPath.COMPILE);
-        String classRelativePath = SpringUtilities.SPRING_CLASS_NAME.replace('.', '/') + ".class"; //NOI18N
+    private String findVersion(FileObject ownerRoot) {
         try {
-            FileObject resource = cp.findResource(classRelativePath);  //NOI18N
-            if (resource==null) {
-                return null;
-            }
-            FileObject ownerRoot = cp.findOwnerRoot(resource);
-
             if (ownerRoot !=null) { //NOI18N
                 if (ownerRoot.getFileSystem() instanceof JarFileSystem) {
                     JarFileSystem jarFileSystem = (JarFileSystem) ownerRoot.getFileSystem();

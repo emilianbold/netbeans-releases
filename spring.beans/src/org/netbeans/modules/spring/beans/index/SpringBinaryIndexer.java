@@ -127,7 +127,8 @@ public class SpringBinaryIndexer extends BinaryIndexer {
         while (fos.hasMoreElements()) {
             FileObject file = fos.nextElement();
             //XXX Version??? spring 2-5 has some xsd's with non 2.5 version
-            if (file.getNameExt().toLowerCase(Locale.US).endsWith(suffix) && version.startsWith(findXsdVersion(file))) { //NOI18N
+            String fileName = file.getNameExt().toLowerCase();
+            if (fileName !=null && fileName.endsWith(suffix) && version.startsWith(findXsdVersion(file))) { //NOI18N
                 //found library, create a new instance and cache it
                 files.add(file);
             }
