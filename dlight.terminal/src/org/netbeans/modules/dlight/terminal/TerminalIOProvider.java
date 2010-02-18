@@ -2,8 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
-package org.netbeans.modules.terminal.ioprovider;
+package org.netbeans.modules.dlight.terminal;
 
 import javax.swing.Action;
 import org.openide.util.lookup.ServiceProvider;
@@ -19,26 +18,25 @@ import org.openide.windows.OutputWriter;
  * This class is public to act as a signature for distinguishing us
  * from other IOProvider implementations:
  * <pre>
-        IOProvider iop = null;
+IOProvider iop = null;
  *
-        Lookup lookup = Lookup.getDefault();
+Lookup lookup = Lookup.getDefault();
  *
-        Collection<? extends IOProvider> ioProviders = lookup.lookupAll(IOProvider.class);
+Collection<? extends IOProvider> ioProviders = lookup.lookupAll(IOProvider.class);
  *
-        for (IOProvider iopCandidate : ioProviders) {
-            if (iopCandidate instanceof TerminalIOProvider)
-                iop = iopCandidate;
-        }
-        if (iop == null)
-            iop = IOProvider.getDefault();
-        return iop;
+for (IOProvider iopCandidate : ioProviders) {
+if (iopCandidate instanceof TerminalIOProvider)
+iop = iopCandidate;
+}
+if (iop == null)
+iop = IOProvider.getDefault();
+return iop;
  * </pre>
  * @author ivan
  */
-
-@ServiceProvider(service = IOProvider.class, position=100)
-
+@ServiceProvider(service = IOProvider.class)
 public final class TerminalIOProvider extends IOProvider {
+
     @Override
     public String getName() {
         return "Terminal";      // NOI18N
@@ -46,16 +44,17 @@ public final class TerminalIOProvider extends IOProvider {
 
     @Override
     public InputOutput getIO(String name, Action[] additionalActions) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getIO(name, true);
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public InputOutput getIO(String name, boolean newIO) {
         IOContainer ioContainer = null;
-        if (true)
+        if (true) {
             ioContainer = IOContainer.getDefault();
+        }
         return new TerminalInputOutput(name, ioContainer);
-
     }
 
     /**
@@ -67,5 +66,4 @@ public final class TerminalIOProvider extends IOProvider {
     public OutputWriter getStdOut() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
 }
