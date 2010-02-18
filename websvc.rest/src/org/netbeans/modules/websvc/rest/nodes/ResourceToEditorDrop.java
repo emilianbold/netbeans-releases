@@ -45,6 +45,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.rest.client.ClientJavaSourceHelper;
+import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.text.ActiveEditorDrop;
@@ -64,9 +65,8 @@ public class ResourceToEditorDrop implements ActiveEditorDrop {
     @Override
     public boolean handleTransfer(JTextComponent targetComponent) {
         Object mimeType = targetComponent.getDocument().getProperty("mimeType"); //NOI18N
-        ResourceUriProvider resourceUriProvider = resourceNode.getLookup().lookup(ResourceUriProvider.class);
-        if (resourceUriProvider != null &&
-            resourceUriProvider.getResourceUri().length() > 0 &&
+        RestServiceDescription serviceDescription = resourceNode.getLookup().lookup(RestServiceDescription.class);
+        if (serviceDescription != null &&
             mimeType!=null &&
             "text/x-java".equals(mimeType)) { //NOI18N
             

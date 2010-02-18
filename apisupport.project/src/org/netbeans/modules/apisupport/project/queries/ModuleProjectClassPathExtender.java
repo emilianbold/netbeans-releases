@@ -47,7 +47,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -147,7 +147,7 @@ public final class ModuleProjectClassPathExtender extends ProjectClassPathModifi
         }
         ProjectXMLManager pxm = new ProjectXMLManager(project);
         Map<String,String> origCpexts = pxm.getClassPathExtensions();
-        Map<String,String> cpexts = new HashMap<String,String>(origCpexts);
+        Map<String,String> cpexts = new LinkedHashMap<String,String>(origCpexts);
         boolean cpChanged = false;
         for (URL root : classPathRoots) {
             File jar = FileUtil.archiveOrDirForURL(root);

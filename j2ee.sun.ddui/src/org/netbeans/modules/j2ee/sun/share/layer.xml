@@ -137,19 +137,4 @@
             </file>
         </folder>
     </folder>
-    
-    <folder name="org-netbeans-modules-j2ee-sun-ddui-version-8_2">
-        <file name="sun-web.xml" url="configbean/templates/version_8_2/sun-web.xml"/>
-        <file name="sun-ejb-jar.xml" url="configbean/templates/version_8_2/sun-ejb-jar.xml"/>
-        <file name="sun-cmp-mappings.xml" url="configbean/templates/version_8_2/sun-cmp-mappings.xml"/>
-        <file name="sun-application.xml" url="configbean/templates/version_8_2/sun-application.xml"/>
-        <file name="sun-application-client.xml" url="configbean/templates/version_8_2/sun-application-client.xml"/>
-    </folder>
-    <folder name="org-netbeans-modules-j2ee-sun-ddui">
-        <file name="sun-web.xml" url="configbean/templates/sun-web.xml"/>
-        <file name="sun-ejb-jar.xml" url="configbean/templates/sun-ejb-jar.xml"/>
-        <file name="sun-cmp-mappings.xml" url="configbean/templates/sun-cmp-mappings.xml"/>
-        <file name="sun-application.xml" url="configbean/templates/sun-application.xml"/>
-        <file name="sun-application-client.xml" url="configbean/templates/sun-application-client.xml"/>
-    </folder>
 </filesystem>

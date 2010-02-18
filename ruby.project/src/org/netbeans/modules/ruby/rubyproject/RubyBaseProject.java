@@ -189,7 +189,11 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
     public UpdateHelper getUpdateHelper() {
         return this.updateHelper;
     }
-    
+
+    public GeneratedFilesHelper getGenFilesHelper() {
+        return genFilesHelper;
+    }
+
     public Lookup getLookup() {
         return lookup;
     }

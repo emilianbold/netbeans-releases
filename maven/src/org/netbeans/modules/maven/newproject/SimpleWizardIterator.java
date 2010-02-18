@@ -50,16 +50,17 @@ import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
  *
  *@author Dafe Simonek
  */
-public class SimpleWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
+public class SimpleWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
     
     private int index;
-    private WizardDescriptor.Panel[] panels;
+    private WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private WizardDescriptor wiz;
     private final Archetype archetype;
 
@@ -78,8 +79,13 @@ public class SimpleWizardIterator implements WizardDescriptor.ProgressInstantiat
     public static SimpleWizardIterator createOSGiIterator() {
         return new SimpleWizardIterator(ArchetypeWizardUtils.OSGI_ARCH);
     }
+
+    public static SimpleWizardIterator createNbModuleOSGiIterator() {
+        return new SimpleWizardIterator(ArchetypeWizardUtils.NB_MODULE_OSGI_ARCH);
+    }
     
-    private WizardDescriptor.Panel[] createPanels(ValidationGroup vg) {
+    @SuppressWarnings("unchecked")
+    private WizardDescriptor.Panel<WizardDescriptor>[] createPanels(ValidationGroup vg) {
         return new WizardDescriptor.Panel[] {
             new BasicWizardPanel(vg, true)
         };
@@ -92,13 +98,13 @@ public class SimpleWizardIterator implements WizardDescriptor.ProgressInstantiat
     }
     
     @Override
-    public Set/*<FileObject>*/ instantiate() throws IOException {
+    public Set<FileObject> instantiate() throws IOException {
         assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator."; //NOI18N
         return null;
     }
     
     @Override
-    public Set instantiate(ProgressHandle handle) throws IOException {
+    public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         return ArchetypeWizardUtils.instantiate(handle, wiz);
     }
     
@@ -162,7 +168,7 @@ public class SimpleWizardIterator implements WizardDescriptor.ProgressInstantiat
     }
     
     @Override
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         return panels[index];
     }
     

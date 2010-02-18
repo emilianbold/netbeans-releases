@@ -54,6 +54,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
+import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -141,7 +142,7 @@ public class BugzillaUtil {
         ResourceBundle bundle = NbBundle.getBundle(BugzillaUtil.class);
         if (BugzillaUtil.show(kp, bundle.getString("LBL_Keywords"), bundle.getString("LBL_Ok"))) { // NOI18N
             String[] values = kp.getSelectedKeywords();
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < values.length; i++) {
                 String s = values[i];
                 sb.append(s);
@@ -169,6 +170,18 @@ public class BugzillaUtil {
      */
     public static boolean isNbRepository(Repository repo) {
         return BugtrackingUtil.isNbRepository(repo);
+    }
+
+    public static boolean showQAContact(BugzillaRepository repo) {
+        return isNbRepository(repo) || !(repo instanceof KenaiRepository);
+    }
+
+    public static boolean showStatusWhiteboard(BugzillaRepository repo) {
+        return isNbRepository(repo) || !(repo instanceof KenaiRepository);
+    }
+
+    public static boolean showIssueType(BugzillaRepository repo) {
+        return isNbRepository(repo);
     }
 
 }

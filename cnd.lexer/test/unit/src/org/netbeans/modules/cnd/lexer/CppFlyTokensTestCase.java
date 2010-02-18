@@ -60,6 +60,7 @@ import org.netbeans.lib.lexer.test.LexerTestUtilities;
  * @author Vladimir Voskresensky
  */
 public class CppFlyTokensTestCase extends NbTestCase {
+    private static final boolean TRACE = false;
     
     public CppFlyTokensTestCase(String testName) {
         super(testName);
@@ -75,6 +76,11 @@ public class CppFlyTokensTestCase extends NbTestCase {
     protected void tearDown() throws java.lang.Exception {
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testHCpp() throws Exception {
         File testJComponentFile = new File(getDataDir() + "/testfiles/istream.txt");
         FileReader r = new FileReader(testJComponentFile);
@@ -85,13 +91,14 @@ public class CppFlyTokensTestCase extends NbTestCase {
         String text = cb.toString();
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
-        
-        System.err.println("Flyweight tokens: " + LexerTestUtilities.flyweightTokenCount(ts)
-                + "\nTotal tokens: " + ts.tokenCount()
-                + "\nFlyweight text length: " + LexerTestUtilities.flyweightTextLength(ts)
-                + "\nTotal text length: " + fileLen
-                + "\nDistribution: " + LexerTestUtilities.flyweightDistribution(ts)
-        ); 
+        if (TRACE) {
+            System.err.println("Flyweight tokens: " + LexerTestUtilities.flyweightTokenCount(ts)
+                    + "\nTotal tokens: " + ts.tokenCount()
+                    + "\nFlyweight text length: " + LexerTestUtilities.flyweightTextLength(ts)
+                    + "\nTotal text length: " + fileLen
+                    + "\nDistribution: " + LexerTestUtilities.flyweightDistribution(ts)
+            );
+        }
         assertEquals(1606, LexerTestUtilities.flyweightTokenCount(ts));
         assertEquals(2822, LexerTestUtilities.flyweightTextLength(ts));
         assertEquals(2485, ts.tokenCount());         
@@ -108,12 +115,14 @@ public class CppFlyTokensTestCase extends NbTestCase {
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageC());
         TokenSequence<?> ts = hi.tokenSequence();
         
-        System.err.println("Flyweight tokens: " + LexerTestUtilities.flyweightTokenCount(ts)
-                + "\nTotal tokens: " + ts.tokenCount()
-                + "\nFlyweight text length: " + LexerTestUtilities.flyweightTextLength(ts)
-                + "\nTotal text length: " + fileLen
-                + "\nDistribution: " + LexerTestUtilities.flyweightDistribution(ts)
-        );   
+        if (TRACE) {
+            System.err.println("Flyweight tokens: " + LexerTestUtilities.flyweightTokenCount(ts)
+                    + "\nTotal tokens: " + ts.tokenCount()
+                    + "\nFlyweight text length: " + LexerTestUtilities.flyweightTextLength(ts)
+                    + "\nTotal text length: " + fileLen
+                    + "\nDistribution: " + LexerTestUtilities.flyweightDistribution(ts)
+            );
+        }
         
         assertEquals(2402, LexerTestUtilities.flyweightTokenCount(ts));
         assertEquals(3508, LexerTestUtilities.flyweightTextLength(ts));
@@ -139,11 +148,13 @@ public class CppFlyTokensTestCase extends NbTestCase {
         List<Integer> distribution = new ArrayList<Integer>();
         for (TokenSequence<?> ts : tsList) {
             List<Integer> tsDistribution = LexerTestUtilities.flyweightDistribution(ts);
-            System.err.println("Flyweight tokens: " + LexerTestUtilities.flyweightTokenCount(ts)
-                    + "\nTotal tokens: " + ts.tokenCount()
-                    + "\nFlyweight text length: " + LexerTestUtilities.flyweightTextLength(ts)
-                    + "\nDistribution: " + tsDistribution
-            );
+            if (TRACE) {
+                System.err.println("Flyweight tokens: " + LexerTestUtilities.flyweightTokenCount(ts)
+                        + "\nTotal tokens: " + ts.tokenCount()
+                        + "\nFlyweight text length: " + LexerTestUtilities.flyweightTextLength(ts)
+                        + "\nDistribution: " + tsDistribution
+                );
+            }
             fwTokenCount += LexerTestUtilities.flyweightTokenCount(ts);
             tokenCount += ts.tokenCount();
             fwTextLength += LexerTestUtilities.flyweightTextLength(ts);
@@ -156,11 +167,13 @@ public class CppFlyTokensTestCase extends NbTestCase {
             
         }
 
-        System.err.println("Flyweight tokens: " + fwTokenCount
-                + "\nTotal tokens: " + tokenCount
-                + "\nFlyweight text length: " + fwTextLength
-                + "\nDistribution: " + distribution
-        );
+        if (TRACE) {
+            System.err.println("Flyweight tokens: " + fwTokenCount
+                    + "\nTotal tokens: " + tokenCount
+                    + "\nFlyweight text length: " + fwTextLength
+                    + "\nDistribution: " + distribution
+            );
+        }
         assertEquals(52, fwTokenCount);
         assertEquals(66, tokenCount);
         assertEquals(114, fwTextLength);

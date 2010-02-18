@@ -582,7 +582,7 @@ public class LayerUtilsTest extends LayerTestBase {
             contents.put("platform/module/Bundle_ja.properties", "folder/file=Japanese");
             TestBase.createJar(new File(platformDir, "cluster/modules/locale/platform-module_ja.jar".replace('/', File.separatorChar)), contents, mf);
             // To satisfy NbPlatform.isValid:
-            TestBase.createJar(new File(new File(new File(platformDir, "platform"), "core"), "core.jar"), Collections.EMPTY_MAP, new Manifest());
+            TestBase.createJar(new File(new File(new File(platformDir, "platform"), "core"), "core.jar"), Collections.<String,String>emptyMap(), new Manifest());
             NbPlatform.addPlatform("testplatform", platformDir, "Test Platform");
             File suiteDir = new File(getWorkDir(), "testSuite");
             SuiteProjectGenerator.createSuiteProject(suiteDir, "testplatform", false);

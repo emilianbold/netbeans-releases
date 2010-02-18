@@ -63,6 +63,7 @@ public class FmtTabsIndents extends javax.swing.JPanel {
 //        rightMarginField.putClientProperty(OPTION_ID, rightMargin);
         continuationIndentSizeField.putClientProperty(OPTION_ID, FmtOptions.continuationIndentSize);
         initialIndentSizeField.putClientProperty(OPTION_ID, FmtOptions.initialIndent);
+        arrayItemsIndentationField.putClientProperty(OPTION_ID, FmtOptions.itemsInArrayDeclarationIndentSize);
     }
     
     public static PreferencesCustomizer.Factory getController() {
@@ -91,6 +92,8 @@ public class FmtTabsIndents extends javax.swing.JPanel {
         continuationIndentSizeField = new javax.swing.JTextField();
         initialIndentLabel = new javax.swing.JLabel();
         initialIndentSizeField = new javax.swing.JTextField();
+        arrayItemsIndentationLabel = new javax.swing.JLabel();
+        arrayItemsIndentationField = new javax.swing.JTextField();
 
         setName(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_TabsAndIndents")); // NOI18N
         setOpaque(false);
@@ -101,18 +104,25 @@ public class FmtTabsIndents extends javax.swing.JPanel {
         initialIndentLabel.setLabelFor(initialIndentSizeField);
         org.openide.awt.Mnemonics.setLocalizedText(initialIndentLabel, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.initialIndentLabel.text")); // NOI18N
 
+        arrayItemsIndentationLabel.setLabelFor(continuationIndentSizeField);
+        org.openide.awt.Mnemonics.setLocalizedText(arrayItemsIndentationLabel, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.arrayItemsIndentationLabel.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(continuationIndentSizeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
+                .add(continuationIndentSizeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(continuationIndentSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
             .add(layout.createSequentialGroup()
                 .add(initialIndentLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 125, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 102, Short.MAX_VALUE)
                 .add(initialIndentSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(layout.createSequentialGroup()
+                .add(arrayItemsIndentationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(24, 24, 24)
+                .add(arrayItemsIndentationField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -125,6 +135,10 @@ public class FmtTabsIndents extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(continuationIndentSizeLabel)
                     .add(continuationIndentSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(arrayItemsIndentationLabel)
+                    .add(arrayItemsIndentationField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -135,6 +149,8 @@ public class FmtTabsIndents extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField arrayItemsIndentationField;
+    private javax.swing.JLabel arrayItemsIndentationLabel;
     private javax.swing.JTextField continuationIndentSizeField;
     private javax.swing.JLabel continuationIndentSizeLabel;
     private javax.swing.JLabel initialIndentLabel;

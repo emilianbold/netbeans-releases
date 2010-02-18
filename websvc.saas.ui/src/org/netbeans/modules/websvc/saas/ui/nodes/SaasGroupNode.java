@@ -103,12 +103,12 @@ public class SaasGroupNode extends AbstractNode {
         return group.isUserDefined();
     }
 
-    private Image getUserDirFolderImage(int type) {
+    private Image getUserDirFolderImage(int type, boolean openIcon) {
         FileObject folder = FileUtil.toFileObject(new File(System.getProperty("netbeans.user"))); //NOI18N
         if (folder != null) {
             DataFolder df = DataFolder.findFolder(folder);
             if (df != null) {
-                return df.getNodeDelegate().getIcon(type);
+                return (openIcon ? df.getNodeDelegate().getOpenedIcon(type) : df.getNodeDelegate().getIcon(type));
             }
         }
         return null;
@@ -128,7 +128,7 @@ public class SaasGroupNode extends AbstractNode {
         if (icon != null) {
             return icon;
         }
-        Image standardFolderImage = getUserDirFolderImage(type);
+        Image standardFolderImage = getUserDirFolderImage(type, false);
         if (standardFolderImage != null) {
             return standardFolderImage;
         }
@@ -141,7 +141,7 @@ public class SaasGroupNode extends AbstractNode {
         if (icon != null) {
             return icon;
         }
-        Image standardFolderImage = getUserDirFolderImage(type);
+        Image standardFolderImage = getUserDirFolderImage(type, true);
         if (standardFolderImage != null) {
             return standardFolderImage;
         }

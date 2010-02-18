@@ -103,11 +103,11 @@ public final class WatchProjects {
         Clipboard cc = Lookup.getDefault().lookup(Clipboard.class);
         Assert.assertNotNull("There is a clipboard in lookup", cc);
         cc.setContents(ss, ss);
-/*
+
         for (Frame f : Frame.getFrames()) {
-            f.setVisible(false);
+            clearInstanceField( f, "java.awt.Container", "dispatcher" );
         }
- */
+
 // XXX: uncommented because of the csl.api & related changes
         JFrame empty = new JFrame("Clear");
         empty.getContentPane().setLayout(new FlowLayout());
@@ -299,7 +299,34 @@ public final class WatchProjects {
     }
 
     private static Object clearField(String clazz, String... name) throws Exception {
+        return clearInstanceField(null, clazz, name);
+    }
+    private static Object getFieldValue(String clazz, String... name) throws Exception {
         Object ret = null;
+        for (int i = 0; i < name.length; i++) {
+            Field f = i == 0 ? getField(clazz, name[0]) : getField(ret.getClass(), name[i]);
+            ret = f.get(ret);
+        }
+        return ret;
+    }
+    
+    
+    private static Field getField(String clazz, String name) throws NoSuchFieldException, ClassNotFoundException {
+        ClassLoader l = Thread.currentThread().getContextClassLoader();
+        if (l == null) {
+            l = WatchProjects.class.getClassLoader();
+        }
+        Class<?> c = Class.forName(clazz, true, l);
+        return getField(c, name);
+    }
+    private static Field getField(Class<?> clazz, String name) throws NoSuchFieldException {
+        Field f = clazz.getDeclaredField(name);
+        f.setAccessible(true);
+        return f;
+    }
+    
+    private static Object clearInstanceField(Object obj, String clazz, String... name) throws Exception {
+        Object ret = obj;
         for (int i = 0; i < name.length; i++) {
             Field f;
             try {
@@ -330,30 +357,6 @@ public final class WatchProjects {
         }
         return ret;
     }
-    private static Object getFieldValue(String clazz, String... name) throws Exception {
-        Object ret = null;
-        for (int i = 0; i < name.length; i++) {
-            Field f = i == 0 ? getField(clazz, name[0]) : getField(ret.getClass(), name[i]);
-            ret = f.get(ret);
-        }
-        return ret;
-    }
-    
-    
-    private static Field getField(String clazz, String name) throws NoSuchFieldException, ClassNotFoundException {
-        ClassLoader l = Thread.currentThread().getContextClassLoader();
-        if (l == null) {
-            l = WatchProjects.class.getClassLoader();
-        }
-        Class<?> c = Class.forName(clazz, true, l);
-        return getField(c, name);
-    }
-    private static Field getField(Class<?> clazz, String name) throws NoSuchFieldException {
-        Field f = clazz.getDeclaredField(name);
-        f.setAccessible(true);
-        return f;
-    }
-    
     
     public static void waitScanFinished() {
         try {

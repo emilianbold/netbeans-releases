@@ -240,6 +240,24 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="c-types"/>
                 <attr name="text/x-c/text/x-h" boolvalue="true"/> <!-- special attribute to be checked in CCFSrcFileIterator.initialize -->
             </file>
+
+            <file name="CSimpleTest.c" url="templates/c/simple-test-c.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="400"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-test-c.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
+                <attr name="templateCategory" stringvalue="c-types"/>
+            </file>
+            
+            <file name="CUnitMain.c" url="templates/c/cunittest-c.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="500"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cunittest-c.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
+                <attr name="templateCategory" stringvalue="c-types"/>
+            </file>
         </folder> <!-- End cFiles folder -->
 
         <folder name="cppFiles">
@@ -298,9 +316,18 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="hidden"/>
             </file>
 
-            <file name="cppunittest.cc" url="templates/cpp/cppunittest-cc.template">
+            <file name="cppsimpletest.cc" url="templates/cpp/simple-test-cc.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="position" intvalue="600"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-test-cc.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
+                <attr name="templateCategory" stringvalue="cpp-types"/>
+            </file>
+
+            <file name="cppunittest.cc" url="templates/cpp/cppunittest-cc.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="700"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cppunittest.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CndClassWizardIterator"/>
@@ -308,14 +335,14 @@ made subject to such option by the copyright holder.
             </file>
 
             <file name="cppunittest.h" url="templates/cpp/cppunittest-h.template">
-                <attr name="position" intvalue="610"/>
+                <attr name="position" intvalue="710"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="hidden"/>
             </file>
 
-            <file name="cppunitrunner.cc" url="templates/cpp/cppunitrunner-cc.template">
+            <file name="CppUnitRunner.cc" url="templates/cpp/cppunitrunner-cc.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="position" intvalue="650"/>
+                <attr name="position" intvalue="750"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cppunitrunner.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>

@@ -85,7 +85,7 @@ public class NbPlatformCustomizerHarness extends JPanel {
     }
     
     private void update() {
-        versionText.setText(NbPlatform.getHarnessVersionDisplayName(plaf.getHarnessVersion()));
+        versionText.setText(plaf.getHarnessVersion().getDisplayName());
         if (plaf.isDefault()) {
             platformButton.setEnabled(false);
             otherButton.setEnabled(false);

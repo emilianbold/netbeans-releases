@@ -52,6 +52,7 @@ import java.net.PasswordAuthentication;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.border.EmptyBorder;
@@ -179,6 +180,46 @@ public class PresenceIndicator {
                     contactListMenu.setEnabled(s==Kenai.Status.ONLINE);
                     final JCheckBoxMenuItem onlineCheckBox = new JCheckBoxMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_OnlineCheckboxMenuItem"),s==Kenai.Status.ONLINE); // NOI18N
                     menu.add(onlineCheckBox);
+
+                    for (final Kenai k: KenaiManager.getDefault().getKenais()) {
+                        if (k.getStatus()==Kenai.Status.OFFLINE)
+                            continue;
+                        JMenu m = new JMenu(k.getName());
+                        final JCheckBoxMenuItem onlineCheckBoxForKenai = new JCheckBoxMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_OnlineCheckboxMenuItem"),k.getStatus()==Kenai.Status.ONLINE); // NOI18N
+                        m.add(onlineCheckBoxForKenai);
+                        final JMenuItem logoutItem = new JMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_LogoutMenuItem")); // NOI18N
+                        m.add(logoutItem);
+                        menu.add(m);
+
+                        onlineCheckBoxForKenai.setEnabled(Utilities.isChatSupported(k));
+                        onlineCheckBoxForKenai.addActionListener(new ActionListener() {
+
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                try {
+                                    PasswordAuthentication passwordAuthentication = k.getPasswordAuthentication();
+                                    if (passwordAuthentication != null) {
+                                        k.login(passwordAuthentication.getUserName(), passwordAuthentication.getPassword(), onlineCheckBoxForKenai.isSelected());
+                                    }
+                                } catch (KenaiException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        });
+
+                        logoutItem.addActionListener(new ActionListener() {
+
+                            public void actionPerformed(ActionEvent e) {
+                                RequestProcessor.getDefault().post(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        k.logout();
+                                    }
+                                });
+                            }
+                        });
+                    }
                     final JMenuItem logoutItem = new JMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_LogoutMenuItem")); // NOI18N
                     menu.add(logoutItem);
                     onlineCheckBox.addActionListener(new ActionListener() {

@@ -109,7 +109,7 @@ public class ReformatingTest extends CompletionTest {
     public void runTest() throws Exception {
         try {
             BaseDocument doc = openFile(testFileObj);
-            String fileName = testFileObj.getName();
+            String fileName = testFileObj.getNameExt();
             EditorOperator eOperator = new EditorOperator(fileName);
             waitTypingFinished(doc);
             if (fileName.startsWith(reformatSimplePrefix)) {

@@ -48,7 +48,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerEvents;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerSetManagerEvents;
 
 public final class Configurations {
 

@@ -217,6 +217,7 @@ class JavaCodeGenerator extends CodeGenerator {
 	    this.properties = properties;
 	}
 	
+        @Override
         public boolean accept(FormProperty property) {	    		     
 	    return (property.isChanged()
                        && !ResourceSupport.isInjectedProperty(property)
@@ -232,6 +233,7 @@ class JavaCodeGenerator extends CodeGenerator {
 //    public JavaCodeGenerator() {
 //    }
 
+    @Override
     public void initialize(FormModel formModel) {
         if (!initialized) {
             this.formModel = formModel;
@@ -247,6 +249,7 @@ class JavaCodeGenerator extends CodeGenerator {
             if (formEditorSupport.getGuardedSectionManager() == null) {
                 // Issue 143655 - opening of big file canceled
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         formEditorSupport.close();
                     }
@@ -301,6 +304,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 bundle.getString("MSG_JC_VariableName"), // NOI18N
                 bundle.getString("MSG_JC_VariableDesc")) // NOI18N
             {
+                @Override
                 public void setValue(Object value) {
                     if (!(value instanceof String))
                         throw new IllegalArgumentException();
@@ -310,6 +314,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         RADComponent.PROP_NAME, null, null); // NOI18N
                 }
 
+                @Override
                 public Object getValue() {
                     return component.getName();
                 }
@@ -326,6 +331,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 bundle.getString("MSG_JC_VariableModifiers"), // NOI18N
                 null)
             {
+                @Override
                 public void setTargetValue(Object value) {
                     if (!(value instanceof Integer))
                         throw new IllegalArgumentException();
@@ -360,6 +366,7 @@ class JavaCodeGenerator extends CodeGenerator {
                                          exp, varType, typeParameters, varName);
                 }
 
+                @Override
                 public Object getTargetValue() {
                     Object val = component.getAuxValue(AUX_VARIABLE_MODIFIER);
                     if (val != null)
@@ -434,6 +441,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 bundle.getString("MSG_JC_TypeParameters"), // NOI18N
                 null)
             {
+                @Override
                 public void setTargetValue(Object value) {
                     if ((value != null) && !(value instanceof String))
                         throw new IllegalArgumentException();
@@ -452,6 +460,7 @@ class JavaCodeGenerator extends CodeGenerator {
                                          exp, varType, (String)value, varName);
                 }
 
+                @Override
                 public Object getTargetValue() {
                     Object value = component.getAuxValue(AUX_TYPE_PARAMETERS);
                     return (value == null) ? "" : value; // NOI18N
@@ -502,6 +511,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 bundle.getString("MSG_JC_UseLocalVar"), // NOI18N
                 null)
             {
+                @Override
                 public void setTargetValue(Object value) {
                     if (!(value instanceof Boolean))
                         throw new IllegalArgumentException();
@@ -552,6 +562,7 @@ class JavaCodeGenerator extends CodeGenerator {
                                          exp, varType, typeParameters, varName);
                 }
 
+                @Override
                 public Object getTargetValue() {
                     Object val = component.getAuxValue(AUX_VARIABLE_LOCAL);
                     if (val != null)
@@ -600,6 +611,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     bundle.getString("PROP_GENERATE_MNEMONICS"), // NOI18N
                     bundle.getString("HINT_GENERATE_MNEMONICS2")) // NOI18N
                 {
+                    @Override
                     public void setValue(Object value) {
                         Object oldValue = getValue();
                         component.setAuxValue(PROP_GENERATE_MNEMONICS, value);
@@ -609,6 +621,7 @@ class JavaCodeGenerator extends CodeGenerator {
                             PROP_GENERATE_MNEMONICS, null, null); // NOI18N
                     }
 
+                    @Override
                     public Object getValue() {
                         return isUsingMnemonics(component) ?
                                Boolean.TRUE : Boolean.FALSE;
@@ -727,6 +740,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 bundle.getString("MSG_JC_CodeGeneration"), // NOI18N
                 bundle.getString("MSG_JC_CodeGenerationDesc")) // NOI18N
             {
+                @Override
                 public void setValue(Object value) {
                     if (!(value instanceof Integer))
                         throw new IllegalArgumentException();
@@ -750,6 +764,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         PROP_CODE_GENERATION, null, null); // NOI18N
                 }
 
+                @Override
                 public Object getValue() {
                     Object value = component.getAuxValue(AUX_CODE_GENERATION);
                     if (value == null)
@@ -779,6 +794,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 bundle.getString("MSG_JC_SerializeTo"), // NOI18N
                 bundle.getString("MSG_JC_SerializeToDesc")) // NOI18N
             {
+                @Override
                 public void setValue(Object value) {
                     if (!(value instanceof String))
                         throw new IllegalArgumentException();
@@ -797,6 +813,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         PROP_SERIALIZE_TO, null, null); // NOI18N
                 }
 
+                @Override
                 public Object getValue() {
                     Object value = component.getAuxValue(AUX_SERIALIZE_TO);
                     if (value == null)
@@ -827,6 +844,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         FormDesigner.PROP_DESIGNER_SIZE, null, null);
                 }
 
+                @Override
                 public Dimension getValue() {
                     Dimension value = (Dimension)component.getAuxValue(FormDesigner.PROP_DESIGNER_SIZE);
                     if (value == null)
@@ -855,6 +873,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 bundle.getString("MSG_JC_BeanClassDesc")) // NOI18N
             {
 		String invalid = null;
+            @Override
                 public Object getValue() {
                     if(!component.isValid()) {
 			if(invalid==null) {
@@ -963,6 +982,7 @@ class JavaCodeGenerator extends CodeGenerator {
             expandInitComponentsInAWT(initComponentsOffset);
         } else {
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     expandInitComponentsInAWT(initComponentsOffset);
                 }
@@ -989,6 +1009,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
                 if (listener == null) {
                     listener = new FoldHierarchyListener() {
+                        @Override
                         public void foldHierarchyChanged(FoldHierarchyEvent evt) {
                             if (expandFold) {
                                 for (int i=0; i<evt.getAddedFoldCount(); i++) {
@@ -1456,7 +1477,7 @@ class JavaCodeGenerator extends CodeGenerator {
             if (codeData == null)
                 generateEmptyLineIfNeeded(writer);
 
-            StringBuffer buf = new StringBuffer(); // we need the entire creation statement written at once
+            StringBuilder buf = new StringBuilder(); // we need the entire creation statement written at once
 
             if (localVariable || isFinalFieldVariable(varType)) { // also generate declaration
                 generateDeclarationPre(comp, writer, codeData);
@@ -2046,11 +2067,11 @@ class JavaCodeGenerator extends CodeGenerator {
                 sizeText = "pack();\n"; // NOI18N
             else if (formPolicy == RADVisualFormContainer.GEN_BOUNDS) {
                 if (genCenter) {
-                    StringBuffer sizeBuffer = new StringBuffer();
+                    StringBuilder sizeBuffer = new StringBuilder();
                     if (genSize) {
 //                                sizeBuffer.append("pack();\n"); // NOI18N
                         sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
-                        sizeBuffer.append("setBounds((screenSize.width-"+formSize.width+")/2, (screenSize.height-"+formSize.height+")/2, "+formSize.width + ", " + formSize.height + ");\n"); // NOI18N
+                        sizeBuffer.append("setBounds((screenSize.width-").append(formSize.width).append(")/2, (screenSize.height-").append(formSize.height).append(")/2, ").append(formSize.width).append(", ").append(formSize.height).append(");\n"); // NOI18N
 //                                sizeBuffer.append("setSize(new java.awt.Dimension("+formSize.width + ", " + formSize.height + "));\n"); // NOI18N
 //                                sizeBuffer.append("setLocation((screenSize.width-"+formSize.width+")/2,(screenSize.height-"+formSize.height+")/2);\n"); // NOI18N
                     }
@@ -2291,7 +2312,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (codeData != null)
             propertyInitializationString = CUSTOM_CODE_MARK + propertyInitializationString + CUSTOM_CODE_MARK;
 
-	if(remainingProperties.size() == 0) {		    		    
+	if(remainingProperties.isEmpty()) {
 	    generateSimpleSetterCode(prop, 
 				     prop.getPartialSetterCode(propertyInitializationString),
 				     setterVariable, 
@@ -2701,6 +2722,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 variables.add(var);
         }
         Collections.sort(variables, new Comparator<CodeVariable>() {
+            @Override
             public int compare(CodeVariable o1, CodeVariable o2) {
                 return o1.getName().compareTo(o2.getName());
             }
@@ -2837,6 +2859,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
         Class[] listenersToImplement = formEvents.getCEDLTypes();
         Arrays.sort(listenersToImplement, new Comparator<Class>() {
+            @Override
             public int compare(Class o1, Class o2) {
                 return o1.getName().compareTo(o2.getName());
             }
@@ -2865,6 +2888,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
             Method[] methods = listenersToImplement[i].getMethods();
             Arrays.sort(methods, new Comparator<Method>() {
+                @Override
                 public int compare(Method o1, Method o2) {
                     return o1.getName().compareTo(o2.getName());
                 }
@@ -2970,8 +2994,10 @@ class JavaCodeGenerator extends CodeGenerator {
         JavaSource js = JavaSource.forFileObject(fo);
         try {
             js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(WorkingCopy wcopy) throws Exception {
                     wcopy.toPhase(JavaSource.Phase.RESOLVED);
                     
@@ -3105,7 +3131,7 @@ class JavaCodeGenerator extends CodeGenerator {
             String initText = formEditorSupport.getInitComponentSection().getText();
             int index = initText.lastIndexOf("private class "); // NOI18N
             if (index >= 0) {
-                StringBuffer nameBuffer = new StringBuffer(16);
+                StringBuilder nameBuffer = new StringBuilder(16);
                 index += "private class ".length(); // NOI18N
 
                 int length = initText.length();
@@ -3546,7 +3572,7 @@ class JavaCodeGenerator extends CodeGenerator {
             } catch (Exception ex) {} // ignore
         }
         
-        StringBuffer tab = new StringBuffer(spacesPerTab);
+        StringBuilder tab = new StringBuilder(spacesPerTab);
         for (int i=0; i < spacesPerTab; i++)
             tab.append(" "); // NOI18N
         
@@ -3562,7 +3588,7 @@ class JavaCodeGenerator extends CodeGenerator {
         int indentLevel = minIndentLevel;
         boolean lastLineEmpty = false;
         int codeLength = code.length();
-        StringBuffer buffer = new StringBuffer(codeLength);
+        StringBuilder buffer = new StringBuilder(codeLength);
         
         int i = 0;
         while (i < codeLength) {
@@ -3879,6 +3905,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private class FormListener implements FormModelListener {
 
+        @Override
         public void formChanged(FormModelEvent[] events) {
             if (events == null)
                 return;
@@ -4133,6 +4160,7 @@ class JavaCodeGenerator extends CodeGenerator {
             }
         }
 
+        @Override
         public void setTargetValue(Object value) {
             if (value != null && !(value instanceof String))
                 throw new IllegalArgumentException();
@@ -4145,6 +4173,7 @@ class JavaCodeGenerator extends CodeGenerator {
             }
         }
 
+        @Override
         public Object getTargetValue() {
             Object value = component.getAuxValue(auxKey);
             if (value == null)
@@ -4189,6 +4218,7 @@ class JavaCodeGenerator extends CodeGenerator {
     private class CodeEditor extends PropertyEditorSupport implements ExPropertyEditor {
         private PropertyEnv env;
 
+        @Override
         public void attachEnv(PropertyEnv env) {
             this.env = env;
         }
@@ -4217,6 +4247,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 FormUtils.getBundleString("HINT_VARIABLES_MODIFIER")); // NOI18N
         }
             
+        @Override
         public void setValue(Object value) {
             if (!(value instanceof Integer))
                 throw new IllegalArgumentException();
@@ -4237,6 +4268,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 PROP_VARIABLE_MODIFIER, oldValue, newValue);
         }
         
+        @Override
         public Object getValue() {
             return new Integer(formModel.getSettings().getVariablesModifier());
         }
@@ -4286,6 +4318,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 FormUtils.getBundleString("HINT_VARIABLES_LOCAL")); // NOI18N
         }
         
+        @Override
         public void setValue(Object value) {
             if (!(value instanceof Boolean))
                 throw new IllegalArgumentException();            
@@ -4316,6 +4349,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 PROP_VARIABLE_MODIFIER, oldModif, newModif);
         }
         
+        @Override
         public Object getValue() {
             return Boolean.valueOf(formModel.getSettings().getVariablesLocal());
         }
@@ -4352,6 +4386,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 FormUtils.getBundleString("HINT_GENERATE_MNEMONICS2")); // NOI18N
         }
             
+        @Override
         public void setValue(Object value) {
             if (!(value instanceof Boolean))
                 throw new IllegalArgumentException();
@@ -4365,6 +4400,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 PROP_GENERATE_MNEMONICS, oldValue, newValue);
         }
         
+        @Override
         public Object getValue() {
             return Boolean.valueOf(formModel.getSettings().getGenerateMnemonicsCode());
         }
@@ -4401,6 +4437,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 FormUtils.getBundleString("HINT_LISTENER_GENERATION_STYLE")); // NOI18N
         }
             
+        @Override
         public void setValue(Object value) {
             if (!(value instanceof Integer))
                 throw new IllegalArgumentException();
@@ -4414,6 +4451,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 PROP_LISTENER_GENERATION_STYLE, oldValue, newValue);
         }
         
+        @Override
         public Object getValue() {
             return new Integer(formModel.getSettings().getListenerGenerationStyle());
         }
@@ -4456,6 +4494,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 FormUtils.getBundleString("HINT_LAYOUT_CODE_TARGET")); // NOI18N
         }
             
+        @Override
         public void setValue(Object value) {
             if (!(value instanceof Integer))
                 throw new IllegalArgumentException();
@@ -4469,6 +4508,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 FormLoaderSettings.PROP_LAYOUT_CODE_TARGET, oldValue, newValue);
         }
 
+        @Override
         public Object getValue() {
             return new Integer(formModel.getSettings().getLayoutCodeTarget());
         }
@@ -4510,6 +4550,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 FormUtils.getBundleString("HINT_GENERATE_FQN")); // NOI18N
         }
 
+        @Override
         public void setValue(Boolean value) {
             Boolean oldValue = getValue();
             formModel.getSettings().setGenerateFQN(value);
@@ -4524,6 +4565,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 FormLoaderSettings.PROP_GENERATE_FQN, oldValue, value);
         }
 
+        @Override
         public Boolean getValue() {
             return formModel.getSettings().getGenerateFQN();
         }

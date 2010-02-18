@@ -47,6 +47,7 @@ import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.IndexSearcher;
+import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.navigation.Icons;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;

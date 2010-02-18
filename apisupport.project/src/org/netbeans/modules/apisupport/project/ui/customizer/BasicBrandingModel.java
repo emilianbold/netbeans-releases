@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -235,7 +234,8 @@ public class BasicBrandingModel {
             getBranding().brandBundleKey(splashWindowTitle);
             getBranding().brandBundleKey(mainWindowTitleNoProject);
             getBranding().brandBundleKey(currentVersion);
-            
+
+            if (icon != null) { // #176423
             boolean isModified = icon.isModified();
             getBranding().brandFile(icon, 
                     getScaleAndStoreIconTask(icon, BasicBrandingModel.ICON_WIDTH,BasicBrandingModel.ICON_HEIGHT));
@@ -244,6 +244,7 @@ public class BasicBrandingModel {
                 icon16.setBrandingSource(icon.getBrandingSource());
                 getBranding().brandFile(icon16, 
                         getScaleAndStoreIconTask(icon16, 16,16));
+            }
             }
                                     
             getBranding().brandBundleKeys(splashKeys);

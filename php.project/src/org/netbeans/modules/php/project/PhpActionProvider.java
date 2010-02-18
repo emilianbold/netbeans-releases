@@ -104,7 +104,9 @@ public class PhpActionProvider implements ActionProvider {
 
     public void invokeAction(final String commandId, final Lookup lookup) {
         final Command command = getCommand(commandId);
-        command.getProject().getCopySupport().waitFinished();
+        if (!command.getProject().getCopySupport().waitFinished()) {
+            return;
+        }
         if (command.saveRequired()) {
             LifecycleManager.getDefault().saveAll();
         }

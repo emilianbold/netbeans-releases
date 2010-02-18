@@ -220,4 +220,115 @@ public class FieldEncapsulationTest extends TestBase {
                             "}",
                             "2:15-2:16:verifier:Public Field");
     }
+
+    public void testOtherPriviteField() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public class Inner {\n" +
+                            "        private int a = 10;\n" +
+                            "    }\n"+
+                            "    public void test() {\n"+
+                            "        new Inner().a = 10;\n"+
+                            "    }\n"+
+                            "}",
+                            "6:20-6:21:verifier:Access of Private Field of Another Object");
+    }
+
+    public void testOtherPublicField() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public class Inner {\n" +
+                            "        public int a = 10;\n" +
+                            "    }\n"+
+                            "    public void test() {\n"+
+                            "        new Inner().a = 10;\n"+
+                            "    }\n"+
+                            "}",
+                            "3:19-3:20:verifier:Public Field");
+    }
+
+    public void testOtherPriviteMethod() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public class Inner {\n" +
+                            "        private Object a = null;\n" +
+                            "    }\n"+
+                            "    public void test() {\n"+
+                            "        new Inner().a.hashCode();\n"+
+                            "    }\n"+
+                            "}",
+                            "6:20-6:21:verifier:Access of Private Field of Another Object");
+    }
+
+    public void testOtherPublicMethod() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public class Inner {\n" +
+                            "        public Object a = null;\n" +
+                            "    }\n"+
+                            "    public void test() {\n"+
+                            "        new Inner().a.hashCode();\n"+
+                            "    }\n"+
+                            "}",
+                            "3:22-3:23:verifier:Public Field");
+    }
+
+    public void testThisField() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    private int a = 10;\n" +
+                            "    public void test() {\n"+
+                            "        this.a = 10;\n"+
+                            "    }\n"+
+                            "}");
+    }
+
+    public void testOutherThisField() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    private int a = 10;\n" +
+                            "    public class Inner {\n"+
+                            "        public void test() {\n"+
+                            "            Test.this.a = 10;\n"+
+                            "        }\n"+
+                            "    }\n"+
+                            "}");
+    }
+
+    public void testPrivateStaticField() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public static class Inner {\n" +
+                            "        private static int a = 10;\n" +
+                            "    }\n"+
+                            "    public void test() {\n"+
+                            "        Inner.a = 10;\n"+
+                            "        new Inner().a = 10;\n"+
+                            "    }\n"+
+                            "}");
+    }
+
+        public void testPrivateCrossField() throws Exception {
+            performAnalysisTest("test/Test.java",
+                                "package test;\n" +
+                                "public class Test {\n"+
+                                "    private Inner inner = new Inner();\n"+
+                                "    private static class Inner {\n"+
+                                "        private int a;\n"+
+                                "    }\n"+
+                                "    private class Friend {\n"+
+                                "        public void test () {\n"+
+                                "            Test.this.inner.a = 10;\n"+
+                                "        }\n"+
+                                "    }\n"+
+                                "}",
+                                "8:28-8:29:verifier:Access of Private Field of Another Object");
+    }
 }

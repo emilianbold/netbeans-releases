@@ -39,9 +39,12 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
+import java.util.Collection;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -51,9 +54,10 @@ import org.openide.util.RequestProcessor;
 public final class LogoutAction extends AbstractAction {
 
     private static LogoutAction instance;
+    private static final String LOGOUT = NbBundle.getMessage(LogoutAction.class, "CTL_LogoutAction");
 
     private LogoutAction() {
-        super(NbBundle.getMessage(LogoutAction.class, "CTL_LogoutAction", NAME));
+        super(LOGOUT);
     }
 
     public static synchronized LogoutAction getDefault() {
@@ -63,17 +67,43 @@ public final class LogoutAction extends AbstractAction {
         return instance;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        final Collection<Kenai> kenais = KenaiManager.getDefault().getKenais();
+        if (kenais.size() == 1) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    kenais.iterator().next().logout();
+                }
+            });
+            return;
+        }
+        final LogoutPanel panel = new LogoutPanel();
+        DialogDescriptor dd = new DialogDescriptor(
+                panel,
+                NbBundle.getMessage(LogoutAction.class, "LOGOUT_TITLE"),
+                true,
+                new Object[]{LOGOUT, DialogDescriptor.CANCEL_OPTION},
+                LOGOUT,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                null);
 
-            public void run() {
-                for (Kenai k : KenaiManager.getDefault().getKenais()) {
-                    if (k.getStatus() != Kenai.Status.OFFLINE) {
-                        k.logout();
+        Object result = DialogDisplayer.getDefault().notify(dd);
+        if (result == LOGOUT) {
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
+                public void run() {
+                    for (Kenai k : panel.getSelectedKenais()) {
+                        if (k.getStatus() != Kenai.Status.OFFLINE) {
+                            k.logout();
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override
@@ -85,6 +115,4 @@ public final class LogoutAction extends AbstractAction {
         }
         return false;
     }
-
-
 }

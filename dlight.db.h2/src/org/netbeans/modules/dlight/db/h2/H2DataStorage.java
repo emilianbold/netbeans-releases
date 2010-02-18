@@ -42,15 +42,19 @@ import java.util.concurrent.CancellationException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.impl.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
@@ -59,8 +63,10 @@ import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.openide.util.Exceptions;
 
 public final class H2DataStorage extends SQLDataStorage {
 
@@ -69,10 +75,13 @@ public final class H2DataStorage extends SQLDataStorage {
     private static boolean driverLoaded = false;
     private static final AtomicInteger dbIndex = new AtomicInteger();
     private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
+    private static final String storagesDir;
     private static final String tmpDir;
     private static final String url;
-    private final String dbURL;
+    final String dbURL;
     private final List<DataTableMetadata> tableMetadatas;
+    boolean isPersistent = false;
+
 
     static {
         try {
@@ -93,17 +102,17 @@ public final class H2DataStorage extends SQLDataStorage {
         } catch (CancellationException ex) {
         }
 
-        if (tempDir == null || tempDir.trim().equals("")) {
+        if (tempDir == null || tempDir.trim().equals("")) {// NOI18N
             tempDir = System.getProperty("java.io.tmpdir"); // NOI18N
         }
 
-        url = "jdbc:h2:" + tempDir + "/h2_db_dlight"; // NOI18N
-
+        storagesDir  = System.getProperty("dlight.storages.folder") == null ? tempDir :  System.getProperty("dlight.storages.folder");// NOI18N
+        url = "jdbc:h2:" + storagesDir + "/h2_db_dlight"; // NOI18N
+        CommonTasksSupport.mkDir(ExecutionEnvironmentFactory.getLocal(), storagesDir, new StringWriter());
         tmpDir = tempDir;
 
         // FIXUP: deleting /tmp/dlight*
-        File tmpDirFile = new File(tmpDir); // NOI18N
-
+        File tmpDirFile = new File(storagesDir); // NOI18N
         if (tmpDirFile.exists()) {
             final File[] files = tmpDirFile.listFiles(new FilenameFilter() {
 
@@ -121,14 +130,16 @@ public final class H2DataStorage extends SQLDataStorage {
                 }
             }
             dbIndex.getAndSet(newValue);
-            DLightExecutorService.submit(new Runnable() {
+            if (System.getProperty("dlight.storages.folder") == null){// NOI18N
+                DLightExecutorService.submit(new Runnable() {
 
-                public void run() {
-                    for (File file : files) {
-                        Util.deleteLocalDirectory(file);
+                    public void run() {
+                        for (File file : files) {
+                            Util.deleteLocalDirectory(file);
+                        }
                     }
-                }
-            }, "H2DataStorage removing old data bases");//NOI18N
+                }, "H2DataStorage removing old data bases");//NOI18N
+            }
         }
     }
 
@@ -142,7 +153,7 @@ public final class H2DataStorage extends SQLDataStorage {
         this(url + dbIndex.incrementAndGet() + "/dlight");//NOI18N
     }
 
-    private H2DataStorage(String url) throws SQLException {
+    H2DataStorage(String url) throws SQLException {
         super(url);
         dbURL = url;
         this.tableMetadatas = new ArrayList<DataTableMetadata>();
@@ -151,6 +162,10 @@ public final class H2DataStorage extends SQLDataStorage {
 
     @Override
     public boolean shutdown() {
+        //do nor remove if it is persistent
+        if (isPersistent){
+            return true;
+        }
         boolean result = super.shutdown();
         //find current DB folder we are placing H2 database files
         final String folderToDelete = dbURL.substring(dbURL.lastIndexOf(":") + 1, dbURL.lastIndexOf("/") + 1);//NOI18N
@@ -250,9 +265,52 @@ public final class H2DataStorage extends SQLDataStorage {
 //    }
     public boolean hasData(DataTableMetadata data) {
         return data.isProvidedBy(tableMetadatas);
-    }
+        }
 
     public boolean supportsType(DataStorageType storageType) {
         return getStorageTypes().contains(storageType);
+    }
+
+    @Override
+    public void loadSchema(){
+        try {
+            ResultSet rs = select("INFORMATION_SCHEMA.TABLES", null, "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE LIKE 'TABLE'");// NOI18N
+            if (rs == null) {
+                return;
+            }
+            while (rs.next()) {
+                String tableName = rs.getString(1);
+                loadTable(tableName);
+            }
+        } catch (SQLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void loadTable(String tableName){
+        try {
+            ResultSet rs = select("INFORMATION_SCHEMA.COLUMNS", null, "SELECT COLUMN_NAME, TYPE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME LIKE '" + tableName + "'");// NOI18N
+            List<Column> columns = new ArrayList<Column>();
+            while (rs.next()) {
+                Column c = new Column(rs.getString("COLUMN_NAME"), getClassByString(rs.getString("TYPE_NAME")));// NOI18N
+                columns.add(c);
+            }
+            DataTableMetadata result = new DataTableMetadata(tableName, columns, null);
+            super.loadTable(result);
+            this.tableMetadatas.add(result);
+        } catch (SQLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+    }
+
+    private Class<?> getClassByString(String type){
+        Set<Class<?>> clazzes = classToType.keySet();
+        for (Class<?> clazz : clazzes){
+            if (classToType.get(clazz).equalsIgnoreCase(type)){
+                return clazz;
+            }
+        }
+        return String.class;
     }
 }

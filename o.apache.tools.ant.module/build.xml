@@ -84,12 +84,6 @@ made subject to such option by the copyright holder.
                 <include name="ant-misc-*.zip"/>
             </fileset>
         </unzip>
-        <chmod perm="ugo+x">
-            <fileset dir="${cluster}/ant/bin">
-                <exclude name="*.cmd"/>
-                <exclude name="*.bat"/>
-            </fileset>
-        </chmod>
     </target>
 
     <target name="test-build" depends="jar-bridge,projectized-common.test-build"/>

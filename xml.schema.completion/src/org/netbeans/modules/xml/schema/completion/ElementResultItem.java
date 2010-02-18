@@ -41,6 +41,7 @@
 package org.netbeans.modules.xml.schema.completion;
 
 import javax.swing.ImageIcon;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.xml.axi.AbstractAttribute;
 import org.netbeans.modules.xml.axi.AbstractElement;
 import org.netbeans.modules.xml.axi.AnyAttribute;
@@ -62,10 +63,15 @@ public class ElementResultItem extends CompletionResultItem {
      * Creates a new instance of ElementResultItem
      */
     public ElementResultItem(AbstractElement element, CompletionContext context) {
-        super(element, context);
+        this(element, context, null);
+    }
+
+    public ElementResultItem(AbstractElement element, CompletionContext context,
+        TokenSequence tokenSequence) {
+        super(element, context, tokenSequence);
         itemText = element.getName();
-        icon = new ImageIcon(CompletionResultItem.class.
-                getResource(ICON_LOCATION + ICON_ELEMENT));
+        icon = new ImageIcon(CompletionResultItem.class.getResource(
+            ICON_LOCATION + ICON_ELEMENT));
     }
     
     /**
@@ -77,7 +83,8 @@ public class ElementResultItem extends CompletionResultItem {
         icon = new ImageIcon(CompletionResultItem.class.
                 getResource(ICON_LOCATION + ICON_ELEMENT));
     }
-        
+
+    @Override
     public String getDisplayText() {
         AbstractElement element = (AbstractElement)axiComponent;
         String cardinality = null;
@@ -126,6 +133,7 @@ public class ElementResultItem extends CompletionResultItem {
         return replacingText;
     }
         
+    @Override
     public CompletionPaintComponent getPaintComponent() {
         if(component == null) {
             component = new ElementPaintComponent(this);

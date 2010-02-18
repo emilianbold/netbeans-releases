@@ -117,7 +117,7 @@ public class DebuggerChooserConfiguration {
         return value;
     }
 
-    public void setModified(boolean b) {
+    public final void setModified(boolean b) {
         this.modified = b;
     }
 
@@ -137,7 +137,7 @@ public class DebuggerChooserConfiguration {
         return def;
     }
 
-    public void reset() {
+    public final void reset() {
         value = getDefault();
         setModified(false);
     }

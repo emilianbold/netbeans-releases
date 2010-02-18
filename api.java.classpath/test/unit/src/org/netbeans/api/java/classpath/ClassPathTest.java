@@ -706,6 +706,13 @@ public class ClassPathTest extends NbTestCase {
         assertEquals(cp.toString(), ClassPathSupport.createClassPath(cp.toString()).toString());
         // XXX could also test IAE (tricky - need to have a URLMapper in Lookup, etc.)
     }
+
+    public void testEmptyClassPath() throws Exception {
+        final ClassPath cp = ClassPath.EMPTY;
+        assertNotNull(cp);
+        assertTrue(cp.entries().isEmpty());
+    }
+
     private String massagePath(String path) throws Exception {
         return path.replace('/', File.separatorChar).replace(':', File.pathSeparatorChar).replace("<root>", getWorkDir().getAbsolutePath());
     }

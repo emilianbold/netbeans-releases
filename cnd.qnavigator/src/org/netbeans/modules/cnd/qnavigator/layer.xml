@@ -54,6 +54,9 @@ made subject to such option by the copyright holder.
                 <folder name="x-c">
                     <file name="org-netbeans-modules-cnd-qnavigator-navigator-NavigatorComponent.instance"/>
                 </folder>
+                <folder name="x-fortran">
+                    <file name="org-netbeans-modules-cnd-qnavigator-navigator-NavigatorComponent.instance"/>
+                </folder>
             </folder>
         </folder>
     </folder>

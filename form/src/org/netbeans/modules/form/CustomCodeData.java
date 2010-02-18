@@ -209,7 +209,7 @@ class CustomCodeData {
     }
 
     private void checkEditableGuardedPairs(List<EditableBlock> eList, List<GuardedBlock> gList) {
-        assert (eList.size() == 0 && gList.size() == 0)
+        assert (eList.isEmpty() && gList.isEmpty())
                || eList.size() == gList.size() + 1;
     }
 

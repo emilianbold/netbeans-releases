@@ -74,15 +74,6 @@ public final class Main extends Object {
 
         MainImpl.main(args);
     }
-    
-    /** Returns string describing usage of the system. Does that by talking to
-     * all registered handlers and asking them to show their usage.
-     *
-     * @return the usage string for the system
-     */
-    public static String usage () throws Exception {
-        return MainImpl.usage();
-    }
         
     
     /**

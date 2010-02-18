@@ -142,11 +142,14 @@ public class PaletteMenuView extends org.openide.awt.JMenuPlus {
             this.popup = popup;
         }
 
+        @Override
         public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
             filled = false; // clear the status and stop listening
             popup.removePopupMenuListener(this);
         }
+        @Override
         public void popupMenuCanceled(PopupMenuEvent e) {}
+        @Override
         public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
     }
 

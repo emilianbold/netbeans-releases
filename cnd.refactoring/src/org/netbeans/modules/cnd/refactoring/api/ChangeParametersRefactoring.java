@@ -69,7 +69,7 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
     // new vibility
     private CsmVisibility visibility;
     // where to use default values
-    private boolean useDefaultValueInFunctionDefinition;
+    private boolean useDefaultValueInFunctionDeclaration;
     
     /**
      * Creates a new instance of change parameters refactoring.
@@ -106,8 +106,8 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
         return visibility;
     }
 
-    public boolean isUseDefaultValueOnlyInFunctionDefinition() {
-        return useDefaultValueInFunctionDefinition;
+    public boolean isUseDefaultValueOnlyInFunctionDeclaration() {
+        return useDefaultValueInFunctionDeclaration;
     }
     /**
      * Sets new parameters for a method
@@ -125,8 +125,8 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
         this.visibility = visibility;
     }
 
-    public void setUseDefaultValueOnlyInFunctionDefinition(boolean onlyInDef) {
-        this.useDefaultValueInFunctionDefinition = onlyInDef;
+    public void setUseDefaultValueOnlyInFunctionDeclaration(boolean onlyInDef) {
+        this.useDefaultValueInFunctionDeclaration = onlyInDef;
     }
     ////////////////////////////////////////////////////////////////////////////
     // INNER CLASSES

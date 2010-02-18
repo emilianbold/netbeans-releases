@@ -45,9 +45,7 @@ import java.awt.Dialog;
 import java.io.File;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JFileChooser;
@@ -562,6 +560,9 @@ private void appletParamsButtonActionPerformed(java.awt.event.ActionEvent evt) {
         } else if (JWSProjectProperties.CB_TYPE_USER.equals(value)) {
             codebaseTextField.setText(jwsProps.getCodebaseLocation());
             codebaseTextField.setEditable(true);
+        } else if (JWSProjectProperties.CB_NO_CODEBASE.equals(value)) {
+            codebaseTextField.setText("");  //NOI18N
+            codebaseTextField.setEditable(false);
         }
     }
 
