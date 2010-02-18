@@ -173,6 +173,74 @@ public final class DatasourceUIHelper {
         
     }
     
+    private static class DatasourcePUComboBoxModel extends AbstractListModel implements MutableComboBoxModel {
+
+        private List<Object> items;
+        private Object selectedItem;
+        private List<Datasource> datasources;
+        private Object previousItem;
+        private final List<PersistenceUnit> pUnits;
+
+        private DatasourcePUComboBoxModel(List<Datasource> datasources, List<PersistenceUnit> pUnits, List<Object> items) {
+            this.datasources = datasources;
+            this.pUnits = pUnits;
+            this.items = items;
+        }
+
+        @Override
+        public void setSelectedItem(Object anItem) {
+            if (selectedItem == null || !selectedItem.equals(anItem)) {
+                previousItem = selectedItem;
+                selectedItem = anItem;
+                fireContentsChanged(this, 0, -1);
+            }
+        }
+
+        @Override
+        public Object getSelectedItem() {
+            return selectedItem;
+        }
+
+        @Override
+        public Object getElementAt(int index) {
+            return items.get(index);
+        }
+
+        @Override
+        public int getSize() {
+            return items.size();
+        }
+
+        Object getPreviousItem() {
+            return previousItem;
+        }
+
+        List<Datasource> getDatasources() {
+            return datasources;
+        }
+
+        @Override
+        public void addElement(Object elem) {
+           items.add(elem);
+        }
+
+        @Override
+        public void removeElement(Object elem) {
+            items.remove(elem);
+        }
+
+        @Override
+        public void insertElementAt(Object elem, int index) {
+            items.set(index, elem);
+        }
+
+        @Override
+        public void removeElementAt(int index) {
+            items.remove(index);
+        }
+
+    }
+
     /**
      * Get data source list cell renderer.
      * @return data source list cell renderer instance.
@@ -183,6 +251,7 @@ public final class DatasourceUIHelper {
     }
     
     private static class DatasourceListCellRenderer extends DefaultListCellRenderer {
+
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -616,6 +685,47 @@ public final class DatasourceUIHelper {
         if (combo.isEditable() && combo.getEditor() != null) {
             // item must be set in the editor in case of editable combobox
             combo.configureEditor(combo.getEditor(), combo.getSelectedItem()); 
+        }
+    }
+
+    private class DatasourcePuPair implements Comparable<DatasourcePuPair> {
+
+        private Datasource datasource;
+        private PersistenceUnit pu;
+
+        public DatasourcePuPair(Datasource datasource, PersistenceUnit pu) {
+            this.datasource= datasource;
+            this.pu = pu;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if(obj instanceof DatasourcePuPair) {
+                DatasourcePuPair pa=(DatasourcePuPair) obj;
+                return datasource.equals(pa.datasource) && ((pu==null && pa.pu==null) || (pu!=null && pu.equals(pa.pu)));
+            }
+            else return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 17 * hash + (this.datasource != null ? this.datasource.hashCode() : 0);
+            hash = 17 * hash + (this.pu != null ? this.pu.hashCode() : 0);
+            return hash;
+        }
+
+
+        @Override
+        public int compareTo(DatasourcePuPair o) {
+            String s1 = datasource.getDisplayName() + "( "+pu.getName()+" )";
+            String s2 = o.datasource.getDisplayName() + "( "+o.pu.getName()+" )";
+            return s1.compareTo(s2);
+        }
+
+        @Override
+        public String toString() {
+            return datasource.getDisplayName() + "( "+pu.getName()+" )";
         }
     }
     

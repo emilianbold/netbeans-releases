@@ -82,14 +82,12 @@ static inline void *_get_real_addr(const char *name, void* wrapper_addr) {
     return res;
 }
 
-#if TRACE
+/*--------------------------------------------------
 static void dbg_print_addr(const char* name) {
     void* addr = dlsym(RTLD_NEXT, name);
     trace("\t%s=%X\n", name, addr);
 }
-#endif
 
-#if TRACE
 static inline void print_dlsym() {
     const char* names[] = {
         "lstat", "_lstat", "stat", "_lxstat", "fstat", "lstat64", "fstat64", "_fxstat",
@@ -102,7 +100,7 @@ static inline void print_dlsym() {
         i++;
     }
 }
-#endif
+--------------------------------------------------*/
 
 static bool is_writing(int flags) {
     return flags & (O_TRUNC |  O_WRONLY | O_RDWR | O_CREAT);
@@ -353,8 +351,8 @@ static void sleep_if_need() {
 static void
 __attribute__((constructor))
 rfs_startup(void) {
+    init_trace_flag("RFS_PRELOAD_TRACE");
     trace_startup("RFS_P", "RFS_PRELOAD_LOG", NULL);
-
     test_env = getenv("RFS_TEST_ENV") ? true : false; // like #ifdef :)
     trace("test_env %s\n", test_env ? "ON" : "OFF");
     

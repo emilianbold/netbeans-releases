@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,38 +31,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.refactoring.javascript.ui;
-
-import org.netbeans.modules.refactoring.javascript.spi.ui.JsActionsImplementationProvider;
-import org.openide.util.Lookup;
+package org.netbeans.modules.cnd.modelimpl.trace;
 
 /**
- * @author Jan Becicka
+ *
+ * @author Nikolay Krasilnikov (http://nnnnnk.name)
  */
-public final class JsActionsImplementationFactory {
-    
-    private JsActionsImplementationFactory(){}
-    
-    private static final Lookup.Result<JsActionsImplementationProvider> implementations =
-        Lookup.getDefault().lookup(new Lookup.Template<JsActionsImplementationProvider>(JsActionsImplementationProvider.class));
+public class FortranFileModelTest extends TraceModelTestBase {
 
-//    public static boolean canExtractInterface(Lookup lookup) {
-//        for (JsActionsImplementationProvider rafi: implementations.allInstances()) {
-//            if (rafi.canExtractInterface(lookup)) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-//    
-//    public static void doExtractInterface(Lookup lookup) {
-//        for (JsActionsImplementationProvider rafi: implementations.allInstances()) {
-//            if (rafi.canExtractInterface(lookup)) {
-//                rafi.doExtractInterface(lookup);
-//                return;
-//            }
-//        }
-//    }
+    public FortranFileModelTest(String testName) {
+        super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        System.setProperty("parser.report.errors", "true");
+        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
+        super.setUp();
+    }
+
+    @Override
+    protected void postSetUp() {
+        // init flags needed for file model tests
+        getTraceModel().setDumpModel(true);
+        getTraceModel().setDumpPPState(true);
+    }
+
+    public void testFile1() throws Exception {
+        performTest("file1.f"); // NOI18N
+    }
+
+    public void testFile2() throws Exception {
+        performTest("file2.f"); // NOI18N
+    }
+
 }
