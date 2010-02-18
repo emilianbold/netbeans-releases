@@ -154,8 +154,6 @@ made subject to such option by the copyright holder.
     <taskdef name="getdependsclusters" classname="org.netbeans.nbbuild.GetDependsClusters" classpath="nbantext.jar"/>
     <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
 
-    <property name="sanitystart.args" value="-J-Dnetbeans.close=true ${sanitystart.args.additional}"/>
-
     <!-- Set up automatic all-* targets: -->
     <taskdef name="insert-module-all-targets" classname="org.netbeans.nbbuild.InsertModuleAllTargets" classpath="nbantext.jar"/>
     <property name="verify.checkout" value="true"/> 
@@ -864,7 +862,6 @@ BASEDIR=${pkg.svr4.basedir}
 PKGINST=${pkg.svr4.pkginst}</echo>
   </target>
     
-  <target name="sanity-check" depends="testuserdir-delete,sanity-start" description="Test whether the build can start up without problems."/>
     <target name="-testuserdir-delete-init" depends="init">
       <property name="test.user.dir.lock" location="${test.user.dir}/lock"/>
       <available property="app.running" file="${test.user.dir.lock}"/>
@@ -877,42 +874,12 @@ PKGINST=${pkg.svr4.pkginst}</echo>
       <fail>Will not delete ${test.user.dir} because ${test.user.dir.lock} still exists; kill any running process and delete lock file if necessary</fail>
     </target>
   <target name="testuserdir-delete" depends="-testuserdir-delete-ok,-testuserdir-delete-fail" description="Clean temporary testing user directory."/>
-  <target name="sanity-start" depends="init,maybe-build-nozip,-jdk-init">
-    <mkdir dir="${test.user.dir}"/>
-    <echo>Starting the IDE as a sanity check...</echo>
-    <echo>WARNING - the sanity-start target is deprecated. Use commit-validation instead.</echo>
-    <!-- XXX better would be to scan start log for stacktraces and just show those; -->
-    <!-- possibly after filtering for duplicates or something like this. -->
-    <!-- Timeout is ten minutes; should be enough for valid start, while preventing -->
-    <!-- a deadlock from hanging an automated build: -->
-    <exec osfamily="windows" executable="${netbeans.dest.dir}/bin/netbeans.exe" failonerror="yes" timeout="600000">
-      <arg value="--jdkhome"/>
-      <arg file="${nbjdk.home}"/>
-      <arg value="--userdir"/>
-      <arg file="${test.user.dir}"/>
-      <arg line="${sanitystart.args}"/>
-    </exec>
-    <exec osfamily="unix" dir="." executable="sh" failonerror="yes" timeout="600000">
-      <arg value="${netbeans.dest.dir}/bin/netbeans"/>
-      <arg value="--jdkhome"/>
-      <arg file="${nbjdk.home}"/>
-      <arg value="--userdir"/>
-      <arg file="${test.user.dir}"/>
-      <arg line="${sanitystart.args}"/>
-    </exec>
-    <echo>Finished starting the IDE, pay attention to any reported errors.</echo>
-  </target>
 
   <target name="check-for-build"  >
     <available property="have-build" file="${netbeans.dest.dir}/bin/netbeans"/>
   </target>
   <target name="maybe-build-nozip" depends="check-for-build" unless="have-build">
     <ant dir="${basedir}" target="build-nozip"/>
-  </target>
-
-  <target name="nozip-check" 
-          depends="build-nozip,sanity-check">
-    <echo>WARNING - the nozip-check target is deprecated. Use all-nozip instead.</echo>
   </target>
 
   <target name="tryme-setup-debug-args" if="debug.port" >
