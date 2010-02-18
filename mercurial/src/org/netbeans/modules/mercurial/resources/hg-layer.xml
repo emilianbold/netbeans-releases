@@ -69,6 +69,9 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-mercurial-ui-diff-ExportDiffChangesAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.diff.ExportDiffChangesAction"/>
             </file>
+            <file name="org-netbeans-modules-mercurial-ui-diff-ExportBundleAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.diff.ExportBundleAction"/>
+            </file>
             <file name="org-netbeans-modules-mercurial-ui-diff-ImportDiffAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.mercurial.ui.diff.ImportDiffAction"/>
             </file>

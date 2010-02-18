@@ -64,6 +64,7 @@ import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
+import org.netbeans.modules.mercurial.ui.diff.ExportBundleAction;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffChangesAction;
 import org.netbeans.modules.mercurial.ui.diff.ImportDiffAction;
@@ -308,6 +309,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             actions.add(null);
             actions.add(SystemAction.get(ExportDiffAction.class));
             actions.add(SystemAction.get(ExportDiffChangesAction.class));
+            actions.add(SystemAction.get(ExportBundleAction.class));
             actions.add(SystemAction.get(ImportDiffAction.class));
 
             actions.add(null);
