@@ -856,6 +856,46 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceAroundUnaryOps03.php", options);
     }
 
+    public void testIssue180859_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.spaceAroundBinaryOps, true);
+        reformatFileContents("testfiles/formatting/spaces/issue180859_01.php", options);
+    }
+
+    public void testIssue180859_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.spaceAroundBinaryOps, false);
+        reformatFileContents("testfiles/formatting/spaces/issue180859_02.php", options);
+    }
+
+    public void testSpacesBeforeAfterSemi01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceBeforeSemi, false);
+	options.put(FmtOptions.spaceAfterSemi, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterSemi01.php", options);
+    }
+
+    public void testSpacesBeforeAfterSemi02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceBeforeSemi, false);
+	options.put(FmtOptions.spaceAfterSemi, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterSemi02.php", options);
+    }
+
+    public void testSpacesBeforeAfterSemi03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceBeforeSemi, true);
+	options.put(FmtOptions.spaceAfterSemi, false);
+        reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterSemi03.php", options);
+    }
+
+    public void testSpacesBeforeAfterSemi04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceBeforeSemi, true);
+	options.put(FmtOptions.spaceAfterSemi, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterSemi04.php", options);
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
