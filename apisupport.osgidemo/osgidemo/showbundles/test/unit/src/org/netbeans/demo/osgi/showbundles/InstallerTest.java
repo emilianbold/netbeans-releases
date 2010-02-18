@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,35 +39,47 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.refactoring.javascript.api.ui;
+package org.netbeans.demo.osgi.showbundles;
 
-import org.openide.util.ContextAwareAction;
+import org.netbeans.demo.osgi.showbundles.Installer;
+import java.util.List;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestCase;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
-/**
- * Factory class providing instances of refactoring actions.
- * <p><b>Usage:</b></p>
- * <pre>
- * InstanceContent ic = new InstanceContent();
- * ic.add(node);
- * Lookup l = new AbstractLookup(ic);
- * Action a = RefactoringActionsFactory.encapsulateFieldsAction().createContextAwareInstance(l);
- * a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
- * </pre>
- *
- * For help on creating and registering actions
- * See <a href=http://wiki.netbeans.org/wiki/view/RefactoringFAQ>Refactoring FAQ</a>
- * 
- * @author Jan Becicka
+/** Integration test that launches the application and checks
+ * whether appropriate OSGi framework is enabled.
  */
-public final class JsRefactoringActionsFactory {
+public class InstallerTest extends NbTestCase {
     
-    private JsRefactoringActionsFactory(){}
-    
-//    /**
-//     * Factory method for ChangeParametersAction
-//     * @return an instance of ChangeParametersAction
-//     */
-//    public static ContextAwareAction changeParametersAction() {
-//        return ChangeParametersAction.findObject(ChangeParametersAction.class, true);
-//    }
+    public InstallerTest(String testName) {
+        super(testName);
+    }
+
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.emptyConfiguration().addTest(InstallerTest.class).gui(false)
+            .clusters(".*")
+        );
+    }
+
+    public void testChildrenAndTheirNodes() throws Exception {
+        Children ch = Installer.createBundleChildren();
+        List<Node> arr = ch.snapshot();
+        String bundleName;
+        // <#if !netbinox?? >
+        bundleName = "org.apache.felix.framework";
+        // <#else>
+        bundleName = "org.eclipse.osgi";
+        // </#if>
+        for (Node n : arr) {
+            if (n.getName().equals(bundleName)) {
+                // OK
+                return;
+            }
+        }
+        fail("Framework " + bundleName + " not found: " + arr);
+    }
 }

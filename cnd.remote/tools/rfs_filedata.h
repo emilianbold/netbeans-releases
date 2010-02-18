@@ -72,9 +72,6 @@ typedef struct file_data {
     volatile enum file_state state;
     pthread_mutex_t cond_mutex;
     pthread_cond_t cond;
-    #if TRACE
-    int cnt;
-    #endif
     char filename[];
 } file_data;
 

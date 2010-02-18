@@ -223,7 +223,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     }
 
     protected static void setupHost(ExecutionEnvironment execEnv) {
-        ToolsCacheManager tcm = ToolsCacheManager.get();
+        ToolsCacheManager tcm = ToolsCacheManager.createInstance(true);
         HostValidatorImpl validator = new HostValidatorImpl(tcm);
         boolean ok = validator.validate(execEnv, null, false, new PrintWriter(System.out));
         assertTrue(ok);

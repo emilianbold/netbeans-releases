@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,37 +38,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.apisupport.osgidemo;
 
-package org.netbeans.modules.refactoring.javascript.ui;
-
-import org.netbeans.modules.refactoring.javascript.spi.ui.JsActionsImplementationProvider;
-import org.openide.util.Lookup;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * @author Jan Becicka
+ * Invokes various Ant targets over osgidemo sample in equinox mode.
+ *
+ * @author Tomas Musil
  */
-public final class JsActionsImplementationFactory {
-    
-    private JsActionsImplementationFactory(){}
-    
-    private static final Lookup.Result<JsActionsImplementationProvider> implementations =
-        Lookup.getDefault().lookup(new Lookup.Template<JsActionsImplementationProvider>(JsActionsImplementationProvider.class));
+public class BuildEquinoxSampleApplicationTest extends BuildSampleApplicationBase {
+    public BuildEquinoxSampleApplicationTest(String testName) {
+        super(testName);
+    }
 
-//    public static boolean canExtractInterface(Lookup lookup) {
-//        for (JsActionsImplementationProvider rafi: implementations.allInstances()) {
-//            if (rafi.canExtractInterface(lookup)) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-//    
-//    public static void doExtractInterface(Lookup lookup) {
-//        for (JsActionsImplementationProvider rafi: implementations.allInstances()) {
-//            if (rafi.canExtractInterface(lookup)) {
-//                rafi.doExtractInterface(lookup);
-//                return;
-//            }
-//        }
-//    }
+    @Override
+    protected Map<String, Object> params() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("netbinox", "true");
+        return map;
+    }
 }
+

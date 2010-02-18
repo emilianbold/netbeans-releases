@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpointEvent;
+import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.utils.PathUtils;
 import org.netbeans.modules.cnd.debugger.gdb.attach.AttachTarget;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
@@ -989,7 +990,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     stackUpdate(new ArrayList<String>());
                     setExited();
                     programPID = 0;
-                    removeRTCBreakpoint();
+                    removeTempBreakpoints();
                     gdbEngineProvider.getDestructor().killEngine();
                     GdbActionHandler gah = lookupProvider.lookupFirst(null, GdbActionHandler.class);
                     if (gah != null) { // gah is null if we attached (but we don't need it then)
@@ -1522,6 +1523,22 @@ public class GdbDebugger implements PropertyChangeListener {
         gdb.exec_step();
     }
 
+    private FunctionBreakpoint untilBreakpoint = null;
+
+    public void until(String loc) {
+        if (untilBreakpoint != null) {
+            DebuggerManager.getDebuggerManager().removeBreakpoint(untilBreakpoint);
+        }
+        //LATER: avoid const modifiers
+        //loc = loc.replace("const", ""); //NOI18N
+        untilBreakpoint = FunctionBreakpoint.create(loc);
+        untilBreakpoint.setTemporary();
+        untilBreakpoint.setHidden(true);
+        DebuggerManager.getDebuggerManager().addBreakpoint(untilBreakpoint);
+        setState(State.RUNNING);
+        gdb.exec_next();
+    }
+
     /**
      * Resumes execution of the inferior program, stopping
      * when the beginning of the next source line is reached.
@@ -1579,7 +1596,9 @@ public class GdbDebugger implements PropertyChangeListener {
         if (line < 0) {
             return;
         }
-        removeRTCBreakpoint();
+        if (rtcBreakpoint != null) {
+            DebuggerManager.getDebuggerManager().removeBreakpoint(rtcBreakpoint);
+        }
         rtcBreakpoint = LineBreakpoint.create(file, line);
         rtcBreakpoint.setTemporary();
         rtcBreakpoint.setHidden(true);
@@ -1587,10 +1606,11 @@ public class GdbDebugger implements PropertyChangeListener {
         resume();
     }
 
-    private void removeRTCBreakpoint() {
-        if (rtcBreakpoint != null) {
-            DebuggerManager.getDebuggerManager().removeBreakpoint(rtcBreakpoint);
-            rtcBreakpoint = null;
+    private void removeTempBreakpoints() {
+        for (Breakpoint b : DebuggerManager.getDebuggerManager().getBreakpoints()) {
+            if (b instanceof CndBreakpoint && ((CndBreakpoint)b).isTemporary()) {
+                DebuggerManager.getDebuggerManager().removeBreakpoint(b);
+            }
         }
     }
 

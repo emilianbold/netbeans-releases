@@ -272,17 +272,22 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Services">
         <folder name="JavaHelp">
-            <!-- Merge after J2EE Help: -->
             <file name="org-netbeans-modules-apisupport-project-helpset.xml" url="helpset-decl.xml">
                 <attr name="position" intvalue="2700"/>
             </file>
-            <!-- Merge before 3rd party help: -->
         </folder>
         <folder name="Hidden">
             <folder name="CatalogProvider">
                 <!-- No use for this, since we are registering an instance (below), and it is a singleton: -->
                 <file name="org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance_hidden"/>
             </folder>
+        </folder>
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-apisupport-hidden-resolver.xml" url="hidden-resolver.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.layers.Bundle#LBL_hidden_files"/>
+                <attr name="icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif"/>
+                <attr name="position" intvalue="97447"/> <!-- late, to avoid capture of foo_hidden.jar etc. -->
+            </file>
         </folder>
     </folder>
     <folder name="Plugins">
@@ -352,6 +357,20 @@ made subject to such option by the copyright holder.
                 <folder name="HyperlinkProviders">
                     <file name="org.netbeans.modules.apisupport.project.hyperlink.ManifestHyperlinkProvider.instance"/>
                 </folder>    
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Loaders">
+        <folder name="application">
+            <folder name="x-netbeans-hidden">
+                <folder name="Factories">
+                    <file name="HiddenDataLoader.instance">
+                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
+                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.apisupport.project.layers.HiddenDataObject"/>
+                        <attr name="mimeType" stringvalue="application/x-netbeans-hidden"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>

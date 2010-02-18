@@ -153,12 +153,20 @@ public class DevelopmentHostConfiguration {
     }
 
     public boolean setHost(ExecutionEnvironment execEnv) {
+        return setHost(execEnv, false);
+    }
+    
+    public boolean setHost(ExecutionEnvironment execEnv, boolean firePC) {
         CndUtils.assertTrue(execEnv != null);
-        if (setHostImpl(execEnv)) {
-            return true;
+        boolean result = setHostImpl(execEnv);
+        if (!result) {
+            addDevelopmentHost(execEnv);
+            result = setHostImpl(execEnv);
         }
-        addDevelopmentHost(execEnv);
-        return setHostImpl(execEnv);
+        if (firePC) {
+            fireHostChanged();
+        }
+        return result;
     }
 
     private boolean setHostImpl(ExecutionEnvironment execEnv) {
@@ -174,6 +182,13 @@ public class DevelopmentHostConfiguration {
             }
         }
         return false;
+    }
+
+    private void fireHostChanged() {
+        ExecutionEnvironment env = (0 < value && value < servers.size()) ? servers.get(value) : null;
+        if (env != null) {
+            pcs.firePropertyChange(PROP_DEV_HOST, ExecutionEnvironmentFactory.toUniqueID(env), DevelopmentHostConfiguration.this);
+        }
     }
 
     /**
@@ -198,9 +213,7 @@ public class DevelopmentHostConfiguration {
                             setBuildPlatform(PlatformTypes.PLATFORM_NONE);
                         }
                         if (firePC) {
-                            pcs.firePropertyChange(PROP_DEV_HOST,
-                                    ExecutionEnvironmentFactory.toUniqueID(currRecord.getExecutionEnvironment()),
-                                    DevelopmentHostConfiguration.this);
+                            fireHostChanged();
                         }
                     }
                 };
