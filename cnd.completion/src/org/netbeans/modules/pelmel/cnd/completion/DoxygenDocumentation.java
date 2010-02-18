@@ -61,7 +61,7 @@ import org.netbeans.spi.editor.completion.CompletionDocumentation;
  */
 public class DoxygenDocumentation {
 
-    private static final Pattern STRIP_STARS = Pattern.compile("^[ \t]*\\*[ \t]*", Pattern.MULTILINE);
+    private static final Pattern STRIP_STARS = Pattern.compile("^[ \t]*\\*[ \t]*", Pattern.MULTILINE); // NOI18N
 
     static String doxygen2HTML(String doxygen) {
         doxygen = doxygen.substring(3, doxygen.length() - 2);
@@ -109,12 +109,12 @@ public class DoxygenDocumentation {
                     }
                     lineEnd.clear();
                     parEnd.clear();
-                    output.append("</p><p>\n");
+                    output.append("</p><p>\n"); // NOI18N
                     break;
                 case COMMAND:
                     CommandDescription cd = commands.get(t.image);
                     if (cd == null) {
-                        System.err.println("unknown command: " + t.image);
+                        System.err.println("unknown command: " + t.image); // NOI18N
                         break;
                     }
                     output.append(cd.htmlStart);
@@ -127,20 +127,20 @@ public class DoxygenDocumentation {
             }
         }
 
-        return "<html><body><p>" + output.toString() + "</p>";
+        return "<html><body><p>" + output.toString() + "</p>"; // NOI18N
     }
 
     private static final Map<String, CommandDescription> commands = new HashMap<String, CommandDescription>();
 
     static {
-        commands.put("\\fn", new CommandDescription(EndsOn.LINE, "<strong>", "</strong></p><p>"));
-        commands.put("\\c", new CommandDescription(EndsOn.WORD, "<tt>", "</tt>"));
-        commands.put("\\return", new CommandDescription(EndsOn.PAR, "<strong>Return:</strong>", ""));
-        commands.put("\\sa", new CommandDescription(EndsOn.PAR, "<strong>See Also:</strong>", ""));
-        commands.put("\\brief", new CommandDescription(EndsOn.PAR, "", ""));
-        commands.put("\\code", new CommandDescription(EndsOn.NONE, "<pre>", ""));//XXX: does not work properly - the content will still be processed, '<', '>' will not be escaped.
-        commands.put("\\endcode", new CommandDescription(EndsOn.NONE, "</pre>", ""));
-        commands.put("\\n", new CommandDescription(EndsOn.NONE, "<br/>", ""));
+        commands.put("\\fn", new CommandDescription(EndsOn.LINE, "<strong>", "</strong></p><p>")); // NOI18N
+        commands.put("\\c", new CommandDescription(EndsOn.WORD, "<tt>", "</tt>")); // NOI18N
+        commands.put("\\return", new CommandDescription(EndsOn.PAR, "<strong>Return:</strong>", "")); // NOI18N
+        commands.put("\\sa", new CommandDescription(EndsOn.PAR, "<strong>See Also:</strong>", "")); // NOI18N
+        commands.put("\\brief", new CommandDescription(EndsOn.PAR, "", "")); // NOI18N
+        commands.put("\\code", new CommandDescription(EndsOn.NONE, "<pre>", ""));//XXX: does not work properly - the content will still be processed, '<', '>' will not be escaped. // NOI18N
+        commands.put("\\endcode", new CommandDescription(EndsOn.NONE, "</pre>", "")); // NOI18N
+        commands.put("\\n", new CommandDescription(EndsOn.NONE, "<br/>", "")); // NOI18N
     }
 
     static final class CommandDescription {
@@ -207,21 +207,21 @@ public class DoxygenDocumentation {
 
         OUTER: while (i < text.length()) {
             switch (text.charAt(i)) {
-                case '\n':
-                    result.add(new Token(wasContent ? TokenId.LINE_END : TokenId.PAR_END, "\n"));
+                case '\n': // NOI18N
+                    result.add(new Token(wasContent ? TokenId.LINE_END : TokenId.PAR_END, "\n")); // NOI18N
                     i++;
                     wasContent = false;
                     break ;
-                case ' ':
-                case '\t':
+                case ' ': // NOI18N
+                case '\t': // NOI18N
                     img.append(text.charAt(i++));
-                    while (i < text.length() && (text.charAt(i) == ' ' || text.charAt(i) == '\t')) {
+                    while (i < text.length() && (text.charAt(i) == ' ' || text.charAt(i) == '\t')) { // NOI18N
                         img.append(text.charAt(i++));
                     }
                     result.add(new Token(TokenId.WHITESPACE, img.toString()));
                     img = new StringBuilder();
                     break ;
-                case '\\':
+                case '\\': // NOI18N
                     img.append(text.charAt(i++));
                     while (i < text.length() && Character.isLetter(text.charAt(i))) {
                         img.append(text.charAt(i++));
@@ -232,7 +232,7 @@ public class DoxygenDocumentation {
                     break ;
                 default:
                     img.append(text.charAt(i++));
-                    while (i < text.length() && (text.charAt(i) != ' ' && text.charAt(i) != '\t' && text.charAt(i) != '\n' && text.charAt(i) != '\\')) {
+                    while (i < text.length() && (text.charAt(i) != ' ' && text.charAt(i) != '\t' && text.charAt(i) != '\n' && text.charAt(i) != '\\')) { // NOI18N
                         img.append(text.charAt(i++));
                     }
                     result.add(new Token(TokenId.WORD, img.toString()));
@@ -256,7 +256,7 @@ public class DoxygenDocumentation {
 
         @Override
         public String toString() {
-            return id + ":" + image;
+            return id + ":" + image; // NOI18N
         }
     }
 

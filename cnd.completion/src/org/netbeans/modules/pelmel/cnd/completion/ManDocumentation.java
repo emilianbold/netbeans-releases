@@ -136,12 +136,12 @@ public class ManDocumentation {
         if (obj instanceof CsmFunction) {
             StringBuilder w = new StringBuilder();
 
-            if (resolvePath(manPageRelativePath("printf", 3)) == null) {
-                w.append("<p>Manual pages do not seem to be installed.</p>\n");
+            if (resolvePath(manPageRelativePath("printf", 3)) == null) { // NOI18N
+                w.append("<p>Manual pages do not seem to be installed.</p>\n"); // NOI18N // FIXUP
             }
 
-            if (!new File("/usr/bin/man2html").exists() /*TODO: should be canExecute()*/) {
-                w.append("<p><tt>man2html</tt> is required for man documentation, but is not installed.</p>\n");
+            if (!new File("/usr/bin/man2html").exists() /*TODO: should be canExecute()*/) { // NOI18N
+                w.append("<p><tt>man2html</tt> is required for man documentation, but is not installed.</p>\n"); // NOI18N // FIXUP
             }
 
             return w.toString();
@@ -151,8 +151,8 @@ public class ManDocumentation {
     }
 
     private static File getCacheDir() {
-        String nbuser = System.getProperty("netbeans.user"); //XXX
-        File cache = new File(nbuser, "var/cache/cpplite");
+        String nbuser = System.getProperty("netbeans.user"); //XXX // NOI18N
+        File cache = new File(nbuser, "var/cache/cpplite"); // NOI18N
 
         cache.mkdirs();
 
@@ -160,7 +160,7 @@ public class ManDocumentation {
     }
 
     private static File getCacheFile(String name, int chapter) {
-        File res = new File(getCacheDir(), name + "." + chapter);
+        File res = new File(getCacheDir(), name + "." + chapter); // NOI18N
 
         return res;
     }
@@ -178,14 +178,14 @@ public class ManDocumentation {
 
         try {
             Process p = Runtime.getRuntime().exec(new String[] {
-                "/usr/bin/man2html",
-                        "-",
+                "/usr/bin/man2html", // NOI18N
+                        "-", // NOI18N
             });
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            StreamCopier inC = new StreamCopier("in", in, p.getOutputStream());
-            StreamCopier outC = new StreamCopier("out", p.getInputStream(), out);
-            StreamCopier errC = new StreamCopier("err", p.getErrorStream(), out);
+            StreamCopier inC = new StreamCopier("in", in, p.getOutputStream()); // NOI18N
+            StreamCopier outC = new StreamCopier("out", p.getInputStream(), out); // NOI18N
+            StreamCopier errC = new StreamCopier("err", p.getErrorStream(), out); // NOI18N
 
             inC.start();
             outC.start();
@@ -207,7 +207,7 @@ public class ManDocumentation {
                 result = result.replace(key, value); //1.5 API!!!!
             }
 
-            int htmlStart = result.indexOf("<HTML>");
+            int htmlStart = result.indexOf("<HTML>"); // NOI18N
 
             if (htmlStart != (-1))
                 result = result.substring(htmlStart);
@@ -227,14 +227,14 @@ public class ManDocumentation {
     }
 
     private static String manPageRelativePath(String name, int chapter) {
-        return "man" + chapter + "/" + name + "." + chapter;
+        return "man" + chapter + "/" + name + "." + chapter; // NOI18N
     }
 
     private static File resolvePath(String path) {
-        File f = new File("/usr/share/man/", path);
+        File f = new File("/usr/share/man/", path); // NOI18N
 
         if (!f.exists()) {
-            f = new File("/usr/share/man/", path + ".gz");
+            f = new File("/usr/share/man/", path + ".gz"); // NOI18N
         }
 
         if (f.exists())
@@ -256,10 +256,10 @@ public class ManDocumentation {
 
     private static String soElim(String text, int depth) throws IOException {
         if (depth > MAX_DEPTH) {
-            throw new IOException("Too deep includes.");
+            throw new IOException("Too deep includes."); // NOI18N
         }
 
-        Pattern soPattern = Pattern.compile("^\\.so (.*)$", Pattern.MULTILINE);
+        Pattern soPattern = Pattern.compile("^\\.so (.*)$", Pattern.MULTILINE); // NOI18N
         Matcher m = soPattern.matcher(text);
         StringBuffer result = new StringBuffer();
         int lastOccurrenceEnd = 0;
@@ -274,7 +274,7 @@ public class ManDocumentation {
             if (included != null) {
                 result.append(soElim(included, depth + 1));
             } else {
-                LOG.log(Level.WARNING, "Cannot resolve man page: {0}", path);
+                LOG.log(Level.WARNING, "Cannot resolve man page: {0}", path); // NOI18N
             }
         }
 
@@ -314,9 +314,9 @@ public class ManDocumentation {
     static {
         TRANSLATE = new HashMap<String, String>();
 
-        TRANSLATE.put("&minus;", "-");
-        TRANSLATE.put("&lsquo;", "'");
-        TRANSLATE.put("&rsquo;", "'");
+        TRANSLATE.put("&minus;", "-"); // NOI18N
+        TRANSLATE.put("&lsquo;", "'"); // NOI18N
+        TRANSLATE.put("&rsquo;", "'"); // NOI18N
     }
 
     private static String readFile(File f) throws IOException {
@@ -327,7 +327,7 @@ public class ManDocumentation {
         try {
             fin = new FileInputStream(f);
 
-            if (f.getName().endsWith(".gz")) {
+            if (f.getName().endsWith(".gz")) { // NOI18N
                 in = new GZIPInputStream(fin);
             } else {
                 in = fin;
@@ -375,12 +375,12 @@ public class ManDocumentation {
         }
 
         public CompletionDocumentation resolveLink(String link) {
-            String[] parts = link.split("\\?");
+            String[] parts = link.split("\\?"); // NOI18N
 
             if (parts.length != 2)
                 return null;
 
-            String[] chapterAndName = parts[1].split("\\+");
+            String[] chapterAndName = parts[1].split("\\+"); // NOI18N
 
             if (chapterAndName.length != 2)
                 return null;

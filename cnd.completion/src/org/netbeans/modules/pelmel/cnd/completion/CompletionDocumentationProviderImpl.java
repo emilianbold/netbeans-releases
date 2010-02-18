@@ -92,7 +92,7 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
             if (documentation == null) {
                 StringBuilder w = new StringBuilder();
 
-                w.append("<html><body><p>No documentation found.</p>");
+                w.append("<html><body><p>No documentation found.</p>"); // NOI18N FIXUP
                 w.append(ManDocumentation.constructWarning(obj));
                 documentation = new EmptyCompletionDocumentationImpl(w.toString());
             }
