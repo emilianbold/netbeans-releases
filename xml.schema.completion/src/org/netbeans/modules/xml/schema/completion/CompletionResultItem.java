@@ -100,10 +100,6 @@ public abstract class CompletionResultItem implements CompletionItem {
         setTokenSequence(tokenSequence);
         if (context != null) {
             this.typedChars = context.getTypedChars();
-            if ((tokenSequence == null) && (context.getBaseDocument() != null)) {
-                TokenHierarchy tokenHierarchy = TokenHierarchy.get(context.getBaseDocument());
-                this.tokenSequence = tokenHierarchy.tokenSequence();
-            }
         }
     }
 
@@ -217,11 +213,15 @@ public abstract class CompletionResultItem implements CompletionItem {
     }
 
     protected String getInsertingText(JTextComponent component, String primaryText) {
-        if ((primaryText == null) || (primaryText.length() < 1) || 
-            (tokenSequence == null)) {
+        if ((primaryText == null) || (primaryText.length() < 1)) {
             return primaryText;
         }
         int textPos = component.getCaret().getDot();
+
+        if (tokenSequence == null) {
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(component.getDocument());
+            this.tokenSequence = tokenHierarchy.tokenSequence();
+        }
 
         tokenSequence.move(textPos);
         tokenSequence.moveNext();
