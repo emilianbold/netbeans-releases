@@ -83,11 +83,15 @@ public class RunProfileNodeProvider implements CustomizerNodeProvider {
         @Override
         public Sheet getSheet(Configuration configuration) {
             RunProfile runProfile = (RunProfile) configuration.getAuxObject(RunProfile.PROFILE_ID);
-            boolean isRemote = false;
-            if (configuration instanceof MakeConfiguration) {
-                isRemote = !((MakeConfiguration) configuration).getDevelopmentHost().isLocalhost();
-            }
-            return runProfile != null ? runProfile.getSheet(isRemote) : null;
+            // TODO: will not disable selection of the console type as
+            // internal terminal was introduced....
+            // later a support for an extermnal terminal may be added.
+            
+            boolean disableConsoleTypeSelection = false;
+//            if (configuration instanceof MakeConfiguration) {
+//                disableConsoleTypeSelection = !((MakeConfiguration) configuration).getDevelopmentHost().isLocalhost();
+//            }
+            return runProfile != null ? runProfile.getSheet(disableConsoleTypeSelection) : null;
         }
 
         @Override

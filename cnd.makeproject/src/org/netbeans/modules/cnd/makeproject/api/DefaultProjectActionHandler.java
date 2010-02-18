@@ -47,6 +47,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -55,14 +56,13 @@ import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -79,6 +79,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.DialogDisplayer;
@@ -97,7 +99,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     //private volatile ExecutorTask executorTask;
     private volatile Future<Integer> executorTask;
     private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
-
     // VK: this is just to tie two pieces of logic together:
     // first is in determining the type of console for remote;
     // second is in canCancel
@@ -126,6 +127,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     public void execute(final InputOutput io) {
         if (SwingUtilities.isEventDispatchThread()) {
             RequestProcessor.getDefault().post(new Runnable() {
+
                 @Override
                 public void run() {
                     _execute(io);
@@ -136,152 +138,168 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         }
     }
 
-    private void _execute(InputOutput io) {
-        String rcfile = null;
-        if (pae.getType() == ProjectActionEvent.PredefinedType.RUN ||
-                pae.getType() == ProjectActionEvent.PredefinedType.BUILD ||
-                pae.getType() == ProjectActionEvent.PredefinedType.CLEAN) {
-            String exe = pae.getExecutable(); // we don't need quoting - it's execution responsibility
-            ArrayList<String> args = new ArrayList<String>();
-            for(String arg : pae.getProfile().getArgsArray()){
-                args.add(arg);
-            }
-            Map<String, String> env = pae.getProfile().getEnvironment().getenvAsMap();
-            boolean showInput = pae.getType() == ProjectActionEvent.PredefinedType.RUN;
-            MakeConfiguration conf = pae.getConfiguration();
-            ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+    private void _execute(final InputOutput io) {
+        final String rcfile = null; // For debugging only...
+        final Type actionType = pae.getType();
 
-            String runDirectory = pae.getProfile().getRunDirectory();
-            PlatformInfo pi = conf.getPlatformInfo();
+        if (actionType != ProjectActionEvent.PredefinedType.RUN
+                && actionType != ProjectActionEvent.PredefinedType.BUILD
+                && actionType != ProjectActionEvent.PredefinedType.CLEAN) {
+            assert false;
+        }
 
-            boolean unbuffer = false;
-            if (pae.getType() == ProjectActionEvent.PredefinedType.RUN) {
-                int conType = pae.getProfile().getConsoleType().getValue();
-                if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null) {
-                    String errmsg;
-                    if (Utilities.isMac()) {
-                        errmsg = getString("Err_NoTermFoundMacOSX");
-                    } else {
-                        errmsg = getString("Err_NoTermFound");
-                    }
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errmsg));
-                    conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
-                }
-                if (!conf.getDevelopmentHost().isLocalhost()) {
-                    if (RUN_REMOTE_IN_OUTPUT_WINDOW) {
-                        //TODO: only output window for remote for now
-                        conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
-                    }
-                }
-                if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    if (conf.getPlatformInfo().getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-                        exe = IpeUtils.naturalize(pae.getExecutable());
-                    } else if (conf.getDevelopmentHost().isLocalhost()) {
-                        exe = IpeUtils.toAbsolutePath(pae.getProfile().getRunDir(), pae.getExecutable());
-                    }
-                    unbuffer = true;
+        final String runDirectory = pae.getProfile().getRunDirectory();
+        final MakeConfiguration conf = pae.getConfiguration();
+        final PlatformInfo pi = conf.getPlatformInfo();
+        final ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+
+        String exe = pae.getExecutable(); // we don't need quoting - it's execution responsibility
+        // we don't need quoting - it's execution responsibility
+        ArrayList<String> args = new ArrayList<String>(Arrays.asList(pae.getProfile().getArgsArray()));
+        Map<String, String> env = pae.getProfile().getEnvironment().getenvAsMap();
+        boolean showInput = actionType == ProjectActionEvent.PredefinedType.RUN;
+        boolean unbuffer = false;
+        boolean runInInternalTerminal = false;
+
+        int consoleType = pae.getProfile().getConsoleType().getValue();
+
+        if (actionType == ProjectActionEvent.PredefinedType.RUN) {
+            runInInternalTerminal = consoleType == RunProfile.CONSOLE_TYPE_INTERNAL;
+
+            if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null) {
+                String errmsg;
+                if (Utilities.isMac()) {
+                    errmsg = getString("Err_NoTermFoundMacOSX");
                 } else {
-                    showInput = false;
-                    if (conType == RunProfile.CONSOLE_TYPE_DEFAULT) {
-                        conType = RunProfile.getDefaultConsoleType();
-                    }
+                    errmsg = getString("Err_NoTermFound");
                 }
-                // Append compilerset base to run path. (IZ 120836)
-                CompilerSet cs = conf.getCompilerSet().getCompilerSet();
-                if (cs != null) {
-                    String csdirs = cs.getDirectory();
-                    String commands = cs.getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
-                    if (commands != null && commands.length() > 0) {
-                        // Also add msys to path. Thet's where sh, mkdir, ... are.
-                        csdirs = csdirs + pi.pathSeparator() + commands;
-                    }
-                    String path = env.get(pi.getPathName());
-                    if (path == null) {
-                        path = pi.getPathAsString() + pi.pathSeparator() + csdirs;
-                    } else {
-                        path += pi.pathSeparator() + csdirs;
-                    }
-                    env.put(pi.getPathName(), path);
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errmsg));
+                consoleType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+            }
+
+            if (!conf.getDevelopmentHost().isLocalhost()) {
+                if (RUN_REMOTE_IN_OUTPUT_WINDOW && !runInInternalTerminal) {
+                    //TODO: only output window for remote for now
+                    consoleType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
                 }
-            } else { // Build or Clean
-                String csdirs = conf.getCompilerSet().getCompilerSet().getDirectory();
-                String commands = conf.getCompilerSet().getCompilerSet().getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
-                    if (commands != null && commands.length()>0) {
+            }
+
+            if (consoleType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+                if (pi.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
+                    exe = IpeUtils.naturalize(exe);
+                } else if (conf.getDevelopmentHost().isLocalhost()) {
+                    exe = IpeUtils.toAbsolutePath(runDirectory, exe);
+                }
+                unbuffer = true;
+            } else if (!runInInternalTerminal) {
+                showInput = false;
+                if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
+                    consoleType = RunProfile.getDefaultConsoleType();
+                }
+            }
+
+            // Append compilerset base to run path. (IZ 120836)
+            CompilerSet cs = conf.getCompilerSet().getCompilerSet();
+            if (cs != null) {
+                String csdirs = cs.getDirectory();
+                String commands = cs.getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
+                if (commands != null && commands.length() > 0) {
                     // Also add msys to path. Thet's where sh, mkdir, ... are.
                     csdirs = csdirs + pi.pathSeparator() + commands;
                 }
                 String path = env.get(pi.getPathName());
                 if (path == null) {
-                    path = csdirs + pi.pathSeparator() + conf.getPlatformInfo().getPathAsString();
+                    path = pi.getPathAsString() + pi.pathSeparator() + csdirs;
                 } else {
-                    path = csdirs + pi.pathSeparator() + path;
+                    path += pi.pathSeparator() + csdirs;
                 }
                 env.put(pi.getPathName(), path);
-                // Pass QMAKE from compiler set to the Makefile (IZ 174731)
-                if (conf.isQmakeConfiguration()) {
-                    String qmakePath = conf.getCompilerSet().getCompilerSet().getTool(PredefinedToolKind.QMakeTool).getPath();
-                    qmakePath = CppUtils.normalizeDriveLetter(conf.getCompilerSet().getCompilerSet(), qmakePath.replace('\\', '/')); // NOI18N
-                    args.add("QMAKE=" + IpeUtils.escapeOddCharacters(qmakePath)); // NOI18N
-                }
             }
-
-            LineConvertor converter = null;
-            if (pae.getType() == ProjectActionEvent.PredefinedType.BUILD) {
-                converter = new CompilerLineConvertor(conf.getCompilerSet().getCompilerSet(), execEnv, FileUtil.toFileObject(new File(runDirectory)));
+        } else { // Build or Clean
+            // Build or Clean
+            final CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+            String csdirs = compilerSet.getDirectory();
+            String commands = compilerSet.getCompilerFlavor().getCommandFolder(conf.getDevelopmentHost().getBuildPlatform());
+            if (commands != null && commands.length() > 0) {
+                // Also add msys to path. Thet's where sh, mkdir, ... are.
+                csdirs = csdirs + pi.pathSeparator() + commands;
             }
-            // TODO: this is actual only for sun studio compiler
-            env.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
-
-            runDirectory = convertToRemoteIfNeeded(execEnv, runDirectory);
-            if (runDirectory == null) {
-                // TODO: fix me
-                // return null;
+            String path = env.get(pi.getPathName());
+            if (path == null) {
+                path = csdirs + pi.pathSeparator() + pi.getPathAsString();
+            } else {
+                path = csdirs + pi.pathSeparator() + path;
             }
-            ProcessChangeListener processChangeListener = new ProcessChangeListener(this, null/*Writer outputListener*/, converter, io,
-                    pae.getActionName(), rcfile);
-            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
-                    .setWorkingDirectory(runDirectory)
-                    .unbufferOutput(unbuffer)
-                    .setExecutable(exe)
-                    .setArguments(args.toArray(new String[args.size()]))
-                    .addNativeProcessListener(processChangeListener);
-            npb.getEnvironment().putAll(env);
-
-            if (pae.getType() == ProjectActionEvent.PredefinedType.RUN &&
-                    pae.getProfile().getConsoleType().getValue() == RunProfile.CONSOLE_TYPE_EXTERNAL) {
-
-                String termPath = pae.getProfile().getTerminalPath();
-                CndUtils.assertNotNull(termPath, "null terminal path"); // NOI18N; should be checked above
-                if (termPath != null) {
-                    String termBaseName = IpeUtils.getBaseName(termPath);
-                    if (ExternalTerminalProvider.getSupportedTerminalIDs().contains(termBaseName)) {
-                        npb.useExternalTerminal(ExternalTerminalProvider.getTerminal(execEnv, termBaseName));
-                    }
-                }
+            env.put(pi.getPathName(), path);
+            // Pass QMAKE from compiler set to the Makefile (IZ 174731)
+            if (conf.isQmakeConfiguration()) {
+                String qmakePath = compilerSet.getTool(PredefinedToolKind.QMakeTool).getPath();
+                qmakePath = CppUtils.normalizeDriveLetter(compilerSet, qmakePath.replace('\\', '/')); // NOI18N
+                args.add("QMAKE=" + IpeUtils.escapeOddCharacters(qmakePath)); // NOI18N
             }
-
-            ExecutionDescriptor descr = new ExecutionDescriptor()
-                    .controllable(true)
-                    .frontWindow(true)
-                    .inputVisible(showInput)
-                    .inputOutput(io)
-                    .outLineBased(true)
-                    .showProgress(true)
-                    .postExecution(processChangeListener)
-                    .errConvertorFactory(processChangeListener)
-                    .outConvertorFactory(processChangeListener);
-
-            if (pae.getType() == PredefinedType.RUN || pae.getType() == PredefinedType.DEBUG) {
-                if (ServerList.get(execEnv).getX11Forwarding() && !env.containsKey("DISPLAY")) { //NOI18N if DISPLAY is set, let it do its work
-                    npb.setX11Forwarding(true);
-                }
-            }
-
-            ExecutionService es = ExecutionService.newService(npb, descr, pae.getActionName()); // NOI18N
-            executorTask = es.run();
-        } else {
-            assert false;
         }
+
+        LineConvertor converter = null;
+
+        if (actionType == ProjectActionEvent.PredefinedType.BUILD) {
+            converter = new CompilerLineConvertor(
+                    conf.getCompilerSet().getCompilerSet(),
+                    execEnv, FileUtil.toFileObject(new File(runDirectory)));
+        }
+
+        // TODO: this is actual only for sun studio compiler
+        env.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
+
+        String workingDirectory = convertToRemoteIfNeeded(execEnv, runDirectory);
+
+        if (workingDirectory == null) {
+            // TODO: fix me
+            // return null;
+        }
+
+        ProcessChangeListener processChangeListener =
+                new ProcessChangeListener(this, null/*Writer outputListener*/,
+                converter, io, pae.getActionName(), rcfile, !runInInternalTerminal);
+
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
+                .setWorkingDirectory(workingDirectory)
+                .unbufferOutput(unbuffer)
+                .setExecutable(exe)
+                .setArguments(args.toArray(new String[args.size()]))
+                .addNativeProcessListener(processChangeListener);
+
+        npb.getEnvironment().putAll(env);
+
+        if (actionType == PredefinedType.RUN || actionType == PredefinedType.DEBUG) {
+            if (ServerList.get(execEnv).getX11Forwarding() && !env.containsKey("DISPLAY")) { //NOI18N if DISPLAY is set, let it do its work
+                npb.setX11Forwarding(true);
+            }
+        }
+
+        if (actionType == ProjectActionEvent.PredefinedType.RUN && consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
+            String termPath = pae.getProfile().getTerminalPath();
+            CndUtils.assertNotNull(termPath, "null terminal path"); // NOI18N; should be checked above
+            if (termPath != null) {
+                String termBaseName = IpeUtils.getBaseName(termPath);
+                if (ExternalTerminalProvider.getSupportedTerminalIDs().contains(termBaseName)) {
+                    npb.useExternalTerminal(ExternalTerminalProvider.getTerminal(execEnv, termBaseName));
+                }
+            }
+        }
+
+        NativeExecutionDescriptor descr = new NativeExecutionDescriptor()
+                .controllable(true)
+                .frontWindow(true)
+                .inputVisible(showInput)
+                .inputOutput(io)
+                .outLineBased(true)
+                .showProgress(true)
+                .postExecution(processChangeListener)
+                .errConvertorFactory(processChangeListener)
+                .outConvertorFactory(processChangeListener);
+
+        NativeExecutionService es = NativeExecutionService.newService(npb, descr, pae.getActionName()); // NOI18N
+        executorTask = es.run();
     }
 
     protected static String convertToRemoteIfNeeded(ExecutionEnvironment execEnv, String localDir) {
@@ -333,6 +351,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     @Override
     public void cancel() {
         RequestProcessor.getDefault().post(new Runnable() {
+
             @Override
             public void run() {
                 Future<Integer> et = executorTask;
@@ -362,12 +381,12 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         return NbBundle.getBundle(DefaultProjectActionHandler.class).getString(s);
     }
 
-    protected static String getString(String key, String ... a1) {
+    protected static String getString(String key, String... a1) {
         return NbBundle.getMessage(DefaultProjectActionHandler.class, key, a1);
     }
 
-
     private static final class ProcessChangeListener implements ChangeListener, Runnable, LineConvertorFactory {
+
         private static final boolean showHeader = Boolean.getBoolean("cnd.execution.showheader");
         private final ExecutionListener listener;
         private Writer outputListener;
@@ -377,15 +396,17 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         private long startTimeMillis;
         private Runnable postRunnable;
         private String rcfile;
+        private final boolean outSummary;
 
         public ProcessChangeListener(ExecutionListener listener, Writer outputListener, LineConvertor lineConvertor,
-                InputOutput tab, String actionName, String rcfile) {
+                InputOutput tab, String actionName, String rcfile, boolean outSummary) {
             this.listener = listener;
             this.outputListener = outputListener;
             this.lineConvertor = lineConvertor;
             this.tab = tab;
             this.actionName = actionName;
             this.rcfile = rcfile;
+            this.outSummary = outSummary;
         }
 
         @Override
@@ -400,7 +421,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     break;
                 case STARTING:
                     startTimeMillis = System.currentTimeMillis();
-                    if(showHeader) {
+                    if (showHeader) {
                         assert false;
                         // TODO: is it needed?
                         //String runDirToShow = execEnv.isLocal() ?
@@ -416,52 +437,58 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     break;
                 case RUNNING:
                     break;
-                case CANCELLED:
-                {
+                case CANCELLED: {
                     closeOutputListener();
                     postRunnable = new Runnable() {
-                    @Override
-                        public void run() {
-                            StringBuilder res = new StringBuilder();
-                            res.append(MessageFormat.format(getString("TERMINATED"), actionName.toUpperCase())); // NOI18N
-                            res.append(" ("); // NOI18N
-                            if (process.exitValue() != 0) {
-                                res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
-                                res.append(' ');
-                            }
-                            res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
-                            res.append(')');
 
-                            tab.getOut().println(res.toString());
-                            tab.getOut().println();
-                            closeIO();
+                        @Override
+                        public void run() {
+                            if (outSummary) {
+                                StringBuilder res = new StringBuilder();
+                                res.append(MessageFormat.format(getString("TERMINATED"), actionName.toUpperCase())); // NOI18N
+                                res.append(" ("); // NOI18N
+                                if (process.exitValue() != 0) {
+                                    res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
+                                    res.append(' ');
+                                }
+                                res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
+                                res.append(')');
+
+                                tab.getOut().println(res.toString());
+                                tab.getOut().println();
+                                closeIO();
+                            }
+
                             if (listener != null) {
                                 listener.executionFinished(process.exitValue());
                             }
+                            
                             StatusDisplayer.getDefault().setStatusText(MessageFormat.format("MSG_TERMINATED", actionName)); // NOI18N
                         }
                     };
                     break;
                 }
-                case ERROR:
-                {
+                case ERROR: {
                     closeOutputListener();
                     postRunnable = new Runnable() {
-                    @Override
-                        public void run() {
-                            StringBuilder res = new StringBuilder();
-                            res.append(MessageFormat.format(getString("FAILED"), actionName.toUpperCase())); // NOI18N
-                            res.append(" ("); // NOI18N
-                            if (process.exitValue() != 0) {
-                                res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
-                                res.append(' ');
-                            }
-                            res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
-                            res.append(')');
 
-                            tab.getErr().println(res.toString());
-                            tab.getErr().println();
-                            closeIO();
+                        @Override
+                        public void run() {
+                            if (outSummary) {
+                                StringBuilder res = new StringBuilder();
+                                res.append(MessageFormat.format(getString("FAILED"), actionName.toUpperCase())); // NOI18N
+                                res.append(" ("); // NOI18N
+                                if (process.exitValue() != 0) {
+                                    res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
+                                    res.append(' ');
+                                }
+                                res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
+                                res.append(')');
+
+                                tab.getErr().println(res.toString());
+                                tab.getErr().println();
+                                closeIO();
+                            }
                             if (listener != null) {
                                 listener.executionFinished(-1);
                             }
@@ -470,30 +497,34 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     };
                     break;
                 }
-                case FINISHED:
-                {
+                case FINISHED: {
                     closeOutputListener();
                     postRunnable = new Runnable() {
-                    @Override
-                        public void run() {
-                            StringBuilder res = new StringBuilder();
-                            int rc = readReturnCode(rcfile, process.exitValue());
-                            res.append(MessageFormat.format(getString(rc == 0 ? "SUCCESSFUL" : "FAILED"), actionName.toUpperCase())); // NOI18N
-                            res.append(" ("); // NOI18N
-                            if (rc != 0) {
-                                res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
-                                res.append(' ');
-                            }
-                            res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
-                            res.append(')');
 
-                            PrintWriter pw = (rc == 0) ? tab.getOut() : tab.getErr();
-                            pw.println(res.toString());
-                            pw.println();
-                            closeIO();
+                        @Override
+                        public void run() {
+                            int rc = readReturnCode(rcfile, process.exitValue());
+                            if (outSummary) {
+                                StringBuilder res = new StringBuilder();
+                                res.append(MessageFormat.format(getString(rc == 0 ? "SUCCESSFUL" : "FAILED"), actionName.toUpperCase())); // NOI18N
+                                res.append(" ("); // NOI18N
+                                if (rc != 0) {
+                                    res.append(MessageFormat.format(getString("EXIT_VALUE"), process.exitValue())); // NOI18N
+                                    res.append(' ');
+                                }
+                                res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(System.currentTimeMillis() - startTimeMillis))); // NOI18N
+                                res.append(')');
+
+                                PrintWriter pw = (rc == 0) ? tab.getOut() : tab.getErr();
+                                pw.println(res.toString());
+                                pw.println();
+                                closeIO();
+                            }
+
                             if (listener != null) {
                                 listener.executionFinished(process.exitValue());
                             }
+
                             StatusDisplayer.getDefault().setStatusText(MessageFormat.format(getString(rc == 0 ? "MSG_SUCCESSFUL" : "MSG_FAILED"), actionName));
                         }
                     };
@@ -509,7 +540,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
         }
 
-        private void closeIO(){
+        private void closeIO() {
             tab.getErr().close();
             tab.getOut().close();
             try {
@@ -519,7 +550,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
         }
 
-        private int readReturnCode(String rcfile, int rc){
+        private int readReturnCode(String rcfile, int rc) {
             if (rcfile != null) {
                 File file = null;
                 FileReader fr = null;
@@ -549,7 +580,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                         }
                     }
                     if (file != null && file.exists()) {
-                       file.delete();
+                        file.delete();
                     }
                 }
             }
@@ -559,6 +590,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         @Override
         public LineConvertor newLineConvertor() {
             return new LineConvertor() {
+
                 @Override
                 public List<ConvertedLine> convert(String line) {
                     return ProcessChangeListener.this.convert(line);
@@ -566,7 +598,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             };
         }
 
-        private synchronized void closeOutputListener(){
+        private synchronized void closeOutputListener() {
             if (outputListener != null) {
                 try {
                     outputListener.flush();
@@ -595,9 +627,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
         private static String formatTime(long millis) {
             StringBuilder res = new StringBuilder();
-            long seconds = millis/1000;
-            long minutes = seconds/60;
-            long hours = minutes/60;
+            long seconds = millis / 1000;
+            long minutes = seconds / 60;
+            long hours = minutes / 60;
             if (hours > 0) {
                 res.append(" ").append(hours).append(getString("HOUR")); // NOI18N
             }
