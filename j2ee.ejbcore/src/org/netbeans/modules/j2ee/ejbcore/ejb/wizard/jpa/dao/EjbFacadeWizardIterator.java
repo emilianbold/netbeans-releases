@@ -234,7 +234,7 @@ import org.openide.util.NbBundle;
      * @return a set containing the generated files.
      */
     Set<FileObject> generate(final FileObject targetFolder, final String entityFQN,
-            String pkg, final boolean hasRemote, final boolean hasLocal,
+            final String pkg, final boolean hasRemote, final boolean hasLocal,
             final Class<? extends EntityManagerGenerationStrategy> strategyClass,
             boolean overrideExisting) throws IOException {
 
@@ -333,7 +333,6 @@ import org.openide.util.NbBundle;
         final FileObject facade = GenerationUtils.createClass(targetFolder, entitySimpleName + FACADE_SUFFIX, null);
         createdFiles.add(facade);
 
-
         // generate methods for the facade
         EntityManagerGenerator generator = new EntityManagerGenerator(facade, entityFQN);
         List<GenerationOptions> methodOptions = getMethodOptions(entityFQN, variableName);
@@ -361,34 +360,39 @@ import org.openide.util.NbBundle;
         // add implements and extends clauses to the facade
         JavaSource source = JavaSource.forFileObject(facade);
         source.runModificationTask(new Task<WorkingCopy>(){
-            public void run(WorkingCopy parameter) throws Exception {
-                parameter.toPhase(Phase.RESOLVED);
-                ClassTree classTree = SourceUtils.getPublicTopLevelTree(parameter);
+            @Override
+            public void run(WorkingCopy wc) throws Exception {
+                wc.toPhase(Phase.RESOLVED);
+                TypeElement classElement = wc.getElements().getTypeElement(pkg + "." + entitySimpleName + FACADE_SUFFIX); //SourceUtils.getPublicTopLevelElement(wc);
+                ClassTree classTree = wc.getTrees().getTree(classElement); //SourceUtils.getPublicTopLevelTree(wc);
                 assert classTree != null;
-                GenerationUtils genUtils = GenerationUtils.newInstance(parameter);
+                GenerationUtils genUtils = GenerationUtils.newInstance(wc);
+                TreeMaker maker = wc.getTreeMaker();
 
-                TreeMaker maker = parameter.getTreeMaker();
-                ClassTree newClassTree = classTree;
-                if (hasLocal){
-                    newClassTree = genUtils.addImplementsClause(newClassTree, localInterfaceFQN);
-                }
-                if (hasRemote){
-                    newClassTree = genUtils.addImplementsClause(newClassTree, remoteInterfaceFQN);
-                }
-                newClassTree = maker.setExtends(newClassTree, (ExpressionTree)genUtils.createType(
-                        afName + "<" + entityFQN + ">",
-                        SourceUtils.getPublicTopLevelElement(parameter)
-                ));
+                List<Tree> implementsClause = new ArrayList(classTree.getImplementsClause());
+                if (hasLocal)
+                    implementsClause.add(genUtils.createType(localInterfaceFQN, classElement));
+                if (hasRemote)
+                    implementsClause.add(genUtils.createType(remoteInterfaceFQN, classElement));
+
+                List<Tree> members = new ArrayList<Tree>(classTree.getMembers());
                 MethodTree constructor = maker.Constructor(
                         genUtils.createModifiers(Modifier.PUBLIC),
                         Collections.EMPTY_LIST,
                         Collections.EMPTY_LIST,
                         Collections.EMPTY_LIST,
                         "{super(" + entitySimpleName + ".class);}");            //NOI18N
-                newClassTree = maker.addClassMember(newClassTree, constructor);
+                members.add(constructor);
 
-                AnnotationTree stateless = genUtils.createAnnotation(EJB_STATELESS);
-                parameter.rewrite(classTree, genUtils.addAnnotation(newClassTree, stateless));
+                ClassTree newClassTree = maker.Class(
+                        maker.addModifiersAnnotation(classTree.getModifiers(), genUtils.createAnnotation(EJB_STATELESS)),
+                        classTree.getSimpleName(),
+                        classTree.getTypeParameters(),
+                        genUtils.createType(afName + "<" + entityFQN + ">", classElement),
+                        implementsClause,
+                        members);
+
+                wc.rewrite(classTree, newClassTree);
             }
         }).commit();
 

@@ -347,4 +347,21 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+
+    <folder name="Loaders">
+        <folder name="image">
+            <folder name="png-gif-jpeg-bmp">
+                <folder name="Actions">
+                    <!-- hide default rename action && use the refactoring instead -->
+                    <file name="RenameAction.shadow_hidden"/>
+                    <file name="RefactoringAll.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringAll.instance"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+
 </filesystem>
