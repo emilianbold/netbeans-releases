@@ -231,20 +231,15 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
     /** Utility method to find a visualizer node for the object passed to
      * any of the cell renderer methods as the value */
     private static VisualizerNode findVisualizerNode(Object value) {
-        VisualizerNode vis;
         if (value instanceof Node) {
-            vis = VisualizerNode.getVisualizer(null, (Node)value);
+            return VisualizerNode.getVisualizer(null, (Node)value);
         } else if (value instanceof VisualizerNode) {
-            vis = (VisualizerNode)value;
+            return (VisualizerNode)value;
+        } else if (value == null) {
+            return VisualizerNode.EMPTY;
         } else {
             throw new ClassCastException("Unexpected value: " + value);
         }
-
-        if (vis == null) {
-            vis = VisualizerNode.EMPTY;
-        }
-
-        return vis;
     }
 
     /** DnD operation enters. Update look and feel to the 'drag under' state.
