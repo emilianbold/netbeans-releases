@@ -139,6 +139,7 @@ public final class NativeExecutionService {
                     .outLineBased(descriptor.outLineBased)
                     .showProgress(descriptor.showProgress)
                     .postExecution(descriptor.postExecution)
+                    .noReset(descriptor.noReset)
                     .errConvertorFactory(descriptor.errConvertorFactory)
                     .outConvertorFactory(descriptor.outConvertorFactory);
 

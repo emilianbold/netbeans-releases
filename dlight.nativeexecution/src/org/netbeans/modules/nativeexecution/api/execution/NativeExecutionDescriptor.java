@@ -62,6 +62,7 @@ public final class NativeExecutionDescriptor {
     Runnable postExecution;
     LineConvertorFactory errConvertorFactory;
     LineConvertorFactory outConvertorFactory;
+    boolean noReset;
 
     public NativeExecutionDescriptor controllable(boolean controllable) {
         this.controllable = controllable;
@@ -105,6 +106,11 @@ public final class NativeExecutionDescriptor {
 
     public NativeExecutionDescriptor outConvertorFactory(LineConvertorFactory outConvertorFactory) {
         this.outConvertorFactory = outConvertorFactory;
+        return this;
+    }
+
+    public NativeExecutionDescriptor noReset(boolean noReset) {
+        this.noReset = noReset;
         return this;
     }
 }
