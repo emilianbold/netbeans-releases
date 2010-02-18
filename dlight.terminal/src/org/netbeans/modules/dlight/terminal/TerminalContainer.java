@@ -158,7 +158,7 @@ public final class TerminalContainer extends JComponent {
         b.setBorderPainted(false);
         b.setOpaque(false);
         b.setText(null);
-        b.putClientProperty("hideActionText", Boolean.TRUE);
+        b.putClientProperty("hideActionText", Boolean.TRUE); // NOI18N
         // NOI18N
         return b;
     }
@@ -237,7 +237,7 @@ public final class TerminalContainer extends JComponent {
             return;
         }
         if (nTerm <= 0) {
-            throw new IllegalStateException("<= 0 Terminals");
+            throw new IllegalStateException("<= 0 Terminals"); // NOI18N
         }
         nTerm--;
         if (nTerm >= 1) {
@@ -265,7 +265,7 @@ public final class TerminalContainer extends JComponent {
             title = originalName;
         }
         if (nTerm == 1) {
-            owner.setName(originalName + " - " + title);
+            owner.setName(originalName + " - " + title); // NOI18N
         } else {
             owner.setName(originalName);
             tabbedPane.setTitleAt(tabbedPane.indexOfComponent(who), title);

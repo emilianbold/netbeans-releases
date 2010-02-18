@@ -124,7 +124,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
     private void println(CharSequence text, OutputListener listener, boolean important, Color color) {
         if (!(term instanceof ActiveTerm)) {
-            throw new UnsupportedOperationException("Term is not an ActiveTerm");
+            throw new UnsupportedOperationException("Term is not an ActiveTerm"); // NOI18N
         }
 
         if (color == null) {
@@ -464,7 +464,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
      */
     @Override
     public OutputWriter getErr() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     @Override
@@ -518,7 +518,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
      */
     @Override
     public void setFocusTaken(boolean value) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     @Deprecated

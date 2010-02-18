@@ -57,12 +57,12 @@ public final class TermTopComponent extends TopComponent implements TerminalWind
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
 
-    private static final String PREFERRED_ID = "TermTopComponent";
+    private static final String PREFERRED_ID = "TermTopComponent"; // NOI18N
 
     TermTopComponent() {
         initComponents();
-        setName(NbBundle.getMessage(TermTopComponent.class, "CTL_TermTopComponent"));
-        setToolTipText(NbBundle.getMessage(TermTopComponent.class, "HINT_TermTopComponent"));
+        setName(NbBundle.getMessage(TermTopComponent.class, "CTL_TermTopComponent")); // NOI18N
+        setToolTipText(NbBundle.getMessage(TermTopComponent.class, "HINT_TermTopComponent")); // NOI18N
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
         initComponents2(getName());
     }
@@ -99,15 +99,15 @@ public final class TermTopComponent extends TopComponent implements TerminalWind
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(TermTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); // NOI18N
             return getDefault();
         }
         if (win instanceof TermTopComponent) {
             return (TermTopComponent) win;
         }
         Logger.getLogger(TermTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
+                "There seem to be multiple components with the '" + PREFERRED_ID + // NOI18N
+                "' ID. That is a potential source of errors and unexpected behavior."); // NOI18N
         return getDefault();
     }
 

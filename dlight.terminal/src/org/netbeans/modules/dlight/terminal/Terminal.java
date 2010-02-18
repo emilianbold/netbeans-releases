@@ -61,6 +61,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.lib.terminalemulator.StreamTerm;
+import org.openide.util.NbBundle;
 import org.openide.windows.IOContainer;
 
 /**
@@ -115,24 +116,24 @@ public final class Terminal extends JComponent {
 
         @Override
         public void closed() {
-            System.out.printf("Terminal.CallBacks.closed()\n");
+//            System.out.printf("Terminal.CallBacks.closed()\n");
             // Causes assertion error in IOContainer/IOWindow.
             // OLD close();
         }
 
         @Override
         public void selected() {
-            System.out.printf("Terminal.CallBacks.selected()\n");
+//            System.out.printf("Terminal.CallBacks.selected()\n");
         }
 
         @Override
         public void activated() {
-            System.out.printf("Terminal.CallBacks.activated()\n");
+//            System.out.printf("Terminal.CallBacks.activated()\n");
         }
 
         @Override
         public void deactivated() {
-            System.out.printf("Terminal.CallBacks.deactivated()\n");
+//            System.out.printf("Terminal.CallBacks.deactivated()\n");
         }
     }
 
@@ -375,7 +376,7 @@ public final class Terminal extends JComponent {
     private final class ClearAction extends AbstractAction {
 
         public ClearAction() {
-            super("Clear");
+            super(NbBundle.getMessage(Terminal.class, "Terminal.ClearAction.name")); // NOI18N
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_E,
                     InputEvent.ALT_MASK);
             putValue(ACCELERATOR_KEY, accelerator);
@@ -393,7 +394,7 @@ public final class Terminal extends JComponent {
     private final class CloseAction extends AbstractAction {
 
         public CloseAction() {
-            super("Close");
+            super(NbBundle.getMessage(Terminal.class, "Terminal.CloseAction.name")); // NOI18N
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_F4,
                     InputEvent.ALT_MASK);
             putValue(ACCELERATOR_KEY, accelerator);
@@ -411,10 +412,10 @@ public final class Terminal extends JComponent {
     private final class CopyAction extends AbstractAction {
 
         public CopyAction() {
-            super("Copy");
+            super(NbBundle.getMessage(Terminal.class, "Terminal.CopyAction.name")); // NOI18N
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_C,
                     InputEvent.ALT_MASK);
-            System.out.printf("Accelerator for Copy: %s\n", accelerator);
+//            System.out.printf("Accelerator for Copy: %s\n", accelerator);
             putValue(ACCELERATOR_KEY, accelerator);
         }
 
@@ -430,7 +431,7 @@ public final class Terminal extends JComponent {
     private final class PasteAction extends AbstractAction {
 
         public PasteAction() {
-            super("Paste");
+            super(NbBundle.getMessage(Terminal.class, "Terminal.PasteAction.name")); // NOI18N
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.ALT_MASK);
             putValue(ACCELERATOR_KEY, accelerator);
         }
@@ -443,13 +444,14 @@ public final class Terminal extends JComponent {
             term.pasteFromClipboard();
         }
     }
-    private static final String BOOLEAN_STATE_ACTION_KEY = "boolean_state_action";
-    private static final String BOOLEAN_STATE_ENABLED_KEY = "boolean_state_enabled";
+    private static final String BOOLEAN_STATE_ACTION_KEY = "boolean_state_action"; // NOI18N
+    private static final String BOOLEAN_STATE_ENABLED_KEY = "boolean_state_enabled"; // NOI18N
 
     private final class WrapAction extends AbstractAction {
 
         public WrapAction() {
-            super("Wrap lines");
+            super(NbBundle.getMessage(Terminal.class, "Terminal.WrapLinesAction.name")); // NOI18N
+
             // LATER KeyStroke accelerator = Utilities.stringToKey("A-R");
             putValue(BOOLEAN_STATE_ACTION_KEY, true);
         }
