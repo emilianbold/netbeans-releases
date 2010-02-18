@@ -49,18 +49,14 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
-import org.netbeans.modules.bugtracking.ui.query.QueryAction;
-import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
@@ -70,9 +66,9 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public class KenaiHandler implements PropertyChangeListener {
+class KenaiHandler {
 
 
     private final QueryAccessorImpl qaImpl;
@@ -87,8 +83,46 @@ public class KenaiHandler implements PropertyChangeListener {
     public KenaiHandler(QueryAccessorImpl qaImpl, Kenai kenai) {
         this.qaImpl = qaImpl;
         this.kenai = kenai;
-        this.kenai.addPropertyChangeListener(this);
-        Dashboard.getDefault().addPropertyChangeListener(this);
+        this.kenai.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+                    if(evt.getNewValue() == null) { // means logged out
+                        ProjectHandleListener[] pls;
+                        synchronized(projectListeners) {
+                            pls = projectListeners.values().toArray(new ProjectHandleListener[projectListeners.values().size()]);
+                        }
+                        for (ProjectHandleListener pl : pls) {
+                            pl.closeQueries();
+                        }
+                    } else {
+                        // logged in
+                        String user = getKenaiUser();
+                        if(!user.equals(lastLoggedUser)) {
+                            for(Map<String, QueryHandle> m : queryHandles.values()) {
+                                for(QueryHandle qh : m.values()) {
+                                    if(qh instanceof LoginAwareQueryHandle) {
+                                        ((LoginAwareQueryHandle)qh).needsRefresh();
+                                    }
+                                }
+                            }
+                        }
+                        user = lastLoggedUser;
+                    }
+                    refreshKenaiQueries();
+                }
+            }
+        });
+        Dashboard.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(evt.getPropertyName().equals(Dashboard.PROP_REFRESH_REQUEST)) {
+                    if(KenaiHandler.this.kenai.equals(((Dashboard)evt.getSource())/* XXX .getKenai()*/)) {
+                        clear();
+                    }
+                }
+            }
+        });
         lastLoggedUser = getKenaiUser();
     }
 
@@ -157,6 +191,7 @@ public class KenaiHandler implements PropertyChangeListener {
 
     private void sortQueries(List<QueryHandle> queryHandles) {
         Collections.sort(queryHandles, new Comparator<QueryHandle>() {
+            @Override
             public int compare(QueryHandle qh1, QueryHandle qh2) {
                 if(qh1 == null && qh1 == null) {
                     return 0;
@@ -211,47 +246,12 @@ public class KenaiHandler implements PropertyChangeListener {
     }
 
     private String getKenaiUser() {
-        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenai, false);
+        PasswordAuthentication pa = KenaiAccessorImpl.getPasswordAuthentication(kenai, false);
         return pa != null ? pa.getUserName() : null;
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Dashboard.PROP_REFRESH_REQUEST)) {
-            if(kenai.equals(((Dashboard)evt.getSource())/* XXX .getKenai()*/)) {
-                clear();
-            }
-        } else if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
-            if(evt.getNewValue() == null) { // means logged out                
-                ProjectHandleListener[] pls;
-                synchronized(projectListeners) {
-                    pls = projectListeners.values().toArray(new ProjectHandleListener[projectListeners.values().size()]);
-                }
-                for (ProjectHandleListener pl : pls) {
-                    pl.closeQueries();
-                }
-            } else {
-                // logged in
-                String user = getKenaiUser();
-                if(!user.equals(lastLoggedUser)) {
-                    for(Map<String, QueryHandle> m : queryHandles.values()) {
-                        for(QueryHandle qh : m.values()) {
-                            if(qh instanceof LoginAwareQueryHandle) {
-                                ((LoginAwareQueryHandle)qh).needsRefresh();
-                            }
-                        }
-                    }
-                }
-                user = lastLoggedUser;
-            }
-            refreshKenaiQueries();
-        }
-    }
-
     private void refreshKenaiQueries() {
-        Set<QueryTopComponent> tcs = QueryTopComponent.getOpenQueries(); // XXX updates also non kenai TC
-        for (QueryTopComponent tc : tcs) {
-            tc.updateSavedQueries();
-        }
+        KenaiUtil.refreshOpenedQueries();
     }
 
     void clear() {
@@ -268,16 +268,18 @@ public class KenaiHandler implements PropertyChangeListener {
 
     Action getFindIssuesAction(final Repository repo) {
         return new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                if(!KenaiUtil.isLoggedIn(kenai) &&
+                if(!KenaiAccessorImpl.isLoggedIn(kenai) &&
                     KenaiSupport.BugtrackingType.JIRA == getBugtrackingType(repo) &&
-                   !KenaiUtil.showLogin())
+                   !KenaiAccessorImpl.showLoginIntern())
                 {
                     return;
                 }
-                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() { // XXX add post method to BM
+                Support.getInstance().post(new Runnable() { // XXX add post method to BM
+                    @Override
                     public void run() {
-                        QueryAction.openQuery(null, repo, true);
+                        BugtrackingUtil.openQuery(null, repo, true);
                     }
                 });
             }
@@ -286,16 +288,18 @@ public class KenaiHandler implements PropertyChangeListener {
 
     Action getCreateIssueAction(final Repository repo) {
         return new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                if(!KenaiUtil.isLoggedIn(kenai) &&
+                if(!KenaiAccessorImpl.isLoggedIn(kenai) &&
                     KenaiSupport.BugtrackingType.JIRA == getBugtrackingType(repo) &&
-                   !KenaiUtil.showLogin())
+                   !KenaiAccessorImpl.showLoginIntern())
                 {
                     return;
                 }
-                BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() { // XXX add post method to BM
+                Support.getInstance().post(new Runnable() { // XXX add post method to BM
+                    @Override
                     public void run() {                        
-                        IssueAction.createIssue(repo);
+                        BugtrackingUtil.createIssue(repo);
                     }
                 });
             }
@@ -319,6 +323,7 @@ public class KenaiHandler implements PropertyChangeListener {
             this.queries = queries;
             this.ph = ph;
         }
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(ProjectHandle.PROP_CLOSE)) {
                 closeQueries();
@@ -327,7 +332,7 @@ public class KenaiHandler implements PropertyChangeListener {
         public void closeQueries() {
             for (QueryHandle qh : queries) {
                 if(qh instanceof QueryHandleImpl) {
-                    QueryAction.closeQuery(((QueryHandleImpl) qh).getQuery());
+                    BugtrackingUtil.closeQuery(((QueryHandleImpl) qh).getQuery());
                 }
             }
             synchronized (projectListeners) {
@@ -346,6 +351,7 @@ public class KenaiHandler implements PropertyChangeListener {
             this.repo = repo;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
                 List<QueryHandle> queryHandles = getQueryHandles(repo, ph);
@@ -372,15 +378,15 @@ public class KenaiHandler implements PropertyChangeListener {
         }
         @Override
         public String getDisplayName() {
-            return super.getDisplayName() + (KenaiUtil.isLoggedIn(kenai) ? "" : " " + notLoggedIn);        // NOI18N
+            return super.getDisplayName() + (KenaiAccessorImpl.isLoggedIn(kenai) ? "" : " " + notLoggedIn);        // NOI18N
         }
         @Override
         List<QueryResultHandle> getQueryResults() {
-            return KenaiUtil.isLoggedIn(kenai) ? super.getQueryResults() : Collections.EMPTY_LIST;
+            return KenaiAccessorImpl.isLoggedIn(kenai) ? super.getQueryResults() : Collections.EMPTY_LIST;
         }
         @Override
         void refreshIfNeeded() {
-            if(!KenaiUtil.isLoggedIn(kenai)) {
+            if(!KenaiAccessorImpl.isLoggedIn(kenai)) {
                 return;
             }
             super.refreshIfNeeded();

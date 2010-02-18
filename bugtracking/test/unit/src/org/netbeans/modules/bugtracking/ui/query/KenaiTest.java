@@ -50,8 +50,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.logging.Level;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.junit.NbTestCase;

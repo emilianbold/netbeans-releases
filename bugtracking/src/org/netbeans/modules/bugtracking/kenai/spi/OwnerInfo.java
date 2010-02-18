@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,34 +34,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.spi;
+package org.netbeans.modules.bugtracking.kenai.spi;
 
-import java.io.File;
+import java.util.List;
 
 /**
- * Entry point for VCS specific functionality accesed from the issuetracking modules
+ * Wrapper for a OwnerInfo instance returned by kenai
+ * 
  * @author Tomas Stupka
+ * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport
  */
-public abstract class VCSSupport {
+public abstract class OwnerInfo {
 
     /**
-     *
-     * @param file
-     * @param line
+     * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo
      */
-    public void searchHistory(File file, final int line) {
-
-    }
+    public abstract String getOwner();
 
     /**
-     *
-     * @param file
-     * @param revision
+     * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo
      */
-    public void searchHistory(File file, String revision) {
+    public abstract List<String> getExtraData();
 
-    }
 }

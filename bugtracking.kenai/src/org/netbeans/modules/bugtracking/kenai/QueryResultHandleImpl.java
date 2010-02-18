@@ -42,14 +42,13 @@ package org.netbeans.modules.bugtracking.kenai;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.ui.query.QueryAction;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
 import org.openide.util.NbBundle;
 
@@ -57,7 +56,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class QueryResultHandleImpl extends QueryResultHandle implements ActionListener {
+class QueryResultHandleImpl extends QueryResultHandle implements ActionListener {
 
 
     private final Query query;
@@ -97,14 +96,13 @@ public class QueryResultHandleImpl extends QueryResultHandle implements ActionLi
     }
 
     public void actionPerformed(ActionEvent e) {
-
         // XXX this is a hack for now - filter should be set only for the one relevant support
-        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
         for (BugtrackingConnector c : connectors) {
             KenaiSupport support = c.getLookup().lookup(KenaiSupport.class);
             support.setFilter(query, filter);
         }
-        QueryAction.openQuery(query, null, true);
+        BugtrackingUtil.openQuery(query, null, true);
     }
 
     static QueryResultHandleImpl forStatus(Query query, int status) {

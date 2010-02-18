@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,73 +34,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.kenai.spi;
+package org.netbeans.modules.bugtracking.kenai;
 
-import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.issuetable.Filter;
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.logging.Logger;
+import org.openide.util.RequestProcessor;
 
 /**
- * 
- * Provides Kenai specific functionality to a {@link BugtrackingController}.<br>
- * To use register your implementation in the {@link BugtrackingConnector}-s and
- * {@link Repositories} lookup.
- * 
+ *
  * @author Tomas Stupka
  */
-public abstract class KenaiSupport {
+class Support {
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.kenai"); // NOI18N
 
-    public enum BugtrackingType {
-        BUGZILLA,
-        JIRA
+    private RequestProcessor rp;
+    private static Support instance;
+
+    final HashMap<String, WeakReference<KenaiProjectImpl>> projectsCache = new HashMap<String, WeakReference<KenaiProjectImpl>>();
+
+    private Support() {
     }
-    
-    /**
-     * Creates a {@link Repository} for the given {@link KenaiProject}
-     *
-     * @param project
-     * @return
-     */
-    public abstract Repository createRepository(KenaiProject project);
 
-    /**
-     * // XXX what is this!
-     * @param query
-     * @param filter
-     */
-    public abstract void setFilter(Query query, Filter filter);
+    static Support getInstance() {
+        if(instance == null) {
+            instance = new Support();
+        }
+        return instance;
+    }
 
-    /**
-     * Returns the default "All Issues" query for the given repository
-     * 
-     * @return
-     */
-    public abstract Query getAllIssuesQuery(Repository repository);
+    private RequestProcessor getRequestProcessor() {
+        if(rp == null) {
+            rp = new RequestProcessor("org.netbeans.modules.bugtracking.kenai", 10); // NOI18N
+        }
+        return rp;
+    }
 
-    /**
-     * Returns the default "My Issues" query for the given repository
-     *
-     * @return
-     */
-    public abstract Query getMyIssuesQuery(Repository repository);
-    
-    /**
-     * Determines the bugtracking type
-     *
-     * @return
-     */
-    public abstract BugtrackingType getType();
-
-    /**
-     * Determines if the query needs the user to be logged in to show some
-     * results - e.g. MyIssues queries have no results in case the user is
-     * not loged in
-     *
-     * @param query
-     * @return true if login needed, otherwise false
-     */
-    public abstract boolean needsLogin(Query query);
+    void post(Runnable r) {
+        getRequestProcessor().post(r);
+    }
 
 }

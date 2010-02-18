@@ -37,9 +37,8 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.jira;
+package org.netbeans.modules.bugtracking.kenai;
 
-import org.netbeans.modules.bugtracking.kenai.QueryDescriptor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
@@ -47,8 +46,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.bugtracking.jira.JiraUpdater;
 import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -67,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class FakeJiraSupport {
+class FakeJiraSupport {
 
     private static final String JIRA_SUBSTRING ="kenai.com/jira/"; // NOI18N
 

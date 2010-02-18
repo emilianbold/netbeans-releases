@@ -37,19 +37,19 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.kenai;
+package org.netbeans.modules.bugtracking.kenai.spi;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -58,8 +58,9 @@ import org.openide.util.Lookup;
  * @author Tomas Stupka
  * @author Marian Petras
  */
-public abstract class KenaiRepositories {
+abstract class KenaiRepositories {
     private static KenaiRepositories instance;
+    private Map<String, Repository> repositoriesMap = new HashMap<String, Repository>();
 
     protected KenaiRepositories() { }
 
@@ -74,6 +75,47 @@ public abstract class KenaiRepositories {
     }
 
     //--------------------------------------------------------------------------
+
+
+    /**
+     * Returns a {@link Repository} representing the given {@link KenaiProject}
+     *
+     * @param kp
+     * @return
+     */
+    public Repository getRepository(KenaiProject kp) {
+        return getRepository(kp, true);
+    }
+
+    /**
+     * Returns a {@link Repository} representing the given {@link KenaiProject}.
+     *
+     * @param kp KenaiProject
+     * @param forceCreate determines if a Repository instance should be created if it doesn't already exist
+     * @return
+     */
+    public Repository getRepository(KenaiProject kp, boolean forceCreate) {
+        Repository repository = repositoriesMap.get(kp.getName());
+        if(repository != null) {
+            return repository;
+        }
+        if(!forceCreate) {
+            return null;
+        }
+        BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
+        for (BugtrackingConnector c : connectors) {
+            KenaiSupport support = c.getLookup().lookup(KenaiSupport.class);
+            if(support != null) {
+                repository = support.createRepository(kp);
+                if(repository != null) {
+                    // XXX what if more repos?!
+                    repositoriesMap.put(kp.getName(), repository);
+                    return repository;
+                }
+            }
+        }
+        return null;
+    }
 
     /**
      * Returns bugtracking repositories of all Kenai projects currently opened
@@ -117,7 +159,7 @@ public abstract class KenaiRepositories {
 
             int count = 0;
             for (KenaiProject p : kenaiProjects) {
-                Repository repo = KenaiRepositoryUtils.getInstance().getRepository(p);
+                Repository repo = getRepository(p);
                 if (repo != null) {
                     result[count++] = repo;
                 }
@@ -126,25 +168,7 @@ public abstract class KenaiRepositories {
         }
 
         private KenaiProject[] getDashboardProjects() {
-            ProjectHandle[] handles = Dashboard.getDefault().getOpenProjects();
-            if ((handles == null) || (handles.length == 0)) {
-                return new KenaiProject[0];
-            }
-
-            int count = 0;
-            KenaiProject[] kenaiProjects = new KenaiProject[handles.length];
-            for (ProjectHandle handle : handles) {
-                KenaiProject project = handle.getKenaiProject();
-                if (project != null) {
-                    kenaiProjects[count++] = project;
-                } else {
-                    BugtrackingManager.LOG.warning(
-                            "No Kenai project is available for ProjectHandle" //NOI18N
-                            + " [" + handle.getId() + ", " + handle.getDisplayName() + "]"); //NOI18N
-                }
-            }
-
-            return stripTrailingNulls(kenaiProjects);
+            return KenaiUtil.getDashboardProjects();
         }
 
         private KenaiProject[] getProjectsViewProjects() {
@@ -175,8 +199,8 @@ public abstract class KenaiRepositories {
 
             KenaiProject kenaiProject;
             try {
-                kenaiProject = KenaiProject.forRepository((String) attValue);
-            } catch (KenaiException ex) {
+                kenaiProject = KenaiUtil.getKenaiProjectForRepository((String) attValue);
+            } catch (IOException ex) {
                 kenaiProject = null;
                 BugtrackingManager.LOG.warning(
                         "No Kenai project is available for bugtracking repository " //NOI18N

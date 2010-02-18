@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,73 +34,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugtracking.kenai.spi;
 
-import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.bugtracking.spi.Issue;
 
 /**
- * 
- * Provides Kenai specific functionality to a {@link BugtrackingController}.<br>
- * To use register your implementation in the {@link BugtrackingConnector}-s and
- * {@link Repositories} lookup.
- * 
+ * Container for a recently opened Issue and it's last open time
+ *
  * @author Tomas Stupka
  */
-public abstract class KenaiSupport {
-
-    public enum BugtrackingType {
-        BUGZILLA,
-        JIRA
+public class RecentIssue {
+    private Issue issue;
+    private long ts;
+    public RecentIssue(Issue issue, long ts) {
+        this.issue = issue;
+        this.ts = ts;
     }
-    
+
     /**
-     * Creates a {@link Repository} for the given {@link KenaiProject}
-     *
-     * @param project
+     * Returns a issue
      * @return
      */
-    public abstract Repository createRepository(KenaiProject project);
+    public Issue getIssue() {
+        return issue;
+    }
 
     /**
-     * // XXX what is this!
-     * @param query
-     * @param filter
-     */
-    public abstract void setFilter(Query query, Filter filter);
-
-    /**
-     * Returns the default "All Issues" query for the given repository
-     * 
+     * Returns the timestamp this issue was the last time opened
      * @return
      */
-    public abstract Query getAllIssuesQuery(Repository repository);
-
-    /**
-     * Returns the default "My Issues" query for the given repository
-     *
-     * @return
-     */
-    public abstract Query getMyIssuesQuery(Repository repository);
-    
-    /**
-     * Determines the bugtracking type
-     *
-     * @return
-     */
-    public abstract BugtrackingType getType();
-
-    /**
-     * Determines if the query needs the user to be logged in to show some
-     * results - e.g. MyIssues queries have no results in case the user is
-     * not loged in
-     *
-     * @param query
-     * @return true if login needed, otherwise false
-     */
-    public abstract boolean needsLogin(Query query);
-
+    public long getTimestamp() {
+        return ts;
+    }
 }

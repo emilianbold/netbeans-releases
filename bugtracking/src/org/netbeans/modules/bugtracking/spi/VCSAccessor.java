@@ -37,15 +37,29 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.kenai;
+package org.netbeans.modules.bugtracking.spi;
 
-import org.netbeans.modules.bugtracking.spi.Query;
+import java.io.File;
 
 /**
- *
+ * Entry point for VCS specific functionality accesed from the issuetracking modules
  * @author Tomas Stupka
  */
-public interface QueryDescriptor {
-    public boolean isPredefined();
-    public Query getQuery();
+public abstract class VCSAccessor {
+
+    /**
+     * Opens search a VCS history panel with a specific DiffResultsView, which
+     * does not moves accross differences but initially fixes on the given line.
+     * Right panel shows current local changes if the file, left panel shows
+     * revisions in the file's repository. </br>
+     * Do not run in AWT, IllegalStateException is thrown.
+     * Validity of the arguments is checked and result is returned as a return value
+     *
+     * @param path requested file absolute path. Must be a versioned file (not a folder), 
+     *        otherwise false is returned and the panel won't be opened
+     * @param lineNumber requested line number to fix on
+     * @return true if parameters are valid and the search panel is opened, otherwise false
+     */
+    public abstract boolean searchHistory(File file, final int line);
+    
 }

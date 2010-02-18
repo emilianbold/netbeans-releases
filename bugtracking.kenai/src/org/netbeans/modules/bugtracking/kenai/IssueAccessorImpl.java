@@ -45,16 +45,16 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.BugtrackingManager.RecentIssue;
-import org.netbeans.modules.bugtracking.jira.FakeJiraSupport;
 import org.netbeans.modules.bugtracking.jira.JiraUpdater;
+import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -75,7 +75,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         FakeJiraSupport support = FakeJiraSupport.get(project);
         if(support != null) {
             // this is a jira project
-            if(!JiraUpdater.isJiraInstalled()) {
+            if(!BugtrackingUtil.isJiraInstalled()) {
                 if(JiraUpdater.notifyJiraDownload(support.getIssueUrl(issueID))) {
                     JiraUpdater.getInstance().downloadAndInstall();
                 }
@@ -85,9 +85,9 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
 
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_GETTING_REPO"));
         handle.start();
-        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                final Repository repo = KenaiRepositoryUtils.getInstance().getRepository(project);
+                final Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(project));
                 handle.finish();
                 try {
                     Issue.open(repo, issueID);
@@ -100,8 +100,8 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
 
     @Override
     public IssueHandle[] getRecentIssues() {
-        Map<String, List<RecentIssue>> recentIssues = BugtrackingManager.getInstance().getAllRecentIssues();
-        Repository[] knownRepos = BugtrackingManager.getInstance().getKnownRepositories();
+        Map<String, List<RecentIssue>> recentIssues = BugtrackingUtil.getAllRecentIssues();
+        Repository[] knownRepos = BugtrackingUtil.getKnownRepositories(false);
         Map<String, Repository> repoMap = new HashMap<String, Repository>(knownRepos.length);
         for (Repository repository : knownRepos) {
             repoMap.put(repository.getID(), repository);
@@ -112,7 +112,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         for(Map.Entry<String, List<RecentIssue>> entry : recentIssues.entrySet()) {
             Repository repo = repoMap.get(entry.getKey());
             if(repo == null) {
-                BugtrackingManager.LOG.fine("No repository available with ID " + entry.getKey()); // NOI18N
+                Support.LOG.fine("No repository available with ID " + entry.getKey()); // NOI18N
                 continue;
             }
             KenaiProject kenaiProject = repo.getLookup().lookup(KenaiProject.class);
@@ -124,7 +124,7 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
                 if(retIssues.size() > 5) {
                     retIssues.remove(5);
                 }
-                if(retIssues.size() == 0) {
+                if(retIssues.isEmpty()) {
                     retIssues.add(ri);
                     issueToKenaiProject.put(ri.getIssue().getID(), kenaiProject);
                 } else {
@@ -158,14 +158,14 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
         if(project == null) {
             return new IssueHandle[0];
         }
-        Repository repo = KenaiRepositoryUtils.getInstance().getRepository(project, false);
+        Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(project), false);
         if(repo == null) {
             // looks like no repository was created for the project yet, and if there's no repository
             // then there can't be any recent issue for it...
-            BugtrackingManager.LOG.fine("No issue tracker available for the given kenai project [" + project.getName() + "," + project.getDisplayName() + "]"); // NOI18N
+            Support.LOG.fine("No issue tracker available for the given kenai project [" + project.getName() + "," + project.getDisplayName() + "]"); // NOI18N
             return new IssueHandle[0];
         }
-        Collection<Issue> issues = BugtrackingManager.getInstance().getRecentIssues(repo);
+        Collection<Issue> issues = BugtrackingUtil.getRecentIssues(repo);
         if(issues == null) {
             return new IssueHandle[0];
         }
@@ -209,14 +209,12 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
 
         @Override
         public boolean isOpened() {
-            IssueTopComponent tc = IssueTopComponent.find(issue, false);
-            return tc != null ? tc.isOpened() : false;
+            return BugtrackingUtil.isOpened(issue);
         }
 
         @Override
         public boolean isShowing() {
-            IssueTopComponent tc = IssueTopComponent.find(issue, false);
-            return tc != null ? tc.isShowing() : false;
+            return BugtrackingUtil.isShowing(issue);
         }
 
     }

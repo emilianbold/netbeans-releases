@@ -50,7 +50,7 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
-import org.netbeans.modules.bugtracking.ui.query.QueryAction;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
 import org.openide.util.WeakListeners;
@@ -59,7 +59,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Tomas Stupka
  */
-public class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionListener, PropertyChangeListener {
+class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionListener, PropertyChangeListener {
     private final Query query;
     private final PropertyChangeSupport changeSupport;
     protected final boolean predefined;
@@ -100,7 +100,7 @@ public class QueryHandleImpl extends QueryHandle implements QueryDescriptor, Act
     }
 
     public void actionPerformed(ActionEvent e) {
-        QueryAction.openQuery(query, null, true);
+        BugtrackingUtil.openQuery(query, null, true);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

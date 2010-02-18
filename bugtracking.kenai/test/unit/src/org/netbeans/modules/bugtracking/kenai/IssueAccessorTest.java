@@ -54,8 +54,8 @@ import javax.swing.JPanel;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.LogHandler;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -197,15 +197,12 @@ public class IssueAccessorTest extends NbTestCase {
         return kenai.getProject(name);
     }
 
-    private static Repository getKenaiRepository(KenaiProject kp) throws KenaiException {
-        return KenaiRepositoryUtils.getInstance().getRepository(kp);
-    }
-
     private static class TestRepository extends Repository {
         private final Repository delegate;
 
-        public TestRepository(String name) throws KenaiException {
-            delegate = getKenaiRepository(getKenaiProject(name));
+        public TestRepository(String name) throws IOException {
+            KenaiProject kp = kenai.getProject(name);
+            delegate = KenaiUtil.getRepository(kp.getWebLocation().toString());
         }
         public String getDisplayName() {
             return delegate.getDisplayName();

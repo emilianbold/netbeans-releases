@@ -1,5 +1,3 @@
-package org.netbeans.modules.bugtracking.ui.selectors;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,66 +37,22 @@ package org.netbeans.modules.bugtracking.ui.selectors;
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.bugtracking.kenai.spi;
 
-
-import java.io.IOException;
-import java.util.logging.Level;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.jira.JiraUpdater;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
+ * Dummy implementation that returns an empty array of repositories.
  *
- * @author Tomas Stupka
+ * @author Marian Petras
  */
-public class RepositorySelector {
+public class DummyKenaiRepositories extends KenaiRepositories {
 
-    private SelectorPanel selectorPanel = new SelectorPanel();
-    public RepositorySelector() {
-        // init connector cbo
-    }
+    private static final Repository[] NO_REPOSITORIES = new Repository[0];
 
-    public Repository create() {
-        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        connectors = addJiraProxyIfNeeded(connectors);
-        selectorPanel.setConnectors(connectors);
-        if(!selectorPanel.open()) {
-            return null;
-        }
-        Repository repo = selectorPanel.getRepository();
-        try {
-            repo.getController().applyChanges();
-        } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            return null;
-        }        
-        return repo;
-    }
-
-    public boolean edit(Repository repository, String errorMessage) {
-        if(!selectorPanel.edit(repository, errorMessage)) {
-            return false;
-        }
-        Repository repo = selectorPanel.getRepository();
-        try {
-            repo.getController().applyChanges();
-        } catch (IOException ex) {
-            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-            return false;
-        }
-        return true;
-    }
-
-    private BugtrackingConnector[] addJiraProxyIfNeeded(BugtrackingConnector[] connectors) {
-        if(!BugtrackingUtil.isJiraInstalled()) {
-            BugtrackingConnector[] ret = new BugtrackingConnector[connectors.length + 1];
-            System.arraycopy(connectors, 0, ret, 0, connectors.length);
-            ret[ret.length - 1] = JiraUpdater.getInstance().getConnector();
-            connectors = ret;
-        }
-        return connectors;
+    @Override
+    public Repository[] getRepositories(boolean allOpenProjects) {
+        return NO_REPOSITORIES;
     }
 
 }

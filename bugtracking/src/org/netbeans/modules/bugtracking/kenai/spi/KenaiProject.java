@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,26 +34,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.dummies;
+package org.netbeans.modules.bugtracking.kenai.spi;
 
-import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import java.net.URL;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport.BugtrackingType;
 
 /**
- * Dummy implementation that returns an empty array of repositories.
- *
- * @author Marian Petras
+ * Wrapper for a KenaiProject instance returned by kenai
+ * @author Tomas Stupka
+ * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport
  */
-public class DummyKenaiRepositories extends KenaiRepositories {
+public abstract class KenaiProject {
 
-    private static final Repository[] NO_REPOSITORIES = new Repository[0];
+    /**
+     * Return a URL representing the project location on web
+     * @return
+     */
+    public abstract URL getWebLocation();
 
-    @Override
-    public Repository[] getRepositories(boolean allOpenProjects) {
-        return NO_REPOSITORIES;
-    }
+    /**
+     * Returns a url representing the projects issuetracking feature location
+     * @return
+     */
+    public abstract String getFeatureLocation();
+
+    /**
+     * Determines what type of bugtracking system the projact has
+     * @return
+     */
+    public abstract BugtrackingType getType();
+
+    /**
+     * Returns the projects name
+     * @return
+     */
+    public abstract String getName();
+
+    /**
+     * Returns the projects display name
+     * @return
+     */
+    public abstract String getDisplayName();
+
 
 }
