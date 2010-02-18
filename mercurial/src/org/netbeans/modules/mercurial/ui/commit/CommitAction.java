@@ -78,8 +78,8 @@ import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
-import org.netbeans.modules.mercurial.hooks.spi.HgHookContext;
-import org.netbeans.modules.mercurial.hooks.spi.HgHook;
+import org.netbeans.modules.versioning.hooks.HgHookContext;
+import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -605,7 +605,11 @@ public class CommitAction extends ContextAction {
 
                 HgLogMessage tip = HgCommand.doTip(repository, logger);
 
-                context = new HgHookContext(hookFiles, msg, new HgHookContext.LogEntry(tip));
+                context = new HgHookContext(hookFiles, msg, new HgHookContext.LogEntry(
+                        tip.getMessage(),
+                        tip.getAuthor(),
+                        tip.getCSetShortID(),
+                        tip.getDate()));
                 for (HgHook hook : hooks) {
                     hook.afterCommit(context);
                 }

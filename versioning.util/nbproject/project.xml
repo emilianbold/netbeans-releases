@@ -267,6 +267,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
+                <friend>org.netbeans.modules.versioning.kenai</friend>
                 <friend>org.netbeans.modules.clearcase</friend>
                 <friend>org.netbeans.modules.localhistory</friend>
                 <friend>org.netbeans.modules.mercurial</friend>
