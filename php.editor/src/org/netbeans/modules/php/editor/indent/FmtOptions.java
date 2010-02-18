@@ -172,8 +172,8 @@ public class FmtOptions {
     public static final String spaceWithinArrayBrackets = "spaceWithinArrayBrackets"; //NOI18N
     public static final String spaceBeforeComma = "spaceBeforeComma"; //NOI18N
     public static final String spaceAfterComma = "spaceAfterComma"; //NOI18N
-//    public static final String spaceBeforeSemi = "spaceBeforeSemi"; //NOI18N
-//    public static final String spaceAfterSemi = "spaceAfterSemi"; //NOI18N
+    public static final String spaceBeforeSemi = "spaceBeforeSemi"; //NOI18N
+    public static final String spaceAfterSemi = "spaceAfterSemi"; //NOI18N
 //    public static final String spaceBeforeColon = "spaceBeforeColon"; //NOI18N
 //    public static final String spaceAfterColon = "spaceAfterColon"; //NOI18N
     public static final String spaceAfterTypeCast = "spaceAfterTypeCast"; //NOI18N
@@ -292,8 +292,8 @@ public class FmtOptions {
             { spaceWithinArrayBrackets, FALSE},
             { spaceBeforeComma, FALSE},
             { spaceAfterComma, TRUE},
-//            { spaceBeforeSemi, FALSE},
-//            { spaceAfterSemi, TRUE},
+            { spaceBeforeSemi, FALSE},
+            { spaceAfterSemi, TRUE},
 //            { spaceBeforeColon, TRUE},
 //            { spaceAfterColon, TRUE},
             { spaceAfterTypeCast, TRUE}
