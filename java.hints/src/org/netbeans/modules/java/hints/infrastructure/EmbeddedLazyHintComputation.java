@@ -43,10 +43,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaParserResultTask;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.source.parsing.JavacParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
@@ -56,9 +57,12 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
  *
  * @author lahvac
  */
-public class EmbeddedLazyHintComputation extends ParserResultTask<JavacParserResult> {
+public class EmbeddedLazyHintComputation extends JavaParserResultTask<JavacParserResult> {
 
-    @Override
+    public EmbeddedLazyHintComputation() {
+        super(Phase.RESOLVED);
+    }
+
     public void run(JavacParserResult result, SchedulerEvent event) {
         if (Utilities.JAVA_MIME_TYPE.equals(result.getSnapshot().getSource().getMimeType())) {
             //handled by LazyHintComputation:
