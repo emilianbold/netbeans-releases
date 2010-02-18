@@ -79,17 +79,18 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 
 /**
  * Default RunOffEDTProvider implementation for ProgressUtils.runOffEventDispatchThread() methods
  * @author Jan Lahoda, Tomas Holy
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.progress.spi.RunOffEDTProvider.class, position = 100)
+@ServiceProvider(service=RunOffEDTProvider.class, position = 100)
 public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
 
     private static final RequestProcessor WORKER = new RequestProcessor(ProgressUtils.class.getName());
-    private static final Map<String, Long> CUMMULATIVE_SPENT_TIME = new HashMap<String, Long>();
+    private static final Map<String, Long> CUMULATIVE_SPENT_TIME = new HashMap<String, Long>();
     private static final Map<String, Long> MAXIMAL_SPENT_TIME = new HashMap<String, Long>();
     private static final Map<String, Integer> INVOCATION_COUNT = new HashMap<String, Integer>();
     private static final int CANCEL_TIME = 1000;
@@ -99,7 +100,8 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
     private final boolean assertionsOn;
 
     @Override
-    public void runOffEventDispatchThread(final Runnable operation, final String operationDescr, final AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorTime, int dlgTime) {
+    public void runOffEventDispatchThread(final Runnable operation, final String operationDescr,
+            final AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorTime, int dlgTime) {
         Parameters.notNull("operation", operation); //NOI18N
         Parameters.notNull("cancelOperation", cancelOperation); //NOI18N
         if (!SwingUtilities.isEventDispatchThread()) {
@@ -112,12 +114,12 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
 
         if (assertionsOn) {
             String clazz = operation.getClass().getName();
-            Long cummulative = CUMMULATIVE_SPENT_TIME.get(clazz);
+            Long cummulative = CUMULATIVE_SPENT_TIME.get(clazz);
             if (cummulative == null) {
                 cummulative = 0L;
             }
             cummulative += elapsed;
-            CUMMULATIVE_SPENT_TIME.put(clazz, cummulative);
+            CUMULATIVE_SPENT_TIME.put(clazz, cummulative);
             Long maximal = MAXIMAL_SPENT_TIME.get(clazz);
             if (maximal == null) {
                 maximal = 0L;
@@ -134,12 +136,14 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
             INVOCATION_COUNT.put(clazz, count);
 
             if (elapsed > WARNING_TIME) {
-                LOG.info("Lenghty operation: " + clazz + ":" + cummulative + ":" + count + ":" + maximal + ":" + String.format("%3.2f", ((double) cummulative) / count)); //NOI18N
+                LOG.log(Level.INFO, "Lengthy operation: {0}:{1}:{2}:{3}:{4}", new Object[] {
+                    clazz, cummulative, count, maximal, String.format("%3.2f", ((double) cummulative) / count)});
             }
         }
     }
 
-    private void runOffEventDispatchThreadImpl(final Runnable operation, final String operationDescr, final AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorTime, int dlgTime) {
+    private void runOffEventDispatchThreadImpl(final Runnable operation, final String operationDescr,
+            final AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorTime, int dlgTime) {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Dialog> d = new AtomicReference<Dialog>();
 
@@ -179,8 +183,8 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
         String title = NbBundle.getMessage(RunOffEDTImpl.class, "RunOffAWT.TITLE_Operation"); //NOI18N
         String cancelButton = NbBundle.getMessage(RunOffEDTImpl.class, "RunOffAWT.BTN_Cancel"); //NOI18N
 
-        DialogDescriptor nd = new DialogDescriptor(operationDescr, title, true, new Object[]{cancelButton}, cancelButton, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
-
+        DialogDescriptor nd = new DialogDescriptor(operationDescr, title, true, new Object[]{cancelButton},
+                cancelButton, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
             public @Override void actionPerformed(ActionEvent e) {
                 cancelOperation.set(true);
                 d.get().setVisible(false);
