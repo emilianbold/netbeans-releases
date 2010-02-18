@@ -187,7 +187,7 @@ import org.openide.util.RequestProcessor;
         pb.setWorkingDirectory(remoteDir);
         String rfsTrace = System.getProperty("cnd.rfs.controller.trace");
         if (rfsTrace != null) {
-            pb.getEnvironment().put("RFS_CONTROLLER_TRACE", rfsTrace);
+            pb.getEnvironment().put("RFS_CONTROLLER_TRACE", rfsTrace); // NOI18N
         }
         remoteControllerProcess = pb.call();
 
