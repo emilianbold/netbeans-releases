@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.parsing.impl.indexing.errors;
 
-import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
