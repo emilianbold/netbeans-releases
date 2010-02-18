@@ -40,7 +40,8 @@
  */
 package org.netbeans.modules.web.core.syntax.completion.api;
 
-import com.sun.tools.javac.code.Type.WildcardType;
+import javax.lang.model.type.WildcardType;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
