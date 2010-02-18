@@ -865,7 +865,7 @@ itor tabs #66700).
      */
 
     public static VCSContext getCurrentContext(Node[] nodes) {
-        if (nodes == null) {
+        if (nodes == null || nodes.length == 0) {
             nodes = TopComponent.getRegistry().getActivatedNodes();
         }
         return VCSContext.forNodes(nodes);

@@ -107,7 +107,6 @@ public class Annotator {
     private static final Pattern lessThan = Pattern.compile("<");  // NOI18N
     
     private final FileStatusCache cache;
-    private final AnnotationColorProvider annotationColorProvider = AnnotationColorProvider.getInstance();
     
     private String          lastAnnotationsFormat;
     private MessageFormat   lastMessageFormat;
@@ -148,29 +147,29 @@ public class Annotator {
         case FileInformation.STATUS_NOTVERSIONED_NOTMANAGED:
             return name;
         case FileInformation.STATUS_VERSIONED_UPTODATE:
-            return annotationColorProvider.UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY:
-            return annotationColorProvider.MODIFIED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().MODIFIED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY: 
-            return annotationColorProvider.NEW_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().NEW_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
-            return annotationColorProvider.REMOVED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().REMOVED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
-            return annotationColorProvider.DELETED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().DELETED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_NEWINREPOSITORY:
-            return annotationColorProvider.NEW_IN_REPOSITORY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().NEW_IN_REPOSITORY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY:
-            return annotationColorProvider.MODIFIED_IN_REPOSITORY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().MODIFIED_IN_REPOSITORY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY:
-            return annotationColorProvider.REMOVED_IN_REPOSITORY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().REMOVED_IN_REPOSITORY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_ADDEDLOCALLY:
-            return annotationColorProvider.ADDED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().ADDED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_MERGE:
-            return annotationColorProvider.MERGEABLE_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().MERGEABLE_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_CONFLICT:
-            return annotationColorProvider.CONFLICT_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().CONFLICT_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_NOTVERSIONED_EXCLUDED:
-            return annotationColorProvider.EXCLUDED_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { name, textAnnotation });
         default:
             throw new IllegalArgumentException("Unknown status: " + status); // NOI18N
         }
@@ -253,9 +252,9 @@ public class Annotator {
         case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY: 
         case FileInformation.STATUS_VERSIONED_ADDEDLOCALLY:
         case FileInformation.STATUS_VERSIONED_UPTODATE:
-            return annotationColorProvider.UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_NOTVERSIONED_EXCLUDED:
-            return annotationColorProvider.EXCLUDED_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { name, textAnnotation });
         default:
             throw new IllegalArgumentException("Unknown status: " + status); // NOI18N
         }
@@ -466,37 +465,37 @@ public class Annotator {
                 statusText = null;
                 break;
             case FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY:
-                statusText = annotationColorProvider.MODIFIED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().MODIFIED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
-                statusText = annotationColorProvider.NEW_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().NEW_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
-                statusText = annotationColorProvider.REMOVED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().REMOVED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
-                statusText = annotationColorProvider.DELETED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().DELETED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_VERSIONED_NEWINREPOSITORY:
-                statusText = annotationColorProvider.NEW_IN_REPOSITORY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().NEW_IN_REPOSITORY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY:
-                statusText = annotationColorProvider.MODIFIED_IN_REPOSITORY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().MODIFIED_IN_REPOSITORY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY:
-                statusText = annotationColorProvider.REMOVED_IN_REPOSITORY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().REMOVED_IN_REPOSITORY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_VERSIONED_ADDEDLOCALLY:
-                statusText = annotationColorProvider.ADDED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().ADDED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_VERSIONED_MERGE:
-                statusText = annotationColorProvider.MERGEABLE_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().MERGEABLE_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_VERSIONED_CONFLICT:
-                statusText = annotationColorProvider.CONFLICT_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().CONFLICT_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_NOTVERSIONED_EXCLUDED:
-                statusText = annotationColorProvider.EXCLUDED_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().EXCLUDED_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             default:
                 throw new IllegalArgumentException("Unknown status: " + status); // NOI18N
@@ -574,4 +573,7 @@ public class Annotator {
         }
     }
 
+    private AnnotationColorProvider getAnnotationProvider() {
+        return AnnotationColorProvider.getInstance();
+    }
 }
