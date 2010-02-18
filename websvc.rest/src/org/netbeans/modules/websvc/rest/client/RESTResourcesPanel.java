@@ -202,7 +202,7 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
             if (resourceNode != null) {
                 WadlSaasResource saasResource = resourceNode.getLookup().lookup(WadlSaasResource.class);
                 if (saasResource != null) {
-                    jTextField2.setText(ClientJavaSourceHelper.getClientClassName(saasResource));
+                    jTextField2.setText(Wadl2JavaHelper.getClientClassName(saasResource));
                 } else {
                     RestServiceDescription restServiceDesc = resourceNode.getLookup().lookup(RestServiceDescription.class);
                     if (restServiceDesc != null) {

@@ -630,35 +630,6 @@ public class ClientJavaSourceHelper {
         return s;
     }
 
-    static String getClientClassName(WadlSaasResource saasResource) {
-        String path = saasResource.getResource().getPath();
-        int len = path.length();
-        for (int i=0; i<len; i++) {
-            char ch = path.charAt(i);
-            if (!Character.isJavaIdentifierPart(ch)) {
-                path = path.replace(ch, '_'); //NOI18N
-            }
-        }
-        while (path.startsWith("_")) { //NOI18N
-            path = path.substring(1);
-        }
-        while (path.endsWith("_")) { //NOI18N
-            path = path.substring(0, path.length()-1);
-        }
-        String saasName = saasResource.getSaas().getDisplayName();
-        saasName = saasName.replace(" ", "_"); //NOI18N
-
-        if (saasName.length() == 0) {
-            saasName = "Resource"; //NOI18N
-        } else if (!Character.isJavaIdentifierStart(saasName.charAt(0))) {
-            saasName= "Resource_"+saasName; //NOI18N
-        } else if (Character.isLowerCase(saasName.charAt(0))) {
-            saasName = saasName.substring(0,1).toUpperCase()+saasName.substring(1);
-        }
-
-        return saasName+(path.length() == 0 ? "" : "_"+path)+"_JerseyClient"; //NOI18N
-    }
-
     private static ResourcePath getResourcePath(Node resourceNode, String resourceClass, String uriTemplate) {
         String resourceUri = normalizePath(uriTemplate);
         Node projectNode = resourceNode.getParentNode();
@@ -827,24 +798,6 @@ public class ClientJavaSourceHelper {
 
         public String getMediaType() {
             return mediaType;
-        }
-    }
-
-    static class Pair {
-        private String key;
-        private String value;
-
-        public Pair(String key, String value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public String getValue() {
-            return value;
         }
     }
 }
