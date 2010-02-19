@@ -41,7 +41,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="jnlp-impl" default="default" basedir="..">
+<project name="jnlp-impl" default="default" basedir=".." xmlns:jnlp="http://www.netbeans.org/ns/j2se-project/jnlp">
 
     <property name="jnlp.file.name.default" value="launch.jnlp"/>
     <property name="jnlp.dest.dir" location="dist"/>
@@ -213,8 +213,57 @@ made subject to such option by the copyright holder.
     <target name="-unavailable-signjars-task" depends="-test-signjars-task-available" unless="signjars.task.available">
         <echo message="Task required to sign JAR file is missing, probably the library 'JWS Ant Tasks' is missing either from shared folder or from IDE installation. JAR files will not be signed."/>
     </target>
-    
-    <target name="sign-jars" depends="-jnlp-init-keystore,-check-signing-possible" if="jnlp.signed.true+signjars.task.available">
+
+    <target name="-set-mixed-code-properties" depends="-check-signing-possible" if="jnlp.signed.true+signjars.task.available">
+        <property name="jnlp.mixed.code" value=""/>
+        <condition property="mixed.code.trusted.only">
+            <equals arg1="trusted_only" arg2="${jnlp.mixed.code}"/>
+        </condition>
+        <condition property="mixed.code.trusted.library">
+            <equals arg1="trusted_library" arg2="${jnlp.mixed.code}"/>
+        </condition>
+    </target>
+
+    <target name="-init-macrodef-extend-manifest">
+        <macrodef name="extend-manifest" uri="http://www.netbeans.org/ns/j2se-project/jnlp">
+            <element name="customize"/>
+            <sequential>
+                <unzip src="${dist.jar}" dest="${build.dir}">
+                    <patternset>
+                        <include name="META-INF/MANIFEST.MF"/>
+                    </patternset>
+                </unzip>
+                <jar jarfile="${dist.jar}" update="true" manifest="${build.dir}/META-INF/MANIFEST.MF">
+                    <customize/>
+                </jar>
+            </sequential>
+        </macrodef>
+    </target>
+
+    <target name="-add-trusted-only-attribute" depends="-set-mixed-code-properties,-init-macrodef-extend-manifest" if="mixed.code.trusted.only">
+        <jnlp:extend-manifest>
+            <customize>
+                <manifest>
+                    <attribute name="Trusted-Only" value="true"/>
+                </manifest>
+            </customize>
+        </jnlp:extend-manifest>
+    </target>
+
+    <target name="-add-trusted-library-attribute" depends="-set-mixed-code-properties,-init-macrodef-extend-manifest" if="mixed.code.trusted.library">
+        <jnlp:extend-manifest>
+            <customize>
+                <manifest>
+                    <attribute name="Trusted-Library" value="true"/>
+                </manifest>
+            </customize>
+        </jnlp:extend-manifest>
+    </target>
+
+    <target name="-add-mixed-code-attributes" depends="-add-trusted-only-attribute,-add-trusted-library-attribute">
+    </target>
+
+    <target name="sign-jars" depends="-jnlp-init-keystore,-check-signing-possible,-add-mixed-code-attributes" if="jnlp.signed.true+signjars.task.available">
         <taskdef name="sign-jars" classname="org.netbeans.modules.javawebstart.anttasks.SignJarsTask" 
             classpath="${libs.JWSAntTasks.classpath}"/>
         <sign-jars keystore="${jnlp.signjar.keystore}" storepass="${jnlp.signjar.storepass}" 

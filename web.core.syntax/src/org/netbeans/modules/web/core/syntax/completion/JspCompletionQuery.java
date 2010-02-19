@@ -42,14 +42,12 @@
 package org.netbeans.modules.web.core.syntax.completion;
 
 import java.io.File;
-import java.io.IOException;
 import org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem;
 import java.util.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.servlet.jsp.tagext.TagInfo;
 import javax.servlet.jsp.tagext.TagAttributeInfo;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -151,44 +149,6 @@ public class JspCompletionQuery {
             
         } catch (BadLocationException e) {
             e.printStackTrace();
-        }
-    }
-
-    private void insertTagImportDirective(final BaseDocument doc, String tokenPart, int semiColonPos) {
-        final String tagLibPrefix = tokenPart.substring(0, semiColonPos);
-        //String tagPrefix = tokenPart.substring(semiColonPos + 1);
-        final String tagLibURI = StandardTagLibraryPrefixes.get(tagLibPrefix);
-        if (tagLibURI != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    doc.runAtomic(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            try {
-                                doc.insertString(Util.findPositionForJspDirective(doc),
-                                        "<%@ taglib prefix=\""  //NOI18N
-                                            + tagLibPrefix + "\" uri=\""        //NOI18N
-                                            + tagLibURI + "\" %>\n", null);     //NOI18N
-
-                            } catch (BadLocationException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                    });
-                }
-            });
-
-//            SwingUtilities.invokeLater(new Runnable() {
-//
-//                @Override
-//                public void run() {
-//                    Completion.get().showCompletion();
-//                }
-//            });
-
         }
     }
     

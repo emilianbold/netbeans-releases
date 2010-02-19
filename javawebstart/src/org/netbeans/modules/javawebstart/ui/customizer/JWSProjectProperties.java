@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.javawebstart.ui.customizer;
 
+import com.sun.org.apache.xerces.internal.impl.dtd.models.MixedContentModel;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -115,6 +116,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     public static final String JNLP_MAX_HEAP     = "jnlp.max-heap-size";
     
     public static final String JNLP_SIGNED = "jnlp.signed";
+    public static final String JNLP_MIXED_CODE = "jnlp.mixed.code";
     
     public static final String CB_TYPE_LOCAL = "local";
     public static final String CB_TYPE_WEB = "web";
@@ -172,6 +174,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     
     ComboBoxModel codebaseModel;
     ComboBoxModel appletClassModel;
+    ComboBoxModel mixedCodeModel;
     
     ButtonModel applicationDescButtonModel;
     ButtonModel appletDescButtonModel;
@@ -204,13 +207,14 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             iconDocument = jnlpPropGroup.createStringDocument(evaluator, JNLP_ICON);
             appletWidthDocument = jnlpPropGroup.createStringDocument(evaluator, JNLP_APPLET_WIDTH);
             appletHeightDocument = jnlpPropGroup.createStringDocument(evaluator, JNLP_APPLET_HEIGHT);
-            
+
             codebaseModel = new CodebaseComboBoxModel();
             codebaseURLDocument = createCBTextFieldDocument();
-        
+
             appletClassModel = new AppletClassComboBoxModel(j2seProject);
+            mixedCodeModel = createMixedCodeModel(j2sePropEval.evaluator());
             initRadioButtons();
-            
+
             extResProperties = readProperties(evaluator, JNLP_EXT_RES_PREFIX, extResSuffixes);
             appletParamsProperties = readProperties(evaluator, JNLP_APPLET_PARAMS_PREFIX, appletParamsSuffixes);
 
@@ -346,6 +350,10 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         if (descType != null) {
             editableProps.setProperty(JNLP_DESCRIPTOR, descType.toString());
         }
+
+        //Store Mixed Code
+        final MixedCodeOptions option = (MixedCodeOptions) mixedCodeModel.getSelectedItem();
+        editableProps.setProperty(JNLP_MIXED_CODE, option.getPropertyValue());
         // store properties
         storeProperties(editableProps, extResProperties, JNLP_EXT_RES_PREFIX);
         storeProperties(editableProps, appletParamsProperties, JNLP_APPLET_PARAMS_PREFIX);
@@ -469,7 +477,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         }
         
     }
-    
+
     public class AppletClassComboBoxModel extends DefaultComboBoxModel {
         
         Set<SearchKind> kinds = new HashSet<SearchKind>(Arrays.asList(SearchKind.IMPLEMENTORS));
@@ -673,7 +681,54 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             }
             propGroupIndex++;
         }
-        
     }
-    
+
+    private static enum MixedCodeOptions {
+        DEFAULT("defaut"),  //NOI18N
+        TRUSTED_ONLY("trusted_only"),   //NOI18N
+        TRUSTED_LIBRARY("trusted_library"); //NOI18N
+
+        private final String propValue;
+
+        private MixedCodeOptions(final String propValue) {
+            this.propValue = propValue;
+        }
+
+        public String getDisplayName() {
+            return NbBundle.getMessage(JWSCustomizerPanel.class, String.format("TXT_MIXED_MODE_%s",name()));
+        }
+
+        public String getPropertyValue() {
+            return this.propValue;
+        }
+
+        @Override
+        public String toString() {
+            return getDisplayName();
+        }
+
+        static MixedCodeOptions fromPropertyValue(final String propValue) {
+            assert propValue != null;
+            for (MixedCodeOptions option : MixedCodeOptions.values()) {
+                if (propValue.equals(option.getPropertyValue())) {
+                    return option;
+                }
+            }
+            return null;
+        }
+    }
+
+    private static ComboBoxModel createMixedCodeModel (final PropertyEvaluator eval) {
+        assert eval != null;
+        final DefaultComboBoxModel model = new DefaultComboBoxModel();
+        for (MixedCodeOptions option : MixedCodeOptions.values()) {
+            model.addElement(option);
+        }
+        final String strValue = eval.getProperty(JNLP_MIXED_CODE);
+        final MixedCodeOptions value = strValue == null ? null : MixedCodeOptions.fromPropertyValue(strValue);
+        if (value != null) {
+            model.setSelectedItem(value);
+        }
+        return model;
+    }
 }

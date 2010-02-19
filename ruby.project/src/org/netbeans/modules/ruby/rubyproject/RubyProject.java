@@ -49,10 +49,11 @@ import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.rubyproject.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.ruby.rubyproject.queries.RubyProjectEncodingQueryImpl;
+import org.netbeans.modules.ruby.rubyproject.spi.PropertiesProvider;
 import org.netbeans.modules.ruby.rubyproject.ui.RubyLogicalViewProvider;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyCompositePanelProvider;
+import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
@@ -122,7 +123,14 @@ public final class RubyProject extends RubyBaseProject {
             new RubyFileLocator(null, this),
             new RubyCoverageProvider(this),
             RequiredGems.create(this),
-            new RubyPlatformProvider(evaluator())
+            RequiredGems.createForTests(this),
+            new RubyPlatformProvider(evaluator()),
+            new PropertiesProvider() {
+                @Override
+                public SharedRubyProjectProperties getProperties() {
+                    return new RubyProjectProperties(RubyProject.this, updateHelper, evaluator(), refHelper, genFilesHelper);
+                }
+            }
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-ruby-rubyproject/Lookup"); //NOI18N
     }
