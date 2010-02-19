@@ -93,11 +93,13 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(ServerList.PROP_DEFAULT_RECORD)) {
-            String name = getDisplayName();
-            fireDisplayNameChange("", name); // to make Node refresh
+            refresh();
         }
     }
 
+    private void refresh() {
+        fireDisplayNameChange("", getDisplayName()); // to make Node refresh
+    }
 
     @Override
     public Image getOpenedIcon(int type) {
@@ -203,6 +205,7 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
         public void actionPerformed(ActionEvent e) {
             RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
             HostPropertiesDialog.invokeMe(record);
+            refresh(); // TODO: introduce listeners for server records
         }
     }
 }
