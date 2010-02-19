@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -53,6 +54,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -87,6 +89,8 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -294,25 +298,32 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
 
             @Override
             public void run() {
-                final EditableProperties prop = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                String ap = prop.getProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST);
-                if (ap == null) {
-                    ap = "";
-                }
-                if (ap.indexOf("org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor") == -1) {
-                    Sources sources = ProjectUtils.getSources(project);
-                    SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                    SourceGroup firstGroup = groups[0];
-                    FileObject fo = firstGroup.getRootFolder();
-                    ClassPath compile = ClassPath.getClassPath(fo, ClassPath.COMPILE);
-                    if (compile.findResource("org/eclipse/persistence/internal/jpa/modelgen/CanonicalModelProcessor.class") != null) {
-                        ap = ap + (ap.length() > 1 ? "," : "") + "org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor"; //NOI18N
-                        prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ap);
-                        //also a workaround for eclipselink processor issue with  persistence.xml
-                        //
-                        project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
+                ProjectManager.mutex().writeAccess(new Runnable() {
+                    @Override
+                    public void run() {
+                        EditableProperties prop = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        String ap = prop.getProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST);
+
+                        if (ap == null) {
+                            ap = "";
+                        }
+                        //TODO: consider add dependency on j2ee.persistence and get class from persistence provider
+                        if (ap.indexOf("org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor") == -1) {
+                            Sources sources = ProjectUtils.getSources(project);
+                            SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                            SourceGroup firstGroup = groups[0];
+                            FileObject fo = firstGroup.getRootFolder();
+                            ClassPath compile = ClassPath.getClassPath(fo, JavaClassPathConstants.PROCESSOR_PATH);
+                            if (compile.findResource("org/eclipse/persistence/internal/jpa/modelgen/CanonicalModelProcessor.class") != null) {
+                                ap = ap + (ap.length() > 1 ? "," : "") + "org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor"; //NOI18N
+                                prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ap);
+                                //also a workaround for eclipselink processor issue with  persistence.xml
+                                //
+                                project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
+                            }
+                        }
                     }
-                }
+                });
             }
         });
     }
