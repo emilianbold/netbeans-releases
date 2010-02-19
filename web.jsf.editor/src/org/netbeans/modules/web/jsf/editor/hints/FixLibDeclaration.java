@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.web.jsf.editor.hints;
 
-import com.sun.istack.internal.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;
@@ -84,7 +83,6 @@ public class FixLibDeclaration implements HintFix{
         return false;
     }
 
-    @NotNull
     public static List<FaceletsLibrary> getLibsByPrefix(Document doc, String prefix){
         List<FaceletsLibrary> libs = new ArrayList<FaceletsLibrary>();
         JsfSupport sup = JsfSupport.findFor(doc);
