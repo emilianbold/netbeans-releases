@@ -55,6 +55,7 @@ import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -74,6 +75,7 @@ import org.openide.windows.WindowManager;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.apisupport.installer.ui.SuiteInstallerProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -82,6 +84,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 public final class BuildInstallersAction extends AbstractAction implements ContextAwareAction {
 
@@ -127,34 +130,31 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                 for (Node node : e) {
                     final Project prj = node.getLookup().lookup(Project.class);
                     if (prj != null) {
+                        Preferences prefs = SuiteInstallerProjectProperties.prefs(prj);
                         File suiteLocation = FileUtil.toFile(prj.getProjectDirectory());
                         FileObject propertiesFile = prj.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        Properties ps = new Properties();
                         String appName = "";
                         String appIcon = null;
-                        String licenseType = null;
+                        String licenseType = prefs.get(SuiteInstallerProjectProperties.LICENSE_TYPE, null);
                         File licenseFile = null;
+                        String licenseFileProp = prefs.get(SuiteInstallerProjectProperties.LICENSE_FILE, null);
+                        if (licenseFileProp != null) {
+                            licenseFile = PropertyUtils.resolveFile(suiteLocation, licenseFileProp);
+                            //if(!licenseFile.exists()) {
+                            //    licenseFile = null;
+                            //}
+                        }
+                        boolean usePack200 = prefs.getBoolean(SuiteInstallerProjectProperties.USE_PACK200_COMPRESSION, false);
 
-                        boolean usePack200 = false;
                         try {
                             InputStream is = propertiesFile.getInputStream();
-                            ps.load(is);
-                            appName = ps.getProperty("app.name");
-                            licenseType = ps.getProperty("installer.license.type");
-                            String licenseFileProp = ps.getProperty("installer.license.file");
-                            if(licenseFileProp!=null) {
-                                licenseFile = new File(licenseFileProp);
-                                if(!licenseFile.equals(licenseFile.getAbsoluteFile())) {
-                                    //relative to suite dir
-                                    licenseFile = new File(suiteLocation, licenseFileProp);
-                                }
-                                //if(!licenseFile.exists()) {
-                                //    licenseFile = null;
-                                //}
+                            Properties ps = new Properties();
+                            try {
+                                ps.load(is);
+                            } finally {
+                                is.close();
                             }
-
-
-                            usePack200 = Boolean.parseBoolean(ps.getProperty(SuiteInstallerProjectProperties.USE_PACK200_COMPRESSION));
+                            appName = ps.getProperty("app.name");
                             appIcon = ps.getProperty("app.icon");
                             if (appName == null) {
                                 //suite, not standalone app
@@ -179,7 +179,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                                 return;
                             }
                         } catch (IOException ex) {
-                            Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "Can`t store properties", ex);
+                            Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "Cannot load properties", ex);
                         }
 
                         
@@ -269,25 +269,25 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         List<String> platforms = new ArrayList<String>();
 
                         boolean installerConfDefined = false;
-                        for (Object s : ps.keySet()) {
-                            String key = (String) s;
-                            String prefix = "installer.os.";
-                            if (key.startsWith(prefix)) {
+                        for (String k : new String[] {
+                            SuiteInstallerProjectProperties.GENERATE_FOR_WINDOWS,
+                            SuiteInstallerProjectProperties.GENERATE_FOR_LINUX,
+                            SuiteInstallerProjectProperties.GENERATE_FOR_SOLARIS,
+                            SuiteInstallerProjectProperties.GENERATE_FOR_MAC
+                        }) {
+                            if (prefs.getBoolean(k, false)) {
                                 installerConfDefined = true;
-                                if (ps.getProperty(key).equals("true")) {
-                                    platforms.add(key.substring(prefix.length()));
-                                }
+                                platforms.add(k.replaceFirst("^os-", ""));
                             }
                         }
                         if (!installerConfDefined) {
-                            String osName = System.getProperty("os.name");
-                            if (osName.contains("Windows")) {
+                            if (Utilities.isWindows()) {
                                 platforms.add("windows");
-                            } else if (osName.contains("Linux")) {
+                            } else if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
                                 platforms.add("linux");
-                            } else if (osName.contains("SunOS") || osName.contains("Solaris")) {
+                            } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
                                 platforms.add("solaris");
-                            } else if (osName.contains("Mac OS X") || osName.contains("Darwin")) {
+                            } else if (Utilities.isMac()) {
                                 platforms.add("macosx");                                
                             }
                         }

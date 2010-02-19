@@ -45,6 +45,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -66,7 +67,7 @@ public class ExtraPanel implements ProjectCustomizer.CompositeCategoryProvider {
     }
 
     public @Override JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        SuiteInstallerProjectProperties installerProjectProperties = new SuiteInstallerProjectProperties(context);
+        SuiteInstallerProjectProperties installerProjectProperties = new SuiteInstallerProjectProperties(context.lookup(Project.class));
         // use OkListener to create new configuration first
         //category.setOkButtonListener(new OkButtonListener(installerProjectProperties, context.lookup(Project.class)));
         category.setStoreListener(new SavePropsListener(installerProjectProperties));
