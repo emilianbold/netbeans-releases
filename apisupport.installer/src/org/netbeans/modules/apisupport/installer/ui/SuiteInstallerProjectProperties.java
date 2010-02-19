@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -64,15 +63,16 @@ public class SuiteInstallerProjectProperties {
             //UGLIEST HACK to get helper
             AntProjectHelper helper = null;
             try {
-                Class suiteClass = suiteProject.getClass();
-                Method getHelperMethod = suiteClass.getDeclaredMethod("getHelper", new Class[]{});
-                helper = (AntProjectHelper) getHelperMethod.invoke(suiteProject, new Object[]{});
+                Class<?> suiteClass = suiteProject.getClass();
+                Method getHelperMethod = suiteClass.getDeclaredMethod("getHelper");
+                helper = (AntProjectHelper) getHelperMethod.invoke(suiteProject);
             } catch (Exception e) {
                 e.printStackTrace();
+                return;
             }
             //End of hack
             /***********************/
-            Collection c = suiteProject.getLookup().lookupAll(Object.class);//.lookup(AntProjectHelper.class);
+            //Collection c = suiteProject.getLookup().lookupAll(Object.class);//.lookup(AntProjectHelper.class);
             //for (Object i : c) {
             //    System.out.println("###" + i.getClass());
             //}
@@ -161,8 +161,7 @@ public class SuiteInstallerProjectProperties {
         try {
             final InputStream is = projPropsFO.getInputStream();
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-
-                public Void run() throws Exception {
+                public @Override Void run() throws Exception {
                     try {
                         ep.load(is);
                     } finally {

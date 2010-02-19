@@ -44,13 +44,10 @@ package org.netbeans.modules.apisupport.installer.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 
@@ -59,9 +56,8 @@ import org.openide.util.Exceptions;
     position=1000
 )
 public class ExtraPanel implements ProjectCustomizer.CompositeCategoryProvider {
-    private static SuiteInstallerProjectProperties installerProjectProperties = null;
 
-    public ProjectCustomizer.Category createCategory(Lookup context) {
+    public @Override ProjectCustomizer.Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
                 "Installer",
                 NbBundle.getMessage(ExtraPanel.class, "LBL_InstallerPanel"),
@@ -69,25 +65,23 @@ public class ExtraPanel implements ProjectCustomizer.CompositeCategoryProvider {
                 (ProjectCustomizer.Category[])null);
     }
 
-    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-         installerProjectProperties = new SuiteInstallerProjectProperties(context);
+    public @Override JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+        SuiteInstallerProjectProperties installerProjectProperties = new SuiteInstallerProjectProperties(context);
         // use OkListener to create new configuration first
         //category.setOkButtonListener(new OkButtonListener(installerProjectProperties, context.lookup(Project.class)));
-        category.setStoreListener(new SavePropsListener(installerProjectProperties, context.lookup(Project.class)));
+        category.setStoreListener(new SavePropsListener(installerProjectProperties));
         return new InstallerPanel(installerProjectProperties);
     }
 
     private static class SavePropsListener implements ActionListener {
 
         private SuiteInstallerProjectProperties installerProps;
-        private Project suiteProject;
 
-        public SavePropsListener(SuiteInstallerProjectProperties props, Project proj) {
+        public SavePropsListener(SuiteInstallerProjectProperties props) {
             installerProps = props;
-            suiteProject = proj;
         }
 
-        public void actionPerformed(ActionEvent e) {
+        public @Override void actionPerformed(ActionEvent e) {
             try {
                 installerProps.store();
             } catch (IOException ioe) {
