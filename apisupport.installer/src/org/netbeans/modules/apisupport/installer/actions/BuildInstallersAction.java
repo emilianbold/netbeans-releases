@@ -59,19 +59,13 @@ import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.openide.ErrorManager;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.Presenter;
-import org.openide.windows.WindowManager;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.apisupport.installer.ui.SuiteInstallerProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -79,7 +73,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.modules.InstalledFileLocator;
@@ -88,48 +81,28 @@ import org.openide.util.Utilities;
 
 public final class BuildInstallersAction extends AbstractAction implements ContextAwareAction {
 
-    private static final BuildInstallersAction inst = new BuildInstallersAction();
-
-    private BuildInstallersAction() {
-    }
-
-    public static BuildInstallersAction getDefault() {
-        return inst;
-    }
-
-    public static void actionPerformed(Node[] e) {
-        ContextBuildInstaller.actionPerformed(e);
-    }
+    public BuildInstallersAction() {}
 
     public @Override void actionPerformed(ActionEvent e) {
         assert false;
     }
 
     public @Override Action createContextAwareInstance(Lookup actionContext) {
-        return new ContextBuildInstaller();
+        return new ContextBuildInstaller(actionContext);
     }
 
-    static class ContextBuildInstaller extends AbstractAction implements Presenter.Popup {
+    static class ContextBuildInstaller extends AbstractAction {
 
-        public ContextBuildInstaller() {
+        private final Lookup actionContext;
+
+        public ContextBuildInstaller(Lookup actionContext) {
+            this.actionContext = actionContext;
             putValue(NAME, NbBundle.getMessage(BuildInstallersAction.class, "CTL_BuildInstallers"));
         }
 
+        @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE") // mkdirs
         public @Override void actionPerformed(ActionEvent e) {
-            Node[] n = WindowManager.getDefault().getRegistry().getActivatedNodes();
-            if (n.length > 0) {
-                ContextBuildInstaller.actionPerformed(n);
-            } else {
-                ContextBuildInstaller.actionPerformed((Node[]) null);
-            }
-        }
-
-        @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
-        public static void actionPerformed(Node[] e) {
-            if (e != null) {
-                for (Node node : e) {
-                    final Project prj = node.getLookup().lookup(Project.class);
-                    if (prj != null) {
+                for (Project prj : actionContext.lookupAll(Project.class)) {
                         Preferences prefs = SuiteInstallerProjectProperties.prefs(prj);
                         File suiteLocation = FileUtil.toFile(prj.getProjectDirectory());
                         FileObject propertiesFile = prj.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -184,7 +157,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
 
                         
                         if (licenseFile==null && licenseType != null && !licenseType.equals(SuiteInstallerProjectProperties.LICENSE_TYPE_NO)) {
-                            Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "License type defined to {0}", licenseType);
+                            Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.FINE, "License type defined to {0}", licenseType);
                             String licenseResource = null;
                             try {
                                 licenseResource = NbBundle.getMessage(SuiteInstallerProjectProperties.class,
@@ -260,7 +233,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                                 "modules/ext/nbi-engine.jar",
                                 "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
                         if (licenseFile != null) {
-                            Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.INFO,
+                            Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.FINE,
                                     "License file is at {0}, exist = {1}", new Object[] {licenseFile, licenseFile.exists()});
                             props.put(
                                     "nbi.license.file", licenseFile.getAbsolutePath());
@@ -396,11 +369,6 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         tmpProps.deleteOnExit();
                         }*/
                     }
-                }
-
-            }
-
-
 
         }
 
@@ -418,25 +386,6 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
 //            return project.getProjectDirectory().getFileObject("build/installer/build.xml");
 //        }
 
-        public @Override JMenuItem getPopupPresenter() {
-            Node[] n = WindowManager.getDefault().getRegistry().getActivatedNodes();
-            if (n.length == 1) {
-                Project prj = n[0].getLookup().lookup(Project.class);
-                if (prj != null && prj.getClass().getSimpleName().equals("SuiteProject")) {
-                    return new JMenuItem(this);
-                }
-            }
-
-            class Empty extends JMenu implements DynamicMenuContent {
-                public @Override JComponent[] getMenuPresenters() {
-                    return new JComponent[0];
-                }
-                public @Override JComponent[] synchMenuPresenters(JComponent[] items) {
-                    return getMenuPresenters();
-                }
-            }
-            return new Empty();
-        }
     }
 }
 

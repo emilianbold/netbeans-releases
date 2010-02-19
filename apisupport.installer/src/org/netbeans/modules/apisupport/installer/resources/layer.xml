@@ -44,22 +44,18 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Actions">
         <folder name="Project">
-            <file name="org-netbeans-modules-apisupport-installer-actions-BuildInstallersAction.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.installer.actions.Bundle"/>
-                <!--<attr name="delegate" newvalue="org.netbeans.modules.apisupport.installer.actions.BuildInstallersAction.getDefault"/>-->
-                <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.installer.actions.Bundle#CTL_BuildInstaller"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.apisupport.installer.actions.BuildInstallersAction.getDefault"/>
-            </file>
+            <file name="org-netbeans-modules-apisupport-installer-actions-BuildInstallersAction.instance"/>
         </folder>        
     </folder>        
-
     <folder name="Projects">
+        <folder name="org-netbeans-modules-apisupport-project-suite">
         <folder name="Actions">
             <file name="org-netbeans-modules-apisupport-installer-actions-BuildInstallersAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-apisupport-installer-actions-BuildInstallersAction.instance"/>
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.apisupport.installer.actions.BuildInstallersAction.getDefault"/>
                 <attr name="position" intvalue="1"/>
             </file>
-        </folder>        
+        </folder>
+        </folder>
     </folder>   
 </filesystem>
