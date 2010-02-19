@@ -45,19 +45,9 @@
 
 package org.netbeans.modules.mercurial.ui.diff;
 
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import javax.swing.JFileChooser;
 import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.mercurial.HgModuleConfig;
-import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.modules.versioning.util.ExportDiffSupport.AbstractExportDiffPanel;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -68,39 +58,6 @@ public class ExportAsFilePanel extends AbstractExportDiffPanel {
     /** Creates new form ExportAsFilePanel */
     public ExportAsFilePanel() {
         initComponents();
-    }
-
-    private void onBrowseClick() {
-        File oldFile = null;
-        final JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(ExportDiffPanel.class, "ACSD_BrowseFolder"), oldFile);   // NO I18N
-        fileChooser.setDialogTitle(NbBundle.getMessage(ExportDiffPanel.class, "Browse_title"));                                            // NO I18N
-        fileChooser.setMultiSelectionEnabled(false);
-        FileFilter[] old = fileChooser.getChoosableFileFilters();
-        for (int i = 0; i < old.length; i++) {
-            FileFilter fileFilter = old[i];
-            fileChooser.removeChoosableFileFilter(fileFilter);
-
-        }
-        fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
-        fileChooser.setApproveButtonMnemonic(NbBundle.getMessage(ExportDiffPanel.class, "OK_Button").charAt(0));                      // NO I18N
-        fileChooser.setApproveButtonText(NbBundle.getMessage(ExportDiffPanel.class, "OK_Button"));                                        // NO I18N
-        fileChooser.setCurrentDirectory(new File(HgModuleConfig.getDefault().getExportFolder()));
-        DialogDescriptor dd = new DialogDescriptor(fileChooser, NbBundle.getMessage(ExportDiffPanel.class, "Browse_title"));              // NO I18N
-        dd.setOptions(new Object[0]);
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        fileChooser.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String state = e.getActionCommand();
-                if (state.equals(JFileChooser.APPROVE_SELECTION)) {
-                    File f = fileChooser.getSelectedFile();
-                    if (f != null) {
-                        outputFileTextField.setText(f.getAbsolutePath());
-                    }
-                }
-                dialog.dispose();
-            }
-        });
-        dialog.setVisible(true);
     }
 
     /** This method is called from within the constructor to

@@ -541,3 +541,7 @@ org.netbeans.modules.web.debug.actions.MainProjectManager
 org.netbeans.modules.web.debug.breakpoints.JspLineBreakpoint
 org.netbeans.modules.web.debug.util.Utils
 
+#180830
+org.netbeans.modules.versioning.system.cvss.options.AnnotationColorProvider
+org.netbeans.modules.versioning.util.OptionsPanelColorProvider
+org.netbeans.modules.versioning.util.OptionsPanelColorProvider$AnnotationFormat
