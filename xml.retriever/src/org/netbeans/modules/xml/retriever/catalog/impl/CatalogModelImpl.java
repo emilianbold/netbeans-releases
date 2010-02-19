@@ -259,7 +259,7 @@ public class CatalogModelImpl implements CatalogModel {
                 return modelSource;
             }
         } catch (Exception e) {
-            logger.log(Level.WARNING,
+            logger.log(Level.INFO,
                 e.getMessage() == null ? e.getClass().getName() : e.getMessage(), e);
         }
         return null;
