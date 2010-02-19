@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,57 +31,70 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl;
+package org.netbeans.modules.web.jsf.editor.hints;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandlerConfiguration;
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietaryPolicyQName;
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietarySecurityPolicyAttribute;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.w3c.dom.Element;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.text.Document;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.JsfUtils;
+import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Martin Grebac
+ * @author Tomasz.Slota@Sun.COM
  */
-public class CallbackHandlerConfigurationImpl extends ProprietarySecurityPolicyComponentImpl implements CallbackHandlerConfiguration {
-    
-    /**
-     * Creates a new instance of CallbackHandlerConfigurationImpl
-     */
-    public CallbackHandlerConfigurationImpl(WSDLModel model, Element e) {
-        super(model, e);
-    }
-    
-    @Override
-    public void setVisibility(String vis) {
-        setAnyAttribute(ProprietaryPolicyQName.VISIBILITY.getQName(), vis);
+public class FixLibDeclaration implements HintFix{
+    private String nsPrefix;
+    private FaceletsLibrary lib;
+    private Document doc;
+
+    public FixLibDeclaration(Document doc, String nsPrefix, FaceletsLibrary lib) {
+        this.doc = doc;
+        this.nsPrefix = nsPrefix;
+        this.lib = lib;
     }
 
     @Override
-    public String getVisibility() {
-        return getAnyAttribute(ProprietaryPolicyQName.VISIBILITY.getQName());
+    public String getDescription() {
+        return NbBundle.getMessage(FixLibDeclaration.class, "MSG_FixLibDeclaration", nsPrefix, lib.getNamespace());
     }
 
     @Override
-    public void setTimestampTimeout(String timeout) {
-        setAttribute(TIMESTAMPTIMEOUT, ProprietarySecurityPolicyAttribute.TIMESTAMPTIMEOUT, timeout);        
+    public void implement() throws Exception {
+        JsfUtils.importLibrary(doc, lib, nsPrefix);
     }
 
     @Override
-    public String getTimestampTimeout() {
-        return getAttribute(ProprietarySecurityPolicyAttribute.TIMESTAMPTIMEOUT);
+    public boolean isSafe() {
+        return true; // hope so...
     }
 
     @Override
-    public void setIterationsForPDK(String iterations) {
-        setAttribute(ITERATIONS, ProprietarySecurityPolicyAttribute.ITERATIONSFORPDK, iterations);
+    public boolean isInteractive() {
+        return false;
     }
 
-    @Override
-    public String getIterationsForPDK() {
-        return getAttribute(ProprietarySecurityPolicyAttribute.ITERATIONSFORPDK);
+    public static List<FaceletsLibrary> getLibsByPrefix(Document doc, String prefix){
+        List<FaceletsLibrary> libs = new ArrayList<FaceletsLibrary>();
+        JsfSupport sup = JsfSupport.findFor(doc);
+
+        if (sup != null){
+            for (FaceletsLibrary lib : sup.getFaceletsLibraries().values()){
+                if (prefix.equals(lib.getDefaultPrefix())){
+                    libs.add(lib);
+                }
+            }
+        }
+
+        return libs;
     }
-    
 }
