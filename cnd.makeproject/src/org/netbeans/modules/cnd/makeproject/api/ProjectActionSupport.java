@@ -43,10 +43,12 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -85,6 +87,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -271,62 +274,114 @@ public class ProjectActionSupport {
             return handle;
         }
 
-        private InputOutput getIOTab(final String name, final boolean reuse) {
-            final List<Action> list = new ArrayList<Action>();
+//        private InputOutput getIOTab(final String name, final boolean reuse) {
+//            final List<Action> list = new ArrayList<Action>();
+//            sa = new StopAction(this);
+//            ra = new RerunAction(this);
+//            list.add(sa);
+//            list.add(ra);
+//            additional = BuildActionsProvider.getDefault().getActions(name, paes);
+//            // TODO: actions should have acces to output writer. Action should listen output writer.
+//            // Provide parameter outputListener for DefaultProjectActionHandler.ProcessChangeListener
+//            list.addAll(additional);
+//
+//            final ProjectActionEvent pae = paes[currentAction];
+//            final IOProvider ioProvider;
+//
+//            if (pae.getProfile().getConsoleType().getValue() == RunProfile.CONSOLE_TYPE_INTERNAL) {
+//                ioProvider = TerminalIOProviderSupport.getIOProvider();
+//            } else {
+//                ioProvider = IOProvider.getDefault();
+//            }
+//
+//            FutureTask<InputOutput> tabCreationTask = new FutureTask<InputOutput>(new Callable<InputOutput>() {
+//
+//                @Override
+//                public InputOutput call() throws Exception {
+//                    InputOutput tab;
+//
+//                    if (reuse) {
+//                        tab = ioProvider.getIO(name, false); // This will (sometimes!) find an existing one.
+//                        tab.closeInputOutput(); // Close it...
+//                    }
+//
+//                    tab = ioProvider.getIO(name, list.toArray(new Action[list.size()])); // Create a new ...
+//
+//                    try {
+//                        tab.getOut().reset();
+//                    } catch (IOException ioe) {
+//                    }
+//
+//                    return tab;
+//                }
+//            });
+//
+//
+//            InputOutput tab = null;
+//
+//            try {
+//                SwingUtilities.invokeAndWait(tabCreationTask);
+//                tab = tabCreationTask.get();
+//            } catch (Exception ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+//
+//            progressHandle = createProgressHandle();
+//            progressHandle.start();
+//
+//            return tab;
+//        }
+        
+        private InputOutput getIOTab(String name, boolean reuse) {
             sa = new StopAction(this);
             ra = new RerunAction(this);
+            List<Action> list = new ArrayList<Action>();
             list.add(sa);
             list.add(ra);
             additional = BuildActionsProvider.getDefault().getActions(name, paes);
             // TODO: actions should have acces to output writer. Action should listen output writer.
             // Provide parameter outputListener for DefaultProjectActionHandler.ProcessChangeListener
             list.addAll(additional);
-
-            final ProjectActionEvent pae = paes[currentAction];
-            final IOProvider ioProvider;
-
-            if (pae.getProfile().getConsoleType().getValue() == RunProfile.CONSOLE_TYPE_INTERNAL) {
-                ioProvider = TerminalIOProviderSupport.getIOProvider();
-            } else {
-                ioProvider = IOProvider.getDefault();
+            InputOutput tab;
+            if (reuse) {
+                tab = IOProvider.getDefault().getIO(name, false); // This will (sometimes!) find an existing one.
+                tab.closeInputOutput(); // Close it...
             }
-
-            FutureTask<InputOutput> tabCreationTask = new FutureTask<InputOutput>(new Callable<InputOutput>() {
-
-                @Override
-                public InputOutput call() throws Exception {
-                    InputOutput tab;
-
-                    if (reuse) {
-                        tab = ioProvider.getIO(name, false); // This will (sometimes!) find an existing one.
-                        tab.closeInputOutput(); // Close it...
-                    }
-
-                    tab = ioProvider.getIO(name, list.toArray(new Action[list.size()])); // Create a new ...
-
-                    try {
-                        tab.getOut().reset();
-                    } catch (IOException ioe) {
-                    }
-
-                    return tab;
-                }
-            });
-
-
-            InputOutput tab = null;
-            
+            tab = IOProvider.getDefault().getIO(name, list.toArray(new Action[list.size()])); // Create a new ...
             try {
-                SwingUtilities.invokeAndWait(tabCreationTask);
-                tab = tabCreationTask.get();
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
+                tab.getOut().reset();
+            } catch (IOException ioe) {
             }
 
             progressHandle = createProgressHandle();
             progressHandle.start();
 
             return tab;
+        }
+
+        private InputOutput getTermIO() {
+            InputOutput io;
+            // hide issues in Terminal IO Provider for now
+            final AtomicReference<InputOutput> refIO = new AtomicReference<InputOutput>();
+            try {
+                // init new term
+                // FIXUP: due to non lazy creation - we have to do it in EDT and wait
+                SwingUtilities.invokeAndWait(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        IOProvider iOProvider = TerminalIOProviderSupport.getIOProvider();
+                        InputOutput io = iOProvider.getIO(iOProvider.getName() + " - " + tabNameSeq, true); // NOI18N
+                        refIO.set(io);
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            io = refIO.get();
+            return io;
         }
 
         private void reRun() {
@@ -383,9 +438,14 @@ public class ProjectActionSupport {
                 }
             }
 
+            InputOutput io = ioTab;
+            int consoleType = pae.getProfile().getConsoleType().getValue();
+            if (consoleType == RunProfile.CONSOLE_TYPE_INTERNAL && !TerminalIOProviderSupport.isTerminalIO(io)) {
+                io = getTermIO();
+            }
             if (pae.getType() == PredefinedType.CUSTOM_ACTION && customHandler != null) {
                 initHandler(customHandler, pae, paes);
-                customHandler.execute(ioTab);
+                customHandler.execute(io);
             } else {
                 // moved to RemoteBuildProjectActionHandler
                 //if (currentAction == 0 && !checkRemotePath(pae, err, out)) {
@@ -397,7 +457,7 @@ public class ProjectActionSupport {
                     if (factory.canHandle(pae.getType(), pae.getConfiguration())) {
                         ProjectActionHandler handler = currentHandler = factory.createHandler();
                         initHandler(handler, pae, paes);
-                        handler.execute(ioTab);
+                        handler.execute(io);
 
                         foundFactory = true;
                         break;
