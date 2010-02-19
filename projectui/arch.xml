@@ -671,7 +671,7 @@ made subject to such option by the copyright holder.
  <answer id="exec-property">
   <ul>
    <li>
-    <api group="property" name="project.tab.no.selection" type="export" category="private">
+    <api group="systemproperty" name="project.tab.no.selection" type="export" category="private">
      <p>
          When this property is set, the opening of projects doesn't trigger 
          opening and focusing of the projects logical view  top component.
@@ -680,14 +680,14 @@ made subject to such option by the copyright holder.
     </api>
     </li>
    <li>
-    <api group="property" name="org.netbeans.modules.project.ui.OpenProjectList" type="export" category="private">
+    <api group="systemproperty" name="org.netbeans.modules.project.ui.OpenProjectList" type="export" category="private">
      <p>
       Error manager logging category for things affecting project list.
      </p>
     </api>
     </li>
     <li>
-    <api group="property" name="netbeans.projects.dir" type="export" category="private">
+    <api group="systemproperty" name="netbeans.projects.dir" type="export" category="private">
      <p>
       Property for overriding default location of projects directory
       which is folder NetBeansProjects under $HOME on Unixes and under default user folder on 

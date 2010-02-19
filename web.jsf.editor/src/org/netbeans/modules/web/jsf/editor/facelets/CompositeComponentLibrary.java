@@ -42,7 +42,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
@@ -143,6 +147,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     private class CCTldLibrary extends LibraryDescriptor {
 
         private Map<String, Tag> cctags = new HashMap<String, Tag>();
+        private String virtualLibraryPrefix;
 
         public CCTldLibrary() { 
             init();
@@ -154,6 +159,12 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
             //sure the inheritance is a mess
         }
 
+        @Override
+        public String getDefaultPrefix() {
+            //return an artificial made up prefix extracted from the library relative path
+            return virtualLibraryPrefix != null ? virtualLibraryPrefix : super.getDefaultPrefix();
+        }
+
         private void init() {
             Collection<String> componentNames = index().getCompositeLibraryComponents(getLibraryName());
             for (String cname : componentNames) {
@@ -161,12 +172,55 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 		if(model == null) {
 		    return ;
 		}
+                //generate a virtual library prefix:
+                //1. if there is just one folder level up to the resources folder, use it as a prefix
+                //2. if there are more folders, make the prefix from their first letters
+                //note: we may generate duplicated prefixes for different libraries
+                String relativePath = model.getRelativePath();
+                StringTokenizer st = new StringTokenizer(relativePath, "/"); //NOI18N
+                LinkedList<String> tokens = new LinkedList<String>();
+                while(st.hasMoreTokens()) {
+                    tokens.add(st.nextToken());
+                }
+
+                //there should be at least the resources folder, library folder + component filename
+                //but the path may also include META-INF folder and possibly?? some others before the
+                //resources folder, lets remove theese first
+                Iterator<String> sitr = tokens.iterator();
+                while(sitr.hasNext()) {
+                    String token = sitr.next();
+                    if("resources".equalsIgnoreCase(token)) { //NOI18N
+                        //remove the item and finish
+                        sitr.remove();
+                        break;
+                    } else {
+                        //remove the item
+                        sitr.remove();
+                    }
+                }
+
+                assert tokens.size() >= 2; //at least library name && the filename remained
+                tokens.removeLast(); //remove the filename
+
+                //one or more tokens left
+                if(tokens.size() == 1) {
+                    //just library folder
+                    virtualLibraryPrefix = tokens.peek();
+                } else {
+                    //more folders
+                    StringBuilder sb = new StringBuilder();
+                    for(String folderName : tokens) {
+                        sb.append(folderName.charAt(0)); //add first char
+                    }
+                    virtualLibraryPrefix = sb.toString();
+                }
+                
                 Map<String, Attribute> attrs = new HashMap<String, Attribute>();
                 String msgNoTld = NbBundle.getBundle(CompositeComponentLibrary.class).getString("MSG_NO_DESCRIPTOR"); //NOI18N
                 for (Map<String, String> attrsMap : model.getExistingInterfaceAttributes()) {
                     String attrname = attrsMap.get("name"); //NOI18N
                     boolean required = Boolean.parseBoolean(attrsMap.get("required")); //NOI18N
-                    String description = getAttributesDescription(model);
+                    String description = getAttributesDescription(model, true);
                     attrs.put(attrname, new Attribute(attrname, description, required));
                 }
 
@@ -175,10 +229,10 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 sb.append(NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_COMPOSITE_COMPONENT_SOURCE") );//NOI18N
                 sb.append("</b>");//NOI18N
                 sb.append("&nbsp;");//NOI18N
-                sb.append(model.getRelativePath());
+                sb.append(relativePath);
                 sb.append("</p>");//NOI18N
                 sb.append("<p>");//NOI18N
-                sb.append(getAttributesDescription(model));
+                sb.append(getAttributesDescription(model, false));
                 sb.append("</p>");//NOI18N
                 sb.append("<p style=\"color: red\">" + msgNoTld + "</p>"); //NOI18N
 
@@ -187,10 +241,11 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
             }
         }
 
-        private String getAttributesDescription(CompositeComponentModel model) {
+        private String getAttributesDescription(CompositeComponentModel model, boolean includeNoDescriptorMsg) {
             if(model.getExistingInterfaceAttributes().isEmpty()) {
                 return NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_NO_TAG_ATTRS");//NOI18N
             }
+
 
             StringBuffer sb = new StringBuffer();
             sb.append("<b>");//NOI18N
@@ -199,6 +254,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
             sb.append("<table border=\"1\">"); //NOI18N
 
             for (Map<String, String> descr : model.getExistingInterfaceAttributes()) {
+                //first generate entry for the attribute name
                 sb.append("<tr>"); //NOI18N
                 sb.append("<td>"); //NOI18N
                 sb.append("<div style=\"font-weight: bold\">"); //NOI18N
@@ -206,28 +262,35 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 sb.append(attrname);
                 sb.append("</div>"); //NOI18N
                 sb.append("</td>"); //NOI18N
-                sb.append("<td>"); //NOI18N
 
-                sb.append("<table border=\"0\" padding=\"0\" margin=\"0\" spacing=\"2\">"); //NOI18N
-                for (String key : descr.keySet()) {
-                    if (key.equals("name")) {//NOI18N
-                        continue; //skip name
+                //then for the rest of the attributes, except the "name" atttribute
+                if(descr.size() > 1) {
+                    sb.append("<td>"); //NOI18N
+                    sb.append("<table border=\"0\" padding=\"0\" margin=\"0\" spacing=\"2\">"); //NOI18N
+                    for (String key : descr.keySet()) {
+                        if (key.equals("name")) {//NOI18N
+                            continue; //skip name
+                        }
+                        String val = descr.get(key);
+                        sb.append("<tr><td><b>");//NOI18N
+                        sb.append(key);
+                        sb.append("</b></td><td>");//NOI18N
+                        sb.append(val);
+                        sb.append("</td></tr>");//NOI18N
                     }
-                    String val = descr.get(key);
-                    sb.append("<tr><td><b>");//NOI18N
-                    sb.append(key);
-                    sb.append("</b></td><td>");//NOI18N
-                    sb.append(val);
-                    sb.append("</td></tr>");//NOI18N
+                    sb.append("</table>"); //NOI18N
+
+
+                    sb.append("</td>"); //NOI18N
                 }
-                sb.append("</table>"); //NOI18N
-
-
-                sb.append("</td>"); //NOI18N
                 sb.append("</tr>"); //NOI18N
                 }
             sb.append("</table>"); //NOI18N
 
+            if(includeNoDescriptorMsg) {
+                String msgNoDescriptor = NbBundle.getBundle(CompositeComponentLibrary.class).getString("MSG_NO_DESCRIPTOR"); //NOI18N
+                sb.append("<p style=\"color: red\">" + msgNoDescriptor + "</p>");
+            } //NOI18N
 
             return sb.toString();
         }

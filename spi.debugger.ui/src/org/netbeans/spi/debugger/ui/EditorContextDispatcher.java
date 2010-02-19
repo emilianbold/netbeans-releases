@@ -279,6 +279,20 @@ public final class EditorContextDispatcher {
         return mostRecentFileRef.get();
     }
 
+    /** Used by unit test only */
+    void setMostRecentFile(FileObject file) {
+        Object oldFile;
+        String MIMEType = null;
+        synchronized (this) {
+            oldFile = mostRecentFileRef.get();
+            mostRecentFileRef = new WeakReference(file);
+            if (file != null) {
+                MIMEType = file.getMIMEType();
+            }
+        }
+        refreshProcessor.post(new EventFirer(PROP_EDITOR, oldFile, file, MIMEType));
+    }
+
     /**
      * Get the String representation of URL of the most recent active file.
      * @return The String representation of URL of the most recent file or
@@ -526,6 +540,9 @@ public final class EditorContextDispatcher {
                     //System.err.println("\nCURRENT FILES = "+fos+"\n");
                     currentFile = newFile == null ? NO_FILE : new WeakReference<FileObject>(newFile);
                     currentURL = null;
+                    if (newFile != null) {
+                        mostRecentFileRef = currentFile;
+                    }
                     reAttachFileChangeListener(oldFile, newFile, true);
                     /*if (newFile != null) {  - NO, we need the last file in editor.
                         mostRecentFileRef = new WeakReference(newFile);

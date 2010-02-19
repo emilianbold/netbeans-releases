@@ -43,6 +43,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -121,6 +123,15 @@ public class RemoteUtil {
         } else {
             // there is a protocol and it equals to ssh
             return ! id.startsWith("ssh" + protocolSeparator); //NOI18N
+        }
+    }
+    
+    public static String getDisplayName(ExecutionEnvironment execEnv) {
+        ServerRecord rec = ServerList.get(execEnv);
+        if (rec == null) {
+            return execEnv.getDisplayName();
+        } else {
+            return rec.getDisplayName();
         }
     }
 }

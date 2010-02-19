@@ -38,12 +38,15 @@
 # made subject to such option by the copyright holder.
 
 LINKER=cc
-CC=gcc
+
+CC-Linux := gcc
+CC-SunOS := cc
+CC-Mac_OS_X := gcc
 
 DEBUG := -g
 
-CFLAGS-COMMON := -c ${DEBUG} -fPIC -D_GNU_SOURCE -Wimplicit
-CFLAGS-Linux := ${CFLAGS-COMMON}
+CFLAGS-COMMON := -c ${DEBUG} -fPIC -D_GNU_SOURCE
+CFLAGS-Linux := ${CFLAGS-COMMON} -Wimplicit -Werror
 CFLAGS-SunOS := ${CFLAGS-COMMON}
 CFLAGS-Mac_OS_X := ${CFLAGS-COMMON}
 
@@ -77,6 +80,7 @@ ifeq (Darwin,$(UNAME_S))
 endif
 
 TRACE := 0
+CC := ${CC-${OSNAME}}
 CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG32_64} -DTRACE=${TRACE} ${EXTRA_CFLAGS}
 LDFLAGS_LIB := ${LDFLAGS-LIB-${OSNAME}} ${FLAG32_64} ${DEBUG}
 LDFLAGS_APP := ${LDFLAGS-APP-${OSNAME}} ${FLAG32_64} ${DEBUG}
@@ -93,14 +97,17 @@ else
     TEST_ENV_PARAM := 
 endif
 
-PLATFORM-i386  :=  x86${PLATFORM_64}
-PLATFORM-i686  :=  x86${PLATFORM_64}
-PLATFORM-x86_64  :=  x86${PLATFORM_64}
-PLATFORM-sparc  :=  sparc${PLATFORM_64}
-ifeq (${UNAME_P}, unknown)
-	PLATFORM = ${PLATFORM-${UNAME_M}}
-else
-	PLATFORM = ${PLATFORM-${UNAME_P}}
+# map different values of `uname -p` and/or `uname -m` into standard postfixes
+TMP-i386   :=  x86
+TMP-i686   :=  x86
+TMP-i86pc  :=  x86
+TMP-x86_64 :=  x86
+TMP-sparc  :=  sparc
+TMP-sun4u  :=  sparc
+
+PLATFORM = ${TMP-${UNAME_P}}${PLATFORM_64}
+ifeq (${PLATFORM}, )
+    PLATFORM = ${TMP-${UNAME_M}}${PLATFORM_64}
 endif
 
 testit :sh= uname -s
@@ -111,7 +118,7 @@ BUILD_BASE="./build"
 DIST=${DIST_BASE}/$(OSNAME)-$(PLATFORM)
 BUILD=${BUILD_BASE}/$(OSNAME)-$(PLATFORM)
 
-INSTALLDIR=../../nbbuild/netbeans/cnd?/bin
+INSTALLDIR=../../nbbuild/netbeans/cnd/bin
 
 all: build_impl install
 
@@ -122,7 +129,7 @@ build_impl: check init ${DIST}/rfs_preload.so ${DIST}/rfs_controller ${DIST}/rfs
 
 #object files
 ${BUILD}/%.o : %.c
-	${CC} ${CFLAGS} -Werror -o $@ $<
+	${CC} ${CFLAGS} -o $@ $<
 
 # rfs_test_env can do with implicit function declarations
 ${BUILD}/rfs_test_env.o : rfs_test_env.c

@@ -55,7 +55,6 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -975,17 +974,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     };
 
     private void attachIssueListener(final NbJiraIssue issue) {
-        issue.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getSource() != issue) {
-                    return;
-                }
-                if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
-                    reloadFormInAWT(false);
-                } 
-            }
-        });
         IssueCacheUtils.removeCacheListener(issue, cacheListener);
         IssueCacheUtils.addCacheListener(issue, cacheListener);
     }

@@ -87,7 +87,7 @@ public class FileChooserAccessory extends javax.swing.JPanel
     private VariablesModel varModel;
     private boolean enableVariableBasedSelection = false;
 
-    private static boolean userSelection = false;
+    private boolean userSelection = false;
     /**
      * Constructor for usage from RelativizeFilePathCustomizer.
      */

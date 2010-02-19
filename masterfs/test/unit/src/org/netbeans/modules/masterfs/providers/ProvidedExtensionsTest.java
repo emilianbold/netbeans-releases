@@ -55,6 +55,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import junit.framework.AssertionFailedError;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
@@ -76,6 +77,12 @@ import org.openide.util.lookup.Lookups;
  */
 public class ProvidedExtensionsTest extends NbTestCase {
     private ProvidedExtensionsImpl iListener;
+
+    static {
+        MockServices.setServices(AnnotationProviderImpl.class);
+    }
+
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         AnnotationProvider provider = (AnnotationProvider)Lookups.metaInfServices(
@@ -353,6 +360,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
 
             iListener.setImplsRenameRetVal(true);
             FileChangeListener fcl =  new FileChangeAdapter() {
+                @Override
                 public void fileRenamed(FileRenameEvent fe)  {
                     try {                        
                         File f = FileUtil.toFile(toRename);
@@ -434,7 +442,6 @@ public class ProvidedExtensionsTest extends NbTestCase {
     }
 
     
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.masterfs.providers.AnnotationProvider.class)
     public static class AnnotationProviderImpl extends InterceptionListenerTest.AnnotationProviderImpl  {
         private ProvidedExtensionsImpl impl = new ProvidedExtensionsImpl(this);
         public InterceptionListener getInterceptionListener() {
@@ -456,6 +463,8 @@ public class ProvidedExtensionsTest extends NbTestCase {
         private static  boolean implsMoveRetVal = true;
         private static boolean implsRenameRetVal = true;
         private static boolean implsDeleteRetVal = false;
+
+        private static int cnt;
         
         public static FileLock lock;
         private final AnnotationProviderImpl provider;
@@ -466,6 +475,15 @@ public class ProvidedExtensionsTest extends NbTestCase {
 
         public ProvidedExtensionsImpl(AnnotationProviderImpl p) {
             this.provider = p;
+            cnt++;
+        }
+        
+        public static void assertCreated(String msg, boolean reallyCreated) {
+            if (reallyCreated) {
+                assertEquals(msg, 1, cnt);
+            } else {
+                assertEquals(msg, 0, cnt);
+            }
         }
         
         public void clear() {
@@ -506,9 +524,11 @@ public class ProvidedExtensionsTest extends NbTestCase {
             implsBeforeChangeCalls++;
         }    
         
+        @Override
         public ProvidedExtensions.DeleteHandler getDeleteHandler(File f) {
             return (!isImplsDeleteRetVal()) ? null : new ProvidedExtensions.DeleteHandler(){
                 final Set s = new HashSet();
+                @Override
                 public boolean delete(File file) {
                     if (file.isDirectory()) {
                         File[] childs = file.listFiles(new FileFilter() {
@@ -530,6 +550,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
             };
         }
                 
+        @Override
         public ProvidedExtensions.IOHandler getRenameHandler(final File from, final String newName) {
             implsRenameCalls++;
             final File f = new File(from.getParentFile(),newName);
@@ -542,6 +563,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
             };
         }
         
+        @Override
         public ProvidedExtensions.IOHandler getMoveHandler(final File from, final File to) {
             implsMoveCalls++;
             return (!isImplsMoveRetVal()) ? null : new ProvidedExtensions.IOHandler(){
@@ -554,15 +576,19 @@ public class ProvidedExtensionsTest extends NbTestCase {
                     assertFalse(to.exists());
                     
                     assertFalse(from.equals(to));
-                    InputStream inputStream = new FileInputStream(from);
-                    OutputStream outputStream = new FileOutputStream(to);
-                    try {
-                        FileUtil.copy(inputStream, outputStream);
-                    } finally {
-                        if (inputStream != null) inputStream.close();
-                        if (outputStream != null) outputStream.close();
+                    if (from.isDirectory()) {
+                        from.renameTo(to);
+                    } else {
+                        InputStream inputStream = new FileInputStream(from);
+                        OutputStream outputStream = new FileOutputStream(to);
+                        try {
+                            FileUtil.copy(inputStream, outputStream);
+                        } finally {
+                            if (inputStream != null) inputStream.close();
+                            if (outputStream != null) outputStream.close();
+                        }
+                        assertTrue(from.delete());
                     }
-                    assertTrue(from.delete());
                     
                     assertFalse(from.exists());
                     assertTrue(to.exists());
@@ -577,29 +603,29 @@ public class ProvidedExtensionsTest extends NbTestCase {
         public static void setLock(FileLock lock) {
             ProvidedExtensionsImpl.lock = lock;
         }
-        
+
         public static boolean isImplsMoveRetVal() {
             return implsMoveRetVal;
         }
-        
+
         public static void setImplsMoveRetVal(boolean implsMoveRetVal) {
             ProvidedExtensionsImpl.implsMoveRetVal = implsMoveRetVal;
         }
-        
+
         public static boolean isImplsRenameRetVal() {
             return implsRenameRetVal;
         }
-        
+
         public static void setImplsRenameRetVal(boolean implsRenameRetVal) {
             ProvidedExtensionsImpl.implsRenameRetVal = implsRenameRetVal;
         }
-               
+
         public static boolean isImplsDeleteRetVal() {
             return implsDeleteRetVal;
         }
-        
+
         public static void setImplsDeleteRetVal(boolean implsDeleteRetVal) {
             ProvidedExtensionsImpl.implsDeleteRetVal = implsDeleteRetVal;
-        }                
+        }
     }
 }

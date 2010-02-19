@@ -4,16 +4,16 @@ Byte
 End cursor position = 1012
 [<% list.|, Boolean element (), <% list.element(), 1050]
 boolean add (Boolean e )
-void add (int index , Boolean element )
-boolean addAll (Collection <? extends Bo
-boolean addAll (int index , Collection <
+void add (int index , Boolean 
+boolean addAll (Collection <? 
+boolean addAll (int index , Co
 void addFirst (Boolean e )
 void addLast (Boolean e )
 void clear ()
 Object clone ()
 boolean contains (Object o )
-boolean containsAll (Collection  c )
-Iterator <Boolean> descendingIterator ()
+boolean containsAll (Collectio
+Iterator <Boolean> descendingI
 Boolean element ()
 boolean equals (Object o )
 Boolean get (int index )
@@ -25,12 +25,12 @@ int indexOf (Object o )
 boolean isEmpty ()
 Iterator <Boolean> iterator ()
 int lastIndexOf (Object o )
-ListIterator <Boolean> listIterator ()
-ListIterator <Boolean> listIterator (int
+ListIterator <Boolean> listIte
+ListIterator <Boolean> listIte
 void notify ()
 void notifyAll ()
 boolean offer (Boolean e )
-boolean offerFirst (Boolean e )
+boolean offerFirst (Boolean e 
 boolean offerLast (Boolean e )
 Boolean peek ()
 Boolean peekFirst ()
@@ -43,21 +43,21 @@ void push (Boolean e )
 Boolean remove ()
 boolean remove (Object o )
 Boolean remove (int index )
-boolean removeAll (Collection  c )
+boolean removeAll (Collection 
 Boolean removeFirst ()
-boolean removeFirstOccurrence (Object o 
+boolean removeFirstOccurrence 
 Boolean removeLast ()
-boolean removeLastOccurrence (Object o )
-boolean retainAll (Collection  c )
-Boolean set (int index , Boolean element
+boolean removeLastOccurrence (
+boolean retainAll (Collection 
+Boolean set (int index , Boole
 int size ()
-List <Boolean> subList (int fromIndex , 
+List <Boolean> subList (int fr
 Object[] toArray ()
 T[] toArray (T[] a )
 String toString ()
 void wait ()
 void wait (long timeout )
-void wait (long timeout , int nanos )
+void wait (long timeout , int 
 End cursor position = 1068
 [<% for (Boolean b : list)  b.|, Boolean FALSE, <% for (Boolean b : list)  b.FALSE, 1167]
 Boolean FALSE
@@ -66,19 +66,19 @@ Class <Boolean> TYPE
 boolean booleanValue ()
 int compareTo (Boolean b )
 boolean equals (Object obj )
-boolean getBoolean (String name )
+boolean getBoolean (String nam
 Class  getClass ()
 int hashCode ()
 void notify ()
 void notifyAll ()
-boolean parseBoolean (String s )
+boolean parseBoolean (String s
 String toString ()
 String toString (boolean b )
 Boolean valueOf (String s )
 Boolean valueOf (boolean b )
 void wait ()
 void wait (long timeout )
-void wait (long timeout , int nanos )
+void wait (long timeout , int 
 End cursor position = 1202
 [<% for (String str : a) a.|, int length, <% for (String str : a) a.length, 1252]
 int length
@@ -91,7 +91,7 @@ void notifyAll ()
 String toString ()
 void wait ()
 void wait (long timeout )
-void wait (long timeout , int nanos )
+void wait (long timeout , int 
 End cursor position = 1285
 [<% suit.|, Suit DIAMONDS, <% suit.DIAMONDS, 1322]
 Suit CLUBS
@@ -101,7 +101,7 @@ Suit SPADES
 int compareTo (Suit o )
 boolean equals (Object other )
 Class  getClass ()
-Class <Suit> getDeclaringClass ()
+Class <Suit> getDeclaringClass
 int hashCode ()
 String name ()
 void notify ()
@@ -109,19 +109,19 @@ void notifyAll ()
 int ordinal ()
 String toString ()
 Suit valueOf (String name )
-T valueOf (Class <T> enumType , String n
+T valueOf (Class <T> enumType 
 Suit[] values ()
 void wait ()
 void wait (long timeout )
-void wait (long timeout , int nanos )
+void wait (long timeout , int 
 End cursor position = 1339
 [<% @Card.|, RequestForEnhancement, <% @Card.RequestForEnhancement, 1435]
 RequestForEnhancement
 Second
 End cursor position = 1466
 [<% @Card.RequestForEnhancement(|)%>, String date = "[unimplemented]", <% @Card.RequestForEnhancement(date=)%>, 1556]
-String date = "[unimplemented]"
-String engineer = "[unassigned]"
+String date = "[unimplemented]
+String engineer = "[unassigned
 int id
 String synopsis
 End cursor position = 1593
@@ -143,30 +143,31 @@ int DAY_OF_YEAR
 int DECEMBER
 int DST_OFFSET
 void destroy ()
-void doDelete (HttpServletRequest req , 
-void doGet (HttpServletRequest req , Htt
-void doHead (HttpServletRequest req , Ht
-void doOptions (HttpServletRequest req ,
-void doPost (HttpServletRequest req , Ht
-void doPut (HttpServletRequest req , Htt
-void doTrace (HttpServletRequest req , H
+void doDelete (HttpServletRequ
+void doGet (HttpServletRequest
+void doHead (HttpServletReques
+void doOptions (HttpServletReq
+void doPost (HttpServletReques
+void doPut (HttpServletRequest
+void doTrace (HttpServletReque
 do
 double
 Deprecated
+DispatcherType
 Double
 End cursor position = 1714
 [<% get| %>, Calendar getInstance, <% getInstance() %>, 1767]
-Locale[] getAvailableLocales ()
+Locale[] getAvailableLocales (
 Class  getClass ()
-String getInitParameter (String name )
-Enumeration getInitParameterNames ()
+String getInitParameter (Strin
+Enumeration <String> getInitPa
 Calendar getInstance ()
-Calendar getInstance (Locale aLocale )
-Calendar getInstance (TimeZone zone )
-Calendar getInstance (TimeZone zone , Lo
-long getLastModified (HttpServletRequest
-ServletConfig getServletConfig ()
-ServletContext getServletContext ()
+Calendar getInstance (Locale a
+Calendar getInstance (TimeZone
+Calendar getInstance (TimeZone
+long getLastModified (HttpServ
+ServletConfig getServletConfig
+ServletContext getServletConte
 String getServletInfo ()
 String getServletName ()
 End cursor position = 1784

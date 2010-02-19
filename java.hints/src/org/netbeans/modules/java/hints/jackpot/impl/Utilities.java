@@ -144,6 +144,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbCollections;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -547,6 +548,16 @@ public class Utilities {
     }
 
     public static Scope constructScope(CompilationInfo info, Map<String, TypeMirror> constraints, Iterable<? extends String> auxiliaryImports) {
+        return Lookup.getDefault().lookup(SPI.class).constructScope(info, constraints, auxiliaryImports);
+    }
+
+    public interface SPI {
+        public Scope constructScope(CompilationInfo info, Map<String, TypeMirror> constraints, Iterable<? extends String> auxiliaryImports);
+    }
+
+    @ServiceProvider(service=SPI.class, position=1000)
+    public static final class SPIImpl implements SPI {
+        public Scope constructScope(CompilationInfo info, Map<String, TypeMirror> constraints, Iterable<? extends String> auxiliaryImports) {
         StringBuilder clazz = new StringBuilder();
 
         clazz.append("package $;");
@@ -580,8 +591,11 @@ public class Utilities {
 
         //TODO: remove impl. dep. on java.source
         JavaFileObject jfo = FileObjects.memoryFileObject("$", "$", new File("/tmp/t" + count + ".java").toURI(), System.currentTimeMillis(), clazz.toString());
+        boolean oldSkipAPs = jti.skipAnnotationProcessing;
 
         try {
+            jti.skipAnnotationProcessing = true;
+            
             Iterable<? extends CompilationUnitTree> parsed = jti.parse(jfo);
             CompilationUnitTree cut = parsed.iterator().next();
 
@@ -591,7 +605,10 @@ public class Utilities {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return null;
+        } finally {
+            jti.skipAnnotationProcessing = oldSkipAPs;
         }
+    }
     }
 
     private static final class ScannerImpl extends TreePathScanner<Scope, CompilationInfo> {

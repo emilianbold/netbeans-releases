@@ -46,11 +46,11 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
+import org.netbeans.modules.cnd.makefile.model.AbstractMakefileElement;
 import org.netbeans.modules.cnd.makefile.model.MakefileAssignment;
-import org.netbeans.modules.cnd.makefile.model.MakefileElement;
-import org.netbeans.modules.cnd.makefile.model.MakefileElementKind;
 import org.netbeans.modules.cnd.makefile.model.MakefileRule;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
@@ -75,40 +75,40 @@ public class MakefileParserTest extends NbTestCase {
     }
 
     public void testSample() throws Exception {
-        MakefileModel result = parseFile(new File(getDataDir(), "Makefile1"));
+        MakefileParseResult result = parseFile(new File(getDataDir(), "Makefile1"));
         assertNotNull(result);
-        List<MakefileElement> elements = result.getElements();
+        List<? extends AbstractMakefileElement> elements = result.getElements();
         assertNotNull(elements);
 
         MakefileAssignment rm = (MakefileAssignment) elements.get(0);
-        assertEquals(MakefileElementKind.ASSIGNMENT, rm.getKind());
-        assertEquals("RM", rm.getMacroName());
-        assertEquals("rm", rm.getMacroValue());
+        assertEquals(ElementKind.VARIABLE, rm.getKind());
+        assertEquals("RM", rm.getName());
+        assertEquals("rm", rm.getValue());
 
         MakefileAssignment cc = (MakefileAssignment) elements.get(1);
-        assertEquals(MakefileElementKind.ASSIGNMENT, cc.getKind());
-        assertEquals("CC", cc.getMacroName());
-        assertEquals("gcc", cc.getMacroValue());
+        assertEquals(ElementKind.VARIABLE, cc.getKind());
+        assertEquals("CC", cc.getName());
+        assertEquals("gcc", cc.getValue());
 
         MakefileRule buildConf = (MakefileRule) elements.get(2);
-        assertEquals(MakefileElementKind.RULE, buildConf.getKind());
+        assertEquals(ElementKind.RULE, buildConf.getKind());
         assertEquals(Collections.singletonList(".build-conf"), buildConf.getTargets());
         assertEquals(Arrays.asList("$(BUILD_SUBPROJECTS)", "dist/Debug/GNU-Solaris-x86/quote_1"), buildConf.getPrerequisites());
 
         MakefileRule cleanConf = (MakefileRule) elements.get(3);
-        assertEquals(MakefileElementKind.RULE, cleanConf.getKind());
+        assertEquals(ElementKind.RULE, cleanConf.getKind());
         assertEquals(Collections.singletonList(".clean-conf"), cleanConf.getTargets());
         assertEquals(Collections.emptyList(), cleanConf.getPrerequisites());
 
         MakefileRule done = (MakefileRule) elements.get(4);
-        assertEquals(MakefileElementKind.RULE, done.getKind());
+        assertEquals(ElementKind.RULE, done.getKind());
         assertEquals(Collections.singletonList(".DONE"), done.getTargets());
         assertEquals(Collections.emptyList(), done.getPrerequisites());
 
         assertEquals(5, elements.size());
     }
 
-    private MakefileModel parseFile(File file) throws ParseException {
+    private MakefileParseResult parseFile(File file) throws ParseException {
         FileObject fobj = FileUtil.toFileObject(file);
         MakefileParser parser = new MakefileParser();
         parser.parse(Source.create(fobj).createSnapshot(), null, null);

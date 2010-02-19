@@ -121,21 +121,19 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     private Task storeColumnsTask;
     private final StoreColumnsHandler storeColumnsWidthHandler;
     private final JButton colsButton;
+    private boolean savedQueryInitialized;
 
     /**
      * Returns the issue table filters
      * @return
      */
     public Filter[] getDefinedFilters() {
-        if(filters == null) {
-            filters = new Filter[] {
-                Filter.getAllFilter(query),
-                Filter.getNotSeenFilter(),
-                Filter.getObsoleteDateFilter(query),
-                Filter.getAllButObsoleteDateFilter(query)
-            };
-        }
         return filters;
+    }
+
+    private void initFilters() {
+        filters = new Filter[]{Filter.getAllFilter(query), Filter.getNotSeenFilter(query), Filter.getObsoleteDateFilter(query), Filter.getAllButObsoleteDateFilter(query)};
+        filter = filters[0]; // preset the first filter as default
     }
 
     private static final Comparator<IssueProperty> NodeComparator = new Comparator<IssueProperty>() {
@@ -169,6 +167,8 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         tableModel = new NodeTableModel();
         sorter = new TableSorter(tableModel);
         
+        initFilters();
+
         sorter.setColumnComparator(Node.Property.class, NodeComparator);
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());
@@ -179,7 +179,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         if (borderColor == null) borderColor = UIManager.getColor("controlShadow"); // NOI18N
         component.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
 
-        ImageIcon ic = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/openide/explorer/columns.gif", true));
+        ImageIcon ic = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/columns_16.png", true));
         colsButton = new javax.swing.JButton(ic);
         colsButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TreeTableView.class, "ACN_ColumnsSelector")); //NOI18N
         colsButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TreeTableView.class, "ACD_ColumnsSelector")); //NOI18N
@@ -457,6 +457,9 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
      * @param columns array of column names, they must be one of SyncFileNode.COLUMN_NAME_XXXXX constants.
      */
     public final void initColumns() {
+        if(savedQueryInitialized) {
+            return;
+        }
         setModelProperties(query);
         if(descriptors.length > 0) {
             sorter.setSortingStatus(0, TableSorter.ASCENDING); // default sorting by first column
@@ -468,6 +471,9 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
             }
         }
         setDefaultColumnSizes();
+        if(query.isSaved()) {
+            savedQueryInitialized = true;
+        }
     }
 
     private void setModelProperties(Query query) {
@@ -654,7 +660,16 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     private TableColumnModelListener tcml = new TableColumnModelListener() {
         public void columnAdded(TableColumnModelEvent e) {}
         public void columnRemoved(TableColumnModelEvent e) {}
-        public void columnMoved(TableColumnModelEvent e) {}
+        public void columnMoved(TableColumnModelEvent e) {
+            int from = e.getFromIndex();
+            int to = e.getToIndex();
+            if(from == to) {
+                return;
+            }
+            table.getTableHeader().getColumnModel().getColumn(from).setModelIndex(from);
+            table.getTableHeader().getColumnModel().getColumn(to).setModelIndex(to);
+            tableModel.moveColumn(from, to);
+        }
         public void columnSelectionChanged(ListSelectionEvent e) {}
         public void columnMarginChanged(ChangeEvent e) {
             storeColumnsTask.schedule(1000);

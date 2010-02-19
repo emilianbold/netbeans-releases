@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.navigation.overrides;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -52,8 +51,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
 /**
@@ -63,7 +62,7 @@ import org.openide.loaders.DataObject;
  */
 public class AnnotationsHolder implements PropertyChangeListener {
 
-    private static final Logger LOGGER = Logger.getLogger(AnnotationsHolder.class.getName());
+    //private static final Logger LOGGER = Logger.getLogger(AnnotationsHolder.class.getName());
 
     /**
      * Maps file objects to AnnotationsHolder instances.
@@ -71,27 +70,31 @@ public class AnnotationsHolder implements PropertyChangeListener {
      */
     private static final Map<DataObject, AnnotationsHolder> file2holders = new HashMap<DataObject, AnnotationsHolder>();
     
-    public static AnnotationsHolder get(FileObject file) {
-        try {
-            DataObject od = DataObject.find(file);
-            synchronized (file2holders) {
-                AnnotationsHolder a = file2holders.get(od);
-                if (a != null) {
-                    return a;
-                }
-                EditorCookie.Observable ec = od.getLookup().lookup(EditorCookie.Observable.class);
-                if (ec == null) {
-                    return null;
-                }
-                file2holders.put(od, a = new AnnotationsHolder(od, ec));
-                return a;
+    public static AnnotationsHolder get(DataObject dao) {
+        synchronized (file2holders) {
+            AnnotationsHolder holder = file2holders.get(dao);
+            if (holder != null) {
+                return holder;
             }
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);            
-            return null;
+            EditorCookie.Observable ec = dao.getLookup().lookup(EditorCookie.Observable.class);
+            if (ec == null) {
+                return null;
+            }
+            file2holders.put(dao, holder = new AnnotationsHolder(dao, ec));
+            return holder;
         }
     }
-    
+
+    public static void clearIfNeed(DataObject dao) {
+        AnnotationsHolder holder;
+        synchronized (file2holders) {
+            holder = file2holders.remove(dao);
+        }
+        if (holder != null) {
+            holder.setNewAnnotations(Collections.<BaseAnnotation>emptyList());
+        }
+    }
+
     private final DataObject file;
     private final EditorCookie.Observable ec;
 
@@ -99,13 +102,13 @@ public class AnnotationsHolder implements PropertyChangeListener {
      * Contains annotations that has been already attached to the document.
      * Accessed ONLY WITHIN AWT THREAD => needs no synchronization.
      */
-    private final Collection<OverriddeAnnotation> attachedAnnotations = new ArrayList<OverriddeAnnotation>();
+    private final List<BaseAnnotation> attachedAnnotations = new ArrayList<BaseAnnotation>();
 
     /**
      * Annotations that are to be attached to the document.
      * Synchronized by pendingAnnotationsLock.
      */
-    private Collection<OverriddeAnnotation> pendingAnnotations = null;
+    private Collection<BaseAnnotation> pendingAnnotations = null;
 
     /** 
      * A lock for accesing pendingAnnotations
@@ -140,29 +143,29 @@ public class AnnotationsHolder implements PropertyChangeListener {
             synchronized (file2holders) {
                 file2holders.remove(file);
             }            
-            setNewAnnotations(Collections.<OverriddeAnnotation>emptyList());
+            setNewAnnotations(Collections.<BaseAnnotation>emptyList());
             ec.removePropertyChangeListener(this);
         }
     }
     
-    public void setNewAnnotations(Collection<OverriddeAnnotation> annotations2set) {
+    public void setNewAnnotations(Collection<BaseAnnotation> annotations2set) {
 
         synchronized (pendingAnnotationsLock) {
-            pendingAnnotations = new ArrayList<OverriddeAnnotation>(annotations2set);
+            pendingAnnotations = new ArrayList<BaseAnnotation>(annotations2set);
         }
 
         Runnable doAttachDetach = new Runnable() {
             @Override
             public void run() {
-                assertUiThread();
+                CndUtils.assertUiThread();
                 // First, clear old annotations.
                 // This should be done even if annotations are to be updated again.
-                for (OverriddeAnnotation a : attachedAnnotations) {
+                for (BaseAnnotation a : attachedAnnotations) {
                     a.detachImpl();
                 }
                 attachedAnnotations.clear();
                 // Remember pendingAnnotations and set it to null
-                Collection<OverriddeAnnotation> toAdd;
+                Collection<BaseAnnotation> toAdd;
                 synchronized (pendingAnnotationsLock) {
                     toAdd = pendingAnnotations;
                     pendingAnnotations = null;
@@ -170,7 +173,7 @@ public class AnnotationsHolder implements PropertyChangeListener {
                 if (toAdd == null) {
                     return;
                 }
-                for (OverriddeAnnotation a : toAdd) {
+                for (BaseAnnotation a : toAdd) {
                     a.attach();
                     attachedAnnotations.add(a);
                 }
@@ -188,14 +191,8 @@ public class AnnotationsHolder implements PropertyChangeListener {
      * Gets annotations that have been attached to the document.
      * Should be called ONLY FROM AWT THREAD
      */
-    public synchronized List<OverriddeAnnotation> getAttachedAnnotations() {
-        assertUiThread();
-        return new ArrayList<OverriddeAnnotation>(attachedAnnotations);
-    }
-
-    private void assertUiThread() {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            throw new IllegalStateException("AnnotationsHolder.getAnnotations should be called only from AWT thread!"); //NOI18N
-        }
+    public List<BaseAnnotation> getAttachedAnnotations() {
+        CndUtils.assertUiThread();
+        return new ArrayList<BaseAnnotation>(attachedAnnotations);
     }
 }

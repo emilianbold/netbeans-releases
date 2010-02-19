@@ -118,7 +118,7 @@ public class ExportDiffPanel extends ChangesetPickerPanel {
     }
 
     private void setDefaultOutputFile() {
-        String folderName = HgModuleConfig.getDefault().getExportFolder();
+        String folderName = HgModuleConfig.getDefault().getPreferences().get("ExportDiff.saveFolder", HgModuleConfig.getDefault().getExportFolder()); // NOI18N
         String fileName;
         if (fileToDiff != null && repoRev != null && repoRev.getLog() != null && repo != null) { //"<filename-ext>_%b_%r_%h"
             fileName = fileToDiff.getName().replace('.', '-') + "_" +  //NOI18N

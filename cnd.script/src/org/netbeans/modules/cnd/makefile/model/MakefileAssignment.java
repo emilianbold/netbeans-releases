@@ -36,15 +36,40 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.makefile.model;
 
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
+
 /**
- *
  * @author Alexey Vladykin
  */
-public interface MakefileAssignment extends MakefileElement {
+public final class MakefileAssignment extends AbstractMakefileElement {
 
-    String getMacroName();
+    private final String value;
 
-    String getMacroValue();
+    public MakefileAssignment(String name, String value, FileObject file, int startOffset, int endOffset) {
+        super(ElementKind.VARIABLE, name, file, startOffset, endOffset);
+        Parameters.notNull("value", value);
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    @Override
+    public boolean signatureEquals(ElementHandle that) {
+        return that instanceof MakefileAssignment
+                && that.getKind() == this.getKind()
+                && that.getName().equals(this.getName());
+    }
+
+    @Override
+    public String toString() {
+        return getName() + " = " + getValue(); // NOI18N
+    }
 }

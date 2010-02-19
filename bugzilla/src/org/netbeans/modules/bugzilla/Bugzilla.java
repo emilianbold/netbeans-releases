@@ -153,6 +153,7 @@ public class Bugzilla {
     }
 
     public void addRepository(BugzillaRepository repository) {
+        assert repository != null;
         if(repository instanceof KenaiRepository) {
             // we don't store kenai repositories - XXX  shouldn't be even called
             return;

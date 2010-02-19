@@ -104,7 +104,7 @@ public final class NewKenaiProjectAction implements ActionListener {
         options[2] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.close"));
 
 
-        DialogDescriptor dialogDesc = new DialogDescriptor(new LandingPagePanel(kenaiPrj.getName(), localPath), 
+        DialogDescriptor dialogDesc = new DialogDescriptor(new LandingPagePanel(kenaiPrj.getName(), localPath, kenaiPrj.getKenai().getName()),
                 NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.dialogTitle"),
                 true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
 

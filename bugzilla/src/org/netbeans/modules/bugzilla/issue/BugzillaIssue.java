@@ -86,7 +86,6 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
-import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.repository.IssueField;
@@ -562,6 +561,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
             public void run() {
                 ((BugzillaIssueNode)getNode()).fireDataChanged();
                 fireDataChanged();
+                refreshViewData(false);
             }
         });
     }
@@ -795,7 +795,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                             attachmentSource,
                             attAttribute,
                             new NullProgressMonitor());
-                refresh(); // XXX to much refresh - is there no other way?
+                refresh(getID(), true); // XXX to much refresh - is there no other way?
             }
         };
         repository.getExecutor().execute(cmd);
@@ -848,7 +848,10 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
 
     @Override
     public void attachPatch(File file, String description) {
-        addAttachment(file, null, description, null, true);
+        boolean isPatch = true;
+        // HACK for attaching hg bundles - they are NOT patches
+        isPatch = !file.getName().endsWith(".hg"); // NOI18N
+        addAttachment(file, null, description, null, isPatch);
     }
 
     private void prepareSubmit() {
@@ -927,7 +930,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         return refresh(getID(), false);
     }
 
-    public boolean refresh(String id, boolean cacheThisIssue) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+    private boolean refresh(String id, boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
             TaskData td = BugzillaUtil.getTaskData(repository, id);
@@ -935,13 +938,18 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                 return false;
             }
             getBugzillaRepository().getIssueCache().setIssueData(this, td); // XXX
-            if (controller != null) {
-                controller.refreshViewData();
-            }
+            refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }
         return true;
+    }
+
+    private void refreshViewData(boolean force) {
+        if (controller != null) {
+            // view might not exist yet and we won't unnecessarily create it
+            controller.refreshViewData(force);
+        }
     }
 
     /**

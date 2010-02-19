@@ -105,7 +105,7 @@ public class AnnotationProcessorTestUtils {
         List<String> args = new ArrayList<String>();
         args.add("-classpath");
         if (cp != null) {
-            StringBuffer b = new StringBuffer();
+            StringBuilder b = new StringBuilder();
             for (File entry : cp) {
                 b.append(File.pathSeparatorChar);
                 b.append(entry.getAbsolutePath());

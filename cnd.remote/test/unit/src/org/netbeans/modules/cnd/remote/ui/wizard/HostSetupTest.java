@@ -42,8 +42,8 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 import java.util.Collection;
 import java.util.List;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -65,7 +65,7 @@ public class HostSetupTest extends RemoteTestBase {
     public void testHostSetup() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         setupHost(execEnv);
-        CompilerSetManager csm = CompilerSetManager.getDefault(execEnv);
+        CompilerSetManager csm = CompilerSetManager.get(execEnv);
         final List<CompilerSet> compilerSets = csm.getCompilerSets();
         dumpCompilerSets(execEnv, compilerSets);
 

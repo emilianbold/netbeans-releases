@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.DebuggerCustom
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -56,6 +57,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.PrioritizedCustomizerNode;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
 public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
@@ -64,22 +66,22 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
 
     private CustomizerNode customizerNode = null;
     
-    public CustomizerNode factoryCreate() {
+    @Override
+    public CustomizerNode factoryCreate(Lookup lookup) {
         if (customizerNode == null) {
-            customizerNode = new GdbCustomizerNode("Debug", NbBundle.getMessage(GdbCustomizerNodeProvider.class, "DebugDisplayName")); // NOI18N
+            customizerNode = new GdbCustomizerNode("Debug", NbBundle.getMessage(GdbCustomizerNodeProvider.class, "DebugDisplayName"), null, lookup); // NOI18N
         }
 	return customizerNode;
     }
 
-    static class GdbCustomizerNode extends CustomizerNode implements PrioritizedCustomizerNode, ProjectActionHandlerFactory, DebuggerCustomizerNode {
+    private static class GdbCustomizerNode extends CustomizerNode implements PrioritizedCustomizerNode, ProjectActionHandlerFactory, DebuggerCustomizerNode {
 
-        public GdbCustomizerNode(String name, String displayName) {
-	    super(name, displayName, null);
+        public GdbCustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
+	    super(name, displayName, children, lookup);
 	}
 
         @Override
-	public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor,
-		    Configuration configuration) {
+	public Sheet getSheet(Configuration configuration) {
 	    GdbProfile profile = (GdbProfile) configuration.getAuxObject(GdbProfile.GDB_PROFILE_ID);
 	    return profile == null ? null : profile.getSheet();
 	}
@@ -89,25 +91,26 @@ public class GdbCustomizerNodeProvider implements CustomizerNodeProvider {
             return new HelpCtx("ProjectPropsDebugging"); // NOI18N
         }
 
+        @Override
         public int getPriority() {
             return GDB_PRIORITY;
         }
 
+        @Override
         public boolean canHandle(ProjectActionEvent.Type type, Configuration conf) {
-            switch (type) {
-                case DEBUG:
-                case DEBUG_LOAD_ONLY:
-                case DEBUG_STEPINTO:
-                    return true;
-                default:
-                    return false;
+            if (type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_LOAD_ONLY || type == PredefinedType.DEBUG_STEPINTO) {
+                return true;
+            } else {
+                return false;
             }
         }
 
+        @Override
         public ProjectActionHandler createHandler() {
             return new GdbActionHandler();
         }
 
+        @Override
         public String getFamily() {
             return "GNU"; //NOI18N
         }

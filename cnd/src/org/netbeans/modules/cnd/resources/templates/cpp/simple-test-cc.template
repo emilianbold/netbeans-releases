@@ -1,0 +1,17 @@
+/* 
+ * File:   %<%NAME%>%.%<%EXTENSION%>%
+ * Author: %<%USER%>%
+ *
+ * Created on %<%DATE%>%, %<%TIME%>%
+ */
+
+#include <stdlib.h>
+
+/*
+ * Simple C++ Test
+ */
+int main(int argc, char** argv) {
+    // TBD
+    return (EXIT_SUCCESS);
+}
+

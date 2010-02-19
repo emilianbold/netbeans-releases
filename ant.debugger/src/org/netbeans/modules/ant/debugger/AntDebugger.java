@@ -229,7 +229,9 @@ public class AntDebugger extends ActionsProviderSupport {
                           event.getScriptLocation ()));
         currentTaskName = event.getTaskStructure().getName();
         originatingIndex = 0;
-        elementStarted(event);
+        if (!ignoreFrame()) {
+            elementStarted(event);
+        }
     }
     
     private void elementStarted(AntEvent event) {
@@ -480,6 +482,20 @@ public class AntDebugger extends ActionsProviderSupport {
         return frame instanceof Task ?
             ((Task) frame).getTaskStructure ().getName () :
             ((TargetLister.Target) frame).getName ();
+    }
+
+    private boolean ignoreFrame() {
+        if (callStackList.size() <= 1) {
+            return false;
+        }
+        //String frameName = getFrameName (callStackList.get(0));
+        if ("import".equals(currentTaskName)) {
+            String frameName = getFrameName (callStackList.get(1));
+            if ("antcall".equals(frameName)) {
+                return true; // Ignore import after antcall
+            }
+        }
+        return false;
     }
     
     private Map watches = new HashMap ();

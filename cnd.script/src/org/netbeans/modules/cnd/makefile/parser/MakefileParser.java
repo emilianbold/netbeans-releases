@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.cnd.makefile.parser;
 
+import org.netbeans.modules.cnd.makefile.model.MakefileRule;
+import org.netbeans.modules.cnd.makefile.model.MakefileAssignment;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,12 +47,13 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
-import org.netbeans.modules.cnd.makefile.model.MakefileElement;
+import org.netbeans.modules.cnd.makefile.model.AbstractMakefileElement;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.openide.filesystems.FileObject;
 
 /**
  * @author Alexey Vladykin
@@ -58,9 +61,9 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 public class MakefileParser extends Parser {
 
     private final AtomicBoolean cancelled;
-    private MakefileModel result;
+    private MakefileParseResult result;
 
-    /*package*/ MakefileParser() {
+    public MakefileParser() {
         cancelled = new AtomicBoolean();
     }
 
@@ -72,7 +75,7 @@ public class MakefileParser extends Parser {
     }
 
     @Override
-    public MakefileModel getResult(Task task) throws ParseException {
+    public MakefileParseResult getResult(Task task) throws ParseException {
         return result;
     }
 
@@ -92,7 +95,7 @@ public class MakefileParser extends Parser {
     }
 
 
-    private static MakefileModel parse(Snapshot snapshot, AtomicBoolean cancelled) {
+    private static MakefileParseResult parse(Snapshot snapshot, AtomicBoolean cancelled) {
         TokenSequence<MakefileTokenId> tokenSequence =
                 snapshot.getTokenHierarchy().tokenSequence(MakefileTokenId.language());
 
@@ -100,7 +103,9 @@ public class MakefileParser extends Parser {
             return null;
         }
 
-        List<MakefileElement> makefileElements = new ArrayList<MakefileElement>();
+        FileObject fobj = snapshot.getSource().getFileObject();
+
+        List<AbstractMakefileElement> makefileElements = new ArrayList<AbstractMakefileElement>();
 
         int startIndex = 0;
         while (tokenSequence.moveNext() && !cancelled.get()) {
@@ -110,14 +115,14 @@ public class MakefileParser extends Parser {
                 case EQUALS:
                 case COLON_EQUALS:
                     tokenSequence.moveIndex(startIndex);
-                    makefileElements.add(createAssignment(tokenSequence));
-                    startIndex = tokenSequence.index();
+                    makefileElements.add(createAssignment(fobj, tokenSequence));
+                    startIndex = tokenSequence.index() + 1;
                     break;
 
                 case COLON:
                     tokenSequence.moveIndex(startIndex);
-                    makefileElements.add(createRule(tokenSequence));
-                    startIndex = tokenSequence.index();
+                    makefileElements.add(createRule(fobj, tokenSequence));
+                    startIndex = tokenSequence.index() + 1;
                     break;
 
                 case COMMENT:
@@ -126,13 +131,17 @@ public class MakefileParser extends Parser {
             }
         }
 
-        return cancelled.get()? null : new MakefileModel(snapshot, makefileElements);
+        return cancelled.get()? null : new MakefileParseResult(snapshot, makefileElements);
     }
 
-    private static AssignmentImpl createAssignment(TokenSequence<MakefileTokenId> tokenSequence) {
+    private static MakefileAssignment createAssignment(FileObject fobj, TokenSequence<MakefileTokenId> tokenSequence) {
         StringBuilder nameBuilder = new StringBuilder();
+        int startOffset = -1;
         NAME_LOOP: while (tokenSequence.moveNext()) {
             Token<MakefileTokenId> token = tokenSequence.token();
+            if (startOffset == -1) {
+                startOffset = tokenSequence.offset();
+            }
             switch (token.id()) {
                 case EQUALS:
                 case COLON_EQUALS:
@@ -143,6 +152,7 @@ public class MakefileParser extends Parser {
         }
 
         StringBuilder valueBuilder = new StringBuilder();
+        int endOffset = startOffset;
         VALUE_LOOP: while (tokenSequence.moveNext()) {
             Token<MakefileTokenId> token = tokenSequence.token();
             switch (token.id()) {
@@ -152,17 +162,24 @@ public class MakefileParser extends Parser {
                 default:
                     valueBuilder.append(token.text());
             }
+            if (endOffset == -1) {
+                endOffset = tokenSequence.offset() + token.length();
+            }
         }
 
-        return new AssignmentImpl(nameBuilder.toString().trim(), valueBuilder.toString());
+        return new MakefileAssignment(nameBuilder.toString().trim(), valueBuilder.toString(), fobj, startOffset, endOffset);
     }
 
-    private static RuleImpl createRule(TokenSequence<MakefileTokenId> tokenSequence) {
+    private static MakefileRule createRule(FileObject fobj, TokenSequence<MakefileTokenId> tokenSequence) {
         StringBuilder nameBuilder = new StringBuilder();
+        int startOffset = -1;
 
         List<String> targets = new ArrayList<String>();
         TARGETS_LOOP: while (tokenSequence.moveNext()) {
             Token<MakefileTokenId> token = tokenSequence.token();
+            if (startOffset == -1) {
+                startOffset = tokenSequence.offset();
+            }
             switch (token.id()) {
                 case COLON:
                     if (0 < nameBuilder.length()) {
@@ -181,7 +198,8 @@ public class MakefileParser extends Parser {
                     nameBuilder.append(token.text());
             }
         }
-        
+
+        int endOffset = startOffset;
         List<String> prereqs = new ArrayList<String>();
         PREREQS_LOOP: while (tokenSequence.moveNext()) {
             Token<MakefileTokenId> token = tokenSequence.token();
@@ -203,8 +221,11 @@ public class MakefileParser extends Parser {
                 default:
                     nameBuilder.append(token.text());
             }
+            if (endOffset == -1) {
+                endOffset = tokenSequence.offset() + token.length();
+            }
         }
 
-        return new RuleImpl(targets, prereqs);
+        return new MakefileRule(targets, prereqs, fobj, startOffset, endOffset);
     }
 }

@@ -580,7 +580,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-      <api name="org.netbeans.log.startup" category="friend" group="property" type="export">
+      <api name="org.netbeans.log.startup" category="friend" group="systemproperty" type="export">
           <p>
           If started with <code>-J-Dorg.netbeans.log.startup=print</code> parameter, then
           times of various start operations are printed to console. If the value is

@@ -194,8 +194,8 @@ import org.openide.util.RequestProcessor;
         final BufferedReader rcInputStreamReader = getReader(rcInputStream);
         final PrintWriter rcOutputStreamWriter = getWriter(rcOutputStream);
         localController = new RfsLocalController(
-                executionEnvironment, files,  remoteDir, rcInputStreamReader,
-                rcOutputStreamWriter, err, new FileData(privProjectStorageDir, executionEnvironment));
+                executionEnvironment, files, rcInputStreamReader,
+                rcOutputStreamWriter, err, privProjectStorageDir);
 
         localController.feedFiles(new SharabilityFilter());
 
@@ -240,6 +240,8 @@ import org.openide.util.RequestProcessor;
         addRemoteEnv(env2add, "cnd.rfs.controller.log", "RFS_CONTROLLER_LOG"); // NOI18N
         addRemoteEnv(env2add, "cnd.rfs.controller.port", "RFS_CONTROLLER_PORT"); // NOI18N
         addRemoteEnv(env2add, "cnd.rfs.controller.host", "RFS_CONTROLLER_HOST"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.controller.trace", "RFS_CONTROLLER_TRACE"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.preload.trace", "RFS_PRELOAD_TRACE"); // NOI18N
 
         RemoteUtil.LOGGER.fine("Setting environment:");
     }
@@ -253,17 +255,13 @@ import org.openide.util.RequestProcessor;
 
     @Override
     public void shutdown() {
-        shutdownImpl();
+        remoteControllerCleanup();
+        localControllerCleanup();
     }
 
     @Override
     public boolean cancel() {
         return false;
-    }
-
-    private void shutdownImpl() {
-        remoteControllerCleanup();
-        localControllerCleanup();
     }
 
     private void localControllerCleanup() {

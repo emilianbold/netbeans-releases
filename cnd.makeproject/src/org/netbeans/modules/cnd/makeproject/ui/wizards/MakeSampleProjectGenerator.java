@@ -61,12 +61,13 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileLock;
@@ -96,7 +97,7 @@ public class MakeSampleProjectGenerator {
         String mainProject = (String)template.getAttribute("mainProjectLocation"); // NOI18N
         String subProjects = (String)template.getAttribute("subProjectLocations"); // NOI18N
         if (mainProject != null) {
-            File mainProjectLocation = new File(projectLocation.getPath() + File.separator + mainProject);
+            File mainProjectLocation = new File(projectLocation.getPath(), mainProject);
             File[] subProjectLocations = null;
             if (subProjects != null) {
                 Vector<File> subProjectsFiles = new Vector<File>();
@@ -140,8 +141,8 @@ public class MakeSampleProjectGenerator {
             //changeXmlFileByTagName(doc, "folderPath", workingDir, "X-PROJECTDIR-X"); // NOI18N
             changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
 
-            ExecutionEnvironment env = CompilerSetManager.getDefaultExecutionEnvironment();
-            CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(env);
+            ExecutionEnvironment env = ServerList.getDefaultRecord().getExecutionEnvironment();
+            CompilerSetManager compilerSetManager = CompilerSetManager.get(env);
             int platform = compilerSetManager.getPlatform();
             CompilerSet compilerSet = compilerSetManager.getDefaultCompilerSet();
             String variant = null;
@@ -190,12 +191,12 @@ public class MakeSampleProjectGenerator {
         if (!logger.isLoggable(Level.INFO)) {
             return;
         }
-        CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(env);
+        CompilerSetManager compilerSetManager = CompilerSetManager.get(env);
         CompilerSet compilerSet = compilerSetManager.getDefaultCompilerSet();
         LogRecord logRecord = new LogRecord(Level.INFO, ConfigurationDescriptorProvider.USG_PROJECT_CREATE_CND);
         logRecord.setLoggerName(logger.getName());
         String host;
-        if (compilerSetManager.getExecutionEnvironment().isLocal()) {
+        if (env.isLocal()) {
             host = "LOCAL"; // NOI18N
         } else {
             host = "REMOTE"; // NOI18N

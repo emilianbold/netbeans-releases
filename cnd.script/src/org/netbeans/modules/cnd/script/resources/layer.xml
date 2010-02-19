@@ -339,7 +339,7 @@
             <folder name="x-make">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.resources.Bundle"/>
 
-                <file name="language.instance">
+                <file name="Language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
@@ -349,15 +349,22 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.ParserFactory"/>
                 </file>
 
-                <file name="NavigatorUpdaterTaskFactory.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.navigator.NavigatorUpdaterTaskFactory"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
-                </file>
-
                 <file name="MakefileIndentTaskFactory.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.editor.MakefileIndentTaskFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
                 </file>
+
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.editor.MakefileKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit"/>
+                </file>
+
+                <folder name="HyperlinkProviders">
+                    <file name="MakefileHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.editor.MakefileHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                    </file>
+                </folder>
 
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
@@ -423,6 +430,16 @@
                         </folder>
                     </folder>
                 </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="CslPlugins">
+        <folder name="text">
+            <folder name="x-make">
+                <file name="LanguageConfig.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.MakefileLanguageConfig"/>
+                </file>
             </folder>
         </folder>
     </folder>

@@ -39,9 +39,11 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -239,25 +241,39 @@ public class AutoUpdate extends Task {
                     if (zipEntry.getName().endsWith("/")) {
                         continue;
                     }
-                    final String relName = zipEntry.getName().substring(9);
+                    String relName = zipEntry.getName().substring(9);
                     File trgt = new File(whereTo, relName.replace('/', File.separatorChar));
                     trgt.getParentFile().mkdirs();
                     log("Writing " + trgt, Project.MSG_VERBOSE);
 
                     InputStream is = zf.getInputStream(zipEntry);
                     OutputStream os = new FileOutputStream(trgt);
+                    boolean doUnpack200 = false;
+                    if(relName.endsWith(".jar.pack.gz") && zf.getEntry(zipEntry.getName().substring(0, zipEntry.getName().length() - 8))==null) {
+                        doUnpack200 = true;
+                    }
                     CRC32 crc = new CRC32();
                     for (;;) {
                         int len = is.read(bytes);
                         if (len == -1) {
                             break;
                         }
-                        crc.update(bytes, 0, len);
+                        if(!doUnpack200) {
+                            crc.update(bytes, 0, len);
+                        }
                         os.write(bytes, 0, len);
                     }
                     is.close();
                     os.close();
-                    config.write(("    <file crc='" + crc.getValue() + "' name='" + relName + "'/>\n").getBytes("UTF-8"));
+                    long crcValue = crc.getValue();
+                    if(doUnpack200) {
+                        File dest = new File(trgt.getParentFile(), trgt.getName().substring(0, trgt.getName().length() - 8));
+                        unpack200(trgt, dest);
+                        trgt.delete();
+                        crcValue = getFileCRC(dest);
+                        relName = relName.substring(0, relName.length() - 8);
+                    }
+                    config.write(("    <file crc='" + crcValue + "' name='" + relName + "'/>\n").getBytes("UTF-8"));
                 }
                 config.write("  </module_version>\n</module>\n".getBytes("UTF-8"));
                 config.close();
@@ -272,6 +288,53 @@ public class AutoUpdate extends Task {
                 }
             }
         }
+    }
+
+    private boolean unpack200(File src, File dest) {
+        // Copy of ModuleUpdater.unpack200
+
+        log("Unpacking " + src + " to " + dest, Project.MSG_VERBOSE);
+        String unpack200Executable = new File(System.getProperty("java.home"),
+                "bin/unpack200" + (isWindows() ? ".exe" : "")).getAbsolutePath();
+        ProcessBuilder pb = new ProcessBuilder(unpack200Executable, src.getAbsolutePath(), dest.getAbsolutePath());
+        pb.directory(src.getParentFile());
+        int result = 1;
+        try {
+            //maybe reuse start() method here?
+            Process process = pb.start();
+            //TODO: Need to think of unpack200/lvprcsrv.exe issues
+            //https://netbeans.org/bugzilla/show_bug.cgi?id=117334
+            //https://netbeans.org/bugzilla/show_bug.cgi?id=119861
+            result = process.waitFor();
+            process.destroy();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return result == 0;
+    }
+    private static boolean isWindows() {
+        String os = System.getProperty("os.name"); // NOI18N
+        return (os != null && os.toLowerCase().startsWith("windows"));//NOI18N
+    }
+
+    private static long getFileCRC(File file) throws IOException {
+        BufferedInputStream bsrc = null;
+        CRC32 crc = new CRC32();
+        try {
+            bsrc = new BufferedInputStream( new FileInputStream( file ) );
+            byte[] bytes = new byte[1024];
+            int i;
+            while( (i = bsrc.read(bytes)) != -1 ) {
+                crc.update(bytes, 0, i );
+            }
+        }
+        finally {
+            if ( bsrc != null )
+                bsrc.close();
+        }
+        return crc.getValue();
     }
 
     private boolean matches(String cnb, String targetCluster) {

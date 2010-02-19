@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
@@ -93,6 +94,7 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
         try {
             JavaSource javaSource = JavaSource.create(cpInfo);
             javaSource.runUserActionTask(new Task<CompilationController>() {
+                @Override
                 public void run(final CompilationController controller) throws IOException {
                     Elements elements = controller.getElements();
                     final ElementUtilities elementUtilities = controller.getElementUtilities();
@@ -111,19 +113,23 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
                                 }
                             } else if(intf.getKind() == ElementKind.CLASS) {
                                 Iterable<? extends Element> methods = elementUtilities.getMembers(intf.asType(), new ElementAcceptor() {
+                                    @Override
                                     public boolean accept(Element e, TypeMirror type) {
                                         TypeElement parent = elementUtilities.enclosingTypeElement(e);
-                                        return ElementKind.METHOD == e.getKind() && e.getEnclosingElement().equals(intf);
+                                        return ElementKind.METHOD == e.getKind() && 
+                                               e.getEnclosingElement().equals(intf) &&
+                                               e.getModifiers().contains(Modifier.PUBLIC);
                                     }
                                 });
                                 for (Element method : methods) {
                                     MethodModel methodModel = MethodModelSupport.createMethodModel(controller, (ExecutableElement) method);
-                                    if (methodModel != null){
+                                    if (methodModel != null && !keys.contains(methodModel)){
                                         keys.add(methodModel);
                                     }
                                 }
                             } else {
                                 Iterable<? extends Element> methods = elementUtilities.getMembers(intf.asType(), new ElementAcceptor() {
+                                    @Override
                                     public boolean accept(Element e, TypeMirror type) {
                                         TypeElement parent = elementUtilities.enclosingTypeElement(e);
                                         boolean isInInterface = ElementKind.INTERFACE == parent.getKind();
@@ -146,12 +152,14 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
             Exceptions.printStackTrace(ioe);
         }
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 setKeys(keys);
             }
         });
     }
     
+    @Override
     protected void addNotify() {
         if(interfaces == null){
             interfaces = getInterfaces();
@@ -169,6 +177,7 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
         try {
             JavaSource javaSource = JavaSource.create(cpInfo);
             javaSource.runUserActionTask(new Task<CompilationController>() {
+                @Override
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     ClassIndex classIndex = controller.getClasspathInfo().getClassIndex();
@@ -187,6 +196,7 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
         try {
             JavaSource javaSource = JavaSource.create(cpInfo);
             javaSource.runUserActionTask(new Task<CompilationController>() {
+                @Override
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     ClassIndex classIndex = controller.getClasspathInfo().getClassIndex();
@@ -198,6 +208,7 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
         }
     }
     
+    @Override
     protected void removeNotify() {
         if (interfaces == null)
             return;
@@ -210,7 +221,7 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
      * Subclasses have to override this if no-arg constructor is used
      */
     protected Collection<String> getInterfaces(){
-        return null;
+        return interfaces;
     }
     
     /*
@@ -229,22 +240,27 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> {
 
     private class ClassIndexListenerImpl implements ClassIndexListener {
 
+        @Override
         public void typesAdded(TypesEvent event) {
             handleTypes(event);
         }
 
+        @Override
         public void typesRemoved(TypesEvent event) {
             handleTypes(event);
         }
 
+        @Override
         public void typesChanged(TypesEvent event) {
             handleTypes(event);
         }
 
+        @Override
         public void rootsAdded(RootsEvent event) {
             // ignore
         }
 
+        @Override
         public void rootsRemoved(RootsEvent event) {
             // ignore
         }

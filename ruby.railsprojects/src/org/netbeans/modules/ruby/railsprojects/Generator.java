@@ -201,30 +201,7 @@ public class Generator {
             }
         }
 
-        StringBuilder sb = new StringBuilder();
-
-        try {
-            BufferedReader fr = new BufferedReader(new FileReader(usageFile));
-
-            while (true) {
-                String line = fr.readLine();
-
-                if (line == null) {
-                    break;
-                }
-
-                sb.append(line);
-                sb.append("\n"); // NOI18N
-            }
-
-            if (sb.length() > 0) {
-                return sb.toString();
-            }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-
-        return null;
+        return RailsProjectUtil.asText(usageFile);
     }
 
     String getNameLabel() {
@@ -248,6 +225,26 @@ public class Generator {
             return NbBundle.getMessage(Generator.class, arg2Key);
         } else {
             return null;
+        }
+    }
+
+    static final class Script {
+
+        final String script;
+        final List<String> args = new ArrayList<String>();
+
+        public Script(String script) {
+            this.script = script;
+        }
+
+        Script addArgs(String... argsToAdd) {
+            if (argsToAdd == null) {
+                return this;
+            }
+            for (String each : argsToAdd) {
+                args.add(each);
+            }
+            return this;
         }
     }
 }

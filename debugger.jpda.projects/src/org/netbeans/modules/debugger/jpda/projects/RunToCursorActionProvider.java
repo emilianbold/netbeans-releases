@@ -55,6 +55,7 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.project.Project;
+import org.netbeans.spi.debugger.ActionsProvider.Registration;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.project.ActionProvider;
@@ -68,6 +69,7 @@ import org.openide.util.WeakListeners;
 *
 * @author   Jan Jancura
 */
+@Registration(actions={"runToCursor"}, activateForMIMETypes={"text/x-java"})
 public class RunToCursorActionProvider extends ActionsProviderSupport {
     
     private EditorContextDispatcher editorContext;

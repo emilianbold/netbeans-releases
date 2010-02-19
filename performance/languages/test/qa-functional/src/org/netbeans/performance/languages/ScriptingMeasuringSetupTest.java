@@ -54,7 +54,7 @@ public class ScriptingMeasuringSetupTest extends NbTestSuite {
         NbTestSuite suite = new NbTestSuite("Scripting pack UI Responsiveness Setup suite");
         System.setProperty("suitename", ScriptingMeasuringSetupTest.class.getCanonicalName());
 
-        suite.addTest(NbModuleSuite.create(ScriptingSetup.class, "websvccommon[0-9]|php[0-9]|ruby[0-9]|webcommon[0-9]|enterprise[0-9]", ".*"));
+        suite.addTest(NbModuleSuite.create(ScriptingSetup.class, ".*", ".*"));
 
         return suite;
     }

@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.cnd.navigation.overrides;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.Level;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -47,11 +49,16 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.loaders.DataObject;
-import org.openide.util.NbBundle;
 
 /**
  * A class that computes annotations -
@@ -60,53 +67,92 @@ import org.openide.util.NbBundle;
  */
 public class ComputeAnnotations {
 
-    private ComputeAnnotations() {
+    public static ComputeAnnotations getInstance(CsmFile csmFile, StyledDocument doc, DataObject dobj) {
+        return new ComputeAnnotations(csmFile, doc, dobj);
     }
 
-    public static void computeAnnotations(
+    private final CsmProject csmProject;
+    private final CsmFile csmFile;
+    private final StyledDocument doc;
+    private final DataObject dobj;
+
+    private ComputeAnnotations(CsmFile csmFile, StyledDocument doc, DataObject dobj) {
+       this.csmFile = csmFile;
+       this.csmProject = csmFile.getProject();
+       this.doc = doc;
+       this.dobj = dobj;
+    }
+
+    /*package*/ void computeAnnotations(Collection<BaseAnnotation> toAdd) {
+        computeAnnotations(csmFile.getDeclarations(), toAdd);
+    }
+
+    private void computeAnnotations(
             Collection<? extends CsmOffsetableDeclaration> toProcess,
-            Collection<OverriddeAnnotation> toAdd, CsmFile file, StyledDocument doc, DataObject dobj) {
+            Collection<BaseAnnotation> toAdd) {
 
         for (CsmOffsetableDeclaration decl : toProcess) {
             if (CsmKindUtilities.isFunction(decl)) {
-                OverriddeAnnotation anno = computeAnnotation((CsmFunction) decl, doc);
-                if (anno != null) {
-                    toAdd.add(anno);
-                }
+                computeAnnotation((CsmFunction) decl, toAdd);
             } else if (CsmKindUtilities.isClass(decl)) {
-                computeAnnotations(((CsmClass) decl).getMembers(), toAdd, file, doc, dobj);
-
+                computeAnnotation((CsmClass) decl, toAdd);
+                computeAnnotations(((CsmClass) decl).getMembers(), toAdd);
             } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
-                computeAnnotations(((CsmNamespaceDefinition) decl).getDeclarations(), toAdd, file, doc, dobj);
+                computeAnnotations(((CsmNamespaceDefinition) decl).getDeclarations(), toAdd);
             }
         }
     }
 
-    private static OverriddeAnnotation computeAnnotation(CsmFunction func, StyledDocument doc) {
+    private void computeAnnotation(CsmFunction func, Collection<BaseAnnotation> toAdd) {
         if (CsmKindUtilities.isMethod(func)) {
-            CsmMethod meth = (CsmMethod) func;
-            final Collection<? extends CsmMethod> baseMethods = CsmVirtualInfoQuery.getDefault().getBaseDeclaration(meth);
-            final Collection<? extends CsmMethod> overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverridenMethods(meth, false);
-            if (OverriddeAnnotation.LOGGER.isLoggable(Level.FINEST)) {
-                OverriddeAnnotation.LOGGER.log(Level.FINEST, "Found {0} base decls for {1}", new Object[]{baseMethods.size(), func});
+            CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(func);
+            final Collection<? extends CsmMethod> baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
+            Collection<? extends CsmMethod> overriddenMethods;
+            if (!baseMethods.isEmpty() || CsmVirtualInfoQuery.getDefault().isVirtual(meth)) {
+                overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverridenMethods(meth, false);
+            } else {
+                overriddenMethods = Collections.<CsmMethod>emptyList();
+            }
+            if (BaseAnnotation.LOGGER.isLoggable(Level.FINEST)) {
+                BaseAnnotation.LOGGER.log(Level.FINEST, "Found {0} base decls for {1}", new Object[]{baseMethods.size(), toString(func)});
                 for (CsmMethod baseMethod : baseMethods) {
-                    OverriddeAnnotation.LOGGER.log(Level.FINEST, "    {0}", baseMethod);
+                    BaseAnnotation.LOGGER.log(Level.FINEST, "    {0}", toString(baseMethod));
                 }
             }
-            if (!baseMethods.isEmpty()) {
-                boolean itself = baseMethods.size() == 1 && baseMethods.iterator().next().equals(func);
-                if (!itself) {
-                    CsmMethod m = baseMethods.iterator().next(); //TODO: XXX
-                    String desc = NbBundle.getMessage(OverridesTaskFactory.class, "LAB_Overrides", m.getQualifiedName().toString());
-                    return new OverriddeAnnotation(doc, func,  OverriddeAnnotation.AnnotationType.OVERRIDES, desc, baseMethods);
-                }
-            }
-            if (!overriddenMethods.isEmpty()) {
-                String desc = NbBundle.getMessage(OverridesTaskFactory.class, "LAB_IsOverriden");
-                return new OverriddeAnnotation(doc, func,  OverriddeAnnotation.AnnotationType.IS_OVERRIDDEN, desc, overriddenMethods);
+            baseMethods.remove(meth);
+            if (!baseMethods.isEmpty() || !overriddenMethods.isEmpty()) {
+                toAdd.add(new OverrideAnnotation(doc, func, baseMethods, overriddenMethods));
             }
         }
-        return null;
     }
 
+    private void computeAnnotation(CsmClass cls, Collection<BaseAnnotation> toAdd) {
+        Collection<CsmReference> subRefs = CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, false);
+        if (!subRefs.isEmpty()) {
+            Collection<CsmClass> subClasses = new ArrayList<CsmClass>(subRefs.size());
+            for (CsmReference ref : subRefs) {
+                CsmObject obj = ref.getReferencedObject();
+                CndUtils.assertTrue(obj == null || (obj instanceof CsmClass), "getClassifier() should return either null or CsmClass"); //NOI18N
+                if (obj instanceof CsmClass) {
+                    subClasses.add((CsmClass) obj);
+                }
+            }
+            if (!subClasses.isEmpty()) {
+                toAdd.add(new InheritAnnotation(doc, cls, subClasses));
+            }
+        }
+    }
+
+    private static CharSequence toString(CsmFunction func) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(func.getClass().getSimpleName());
+        sb.append(' ');
+        sb.append(func.getQualifiedName());
+        sb.append(" ["); // NOI18N
+        sb.append(func.getContainingFile().getName());
+        sb.append(':');
+        sb.append(func.getStartPosition().getLine());
+        sb.append(']');
+        return sb;
+    }
 }

@@ -40,13 +40,12 @@
 package org.netbeans.modules.java.hints;
 
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
@@ -93,8 +92,8 @@ public class LeakingThisInConstructor {
     public static ErrorDescription hintOnAssignment(HintContext ctx) {
         Map<String,TreePath> variables = ctx.getVariables ();
         TreePath thisPath = variables.get ("$this"); // NOI18N
-        Element e = ctx.getInfo().getTrees().getElement(thisPath);
-        if (e == null || !e.getSimpleName().contentEquals(THIS_KEYWORD)) {
+        if (   thisPath.getLeaf().getKind() != Kind.IDENTIFIER
+            || !((IdentifierTree) thisPath.getLeaf()).getName().contentEquals(THIS_KEYWORD)) {
             return null;
         }
         if (!isInConstructor(ctx)) {
@@ -107,8 +106,9 @@ public class LeakingThisInConstructor {
     }
 
     private static boolean isInConstructor(HintContext ctx) {
-        Scope scope = ctx.getInfo().getTrees().getScope(ctx.getPath());
-        ExecutableElement enclosingMethodElement = scope.getEnclosingMethod();
+        TreePath method = OverridableMethodCallInConstructor.findEnclosingMethodOrConstructor(ctx.getPath());
+        if (method == null) return false;
+        Element enclosingMethodElement = ctx.getInfo().getTrees().getElement(method);
         return (enclosingMethodElement != null &&
                 enclosingMethodElement.getKind() == ElementKind.CONSTRUCTOR);
     }

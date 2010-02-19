@@ -91,7 +91,7 @@ public class ThreadsCollectorImpl extends ThreadsCollector {
 
     public boolean isSomeThreadRunning() {
         for (JPDAThread thread : getAllThreads()) {
-            if (!thread.isSuspended()) {
+            if (!thread.isSuspended() && !((JPDAThreadImpl) thread).isMethodInvoking()) {
                 return true;
             }
         }
@@ -100,7 +100,7 @@ public class ThreadsCollectorImpl extends ThreadsCollector {
 
     public boolean isSomeThreadSuspended() {
         for (JPDAThread thread : getAllThreads()) {
-            if (thread.isSuspended()) {
+            if (thread.isSuspended() || ((JPDAThreadImpl) thread).isMethodInvoking()) {
                 return true;
             }
         }
@@ -118,6 +118,9 @@ public class ThreadsCollectorImpl extends ThreadsCollector {
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (JPDAThread.PROP_SUSPENDED.equals(evt.getPropertyName())) {
+                if ("methodInvoke".equals(evt.getPropagationId())) {
+                    return ; // Ignore events associated with method invocations
+                }
                 JPDAThread thread = (JPDAThread) evt.getSource();
                 if (thread.isSuspended()) {
                     firePropertyChange(PROP_THREAD_SUSPENDED, null, thread);

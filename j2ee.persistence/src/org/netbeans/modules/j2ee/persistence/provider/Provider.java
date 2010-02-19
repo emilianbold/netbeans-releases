@@ -196,6 +196,13 @@ public abstract class Provider {
     public String getJdbcPassword() {
         return "javax.persistence.jdbc.password";
     }
+
+    /**
+     * Return annotation processor for metamodel generation
+     */
+    public String getAnnotationProcessor() {
+        return null;
+    }
     
     /**
      * @return name of the property representing table generation strategy.

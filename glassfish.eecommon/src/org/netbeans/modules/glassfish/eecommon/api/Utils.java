@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.glassfish.eecommon.api;
@@ -52,6 +52,7 @@ import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Utility class for common procedures
@@ -193,4 +194,32 @@ public final class Utils {
         }
     }
     
+    public static FileObject getSunDDFromProjectsModuleVersion(J2eeModule mod, String sunDDFileName) {
+        FileObject retVal = null;
+        String suffix = "-java_ee_5/";
+        if (null != mod) {
+            String modVer = mod.getModuleVersion();
+            J2eeModule.Type t = mod.getType();
+            // ejb 2.0, 2.1, 3.0, 3.1
+            // web 2.3, 2.4, 2.5, 3.0
+            // appcli 1.3, 1.4, 5.0, 6.0
+            // ear 1.3, 1.4, 5, 6
+            if (modVer.equals("6") || modVer.equals("6.0") || modVer.endsWith("1.6") || modVer.equals("3.1")) {
+                suffix = "-java_ee_6/";
+            } else if (modVer.equals("3.0")) {
+                if (J2eeModule.Type.WAR.equals(t)) {
+                    suffix = "-java_ee_6/";
+                }
+            } else if (modVer.equals("1.4") || modVer.equals("2.4") || modVer.equals("2.1")) {
+                suffix = "-j2ee_1_4/";
+            } else if (modVer.equals("2.0") || modVer.equals("2.3") || modVer.equals("1.3")) {
+                suffix = "-j2ee_1_3/";
+            }
+        }
+        String resource = "org-netbeans-modules-glassfish-eecommon-ddtemplates" + suffix + sunDDFileName; // NOI18N
+        retVal = FileUtil.getConfigFile(resource);
+        
+        return retVal;
+    }
+
 }

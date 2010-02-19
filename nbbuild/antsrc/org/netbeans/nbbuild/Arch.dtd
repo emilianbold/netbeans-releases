@@ -88,7 +88,7 @@ HTML contents of the document, with substitutions.
 
 <!ELEMENT api %Flow; >
 <!ATTLIST api
-          group (preferences|java|lookup|property|dtd|layer|java.io.File|javax.swing.UIManager|jmi|org.apache.tools.ant.Task|cli|logger) #REQUIRED
+          group (preferences|java|lookup|property|systemproperty|dtd|layer|java.io.File|javax.swing.UIManager|jmi|org.apache.tools.ant.Task|cli|logger) #REQUIRED
           name NMTOKEN #REQUIRED
           type (import|export) #REQUIRED
           category %category; #REQUIRED

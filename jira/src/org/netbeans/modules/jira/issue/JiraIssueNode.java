@@ -82,8 +82,8 @@ public class JiraIssueNode extends IssueNode {
             new WorkLogFieldProperty(NbJiraIssue.LABEL_NAME_INITIAL_ESTIMATE, IssueField.INITIAL_ESTIMATE, "CTL_Issue_Initial_Estimate_Title", "CTL_Issue_Initial_Estimate_Desc"),
             new WorkLogFieldProperty(NbJiraIssue.LABEL_NAME_TIME_SPENT, IssueField.ACTUAL, "CTL_Issue_Time_Spent_Title", "CTL_Issue_Time_Spent_Desc"),
             new MultiValueFieldProperty(NbJiraIssue.LABEL_NAME_COMPONENTS, IssueField.COMPONENT, "CTL_Issue_Components_Title", "CTL_Issue_Components_Desc"),
-            new RecentChangesProperty(), // XXX move to issue node
-            new SeenProperty() // XXX move to issue node
+            new MultiValueFieldProperty(NbJiraIssue.LABEL_NAME_AFFECTS_VERSION, IssueField.AFFECTSVERSIONS, "CTL_Issue_Affects_Version_Title", "CTL_Issue_Affects_Version_Desc"),
+            new MultiValueFieldProperty(NbJiraIssue.LABEL_NAME_FIX_VERSION, IssueField.FIXVERSIONS, "CTL_Issue_Fix_Version_Title", "CTL_Issue_Fix_Version_Desc"),
         };
     };
 
@@ -113,21 +113,19 @@ public class JiraIssueNode extends IssueNode {
             int idx = id.lastIndexOf("-");      // NOI18N
             int pidx = pid.lastIndexOf("-");    // NOI18N
 
-            if(idx > -1 && pidx > -1) {
-                String projectId = id.substring(0, idx);
-                String projectPid = id.substring(0, pidx);
-                int c = projectId.compareTo(projectPid);
-                if(c != 0) {
-                    return c;
-                }
-                try {
-                    Long lid = Long.parseLong(id.substring(idx + 1));
-                    Long lpid = Long.parseLong(pid.substring(pidx + 1));
-                    if(lid != null && lpid != null) {
-                        return lid.compareTo(lpid);
-                    }
-                } catch (NumberFormatException ex) {}
+            String projectId = idx < id.length() ?  id.substring(0, idx) : "";      // NOI18N
+            String projectPid = pidx < pid.length() ? pid.substring(0, pidx) : "";  // NOI18N
+            int c = projectId.compareTo(projectPid);
+            if(c != 0) {
+                return c;
             }
+            try {
+                Long lid = idx + 1 < pid.length() ? Long.parseLong(id.substring(idx + 1)) : -1;
+                Long lpid = pidx + 1 < pid.length() ? Long.parseLong(pid.substring(pidx + 1)) : -1;
+                if(lid != null && lpid != null) {
+                    return lid.compareTo(lpid);
+                }
+            } catch (NumberFormatException ex) {}
             return id.compareTo(pid);
         }
     }

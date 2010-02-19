@@ -171,7 +171,7 @@ public class OutputFileManager extends CachingFileManager {
                 activeRoot.mkdirs();
             }
             File f = FileUtil.normalizeFile(new File (activeRoot, nameStr));
-            return OutputFileObject.create (activeRoot, f);
+            return FileObjects.fileFileObject(f, activeRoot, null, null);
         }
     }
 
@@ -190,20 +190,17 @@ public class OutputFileManager extends CachingFileManager {
         }
         assert index >= 0 && index < this.cp.entries().size();
         File activeRoot = new File (URI.create(this.cp.entries().get(index).getURL().toExternalForm()));
-        File folder;
-        if (pkgName.length() == 0) {
-            folder = activeRoot;
+        if (File.separatorChar != '/') {    //NOI18N
+            relativeName = relativeName.replace('/', File.separatorChar);   //NOI18N
         }
-        else {
-            folder = new File (activeRoot,FileObjects.convertPackage2Folder(pkgName));
+        final StringBuilder  path = new StringBuilder();
+        if (pkgName.length() > 0) {
+            path.append(FileObjects.convertPackage2Folder(pkgName, File.separatorChar));
+            path.append(File.separatorChar);
         }
-        if (!folder.exists()) {
-            if (!folder.mkdirs()) {
-                throw new IOException ();
-            }
-        }
-        File file = FileUtil.normalizeFile(new File (folder,relativeName));
-        return OutputFileObject.create (activeRoot,file);
+        path.append(relativeName);
+        final File file = FileUtil.normalizeFile(new File (activeRoot,path.toString()));
+        return FileObjects.fileFileObject(file, activeRoot,null,null);
     }
 
 

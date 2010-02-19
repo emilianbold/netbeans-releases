@@ -54,7 +54,7 @@ import org.netbeans.api.lexer.TokenId;
 public enum MakefileTokenId implements TokenId {
 
     /**
-     * Regular whitespace that does not have any special meaning.
+     * Space or tab that does not have any special meaning.
      */
     WHITESPACE("whitespace"), // NOI18N
 
@@ -74,7 +74,7 @@ public enum MakefileTokenId implements TokenId {
     TAB("tab"), // NOI18N
 
     /**
-     * Unparsed shell command.
+     * Shell command, unlexed.
      */
     SHELL("shell"), // NOI18N
 
@@ -89,19 +89,29 @@ public enum MakefileTokenId implements TokenId {
     MACRO("macro"), // NOI18N
 
     /**
-     * Equals character.
+     * Equals character: <code>=</code>
      */
     EQUALS("separator"), // NOI18N
 
     /**
-     * Colon character.
+     * Colon character followed by equals character: <code>:=</code>
+     */
+    COLON_EQUALS("separator"), // NOI18N
+
+    /**
+     * Plus character followed by equals character: <code>+=</code>
+     */
+    PLUS_EQUALS("separator"), // NOI18N
+
+    /**
+     * Colon character: <code>:</code>
      */
     COLON("separator"), // NOI18N
 
     /**
-     * Colon character followed by equals character.
+     * Semicolon character: <code>;</code>
      */
-    COLON_EQUALS("separator"), // NOI18N
+    SEMICOLON("separator"), // NOI18N
 
     /**
      * Keyword: <code>include</code>, <code>ifdef</code>, <code>endif</code>

@@ -58,6 +58,6 @@ public class FunctionBreakpointImpl extends BreakpointImpl<FunctionBreakpoint> {
 
     @Override
     protected String getBreakpointCommand() {
-        return getBreakpoint().getFunctionName();
+        return '\'' + getBreakpoint().getFunctionName() + '\'';
     }
 }

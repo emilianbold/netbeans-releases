@@ -112,8 +112,16 @@ class SingletonLookup extends Lookup {
         }
 
         String templateId = template.getId();
-        if ((templateId != null) && !templateId.equals(id)) {
-            return null;
+        if (templateId != null) {
+            if (id == null) {
+                if (!templateId.equals(objectToLookup.toString())) {
+                    return null;
+                }
+            } else {
+                if (!templateId.equals(id)) {
+                    return null;
+                }
+            }
         }
 
         Object templateInst = template.getInstance();

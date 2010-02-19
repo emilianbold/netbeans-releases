@@ -41,6 +41,11 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 
@@ -56,7 +61,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jan Jancura
  */
-public final class ThreadBreakpoint extends JPDABreakpoint {
+public class ThreadBreakpoint extends JPDABreakpoint {
 
     /** Property name constant. */
     public static final String          PROP_BREAKPOINT_TYPE = "breakpointtType"; // NOI18N
@@ -81,7 +86,7 @@ public final class ThreadBreakpoint extends JPDABreakpoint {
      * @return a new breakpoint for given parameters
      */
     public static ThreadBreakpoint create () {
-        return new ThreadBreakpoint ();
+        return new ThreadBreakpointImpl ();
     }
 
     /**
@@ -116,33 +121,46 @@ public final class ThreadBreakpoint extends JPDABreakpoint {
         return "ThreadBreakpoint " + breakpointType;
     }
 
-    //@Override
-    private Object /*public GroupProperties*/ getGroupProperties() {
-        return new ThreadGroupProperties();
+    private static final class ThreadBreakpointImpl extends ThreadBreakpoint implements PropertyChangeListener {
+
+        //@Override
+        public Object /*public GroupProperties*/ getGroupProperties() {
+            return new ThreadGroupProperties();
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            enginePropertyChange(evt);
+        }
+
+
+        private final class ThreadGroupProperties {//extends GroupProperties {
+
+            public String getType() {
+                return "Thread";
+            }
+
+            public String getLanguage() {
+                return "Java";
+            }
+
+            public FileObject[] getFiles() {
+                return null;
+            }
+
+            public Project[] getProjects() {
+                return null;
+            }
+
+            public DebuggerEngine[] getEngines() {
+                return ThreadBreakpointImpl.this.getEngines();
+            }
+
+            public boolean isHidden() {
+                return ThreadBreakpointImpl.this.isHidden();
+            }
+
+        }
     }
 
-    private final class ThreadGroupProperties {//extends GroupProperties {
-
-        public String getType() {
-            return "Thread";
-        }
-
-        public String getLanguage() {
-            return "Java";
-        }
-
-        public FileObject[] getFiles() {
-            return null;
-        }
-
-        public Project[] getProjects() {
-            return null;
-        }
-        
-        public boolean isHidden() {
-            return ThreadBreakpoint.this.isHidden();
-        }
-
-    }
-    
 }

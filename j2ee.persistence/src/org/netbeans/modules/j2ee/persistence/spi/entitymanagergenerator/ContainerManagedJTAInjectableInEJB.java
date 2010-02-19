@@ -63,7 +63,7 @@ public final class ContainerManagedJTAInjectableInEJB extends EntityManagerGener
         ClassTree modifiedClazz = getClassTree();
         
         ModifiersTree methodModifiers = getTreeMaker().Modifiers(
-                Collections.<Modifier>singleton(Modifier.PUBLIC),
+                getGenerationOptions().getModifiers(),
                 Collections.<AnnotationTree>emptyList()
                 );
         

@@ -73,6 +73,19 @@ public final class RubyType {
     public static final RubyType DATE = new RubyType("Date");
     public static final RubyType TIME = new RubyType("Time");
 
+    private Set<String> realTypes;
+    /** See {@link  #hasUnknownMember()}. */
+    private boolean hasUnknownMember;
+
+    /**
+     * Unknown type.
+     */
+    private static final RubyType UNKNOWN;
+    static {
+        UNKNOWN = new RubyType();
+        UNKNOWN.hasUnknownMember = true;
+    }
+
     /**
      * Union type for {{@link #TRUE_CLASS}, {@link #FALSE_CLASS}}. Value of this
      * type is typed to one of them.
@@ -103,16 +116,9 @@ public final class RubyType {
         return coreType == null ? new RubyType(realType) : coreType;
     }
 
-    public static RubyType createUnknown() {
-        RubyType type = new RubyType();
-        type.hasUnknownMember = true;
-        return type;
+    public static RubyType unknown() {
+        return UNKNOWN;
     }
-    
-    private Set<String> realTypes;
-
-    /** See {@link  #hasUnknownMember()}. */
-    private boolean hasUnknownMember;
 
     public RubyType() {
         this.realTypes = new LinkedHashSet<String>();

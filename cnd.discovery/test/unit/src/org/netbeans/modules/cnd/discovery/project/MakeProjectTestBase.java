@@ -52,8 +52,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmModel;
@@ -129,7 +129,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         shutdownModel();
     }
 
-    private final void shutdownModel() {
+    private void shutdownModel() {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
         waitModelTasks(model);
         model.shutdown();
@@ -172,28 +172,28 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
 
     public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers, final String subFolder){
         Map<String, String> tools = findTools();
-        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        CompilerSet def = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
         if (useSunCompilers) {
-            if (def != null && def.isGnuCompiler()) {
-                for(CompilerSet set : CompilerSetManager.getDefault().getCompilerSets()){
-                    if (set.isSunCompiler()) {
-                        CompilerSetManager.getDefault().setDefault(set);
+            if (def != null && def.getCompilerFlavor().isGnuCompiler()) {
+                for(CompilerSet set : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()){
+                    if (set.getCompilerFlavor().isSunStudioCompiler()) {
+                        CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
                         break;
                     }
                 }
             }
         } else {
-            if (def != null && def.isSunCompiler()) {
-                for(CompilerSet set : CompilerSetManager.getDefault().getCompilerSets()){
-                    if (set.isGnuCompiler()) {
-                        CompilerSetManager.getDefault().setDefault(set);
+            if (def != null && def.getCompilerFlavor().isSunStudioCompiler()) {
+                for(CompilerSet set : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()){
+                    if (set.getCompilerFlavor().isGnuCompiler()) {
+                        CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
                         break;
                     }
                 }
             }
         }
-        def = CompilerSetManager.getDefault().getDefaultCompilerSet();
-        final boolean isSUN = def != null ? def.isSunCompiler() : false;
+        def = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
+        final boolean isSUN = def != null ? def.getCompilerFlavor().isSunStudioCompiler() : false;
         if (tools == null) {
             assertTrue("Please install required tools.", false);
             System.err.println("Test did not run because required tools do not found");
@@ -257,9 +257,9 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                                         return "-spec macx-g++ QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
                                     } else {
                                         if (Utilities.isWindows()) {
-                                            for (CompilerSet set : CompilerSetManager.getDefault().getCompilerSets()){
+                                            for (CompilerSet set : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()){
                                                 if (set.getCompilerFlavor().getToolchainDescriptor().getName().startsWith("MinGW")) {
-                                                    CompilerSetManager.getDefault().setDefault(set);
+                                                    CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
                                                     break;
                                                 }
                                             }

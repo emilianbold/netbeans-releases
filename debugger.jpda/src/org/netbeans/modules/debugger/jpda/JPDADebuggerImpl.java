@@ -208,7 +208,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
         this.lookupProvider = lookupProvider;
         
         Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
-        suspend = p.getInt("StepResume", suspend);
+        int stepResume = p.getInt("StepResume", (SINGLE_THREAD_STEPPING) ? 1 : 0);
+        suspend = (stepResume == 1) ? SUSPEND_EVENT_THREAD : SUSPEND_ALL;
 
         pcs = new PropertyChangeSupport (this);
         List l = lookupProvider.lookup (null, DebuggerEngineProvider.class);
@@ -431,6 +432,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
             // update breakpoints
             fixBreakpoints();
+
+            firePropertyChange("classesFixed", null, null); // [TODO] add property to API
 
             // 2) pop obsoleted frames
             JPDAThread t = getCurrentThread ();

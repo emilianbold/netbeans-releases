@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -237,11 +238,11 @@ public class PHPFormatter implements Formatter {
 
     private void prettyPrint(final Context context, final ParserResult info) {
         final BaseDocument doc = (BaseDocument) context.document();
-        final String openingBraceStyle = CodeStyle.get(doc).getOpeningBraceStyle();
+//        final String openingBraceStyle = CodeStyle.get(doc).getOpeningBraceStyle();
 
-        if (FmtOptions.OBRACE_PRESERVE.equals(openingBraceStyle)){
-            return;
-        }
+//        if (FmtOptions.OBRACE_PRESERVE.equals(openingBraceStyle)){
+//            return;
+//        }
 
         doc.runAtomic(new Runnable() {
 
@@ -256,25 +257,49 @@ public class PHPFormatter implements Formatter {
                 Collections.sort(replacements);
                 Collections.reverse(replacements);
 
-                for (WSTransformer.Replacement replacement : replacements){
-                    int offset = replacement.offset();
+		WSTransformer.Replacement replacementToApply = null;
+                for (WSTransformer.Replacement replacement : replacements) {
+		    if (replacementToApply != null) {
+			if (replacementToApply.offset() != replacement.offset()) {
+			    int offset = replacementToApply.offset();
 
-                    if (offset < context.startOffset()
-                            || offset > context.endOffset()){
-                        continue;
-                    }
+			    if (offset >= context.startOffset() && offset <= context.endOffset()) {
+				try {
+				    doc.insertString(offset, replacementToApply.newString(), null);
+				    if (replacementToApply.length() > 0){
+					doc.remove(offset - replacementToApply.length(), replacementToApply.length());
+				    }
+				} catch (BadLocationException ex) {
+				    Exceptions.printStackTrace(ex);
+				}
+			    }
 
-                    try {
-                        doc.insertString(offset, replacement.newString(), null);
-
-                        if (replacement.length() > 0){
-                            doc.remove(offset - replacement.length(), replacement.length());
-                        }
-
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+			    
+			    replacementToApply = replacement;
+			}
+			else {
+			    if (replacementToApply.newString().length() < replacement.newString().length()) {
+				replacementToApply = replacement;
+			    }
+			}
+		    }
+		    else {
+			replacementToApply = replacement;
+		    }
                 }
+		if (replacementToApply != null) {
+		    int offset = replacementToApply.offset();
+		    if (offset >= context.startOffset() && offset <= context.endOffset()){
+			try {
+			    doc.insertString(offset, replacementToApply.newString(), null);
+			    if (replacementToApply.length() > 0){
+				doc.remove(offset - replacementToApply.length(), replacementToApply.length());
+			    }
+			} catch (BadLocationException ex) {
+			    Exceptions.printStackTrace(ex);
+			}
+		    }
+		}
             }
         });
     }
@@ -339,7 +364,10 @@ public class PHPFormatter implements Formatter {
 
                             if (lineDelta != null) {
                                 currentIndent += lineDelta;
-                                assert currentIndent >= 0 : "currentIndent < 0";
+                                if (currentIndent < 0 ) {
+				    LOG.warning("currentIndent was < 0 in PHPFormatter.astReformat(). It shouldn't happen."); //I18N
+				    currentIndent = 0;
+				}
                             }
 
                             if (!lineUnformattable(doc, lineStart)) {

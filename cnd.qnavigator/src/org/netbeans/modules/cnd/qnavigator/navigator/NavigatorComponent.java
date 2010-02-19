@@ -113,7 +113,7 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     /** Impl of LookupListener, reacts to changes of context */
     public synchronized void resultChanged(LookupEvent ev) {
         for (DataObject dob : doContext.allInstances()) {
-            if (MIMENames.isHeaderOrCppOrC(getMime(dob))) {
+            if (MIMENames.isFortranOrHeaderOrCppOrC(getMime(dob))) {
                 if (!dob.equals(curData)) {
                     detachFromModel(curModel);
                     curData = dob;

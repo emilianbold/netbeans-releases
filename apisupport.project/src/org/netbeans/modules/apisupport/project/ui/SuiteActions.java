@@ -41,12 +41,17 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -63,11 +68,13 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -99,6 +106,10 @@ public final class SuiteActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction("run-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_jnlp"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction("debug-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_jnlp"), null));
         actions.add(null);
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V69) >= 0 && platform.getModule("org.netbeans.core.netigso") != null) {
+            actions.add(new OSGiSubMenuAction());
+            actions.add(null);
+        }
         if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V55u1) >= 0) {
             actions.add(ProjectSensitiveActions.projectCommandAction("build-mac", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_mac"), null));
             actions.add(null);
@@ -123,6 +134,24 @@ public final class SuiteActions implements ActionProvider {
         actions.add(CommonProjectActions.customizeProjectAction());
         return actions.toArray(new Action[actions.size()]);
     }
+    private static class OSGiSubMenuAction extends AbstractAction implements Presenter.Popup {
+        public @Override void actionPerformed(ActionEvent e) {assert false;}
+        public @Override JMenuItem getPopupPresenter() {
+            class Menu extends JMenu implements DynamicMenuContent {
+                Menu() {super(NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_osgi_menu"));}
+                public @Override JComponent[] getMenuPresenters() {return new JComponent[] {this};}
+                public @Override JComponent[] synchMenuPresenters(JComponent[] items) {return getMenuPresenters();}
+            }
+            JMenu m = new Menu();
+            m.add(ProjectSensitiveActions.projectCommandAction("build-osgi",
+                    NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build_osgi"), null));
+            m.add(ProjectSensitiveActions.projectCommandAction("build-osgi-obr",
+                    NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build_osgi_obr"), null));
+            m.add(ProjectSensitiveActions.projectCommandAction("run-osgi",
+                    NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_osgi"), null));
+            return m;
+        }
+    }
     
     private final SuiteProject project;
     
@@ -141,6 +170,9 @@ public final class SuiteActions implements ActionProvider {
             "build-jnlp", // NOI18N
             "run-jnlp", // NOI18N
             "debug-jnlp", // NOI18N
+            "build-osgi", // NOI18N
+            "build-osgi-obr", // NOI18N
+            "run-osgi", // NOI18N
             "build-mac", // NOI18N
             "nbms", // NOI18N
             "profile", // NOI18N
@@ -250,12 +282,8 @@ public final class SuiteActions implements ActionProvider {
                 return null;
             }
             targetNames = new String[] {"debug-jnlp"}; // NOI18N
-        } else if (command.equals("build-mac")) { // NOI18N
-            targetNames = new String[] {"build-mac"}; // NOI18N
-        } else if (command.equals("nbms")) { // NOI18N
-            targetNames = new String[] {"nbms"}; // NOI18N
-        } else if (command.equals("profile")) { // NOI18N
-            targetNames = new String[] {"profile"}; // NOI18N
+        } else if (command.matches("build-osgi|build-osgi-obr|run-osgi|build-mac|nbms|profile")) { // NOI18N
+            targetNames = new String[] {command}; // NOI18N
         } else {
             throw new IllegalArgumentException(command);
         }

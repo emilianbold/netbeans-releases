@@ -183,7 +183,7 @@ final class RubyMethodTypeInferencer {
         }
 
         if (receiverType == null) {
-            return RubyType.createUnknown();
+            return RubyType.unknown();
         }
 
         if (returnsReceiver(name)) {
@@ -210,7 +210,7 @@ final class RubyMethodTypeInferencer {
         // this can be very time consuming, return if TI is not enabled and
         // we're operating in the fast mode
         if (fast && !TypeInferenceSettings.getDefault().getMethodTypeInference()) {
-            return RubyType.createUnknown();
+            return RubyType.unknown();
         }
 
         RubyType resultType = new RubyType();

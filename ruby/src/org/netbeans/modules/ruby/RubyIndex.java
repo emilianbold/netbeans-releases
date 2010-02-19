@@ -667,7 +667,7 @@ public final class RubyIndex {
         // TODO parse possibly multiple types
         String type = typeIndex == -1 ? null : signature.substring(typeIndex + 1);
 
-        RubyType rubyType = isEmptyOrNull(type) ? RubyType.createUnknown() : RubyType.create(type);
+        RubyType rubyType = isEmptyOrNull(type) ? RubyType.unknown() : RubyType.create(type);
         IndexedConstant m = IndexedConstant.create(
                 this, name, classFQN, ir, require, flags, context, rubyType);
 
@@ -773,9 +773,10 @@ public final class RubyIndex {
     }
 
     /**
-     * Gets the super clases of the given class.
+     * Gets the super clases of the given class; the class itself
+     * is not included.
      * @param fqn
-     * @return
+     * @return an ordered list of the super classes; closest first.
      */
     public List<IndexedClass> getSuperClasses(String fqn) {
         // todo: performance?

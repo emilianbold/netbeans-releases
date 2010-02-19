@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.cnd.toolchain.api;
 
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -48,9 +48,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ScannerDescriptor;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ScannerPattern;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerPattern;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainManagerImpl;
 
 /**
  * @author Alexey Vladykin
@@ -67,7 +68,7 @@ public class ScannerTestCase extends NbTestCase {
     }
 
     public void testGNUpatterns() throws Exception {
-        ToolchainDescriptor toolchain = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
         String[] GCC_ERROR_SCANNER = new String[]{"^([a-zA-Z]:[^:$]*|[^:$]*):([0-9]+)[\\.:]([^:$]*):([^$]*)", // NOI18N
 						  "^([^:$]*):([0-9]+): ([a-zA-Z]*):*.*", // NOI18N
 						  "^([^\\($]*)\\(([0-9]+)\\): ([^:$]*): ([^$]*)"}; // NOI18N
@@ -90,7 +91,7 @@ public class ScannerTestCase extends NbTestCase {
     }
 
     public void testSUNpatterns() throws Exception {
-        ToolchainDescriptor toolchain = ToolchainManager.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         String[] SUN_ERROR_SCANNER = new String[]{"^\"(.*)\", line ([0-9]+):", // NOI18N
 						  "^\"(.*)\", line ([0-9]+): Error:", // NOI18N
 						  "^\"(.*)\", Line = ([0-9]+),", // NOI18N
@@ -125,22 +126,22 @@ public class ScannerTestCase extends NbTestCase {
     }
 
     public void testCygwinLogs() throws Exception {
-        ToolchainDescriptor toolchain = ToolchainManager.getImpl().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
         doTest(getLogs(), toolchain.getScanner(), getRef());
     }
 
     public void testDJGPPLogs() throws Exception {
-        ToolchainDescriptor toolchain = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_WINDOWS);
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_WINDOWS);
         doTest(getLogs(), toolchain.getScanner(), getRef());
     }
 
     public void testGnuFortranLogs() throws Exception {
-        ToolchainDescriptor toolchain = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
         doTest(getLogs(), toolchain.getScanner(), getRef());
     }
 
     public void testGnuCluceneLogs() throws Exception {
-        ToolchainDescriptor toolchain = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
         doTest(getLogs(), toolchain.getScanner(), getRef());
     }
 

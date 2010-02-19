@@ -57,7 +57,7 @@ public class WatchesTableModel implements TableModel, Constants {
 
     public Object getValueAt (Object row, String columnID) throws
     UnknownTypeException {
-        if (row instanceof Watch) {
+        if (row instanceof Watch || row instanceof WatchesTreeModel.EmptyWatch) {
             if (columnID.equals (WATCH_TO_STRING_COLUMN_ID) ||
                     columnID.equals (LOCALS_TO_STRING_COLUMN_ID))
                 return "";
@@ -75,7 +75,7 @@ public class WatchesTableModel implements TableModel, Constants {
     
     public boolean isReadOnly (Object row, String columnID) throws 
     UnknownTypeException {
-        if (row instanceof Watch) {
+        if (row instanceof Watch || row instanceof WatchesTreeModel.EmptyWatch) {
             if (columnID.equals (WATCH_TO_STRING_COLUMN_ID) ||
                     columnID.equals (LOCALS_TO_STRING_COLUMN_ID))
                 return true;

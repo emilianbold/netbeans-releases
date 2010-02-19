@@ -74,6 +74,7 @@ import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.TestBaseHid;
 import org.openide.filesystems.URLMapper;
+import org.openide.filesystems.test.StatFiles;
 import org.openide.util.Utilities;
 import org.openide.util.io.NbMarshalledObject;
 
@@ -113,6 +114,37 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         FileObject root1 = fs.getRoot();
         assertNotNull(root1);
         assertNotNull(FileUtil.toFile(root1));
+    }
+
+    public void testMoveOfAFolderDoesNotTouchSubhierarchy() throws Exception {
+        FileObjectFactory fs = FileObjectFactory.getInstance(getWorkDir());
+        assertNotNull(fs);
+        FileObject root1 = fs.getValidFileObject(getWorkDir(), FileObjectFactory.Caller.Others);
+
+        FileObject where = root1.createFolder("else").createFolder("sub").createFolder("subsub");
+        FileObject fo = root1.createFolder("something");
+        FileObject kidTxt = fo.createData("kid.txt");
+        FileObject kid = fo.createFolder("kid");
+        File kidFile = FileUtil.toFile(kid);
+        File kidTxtFile = FileUtil.toFile(kidTxt);
+
+        accessMonitor = new StatFiles();
+        FileLock lock = fo.lock();
+        FileObject newFolder = fo.move(lock, where, fo.getNameExt(), null);
+        assertEquals("Subfolder", where, newFolder.getParent());
+
+        assertNotNull("Folder found", newFolder.getFileObject("kid"));
+        assertNotNull("File found", newFolder.getFileObject("kid.txt"));
+        assertFalse("No longer valid file", kidTxt.isValid());
+        assertFalse("No longer valid dir", kid.isValid());
+
+        String msg = 
+            accessMonitor.getResults().statResultStack(kidFile, StatFiles.ALL) + "\n" +
+            accessMonitor.getResults().statResultStack(kidTxtFile, StatFiles.ALL) + "\n";
+        final Set<File> files = accessMonitor.getResults().getFiles();
+        if (files.contains(kidFile) || files.contains(kidTxtFile)) {
+            fail(msg);
+        }
     }
     
     public void testRefresh109490() throws Exception {
@@ -550,7 +582,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertNotNull(root.getFileObject("subpackage1"));
         assertNotNull(root.getFileObject("subpackage1/newclass.java"));
         FileObjectTestHid.implOfTestGetFileObjectForSubversion(root, "subpackage");                                
-        final String subpackageName = (ProvidedExtensionsTest.ProvidedExtensionsImpl.isImplsDeleteRetVal() && Utilities.isWindows()) ? 
+        final String subpackageName = Utilities.isWindows() ? 
             "subpackage2" : "Subpackage";
         fs.addFileChangeListener(tl);
         try {
@@ -741,9 +773,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertTrue (f.delete());
         fileObject.refresh();
         
-        if (!ProvidedExtensionsTest.ProvidedExtensionsImpl.isImplsDeleteRetVal()) {        
-            assertFalse(fileObject.isValid());       
-        }
+        assertFalse(fileObject.isValid());
     }
         
     public void testFindResourceNoCaptureExternalChanges () throws Exception {

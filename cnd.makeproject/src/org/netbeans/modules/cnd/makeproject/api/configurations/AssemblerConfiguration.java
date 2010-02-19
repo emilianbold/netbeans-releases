@@ -43,13 +43,14 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public class AssemblerConfiguration extends BasicCompilerConfiguration implements AllOptionsProvider, ConfigurationBase  {
+public class AssemblerConfiguration extends BasicCompilerConfiguration {
     // Constructors
 
     public AssemblerConfiguration(String baseDir, AssemblerConfiguration master) {
@@ -78,14 +79,14 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration implement
 
     // Interface OptionsProvider
     @Override
-    public String getOptions(BasicCompiler compiler) {
+    public String getOptions(AbstractCompiler compiler) {
         String options = "$(AS) $(ASFLAGS) "; // NOI18N
         options += getAllOptions2(compiler) + " "; // NOI18N
         options += getCommandLineConfiguration().getValue() + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
 
-    public String getAsFlagsBasic(BasicCompiler compiler) {
+    public String getAsFlagsBasic(AbstractCompiler compiler) {
         String options = ""; // NOI18N
         options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
         options += compiler.getSixtyfourBitsOption(getSixtyfourBits().getValue()) + " "; // NOI18N
@@ -95,14 +96,18 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration implement
         return CppUtils.reformatWhitespaces(options);
     }
 
-    public String getAsFlags(BasicCompiler compiler) {
+    public String getAsFlags(AbstractCompiler compiler) {
         String options = getAsFlagsBasic(compiler) + " "; // NOI18N
         options += getCommandLineConfiguration().getValue() + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
 
     @Override
-    public String getAllOptions(BasicCompiler compiler) {
+    public String getAllOptions(Tool tool) {
+        if (!(tool instanceof AbstractCompiler)) {
+            return "";
+        }
+        AbstractCompiler compiler = (AbstractCompiler) tool;
         AssemblerConfiguration master = (AssemblerConfiguration) getMaster();
 
         String options = ""; // NOI18N
@@ -114,7 +119,7 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration implement
         return CppUtils.reformatWhitespaces(options);
     }
 
-    public String getAllOptions2(BasicCompiler compiler) {
+    public String getAllOptions2(AbstractCompiler compiler) {
         String options = ""; // NOI18N
         options += compiler.getDevelopmentModeOptions(getDevelopmentMode().getValue()) + " "; // NOI18N
         options += compiler.getWarningLevelOptions(getWarningLevel().getValue()) + " "; // NOI18N
@@ -125,7 +130,7 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration implement
     public Sheet getGeneralSheet(MakeConfiguration conf) {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        BasicCompiler assemblerCompiler = compilerSet == null ? null : (BasicCompiler) compilerSet.getTool(Tool.Assembler);
+        AbstractCompiler assemblerCompiler = compilerSet == null ? null : (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.Assembler);
 
         Sheet.Set basicSet = getBasicSet();
         basicSet.remove("StripSymbols"); // NOI18N

@@ -1,3 +1,8 @@
+#179838
+org.apache.derby.jdbc.AutoloadedDriver
+org.h2.Driver
+org.netbeans.modules.db.explorer.DatabaseConnector
+
 #177514
 org.netbeans.modules.cnd.api.model.CsmClass
 org.netbeans.modules.cnd.api.model.CsmClassifier
@@ -78,16 +83,6 @@ org.netbeans.modules.xml.tools.actions.CheckDTDAction
 org.netbeans.modules.xml.tools.doclet.DocletAction
 org.netbeans.modules.xml.tools.java.actions.GenerateDOMScannerAction
 org.netbeans.modules.xml.tools.java.actions.GenerateDocumentHandlerAction
-
-#177561
-org.netbeans.modules.cnd.debug.DebugUtils
-org.netbeans.modules.cnd.debugger.common.EditorContext
-org.netbeans.modules.cnd.debugger.common.EditorContextBridge
-org.netbeans.modules.cnd.debugger.common.EditorContextImpl
-org.netbeans.modules.cnd.debugger.common.breakpoints.ToggleBreakpointActionProvider
-org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$SessionsListener
-org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$SessionsListenerRemoval
-
 
 com.sun.java.swing.plaf.windows.WindowsButtonUI
 com.sun.java.swing.plaf.windows.WindowsCheckBoxMenuItemUI
@@ -1047,8 +1042,6 @@ org.netbeans.api.debugger.Lookup$MetaInf$MetaInfLookupList$LazyInstance
 org.netbeans.api.debugger.Lookup$MetaInf$ModuleChangeListener
 org.netbeans.api.debugger.Session
 org.netbeans.api.debugger.Watch
-org.netbeans.api.debugger.jpda.JPDABreakpoint
-org.netbeans.api.debugger.jpda.LineBreakpoint
 org.netbeans.api.editor.EditorRegistry
 org.netbeans.api.editor.EditorRegistry$AncestorL
 org.netbeans.api.editor.EditorRegistry$FocusL
@@ -2304,8 +2297,6 @@ org.netbeans.lib.uihandler.LogRecords$Parser
 org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor$Destination
 org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor$Source
 org.netbeans.mobility.antext.preprocessor.PreprocessorException
-org.netbeans.modules.ant.debugger.breakpoints.AntBreakpoint
-org.netbeans.modules.ant.debugger.breakpoints.AntBreakpointActionProvider
 org.netbeans.modules.ant.freeform.Accessor
 org.netbeans.modules.ant.freeform.Actions
 org.netbeans.modules.ant.freeform.Actions$TargetRunner
@@ -2489,8 +2480,6 @@ org.netbeans.modules.debugger.jpda.projects.EditorContextImpl
 org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$EditorContextDispatchListener
 org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$EditorLookupListener
 org.netbeans.modules.debugger.jpda.projects.MainProjectManager
-org.netbeans.modules.debugger.jpda.projects.RunToCursorActionProvider
-org.netbeans.modules.debugger.jpda.projects.RunToCursorActionProvider$Listener
 org.netbeans.modules.debugger.jpda.projects.StepIntoActionProvider
 org.netbeans.modules.debugger.jpda.projects.StepIntoActionProvider$Listener
 org.netbeans.modules.debugger.jpda.ui.ConnectPanel
@@ -2501,7 +2490,6 @@ org.netbeans.modules.debugger.jpda.ui.actions.EvaluateAction
 org.netbeans.modules.debugger.jpda.ui.actions.EvaluateAction$EnableListener
 org.netbeans.modules.debugger.jpda.ui.actions.SetCurrentThreadFromHistoryAction
 org.netbeans.modules.debugger.jpda.ui.actions.SourcesViewAction
-org.netbeans.modules.debugger.jpda.ui.actions.ToggleBreakpointActionProvider
 org.netbeans.modules.debugger.jpda.ui.actions.ToggleMethodFieldBreakpointAction
 org.netbeans.modules.debugger.jpda.ui.debugging.ThreadsHistoryAction
 org.netbeans.modules.debugger.ui.DebuggerModule
@@ -2912,9 +2900,6 @@ org.netbeans.modules.form.palette.PaletteItemDataObject$PaletteItemDataLoader
 org.netbeans.modules.glassfish.common.Installer
 org.netbeans.modules.gototest.GotoOppositeAction
 org.netbeans.modules.groovy.grailsproject.GrailsProjectFactory
-org.netbeans.modules.groovy.support.debug.Context
-org.netbeans.modules.groovy.support.debug.GroovyLineBreakpoint
-org.netbeans.modules.groovy.support.debug.GroovyToggleBreakpointActionProvider
 org.netbeans.modules.gsf.DefaultLanguage
 org.netbeans.modules.gsf.GsfDataLoader
 org.netbeans.modules.gsf.GsfDataObject
@@ -3730,9 +3715,6 @@ org.netbeans.modules.registration.NbInstaller
 org.netbeans.modules.registration.RegisterAction
 org.netbeans.modules.ruby.RubyMimeResolver
 org.netbeans.modules.ruby.api.project.rake.RakeArtifact
-org.netbeans.modules.ruby.debugger.EditorUtil
-org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint
-org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointActionProvider
 org.netbeans.modules.ruby.modules.project.rake.FileChangeSupportListener
 org.netbeans.modules.ruby.modules.project.rake.RakeBasedProjectFactorySingleton
 org.netbeans.modules.ruby.modules.project.rake.RakeBasedProjectFactorySingleton$RakeProjectHelperCallback
@@ -4211,8 +4193,6 @@ org.netbeans.modules.web.client.javascript.debugger.actions.NbJSDebugURLAction
 org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObject
 org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObjectFactory
 org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObjectMapper
-org.netbeans.modules.web.client.javascript.debugger.ui.NbJSEditorUtil
-org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.NbJSBreakpointActionProvider
 org.netbeans.modules.web.core.EditQueryStringAction
 org.netbeans.modules.web.core.JspEditorWarmUpTask
 org.netbeans.modules.web.core.QueryStringCookie
@@ -4226,13 +4206,6 @@ org.netbeans.modules.web.core.syntax.indent.JspIndentTaskFactory
 org.netbeans.modules.web.core.syntax.settings.JspMultiSettingsInitializer
 org.netbeans.modules.web.core.syntax.settings.RestoreSettings
 org.netbeans.modules.web.core.syntax.spi.AutoTagImporterProvider
-org.netbeans.modules.web.debug.Context
-org.netbeans.modules.web.debug.actions.JspRunToCursorActionProvider
-org.netbeans.modules.web.debug.actions.JspRunToCursorActionProvider$Listener
-org.netbeans.modules.web.debug.actions.JspToggleBreakpointActionProvider
-org.netbeans.modules.web.debug.actions.MainProjectManager
-org.netbeans.modules.web.debug.breakpoints.JspLineBreakpoint
-org.netbeans.modules.web.debug.util.Utils
 org.netbeans.modules.web.freeform.FolderTemplateLookupProviderImpl
 org.netbeans.modules.web.freeform.LookupProviderImpl
 org.netbeans.modules.web.freeform.LookupProviderImpl$ProjectLookup
@@ -5527,3 +5500,26 @@ org.netbeans.core.startup.Splash$SplashPainter
 org.netbeans.modules.ide.ergonomics.Installer
 org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$FCL
 org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$RootsListeners
+
+# OK on Feb 4, 2010:
+javax.swing.GroupLayout
+javax.swing.GroupLayout$Alignment
+javax.swing.GroupLayout$ParallelGroup
+org.netbeans.modules.parsing.impl.indexing.DefaultPathRecognizer
+org.netbeans.modules.parsing.impl.indexing.errors.ErrorAnnotator
+org.netbeans.modules.progress.spi.Controller
+org.netbeans.modules.progress.spi.ExtractedProgressUIWorker
+org.netbeans.modules.progress.spi.InternalHandle
+org.netbeans.modules.progress.spi.ProgressEvent
+org.netbeans.modules.progress.spi.ProgressUIWorker
+org.netbeans.modules.progress.spi.ProgressUIWorkerProvider
+org.netbeans.modules.progress.spi.ProgressUIWorkerWithModel
+org.netbeans.modules.progress.spi.TaskModel
+org.openide.util.NbPreferences$Provider
+org.openide.util.actions.ActionPresenterProvider
+org.openide.util.lookup.implspi.NamedServicesProvider
+
+# classes loaded to make VersioningAnnotator asynchronous and much more responsive
+# permitted in #180830
+org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache
+org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache$AnnotationRefreshTask

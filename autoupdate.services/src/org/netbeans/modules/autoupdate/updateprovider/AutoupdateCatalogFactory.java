@@ -66,9 +66,8 @@ import org.openide.util.NbPreferences;
  * @author Jiri Rechtacek
  */
 public class AutoupdateCatalogFactory {
-    private static Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.updateproviders.AutoupdateCatalogFactory");
+    private static final Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.updateproviders.AutoupdateCatalogFactory");
     
-    /** Creates a new instance of CreateNewUpdatesProvider */
     private AutoupdateCatalogFactory () {
     }
     
@@ -87,23 +86,26 @@ public class AutoupdateCatalogFactory {
     
     public static UpdateProvider createUpdateProvider (FileObject fo) {
         String sKey = (String) fo.getAttribute ("url_key"); // NOI18N
-        String remoteBundleName = (String) fo.getAttribute ("SystemFileSystem.localizingBundle"); // NOI18N
-        assert remoteBundleName != null : "remoteBundleName should found in fo: " + fo;
-        
-        ResourceBundle bundle = NbBundle.getBundle (remoteBundleName);
-        URL url = null;
+        URL url;
+        String name;
         if (sKey != null) {
+            err.log(Level.WARNING, "{0}: url_key attribute deprecated in favor of url", fo.getPath());
+            String remoteBundleName = (String) fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
+            assert remoteBundleName != null : "remoteBundleName should found in fo: " + fo;
+            ResourceBundle bundle = NbBundle.getBundle(remoteBundleName);
             String localizedValue = null;
             try {
                 localizedValue = bundle.getString (sKey);
                 url = new URL (localizedValue);
             } catch (MissingResourceException mre) {
                 assert false : bundle + " should contain key " + sKey;
+                return null;
             } catch (MalformedURLException urlex) {
                 assert false : "MalformedURLException when parsing name " + localizedValue;
+                return null;
             }
+            name = sKey;
         } else {
-            assert false : "url attrib ute is not supported.";
             Object o = fo.getAttribute("url"); // NOI18N
             try {
                 if (o instanceof String) {
@@ -113,14 +115,16 @@ public class AutoupdateCatalogFactory {
                 }
             } catch (MalformedURLException urlex) {
                 err.log (Level.INFO, urlex.getMessage (), urlex);
+                return null;
             }
+            name = fo.getName();
         }
         url = modifyURL (url);
         String categoryName = (String) fo.getAttribute ("category"); // NOI18N    
         CATEGORY category = (categoryName != null) ? CATEGORY.valueOf(categoryName) : CATEGORY.COMMUNITY;
-        AutoupdateCatalogProvider au_catalog = new AutoupdateCatalogProvider (sKey, displayName (fo), url, category);
+        AutoupdateCatalogProvider au_catalog = new AutoupdateCatalogProvider(name, displayName(fo), url, category);
         
-        Preferences providerPreferences = getPreferences ().node (sKey);
+        Preferences providerPreferences = getPreferences().node(name);
         providerPreferences.put (ORIGINAL_URL, url.toExternalForm ());
         providerPreferences.put (ORIGINAL_DISPLAY_NAME, au_catalog.getDisplayName ());
         providerPreferences.put (ORIGINAL_CATEGORY_NAME, au_catalog.getCategory().name());        
@@ -146,7 +150,7 @@ public class AutoupdateCatalogFactory {
                 FileSystem fs = fo.getFileSystem ();
                 FileSystem.Status s = fs.getStatus ();
                 String x = s.annotateName ("", Collections.singleton (fo)); // NOI18N
-                if (!x.equals ("")) { // NOI18N
+                if (!x.isEmpty()) {
                     displayName = x;
                 }
             } catch (FileStateInvalidException e) {
@@ -196,7 +200,7 @@ public class AutoupdateCatalogFactory {
 	String rval = stringURL;
             int q = stringURL.indexOf ('?');
             if(q > 0) {
-		StringBuffer buf = new StringBuffer (stringURL.substring (0, q+1));
+        StringBuilder buf = new StringBuilder(stringURL.substring(0, q + 1));
 		StringTokenizer st = new StringTokenizer (stringURL.substring (q + 1), "&");
 		while(st.hasMoreTokens ()) {
                     String a = st.nextToken ();
@@ -208,7 +212,7 @@ public class AutoupdateCatalogFactory {
                             buf.append(URLEncoder.encode (a.substring(0, ei), "UTF-8"));
                             buf.append ('=');
                             String tna = a.substring( ei+1);
-                            int tni = tna.indexOf ("%");
+                            int tni = tna.indexOf('%');
                             if( tni < 0) {
                                 buf.append (URLEncoder.encode (tna, "UTF-8"));
                             } else {
@@ -220,8 +224,9 @@ public class AutoupdateCatalogFactory {
                     } catch (UnsupportedEncodingException ex) {
                         Logger.getLogger(AutoupdateCatalogFactory.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
-                    if (st.hasMoreTokens ())
-                        buf.append ('&');
+                    if (st.hasMoreTokens ()) {
+                        buf.append('&');
+                    }
                 }
                 rval = buf.toString ();
             }
@@ -234,14 +239,15 @@ public class AutoupdateCatalogFactory {
         // First of all set our system properties
         setSystemProperties ();
 
-        if ( string == null )
+        if (string == null) {
             return null;
+        }
 
-        StringBuffer sb = new StringBuffer ();
+        StringBuilder sb = new StringBuilder();
 
         int index, prevIndex;
         index = prevIndex = 0;
-        while( ( index = string.indexOf( "{", index )) != -1 && index < string.length() - 1) { // NOI18N
+        while ((index = string.indexOf('{', index)) != -1 && index < string.length() - 1) {
 
             if ( string.charAt( index + 1 ) == '{' || string.charAt( index + 1 ) != '$'  ) {
                 ++index;
@@ -249,7 +255,7 @@ public class AutoupdateCatalogFactory {
             }
 
             sb.append( string.substring (prevIndex, index) );
-            int endBracketIndex = string.indexOf ("}", index); // NOI18N
+            int endBracketIndex = string.indexOf('}', index);
             if (endBracketIndex != -1) {
                 String whatToReplace = string.substring (index + 2, endBracketIndex);
                 sb.append (getReplacement (whatToReplace));
@@ -258,8 +264,9 @@ public class AutoupdateCatalogFactory {
             ++index;
         }
 
-        if ( prevIndex < string.length () - 1 )
-            sb.append( string.substring (prevIndex));
+        if (prevIndex < string.length() - 1) {
+            sb.append(string.substring(prevIndex));
+        }
 
         return sb.toString ();
     }

@@ -41,12 +41,22 @@ package org.netbeans.modules.maven.api;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Enumeration;
+import java.util.SortedSet;
 import java.util.Stack;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 import org.apache.maven.artifact.Artifact;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * Various File/FileObject related utilities.
@@ -241,5 +251,73 @@ public final class FileUtilities {
         }
     }
 
-   
+    /**
+     * Inspired by org.netbeans.modules.apisupport.project.Util.scanProjectForPackageNames
+     *
+     * Returns sorted set of given project's package names in x.y.z form.
+     * Result contains only packages which are valid as candidates for
+     * public packages - contains some *.class or *.java
+     *
+     * @param prj project to retrieve package names from
+     * @return Sorted set of package names
+     */
+    public static SortedSet<String> getPackageNames (Project prj) {
+        ProjectSourcesClassPathProvider cpProvider = prj.getLookup().lookup(ProjectSourcesClassPathProvider.class);
+        assert cpProvider != null : "Project has to provide ProjectSourcesClassPathProvider ability"; //NOI18N
+
+        SortedSet<String> result = new TreeSet<String>();
+
+        SourceGroup[] scs = ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (int i = 0; i < scs.length; i++) {
+            final FileObject root = scs[i].getRootFolder();
+            processFolder(root, new NameObtainer() {
+                @Override
+                public String getPackageName(FileObject file) {
+                    String pkgName = relativizeFile(FileUtil.toFile(root), FileUtil.toFile(file));
+                    return pkgName.replace('/', '.');
+                }
+            }, result);
+        }
+
+        final ClassPath runtimeCP = cpProvider.getProjectSourcesClassPath(ClassPath.EXECUTE);
+        FileObject[] cpRoots = runtimeCP.getRoots();
+        for (int i = 0; i < cpRoots.length; i++) {
+            FileObject root = cpRoots[i];
+            if (root.isFolder()) {
+                processFolder(root, new NameObtainer() {
+                    @Override
+                    public String getPackageName(FileObject file) {
+                        return runtimeCP.getResourceName(file, '.', true);
+                    }
+                }, result);
+            }
+        }
+
+        return result;
+    }
+
+    private static void processFolder(FileObject file, NameObtainer nameObtainer, SortedSet<String> result) {
+        Enumeration<? extends FileObject> dataFiles = file.getData(false);
+        Enumeration<? extends FileObject> folders = file.getFolders(false);
+
+        if (dataFiles.hasMoreElements() || !folders.hasMoreElements()) {
+            while (dataFiles.hasMoreElements()) {
+                FileObject kid = dataFiles.nextElement();
+                if ((kid.hasExt("java") || kid.hasExt("class")) && Utilities.isJavaIdentifier(kid.getName())) {
+                    // at least one java or class inside directory -> valid package
+                    result.add(nameObtainer.getPackageName(file));
+                    break;
+                }
+            }
+        }
+
+        while (folders.hasMoreElements()) {
+            processFolder(folders.nextElement(), nameObtainer, result);
+        }
+    }
+
+    private interface NameObtainer {
+        String getPackageName (FileObject file);
+    }
+
 }

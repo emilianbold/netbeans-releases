@@ -62,11 +62,12 @@ public abstract class FaceletsLibrary {
         Tag faceletsTag = getTag(fld, name);
         TldLibrary tld = support.getJsfSupport().getTldLibrary(getNamespace());
         Tag tldTag = getTag(tld, name);
+        Tag coreTag = getTag(getLibraryDescriptor(), name);
 
         if(faceletsTag == null) {
-            return tldTag;
+            return tldTag != null ? new ProxyTag(tldTag, coreTag) : coreTag;
         } else {
-            return new ProxyTag(faceletsTag, tldTag);
+            return new ProxyTag(new ProxyTag(faceletsTag, tldTag), coreTag);
         }
     }
 

@@ -58,10 +58,8 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ImplementationProvider;
 import org.netbeans.editor.Utilities;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
@@ -87,7 +85,7 @@ public class OverrideAnnotationAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         if (!invokeDefaultAction((JTextComponent) e.getSource())) {
             // sorry, don't know how to do without deprecated ImplementationProvider
-            Action actions[] = ImplementationProvider.getDefault().getGlyphGutterActions((JTextComponent) e.getSource());
+            Action actions[] = org.netbeans.editor.ImplementationProvider.getDefault().getGlyphGutterActions((JTextComponent) e.getSource());
             if (actions == null) {
                 return ;
             }
@@ -112,7 +110,7 @@ public class OverrideAnnotationAction extends AbstractAction {
             final Annotations annotations = ((BaseDocument) doc).getAnnotations();
             //final Map<String, List<ElementDescription>> caption2Descriptions = new LinkedHashMap<String, List<ElementDescription>>();
             final AtomicReference<Point> point = new AtomicReference<Point>();
-            final AtomicReference<OverriddeAnnotation> anno = new AtomicReference<OverriddeAnnotation>();
+            final AtomicReference<BaseAnnotation> anno = new AtomicReference<BaseAnnotation>();
             doc.render(new Runnable() {
                 @Override
                 public void run() {
@@ -124,7 +122,7 @@ public class OverrideAnnotationAction extends AbstractAction {
                         if (desc == null) {
                             return ;
                         }
-                        Collection<OverriddeAnnotation> annos;
+                        Collection<BaseAnnotation> annos;
 
                         if (COMBINED_TYPES.contains(desc.getAnnotationType())) {
                             annos = findAnnotations(comp, startOffset, endOffset);
@@ -132,7 +130,7 @@ public class OverrideAnnotationAction extends AbstractAction {
                             annos = Collections.singletonList(findAnnotation(comp, desc, startOffset, endOffset));
                         }
 
-                        for (OverriddeAnnotation a : annos) {
+                        for (BaseAnnotation a : annos) {
                             if (a != null) {
                                 anno.set(a);
                                 point.set(comp.modelToView(startOffset).getLocation());
@@ -153,23 +151,23 @@ public class OverrideAnnotationAction extends AbstractAction {
         return false;
     }
 
-    private List<OverriddeAnnotation> findAnnotations(JTextComponent component, int startOffset, int endOffset) {
-        FileObject file = getFile(component);
-        if (file == null) {
+    private List<BaseAnnotation> findAnnotations(JTextComponent component, int startOffset, int endOffset) {
+        DataObject dao = getDataObject(component);
+        if (dao == null) {
             if (ErrorManager.getDefault().isLoggable(ErrorManager.WARNING)) {
                 ErrorManager.getDefault().log(ErrorManager.WARNING, "component=" + component + " does not have a file specified in the document."); //NOI18N
             }
             return null;
         }
 
-        AnnotationsHolder ah = AnnotationsHolder.get(file);
+        AnnotationsHolder ah = AnnotationsHolder.get(dao);
         if (ah == null) {
-            OverriddeAnnotation.LOGGER.log(Level.INFO, "component={0} does not have attached AnnotationsHolder", component); //NOI18N
+            BaseAnnotation.LOGGER.log(Level.INFO, "component={0} does not have attached AnnotationsHolder", component); //NOI18N
             return null;
         }
 
-        List<OverriddeAnnotation> annotations = new LinkedList<OverriddeAnnotation>();
-        for(OverriddeAnnotation a : ah.getAttachedAnnotations()) {
+        List<BaseAnnotation> annotations = new LinkedList<BaseAnnotation>();
+        for(BaseAnnotation a : ah.getAttachedAnnotations()) {
             int offset = a.getPosition().getOffset();
             if (startOffset <= offset && offset <= endOffset) {
                 annotations.add(a);
@@ -178,22 +176,22 @@ public class OverrideAnnotationAction extends AbstractAction {
         return annotations;
     }
 
-    private OverriddeAnnotation findAnnotation(JTextComponent component, AnnotationDesc desc, int startOffset, int endOffset) {
-        FileObject file = getFile(component);
-        if (file == null) {
+    private BaseAnnotation findAnnotation(JTextComponent component, AnnotationDesc desc, int startOffset, int endOffset) {
+        DataObject dao = getDataObject(component);
+        if (dao == null) {
             if (ErrorManager.getDefault().isLoggable(ErrorManager.WARNING)) {
                 ErrorManager.getDefault().log(ErrorManager.WARNING, "component=" + component + " does not have a file specified in the document."); //NOI18N
             }
             return null;
         }
 
-        AnnotationsHolder ah = AnnotationsHolder.get(file);
+        AnnotationsHolder ah = AnnotationsHolder.get(dao);
         if (ah == null) {
-            OverriddeAnnotation.LOGGER.log(Level.INFO, "component={0} does not have attached a IsOverriddenAnnotationHandler", component); //NOI18N
+            BaseAnnotation.LOGGER.log(Level.INFO, "component={0} does not have attached a IsOverriddenAnnotationHandler", component); //NOI18N
             return null;
         }
 
-        for(OverriddeAnnotation a : ah.getAttachedAnnotations()) {
+        for(BaseAnnotation a : ah.getAttachedAnnotations()) {
             int offset = a.getPosition().getOffset();
             if (startOffset <= offset && offset <= endOffset) {
                 if (desc.getShortDescription().equals(a.getShortDescription())) {
@@ -204,15 +202,9 @@ public class OverrideAnnotationAction extends AbstractAction {
         return null;
     }
 
-    private FileObject getFile(JTextComponent component) {
+    private DataObject getDataObject(JTextComponent component) {
         Document doc = component.getDocument();
-        DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-
-        if (od == null) {
-            return null;
-        }
-
-        return od.getPrimaryFile();
+        return (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
     }
 
 

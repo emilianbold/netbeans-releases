@@ -60,12 +60,12 @@ import org.netbeans.modules.cnd.api.remote.RemoteFile;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -153,20 +153,20 @@ public class ProjectActionSupport {
     private InputOutput mainTab = null;
     private HandleEvents mainTabHandler = null;
     private ArrayList<String> tabNames = new ArrayList<String>();
+    private final Object lock = new Object();
 
     private final class HandleEvents implements ExecutionListener {
 
         private InputOutput ioTab = null;
-        private ProjectActionEvent[] paes;
+        private final ProjectActionEvent[] paes;
         private String tabName;
         private String tabNameSeq;
-        int currentAction = 0;
+        private int currentAction = 0;
         private StopAction sa = null;
         private RerunAction ra = null;
-        List<BuildAction> additional;
+        private List<BuildAction> additional;
         private ProgressHandle progressHandle = null;
-        private final Object lock = new Object();
-        private ProjectActionHandler customHandler = null;
+        private final ProjectActionHandler customHandler;
         private ProjectActionHandler currentHandler = null;
 
         public HandleEvents(ProjectActionEvent[] paes, ProjectActionHandler customHandler) {
@@ -332,20 +332,19 @@ public class ProjectActionSupport {
             }
 
             // Validate executable
-            switch (pae.getType()) {
-                case RUN:
-                case DEBUG:
-                case DEBUG_LOAD_ONLY:
-                case DEBUG_STEPINTO:
-                case CHECK_EXECUTABLE:
-                case CUSTOM_ACTION:
-                if (!checkExecutable(pae) || pae.getType() == ProjectActionEvent.Type.CHECK_EXECUTABLE) {
+            if (pae.getType() == PredefinedType.RUN ||
+                pae.getType() == PredefinedType.DEBUG ||
+                pae.getType() == PredefinedType.DEBUG_LOAD_ONLY ||
+                pae.getType() == PredefinedType.DEBUG_STEPINTO ||
+                pae.getType() == PredefinedType.CHECK_EXECUTABLE ||
+                pae.getType() == PredefinedType.CUSTOM_ACTION) {
+                if (!checkExecutable(pae) || pae.getType() == PredefinedType.CHECK_EXECUTABLE) {
                     progressHandle.finish();
                     return;
                 }
             }
 
-            if (pae.getType() == ProjectActionEvent.Type.CUSTOM_ACTION && customHandler != null) {
+            if (pae.getType() == PredefinedType.CUSTOM_ACTION && customHandler != null) {
                 initHandler(customHandler, pae, paes);
                 customHandler.execute(ioTab);
             } else {
@@ -402,7 +401,7 @@ public class ProjectActionSupport {
                     ((ExecutionListener) action).executionFinished(rc);
                 }
             }
-            if (paes[currentAction].getType() == ProjectActionEvent.Type.BUILD || paes[currentAction].getType() == ProjectActionEvent.Type.CLEAN) {
+            if (paes[currentAction].getType() == PredefinedType.BUILD || paes[currentAction].getType() == PredefinedType.CLEAN) {
                 // Refresh all files
                 try {
                     FileObject projectFileObject = paes[currentAction].getProject().getProjectDirectory();
@@ -446,7 +445,7 @@ public class ProjectActionSupport {
             if (project != null) { // paranoidal null checks are better than latent NPE :)
                 FileObject projectDirectory = project.getProjectDirectory();
                 if (projectDirectory != null) {
-                    FileObject nbproject = projectDirectory.getFileObject("nbproject"); // NOI18N
+                    FileObject nbproject = projectDirectory.getFileObject(MakeConfiguration.NBPROJECT_FOLDER); // NOI18N
                     if (nbproject != null) {
                         // I'm more sure in java.io.File.exists() - practice shows that FileObjects might be sometimes cached...
                         File file = FileUtil.toFile(nbproject);
@@ -473,9 +472,9 @@ public class ProjectActionSupport {
                     // Set executable in configuration
                     MakeConfiguration makeConfiguration = pae.getConfiguration();
                     executable = panel.getExecutable();
-                    executable = FilePathAdaptor.naturalize(executable);
+                    executable = IpeUtils.naturalize(executable);
                     executable = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), executable);
-                    executable = FilePathAdaptor.normalize(executable);
+                    executable = IpeUtils.normalize(executable);
                     makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
                     // Mark the project 'modified'
                     ConfigurationDescriptorProvider pdp = pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
@@ -483,7 +482,7 @@ public class ProjectActionSupport {
                         pdp.getConfigurationDescriptor().setModified();
                     }
                     // Set executable in pae
-                    if (pae.getType() == ProjectActionEvent.Type.RUN) {
+                    if (pae.getType() == PredefinedType.RUN) {
                         // Next block is commented out due to IZ120794
                         /*CompilerSet compilerSet = CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getName()).getCompilerSet(makeConfiguration.getCompilerSet().getValue());
                         if (compilerSet != null && compilerSet.getCompilerFlavor() != CompilerFlavor.MinGW) {
@@ -508,7 +507,7 @@ public class ProjectActionSupport {
                     runDir = IpeUtils.toAbsolutePath(pae.getConfiguration().getBaseDir(), runDir);
                     executable = IpeUtils.toAbsolutePath(runDir, executable);
                 }
-                executable = FilePathAdaptor.normalize(executable);
+                executable = IpeUtils.normalize(executable);
             }
             if (IpeUtils.isPathAbsolute(executable)) {
                 Configuration conf = pae.getConfiguration();
@@ -574,7 +573,7 @@ public class ProjectActionSupport {
 
     private static final class StopAction extends AbstractAction {
 
-        HandleEvents handleEvents;
+        private HandleEvents handleEvents;
 
         public StopAction(HandleEvents handleEvents) {
             this.handleEvents = handleEvents;
@@ -598,7 +597,7 @@ public class ProjectActionSupport {
 
     private static final class RerunAction extends AbstractAction {
 
-        HandleEvents handleEvents;
+        private HandleEvents handleEvents;
 
         public RerunAction(HandleEvents handleEvents) {
             this.handleEvents = handleEvents;

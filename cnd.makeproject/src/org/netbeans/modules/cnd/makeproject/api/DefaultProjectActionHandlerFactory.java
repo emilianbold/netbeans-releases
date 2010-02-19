@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api;
 
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -55,17 +56,18 @@ public class DefaultProjectActionHandlerFactory implements ProjectActionHandlerF
      * @return <code>false</code> if <code>action</code> is related to debugging,
      *          <code>true</code> otherwise
      */
+    @Override
     public boolean canHandle(ProjectActionEvent.Type type, Configuration configuration) {
-        switch (type) {
-            case DEBUG:
-            case DEBUG_LOAD_ONLY:
-            case DEBUG_STEPINTO:
-                return false;
-            default:
-                return true;
+        if (type == PredefinedType.DEBUG ||
+            type == PredefinedType.DEBUG_LOAD_ONLY ||
+            type == PredefinedType.DEBUG_STEPINTO) {
+            return false;
+        } else {
+            return type instanceof PredefinedType;
         }
     }
 
+    @Override
     public ProjectActionHandler createHandler() {
         return new DefaultProjectActionHandler();
     }
