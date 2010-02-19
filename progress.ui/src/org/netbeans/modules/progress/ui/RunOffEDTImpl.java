@@ -114,12 +114,12 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
 
         if (assertionsOn) {
             String clazz = operation.getClass().getName();
-            Long cummulative = CUMULATIVE_SPENT_TIME.get(clazz);
-            if (cummulative == null) {
-                cummulative = 0L;
+            Long cumulative = CUMULATIVE_SPENT_TIME.get(clazz);
+            if (cumulative == null) {
+                cumulative = 0L;
             }
-            cummulative += elapsed;
-            CUMULATIVE_SPENT_TIME.put(clazz, cummulative);
+            cumulative += elapsed;
+            CUMULATIVE_SPENT_TIME.put(clazz, cumulative);
             Long maximal = MAXIMAL_SPENT_TIME.get(clazz);
             if (maximal == null) {
                 maximal = 0L;
@@ -137,7 +137,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
 
             if (elapsed > WARNING_TIME) {
                 LOG.log(Level.WARNING, "Lengthy operation: {0}:{1}:{2}:{3}:{4}", new Object[] {
-                    clazz, cummulative, count, maximal, String.format("%3.2f", ((double) cummulative) / count)});
+                    clazz, cumulative, count, maximal, String.format("%3.2f", ((double) cumulative) / count)});
             }
         }
     }
