@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -134,16 +135,56 @@ class WSTransformer extends DefaultTreePathVisitor {
 	super.visit(node);
 	TokenSequence<PHPTokenId> ts = tokenSequence(node.getStartOffset());
         Token<? extends PHPTokenId> token;
+	boolean spaceCheckAfterKeywords = CodeStyle.get(context.document()).spaceCheckAfterKeywords();
+	List <PHPTokenId> keywordsToCheckSpaceAfter =  Arrays.asList(
+		PHPTokenId.PHP_ABSTRACT, PHPTokenId.PHP_CLASS, PHPTokenId.PHP_CONST, PHPTokenId.PHP_DECLARE, PHPTokenId.PHP_ECHO,
+		PHPTokenId.PHP_FINAL, PHPTokenId.PHP_FUNCTION, PHPTokenId.PHP__FILE__, PHPTokenId.PHP__FUNCTION__,
+		PHPTokenId.PHP_GLOBAL, PHPTokenId.PHP_GOTO, PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.PHP_INCLUDE,
+		PHPTokenId.PHP_INCLUDE_ONCE, PHPTokenId.PHP_INTERFACE, PHPTokenId.PHP_NAMESPACE, PHPTokenId.PHP_NEW,
+		PHPTokenId.PHP_PRINT, PHPTokenId.PHP_PRIVATE, PHPTokenId.PHP_PROTECTED, PHPTokenId.PHP_PUBLIC,
+		PHPTokenId.PHP_REQUIRE, PHPTokenId.PHP_REQUIRE_ONCE, PHPTokenId.PHP_RETURN,
+		PHPTokenId.PHP_STATIC, PHPTokenId.PHP_THROW, PHPTokenId.PHP_USE, PHPTokenId.PHP_VAR);
+	List <PHPTokenId> lookingForTokens = new ArrayList<PHPTokenId>();
+	lookingForTokens.addAll(Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_OPERATOR,
+		    PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_INSTANCEOF));
+	lookingForTokens.addAll(keywordsToCheckSpaceAfter);
 
 	while (ts.moveNext()) {
-	    token = LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_OPERATOR, 
-		    PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_INSTANCEOF));
+	    token = LexUtilities.findNextToken(ts, lookingForTokens);
 	    if (token.id() == PHPTokenId.PHP_OBJECT_OPERATOR) {
 		checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundObjectOps());
 	    }
 	    else if (token.id() == PHPTokenId.PHP_INSTANCEOF) {
 		// always keep 1 space around
 		checkSpaceAroundToken(ts, true);
+	    }
+	    else if (token.id() == PHPTokenId.PHP_RETURN && ts.moveNext()) {
+		if (ts.token().id() !=  PHPTokenId.PHP_SEMICOLON) {
+		    LexUtilities.findNext(ts, Arrays.asList(PHPTokenId.WHITESPACE));
+		    if (ts.token().id() != PHPTokenId.PHP_SEMICOLON) {
+			replaceSpaceBeforeToken(ts, true, null);
+		    }
+		    else {
+			replaceSpaceBeforeToken(ts, false, null);
+		    }
+		}
+
+	    }
+	    else if ((token.id() == PHPTokenId.PHP_REQUIRE || token.id() == PHPTokenId.PHP_REQUIRE_ONCE
+		    || token.id() == PHPTokenId.PHP_INCLUDE || token.id() == PHPTokenId.PHP_INCLUDE_ONCE)
+		    && ts.moveNext()) {
+		LexUtilities.findNext(ts, Arrays.asList(PHPTokenId.WHITESPACE));
+		if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
+		    replaceSpaceBeforeToken(ts,  CodeStyle.get(context.document()).spaceBeforeMethodDeclParen(), null);
+		}
+		else {
+		    replaceSpaceBeforeToken(ts, true, null);
+		}
+	    }
+	    else if (keywordsToCheckSpaceAfter.contains(ts.token().id())
+		    && spaceCheckAfterKeywords && ts.moveNext()) {
+		LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
+		replaceSpaceBeforeToken(ts, true, null);
 	    }
 	    else if (token.id() == PHPTokenId.PHP_SEMICOLON) {
 		replaceSpaceBeforeToken(ts, CodeStyle.get(context.document()).spaceBeforeSemi(), null);
