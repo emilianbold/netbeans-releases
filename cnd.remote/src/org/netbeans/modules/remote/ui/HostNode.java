@@ -43,13 +43,16 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JOptionPane;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.ui.HostPropertiesDialog;
@@ -57,10 +60,12 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
@@ -141,6 +146,8 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
         return new Action[] {
             new PropertiesAction(),
             new SetDefaultAction(),
+            new ConnectAction(),
+            new DisconnectAction(),
             new RemoveHostAction()            
         };
     }
@@ -206,6 +213,71 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
             RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
             HostPropertiesDialog.invokeMe(record);
             refresh(); // TODO: introduce listeners for server records
+        }
+    }
+
+    private class ConnectAction extends AbstractAction implements Runnable {
+
+        public ConnectAction() {
+            super(NbBundle.getMessage(HostListRootNode.class, "ConnectMenuItem"));
+            setEnabled(!ConnectionManager.getInstance().isConnectedTo(env));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            RequestProcessor.getDefault().post(this);
+        }
+
+        public void run() {
+            if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+                try {
+                    ConnectionManager.getInstance().connectTo(env);
+                    checkSetupAfterConnection();
+                } catch (IOException ex) {
+                    conectionFailed(ex);
+                } catch (CancellationException ex) {
+                    conectionFailed(ex);
+                }
+            }
+        }
+
+        private void checkSetupAfterConnection() {
+            // TODO: implement (ideally in RAS)
+//            RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
+//            if (!record.isOnline()) {
+//                record.resetOfflineState(); // this is a do-over
+//                record.init(null);
+//                if (record.isOnline()) {
+//                    CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(record.getExecutionEnvironment(), false);
+//                    csm.initialize(false, true, null);
+//                }
+//
+//            }
+        }
+
+        private  void conectionFailed(Exception e) {
+            StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(HostNode.class, "UnableToConnectMessage", getDisplayName(), e.getMessage()));
+
+        }
+    }
+
+    private class DisconnectAction extends AbstractAction implements Runnable {
+
+        public DisconnectAction() {
+            super(NbBundle.getMessage(HostListRootNode.class, "DisconnectMenuItem"));
+            setEnabled(ConnectionManager.getInstance().isConnectedTo(env));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            RequestProcessor.getDefault().post(this);
+        }
+
+        public void run() {
+            if (ConnectionManager.getInstance().isConnectedTo(env)) {
+                ConnectionManager.getInstance().disconnect(env);
+            }
         }
     }
 }
