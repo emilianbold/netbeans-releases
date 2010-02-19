@@ -76,6 +76,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.glassfish.spi.ExecSupport;
 import org.netbeans.modules.j2ee.sun.dd.impl.verifier.Appclient;
 import org.netbeans.modules.j2ee.sun.dd.impl.verifier.Application;
 import org.netbeans.modules.j2ee.sun.dd.impl.verifier.Connector;
