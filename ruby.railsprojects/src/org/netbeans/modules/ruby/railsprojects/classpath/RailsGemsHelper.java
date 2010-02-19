@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.ruby.railsprojects.classpath;
 
+import java.util.Collection;
 import org.netbeans.modules.ruby.rubyproject.RequiredGems;
 import org.netbeans.modules.ruby.rubyproject.GemRequirement;
 import java.beans.PropertyChangeListener;
@@ -78,7 +79,13 @@ public final class RailsGemsHelper implements RakeTaskCustomizer {
         if (!"gems".equals(task.getTask())) {
             return;
         }
-        RequiredGems requiredGems = project.getLookup().lookup(RequiredGems.class);
+        RequiredGems requiredGems = null;
+        for (RequiredGems each : project.getLookup().lookupAll(RequiredGems.class)) {
+            if (!each.isForTests()) {
+                requiredGems = each;
+                break;
+            }
+        }
         this.convertor = new GemsLineConvertor(requiredGems, (RubyBaseProject) project);
         taskDescriptor.addOutConvertor(convertor);
         taskDescriptor.setOutProcessorFactory(new RakeGemsInputProcessorFactory(convertor.getGems(), requiredGems));
