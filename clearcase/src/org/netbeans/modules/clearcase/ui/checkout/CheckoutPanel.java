@@ -56,7 +56,10 @@ import java.util.*;
 class CheckoutPanel extends javax.swing.JPanel {
         
     private static final String CHECKOUT_RESERVED = "checkout.reserved";
+    private static final String CHECKOUT_UNRESERVED_NON_MASTER = "checkout.unreserved.nonmaster";
     private static final String CHECKOUT_RECURSIVE = "checkout.recursive";
+
+    private boolean nonMaster;
 
     /** Creates new form CheckoutPanel */
     public CheckoutPanel() {
@@ -67,6 +70,9 @@ class CheckoutPanel extends javax.swing.JPanel {
         super.addNotify();
         cbReserved.setSelected(ClearcaseModuleConfig.getPreferences().getBoolean(CHECKOUT_RESERVED, true));        
         cbRecursive.setSelected(ClearcaseModuleConfig.getPreferences().getBoolean(CHECKOUT_RECURSIVE, false));
+        nonMaster = ClearcaseModuleConfig.getPreferences().getBoolean(CHECKOUT_UNRESERVED_NON_MASTER, false);
+        cbNonMaster.setSelected(nonMaster);
+        setNonMasterEnabled();
         bRecentMessages.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         List<String> messages = Utils.getStringList(ClearcaseModuleConfig.getPreferences(), CheckoutAction.RECENT_CHECKOUT_MESSAGES);
         if (messages.size() > 0) {
@@ -79,7 +85,19 @@ class CheckoutPanel extends javax.swing.JPanel {
     public void removeNotify() {
         ClearcaseModuleConfig.getPreferences().putBoolean(CHECKOUT_RESERVED, cbReserved.isSelected());
         ClearcaseModuleConfig.getPreferences().putBoolean(CHECKOUT_RECURSIVE, cbRecursive.isSelected());
+        ClearcaseModuleConfig.getPreferences().putBoolean(CHECKOUT_UNRESERVED_NON_MASTER, cbNonMaster.isSelected());
         super.removeNotify();
+    }
+
+    private void setNonMasterEnabled() {
+        if(cbReserved.isSelected()) {
+            cbNonMaster.setEnabled(false);
+            nonMaster = cbNonMaster.isSelected();
+            cbNonMaster.setSelected(false);
+        } else {
+            cbNonMaster.setEnabled(true);
+            cbNonMaster.setSelected(nonMaster);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -96,6 +114,7 @@ class CheckoutPanel extends javax.swing.JPanel {
         taMessage = new javax.swing.JTextArea();
         cbReserved = new javax.swing.JCheckBox();
         bRecentMessages = new javax.swing.JButton();
+        cbNonMaster = new javax.swing.JCheckBox();
 
         jLabel1.setLabelFor(taMessage);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CheckoutPanel.jLabel1.text")); // NOI18N
@@ -118,7 +137,6 @@ class CheckoutPanel extends javax.swing.JPanel {
         bRecentMessages.setToolTipText(org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CheckoutPanel.bRecentMessages.toolTipText")); // NOI18N
         bRecentMessages.setBorderPainted(false);
         bRecentMessages.setIconTextGap(0);
-        bRecentMessages.setMargin(new java.awt.Insets(0, 2, 0, 2));
         bRecentMessages.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bRecentMessagesActionPerformed(evt);
@@ -127,6 +145,14 @@ class CheckoutPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbRecursive, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CheckoutPanel.cbRecursive.text")); // NOI18N
         cbRecursive.setToolTipText(org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CheckoutPanel.cbRecursive.toolTipText")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbNonMaster, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CheckoutPanel.cbNonMaster.text")); // NOI18N
+        cbNonMaster.setToolTipText(org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CheckoutPanel.cbNonMaster.toolTipText")); // NOI18N
+        cbNonMaster.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbNonMasterActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -140,9 +166,12 @@ class CheckoutPanel extends javax.swing.JPanel {
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 315, Short.MAX_VALUE)
                         .add(bRecentMessages))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
-                    .add(cbReserved))
-                        .addContainerGap())
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(cbReserved)
+                        .add(18, 18, 18)
+                        .add(cbNonMaster)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -154,7 +183,9 @@ class CheckoutPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(cbReserved)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(cbReserved)
+                    .add(cbNonMaster))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(cbRecursive)
                 .addContainerGap())
@@ -162,7 +193,7 @@ class CheckoutPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbReservedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbReservedActionPerformed
-        // ignore
+        setNonMasterEnabled();
     }//GEN-LAST:event_cbReservedActionPerformed
 
     private void bRecentMessagesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bRecentMessagesActionPerformed
@@ -174,9 +205,14 @@ class CheckoutPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_bRecentMessagesActionPerformed
 
+    private void cbNonMasterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbNonMasterActionPerformed
+        
+    }//GEN-LAST:event_cbNonMasterActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JButton bRecentMessages;
+    javax.swing.JCheckBox cbNonMaster;
     final javax.swing.JCheckBox cbRecursive = new javax.swing.JCheckBox();
     javax.swing.JCheckBox cbReserved;
     javax.swing.JLabel jLabel1;
