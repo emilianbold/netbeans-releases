@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +58,10 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.openide.ErrorManager;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileUtil;
@@ -72,11 +74,10 @@ import org.openide.windows.WindowManager;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.apisupport.installer.ui.SuiteInstallerProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.execution.ExecutorTask;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.modules.InstalledFileLocator;
@@ -84,15 +85,12 @@ import org.openide.util.RequestProcessor;
 
 public final class BuildInstallersAction extends AbstractAction implements ContextAwareAction {
 
-    private static BuildInstallersAction inst = null;
+    private static final BuildInstallersAction inst = new BuildInstallersAction();
 
     private BuildInstallersAction() {
     }
 
-    public static synchronized BuildInstallersAction getDefault() {
-        if (inst == null) {
-            inst = new BuildInstallersAction();
-        }
+    public static BuildInstallersAction getDefault() {
         return inst;
     }
 
@@ -100,11 +98,11 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
         ContextBuildInstaller.actionPerformed(e);
     }
 
-    public void actionPerformed(ActionEvent e) {
+    public @Override void actionPerformed(ActionEvent e) {
         assert false;
     }
 
-    public Action createContextAwareInstance(Lookup actionContext) {
+    public @Override Action createContextAwareInstance(Lookup actionContext) {
         return new ContextBuildInstaller();
     }
 
@@ -114,7 +112,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
             putValue(NAME, NbBundle.getMessage(BuildInstallersAction.class, "CTL_BuildInstallers"));
         }
 
-        public void actionPerformed(ActionEvent e) {
+        public @Override void actionPerformed(ActionEvent e) {
             Node[] n = WindowManager.getDefault().getRegistry().getActivatedNodes();
             if (n.length > 0) {
                 ContextBuildInstaller.actionPerformed(n);
@@ -123,6 +121,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
             }
         }
 
+        @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
         public static void actionPerformed(Node[] e) {
             if (e != null) {
                 for (Node node : e) {
@@ -160,8 +159,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                             if (appName == null) {
                                 //suite, not standalone app
                                 RequestProcessor.getDefault().post(new Runnable() {
-
-                                    public void run() {
+                                    public @Override void run() {
                                         DialogDescriptor d = new DialogDescriptor(
                                                 NbBundle.getMessage(BuildInstallersAction.class, "BuildInstallersAction.NotApp.Warning.Message"),
                                                 NbBundle.getMessage(BuildInstallersAction.class, "BuildInstallersAction.NotApp.Warning.Title"));
@@ -186,7 +184,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
 
                         
                         if (licenseFile==null && licenseType != null && !licenseType.equals(SuiteInstallerProjectProperties.LICENSE_TYPE_NO)) {
-                            Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "License type defined to " + licenseType);
+                            Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "License type defined to {0}", licenseType);
                             String licenseResource = null;
                             try {
                                 licenseResource = NbBundle.getMessage(SuiteInstallerProjectProperties.class,
@@ -215,9 +213,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                                         os.close();
                                     } else {
                                         Logger.getLogger(BuildInstallersAction.class.getName()).log(
-                                                Level.WARNING,
-                                                "License resource " + licenseResource
-                                                + " not found");
+                                                Level.WARNING, "License resource {0} not found", licenseResource);
                                     }
                                 } catch (MalformedURLException ex) {
                                     Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING,
@@ -265,7 +261,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                                 "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
                         if (licenseFile != null) {
                             Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.INFO,
-                                    "License file is at " + licenseFile + ", exist = " + licenseFile.exists());
+                                    "License file is at {0}, exist = {1}", new Object[] {licenseFile, licenseFile.exists()});
                             props.put(
                                     "nbi.license.file", licenseFile.getAbsolutePath());
                         }
@@ -305,8 +301,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         if (sb.length() == 0) {
                             //nothing to build
                             RequestProcessor.getDefault().post(new Runnable() {
-
-                                public void run() {
+                                public @Override void run() {
                                     DialogDescriptor d = new DialogDescriptor(
                                             NbBundle.getMessage(BuildInstallersAction.class, "BuildInstallersAction.NotConfigured.Warning.Message"),
                                             NbBundle.getMessage(BuildInstallersAction.class, "BuildInstallersAction.NotConfigured.Warning.Title"));
@@ -373,7 +368,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "Can`t store properties", ex);
                         }*/
                         try {
-                            final ExecutorTask executorTask = ActionUtils.runTarget(findGenXml(prj), new String[]{"build"}, props);
+                            /*final ExecutorTask executorTask = */ActionUtils.runTarget(findGenXml(prj), new String[]{"build"}, props);
                             /*
                             executorTask.addTaskListener(new TaskListener() {
 
@@ -409,9 +404,9 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
 
         }
 
-        private static FileObject findBuildXml(Project project) {
-            return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-        }
+//        private static FileObject findBuildXml(Project project) {
+//            return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+//        }
 
         private static FileObject findGenXml(Project project) {
             return FileUtil.toFileObject(InstalledFileLocator.getDefault().locate(
@@ -419,11 +414,11 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                     "org.netbeans.modules.apisupport.installer", false));
         }
 
-        private static FileObject findInstXml(Project project) throws FileStateInvalidException {
-            return project.getProjectDirectory().getFileObject("build/installer/build.xml");
-        }
+//        private static FileObject findInstXml(Project project) throws FileStateInvalidException {
+//            return project.getProjectDirectory().getFileObject("build/installer/build.xml");
+//        }
 
-        public JMenuItem getPopupPresenter() {
+        public @Override JMenuItem getPopupPresenter() {
             Node[] n = WindowManager.getDefault().getRegistry().getActivatedNodes();
             if (n.length == 1) {
                 Project prj = n[0].getLookup().lookup(Project.class);
@@ -432,10 +427,15 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                 }
             }
 
-            JMenuItem dummy = new JMenuItem();
-            dummy.setVisible(false);
-            return dummy;
-
+            class Empty extends JMenu implements DynamicMenuContent {
+                public @Override JComponent[] getMenuPresenters() {
+                    return new JComponent[0];
+                }
+                public @Override JComponent[] synchMenuPresenters(JComponent[] items) {
+                    return getMenuPresenters();
+                }
+            }
+            return new Empty();
         }
     }
 }
