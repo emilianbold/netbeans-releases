@@ -194,6 +194,7 @@ public class UsernameAuthPasswordDerivedKeysProfile extends ProfileBase
         ProprietarySecurityPolicyModelHelper.setCallbackHandler(
                 (Binding)component, CallbackHandler.PASSWORD_CBHANDLER, null, UsernameAuthenticationProfile.DEFAULT_PASSWORD, true);
         ProprietarySecurityPolicyModelHelper.setHandlerTimestampTimeout((Binding) component, null, true);
+        ProprietarySecurityPolicyModelHelper.setHandlerIterations((Binding) component, "1000", true);
     }
 
     @Override

@@ -183,6 +183,7 @@ public class CallbackPanel extends SectionInnerPanel {
         addImmediateModifier(credTypeCombo);
         addImmediateModifier(devDefaultsChBox);
         addImmediateModifier(cbTimestampField);
+        addImmediateModifier(iterationField);
         
         sync();
     }
@@ -221,6 +222,13 @@ public class CallbackPanel extends SectionInnerPanel {
             cbTimestampField.setText(tsTimeout);
         } 
         
+        String iterations = ProprietarySecurityPolicyModelHelper.getHandlerIterations(binding);
+        if (iterations == null) { // no setup exists yet - set the default
+            iterationField.setText(ProprietarySecurityPolicyModelHelper.DEFAULT_ITERATIONS);
+        } else {
+            iterationField.setText(iterations);
+        }
+
         enableDisable();
 
         inSync = false;
@@ -279,6 +287,15 @@ public class CallbackPanel extends SectionInnerPanel {
             }
             ProprietarySecurityPolicyModelHelper.setCallbackHandler(binding, CallbackHandler.SAML_CBHANDLER, classname, null, true);
             return;
+        }
+
+        if (source.equals(iterationField)) {
+            String iterations = (String) iterationField.getValue();
+            if ((iterations == null) || iterations.length() == 0) {
+                ProprietarySecurityPolicyModelHelper.setHandlerIterations(binding, null, true);
+            } else {
+                ProprietarySecurityPolicyModelHelper.setHandlerIterations(binding, iterations, true);
+            }
         }
 
         if (source.equals(cbTimestampField)) {
@@ -391,6 +408,8 @@ public class CallbackPanel extends SectionInnerPanel {
             cbTimestampField.setEnabled(!defaults);
             cbTimestampLbl.setEnabled(!defaults);
             
+            iterationField.setEnabled(!defaults);
+            iterationLabel.setEnabled(!defaults);
         } else {
             credPanel.setEnabled(false);
             Component[] comps = credPanel.getComponents();
