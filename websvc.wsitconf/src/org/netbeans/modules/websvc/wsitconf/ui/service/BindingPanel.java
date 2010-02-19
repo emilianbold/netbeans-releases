@@ -423,7 +423,7 @@ public class BindingPanel extends SectionInnerPanel {
         if (source.equals(securityChBox)) {
             String profile = (String) profileCombo.getSelectedItem();
             if (securityChBox.isSelected()) {
-                Util.checkMetroRtLibrary(project);
+                Util.checkMetroRtLibrary(project, true);
                 profileCombo.setSelectedItem(profile);
                 if (devDefaultsChBox.isSelected()) {
                     DefaultSettings.fillDefaults(project, false,true);
