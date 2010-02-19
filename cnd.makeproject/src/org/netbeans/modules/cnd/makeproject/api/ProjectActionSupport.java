@@ -43,8 +43,12 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -66,8 +70,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
+import org.netbeans.modules.dlight.terminal.api.TerminalIOProviderSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -76,10 +82,12 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -147,7 +155,6 @@ public class ProjectActionSupport {
     public void fireActionPerformed(ProjectActionEvent[] paes, ProjectActionHandler preferredHandler) {
         new HandleEvents(paes, preferredHandler).go();
     }
-
 ////////////////////////////////////////////////////////////////////////////////
 
     private InputOutput mainTab = null;
@@ -237,12 +244,14 @@ public class ProjectActionSupport {
 
         private ProgressHandle createProgressHandle() {
             ProgressHandle handle = ProgressHandleFactory.createHandle(tabNameSeq, new Cancellable() {
+
                 @Override
                 public boolean cancel() {
                     sa.actionPerformed(null);
                     return true;
                 }
             }, new AbstractAction() {
+
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     getTab().select();
@@ -255,7 +264,8 @@ public class ProjectActionSupport {
         private ProgressHandle createProgressHandleNoCancel() {
             ProgressHandle handle = ProgressHandleFactory.createHandle(tabNameSeq,
                     new AbstractAction() {
-                @Override
+
+                        @Override
                         public void actionPerformed(ActionEvent e) {
                             getTab().select();
                         }
@@ -263,7 +273,7 @@ public class ProjectActionSupport {
             handle.setInitialDelay(0);
             return handle;
         }
-
+        
         private InputOutput getIOTab(String name, boolean reuse) {
             sa = new StopAction(this);
             ra = new RerunAction(this);
@@ -291,6 +301,31 @@ public class ProjectActionSupport {
             return tab;
         }
 
+        private InputOutput getTermIO() {
+            InputOutput io;
+            // hide issues in Terminal IO Provider for now
+            final AtomicReference<InputOutput> refIO = new AtomicReference<InputOutput>();
+            try {
+                // init new term
+                // FIXUP: due to non lazy creation - we have to do it in EDT and wait
+                SwingUtilities.invokeAndWait(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        IOProvider iOProvider = TerminalIOProviderSupport.getIOProvider();
+                        InputOutput io = iOProvider.getIO(iOProvider.getName() + " - " + tabNameSeq, true); // NOI18N
+                        refIO.set(io);
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            io = refIO.get();
+            return io;
+        }
+
         private void reRun() {
             currentAction = 0;
             getTab().closeInputOutput();
@@ -304,7 +339,8 @@ public class ProjectActionSupport {
             progressHandle = createProgressHandle();
             progressHandle.start();
             if (SwingUtilities.isEventDispatchThread()) {
-                RequestProcessor.getDefault().post(new Runnable(){
+                RequestProcessor.getDefault().post(new Runnable() {
+
                     @Override
                     public void run() {
                         go();
@@ -332,21 +368,26 @@ public class ProjectActionSupport {
             }
 
             // Validate executable
-            if (pae.getType() == PredefinedType.RUN ||
-                pae.getType() == PredefinedType.DEBUG ||
-                pae.getType() == PredefinedType.DEBUG_LOAD_ONLY ||
-                pae.getType() == PredefinedType.DEBUG_STEPINTO ||
-                pae.getType() == PredefinedType.CHECK_EXECUTABLE ||
-                pae.getType() == PredefinedType.CUSTOM_ACTION) {
+            if (pae.getType() == PredefinedType.RUN
+                    || pae.getType() == PredefinedType.DEBUG
+                    || pae.getType() == PredefinedType.DEBUG_LOAD_ONLY
+                    || pae.getType() == PredefinedType.DEBUG_STEPINTO
+                    || pae.getType() == PredefinedType.CHECK_EXECUTABLE
+                    || pae.getType() == PredefinedType.CUSTOM_ACTION) {
                 if (!checkExecutable(pae) || pae.getType() == PredefinedType.CHECK_EXECUTABLE) {
                     progressHandle.finish();
                     return;
                 }
             }
 
+            InputOutput io = ioTab;
+            int consoleType = pae.getProfile().getConsoleType().getValue();
+            if (consoleType == RunProfile.CONSOLE_TYPE_INTERNAL && !TerminalIOProviderSupport.isTerminalIO(io)) {
+                io = getTermIO();
+            }
             if (pae.getType() == PredefinedType.CUSTOM_ACTION && customHandler != null) {
                 initHandler(customHandler, pae, paes);
-                customHandler.execute(ioTab);
+                customHandler.execute(io);
             } else {
                 // moved to RemoteBuildProjectActionHandler
                 //if (currentAction == 0 && !checkRemotePath(pae, err, out)) {
@@ -358,7 +399,7 @@ public class ProjectActionSupport {
                     if (factory.canHandle(pae.getType(), pae.getConfiguration())) {
                         ProjectActionHandler handler = currentHandler = factory.createHandler();
                         initHandler(handler, pae, paes);
-                        handler.execute(ioTab);
+                        handler.execute(io);
 
                         foundFactory = true;
                         break;
@@ -374,7 +415,7 @@ public class ProjectActionSupport {
         private void initHandler(ProjectActionHandler handler, ProjectActionEvent pae, ProjectActionEvent[] paes) {
             handler.init(pae, paes);
             progressHandle.finish();
-            progressHandle = handler.canCancel()? createProgressHandle() : createProgressHandleNoCancel();
+            progressHandle = handler.canCancel() ? createProgressHandle() : createProgressHandleNoCancel();
             progressHandle.start();
             sa.setEnabled(handler.canCancel());
             handler.addExecutionListener(this);
@@ -431,6 +472,7 @@ public class ProjectActionSupport {
             if (rc == 0) {
                 currentAction++;
                 RequestProcessor.getDefault().post(new Runnable() {
+
                     @Override
                     public void run() {
                         go();
@@ -462,7 +504,7 @@ public class ProjectActionSupport {
             MakeConfiguration configuration = pae.getConfiguration();
             ExecutionEnvironment execEnviroment = configuration.getDevelopmentHost().getExecutionEnvironment();
             //executable can be not 0 length but still is not a file
-            File executableFile = RemoteFile.create(execEnviroment,executable);
+            File executableFile = RemoteFile.create(execEnviroment, executable);
             if (executable.length() == 0 || executableFile.isDirectory()) {
                 SelectExecutablePanel panel = new SelectExecutablePanel(pae.getConfiguration());
                 DialogDescriptor descriptor = new DialogDescriptor(panel, getString("SELECT_EXECUTABLE"));
@@ -517,7 +559,7 @@ public class ProjectActionSupport {
                     final ExecutionEnvironment execEnv = ((MakeConfiguration) conf).getDevelopmentHost().getExecutionEnvironment();
                     if (!pae.isFinalExecutable()) {
                         PathMap mapper = HostInfoProvider.getMapper(execEnv);
-                        executable = mapper.getRemotePath(executable,true);
+                        executable = mapper.getRemotePath(executable, true);
                     }
                     CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
                     if (cmd != null) {
@@ -546,10 +588,9 @@ public class ProjectActionSupport {
 
             pae.setExecutable(executable);
             pae.setFinalExecutable();
-            
+
             return true;
         }
-
     }
 
 // VK: inlined since it's used once; and caller should know not only return status,
@@ -570,7 +611,6 @@ public class ProjectActionSupport {
 //        }
 //        return false;
 //    }
-
     private static final class StopAction extends AbstractAction {
 
         private HandleEvents handleEvents;
@@ -579,8 +619,8 @@ public class ProjectActionSupport {
             this.handleEvents = handleEvents;
             putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/stop.png", false)); // NOI18N
             putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.StopAction.stop")); // NOI18N
-        //System.out.println("handleEvents 1 " + handleEvents);
-        //setEnabled(false); // initially, until ready
+            //System.out.println("handleEvents 1 " + handleEvents);
+            //setEnabled(false); // initially, until ready
         }
 
         @Override

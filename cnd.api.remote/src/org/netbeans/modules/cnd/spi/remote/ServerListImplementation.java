@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.spi.remote;
 
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.cnd.api.remote.*;
 import java.util.Collection;
 import java.util.List;
@@ -71,4 +72,8 @@ public interface ServerListImplementation {
     public abstract boolean isValidExecutable(ExecutionEnvironment env, String path);
 
     public abstract  ServerRecord createServerRecord(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory);
+
+    public void removePropertyChangeListener(PropertyChangeListener listener);
+
+    public void addPropertyChangeListener(PropertyChangeListener listener);
 }

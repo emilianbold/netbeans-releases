@@ -89,6 +89,12 @@ made subject to such option by the copyright holder.
                         </file>
 		    </folder>
                 </folder>
+                
+                 <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="enable-doc-completion.xml" url="enable-doc-completion.xml"/>
+                    </folder>
+                </folder>
             </folder>
             <folder name="x-c++">
                 <folder name="CompletionProviders">
@@ -129,6 +135,12 @@ made subject to such option by the copyright holder.
                             <attr name="position" intvalue="100"/>
                         </file>
 		    </folder>
+                </folder>
+                
+                 <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="enable-doc-completion.xml" url="enable-doc-completion.xml"/>
+                    </folder>
                 </folder>
             </folder>
 
@@ -171,6 +183,12 @@ made subject to such option by the copyright holder.
                             <attr name="position" intvalue="100"/>
                         </file>
 		    </folder>
+                </folder>
+                
+                 <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="enable-doc-completion.xml" url="enable-doc-completion.xml"/>
+                    </folder>
                 </folder>
             </folder>            
         </folder>
