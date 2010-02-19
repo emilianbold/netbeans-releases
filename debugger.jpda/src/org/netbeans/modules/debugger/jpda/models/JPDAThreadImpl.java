@@ -1147,8 +1147,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         // Do not notify suspended state when was already unsuspended when started invoking.
         if (!wasUnsuspendedStateWhenInvoking) {
             PropertyChangeEvent evt = notifySuspended(false, false);
-            evt.setPropagationId("methodInvoke"); // NOI18N
-            pch.firePropertyChange(evt);
+            if (evt != null) {
+                evt.setPropagationId("methodInvoke"); // NOI18N
+                pch.firePropertyChange(evt);
+            }
         }
     }
     

@@ -47,8 +47,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
@@ -89,37 +89,52 @@ import org.openide.windows.WindowManager;
 public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
 
     private static final RequestProcessor WORKER = new RequestProcessor(ProgressUtils.class.getName());
-    private static final Map<Class<? extends Runnable>, Integer> OPERATIONS = new WeakHashMap<Class<? extends Runnable>, Integer>();
-    private static final int CLEAR_TIME = 100;
+    private static final Map<String, Long> CUMMULATIVE_SPENT_TIME = new HashMap<String, Long>();
+    private static final Map<String, Long> MAXIMAL_SPENT_TIME = new HashMap<String, Long>();
+    private static final Map<String, Integer> INVOCATION_COUNT = new HashMap<String, Integer>();
     private static final int CANCEL_TIME = 1000;
     private static final int WARNING_TIME = Integer.getInteger("org.netbeans.modules.progress.ui.WARNING_TIME", 10000);
     private static final Logger LOG = Logger.getLogger(RunOffEDTImpl.class.getName());
 
+    private final boolean assertionsOn;
+
+    @Override
     public void runOffEventDispatchThread(final Runnable operation, final String operationDescr, final AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorTime, int dlgTime) {
-        Parameters.notNull("operation", operation);
-        Parameters.notNull("cancelOperation", cancelOperation);
+        Parameters.notNull("operation", operation); //NOI18N
+        Parameters.notNull("cancelOperation", cancelOperation); //NOI18N
         if (!SwingUtilities.isEventDispatchThread()) {
             operation.run();
             return;
         }
         long startTime = System.currentTimeMillis();
         runOffEventDispatchThreadImpl(operation, operationDescr, cancelOperation, waitForCanceled, waitCursorTime, dlgTime);
-        int elapsed = (int) (System.currentTimeMillis() - startTime);
+        long elapsed = System.currentTimeMillis() - startTime;
 
-        boolean ea = false;
-        assert ea = true;
-        if (ea) {
-            Class<? extends Runnable> clazz = operation.getClass();
-            synchronized (OPERATIONS) {
-                if (elapsed < CLEAR_TIME) {
-                    OPERATIONS.remove(clazz);
-                } else {
-                    Integer prevElapsed = OPERATIONS.get(operation.getClass());
-                    if (prevElapsed != null && elapsed + prevElapsed > WARNING_TIME) {
-                        LOG.log(Level.WARNING, "Operation is too slow", new Exception(clazz + " is too slow"));
-                    }
-                    OPERATIONS.put(clazz, elapsed);
-                }
+        if (assertionsOn) {
+            String clazz = operation.getClass().getName();
+            Long cummulative = CUMMULATIVE_SPENT_TIME.get(clazz);
+            if (cummulative == null) {
+                cummulative = 0L;
+            }
+            cummulative += elapsed;
+            CUMMULATIVE_SPENT_TIME.put(clazz, cummulative);
+            Long maximal = MAXIMAL_SPENT_TIME.get(clazz);
+            if (maximal == null) {
+                maximal = 0L;
+            }
+            if (elapsed > maximal) {
+                maximal = elapsed;
+                MAXIMAL_SPENT_TIME.put(clazz, maximal);
+            }
+            Integer count = INVOCATION_COUNT.get(clazz);
+            if (count == null) {
+                count = 0;
+            }
+            count++;
+            INVOCATION_COUNT.put(clazz, count);
+
+            if (elapsed > WARNING_TIME) {
+                LOG.info("Lenghty operation: " + clazz + ":" + cummulative + ":" + count + ":" + maximal + ":" + String.format("%3.2f", ((double) cummulative) / count)); //NOI18N
             }
         }
     }
@@ -130,7 +145,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
 
         WORKER.post(new Runnable() {
 
-            public void run() {
+            public @Override void run() {
                 if (cancelOperation.get()) {
                     return;
                 }
@@ -139,7 +154,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
 
                 SwingUtilities.invokeLater(new Runnable() {
 
-                    public void run() {
+                    public @Override void run() {
                         Dialog dd = d.get();
                         if (dd != null) {
                             dd.setVisible(false);
@@ -161,12 +176,12 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
             return;
         }
 
-        String title = NbBundle.getMessage(RunOffEDTImpl.class, "RunOffAWT.TITLE_Operation");
-        String cancelButton = NbBundle.getMessage(RunOffEDTImpl.class, "RunOffAWT.BTN_Cancel");
+        String title = NbBundle.getMessage(RunOffEDTImpl.class, "RunOffAWT.TITLE_Operation"); //NOI18N
+        String cancelButton = NbBundle.getMessage(RunOffEDTImpl.class, "RunOffAWT.BTN_Cancel"); //NOI18N
 
         DialogDescriptor nd = new DialogDescriptor(operationDescr, title, true, new Object[]{cancelButton}, cancelButton, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
+            public @Override void actionPerformed(ActionEvent e) {
                 cancelOperation.set(true);
                 d.get().setVisible(false);
             }
@@ -180,7 +195,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
         if (waitForCanceled) {
             try {
                 if (!latch.await(CANCEL_TIME, TimeUnit.MILLISECONDS)) {
-                    throw new IllegalStateException("Canceled operation did not finish in time.");
+                    throw new IllegalStateException("Canceled operation did not finish in time."); //NOI18N
                 }
             } catch (InterruptedException ex) {
                 LOG.log(Level.FINE, null, ex);
@@ -209,6 +224,12 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
         }
     }
 
+    public RunOffEDTImpl() {
+        boolean ea = false;
+        assert ea = true;
+        assertionsOn = ea;
+    }
+
     @Override
     public <T> Future<T> showProgressDialogAndRunLater (ProgressRunnable<T> operation, ProgressHandle handle, boolean includeDetailLabel) {
        AbstractWindowRunner<T> wr = new ProgressBackgroundRunner<T>(operation, handle, includeDetailLabel, operation instanceof Cancellable);
@@ -218,8 +239,8 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
            try {
                result = wr.waitForStart();
            } catch (InterruptedException ex) {
-               Logger.getLogger(RunOffEDTImpl.class.getName()).log(Level.FINE, "Interrupted/cancelled during start {0}", operation);
-               Logger.getLogger(RunOffEDTImpl.class.getName()).log(Level.FINER, "Interrupted/cancelled during start", ex);
+               LOG.log(Level.FINE, "Interrupted/cancelled during start {0}", operation); //NOI18N
+               LOG.log(Level.FINER, "Interrupted/cancelled during start", ex); //NOI18N
                return null;
            }
        }
@@ -235,7 +256,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
-            Logger.getLogger(RunOffEDTImpl.class.getName()).log(Level.FINER, "Cancelled " + toRun, ex); //NOI18N
+            LOG.log(Level.FINER, "Cancelled " + toRun, ex); //NOI18N
         } catch (ExecutionException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -251,7 +272,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
             try {
                 wr.waitForStart().get();
             } catch (CancellationException ex) {
-                Logger.getLogger(RunOffEDTImpl.class.getName()).log(Level.FINER, "Cancelled " + toRun, ex); //NOI18N
+                LOG.log(Level.FINER, "Cancelled " + toRun, ex); //NOI18N
             } catch (ExecutionException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -282,12 +303,12 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
 
         @Override
         public String toString() {
-            return super.toString() + "[" + c + "]";
+            return super.toString() + "[" + c + "]"; //NOI18N
         }
     }
 
     static final class TranslucentMask extends JComponent { //pkg private for tests
-        private static final String PROGRESS_WINDOW_MASK_COLOR = "progress.windowMaskColor";
+        private static final String PROGRESS_WINDOW_MASK_COLOR = "progress.windowMaskColor"; //NOI18N
         TranslucentMask() {
             setVisible(false); //so we will trigger a property change
         }
@@ -300,7 +321,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
         @Override
         public void paint (Graphics g) {
             Graphics2D g2d = (Graphics2D) g;
-            Color translu = UIManager.getColor(PROGRESS_WINDOW_MASK_COLOR); //NOI18N
+            Color translu = UIManager.getColor(PROGRESS_WINDOW_MASK_COLOR);
             if (translu == null) {
                 translu = new Color (180, 180, 180, 148);
             }

@@ -1975,6 +1975,7 @@ public final class WebProject implements Project, AntProjectListener {
             {
                 this.cosEnabled = cosEnabled;
                 this.delegate = delegate;
+                this.delegate.addChangeListener(this);
             }
 
             public boolean isBuilt()

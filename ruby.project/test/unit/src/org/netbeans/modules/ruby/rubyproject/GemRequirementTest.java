@@ -73,6 +73,33 @@ public class GemRequirementTest extends TestCase {
 
     }
 
+    public void testParseBundler() {
+        // sample bundler output
+        /*
+  * activesupport (3.0.0.beta)
+  * arel (0.2.1)
+  * builder (2.1.2)
+  * bundler (0.9.7)
+  * erubis (2.6.5)
+  * i18n (0.3.3)
+         */
+        GemRequirement info = GemRequirement.parse("  * activesupport (3.0.0.beta)");
+        assertNotNull(info);
+        assertEquals("activesupport", info.getName());
+        assertEquals("3.0.0.beta", info.getVersion());
+        assertEquals(GemRequirement.Status.UNKNOWN, info.getStatus());
+
+        info = GemRequirement.parse("  * erubis (2.6.5)");
+        assertNotNull(info);
+        assertEquals("erubis", info.getName());
+        assertEquals("2.6.5", info.getVersion());
+        assertEquals(GemRequirement.Status.UNKNOWN, info.getStatus());
+
+        info = GemRequirement.parse("  some nonsense");
+        assertNull(info);
+
+    }
+
     public void testFromString() {
         GemRequirement info = GemRequirement.fromString("color");
         assertNotNull(info);
