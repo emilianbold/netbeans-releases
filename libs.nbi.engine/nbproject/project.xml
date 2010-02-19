@@ -5,49 +5,7 @@
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.libs.nbi.engine</code-name-base>
             <module-dependencies/>
-            <public-packages>
-                <package>org.netbeans.installer</package>
-                <package>org.netbeans.installer.downloader</package>
-                <package>org.netbeans.installer.downloader.connector</package>
-                <package>org.netbeans.installer.downloader.dispatcher</package>
-                <package>org.netbeans.installer.downloader.queue</package>
-                <package>org.netbeans.installer.downloader.services</package>
-                <package>org.netbeans.installer.downloader.ui</package>
-                <package>org.netbeans.installer.product</package>
-                <package>org.netbeans.installer.product.components</package>
-                <package>org.netbeans.installer.product.dependencies</package>
-                <package>org.netbeans.installer.product.filters</package>
-                <package>org.netbeans.installer.utils</package>
-                <package>org.netbeans.installer.utils.applications</package>
-                <package>org.netbeans.installer.utils.cli</package>
-                <package>org.netbeans.installer.utils.cli.options</package>
-                <package>org.netbeans.installer.utils.exceptions</package>
-                <package>org.netbeans.installer.utils.helper</package>
-                <package>org.netbeans.installer.utils.helper.swing</package>
-                <package>org.netbeans.installer.utils.progress</package>
-                <package>org.netbeans.installer.utils.system</package>
-                <package>org.netbeans.installer.utils.system.cleaner</package>
-                <package>org.netbeans.installer.utils.system.launchers</package>
-                <package>org.netbeans.installer.utils.system.launchers.impl</package>
-                <package>org.netbeans.installer.utils.system.resolver</package>
-                <package>org.netbeans.installer.utils.system.shortcut</package>
-                <package>org.netbeans.installer.utils.system.unix.shell</package>
-                <package>org.netbeans.installer.utils.system.windows</package>
-                <package>org.netbeans.installer.utils.xml</package>
-                <package>org.netbeans.installer.utils.xml.visitors</package>
-                <package>org.netbeans.installer.wizard</package>
-                <package>org.netbeans.installer.wizard.components</package>
-                <package>org.netbeans.installer.wizard.components.actions</package>
-                <package>org.netbeans.installer.wizard.components.panels</package>
-                <package>org.netbeans.installer.wizard.components.sequences</package>
-                <package>org.netbeans.installer.wizard.containers</package>
-                <package>org.netbeans.installer.wizard.ui</package>
-                <package>org.netbeans.installer.wizard.utils</package>
-            </public-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/nbi-engine.jar</runtime-relative-path>
-                <binary-origin>../nbi/engine/dist/nbi-engine.jar</binary-origin>
-            </class-path-extension>
+            <public-packages/>
         </data>
     </configuration>
 </project>

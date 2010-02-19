@@ -4,32 +4,8 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.libs.nbi.ant</code-name-base>
-            <module-dependencies>
-                <dependency>
-                    <code-name-base>org.apache.tools.ant.module</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>3</release-version>
-                        <specification-version>3.39</specification-version>
-                    </run-dependency>
-                </dependency>
-            </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.installer.infra.build.ant</package>
-                <package>org.netbeans.installer.infra.build.ant.registries</package>
-                <package>org.netbeans.installer.infra.build.ant.utils</package>
-                <package>org.netbeans.installer.infra.lib.registries</package>
-                <package>org.netbeans.installer.infra.lib.registries.impl</package>
-            </public-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/nbi-ant-tasks.jar</runtime-relative-path>
-                <binary-origin>../nbi/infra/build/.ant-lib/dist/nbi-ant-tasks.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/nbi-registries-management.jar</runtime-relative-path>
-                <binary-origin>../nbi/infra/lib/registries-management/dist/registries-management.jar</binary-origin>
-            </class-path-extension>
+            <module-dependencies/>
+            <public-packages/>
         </data>
     </configuration>
 </project>
