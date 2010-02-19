@@ -90,6 +90,7 @@ import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.CommandBuffer;
+import org.netbeans.modules.cnd.debugger.gdb.proxy.ExternalTerminal;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
@@ -101,8 +102,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.terminal.api.TerminalIOProviderSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.UnbufferSupport;
@@ -217,6 +221,7 @@ public class GdbDebugger implements PropertyChangeListener {
     private boolean core = false;
     // to skip SIGCONT after breakpoint set on the fly (see IZ 160749)
     private boolean skipSignal = false;
+    private Pty pty = null;
 
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -249,8 +254,6 @@ public class GdbDebugger implements PropertyChangeListener {
     public void startDebugger() {
         ProjectActionEvent pae;
         GdbProfile profile;
-        String termpath = null;
-        int conType;
         GdbTimer.getTimer("Startup").start("Startup1"); // NOI18N
         GdbTimer.getTimer("Stop").start("Stop1"); // NOI18N
 
@@ -266,13 +269,18 @@ public class GdbDebugger implements PropertyChangeListener {
             runDirectory = pathMap.getRemotePath(pae.getProfile().getRunDirectory().replace("\\", "/") + "/",true);  // NOI18N
             baseDir = pae.getConfiguration().getBaseDir().replace("\\", "/");  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
-            conType = execEnv.isLocal() ? pae.getProfile().getConsoleType().getValue() : RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+            
+            int conType = pae.getProfile().getConsoleType().getValue();
+            if (conType == RunProfile.CONSOLE_TYPE_DEFAULT) {
+                conType = RunProfile.getDefaultConsoleType();
+            }
+            if (execEnv.isRemote() && conType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
+                conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+            }
             // See IZ 161592: we do not care what platform we have in project configuration
             // we use real platform instead
             platform = pae.getConfiguration().getPlatformInfo().getPlatform();
-            if (platform != PlatformTypes.PLATFORM_WINDOWS && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW && pae.getType() != DEBUG_ATTACH) {
-                termpath = pae.getProfile().getTerminalPath();
-            }
+            
             if (!Boolean.getBoolean("gdb.suppress.timeout")) {
                 startupTimer = new Timer("GDB Startup Timer Thread"); // NOI18N
                 startupTimer.schedule(new TimerTask() {
@@ -301,7 +309,21 @@ public class GdbDebugger implements PropertyChangeListener {
             if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                debuggerEnv = pae.getProfile().getEnvironment().getenv();
             }
-            gdb = new GdbProxy(this, gdbCommand, debuggerEnv, runDirectory, termpath, cspath);
+            
+            String tty = null;
+            if (platform != PlatformTypes.PLATFORM_WINDOWS && conType == RunProfile.CONSOLE_TYPE_EXTERNAL && pae.getType() != DEBUG_ATTACH) {
+                String termpath = pae.getProfile().getTerminalPath();
+                if (termpath != null) {
+                    tty = ExternalTerminal.create(this, termpath, debuggerEnv);
+                }
+            } else if (conType == RunProfile.CONSOLE_TYPE_INTERNAL) {
+                assert TerminalIOProviderSupport.isTerminalIO(iotab);
+                pty = PtySupport.allocate(execEnv);
+                PtySupport.connect(iotab, pty);
+                tty = pty.getSlaveName();
+            }
+
+            gdb = new GdbProxy(this, gdbCommand, debuggerEnv, runDirectory, tty, cspath);
             // we should not continue until gdb version is initialized
             initGdbVersion();
 
@@ -436,7 +458,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
 
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-                    if (conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+                    if (conType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
                         gdb.set_new_console();
                     }
                 }
@@ -997,6 +1019,13 @@ public class GdbDebugger implements PropertyChangeListener {
                         gah.executionFinished(0);
                     }
                     Disassembly.close();
+                    if (pty != null) {
+                        try {
+                            pty.close();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
                     if (ioProxy != null) {
                         ioProxy.stop();
                     }

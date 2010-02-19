@@ -43,6 +43,8 @@ package org.netbeans.modules.apisupport.project.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import javax.swing.Action;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -128,7 +130,16 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-apisupport-project/Nodes"), 
                   Lookups.fixed(new Object[] {project}));
             this.project = project;
-            boolean osgi = project.getManifest().getMainAttributes().getValue("Bundle-SymbolicName") != null; // NOI18N
+            boolean osgi = false;
+            if (project != null) {
+                Manifest man = project.getManifest();
+                if (man != null) {
+                    Attributes attrs = man.getMainAttributes();
+                    if (attrs != null) {
+                        osgi = attrs.getValue("Bundle-SymbolicName") != null; // NOI18N
+                    }
+                }
+            }
             setIconBaseWithExtension(
                 osgi ? NbModuleProject.NB_PROJECT_OSGI_ICON_PATH :
                 NbModuleProject.NB_PROJECT_ICON_PATH
