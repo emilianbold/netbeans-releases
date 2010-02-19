@@ -136,7 +136,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
             INVOCATION_COUNT.put(clazz, count);
 
             if (elapsed > WARNING_TIME) {
-                LOG.log(Level.INFO, "Lengthy operation: {0}:{1}:{2}:{3}:{4}", new Object[] {
+                LOG.log(Level.WARNING, "Lengthy operation: {0}:{1}:{2}:{3}:{4}", new Object[] {
                     clazz, cummulative, count, maximal, String.format("%3.2f", ((double) cummulative) / count)});
             }
         }
