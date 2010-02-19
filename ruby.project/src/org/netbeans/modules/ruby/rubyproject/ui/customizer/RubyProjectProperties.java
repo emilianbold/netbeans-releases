@@ -51,6 +51,7 @@ import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatform.Info;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.SourceRoots;
@@ -80,7 +81,7 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
     DefaultTableModel testRootsModel;
      
     public RubyProjectProperties(
-            final RubyProject project,
+            final RubyBaseProject project,
             final UpdateHelper updateHelper,
             final PropertyEvaluator evaluator,
             final ReferenceHelper refHelper,

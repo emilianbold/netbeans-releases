@@ -54,11 +54,14 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.rubyproject.RequiredGems;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
+import org.netbeans.modules.ruby.rubyproject.spi.PropertiesProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -94,7 +97,7 @@ public final class BundlerSupport {
 
     private static final String BUNDLE = "bundle"; //NOI18N
     private static final String BUNDLER_GEM = "bundler"; //NOI18N
-    private final Project project;
+    private final RubyBaseProject project;
 
     /**
      * Per-platform cache for fetched tasks.
@@ -106,7 +109,7 @@ public final class BundlerSupport {
     private boolean installed;
     private boolean initialized;
 
-    public BundlerSupport(Project project) {
+    public BundlerSupport(RubyBaseProject project) {
         this.project = project;
     }
 
@@ -195,6 +198,30 @@ public final class BundlerSupport {
                     ed,
                     descriptor.getDisplayName()).run();
 
+    }
+
+    void updateIndices() {
+        final BundlerLineConvertor convertor = new BundlerLineConvertor();
+        final Runnable updateTask = new Runnable() {
+
+            @Override
+            public void run() {
+                if (!convertor.getGems().isEmpty()) {
+                    RequiredGems requiredGems = null;
+                    for (RequiredGems each : project.getLookup().lookupAll(RequiredGems.class)) {
+                        if (!each.isForTests()) {
+                            requiredGems = each;
+                            break;
+                        }
+                    }
+                    requiredGems.setRequiredGems(convertor.getGems());
+                    SharedRubyProjectProperties properties = project.getLookup().lookup(PropertiesProvider.class).getProperties();
+                    properties.setGemRequirements(requiredGems.getGemRequirements());
+                    properties.save();
+                }
+            }
+        };
+        runBundlerTask("show", convertor, true, updateTask);
     }
 
     private static List<Task> filter(List<Task> toFilter) {
