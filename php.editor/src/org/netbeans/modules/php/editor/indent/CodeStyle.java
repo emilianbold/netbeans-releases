@@ -410,6 +410,10 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceAfterTypeCast, getDefaultAsBoolean(spaceAfterTypeCast));
     }
 
+    public boolean spaceCheckAfterKeywords() {
+        return preferences.getBoolean(spaceCheckAfterKeywords, getDefaultAsBoolean(spaceCheckAfterKeywords));
+    }
+
     
     private static class Producer implements FmtOptions.CodeStyleProducer {
 

@@ -177,7 +177,8 @@ public class FmtOptions {
 //    public static final String spaceBeforeColon = "spaceBeforeColon"; //NOI18N
 //    public static final String spaceAfterColon = "spaceAfterColon"; //NOI18N
     public static final String spaceAfterTypeCast = "spaceAfterTypeCast"; //NOI18N
-    
+    public static final String spaceCheckAfterKeywords = "spaceCheckAfterKeywords"; //NOI18N
+
     public static CodeStyleProducer codeStyleProducer;
 
     private FmtOptions() {}
@@ -296,7 +297,8 @@ public class FmtOptions {
             { spaceAfterSemi, TRUE},
 //            { spaceBeforeColon, TRUE},
 //            { spaceAfterColon, TRUE},
-            { spaceAfterTypeCast, TRUE}
+            { spaceAfterTypeCast, TRUE},
+	    { spaceCheckAfterKeywords, TRUE}
 
         };
         
