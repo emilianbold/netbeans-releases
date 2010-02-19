@@ -40,23 +40,29 @@
 package org.netbeans.modules.remote.ui;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public final class HostNode extends AbstractNode implements ConnectionListener {
+public final class HostNode extends AbstractNode implements ConnectionListener, PropertyChangeListener {
 
     public HostNode(ExecutionEnvironment execEnv) {
         super(Children.LEAF, Lookups.singleton(execEnv));
-        ConnectionManager.getInstance().addConnectionListener(this);
+        ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, null));
+        ServerList.addPropertyChangeListener(WeakListeners.propertyChange(this, null));
     }
 
     @Override
@@ -68,6 +74,15 @@ public final class HostNode extends AbstractNode implements ConnectionListener {
     public void disconnected(ExecutionEnvironment env) {
         fireIconChange();
     }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(ServerList.PROP_DEFAULT_RECORD)) {
+            String name = getDisplayName();
+            fireDisplayNameChange(name, name);
+        }
+    }
+
 
     @Override
     public Image getOpenedIcon(int type) {
@@ -90,6 +105,16 @@ public final class HostNode extends AbstractNode implements ConnectionListener {
     @Override
     public String getDisplayName() {
         return getExecutionEnvironment().getDisplayName();
+    }
+    
+    @Override
+    public String getHtmlDisplayName() {
+        String displayName = getExecutionEnvironment().getDisplayName();
+        ServerRecord defRec = ServerList.getDefaultRecord();
+        if (defRec != null && defRec.getExecutionEnvironment().equals(getExecutionEnvironment())) {
+            displayName = "<b>" + displayName + "<\b>"; // NOI18N
+        }
+        return displayName;
     }
 
     public ExecutionEnvironment getExecutionEnvironment() {
