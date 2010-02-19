@@ -136,7 +136,8 @@ public class DoxygenDocumentation {
     static {
         commands.put("\\fn", new CommandDescription(EndsOn.LINE, "<strong>", "</strong></p><p>")); // NOI18N
         commands.put("\\c", new CommandDescription(EndsOn.WORD, "<tt>", "</tt>")); // NOI18N
-        commands.put("\\return", new CommandDescription(EndsOn.PAR, "<strong>Return:</strong>", "")); // NOI18N
+        commands.put("\\return", new CommandDescription(EndsOn.PAR, "<strong>Returns:</strong>", "")); // NOI18N
+        commands.put("\\param", new CommandDescription(EndsOn.PAR, "<strong>Parameters:</strong>", "")); // NOI18N
         commands.put("\\sa", new CommandDescription(EndsOn.PAR, "<strong>See Also:</strong>", "")); // NOI18N
         commands.put("\\brief", new CommandDescription(EndsOn.PAR, "", "")); // NOI18N
         commands.put("\\code", new CommandDescription(EndsOn.NONE, "<pre>", ""));//XXX: does not work properly - the content will still be processed, '<', '>' will not be escaped. // NOI18N
@@ -222,8 +223,10 @@ public class DoxygenDocumentation {
                     result.add(new Token(TokenId.WHITESPACE, img.toString()));
                     img = new StringBuilder();
                     break ;
+                case '@':
                 case '\\': // NOI18N
-                    img.append(text.charAt(i++));
+                    img.append('\\');
+                    i++;
                     while (i < text.length() && Character.isLetter(text.charAt(i))) {
                         img.append(text.charAt(i++));
                     }
