@@ -154,4 +154,10 @@ public class IntConfiguration {
         clone.setModified(getModified());
         return clone;
     }
+
+    @Override
+    public String toString() {
+        return "(" + getValue() + ")" + getName(); // NOI18N
+    }
+
 }

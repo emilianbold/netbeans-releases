@@ -896,6 +896,18 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterSemi04.php", options);
     }
 
+    public void testSpacesCheckAfterKeywords01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceCheckAfterKeywords, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceCheckAfterKeywords01.php", options);
+    }
+
+    public void testSpacesCheckAfterKeywords02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.spaceCheckAfterKeywords, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceCheckAfterKeywords02.php", options);
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
