@@ -273,64 +273,6 @@ public class ProjectActionSupport {
             handle.setInitialDelay(0);
             return handle;
         }
-
-//        private InputOutput getIOTab(final String name, final boolean reuse) {
-//            final List<Action> list = new ArrayList<Action>();
-//            sa = new StopAction(this);
-//            ra = new RerunAction(this);
-//            list.add(sa);
-//            list.add(ra);
-//            additional = BuildActionsProvider.getDefault().getActions(name, paes);
-//            // TODO: actions should have acces to output writer. Action should listen output writer.
-//            // Provide parameter outputListener for DefaultProjectActionHandler.ProcessChangeListener
-//            list.addAll(additional);
-//
-//            final ProjectActionEvent pae = paes[currentAction];
-//            final IOProvider ioProvider;
-//
-//            if (pae.getProfile().getConsoleType().getValue() == RunProfile.CONSOLE_TYPE_INTERNAL) {
-//                ioProvider = TerminalIOProviderSupport.getIOProvider();
-//            } else {
-//                ioProvider = IOProvider.getDefault();
-//            }
-//
-//            FutureTask<InputOutput> tabCreationTask = new FutureTask<InputOutput>(new Callable<InputOutput>() {
-//
-//                @Override
-//                public InputOutput call() throws Exception {
-//                    InputOutput tab;
-//
-//                    if (reuse) {
-//                        tab = ioProvider.getIO(name, false); // This will (sometimes!) find an existing one.
-//                        tab.closeInputOutput(); // Close it...
-//                    }
-//
-//                    tab = ioProvider.getIO(name, list.toArray(new Action[list.size()])); // Create a new ...
-//
-//                    try {
-//                        tab.getOut().reset();
-//                    } catch (IOException ioe) {
-//                    }
-//
-//                    return tab;
-//                }
-//            });
-//
-//
-//            InputOutput tab = null;
-//
-//            try {
-//                SwingUtilities.invokeAndWait(tabCreationTask);
-//                tab = tabCreationTask.get();
-//            } catch (Exception ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//
-//            progressHandle = createProgressHandle();
-//            progressHandle.start();
-//
-//            return tab;
-//        }
         
         private InputOutput getIOTab(String name, boolean reuse) {
             sa = new StopAction(this);
