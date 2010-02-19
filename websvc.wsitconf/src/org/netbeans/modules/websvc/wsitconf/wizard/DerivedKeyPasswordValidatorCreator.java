@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,55 +39,35 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl;
+package org.netbeans.modules.websvc.wsitconf.wizard;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandlerConfiguration;
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietaryPolicyQName;
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietarySecurityPolicyAttribute;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.w3c.dom.Element;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 
-/**
- *
- * @author Martin Grebac
- */
-public class CallbackHandlerConfigurationImpl extends ProprietarySecurityPolicyComponentImpl implements CallbackHandlerConfiguration {
-    
-    /**
-     * Creates a new instance of CallbackHandlerConfigurationImpl
-     */
-    public CallbackHandlerConfigurationImpl(WSDLModel model, Element e) {
-        super(model, e);
-    }
-    
-    @Override
-    public void setVisibility(String vis) {
-        setAnyAttribute(ProprietaryPolicyQName.VISIBILITY.getQName(), vis);
-    }
-
-    @Override
-    public String getVisibility() {
-        return getAnyAttribute(ProprietaryPolicyQName.VISIBILITY.getQName());
-    }
-
-    @Override
-    public void setTimestampTimeout(String timeout) {
-        setAttribute(TIMESTAMPTIMEOUT, ProprietarySecurityPolicyAttribute.TIMESTAMPTIMEOUT, timeout);        
-    }
-
-    @Override
-    public String getTimestampTimeout() {
-        return getAttribute(ProprietarySecurityPolicyAttribute.TIMESTAMPTIMEOUT);
-    }
-
-    @Override
-    public void setIterationsForPDK(String iterations) {
-        setAttribute(ITERATIONS, ProprietarySecurityPolicyAttribute.ITERATIONSFORPDK, iterations);
-    }
-
-    @Override
-    public String getIterationsForPDK() {
-        return getAttribute(ProprietarySecurityPolicyAttribute.ITERATIONSFORPDK);
+public class DerivedKeyPasswordValidatorCreator {
+  
+    public DerivedKeyPasswordValidatorCreator() { }
+     
+    public DataObject generate(FileObject targetFolder, String targetName) {
+        try {
+            DataFolder folder = (DataFolder) DataObject.find(targetFolder);
+            FileObject fo = null;
+            fo = FileUtil.getConfigFile("Templates/WebServices/DerivedKeyPasswordValidator.java"); // NOI18N
+            if (fo != null) {
+                DataObject template = DataObject.find(fo);
+                DataObject obj = template.createFromTemplate(folder, targetName);            
+                return obj;
+            }
+        } catch (IOException ex) {
+            Logger.getLogger("global").log(Level.INFO, null, ex);
+        }
+        
+        return null;
     }
     
 }
