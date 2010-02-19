@@ -39,11 +39,18 @@
 
 package org.netbeans.modules.remote.ui;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.remote.ui.setup.CreateHostWizardIterator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
@@ -72,9 +79,15 @@ public final class HostListRootNode extends AbstractNode {
         setIconBaseWithExtension(ICON_BASE);
     }
 
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[] { new AddHostAction() };
+    }
+
     private static class HostChildren extends ChildFactory<ExecutionEnvironment> implements PropertyChangeListener {
 
         public HostChildren() {
+            ServerList.addPropertyChangeListener(this);
         }
 
         @Override
@@ -95,6 +108,29 @@ public final class HostListRootNode extends AbstractNode {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
+            this.refresh(false);
+        }
+    }
+
+    private static class AddHostAction extends AbstractAction {
+
+        public AddHostAction() {
+            super(NbBundle.getMessage(HostListRootNode.class, "AddHostMenuItem"));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ToolsCacheManager cacheManager = ToolsCacheManager.createInstance(true);
+            ServerRecord newServerRecord = CreateHostWizardIterator.invokeMe(cacheManager);
+            if (newServerRecord != null) {
+                List<ServerRecord> hosts = new ArrayList<ServerRecord>(ServerList.getRecords());
+                if (!hosts.contains(newServerRecord)) {
+                    hosts.add(newServerRecord);
+                    cacheManager.setHosts(hosts);
+                    cacheManager.setDefaultRecord(ServerList.getDefaultRecord());
+                    cacheManager.applyChanges();
+                }
+            }
         }
     }
 }
