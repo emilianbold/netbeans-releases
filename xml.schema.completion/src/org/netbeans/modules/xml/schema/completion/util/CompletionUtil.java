@@ -331,34 +331,50 @@ public class CompletionUtil {
         CompletionContextImpl context, CompletionModel cm, List<CompletionResultItem> results) {
         String typedChars = context.getTypedChars();
         CompletionResultItem item = null;
-        if(!isFormQualified(axi)) {
+        if (! isFormQualified(axi)) {
             item = createResultItem(axi, null, context);
-            if(item == null)
+            if (item == null)
                 return;
-            if(typedChars == null) {
+            if (typedChars == null) {
                 results.add(item);
-            } else if(item.getReplacementText().startsWith(typedChars)) {
+            } else if (isResultItemTextStartsWith(item, typedChars)) {
                 results.add(item);
             }
             return;
         }
-        //namespace aware items
+        // namespace aware items
         List<String> prefixes = getPrefixes(context, axi, cm);
-        if(prefixes.size() == 0) {
+        if (prefixes.size() == 0) {
            prefixes.add(null);
         }
-        for(String prefix: prefixes) {
+        for (String prefix: prefixes) {
             item = createResultItem(axi, prefix, context);
-            if(item == null)
+            if (item == null)
                 continue;
-            if(typedChars == null) {
+            if (typedChars == null) {
                 results.add(item);
-            } else if(item.getReplacementText().startsWith(typedChars)) {
+            } else if (isResultItemTextStartsWith(item, typedChars)) {
                 results.add(item);
             }
         }
     }
     
+    private static boolean isResultItemTextStartsWith(CompletionResultItem resultItem, 
+        String text) {
+        if ((resultItem == null) || (text == null)) return false;
+
+        String resultText = resultItem.getReplacementText();
+        int startIndex = 0;
+        if (resultText.startsWith(END_TAG_PREFIX) && (! text.startsWith(END_TAG_PREFIX))) {
+            startIndex = END_TAG_PREFIX.length();
+        } else if (resultText.startsWith(TAG_FIRST_CHAR) &&
+                  (! text.startsWith(TAG_FIRST_CHAR))) {
+            startIndex = TAG_FIRST_CHAR.length();
+        }
+        boolean result = resultText.startsWith(text, startIndex);
+        return result;
+    }
+
     private static CompletionResultItem createResultItem(AXIComponent axi,
             String prefix, CompletionContextImpl context) {
         CompletionResultItem item = null;

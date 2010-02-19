@@ -848,7 +848,10 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
 
     @Override
     public void attachPatch(File file, String description) {
-        addAttachment(file, null, description, null, true);
+        boolean isPatch = true;
+        // HACK for attaching hg bundles - they are NOT patches
+        isPatch = !file.getName().endsWith(".hg"); // NOI18N
+        addAttachment(file, null, description, null, isPatch);
     }
 
     private void prepareSubmit() {

@@ -100,7 +100,7 @@ public class Strip implements PropertyChangeListener {
 
     public String getSelectionRevision() {
         if (panel == null) return null;
-        return panel.getSelectedRevision();
+        return panel.getSelectedRevision()[0];
     }
     public boolean isBackupRequested() {
         if (panel == null) return false;

@@ -64,6 +64,7 @@ import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
+import org.netbeans.modules.mercurial.ui.diff.ExportBundleAction;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffChangesAction;
 import org.netbeans.modules.mercurial.ui.diff.ImportDiffAction;
@@ -90,7 +91,6 @@ import org.openide.util.actions.SystemAction;
 public class MercurialAnnotator extends VCSAnnotator {
     
     private static final int INITIAL_ACTION_ARRAY_LENGTH = 25;
-    private final AnnotationColorProvider annotationFormatsProvider = AnnotationColorProvider.getInstance();
     
     private static final int STATUS_TEXT_ANNOTABLE = 
             FileInformation.STATUS_NOTVERSIONED_EXCLUDED |
@@ -226,26 +226,26 @@ public class MercurialAnnotator extends VCSAnnotator {
         String statusText = null;
         int status = mostImportantInfo.getStatus();
         if (0 != (status & FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
-            statusText = annotationFormatsProvider.EXCLUDED_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
+            statusText = getAnnotationProvider().EXCLUDED_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
-            statusText = annotationFormatsProvider.DELETED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
+            statusText = getAnnotationProvider().DELETED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
-            statusText = annotationFormatsProvider.REMOVED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
+            statusText = getAnnotationProvider().REMOVED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
-            statusText = annotationFormatsProvider.NEW_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
+            statusText = getAnnotationProvider().NEW_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
             FileStatus fileStatus = mostImportantInfo.getStatus(mostImportantFile);
             if (fileStatus != null && fileStatus.isCopied()) {
-                statusText = annotationFormatsProvider.COPIED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
+                statusText = getAnnotationProvider().COPIED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
             } else {
-                statusText = annotationFormatsProvider.ADDED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
+                statusText = getAnnotationProvider().ADDED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
             }
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
-            statusText = annotationFormatsProvider.MODIFIED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
+            statusText = getAnnotationProvider().MODIFIED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_UPTODATE)) {
             statusText = null;
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {
-            statusText = annotationFormatsProvider.CONFLICT_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
+            statusText = getAnnotationProvider().CONFLICT_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NOTMANAGED)) {
             statusText = null;
         } else if (status == FileInformation.STATUS_UNKNOWN) {
@@ -308,6 +308,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             actions.add(null);
             actions.add(SystemAction.get(ExportDiffAction.class));
             actions.add(SystemAction.get(ExportDiffChangesAction.class));
+            actions.add(SystemAction.get(ExportBundleAction.class));
             actions.add(SystemAction.get(ImportDiffAction.class));
 
             actions.add(null);
@@ -455,26 +456,26 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
 
         if (0 != (status & FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
-            return annotationFormatsProvider.EXCLUDED_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
-            return annotationFormatsProvider.DELETED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().DELETED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
-            return annotationFormatsProvider.REMOVED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().REMOVED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
-            return annotationFormatsProvider.NEW_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().NEW_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
             FileStatus fileStatus = mostImportantInfo.getStatus(mostImportantFile);
             if (fileStatus != null && fileStatus.isCopied()) {
-                return annotationFormatsProvider.COPIED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+                return getAnnotationProvider().COPIED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
             } else {
-                return annotationFormatsProvider.ADDED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+                return getAnnotationProvider().ADDED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
             }
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
-            return annotationFormatsProvider.MODIFIED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().MODIFIED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_UPTODATE)) {
-            return annotationFormatsProvider.UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {
-            return annotationFormatsProvider.CONFLICT_FILE.getFormat().format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().CONFLICT_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NOTMANAGED)) {
             return name;
         } else if (status == FileInformation.STATUS_UNKNOWN) {
@@ -492,9 +493,9 @@ public class MercurialAnnotator extends VCSAnnotator {
     private String annotateFolderNameHtml(String name, VCSContext context, FileInformation mostImportantInfo, File mostImportantFile) {
         String nameHtml = htmlEncode(name);
         if (mostImportantInfo.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED){
-            return annotationFormatsProvider.EXCLUDED_FILE.getFormat().format(new Object [] { nameHtml, ""}); // NOI18N
+            return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { nameHtml, ""}); // NOI18N
         }
-        MessageFormat uptodateFormat = annotationFormatsProvider.UP_TO_DATE_FILE.getFormat();
+        MessageFormat uptodateFormat = getAnnotationProvider().UP_TO_DATE_FILE.getFormat();
         String fileName = mostImportantFile.getName();
         if (fileName.equals(name)){
             return uptodateFormat.format(new Object [] { nameHtml, "" }); // NOI18N
@@ -635,5 +636,9 @@ public class MercurialAnnotator extends VCSAnnotator {
             }
         }
         return true;
+    }
+
+    private AnnotationColorProvider getAnnotationProvider() {
+        return AnnotationColorProvider.getInstance();
     }
 }
