@@ -49,6 +49,7 @@ import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -177,8 +178,10 @@ public class RemoteServerList implements ServerListImplementation {
     }
 
     private synchronized void setDefaultIndexImpl(int defaultIndex) {
+        int oldValue = this.defaultIndex;
         this.defaultIndex = defaultIndex;
         getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
+        firePropertyChange(ServerList.PROP_DEFAULT_RECORD, oldValue, defaultIndex);
     }
 
     @Override
@@ -245,6 +248,7 @@ public class RemoteServerList implements ServerListImplementation {
             record.setSyncFactory(syncFactory);
             unlisted.remove(record);
         }
+        ArrayList<RemoteServerRecord> oldItems = new ArrayList<RemoteServerRecord>(items);
         items.add(record);
         Collections.sort(items, RECORDS_COMPARATOR);
         if (asDefault) {
@@ -253,6 +257,7 @@ public class RemoteServerList implements ServerListImplementation {
         refresh();
         storePreferences(record);
         getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
+        firePropertyChange(ServerList.PROP_RECORD_LIST, oldItems, new ArrayList<RemoteServerRecord>(items));
         return record;
     }
 
@@ -287,6 +292,7 @@ public class RemoteServerList implements ServerListImplementation {
 
     @Override
     public synchronized void set(List<ServerRecord> records, ServerRecord defaultRecord) {
+        ArrayList<RemoteServerRecord> oldItems = new ArrayList<RemoteServerRecord>(items);
         RemoteUtil.LOGGER.finest("ServerList: set " + records);
         Collection<ExecutionEnvironment> removed = clear();
         for (ServerRecord rec : records) {
@@ -294,6 +300,7 @@ public class RemoteServerList implements ServerListImplementation {
             removed.remove(rec.getExecutionEnvironment());
         }
         setDefaultRecord(defaultRecord);
+        firePropertyChange(ServerList.PROP_RECORD_LIST, oldItems, new ArrayList<RemoteServerRecord>(items));
     }
 
     private Collection<ExecutionEnvironment> clear() {
@@ -367,8 +374,8 @@ public class RemoteServerList implements ServerListImplementation {
         pcs.removePropertyChangeListener(listener);
     }
 
-    public void firePropertyChange(String property, Object n) {
-        pcs.firePropertyChange(property, null, n);
+    private void firePropertyChange(String property, Object oldValue, Object newValue) {
+        pcs.firePropertyChange(property, oldValue, newValue);
     }
 
     private static Preferences getPreferences() {

@@ -75,6 +75,7 @@ public final class HostListRootNode extends AbstractNode {
     private static class HostChildren extends ChildFactory<ExecutionEnvironment> implements PropertyChangeListener {
 
         public HostChildren() {
+            ServerList.addPropertyChangeListener(this);
         }
 
         @Override
@@ -95,6 +96,7 @@ public final class HostListRootNode extends AbstractNode {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
+            this.refresh(false);
         }
     }
 }

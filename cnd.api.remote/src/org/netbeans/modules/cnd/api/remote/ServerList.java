@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,6 +58,9 @@ import org.openide.util.NbBundle;
  * @author gordonp
  */
 public class ServerList {
+
+    public static final String PROP_DEFAULT_RECORD = "DEFAULT_RECORD"; //NOI18N
+    public static final String PROP_RECORD_LIST = "RECORD_LIST"; //NOI18N
 
     private ServerList() {
     }
@@ -120,6 +124,14 @@ public class ServerList {
 
     public static boolean isValidExecutable(ExecutionEnvironment env, String path) {
         return getDefault().isValidExecutable(env, path);
+    }
+
+    public static void addPropertyChangeListener(PropertyChangeListener listener) {
+        getDefault().addPropertyChangeListener(listener);
+    }
+
+    public static void removePropertyChangeListener(PropertyChangeListener listener) {
+        getDefault().removePropertyChangeListener(listener);
     }
 
 
@@ -221,6 +233,14 @@ public class ServerList {
 
         public ServerRecord createServerRecord(ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory) {
             return new DummyServerRecord();
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
     }
 }
