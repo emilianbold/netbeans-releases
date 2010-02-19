@@ -65,8 +65,8 @@ public class DoxygenDocumentation {
 
     static String doxygen2HTML(String doxygen) {
         doxygen = doxygen.substring(3, doxygen.length() - 2);
-
         doxygen = STRIP_STARS.matcher(doxygen).replaceAll("");
+        doxygen = doxygen.trim();
 
         StringBuilder output = new StringBuilder();
         List<String> wordEnd = new LinkedList<String>();
@@ -136,9 +136,9 @@ public class DoxygenDocumentation {
     static {
         commands.put("\\fn", new CommandDescription(EndsOn.LINE, "<strong>", "</strong></p><p>")); // NOI18N
         commands.put("\\c", new CommandDescription(EndsOn.WORD, "<tt>", "</tt>")); // NOI18N
-        commands.put("\\return", new CommandDescription(EndsOn.PAR, "<strong>Returns:</strong>", "")); // NOI18N
-        commands.put("\\param", new CommandDescription(EndsOn.PAR, "<strong>Parameters:</strong>", "")); // NOI18N
-        commands.put("\\sa", new CommandDescription(EndsOn.PAR, "<strong>See Also:</strong>", "")); // NOI18N
+        commands.put("\\return", new CommandDescription(EndsOn.PAR, "<strong>Returns:</strong><br>&nbsp; ", "")); // NOI18N
+        commands.put("\\param", new CommandDescription(EndsOn.PAR, "<strong>Parameters:</strong><br>&nbsp; ", "")); // NOI18N
+        commands.put("\\sa", new CommandDescription(EndsOn.PAR, "<strong>See Also:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\brief", new CommandDescription(EndsOn.PAR, "", "")); // NOI18N
         commands.put("\\code", new CommandDescription(EndsOn.NONE, "<pre>", ""));//XXX: does not work properly - the content will still be processed, '<', '>' will not be escaped. // NOI18N
         commands.put("\\endcode", new CommandDescription(EndsOn.NONE, "</pre>", "")); // NOI18N
