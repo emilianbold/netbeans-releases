@@ -7,7 +7,9 @@
         </folder>
         <folder name="Modes">
             <folder name="output">
-                <file name="TermTopComponent.wstcref" url="TermTopComponentWstcref.xml"/>
+                <file name="TermTopComponent.wstcref" url="TermTopComponentWstcref.xml">
+                    <attr name="position" intvalue="2275"/>
+                </file>
             </folder>
         </folder>
     </folder>
