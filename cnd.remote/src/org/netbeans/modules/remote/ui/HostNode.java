@@ -40,18 +40,30 @@
 package org.netbeans.modules.remote.ui;
 
 import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JOptionPane;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
+import org.netbeans.modules.cnd.remote.ui.HostPropertiesDialog;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -59,8 +71,11 @@ import org.openide.util.lookup.Lookups;
  */
 public final class HostNode extends AbstractNode implements ConnectionListener, PropertyChangeListener {
 
+    private final ExecutionEnvironment env;
+
     public HostNode(ExecutionEnvironment execEnv) {
         super(Children.LEAF, Lookups.singleton(execEnv));
+        this.env = execEnv;
         ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, null));
         ServerList.addPropertyChangeListener(WeakListeners.propertyChange(this, null));
     }
@@ -79,7 +94,7 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(ServerList.PROP_DEFAULT_RECORD)) {
             String name = getDisplayName();
-            fireDisplayNameChange(name, name);
+            fireDisplayNameChange("", name); // to make Node refresh
         }
     }
 
@@ -99,25 +114,95 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
     }
 
     private boolean isConnected() {
-        return ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment());
+        return ConnectionManager.getInstance().isConnectedTo(env);
     }
 
     @Override
     public String getDisplayName() {
-        return getExecutionEnvironment().getDisplayName();
+        ServerRecord record = ServerList.get(env);
+        return (record == null) ? env.getDisplayName() : record.getDisplayName();
     }
     
     @Override
     public String getHtmlDisplayName() {
-        String displayName = getExecutionEnvironment().getDisplayName();
+        String displayName = getDisplayName();
         ServerRecord defRec = ServerList.getDefaultRecord();
-        if (defRec != null && defRec.getExecutionEnvironment().equals(getExecutionEnvironment())) {
+        if (defRec != null && defRec.getExecutionEnvironment().equals(env)) {
             displayName = "<b>" + displayName + "<\b>"; // NOI18N
         }
         return displayName;
     }
 
+
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[] {
+            new PropertiesAction(),
+            new SetDefaultAction(),
+            new RemoveHostAction()            
+        };
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        return new PropertiesAction();
+    }
+
+
     public ExecutionEnvironment getExecutionEnvironment() {
         return getLookup().lookup(ExecutionEnvironment.class);
+    }
+
+    private class RemoveHostAction extends AbstractAction { // extends HostAction
+
+        public RemoveHostAction() {
+            super(NbBundle.getMessage(HostListRootNode.class, "RemoveHostMenuItem"));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ServerRecord record = ServerList.get(getExecutionEnvironment());
+            String title = NbBundle.getMessage(HostNode.class, "RemoveHostCaption");
+            String message = NbBundle.getMessage(HostNode.class, "RemoveHostQuestion", record.getDisplayName());
+
+            if (JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(),
+                    message, title, JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+                ToolsCacheManager cacheManager = ToolsCacheManager.createInstance(true);
+                List<ServerRecord> hosts = new ArrayList<ServerRecord>(ServerList.getRecords());
+                hosts.remove(record);
+                cacheManager.setHosts(hosts);
+                ServerRecord defaultRecord = ServerList.getDefaultRecord();
+                if (defaultRecord.getExecutionEnvironment().equals(getExecutionEnvironment())) {
+                    defaultRecord = ServerList.get(ExecutionEnvironmentFactory.getLocal());
+                }
+                cacheManager.setDefaultRecord(defaultRecord);
+                cacheManager.applyChanges();
+            }
+        }
+    }
+
+    private class SetDefaultAction extends AbstractAction { // extends HostAction
+
+        public SetDefaultAction() {
+            super(NbBundle.getMessage(HostListRootNode.class, "SetDefaultMenuItem"));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ServerList.setDefaultRecord(ServerList.get(getExecutionEnvironment()));
+        }
+    }
+
+    private class PropertiesAction extends AbstractAction { // extends HostAction
+
+        public PropertiesAction() {
+            super(NbBundle.getMessage(HostListRootNode.class, "PropertirsMenuItem"));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
+            HostPropertiesDialog.invokeMe(record);
+        }
     }
 }
