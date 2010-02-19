@@ -60,6 +60,7 @@ import org.netbeans.modules.ruby.rubyproject.RequiredGems;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.spi.PropertiesProvider;
 import org.openide.filesystems.FileUtil;
@@ -222,6 +223,11 @@ public final class BundlerSupport {
             }
         };
         runBundlerTask("show", convertor, true, updateTask);
+    }
+
+    boolean canUpdateIndices() {
+        // currently supported for Rails projects only
+        return !(project instanceof RubyProject);
     }
 
     private static List<Task> filter(List<Task> toFilter) {
