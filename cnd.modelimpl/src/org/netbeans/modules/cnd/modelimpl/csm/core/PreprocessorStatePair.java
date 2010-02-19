@@ -53,7 +53,8 @@ public final class PreprocessorStatePair {
     public final FilePreprocessorConditionState pcState;
 
     public PreprocessorStatePair(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState) {
-        super();
+        assert ppState != null;
+        assert pcState != null;
         this.state = ppState;
         this.pcState = pcState;
     }

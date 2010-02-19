@@ -45,7 +45,6 @@ import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -88,15 +87,10 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
-import org.netbeans.modules.cnd.modelimpl.csm.ClassEnumBase;
-import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
-import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
-import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
-import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.FileEntry;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -1224,6 +1218,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * Object stateLock = getFileContainer().getLock(file);
      */
     private void putPreprocState(File file, APTPreprocHandler.State state) {
+        assert state != null: "can not be null state for " + file;
         if (state != null && !state.isCleaned()) {
             state = APTHandlersSupport.createCleanPreprocState(state);
         }
@@ -1856,7 +1851,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (initial != null) {
             synchronized (getFileContainer().getLock(file)) {
                 Collection<APTPreprocHandler.State> states = getFileContainer().getPreprocStates(file);
-                if (states == null || states.isEmpty() || (states.size() == 1 && states.iterator().next() == null)) {
+                if (states.isEmpty()) {
                     putPreprocState(file, initial);
                 }
             }
