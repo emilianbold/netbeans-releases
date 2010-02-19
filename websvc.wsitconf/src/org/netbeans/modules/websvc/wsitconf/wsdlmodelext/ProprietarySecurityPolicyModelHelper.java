@@ -96,6 +96,7 @@ public class ProprietarySecurityPolicyModelHelper {
     public static final String DEFAULT_HANDLER_TIMESTAMP_TIMEOUT = "300";                     //NOI18N
     public static final String DEFAULT_MAXCLOCKSKEW = "300000";                     //NOI18N
     public static final String DEFAULT_TIMESTAMPFRESHNESS = "300000";                     //NOI18N
+    public static final String DEFAULT_ITERATIONS = "1000";                     //NOI18N
     
     private static HashMap<ConfigVersion, ProprietarySecurityPolicyModelHelper> instances = 
             new HashMap<ConfigVersion, ProprietarySecurityPolicyModelHelper>();
@@ -979,6 +980,14 @@ public class ProprietarySecurityPolicyModelHelper {
         }
     }
     
+    public static String getHandlerIterations(Binding b) {
+        CallbackHandlerConfiguration chc = getCBHConfiguration(b);
+        if (chc != null) {
+            return chc.getIterationsForPDK();
+        }
+        return null;
+    }
+
     public static String getHandlerTimestampTimeout(Binding b) {
         CallbackHandlerConfiguration chc = getCBHConfiguration(b);
         if (chc != null) {
@@ -986,6 +995,28 @@ public class ProprietarySecurityPolicyModelHelper {
         }
         return null;
     }    
+
+    public static void setHandlerIterations(Binding b, String value, boolean client) {
+        WSDLModel model = b.getModel();
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        boolean isTransaction = model.isIntransaction();
+        if (!isTransaction) {
+            model.startTransaction();
+        }
+        try {
+            CallbackHandlerConfiguration chc = (CallbackHandlerConfiguration) PolicyModelHelper.getTopLevelElement(p, CallbackHandlerConfiguration.class,false);
+            if (((p == null) || (chc == null)) && value != null) {
+                chc = createCallbackHandlerConfiguration(b, client);
+            }
+            if (chc != null) {
+                chc.setIterationsForPDK(value);
+            }
+        } finally {
+            if (!isTransaction) {
+                model.endTransaction();
+            }
+        }
+    }
 
     public static void setHandlerTimestampTimeout(Binding b, String value, boolean client) {
         WSDLModel model = b.getModel();
