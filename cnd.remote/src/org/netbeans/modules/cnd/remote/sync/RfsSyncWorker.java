@@ -185,6 +185,10 @@ import org.openide.util.RequestProcessor;
         remoteControllerCleanup(); // just in case
         pb.setExecutable(remoteControllerPath); //I18N
         pb.setWorkingDirectory(remoteDir);
+        String rfsTrace = System.getProperty("cnd.rfs.controller.trace");
+        if (rfsTrace != null) {
+            pb.getEnvironment().put("RFS_CONTROLLER_TRACE", rfsTrace); // NOI18N
+        }
         remoteControllerProcess = pb.call();
 
         RequestProcessor.getDefault().post(new ErrorReader(remoteControllerProcess.getErrorStream(), err));
@@ -239,8 +243,7 @@ import org.openide.util.RequestProcessor;
         addRemoteEnv(env2add, "cnd.rfs.preload.log", "RFS_PRELOAD_LOG"); // NOI18N
         addRemoteEnv(env2add, "cnd.rfs.controller.log", "RFS_CONTROLLER_LOG"); // NOI18N
         addRemoteEnv(env2add, "cnd.rfs.controller.port", "RFS_CONTROLLER_PORT"); // NOI18N
-        addRemoteEnv(env2add, "cnd.rfs.controller.host", "RFS_CONTROLLER_HOST"); // NOI18N
-        addRemoteEnv(env2add, "cnd.rfs.controller.trace", "RFS_CONTROLLER_TRACE"); // NOI18N
+        addRemoteEnv(env2add, "cnd.rfs.controller.host", "RFS_CONTROLLER_HOST"); // NOI18N        
         addRemoteEnv(env2add, "cnd.rfs.preload.trace", "RFS_PRELOAD_TRACE"); // NOI18N
 
         RemoteUtil.LOGGER.fine("Setting environment:");

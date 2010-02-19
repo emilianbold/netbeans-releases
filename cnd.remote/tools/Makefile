@@ -46,13 +46,13 @@ CC-Mac_OS_X := gcc
 DEBUG := -g
 
 CFLAGS-COMMON := -c ${DEBUG} -fPIC -D_GNU_SOURCE
-CFLAGS-Linux := ${CFLAGS-COMMON} -Wimplicit -Werror
-CFLAGS-SunOS := ${CFLAGS-COMMON}
+CFLAGS-Linux := ${CFLAGS-COMMON} -Wimplicit -Werror -std=c99
+CFLAGS-SunOS := ${CFLAGS-COMMON} -xc99 -errwarn
 CFLAGS-Mac_OS_X := ${CFLAGS-COMMON}
 
-LDFLAGS-LIB-Linux := -shared -ldl
-LDFLAGS-LIB-SunOS := -shared -ldl -lsocket
-LDFLAGS-LIB-Mac_OS_X := -G -ldl
+LDFLAGS-LIB-Linux := -shared -ldl -lrt
+LDFLAGS-LIB-SunOS := -shared -ldl -lrt -lsocket
+LDFLAGS-LIB-Mac_OS_X := -G -ldl -lrt
 
 LDFLAGS-APP-Linux := -lrt -lnsl -lresolv
 LDFLAGS-APP-SunOS := -lrt -lnsl -lsocket -lresolv
@@ -84,10 +84,6 @@ CC := ${CC-${OSNAME}}
 CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG32_64} -DTRACE=${TRACE} ${EXTRA_CFLAGS}
 LDFLAGS_LIB := ${LDFLAGS-LIB-${OSNAME}} ${FLAG32_64} ${DEBUG}
 LDFLAGS_APP := ${LDFLAGS-APP-${OSNAME}} ${FLAG32_64} ${DEBUG}
-
-ifneq (${TRACE}, 0)
-	LDFLAGS_LIB_TRACE = -lrt
-endif
 
 ifdef 64BITS
     PLATFORM_64 := _64
@@ -141,7 +137,7 @@ TEST_ENV_OBJFILES := ${BUILD}/rfs_test_env.o
 
 #library:
 ${DIST}/rfs_preload.so: ${PRELOAD_OBJFILES}
-	${LINKER} ${LDFLAGS_LIB} ${LDFLAGS_LIB_TRACE} -o ${DIST}/rfs_preload.so ${PRELOAD_OBJFILES}
+	${LINKER} ${LDFLAGS_LIB} -o ${DIST}/rfs_preload.so ${PRELOAD_OBJFILES}
 
 #appliction:
 ${DIST}/rfs_controller: ${CONTROLLER_OBJFILES}
