@@ -21,6 +21,7 @@ if [ "$action" = "build" ]; then
     testmodule apisupport.crudsample
     testmodule apisupport.feedreader
     testmodule apisupport.harness
+    testmodule apisupport.osgidemo
     testmodule apisupport.paintapp
     testmodule apisupport.project
     testmodule autoupdate.services

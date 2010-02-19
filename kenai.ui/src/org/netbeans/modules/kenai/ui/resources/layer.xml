@@ -6,7 +6,7 @@
             <file name="org-netbeans-modules-kenai-ui-GetSourcesFromKenaiAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.kenai.ui.Bundle"/>
                 <attr name="delegate" newvalue="org.netbeans.modules.kenai.ui.GetSourcesFromKenaiAction"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#CTL_GetSourcesFromKenaiAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#Actions/Team/org-netbeans-modules-kenai-ui-GetSourcesFromKenaiAction.instance"/>
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
             </file>
             <file name="org-netbeans-modules-kenai-ui-LoginAction.instance">
@@ -30,7 +30,7 @@
             <file name="org-netbeans-modules-kenai-ui-NewKenaiProjectAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.kenai.ui.Bundle"/>
                 <attr name="delegate" newvalue="org.netbeans.modules.kenai.ui.NewKenaiProjectAction"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#CTL_NewKenaiProjectAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#Actions/Versioning/org-netbeans-modules-kenai-ui-NewKenaiProjectAction.instance"/>
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
             </file>
             <file name="org-netbeans-modules-kenai-ui-ShareAction.instance">
@@ -42,7 +42,7 @@
             <file name="org-netbeans-modules-kenai-ui-ShareMenuAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.kenai.ui.Bundle"/>
                 <attr name="delegate" newvalue="org.netbeans.modules.kenai.ui.ShareMenuAction"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#CTL_ShareMenuAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#Actions/Team/org-netbeans-modules-kenai-ui-ShareMenuAction.instance"/>
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="noIconInMenu" stringvalue="false"/>
             </file>
@@ -71,7 +71,7 @@
             <file name="org-netbeans-modules-kenai-ui-KenaiAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.kenai.ui.Bundle"/>
                 <attr name="component" methodvalue="org.netbeans.modules.kenai.ui.KenaiTopComponent.findInstance"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#CTL_KenaiAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#Actions/Window/org-netbeans-modules-kenai-ui-KenaiAction.instance"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/kenai/ui/resources/kenai-small.png"/>
                 <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
             </file>

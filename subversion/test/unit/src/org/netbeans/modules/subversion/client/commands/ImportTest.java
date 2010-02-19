@@ -63,19 +63,20 @@ public class ImportTest extends AbstractCommandTest {
     }
 
     public void testImportFileWithAtSign() throws Exception {
-        testImportFile("@file", "targedir");
+//        testImportFile("@file", "targedir"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
         testImportFile("fi@le", "targedir");
-        testImportFile("file@", "targedir");
+        testImportFile("file@", "targedir2");
     }
 
     public void testImportFileToUrlWithAtSign() throws Exception {
-        testImportFile("file", "@targetdir");
+//        testImportFile("file", "@targetdir"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
         testImportFile("file", "target@dir");
         testImportFile("file", "targetdir@");
     }
 
     public void testImportFileWithAtSignToUrlWithAtSign() throws Exception {
-        testImportFile("@file", "@targetdir");
+        testImportFile("fi@le", "target@dir"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
+//        testImportFile("@file", "@targetdir"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
     }
 
     public void testImportFile(String fileToImport, String lastUrlPart) throws Exception {
