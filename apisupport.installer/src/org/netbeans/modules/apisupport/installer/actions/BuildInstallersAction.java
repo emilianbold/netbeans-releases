@@ -368,7 +368,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "Can`t store properties", ex);
                         }*/
                         try {
-                            /*final ExecutorTask executorTask = */ActionUtils.runTarget(findGenXml(prj), new String[]{"build"}, props);
+                            /*final ExecutorTask executorTask = */ActionUtils.runTarget(findGenXml(), new String[]{"build"}, props);
                             /*
                             executorTask.addTaskListener(new TaskListener() {
 
@@ -408,10 +408,10 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
 //            return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
 //        }
 
-        private static FileObject findGenXml(Project project) {
+        private static FileObject findGenXml() {
             return FileUtil.toFileObject(InstalledFileLocator.getDefault().locate(
                     "nbi/stub/template.xml",
-                    "org.netbeans.modules.apisupport.installer", false));
+                    "org.netbeans.libs.nbi.ant", false));
         }
 
 //        private static FileObject findInstXml(Project project) throws FileStateInvalidException {
