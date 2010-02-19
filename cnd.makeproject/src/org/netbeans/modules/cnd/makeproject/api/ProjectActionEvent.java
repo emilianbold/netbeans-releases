@@ -156,7 +156,12 @@ public final class ProjectActionEvent {
     boolean isFinalExecutable(){
         return isFinalExecutable;
     }
-    
+
+    @Override
+    public String toString() {
+        return "PAE " + type + " " + getActionName() + " exec: " + getExecutable(); // NOI18N
+    }
+
      /** Look up i18n strings here */
     private static ResourceBundle bundle;
     private static String getString(String s) {
