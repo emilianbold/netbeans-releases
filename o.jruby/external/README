@@ -1,0 +1,3 @@
+jruby-src-1.4.0.zip is the zip distribution from jruby.org with an updated version of bnd (0.0.384 - the version that comes with JRuby is 0.0.249).
+
+jruby-1.4.0/build.xml  is patched to use that version.

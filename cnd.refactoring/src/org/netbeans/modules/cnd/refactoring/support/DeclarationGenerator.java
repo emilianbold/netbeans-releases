@@ -105,7 +105,6 @@ public final class DeclarationGenerator {
         } else {
             out.append("{ ").append("this->").append(fldName).append("=").append(paramName).append(";}"); // NOI18N
         }
-        out.append("\n"); // NOI18N
         return out.toString();
     }
 

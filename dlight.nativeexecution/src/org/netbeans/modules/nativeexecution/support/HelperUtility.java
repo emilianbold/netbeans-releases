@@ -89,7 +89,7 @@ public class HelperUtility {
                         result = localFile;
                     } else {
                         final String fileName = new File(localFile).getName();
-                        final String remoteFile = new File(hinfo.getTempDir(), fileName).getAbsolutePath();
+                        final String remoteFile = hinfo.getTempDir() + '/' + fileName;
 
                         if (!HostInfoUtils.fileExists(env, remoteFile)) {
                             Future<Integer> uploadTask = CommonTasksSupport.uploadFile(localFile, env, remoteFile, 0755, null);
