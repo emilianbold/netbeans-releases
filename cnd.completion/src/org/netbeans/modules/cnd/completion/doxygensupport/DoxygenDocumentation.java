@@ -62,6 +62,7 @@ import org.netbeans.spi.editor.completion.CompletionDocumentation;
 public class DoxygenDocumentation {
 
     private static final Pattern STRIP_STARS = Pattern.compile("^[ \t]*\\*[ \t]*", Pattern.MULTILINE); // NOI18N
+    private static final String[] formatItalic = new String[] {"<i>", "</i>"}; // NOI18N
 
     static String doxygen2HTML(String doxygen) {
         doxygen = doxygen.substring(3, doxygen.length() - 2);
@@ -72,8 +73,10 @@ public class DoxygenDocumentation {
         List<String> wordEnd = new LinkedList<String>();
         List<String> lineEnd = new LinkedList<String>();
         List<String> parEnd = new LinkedList<String>();
+        String[] nextWordFormat = null;
 
         for (Token t : lex(doxygen)) {
+            System.out.println("---" + t.id + " " + t.image);
             switch (t.id) {
                 case WHITESPACE:
                     output.append(t.image);
@@ -83,7 +86,14 @@ public class DoxygenDocumentation {
                         output.append(s);
                     }
                     wordEnd.clear();
+                    if (nextWordFormat != null) {
+                        output.append(nextWordFormat[0]);
+                    }
                     output.append(t.image);
+                    if (nextWordFormat != null) {
+                        output.append(nextWordFormat[1]);
+                    }
+                    nextWordFormat = null;
                     break;
                 case LINE_END:
                     for (String s : wordEnd) {//should be empty...
@@ -124,6 +134,9 @@ public class DoxygenDocumentation {
                         case LINE: lineEnd.add(cd.htmlEnd); break;
                         case PAR: parEnd.add(cd.htmlEnd); break;
                     }
+                    if (t.image.equals("\\param")) { // NOI18N
+                        nextWordFormat = formatItalic;
+                    }
                     break;
             }
         }
@@ -137,7 +150,7 @@ public class DoxygenDocumentation {
         commands.put("\\fn", new CommandDescription(EndsOn.LINE, "<strong>", "</strong></p><p>")); // NOI18N
         commands.put("\\c", new CommandDescription(EndsOn.WORD, "<tt>", "</tt>")); // NOI18N
         commands.put("\\return", new CommandDescription(EndsOn.PAR, "<strong>Returns:</strong><br>&nbsp; ", "")); // NOI18N
-        commands.put("\\param", new CommandDescription(EndsOn.PAR, "<strong>Parameters:</strong><br>&nbsp; ", "")); // NOI18N
+        commands.put("\\param", new CommandDescription(EndsOn.PAR, "<strong>Parameter:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\sa", new CommandDescription(EndsOn.PAR, "<strong>See Also:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\brief", new CommandDescription(EndsOn.PAR, "", "")); // NOI18N
         commands.put("\\code", new CommandDescription(EndsOn.NONE, "<pre>", ""));//XXX: does not work properly - the content will still be processed, '<', '>' will not be escaped. // NOI18N
