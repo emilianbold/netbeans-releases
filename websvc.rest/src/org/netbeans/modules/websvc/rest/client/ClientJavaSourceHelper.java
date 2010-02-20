@@ -196,8 +196,12 @@ public class ClientJavaSourceHelper {
                     copy.toPhase(JavaSource.Phase.RESOLVED);
 
                     ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
-                    //String className = resourceName+"_JerseyClient"; //NOI18N
-                    ClassTree modifiedTree = addJerseyClientClass(copy, tree, className, resourceUri, restServiceDesc, saasResource, pf);
+                    ClassTree modifiedTree = null;
+                    if (className == null) {
+                        modifiedTree = modifyJerseyClientClass(copy, tree, resourceUri, restServiceDesc, saasResource, pf);
+                    } else {
+                        modifiedTree = addJerseyClientClass(copy, tree, className, resourceUri, restServiceDesc, saasResource, pf);
+                    }
 
                     copy.rewrite(tree, modifiedTree);
                 }
@@ -209,9 +213,20 @@ public class ClientJavaSourceHelper {
         }
     }
 
+    private static ClassTree modifyJerseyClientClass (
+            WorkingCopy copy,
+            ClassTree classTree,
+            String resourceURI,
+            RestServiceDescription restServiceDesc,
+            WadlSaasResource saasResource,
+            PathFormat pf) {
+
+        return generateClassArtifacts(copy, classTree, resourceURI, restServiceDesc, saasResource, pf);
+    }
+
     private static ClassTree addJerseyClientClass (
             WorkingCopy copy,
-            ClassTree tree,
+            ClassTree classTree,
             String className,
             String resourceURI,
             RestServiceDescription restServiceDesc,
@@ -228,16 +243,31 @@ public class ClientJavaSourceHelper {
                 Collections.<Tree>emptyList(),
                 Collections.<Tree>emptyList());
 
+        ClassTree modifiedInnerClass =
+                generateClassArtifacts(copy, innerClass, resourceURI, restServiceDesc, saasResource, pf);
+
+        return maker.addClassMember(classTree, modifiedInnerClass);
+    }
+
+    private static ClassTree generateClassArtifacts(
+            WorkingCopy copy,
+            ClassTree classTree,
+            String resourceURI,
+            RestServiceDescription restServiceDesc,
+            WadlSaasResource saasResource,
+            PathFormat pf) {
+
+        TreeMaker maker = copy.getTreeMaker();
         // add 3 fields
         ModifiersTree fieldModif =  maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
         Tree typeTree = JavaSourceHelper.createTypeTree(copy, "com.sun.jersey.api.client.WebResource"); //NOI18N
         VariableTree fieldTree = maker.Variable(fieldModif, "webResource", typeTree, null); //NOI18N
-        ClassTree modifiedInnerClass = maker.addClassMember(innerClass, fieldTree);
+        ClassTree modifiedClass = maker.addClassMember(classTree, fieldTree);
 
         fieldModif =  maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
         typeTree = JavaSourceHelper.createTypeTree(copy, "com.sun.jersey.api.client.Client"); //NOI18N
         fieldTree = maker.Variable(fieldModif, "client", typeTree, null); //NOI18N
-        modifiedInnerClass = maker.addClassMember(modifiedInnerClass, fieldTree);
+        modifiedClass = maker.addClassMember(modifiedClass, fieldTree);
 
         Set<Modifier> modifiersSet = new HashSet<Modifier>();
         modifiersSet.add(Modifier.PRIVATE);
@@ -246,10 +276,10 @@ public class ClientJavaSourceHelper {
         fieldModif =  maker.Modifiers(modifiersSet);
         typeTree = maker.Identifier("String"); //NOI18N
         fieldTree = maker.Variable(fieldModif, "BASE_URI", typeTree, maker.Literal(resourceURI)); //NOI18N
-        modifiedInnerClass = maker.addClassMember(modifiedInnerClass, fieldTree);
+        modifiedClass = maker.addClassMember(modifiedClass, fieldTree);
 
         // add constructor
-        ModifiersTree emtyModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+        ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
         TypeElement clientEl = copy.getElements().getTypeElement("com.sun.jersey.api.client.Client"); // NOI18N
         boolean isSubresource = (pf.getArguments().length>0);
 
@@ -279,16 +309,15 @@ public class ClientJavaSourceHelper {
                 "   webResource = client.resource(BASE_URI).path("+resURI+");"+ //NOI18N
                 "}"; //NOI18N
         MethodTree constructorTree = maker.Constructor (
-                emtyModifier,
+                methodModifier,
                 Collections.<TypeParameterTree>emptyList(),
                 paramList,
                 Collections.<ExpressionTree>emptyList(),
                 body);
-        modifiedInnerClass = maker.addClassMember(modifiedInnerClass, constructorTree);
+        modifiedClass = maker.addClassMember(modifiedClass, constructorTree);
 
         // add setResourcePath() method for SubresourceLocators
         if (isSubresource) {
-            ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
             body =
                 "{"+ //NOI18N
                 "   String resourcePath = "+getPathExpression(pf)+";"+ //NOI18N
@@ -303,7 +332,7 @@ public class ClientJavaSourceHelper {
                     Collections.<ExpressionTree>emptyList(),
                     body,
                     null); //NOI18N
-            modifiedInnerClass = maker.addClassMember(modifiedInnerClass, methodTree);
+            modifiedClass = maker.addClassMember(modifiedClass, methodTree);
         }
 
         // add wrappers for http methods (GET/POST/PUT/DELETE)
@@ -313,16 +342,15 @@ public class ClientJavaSourceHelper {
                 if (methodDesc instanceof HttpMethod) {
                     List<MethodTree> httpMethods = createHttpMethods(copy, (HttpMethod)methodDesc);
                     for (MethodTree httpMethod : httpMethods) {
-                        modifiedInnerClass = maker.addClassMember(modifiedInnerClass, httpMethod);
+                        modifiedClass = maker.addClassMember(modifiedClass, httpMethod);
                     }
                 }
             }
         } else if (saasResource != null) {
-            modifiedInnerClass = Wadl2JavaHelper.addHttpMethods(copy, modifiedInnerClass, saasResource);
+            modifiedClass = Wadl2JavaHelper.addHttpMethods(copy, modifiedClass, saasResource);
         }
 
         // add close()
-        ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
         MethodTree methodTree = maker.Method (
                 methodModifier,
                 "close", //NOI18N
@@ -334,11 +362,11 @@ public class ClientJavaSourceHelper {
                 "   client.destroy();"+ //NOI18N
                 "}", //NOI18N
                 null); //NOI18N
-        modifiedInnerClass = maker.addClassMember(modifiedInnerClass, methodTree);
 
-        ClassTree modifiedTree = tree;
-        return maker.addClassMember(modifiedTree, modifiedInnerClass);
+        modifiedClass = maker.addClassMember(modifiedClass, methodTree);
+        return modifiedClass;
     }
+
 
     private static List<MethodTree> createHttpMethods(WorkingCopy copy, HttpMethod httpMethod) {
         List<MethodTree> httpMethods = new ArrayList<MethodTree>();
