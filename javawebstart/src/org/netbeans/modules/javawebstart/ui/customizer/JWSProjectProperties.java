@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.javawebstart.ui.customizer;
 
-import com.sun.org.apache.xerces.internal.impl.dtd.models.MixedContentModel;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
