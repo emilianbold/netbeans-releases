@@ -57,6 +57,7 @@ import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * Root node for remote hosts list in Services tab
@@ -87,7 +88,7 @@ public final class HostListRootNode extends AbstractNode {
     private static class HostChildren extends ChildFactory<ExecutionEnvironment> implements PropertyChangeListener {
 
         public HostChildren() {
-            ServerList.addPropertyChangeListener(this);
+            ServerList.addPropertyChangeListener(WeakListeners.propertyChange(this, null));
         }
 
         @Override
