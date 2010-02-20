@@ -60,6 +60,8 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -103,15 +105,27 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
     @org.junit.Test
     @ForAllEnvironments(section = "remote.platforms")
     public void testGetExpander_ExecutionEnvironment_String() {
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        Task task = RequestProcessor.getDefault().post(new Runnable() {
 
+            @Override
+            public void run() {
+                try {
+                    // Make sure that host is connected!
+                    ConnectionManager.getInstance().connectTo(execEnv);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (CancellationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
         try {
-            // Make sure that host is connected!
-            ConnectionManager.getInstance().connectTo(execEnv);
-        } catch (IOException ex) {
+            task.waitFinished(20000);
+            task.cancel();
+        } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
+            assertFalse("Cannot connect to " + execEnv.getDisplayName(), false); // NOI18N
         }
 
         System.out.println("--- getExpander --- " + execEnv.toString()); // NOI18N
@@ -166,6 +180,7 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
     private void doTestPath(final ExecutionEnvironment execEnv) {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
         npb.setExecutable("env"); // NOI18N
+        npb.redirectError();
         MacroMap env = npb.getEnvironment();
         env.prependPathVariable("PATH", "/firstPath"); // NOI18N
         env.appendPathVariable("PATH", "${ZZZ}_${platform}"); // NOI18N
@@ -174,8 +189,6 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
 
         try {
             Process p = npb.call();
-            int result = p.waitFor();
-            assertEquals(0, result);
 
             List<String> pout = ProcessUtils.readProcessOutput(p);
             int ok = 0;
@@ -191,6 +204,9 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
                     }
                 }
             }
+
+            int result = p.waitFor();
+            assertEquals(0, result);
 
             assertEquals(2, ok);
         } catch (InterruptedException ex) {

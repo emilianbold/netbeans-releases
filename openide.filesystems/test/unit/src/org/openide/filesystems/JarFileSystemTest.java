@@ -59,11 +59,6 @@ public class JarFileSystemTest extends FileSystemFactoryHid {
         super(test);
     }
 
-    public static void main(String args[]) {
-        junit.textui.TestRunner.run(suite());
-    }
-
-
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(RepositoryTestHid.class);                
@@ -72,12 +67,15 @@ public class JarFileSystemTest extends FileSystemFactoryHid {
         /*failing tests*/
         suite.addTestSuite(URLMapperTestHidden.class);
         suite.addTestSuite(URLMapperTestInternalHidden.class);
-        suite.addTestSuite(FileUtilTestHidden.class);                        
+        suite.addTestSuite(FileUtilTestHidden.class);
+        suite.addTestSuite(JarFileSystemHidden.class);
         
         return new JarFileSystemTest(suite);
     }
+    @Override
     protected void destroyFileSystem (String testName) throws IOException {}
     
+    @Override
     protected FileSystem[] createFileSystem (String testName, String[] resources) throws IOException{
         File jar = TestUtilHid.locationOfTempFolder("jfstest");
         jar.mkdir();

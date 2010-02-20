@@ -1582,11 +1582,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 SourceIndexers indexers,
                 Map<SourceIndexerFactory,Boolean> votes
         ) throws IOException {
-            if (getShuttdownRequest().isRaised()) {
+            if (!RepositoryUpdater.getDefault().rootsListeners.add(root, true, getShuttdownRequest())) {
                 //Do not call the expensive recursive listener if exiting
                 return false;
             }
-            RepositoryUpdater.getDefault().rootsListeners.add(root, true);
 
             final LinkedList<Context> transactionContexts = new LinkedList<Context>();
             final LinkedList<Iterable<Indexable>> allIndexblesSentToIndexers = new LinkedList<Iterable<Indexable>>();
@@ -1764,7 +1763,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         protected final boolean indexBinary(URL root, BinaryIndexers indexers, Map<BinaryIndexerFactory, Boolean> votes) throws IOException {
             LOGGER.log(Level.FINE, "Scanning binary root: {0}", root); //NOI18N
 
-            RepositoryUpdater.getDefault().rootsListeners.add(root, false);
+            if (!RepositoryUpdater.getDefault().rootsListeners.add(root, false, getShuttdownRequest())) {
+                return false;
+            }
+            
             FileObjectCrawler crawler = null;
             boolean isFolder = false;
             boolean isUpToDate = false;
@@ -2763,12 +2765,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                 Controller controller = (Controller)IndexingController.getDefault();
                 synchronized (controller) {
-                    Map<URL,List<URL>> nextRoots2Deps = new HashMap<URL, List<URL>>();
+                    Map<URL, List<URL>> nextRoots2Deps = new HashMap<URL, List<URL>>();
                     nextRoots2Deps.putAll(depCtx.initialRoots2Deps);
                     nextRoots2Deps.keySet().removeAll(depCtx.oldRoots);
                     nextRoots2Deps.putAll(depCtx.newRoots2Deps);
                     controller.roots2Dependencies = Collections.unmodifiableMap(nextRoots2Deps);
-                    Map<URL,List<URL>> nextBinRoots2Deps = new HashMap<URL, List<URL>>();
+                    Map<URL, List<URL>> nextBinRoots2Deps = new HashMap<URL, List<URL>>();
                     nextBinRoots2Deps.putAll(depCtx.initialBinaries2InvDeps);
                     nextBinRoots2Deps.keySet().removeAll(depCtx.oldBinaries);
                     nextBinRoots2Deps.putAll(depCtx.newBinaries2InvDeps);
@@ -2867,8 +2869,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             //as it was set to optimistic value (supposed that all is scanned).
             Controller controller = (Controller)IndexingController.getDefault();
             synchronized (controller) {
-                controller.roots2Dependencies = Collections.unmodifiableMap(scannedRoots2Dependencies);
-                controller.binRoots2Dependencies = Collections.unmodifiableMap(scannedBinaries2InvDependencies);
+                controller.roots2Dependencies = Collections.unmodifiableMap(new HashMap<URL, List<URL>>(scannedRoots2Dependencies));
+                controller.binRoots2Dependencies = Collections.unmodifiableMap(new HashMap<URL, List<URL>>(scannedBinaries2InvDependencies));
             }
 
             notifyRootsRemoved (depCtx.oldBinaries, depCtx.oldRoots);
@@ -3211,7 +3213,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         
         private static void reportRootScan(URL root, long duration) {
             try {
-                Class c = Class.forName("org.netbeans.performance.test.utilities.LoggingScanClasspath",true,Thread.currentThread().getContextClassLoader()); // NOI18N
+                Class<?> c = Class.forName("org.netbeans.performance.test.utilities.LoggingScanClasspath",true,Thread.currentThread().getContextClassLoader()); // NOI18N
                 java.lang.reflect.Method m = c.getMethod("reportScanOfFile", new Class[] {String.class, Long.class}); // NOI18N
                 m.invoke(c.newInstance(), new Object[] {root.toExternalForm(), new Long(duration)});
             } catch (Exception e) {
@@ -3855,6 +3857,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
     private static final class RootsListeners {
 
+        private static final RequestProcessor RP = new RequestProcessor("Recursive Listener Init", 1, true);
+        
         private FileChangeListener sourcesListener = null;
         private FileChangeListener binariesListener = null;
         private final Map<URL, File> sourceRoots = new HashMap<URL, File>();
@@ -3895,7 +3899,30 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
         }
 
-        public void add(URL root, boolean sourceRoot) {
+        public boolean add(final URL root, final boolean sourceRoot, CancelRequest shuttdownRequest) {
+            RequestProcessor.Task task = RP.post(new Runnable() {
+                public @Override void run() {
+                    interruptibleAddRecursiveListener(root, sourceRoot);
+                }
+            });
+            for (;;) {
+                if (task.isFinished()) {
+                    break;
+                }
+                try {
+                    task.waitFinished(1000);
+                    if (shuttdownRequest.isRaised()) {
+                        //Do not call the expensive recursive listener if exiting
+                        return false;
+                    }
+                } catch (InterruptedException ex) {
+                    LOGGER.log(Level.INFO, "Interrupted", ex);
+                }
+            }
+            return true;
+        }
+
+        private void interruptibleAddRecursiveListener(URL root, boolean sourceRoot) {
             synchronized (this) {
                 if (sourceRoot) {
                     if (sourcesListener != null) {

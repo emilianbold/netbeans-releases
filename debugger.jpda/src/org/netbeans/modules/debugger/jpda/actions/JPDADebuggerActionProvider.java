@@ -87,6 +87,9 @@ implements PropertyChangeListener {
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
+        if ("methodInvoke".equals(evt.getPropagationId())) {
+            return ; // Ignore events associated with method invocations
+        }
         checkEnabled (debugger.getState ());
     }
     

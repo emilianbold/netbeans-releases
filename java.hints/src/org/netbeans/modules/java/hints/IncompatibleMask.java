@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="general")
+@Hint(category="bitwise_operations")
 public class IncompatibleMask {
 
     @TriggerPatterns ({

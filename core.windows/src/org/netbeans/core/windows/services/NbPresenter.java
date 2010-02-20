@@ -74,6 +74,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -92,7 +94,6 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicLookAndFeel;
 import javax.swing.plaf.metal.MetalLookAndFeel;
-import org.jdesktop.layout.GroupLayout;
 import org.netbeans.core.windows.Constants;
 import org.openide.DialogDescriptor;
 import org.openide.NotificationLineSupport;
@@ -343,17 +344,17 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                 GroupLayout layout = new GroupLayout(notificationPanel);
                 notificationPanel.setLayout(layout);
                 layout.setHorizontalGroup(
-                    layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
+                    layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(notificationLine)
+                        .addComponent(notificationLine)
                         .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
                 layout.setVerticalGroup(
-                    layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
+                    layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(notificationLine, FixedHeightLabel.ESTIMATED_HEIGHT, FixedHeightLabel.ESTIMATED_HEIGHT, Short.MAX_VALUE)
+                        .addComponent(notificationLine, FixedHeightLabel.ESTIMATED_HEIGHT, FixedHeightLabel.ESTIMATED_HEIGHT, Short.MAX_VALUE)
                         .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
                 enlargedToAdd.add (notificationPanel, BorderLayout.SOUTH);

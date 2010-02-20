@@ -87,6 +87,10 @@ class GoldenArchive implements Archive {
         return TestUtil.collectionDiff( getFiles( folderName, null, null, null), archive.getFiles( folderName, null, null,null) );        
     }
 
+    public JavaFileObject create (final String relativePath, final JavaFileFilterImplementation filter) {
+        throw new UnsupportedOperationException("Not needed in tests"); //NOI18N
+    }
+
     // Implementation of Archive -----------------------------------------------
     
     public GoldenArchive( File rootFolder ) {

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.modeldiscovery.provider;
 
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.AfterClass;
@@ -55,7 +56,7 @@ import org.openide.util.Utilities;
  */
 public class PackageConfigTestCase extends CndBaseTestCase {
 
-    private static final boolean TRACE = false;
+    private static final boolean TRACE = true;
 
     public PackageConfigTestCase(String testName) {
         super(testName);
@@ -97,45 +98,51 @@ public class PackageConfigTestCase extends CndBaseTestCase {
             pc.traceRecursiveConfig(packageName);
         }
         //pc.trace();
-        assert pc.getPkgConfig(packageName) != null;
-        ResolvedPath rp = pc.getResolvedPath(include);
-        assert rp != null;
-        if (TRACE) {
-            System.out.println("Resolved include paths");
-        }
-        String path = rp.getIncludePath();
-        if (TRACE) {
-            System.out.println("Include: " + include);
-        }
-        if (TRACE) {
-            System.out.println("Path:    " + path);
-        }
-        StringBuilder packages = new StringBuilder();
-        for (PackageConfiguration pkg : rp.getPackages()) {
+        assertNotNull(pc.getPkgConfig(packageName));
+        Collection<ResolvedPath> listRP = pc.getResolvedPath(include);
+        assertNotNull(listRP);
+        assertTrue(!listRP.isEmpty());
+        boolean find = false;
+        for (ResolvedPath rp : listRP) {
             if (TRACE) {
-                System.out.print("Package: " + pkg.getName());
+                System.out.println("Resolved include paths");
             }
-            packages.append(pkg.getName() + " ");
-            StringBuilder buf = new StringBuilder();
-            for (String p : pkg.getIncludePaths()) {
-                if (buf.length() > 0) {
-                    buf.append(", ");
-                }
-                buf.append(p);
-            }
-            StringBuilder buf2 = new StringBuilder();
-            for (String p : pkg.getMacros()) {
-                if (buf2.length() > 0) {
-                    buf2.append(", ");
-                }
-                buf2.append(p);
+            String path = rp.getIncludePath();
+            if (TRACE) {
+                System.out.println("Include: " + include);
             }
             if (TRACE) {
-                System.out.println("\t[" + buf.toString() + "] [" + buf2.toString() + "]");
+                System.out.println("Path:    " + path);
+            }
+            StringBuilder packages = new StringBuilder();
+            for (PackageConfiguration pkg : rp.getPackages()) {
+                if (TRACE) {
+                    System.out.print("Package: " + pkg.getName());
+                }
+                packages.append(pkg.getName()).append(" ");
+                StringBuilder buf = new StringBuilder();
+                for (String p : pkg.getIncludePaths()) {
+                    if (buf.length() > 0) {
+                        buf.append(", ");
+                    }
+                    buf.append(p);
+                }
+                StringBuilder buf2 = new StringBuilder();
+                for (String p : pkg.getMacros()) {
+                    if (buf2.length() > 0) {
+                        buf2.append(", ");
+                    }
+                    buf2.append(p);
+                }
+                if (TRACE) {
+                    System.out.println("\t[" + buf.toString() + "] [" + buf2.toString() + "]");
+                }
+            }
+            if (packages.toString().indexOf(packageName + " ") >= 0) {
+                find = true;
             }
         }
-        assert packages.toString().indexOf(packageName + " ") >= 0;
-
+        assertTrue(find);
     }
 
 // World is not yet ready for this test...

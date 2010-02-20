@@ -87,6 +87,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         if (isMove) {
             nameLabel.setVisible(false);
             projectName.setVisible(false);
+            warningTextArea.setVisible(false);
         }
         
         if (Boolean.getBoolean("org.netbeans.modules.project.uiapi.DefaultProjectOperations.showProgress")) {

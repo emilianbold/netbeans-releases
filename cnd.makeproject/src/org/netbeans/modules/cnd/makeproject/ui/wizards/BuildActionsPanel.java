@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
 import org.openide.WizardDescriptor;
@@ -137,7 +136,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private void makefileFieldChanged() {
         File makefile = new File(makefileName);
         if (makefile.getParent() != null) {
-            buildCommandWorkingDirTextField.setText(FilePathAdaptor.normalize(makefile.getParent()));
+            buildCommandWorkingDirTextField.setText(IpeUtils.normalize(makefile.getParent()));
             String buildCommand = MessageFormat.format(DEF_BUILD_COMMAND_FMT, new Object[]{DEF_BUILD_COMMAND, makefile.getName()});
             String cleanCommand = MessageFormat.format(DEF_CLEAN_COMMAND_FMT, new Object[]{DEF_BUILD_COMMAND, makefile.getName()});
             buildCommandTextField.setText(buildCommand);
@@ -406,7 +405,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             return;
         }
         //String path = IpeUtils.toRelativePath(buildCommandWorkingDirTextField.getText(), fileChooser.getSelectedFile().getPath()); // FIXUP: not always relative path
-        String path = FilePathAdaptor.normalize(fileChooser.getSelectedFile().getPath());
+        String path = IpeUtils.normalize(fileChooser.getSelectedFile().getPath());
         outputTextField.setText(path);
     }//GEN-LAST:event_outputBrowseButtonActionPerformed
     
@@ -435,7 +434,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             return;
         }
         String path = fileChooser.getSelectedFile().getPath();
-        path = FilePathAdaptor.normalize(path);
+        path = IpeUtils.normalize(path);
         buildCommandWorkingDirTextField.setText(path);
     }//GEN-LAST:event_buildCommandWorkingDirBrowseButtonActionPerformed
     

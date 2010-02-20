@@ -44,63 +44,13 @@ package org.netbeans.modules.cnd.makeproject.api;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 
 public final class MakeProjectOptions {
+    public static final int REL_OR_ABS = 0;
+    public static final int REL = 1;
+    public static final int ABS = 2;
 
     private MakeProjectOptions() {
     }
 
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public static void setDefaultMakeCommand(String defaultMakeCommand) {
-        //CppSettings.getDefault().setMakeName(defaultMakeCommand);
-    }
-
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public static String getDefaultMakeCommand() {
-        return null; //CppSettings.getDefault().getMakeName();
-    }
-    
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public static void setDefaultMakeOptions(String defaultMakeOptions) {
-        MakeOptions.setDefaultMakeOptions(defaultMakeOptions);
-    }
-
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public static String getDefaultMakeOptions() {
-        return MakeOptions.getDefaultMakeOptions();
-    }
-
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public static void setFortranSupport(boolean fortran) {
-        //CppSettings.getDefault().setFortranEnabled(fortran);
-    }
-
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public static boolean getFortranSupport() {
-        return true;
-        //return CppSettings.getDefault().isFortranEnabled();
-    }
-    
-    public static void setDepencyChecking(boolean val) {
-        MakeOptions.getInstance().setDepencyChecking(val);
-    }
-    
     public static boolean getDepencyChecking() {
         return MakeOptions.getInstance().getDepencyChecking();
     }
@@ -109,8 +59,7 @@ public final class MakeProjectOptions {
         return MakeOptions.getInstance().getShowProfiling();
     }
 
-    public static void setShowIndicatorsOnRun(boolean val) {
-        MakeOptions.getInstance().setShowProfiling(val);
+    public static int getPathMode() {
+        return MakeOptions.getInstance().getPathMode();
     }
-
 }

@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <!-- templates -->
     <folder name="Templates">
-
         <folder name="OSGI">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.osgi.Bundle"/>
             <attr name="position" intvalue="723"/>
-
             <file name="Activator.java" url="templates/activator.java.template">
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
@@ -15,27 +12,22 @@
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.osgi.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.maven.osgi.ActivatorIterator" />
-                <!--attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/EmptyJUnitTest.html"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/-->
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/osgi/templates/new_OSGi_activator.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/osgi/templates/new_OSGi_file_16.png"/>
                 <attr name="templateCategory" stringvalue="osgi"/>
             </file>
         </folder>
-    </folder>
-    <folder name="Projects">
-        <folder name="org-netbeans-modules-maven">
-            <folder name="Archetypes">
-                <file name="osgi-archetype">
-                    <attr name="position" intvalue="329"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.osgi.Bundle"/>
-                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
-                    <attr name="artifactId" stringvalue="osgi-archetype"/>
-                    <attr name="version" stringvalue="1.0-SNAPSHOT"/>
-                    <attr name="repository" stringvalue="http://snapshots.repository.codehaus.org"/>
-                    <attr name="nameBundleKey" stringvalue="TIT_OSGI_Archetype"/>
-                    <attr name="descriptionBundleKey" stringvalue="DESC_OSGI_Archetype"/>
+        <folder name="Project">
+            <folder name="Maven2">
+                <file name="OSGi">
+                    <attr name="position" intvalue="290"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.SimpleWizardIterator.createOSGiIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/OSGiDescription.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/maven_osgi_16.png"/>
+                    <attr name="template" boolvalue="true"/>
                 </file>
             </folder>
         </folder>
     </folder>
-
 </filesystem>

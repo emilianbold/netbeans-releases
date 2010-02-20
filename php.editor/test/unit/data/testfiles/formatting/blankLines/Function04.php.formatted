@@ -2,7 +2,7 @@
 
 final class TestFianl extends Bla {
     
-    final function test1 () {
+    final function test1() {
         
     }
     

@@ -52,6 +52,7 @@ public class TinyTest extends TestBase {
     public TinyTest(String name) {
         super(name, Tiny.class);
     }
+    
     public void testPositive1() throws Exception {
         performFixTest("test/Test.java",
                        "package test;\n" +
@@ -78,6 +79,106 @@ public class TinyTest extends TestBase {
                             "        \"a\".replaceAll(\",\", \"/\");\n" +
                             "    }\n" +
                             "}\n");
+    }
+
+    public void testIgnoredNewObject1() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public void test(String[] args) {\n" +
+                            "        new Object();\n" +
+                            "    }\n" +
+                            "}\n",
+                            "3:8-3:21:verifier:new Object");
+    }
+
+    public void testIgnoredNewObject2() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "        public static void test() {\n" +
+                            "            new TT().new T(1, 3);\n" +
+                            "        }\n" +
+                            "        private class T {\n" +
+                            "            public T(int i, int j) {}" +
+                            "        }\n" +
+                            "}\n",
+                            "3:12-3:33:verifier:new Object");
+    }
+
+    public void testSystemArrayCopy() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "        public static void test(Object o1, Object[] o2, Object o3) {\n" +
+                            "            System.arraycopy(o1, 0, o2, 0, 1);\n" +
+                            "            System.arraycopy(o2, 0, o3, 0, 1);\n" +
+                            "            System.arraycopy(o2, 0 - 1, o2, 0 + 2 - 4, -1);\n" +
+                            "        }\n" +
+                            "}\n",
+                            "3:29-3:31:verifier:...o1 not an instance of an array type",
+                            "4:36-4:38:verifier:...o3 not an instance of an array type",
+                            "5:33-5:38:verifier:0-1 is negative",
+                            "5:44-5:53:verifier:0+2-4 is negative",
+                            "5:55-5:57:verifier:-1 is negative");
+    }
+
+    public void testEqualsNull() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    public boolean test(String arg) {\n" +
+                       "        return arg.equals(null);\n" +
+                       "    }\n" +
+                       "}\n",
+                       "3:15-3:31:verifier:ERR_equalsNull",
+                       "FIX_equalsNull",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public boolean test(String arg) {\n" +
+                        "        return arg == null;\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+
+    public void testResultSet1() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public Object test(java.sql.ResultSet set) {\n" +
+                            "        return set.getBoolean(0);\n" +
+                            "    }\n" +
+                            "}\n",
+                            "3:30-3:31:verifier:ERR_ResultSetZero");
+    }
+
+    public void testResultSet2() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public Object test(R set) {\n" +
+                            "        return set.getBoolean(0);\n" +
+                            "    }" +
+                            "    private interface R extends java.sql.ResultSet {" +
+                            "        public boolean getBoolean(int i);" +
+                            "    }\n" +
+                            "}\n",
+                            "3:30-3:31:verifier:ERR_ResultSetZero");
+    }
+
+    public void testResultSet180027() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public Object test(R set, int i) {\n" +
+                            "        set.getBoolean(0);\n" +
+                            "        return set.getBoolean(i + 1);\n" +
+                            "    }" +
+                            "    private interface R extends java.sql.ResultSet {" +
+                            "        public boolean getBoolean(int i);" +
+                            "    }\n" +
+                            "}\n",
+                            "3:23-3:24:verifier:ERR_ResultSetZero");
     }
 
     @Override

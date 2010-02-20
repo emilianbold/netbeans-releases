@@ -368,12 +368,13 @@ public class Util {
      * nor create the persistence.xml file if it  does not exist.
      * If some parameters are null, try to find default one or best match
      * @param project the current project
+     * @param name name for pu, if null default will be used
      * @param preselectedDB the name of the database connection that should be preselected in the wizard.
      * @tableGeneration the table generation strategy that should be preselected in the wizard.
      * @return the created PersistenceUnit or null if nothing was created, for example
      * if wizard was cancelled.
      */
-    public static PersistenceUnit buildPersistenceUnitUsingData(Project project,
+    public static PersistenceUnit buildPersistenceUnitUsingData(Project project, String puName,
             String preselectedDB, TableGeneration tableGeneration, Provider provider) {
 
         boolean isContainerManaged = Util.isContainerManaged(project);
@@ -419,7 +420,7 @@ public class Util {
             punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
         }
         if (isContainerManaged) {
-            if(preselectedDB == null){
+            if(preselectedDB == null || preselectedDB.trim().equals("")){
                 //find first with default/sample part in name
                 JPADataSourceProvider dsProvider = project.getLookup().lookup(JPADataSourceProvider.class);
                 if(dsProvider.getDataSources().size()>0)preselectedDB = dsProvider.getDataSources().get(0).getDisplayName();
@@ -431,16 +432,20 @@ public class Util {
                 punit.setProvider(provider.getProviderClass());
             }
         } else {
-            ConnectionManager cm = ConnectionManager.getDefault();
-            DatabaseConnection[] connections = cm.getConnections();
-            DatabaseConnection connection = connections!=null && connections.length>0 ? connections[0] : null;
-            if(preselectedDB != null){
+            DatabaseConnection connection = null;
+            if(preselectedDB != null && !preselectedDB.trim().equals("")){
                 connection = ConnectionManager.getDefault().getConnection(preselectedDB);
+            }
+            if(connection == null){
+                ConnectionManager cm = ConnectionManager.getDefault();
+                DatabaseConnection[] connections = cm.getConnections();
+                connection = connections!=null && connections.length>0 ? connections[0] : null;
             }
             punit = ProviderUtil.buildPersistenceUnit("tmp", provider, connection, version);
             punit.setTransactionType("RESOURCE_LOCAL"); //NOI18N
         }
-        punit.setName(getCandidateName(project));
+        if(puName == null) puName = getCandidateName(project);
+        punit.setName(puName);
         ProviderUtil.setTableGeneration(punit, tableGeneration !=null ? tableGeneration.name() : TableGeneration.NONE.name(), project);
         return punit;
     }

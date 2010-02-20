@@ -103,7 +103,10 @@ public class CachingArchive implements Archive {
             return l;
         }
     }          
-    
+
+    public JavaFileObject create (final String relativePath, final JavaFileFilterImplementation filter) {
+        throw new UnsupportedOperationException("Write into archives not supported");   //NOI18N
+    }
 
     private String getString(int off, int len) {
         byte[] name = new byte[len];

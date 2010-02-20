@@ -51,6 +51,7 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.ruby.debugger.EditorUtil;
 import org.netbeans.modules.ruby.debugger.Util;
+import org.netbeans.spi.debugger.ActionsProvider.Registration;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.text.Line;
@@ -60,6 +61,7 @@ import org.rubyforge.debugcommons.RubyDebuggerException;
 /**
  * Provides actions for adding and removing Ruby breakpoints.
  */
+@Registration(actions={"toggleBreakpoint"}, activateForMIMETypes={"text/x-ruby", "application/x-httpd-eruby"})
 public final class RubyBreakpointActionProvider extends ActionsProviderSupport
         implements PropertyChangeListener {
     

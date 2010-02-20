@@ -49,6 +49,8 @@ import com.sun.source.util.TreePath;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
@@ -175,7 +177,12 @@ public class LoggerStringConcat {
 
         for (List<TreePath> element : sorted) {
             if (element.size() == 1 && element.get(0).getLeaf().getKind() == Kind.STRING_LITERAL) {
-                workingLiteral.append((String) ((LiteralTree) element.get(0).getLeaf()).getValue());
+                String literalValue = (String) ((LiteralTree) element.get(0).getLeaf()).getValue();
+
+                literalValue = literalValue.replaceAll("'", "''");
+                literalValue = literalValue.replaceAll(Pattern.quote("{"), Matcher.quoteReplacement("'{'"));
+                literalValue = literalValue.replaceAll(Pattern.quote("}"), Matcher.quoteReplacement("'}'"));
+                workingLiteral.append(literalValue);
             } else {
                 if (element.size() == 1 && !Utilities.isConstantString(wc, element.get(0))) {
                     workingLiteral.append("{");

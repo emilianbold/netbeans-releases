@@ -77,10 +77,12 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
         this.isContainerManaged = Util.isContainerManaged(project);
     }
     
+    @Override
     public void addChangeListener(javax.swing.event.ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
     
+    @Override
     public java.awt.Component getComponent() {
         if (panel == null) {
             if (isContainerManaged) {
@@ -91,6 +93,7 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
                 panel = jdbcPanel;
             }
             panel.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (evt.getPropertyName().equals(PersistenceUnitWizardPanel.IS_VALID)) {
                         Object newvalue = evt.getNewValue();
@@ -104,10 +107,12 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
         return panel;
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelp() {
         return new HelpCtx(PersistenceUnitWizardDescriptor.class);
     }
     
+    @Override
     public boolean isValid() {
         if (wizardDescriptor == null) {
             return true;
@@ -135,43 +140,52 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
     }
     
     
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         project = Templates.getProject(wizardDescriptor);
     }
     
+    @Override
     public void removeChangeListener(javax.swing.event.ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
     
+    @Override
     public void storeSettings(Object settings) {
     }
     
+    @Override
     public boolean isFinishPanel() {
         return isValid();
     }
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
     }
     
-    String getPersistenceUnitName() {
+    public String getPersistenceUnitName() {
         return panel.getPersistenceUnitName();
     }
     
-    DatabaseConnection getPersistenceConnection() {
+    public DatabaseConnection getPersistenceConnection() {
         return jdbcPanel == null ? null : jdbcPanel.getPersistenceConnection();
     }
     
-    String getDatasource() {
+    public String getDatasource() {
         return datasourcePanel == null ? null : datasourcePanel.getDatasource();
     }
+
+    public String getDBResourceSelection() {
+        return getPersistenceConnection()!=null ? getPersistenceConnection().getName() : getDatasource();
+    }
     
-    boolean isContainerManaged() {
+    public boolean isContainerManaged() {
         return isContainerManaged;
     }
     
-    boolean isJTA() {
+    public boolean isJTA() {
         return datasourcePanel == null ? false : datasourcePanel.isJTA();
     }
     
@@ -179,15 +193,15 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
         return datasourcePanel == null ? false : datasourcePanel.isNonDefaultProviderEnabled();
     }
     
-    String getNonDefaultProvider() {
+    public String getNonDefaultProvider() {
         return datasourcePanel == null ? null : datasourcePanel.getNonDefaultProvider();
     }
     
-    String getTableGeneration() {
+    public String getTableGeneration() {
         return panel.getTableGeneration();
     }
     
-    Provider getSelectedProvider(){
+    public Provider getSelectedProvider(){
         return panel.getSelectedProvider();
     }
 }

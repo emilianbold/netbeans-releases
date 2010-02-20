@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints.introduce;
 
@@ -86,71 +86,71 @@ public class CopyFinderTest extends NbTestCase {
     public void testSimple1() throws Exception {
         performTest("package test; public class Test {public void test() {int i = 0; y = i + i; y = i + i;}}", 90 - 22, 95 - 22, 101 - 22, 106 - 22);
     }
-    
+
 //    public void testSimple2() throws Exception {
 //        performTest("package test; public class Test {public void test() {int i = 0; y = i + i; y = i + i + i;}}", 90 - 22, 95 - 22, 101 - 22, 106 - 22);
 //    }
-    
+
     public void testSimple3() throws Exception {
         performTest("package test; public class Test {public void test() {int i = System.currentTimeMillis(); y = System.currentTimeMillis();}}", 83 - 22, 109 - 22, 115 - 22, 141 - 22);
     }
-    
+
     public void testSimple4() throws Exception {
         performTest("package test; import java.util.ArrayList; public class Test {public void test() {Object o = new ArrayList<String>();o = new ArrayList<String>();}}", 114 - 22, 137- 22, 142 - 22, 165 - 22);
     }
-    
+
     public void testSimple5() throws Exception {
         performTest("package test; public class Test {public void test() {Object o = null; String s = (String) o; s = (String) o; s = (String) null; o = (Object) o;}}", 103 - 22, 113 - 22, 119 - 22, 129 - 22);
     }
-    
+
     public void testSimple6() throws Exception {
         performTest("package test; public class Test {public void test() {int i = 0; y = i + i; y = i + i;} public void test2() {int i = 0; y = i + i; y = i + i;}}", 90 - 22, 95 - 22, 101 - 22, 106 - 22);
     }
-    
+
     public void testSimple7() throws Exception {
         performTest("package test; public class Test {public void test() {int i = 0; y = i != 0 ? i + i : i * i; y = i != 0 ? i + i : i * i; y = i != 1 ? i + i : i * i; y = i == 0 ? i + i : i * i; y = i != 0 ? i * i : i * i; y = i != 0 ? i + i : i + i; y = i != 0 ? i + i : i * 1;}}", 90 - 22, 112 - 22, 118 - 22, 140 - 22);
     }
-    
+
     public void testSimple8() throws Exception {
         performTest("package test; public class Test {public void test() {int i = 0; int y = -i; y = -i; y = +i; y = +y;}}", 94 - 22, 96 - 22, 102 - 22, 104 - 22);
     }
-    
+
     public void testSimple9() throws Exception {
         performTest("package test; public class Test {public void test() {int i = 0; int y = i *= 9; y = i *= 9; y = i /= 9; y = i *= 8; y = y *= 9;}}", 94 - 22, 100 - 22, 106 - 22, 112 - 22);
     }
-    
+
     public void testSimple10() throws Exception {
         performTest("package test; public class Test {public void test() {int[] i = null; int y = i[1]; y = i[1]; y = i[y]; y = i[0];}}", 99 - 22, 103 - 22, 109 - 22, 113 - 22);
     }
-    
+
     public void testSimple11() throws Exception {
         performTest("package test; public class Test {public void test() {int[] i = new int[0]; i = new int[0]; i = new int[1];}}", 85 - 22, 95 - 22, 101 - 22, 111 - 22);
     }
-    
+
     public void testSimple12() throws Exception {
         performTest("package test; public class Test {public void test() {int[] i = new int[1]; i = new int[1]; i = new int[0];}}", 85 - 22, 95 - 22, 101 - 22, 111 - 22);
     }
-    
+
     public void testSimple13() throws Exception {
         performTest("package test; public class Test {public void test() {int i = 0; int y = (i); y = (i); y = i;}}", 94 - 22, 97 - 22, 103 - 22, 106 - 22);
     }
-    
+
     public void testSimple14() throws Exception {
         performTest("package test; public class Test {public void test() {Object o = null; boolean b = o instanceof String; b = o instanceof String; b = o instanceof Object;}}", 104 - 22, 123 - 22, 129 - 22, 148 - 22);
     }
-    
+
     public void testSimple15() throws Exception {
         performTest("package test; public class Test {private int x = 1; private int y = 1; public void test() {int x = 1; int y = 1;}}", 90 - 22, 91 - 22, 71 - 22, 72 - 22, 121 - 22, 122 - 22, 132 - 22, 133 - 22);
     }
-    
+
     public void testSimple16() throws Exception {
         performTest("package test; public class Test {public void test(int i) {int y = \"\".length(); test(\"\".length());} }", 88 - 22, 99 - 22, 106 - 22, 117 - 22);
     }
-    
+
     public void testSimple17() throws Exception {
         performTest("package test; public class Test {public void test2() {int a = test(test(test(1))); a = test(test(test(1))); a = test(test(test(1)));} public int test(int i) {return 0;} }", 94 - 22, 101 - 22, 119 - 22, 126 - 22, 144 - 22, 151 - 22);
     }
-    
+
     public void testMemberSelectAndIdentifierAreSame() throws Exception {
         performTest("package test; import static java.lang.String.*; public class Test {public void test1() {|String.valueOf(2)|; |valueOf(2)|;} }");
     }
@@ -603,7 +603,7 @@ public class CopyFinderTest extends NbTestCase {
                              true,
                              true);
     }
-    
+
     public void testSimpleRemapping1() throws Exception {
         performRemappingTest("package test;\n" +
                              "public class Test {\n" +
@@ -671,6 +671,13 @@ public class CopyFinderTest extends NbTestCase {
                              "i");
     }
     
+    public void testVariableMemberSelect() throws Exception {
+        performVariablesTest("package test; public class Test {public void test(String str) { str.length(); str.length(); } public void test1(String str) { str.length(); str.isEmpty(); } }",
+                             "{ $str.$method(); $str.$method(); }",
+                             new Pair[0],
+                             new Pair[] {new Pair<String, String>("$method", "length")});
+    }
+
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }
@@ -966,8 +973,9 @@ public class CopyFinderTest extends NbTestCase {
         Set<List<Integer>> realSpans = new HashSet<List<Integer>>();
 
         for (MethodDuplicateDescription mdd : result) {
-            int startPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), mdd.block.getStatements().get(mdd.dupeStart));
-            int endPos = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), mdd.block.getStatements().get(mdd.dupeEnd));
+            List<? extends StatementTree> parentStatements = CopyFinder.getStatements(mdd.firstLeaf);
+            int startPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), parentStatements.get(mdd.dupeStart));
+            int endPos = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), parentStatements.get(mdd.dupeEnd));
 
             realSpans.add(Arrays.asList(startPos, endPos));
         }

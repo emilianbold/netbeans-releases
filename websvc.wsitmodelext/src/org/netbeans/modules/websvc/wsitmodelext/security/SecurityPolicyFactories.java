@@ -360,6 +360,22 @@ public class SecurityPolicyFactories {
     }
     
     @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
+    public static class ProtectTokensFactory extends ElementFactory {
+        @Override
+        public Set<QName> getElementQNames() {
+            HashSet<QName> set = new HashSet<QName>();
+            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+                set.add(SecurityPolicyQName.PROTECTTOKENS.getQName(cfgVersion));
+            }
+            return Collections.unmodifiableSet(set);
+        }
+        @Override
+        public WSDLComponent create(WSDLComponent context, Element element) {
+            return new ProtectTokensImpl(context.getModel(), element);
+        }
+    }
+
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class EncryptSignatureFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

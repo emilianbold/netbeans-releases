@@ -158,7 +158,8 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
             }
             b = mb;
         }
-        if (typeID.equals (ClassLoadUnloadBreakpoint.class.getName ())) {
+        if (typeID.equals (ClassLoadUnloadBreakpoint.class.getName ()) ||
+                typeID.equals (ClassLoadUnloadBreakpoint.class.getName ()+"$ClassLoadUnloadBreakpointImpl")) {
             ClassLoadUnloadBreakpoint cb = ClassLoadUnloadBreakpoint.create (
                 properties.getInt (
                     ClassLoadUnloadBreakpoint.PROP_BREAKPOINT_TYPE, 
@@ -182,7 +183,8 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
             }
             b = cb;
         }
-        if (typeID.equals (ExceptionBreakpoint.class.getName ())) {
+        if (typeID.equals (ExceptionBreakpoint.class.getName ()) ||
+                typeID.equals (ExceptionBreakpoint.class.getName ()+"$ExceptionBreakpointImpl")) {
             ExceptionBreakpoint eb = ExceptionBreakpoint.create (
                 properties.getString (
                     ExceptionBreakpoint.PROP_EXCEPTION_CLASS_NAME, 
@@ -212,8 +214,8 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
         if (typeID.equals (FieldBreakpoint.class.getName ()) ||
                 typeID.equals (FieldBreakpoint.class.getName ()+"$FieldBreakpointImpl")) {
             FieldBreakpoint fb = FieldBreakpoint.create (
-                properties.getString (FieldBreakpoint.PROP_CLASS_NAME, null),
-                properties.getString (FieldBreakpoint.PROP_FIELD_NAME, null),
+                properties.getString (FieldBreakpoint.PROP_CLASS_NAME, ""),
+                properties.getString (FieldBreakpoint.PROP_FIELD_NAME, ""),
                 properties.getInt (
                     FieldBreakpoint.PROP_BREAKPOINT_TYPE, 
                     FieldBreakpoint.TYPE_ACCESS
@@ -227,7 +229,8 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
             }
             b = fb;
         }
-        if (typeID.equals (ThreadBreakpoint.class.getName ())) {
+        if (typeID.equals (ThreadBreakpoint.class.getName ()) ||
+                typeID.equals (ThreadBreakpoint.class.getName ()+"ThreadBreakpoint$Impl")) {
             ThreadBreakpoint tb = ThreadBreakpoint.create (
             );
             tb.setBreakpointType (

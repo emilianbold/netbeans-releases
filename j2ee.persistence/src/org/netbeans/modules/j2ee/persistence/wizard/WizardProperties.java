@@ -46,6 +46,6 @@ public class WizardProperties {
     /**
      * Key used for the created persistence unit.
      */
-    public static final String PERSISTENCE_UNIT = "PersistenceUnit"; //NOI18N
-    
+    //public static final String PERSISTENCE_UNIT = "PersistenceUnit"; //NOI18N
+    public static final String CREATE_PERSISTENCE_UNIT = "CreatePersistenceUnit"; //NOI18N
 }

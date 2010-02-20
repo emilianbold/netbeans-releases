@@ -560,13 +560,13 @@ made subject to such option by the copyright holder.
         </question>
 -->
  <answer id="exec-component">
-     <api name="DataFolder.Index.reorderable" type="import" category="friend" group="property">
+     <api name="DataFolder.Index.reorderable" type="import" category="friend" group="systemproperty">
          Claims that layer filesystems are reorderable so that <code>DataFolder</code> will give them an <code>Index</code>.
      </api>
-     <api name="OpenIDE-Folder-Order" type="import" category="friend" group="property">
+     <api name="OpenIDE-Folder-Order" type="import" category="friend" group="systemproperty">
          Specially interprets requests from <code>FolderOrder</code> to reorder layer folders.
      </api>
-     <api name="MultiFileObject.VoidValue" type="import" category="private" group="property">
+     <api name="MultiFileObject.VoidValue" type="import" category="private" group="systemproperty">
          Specially interprets requests from <code>MultiFileSystem</code> to store null attribute values.
          Otherwise would be serializing special quasi-nulls into the XML layer, which is unacceptable
          (and anyway not what folder ordering semantics requires, in a development-time context).

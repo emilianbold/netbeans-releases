@@ -82,7 +82,12 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.windows.TopComponent;
 import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
 
 /**
@@ -349,11 +354,6 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
             nextAction.setEnabled(false);
         }
         prevAction.setEnabled(currentIndex > 0 || currentDifferenceIndex > 0);
-
-        if (splitPane != null) {
-            dividerSet = false;
-            updateSplitLocation();
-        }
     }
     
     @Override
@@ -377,6 +377,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                     updateSplitLocation();
                 }
             });
+            return;
         }
         dividerSet = true;
         JTable jt = fileTable.getTable();
@@ -423,6 +424,14 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
             File baseFile = setups[currentModelIndex].getBaseFile();
             if (baseFile != null) {
                 fileObj = FileUtil.toFileObject(baseFile);
+            }
+            TopComponent tc = (TopComponent) getClientProperty(TopComponent.class);
+            if (tc != null) {
+                Node node = Node.EMPTY;
+                if (fileObj != null) {
+                    node = new AbstractNode(Children.LEAF, Lookups.singleton(fileObj));
+                }
+                tc.setActivatedNodes(new Node[] {node});
             }
             EditorCookie editorCookie = editorCookies[currentModelIndex];
             if (editorCookie instanceof EditorCookie.Observable) {
@@ -728,6 +737,10 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                             }
                             if (currentModelIndex == fi) {
                                 setDiffIndex(currentIndex, 0);
+                            }
+                            if (splitPane != null) {
+                                dividerSet = false;
+                                updateSplitLocation();
                             }
                         }
                     });

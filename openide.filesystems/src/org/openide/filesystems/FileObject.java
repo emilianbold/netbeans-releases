@@ -117,7 +117,12 @@ public abstract class FileObject extends Object implements Serializable {
     public FileObject copy(FileObject target, String name, String ext)
     throws IOException {
         if (isFolder()) {
-            throw new FSException(NbBundle.getMessage(FileObject.class, "EXC_FolderCopy"));
+            FileObject peer = target.createFolder(name);
+            FileUtil.copyAttributes(this, peer);
+            for (FileObject fo : getChildren()) {
+                fo.copy(peer, fo.getName(), fo.getExt());
+            }
+            return peer;
         }
 
         FileObject dest = FileUtil.copyFileImpl(this, target, name, ext);

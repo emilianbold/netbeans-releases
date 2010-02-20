@@ -44,6 +44,7 @@
 
 #include "rfs_util.h"
 
+__attribute__ ((visibility ("hidden")))
 void report_error(const char *format, ...) {
     va_list args;
     va_start (args, format);
@@ -51,7 +52,8 @@ void report_error(const char *format, ...) {
     va_end (args);
 }
 
-#if TRACE
+__attribute__ ((visibility ("hidden")))
+bool trace_flag = 0;
 
 static const char* pattern = "%u #%s[%d]: ";
 static const char* prefix = "";
@@ -63,44 +65,51 @@ static unsigned long get_timestamp() {
     return tp.tv_sec*1000000000+tp.tv_nsec;
 }
 
-void trace(const char *format, ...) {
-    if (!trace_file) {
-        trace_file = stderr;
-    }
-    fprintf(trace_file, pattern, get_timestamp(), prefix, getpid());
-    va_list args;
-    va_start (args, format);
-    vfprintf(trace_file, format, args);
-    va_end (args);
-    fflush(trace_file);
-}
-
-void trace_startup(const char* _prefix, const char* env_var, const char* binary) {
-    prefix = _prefix;
-    char *file_name = env_var ? getenv(env_var) : NULL;
-    binary = binary ? binary : "";
-    if (file_name) {
-        trace_file = fopen(file_name, "a");
-        if (trace_file) {
-            fprintf(stderr, "Redirecting trace to %s\n", file_name);
-            fprintf(trace_file, "\n\n--------------------\n");
-            fflush(trace_file);
-        } else {
-            fprintf(stderr, "Redirecting trace to %s failed.\n", file_name);
+__attribute__ ((visibility ("hidden")))
+void _trace(const char *format, ...) {
+    if (trace_flag) {
+        if (!trace_file) {
             trace_file = stderr;
         }
-    } else {
-        trace_file = stderr;
-    }
-    char dir[PATH_MAX];
-    getcwd(dir, sizeof dir);
-    trace("%s started in %s\n", binary, dir);
-}
-
-void trace_shutdown() {
-    if (trace_file && trace_file != stderr) {
-        fclose(trace_file);
+        fprintf(trace_file, pattern, get_timestamp(), prefix, getpid());
+        va_list args;
+        va_start (args, format);
+        vfprintf(trace_file, format, args);
+        va_end (args);
+        fflush(trace_file);
     }
 }
 
-#endif
+__attribute__ ((visibility ("hidden")))
+void _trace_startup(const char* _prefix, const char* env_var, const char* binary) {
+    if (trace_flag) {
+        prefix = _prefix;
+        char *file_name = env_var ? getenv(env_var) : NULL;
+        binary = binary ? binary : "";
+        if (file_name) {
+            trace_file = fopen(file_name, "a");
+            if (trace_file) {
+                fprintf(stderr, "Redirecting trace to %s\n", file_name);
+                fprintf(trace_file, "\n\n--------------------\n");
+                fflush(trace_file);
+            } else {
+                fprintf(stderr, "Redirecting trace to %s failed.\n", file_name);
+                trace_file = stderr;
+            }
+        } else {
+            trace_file = stderr;
+        }
+        char dir[PATH_MAX];
+        getcwd(dir, sizeof dir);
+        trace("%s started in %s\n", binary, dir);
+    }
+}
+
+__attribute__ ((visibility ("hidden")))
+void _trace_shutdown() {
+    if (trace_flag) {
+        if (trace_file && trace_file != stderr) {
+            fclose(trace_file);
+        }
+    }
+}

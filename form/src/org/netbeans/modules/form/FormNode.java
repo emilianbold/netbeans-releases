@@ -72,11 +72,13 @@ public class FormNode extends AbstractNode implements FormCookie {
     }
 
     // FormCookie implementation
+    @Override
     public final FormModel getFormModel() {
         return formModel;
     }
 
     // FormCookie implementation
+    @Override
     public final Node getOriginalNode() {
         return this;
     }
@@ -184,6 +186,7 @@ public class FormNode extends AbstractNode implements FormCookie {
 
     static class Handle implements Node.Handle {
         static final long serialVersionUID = 1;
+        @Override
         public Node getNode() throws java.io.IOException {
             return new ClosingNode();
         }
@@ -203,6 +206,7 @@ public class FormNode extends AbstractNode implements FormCookie {
             java.awt.EventQueue.invokeLater(this);
             return super.getPropertySets();
         }
+        @Override
         public void run() {
             this.fireNodeDestroyed();
         }

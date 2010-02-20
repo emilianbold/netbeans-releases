@@ -73,7 +73,7 @@ made subject to such option by the copyright holder.
                     <attr name="template" boolvalue="true"/>
                 </file>
                 <file name="Existing">
-                    <attr name="position" intvalue="300"/>
+                    <attr name="position" intvalue="1000"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.ExistingWizardIterator.createIterator"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/ExistingDescription.html"/>

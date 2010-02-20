@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
@@ -67,7 +68,10 @@ import org.openide.util.Exceptions;
  */
 public class BreakpointGroup {
 
-    static enum Group { NO, CUSTOM, LANGUAGE, TYPE, PROJECT, FILE, NESTED }
+    static enum Group { NO, CUSTOM, LANGUAGE, TYPE, PROJECT, FILE, ENGINE, NESTED }
+
+    static final String PROP_FROM_OPEN_PROJECTS = "fromOpenProjects";       // NOI18N
+    static final String PROP_FROM_CURRENT_SESSION_PROJECTS = "fromCurrentSessionProjects";  // NOI18N
 
     private BreakpointGroup parent;
     private String name;
@@ -139,8 +143,8 @@ public class BreakpointGroup {
     static Object[] createGroups(Properties props) {
         //props.addPropertyChangeListener(null);
         String[] groupNames = (String[]) props.getArray("Grouping", new String[] { Group.CUSTOM.name() });
-        boolean openProjectsOnly = props.getBoolean("fromOpenProjects", true);
-        boolean sessionProjectsOnly = props.getBoolean("fromCurrentSessionProjects", true);
+        boolean openProjectsOnly = props.getBoolean(PROP_FROM_OPEN_PROJECTS, true);
+        boolean sessionProjectsOnly = props.getBoolean(PROP_FROM_CURRENT_SESSION_PROJECTS, true);
         Breakpoint[] bs = DebuggerManager.getDebuggerManager().getBreakpoints();
         if (groupNames.length == 0 || groupNames[0].equals(Group.NO.name())) {
             return bs;
@@ -161,12 +165,6 @@ public class BreakpointGroup {
         List<BreakpointGroup> parentGroups = new ArrayList<BreakpointGroup>();
         List<BreakpointGroup> rootGroups = new ArrayList<BreakpointGroup>();
 
-        Set<Project> openProjects;
-        if (openProjectsOnly) {
-            openProjects = new HashSet<Project>(Arrays.asList(OpenProjects.getDefault().getOpenProjects()));
-        } else {
-            openProjects = null;
-        }
         Set<Project> sessionProjects;
         if (sessionProjectsOnly) {
             // TODO: Perhaps, better, ask for the session breakpoints somehow directly
@@ -183,7 +181,7 @@ public class BreakpointGroup {
                 if (bprops.isHidden()) {
                     continue;
                 }
-                if (openProjects != null && !contains(openProjects, bprops.getProjects())) {
+                if (openProjectsOnly && !isOpened(bprops.getProjects())) {
                     continue;
                 }
                 if (sessionProjects != null && !contains(sessionProjects, bprops.getProjects())) {
@@ -242,6 +240,23 @@ public class BreakpointGroup {
                                     idz = prjs;
                                     for (int i = 0; i < prjs.length; i++) {
                                         propertyNames[i] = ProjectUtils.getInformation(prjs[i]).getDisplayName();
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case ENGINE:
+                        if (bprops != null) {
+                            DebuggerEngine[] es = bprops.getEngines();
+                            if (es != null && es.length > 0) {
+                                if (es.length == 1) {
+                                    propertyName = getName(es[0]);
+                                    id = es[0];
+                                } else {
+                                    propertyNames = new String[es.length];
+                                    idz = es;
+                                    for (int i = 0; i < es.length; i++) {
+                                        propertyNames[i] = getName(es[i]);
                                     }
                                 }
                             }
@@ -359,6 +374,19 @@ public class BreakpointGroup {
         return groupsAndBreakpoints.toArray();
     }
 
+    private static boolean isOpened(Project[] projects) {
+        if (projects != null && projects.length > 0) {
+            for (Project p : projects) {
+                if (OpenProjects.getDefault().isProjectOpen(p)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     private static boolean contains(Set<Project> openProjects, Project[] projects) {
         if (projects != null && projects.length > 0) {
             boolean contains = false;
@@ -372,6 +400,22 @@ public class BreakpointGroup {
         } else {
             return true;
         }
+    }
+
+    private static String getName(DebuggerEngine e) {
+        Session s = e.lookupFirst(null, Session.class);
+        String name = s.getName();
+        String[] ls = s.getSupportedLanguages();
+        if (ls.length > 1) {
+            for (String l : ls) {
+                DebuggerEngine en = s.getEngineForLanguage(l);
+                if (en == e) {
+                    name += "/"+l;
+                    break;
+                }
+            }
+        }
+        return name;
     }
 
     private static Set<Project> getCurrentSessionProjects() {
@@ -523,6 +567,15 @@ public class BreakpointGroup {
          */
         public Project[] getProjects() {
             return (Project[]) getMethod("getProjects");
+        }
+
+        /**
+         * Get the debugger engines that are currently actively using this breakpoint.
+         * @return The engines in which this breakpoint is active or <code>null</code>
+         * when this does not apply.
+         */
+        public DebuggerEngine[] getEngines() {
+            return (DebuggerEngine[]) getMethod("getEngines");
         }
 
         /**

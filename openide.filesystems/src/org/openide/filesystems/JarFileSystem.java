@@ -71,6 +71,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -88,7 +89,7 @@ public class JarFileSystem extends AbstractFileSystem {
     static final long serialVersionUID = -98124752801761145L;
 
     /** One request proccesor shared for all instances of JarFileSystem*/
-    private static RequestProcessor req = new RequestProcessor("JarFs - modification watcher", 1, false, false); // NOI18N
+    private static final RequestProcessor req = new RequestProcessor("JarFs - modification watcher", 1, false, false); // NOI18N
 
     /** Controlls the LocalFileSystem's automatic refresh.
     * If the refresh time interval is set from the System.property, than this value is used.
@@ -171,6 +172,31 @@ public class JarFileSystem extends AbstractFileSystem {
         setCapability(cap);
     }
 
+    /** Creates new JAR for a given JAR file. This constructor
+     * behaves basically like:
+     * <pre>
+     * JarFileSystem fs = new JarFileSystem();
+     * fs.setJarFile(jar);
+     * </pre>
+     * but it is more effective in some situations. It does not open and
+     * read the content of the jar file immediately. Instead
+     * it waits until somebody asks for resources from inside the JAR.
+     *
+     * @param jar location of the JAR file
+     * @since 7.34
+     */
+    public JarFileSystem(File jar) throws IOException {
+        this();
+        try {
+            setJarFile(jar, true, false);
+        } catch (PropertyVetoException ex) {
+            // cannot happen, setSystemName can throw the exception only
+            // if the filesystem is already in Repository, which this one
+            // is not.
+            throw (IOException)new IOException().initCause(ex);
+        }
+    }
+
     /* Creates Reference. In FileSystem, which subclasses AbstractFileSystem, you can overload method
      * createReference(FileObject fo) to achieve another type of Reference (weak, strong etc.)
      * @param fo is FileObject. It`s reference yourequire to get.
@@ -233,7 +259,7 @@ public class JarFileSystem extends AbstractFileSystem {
     * @throws IOException if the file is not valid
     */
     public void setJarFile(final File aRoot) throws IOException, PropertyVetoException {
-        setJarFile(aRoot, true);
+        setJarFile(aRoot, true, true);
     }
     
     @SuppressWarnings("deprecation") // need to set it for compat
@@ -241,7 +267,7 @@ public class JarFileSystem extends AbstractFileSystem {
         setSystemName(s);
     }
 
-    private void setJarFile(final File aRoot, boolean refreshRoot)
+    private void setJarFile(final File aRoot, boolean refreshRoot, boolean openJar)
     throws IOException, PropertyVetoException {
         if (!aRoot.equals(FileUtil.normalizeFile(aRoot))) {
             throw new IllegalArgumentException(
@@ -279,18 +305,20 @@ public class JarFileSystem extends AbstractFileSystem {
 
         JarFile tempJar = null;
 
-        try {
-            tempJar = new JarFile(s);
-            LOGGER.log(Level.FINE, "opened: "+ System.currentTimeMillis()+ "   " + s);//NOI18N
-        } catch (ZipException e) {
-            throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_NotValidJarFile2", e.getLocalizedMessage(), s));
+        if (openJar) {
+            try {
+                tempJar = new JarFile(s);
+                LOGGER.log(Level.FINE, "opened: "+ System.currentTimeMillis()+ "   " + s);//NOI18N
+            } catch (ZipException e) {
+                throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_NotValidJarFile2", e.getLocalizedMessage(), s));
+            }
         }
 
         synchronized (closeSync) {
             _setSystemName(s);
 
             closeCurrentRoot(false);
-            jar = tempJar;
+            setJar(tempJar);
             openRequestTime = System.currentTimeMillis();
             root = new File(s);
 
@@ -328,7 +356,7 @@ public class JarFileSystem extends AbstractFileSystem {
 
                     if ((f != null) && !f.equals(aRoot)) {
                         try {
-                            setJarFile(f, false);
+                            setJarFile(f, false, true);
                         } catch (IOException iex) {
                             ExternalUtil.exception(iex);
                         } catch (PropertyVetoException pvex) {
@@ -688,18 +716,7 @@ public class JarFileSystem extends AbstractFileSystem {
             // 150% of time from last open request, but between CLOSE_DELAY_MIN and CLOSE_DELAY_MAX
             closeDelay = (int) Math.min(CLOSE_DELAY_MAX, Math.max(CLOSE_DELAY_MIN, (1.5 * requestPeriod)));
 
-            JarFile j = jar;
-
-            if (j != null) {
-                return j;
-            }
-
-            if ((jar == null) && (root != null)) {
-                jar = new JarFile(root);
-                LOGGER.log(Level.FINE, "opened: "+ System.currentTimeMillis()+ "   " + root.getAbsolutePath());//NOI18N
-            }
-
-            return jar;
+            return getJar(true);
         }
     }
 
@@ -724,15 +741,16 @@ public class JarFileSystem extends AbstractFileSystem {
         return new Runnable() {
                 public void run() {
                     synchronized (closeSync) {
-                        if (jar != null) {
+                    final JarFile jarFile = getJar(false);
+                        if (jarFile != null) {
                             try {
-                                jar.close();
+                                jarFile.close();
                                 LOGGER.log(Level.FINE, "closed: "+ System.currentTimeMillis()+ "   " + root.getAbsolutePath());//NOI18N
                             } catch (Exception exc) {
                                 // ignore exception during closing, just log it
                                 ExternalUtil.exception(exc);
                             } finally {
-                                jar = null;
+                                setJar(null);
                                 closeTask = null;
                             }
                         }
@@ -895,7 +913,10 @@ public class JarFileSystem extends AbstractFileSystem {
             synchronized (closeSync) {
                 j = reOpenJarFile();
 
-                JarEntry je = j.getJarEntry(file);
+                JarEntry je = null;
+                if (j != null) {
+                    je = j.getJarEntry(file);
+                }
 
                 if (je != null) {
                     return je;
@@ -905,6 +926,33 @@ public class JarFileSystem extends AbstractFileSystem {
         }
 
         return new JarEntry(file);
+    }
+
+    /**
+     * @return the jar
+     */
+    private JarFile getJar(boolean create) {
+        assert Thread.holdsLock(closeSync);
+        if (jar == null && create) {
+            try {
+                if (root.canRead()) {
+                    jar = new JarFile(root);
+                    LOGGER.log(Level.FINE, "opened: {0} {1}", new Object[]{System.currentTimeMillis(), root.getAbsolutePath()}); //NOI18N
+                    return jar;
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, ex.getMessage(), ex);
+            }
+            LOGGER.log(Level.WARNING, "cannot open {0}", root.getAbsolutePath()); // NOI18N
+        }
+        return jar;
+    }
+
+    /**
+     * @param jar the jar to set
+     */
+    private void setJar(JarFile jar) {
+        this.jar = jar;
     }
 
     /** Use soft-references to not throw away the data that quickly.

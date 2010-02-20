@@ -161,6 +161,10 @@ public class CsmImageLoader implements CsmImageName {
                 return CLASS_FORWARD;
             }
             return STRUCT_FORWARD;
+        } else if (CsmKindUtilities.isProgram(o)) {
+            return PROJECT_OPENED;
+        } else if (CsmKindUtilities.isModule(o)) {
+            return MODULE;
         } else if (CsmKindUtilities.isDeclaration(o)) {
             kind = ((CsmDeclaration)o).getKind();
         } else if (CsmKindUtilities.isNamespace(o)) {

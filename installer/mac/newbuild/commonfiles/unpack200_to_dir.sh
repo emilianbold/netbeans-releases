@@ -33,7 +33,7 @@ for x in `find . -name \*.jar.pack` ; do
     jar="$tmp_dir"/"$jar_subpath"   
     mkdir -p `dirname "$jar"`
     echo "Unpack file $x into $tmp_dir / $jar_subpath"
-    /System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home/bin/unpack200 "$x" "$jar"
+    /System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home/bin/unpack200 "$x" "$jar"
 done
 
 exit 0

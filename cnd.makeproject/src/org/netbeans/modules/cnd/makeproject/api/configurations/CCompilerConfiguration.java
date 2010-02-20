@@ -45,15 +45,14 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public class CCompilerConfiguration extends CCCCompilerConfiguration implements AllOptionsProvider, ConfigurationBase  {
+public class CCompilerConfiguration extends CCCCompilerConfiguration {
     // Constructors
     public CCompilerConfiguration(String baseDir, CCompilerConfiguration master) {
         super(baseDir, master);
@@ -91,19 +90,18 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     
     // Interface OptionsProvider
     @Override
-    public String getOptions(BasicCompiler compiler) {
+    public String getOptions(AbstractCompiler compiler) {
         String options = "$(COMPILE.c) "; // NOI18N
         options += getAllOptions2(compiler) + " "; // NOI18N
         options += getCommandLineConfiguration().getValue() + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
     
-    public String getCFlagsBasic(BasicCompiler compiler) {
-        CCCCompiler cccCompiler = (CCCCompiler)compiler;
+    public String getCFlagsBasic(AbstractCompiler compiler) {
         String options = ""; // NOI18N
-        options += cccCompiler.getMTLevelOptions(getMTLevel().getValue()) + " "; // NOI18N
-        options += cccCompiler.getStandardsEvolutionOptions(getStandardsEvolution().getValue()) + " "; // NOI18N
-        options += cccCompiler.getLanguageExtOptions(getLanguageExt().getValue()) + " "; // NOI18N
+        options += compiler.getMTLevelOptions(getMTLevel().getValue()) + " "; // NOI18N
+        options += compiler.getStandardEvaluationOptions(getStandardsEvolution().getValue()) + " "; // NOI18N
+        options += compiler.getLanguageExtOptions(getLanguageExt().getValue()) + " "; // NOI18N
         //options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
         options += compiler.getSixtyfourBitsOption(getSixtyfourBits().getValue()) + " "; // NOI18N
         if (getDevelopmentMode().getValue() == DEVELOPMENT_MODE_TEST) {
@@ -112,14 +110,18 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         return CppUtils.reformatWhitespaces(options);
     }
     
-    public String getCFlags(BasicCompiler compiler) {
+    public String getCFlags(AbstractCompiler compiler) {
         String options = getCFlagsBasic(compiler) + " "; // NOI18N
         options += getCommandLineConfiguration().getValue() + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
     
     @Override
-    public String getAllOptions(BasicCompiler compiler) {
+    public String getAllOptions(Tool tool) {
+        if (!(tool instanceof AbstractCompiler)) {
+            return "";
+        }
+        AbstractCompiler compiler = (AbstractCompiler) tool;
         CCompilerConfiguration master;
         
         StringBuilder options = new StringBuilder();
@@ -136,7 +138,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         return CppUtils.reformatWhitespaces(options.toString());
     }
     
-    public String getAllOptions2(BasicCompiler compiler) {
+    public String getAllOptions2(AbstractCompiler compiler) {
         CCompilerConfiguration master;
         
         String options = ""; // NOI18N
@@ -145,14 +147,14 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         }
         options += compiler.getWarningLevelOptions(getWarningLevel().getValue()) + " "; // NOI18N
         options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
-        options += getPreprocessorOptions();
+        options += getPreprocessorOptions(compiler.getCompilerSet());
         options += getIncludeDirectoriesOptions(compiler.getCompilerSet());
         return CppUtils.reformatWhitespaces(options);
     }
     
-    public String getPreprocessorOptions() {
+    public String getPreprocessorOptions(CompilerSet cs) {
         CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
-        OptionToString visitor = new OptionToString(null, getUserMacroFlag());
+        OptionToString visitor = new OptionToString(null, getUserMacroFlag(cs));
         StringBuilder options = new StringBuilder(getPreprocessorConfiguration().toString(visitor));
         options.append(' '); // NOI18N
         while (master != null && getInheritPreprocessor().getValue()) {
@@ -169,7 +171,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     
     public String getIncludeDirectoriesOptions(CompilerSet cs) {
         CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
-        OptionToString visitor = new OptionToString(cs, getUserIncludeFlag());
+        OptionToString visitor = new OptionToString(cs, getUserIncludeFlag(cs));
         StringBuilder options = new StringBuilder(getIncludeDirectories().toString(visitor));
         options.append(' '); // NOI18N
         while (master != null && getInheritIncludes().getValue()) {
@@ -185,38 +187,25 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     } 
 
     @Override
-    protected CompilerDescriptor getCompilerDescription(){
-        return null;
-    }
-    
-    @Override
-    protected String getUserIncludeFlag(){
-        // TODO get from compiler descriptor.
-        if (false) {
-            return getCompilerDescription().getUserIncludeFlag();
-        }
-        return "-I"; // NOI18N
+    protected String getUserIncludeFlag(CompilerSet cs){
+        return cs.getCompilerFlavor().getToolchainDescriptor().getC().getUserIncludeFlag();
     }
 
     @Override
-    protected String getUserMacroFlag(){
-        // TODO get from compiler descriptor.
-        if (false) {
-            return getCompilerDescription().getUserMacroFlag();
-        }
-        return "-D"; // NOI18N
+    protected String getUserMacroFlag(CompilerSet cs){
+        return cs.getCompilerFlavor().getToolchainDescriptor().getC().getUserMacroFlag();
     }
 
     // Sheet
     public Sheet getGeneralSheet(MakeConfiguration conf, Folder folder) {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        BasicCompiler cCompiler = compilerSet == null ? null : (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
+        AbstractCompiler cCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
         
         sheet.put(getSet());
         if (conf.isCompileConfiguration() && folder == null) {
             sheet.put(getBasicSet());
-            if (compilerSet != null && compilerSet.isSunCompiler()) { // FIXUP: should be moved to SunCCompiler
+            if (compilerSet != null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) { // FIXUP: should be moved to SunCCompiler
                 Sheet.Set set2 = new Sheet.Set();
                 set2.setName("OtherOptions"); // NOI18N
                 set2.setDisplayName(getString("OtherOptionsTxt"));

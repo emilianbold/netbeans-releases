@@ -80,7 +80,11 @@ public class FileObjectArchive implements Archive {
         }
         return result;
     }
-    
+
+    public JavaFileObject create (final String relativePath, final JavaFileFilterImplementation filter) {
+        throw new UnsupportedOperationException("Write not supported");   //NOI18N
+    }
+
     public void clear() {
     }
 

@@ -59,6 +59,9 @@ import org.openide.filesystems.FileUtil;
  */
 public class RemoteProjectSupport {
 
+    private RemoteProjectSupport() {
+    }
+
     public static ExecutionEnvironment getExecutionEnvironment(Project project) {
         MakeConfiguration mk = ConfigurationSupport.getProjectActiveConfiguration(project);
         if (mk != null) {
@@ -131,9 +134,11 @@ public class RemoteProjectSupport {
             if (!filter.accept(normFile)) {
                 // user explicitely added file -> copy it even
                 filesToSync.add(normFile);
-                File parentFile = normFile.getParentFile();
             } else if (!isContained(normFile, filesToSync)) {
                 // directory containing file is not yet added => copy it
+                filesToSync.add(normFile);
+            } else if (!normFile.exists()) {
+                // it won't be added while recursin into directories
                 filesToSync.add(normFile);
             }
         }

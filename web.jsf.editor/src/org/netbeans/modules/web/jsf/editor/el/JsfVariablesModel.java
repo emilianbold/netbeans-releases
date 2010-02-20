@@ -261,6 +261,11 @@ public class JsfVariablesModel {
             }
         }
 
+        if(matching.isEmpty()) {
+            //nothing to match to
+            return expr.getCleanExpression();
+        }
+
         //now resolve the variable using path of the matching contexts
         for(Iterator<JsfVariableContext> itr = matching.iterator() ; itr.hasNext(); ) {
             JsfVariableContext c  = itr.next();

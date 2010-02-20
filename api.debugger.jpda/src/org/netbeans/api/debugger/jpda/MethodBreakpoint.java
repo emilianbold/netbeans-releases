@@ -41,6 +41,8 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +51,7 @@ import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.filesystems.FileObject;
@@ -353,7 +356,8 @@ public class MethodBreakpoint extends JPDABreakpoint {
     }
     
     
-    private static final class MethodBreakpointImpl extends MethodBreakpoint implements ChangeListener {
+    private static final class MethodBreakpointImpl extends MethodBreakpoint implements ChangeListener,
+                                                                                        PropertyChangeListener {
         
         //@Override
         public Object /*GroupProperties*/ getGroupProperties() {
@@ -367,6 +371,11 @@ public class MethodBreakpoint extends JPDABreakpoint {
             } else {
                 throw new UnsupportedOperationException(chev.toString());
             }
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            enginePropertyChange(evt);
         }
 
         
@@ -412,6 +421,10 @@ public class MethodBreakpoint extends JPDABreakpoint {
                     }
                 }
                 return projects.toArray(new Project[] {});
+            }
+
+            public DebuggerEngine[] getEngines() {
+                return MethodBreakpointImpl.this.getEngines();
             }
 
             public boolean isHidden() {

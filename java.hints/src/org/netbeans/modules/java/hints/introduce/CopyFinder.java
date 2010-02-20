@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007-2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints.introduce;
 
@@ -33,6 +33,7 @@ import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
@@ -206,10 +207,10 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
         OUTER: for (Entry<TreePath, VariableAssignments> e : firstStatementSearcher.result.entrySet()) {
             TreePath firstOccurrence = e.getKey();
-            BlockTree occurrenceBlock = (BlockTree) firstOccurrence.getParentPath().getLeaf();
-            int occurrenceIndex = occurrenceBlock.getStatements().indexOf(firstOccurrence.getLeaf());
+            List<? extends StatementTree> statements = getStatements(firstOccurrence);
+            int occurrenceIndex = statements.indexOf(firstOccurrence.getLeaf());
 
-            if (occurrenceIndex + searchingFor.size() > occurrenceBlock.getStatements().size()) {
+            if (occurrenceIndex + searchingFor.size() > statements.size()) {
                 continue;
             }
 
@@ -232,12 +233,12 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 ver.bindState = State.from(remapElements, remapTrees);
                 ver.allowVariablesRemap = true;
 
-                if (!ver.scan(new TreePath(firstOccurrence.getParentPath(), occurrenceBlock.getStatements().get(currentIndex)), currentToProcess)) {
+                if (!ver.scan(new TreePath(firstOccurrence.getParentPath(), statements.get(currentIndex)), currentToProcess)) {
                     continue OUTER;
                 }
             }
 
-            result.add(new MethodDuplicateDescription(occurrenceBlock, occurrenceIndex, currentIndex, e.getValue().variablesRemapToElement, e.getValue().variablesRemapToTrees));
+            result.add(new MethodDuplicateDescription(firstOccurrence, occurrenceIndex, currentIndex, e.getValue().variablesRemapToElement, e.getValue().variablesRemapToTrees));
         }
 
         return result;
@@ -1006,6 +1007,17 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         if (!scan(node.getExpression(), t.getExpression(), p))
             return false;
 
+        String ident = t.getIdentifier().toString();
+
+        if (ident.startsWith("$")) { //XXX: there should be a utility method for this check
+            if (bindState.variables2Names.containsKey(ident)) {
+                return node.getIdentifier().contentEquals(bindState.variables2Names.get(ident));
+            } else {
+                bindState.variables2Names.put(ident, node.getIdentifier().toString());
+            }
+            return true;
+        }
+
         return node.getIdentifier().toString().equals(t.getIdentifier().toString());
     }
 
@@ -1245,6 +1257,17 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         throw new UnsupportedOperationException();
     }
 
+    public static List<? extends StatementTree> getStatements(TreePath firstLeaf) {
+        switch (firstLeaf.getParentPath().getLeaf().getKind()) {
+            case BLOCK:
+                return ((BlockTree) firstLeaf.getParentPath().getLeaf()).getStatements();
+            case CASE:
+                return ((CaseTree) firstLeaf.getParentPath().getLeaf()).getStatements();
+            default:
+                return Collections.singletonList((StatementTree) firstLeaf.getLeaf());
+        }
+    }
+
     public static final class VariableAssignments {
         public final Map<String, TreePath> variables;
         public final Map<String, Collection<? extends TreePath>> multiVariables;
@@ -1270,13 +1293,13 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
     }
 
     public static final class MethodDuplicateDescription {
-        public final BlockTree block; //XXX: should not require the duplicate to be in a block!
+        public final TreePath firstLeaf;
         public final int dupeStart;
         public final int dupeEnd;
         public final Map<Element, Element> variablesRemapToElement;
         public final Map<Element, TreePath> variablesRemapToTrees;
-        public MethodDuplicateDescription(BlockTree block, int dupeStart, int dupeEnd, Map<Element, Element> variablesRemapToElement, Map<Element, TreePath> variablesRemapToTrees) {
-            this.block = block;
+        public MethodDuplicateDescription(TreePath firstLeaf, int dupeStart, int dupeEnd, Map<Element, Element> variablesRemapToElement, Map<Element, TreePath> variablesRemapToTrees) {
+            this.firstLeaf = firstLeaf;
             this.dupeStart = dupeStart;
             this.dupeEnd = dupeEnd;
             this.variablesRemapToElement = variablesRemapToElement;

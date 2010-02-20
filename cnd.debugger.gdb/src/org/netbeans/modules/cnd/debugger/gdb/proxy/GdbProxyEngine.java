@@ -54,7 +54,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
@@ -111,17 +110,12 @@ public class GdbProxyEngine {
      * @param stepIntoProject - a flag to stop at first source line
      */
     public GdbProxyEngine(GdbDebugger debugger, GdbProxy gdbProxy, List<String> debuggerCommand,
-                    String[] debuggerEnvironment, String workingDirectory, String termpath,
+                    String[] debuggerEnvironment, String workingDirectory, String tty,
                     String cspath) throws IOException {
-        
-        if (debugger.getPlatform() != PlatformTypes.PLATFORM_WINDOWS && termpath != null) {
-            String tty = ExternalTerminal.create(debugger, termpath, debuggerEnvironment);
-            if (tty != null) {
-                debuggerCommand.add("-tty"); // NOI18N
-                debuggerCommand.add(tty);
-            } else {
-                throw new IllegalStateException(NbBundle.getMessage(GdbProxyEngine.class, "ERR_ExternalTerminalFailedMessage")); // NOI18N
-            }
+
+        if (tty != null) {
+            debuggerCommand.add("-tty"); // NOI18N
+            debuggerCommand.add(tty);
         }
         this.debugger = debugger;
         this.gdbProxy = gdbProxy;

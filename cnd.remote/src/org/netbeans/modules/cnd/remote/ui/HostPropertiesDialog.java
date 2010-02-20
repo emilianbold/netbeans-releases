@@ -149,6 +149,7 @@ public class HostPropertiesDialog extends JPanel {
         cbSync = new javax.swing.JComboBox();
         cbX11 = new javax.swing.JCheckBox();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 12, 12));
         setFocusCycleRoot(true);
 
         lblHost.setLabelFor(tfHost);
@@ -193,16 +194,16 @@ public class HostPropertiesDialog extends JPanel {
                     .addComponent(lblSync))
                 .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cbX11, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
+                    .addComponent(cbX11, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(tfHost, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
+                        .addComponent(tfHost, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(lblPort)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(tfPort, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(tfUser, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
-                    .addComponent(tfName, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
-                    .addComponent(cbSync, javax.swing.GroupLayout.Alignment.TRAILING, 0, 305, Short.MAX_VALUE))
+                    .addComponent(tfUser, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
+                    .addComponent(tfName, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
+                    .addComponent(cbSync, javax.swing.GroupLayout.Alignment.TRAILING, 0, 281, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

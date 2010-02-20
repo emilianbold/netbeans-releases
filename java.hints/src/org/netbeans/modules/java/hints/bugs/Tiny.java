@@ -39,12 +39,28 @@
 
 package org.netbeans.modules.java.hints.bugs;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import org.netbeans.modules.java.hints.ArithmeticUtilities;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
@@ -58,7 +74,7 @@ import org.openide.util.NbBundle;
  */
 public class Tiny {
 
-    @Hint(category="bugs")
+    @Hint(category="bugs", suppressWarnings="ReplaceAllDot")
     @TriggerPattern(value="$str.replaceAll(\".\", $to))",
                     constraints=@Constraint(variable="$str", type="java.lang.String"))
     public static ErrorDescription stringReplaceAllDot(HintContext ctx) {
@@ -72,4 +88,135 @@ public class Tiny {
         return ErrorDescriptionFactory.forTree(ctx, constant, displayName, fix);
     }
 
+    @Hint(category="bugs", suppressWarnings="ResultOfObjectAllocationIgnored")
+    //TODO: anonymous innerclasses?
+    @TriggerPatterns({
+        @TriggerPattern(value="new $type($params$);"),
+        @TriggerPattern(value="$enh.new $type($params$);")
+    })
+    public static ErrorDescription newObject(HintContext ctx) {
+        String displayName = NbBundle.getMessage(Tiny.class, "ERR_newObject");
+
+        return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName);
+    }
+
+    @Hint(category="bugs", suppressWarnings="SuspiciousSystemArraycopy")
+    @TriggerPattern(value="java.lang.System.arraycopy($src, $srcPos, $dest, $destPos, $length)")
+    public static List<ErrorDescription> systemArrayCopy(HintContext ctx) {
+        List<ErrorDescription> result = new LinkedList<ErrorDescription>();
+
+        for (String objName : Arrays.asList("$src", "$dest")) {
+            TreePath obj = ctx.getVariables().get(objName);
+            TypeMirror type = ctx.getInfo().getTrees().getTypeMirror(obj);
+
+            if (type != null && type.getKind() != TypeKind.ERROR && type.getKind() != TypeKind.ARRAY) {
+                String treeDisplayName = Utilities.shortDisplayName(ctx.getInfo(), (ExpressionTree) obj.getLeaf());
+                String displayName = NbBundle.getMessage(Tiny.class, "ERR_system_arraycopy_notarray", treeDisplayName);
+                
+                result.add(ErrorDescriptionFactory.forTree(ctx, obj, displayName));
+            }
+        }
+
+        for (String countName : Arrays.asList("$srcPos", "$destPos", "$length")) {
+            TreePath count = ctx.getVariables().get(countName);
+            Number value = ArithmeticUtilities.compute(ctx.getInfo(), count, true);
+
+            if (value != null && value.intValue() < 0) {
+                String treeDisplayName = Utilities.shortDisplayName(ctx.getInfo(), (ExpressionTree) count.getLeaf());
+                String displayName = NbBundle.getMessage(Tiny.class, "ERR_system_arraycopy_negative", treeDisplayName);
+
+                result.add(ErrorDescriptionFactory.forTree(ctx, count, displayName));
+            }
+        }
+
+        return result;
+    }
+
+
+    @Hint(category="bugs", suppressWarnings="ObjectEqualsNull")
+    @TriggerPattern(value="$obj.equals(null)")
+    public static ErrorDescription equalsNull(HintContext ctx) {
+        String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_equalsNull");
+        Fix fix = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$obj == null");
+        String displayName = NbBundle.getMessage(Tiny.class, "ERR_equalsNull");
+
+        return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, fix);
+    }
+
+    @Hint(category="bugs")
+    @TriggerPattern(value="$set.$method($columnIndex, $other$)",
+                    constraints={
+                        @Constraint(variable="$set", type="java.sql.ResultSet"),
+                        @Constraint(variable="$columnIndex", type="int")
+                    })
+    public static ErrorDescription resultSet(HintContext ctx) {
+        TypeElement resultSet = ctx.getInfo().getElements().getTypeElement("java.sql.ResultSet");
+        String methodName = ctx.getVariableNames().get("$method");
+
+        if (!METHOD_NAME.contains(methodName)) {
+            return null;
+        }
+
+        TreePath columnIndex = ctx.getVariables().get("$columnIndex");
+        Number value = ArithmeticUtilities.compute(ctx.getInfo(), columnIndex, true);
+
+        if (value == null) {
+            return null;
+        }
+
+        int intValue = value.intValue();
+
+        if (intValue > 0) {
+            return null;
+        }
+
+        Element methodEl = ctx.getInfo().getTrees().getElement(ctx.getPath());
+
+        if (methodEl == null || methodEl.getKind() != ElementKind.METHOD) {
+            return null;
+        }
+
+        ExecutableElement methodElement = (ExecutableElement) methodEl;
+        boolean found = false;
+
+        for (ExecutableElement e : ElementFilter.methodsIn(resultSet.getEnclosedElements())) {
+            if (e.equals(methodEl)) {
+                found = true;
+                break;
+            }
+            if (ctx.getInfo().getElements().overrides(methodElement, e, (TypeElement) methodElement.getEnclosingElement())) {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            return null;
+        }
+
+        String key = intValue == 0 ? "ERR_ResultSetZero" : "ERR_ResultSetNegative";
+        String displayName = NbBundle.getMessage(Tiny.class, key);
+
+        return ErrorDescriptionFactory.forName(ctx, columnIndex, displayName);
+    }
+    
+    private static final Set<String> METHOD_NAME = new HashSet<String>(Arrays.asList(
+            "getString", "getBoolean", "getByte", "getShort", "getInt", "getLong",
+            "getFloat", "getDouble", "getBigDecimal", "getBytes", "getDate",
+            "getTime", "getTimestamp", "getAsciiStream", "getUnicodeStream",
+            "getBinaryStream", "getObject", "getCharacterStream", "getBigDecimal",
+            "updateNull", "updateBoolean", "updateByte", "updateShort", "updateInt",
+            "updateLong", "updateFloat", "updateDouble", "updateBigDecimal", "updateString",
+            "updateBytes", "updateDate", "updateTime", "updateTimestamp", "updateAsciiStream",
+            "updateBinaryStream", "updateCharacterStream", "updateObject", "updateObject",
+            "getObject", "getRef", "getBlob", "getClob", "getArray", "getDate", "getTime",
+            "getTimestamp", "getURL", "updateRef", "updateBlob", "updateClob", "updateArray",
+            "getRowId", "updateRowId", "updateNString", "updateNClob", "getNClob", "getSQLXML",
+            "updateSQLXML", "getNString", "getNCharacterStream", "updateNCharacterStream",
+            "updateAsciiStream", "updateBinaryStream", "updateCharacterStream", "updateBlob",
+            "updateClob", "updateNClob", "updateNCharacterStream", "updateAsciiStream",
+            "updateBinaryStream", "updateCharacterStream", "updateBlob", "updateClob",
+            "updateNClob"
+    ));
+    
 }

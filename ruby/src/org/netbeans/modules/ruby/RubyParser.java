@@ -776,7 +776,7 @@ public final class RubyParser extends Parser {
         void error(Error error);
     }
 
-    public static class RubyError implements Error {
+    public static class RubyError implements Error.Badging {
         
         private final String displayName;
         private final ID id;
@@ -796,22 +796,27 @@ public final class RubyParser extends Parser {
             this.parameters = parameters;
         }
 
+        @Override
         public String getDisplayName() {
             return displayName;
         }
 
+        @Override
         public int getStartPosition() {
             return startPosition;
         }
 
+        @Override
         public int getEndPosition() {
             return endPosition;
         }
 
+        @Override
         public FileObject getFile() {
             return file;
         }
 
+        @Override
         public String getKey() {
             return id != null ? id.name() : "";
         }
@@ -820,10 +825,12 @@ public final class RubyParser extends Parser {
             return id;
         }
 
+        @Override
         public Object[] getParameters() {
             return parameters;
         }
 
+        @Override
         public Severity getSeverity() {
             return severity;
         }
@@ -833,11 +840,18 @@ public final class RubyParser extends Parser {
             return "RubyError:" + displayName;
         }
 
+        @Override
         public String getDescription() {
             return null;
         }
 
+        @Override
         public boolean isLineError() {
+            return true;
+        }
+
+        @Override
+        public boolean showExplorerBadge() {
             return true;
         }
     }    

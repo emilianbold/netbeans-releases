@@ -66,6 +66,7 @@ import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.SessionProvider;
+import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
@@ -102,7 +103,9 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
             ActionsProvider.Registration reg = e.getAnnotation(ActionsProvider.Registration.class);
 
             final String path = reg.path();
-            handleProviderRegistrationInner(e, ActionsProvider.class, path);
+            final String[] actions = reg.actions();
+            final String[] mimeTypes = reg.activateForMIMETypes();
+            handleProviderRegistrationInner(e, ActionsProvider.class, path, actions, mimeTypes);
             //layer(e).instanceFile("Debugger/"+path, null, ActionsProvider.class).
             //        stringvalue("serviceName", instantiableClassOrMethod(e)).
             //        stringvalue("serviceClass", ActionsProvider.class.getName()).
@@ -186,6 +189,12 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
     }
 
     private void handleProviderRegistrationInner(Element e, Class providerClass, String path) throws IllegalArgumentException, LayerGenerationException {
+        handleProviderRegistrationInner(e, providerClass, path, null, null);
+    }
+
+    private void handleProviderRegistrationInner(Element e, Class providerClass, String path,
+                                                 String[] actions, String[] enabledOnMIMETypes
+                                                 ) throws IllegalArgumentException, LayerGenerationException {
         String className = instantiableClassOrMethod(e);
         if (!isClassOf(e, providerClass)) {
             throw new IllegalArgumentException("Annotated element "+e+" is not an instance of " + providerClass);
@@ -195,12 +204,18 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         } else {
             path = "Debugger";
         }
-        layer(e).instanceFile(path, null, providerClass).
-                stringvalue("serviceName", className).
-                stringvalue("serviceClass", providerClass.getName()).
-                stringvalue("instanceOf", providerClass.getName()).
-                methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
-                write();
+        File f = layer(e).instanceFile(path, null, providerClass).
+                stringvalue(ContextAwareServiceHandler.SERVICE_NAME, className).
+                stringvalue("serviceClass", providerClass.getName());
+        if (actions != null && actions.length > 0) {
+            f.stringvalue(ContextAwareServiceHandler.SERVICE_ACTIONS, Arrays.toString(actions));
+        }
+        if (enabledOnMIMETypes != null && enabledOnMIMETypes.length > 0) {
+            f.stringvalue(ContextAwareServiceHandler.SERVICE_ENABLED_MIMETYPES, Arrays.toString(enabledOnMIMETypes));
+        }
+        f.stringvalue("instanceOf", providerClass.getName());
+        f.methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService");
+        f.write();
     }
 
     private boolean isClassOf(Element e, Class providerClass) {

@@ -555,7 +555,6 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
             for (JiraLazyIssue issue : watchedIssues.values()) {
                 if (issue instanceof KenaiJiraLazyIssue) {
                     Kenai issueKenai = KenaiUtil.getKenai(issue.getUrl().toString());
-                    assert issueKenai != null;
                     if(notifiedKenai.equals(issueKenai)) {
                         ((KenaiJiraLazyIssue) issue).notifyKenaiLogin();
                     }

@@ -43,7 +43,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import java.io.File;
-import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -64,8 +63,7 @@ abstract class CompileWorker {
 
     abstract ParsingOutput compile(ParsingOutput previous, Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files);
     
-
-    public void computeFQNs(final Map<JavaFileObject, List<String>> file2FQNs, CompilationUnitTree cut, CompileTuple tuple) {
+    protected void computeFQNs(final Map<JavaFileObject, List<String>> file2FQNs, CompilationUnitTree cut, CompileTuple tuple) {
         String pack;
         if (cut.getPackageName() != null) {
             pack = cut.getPackageName().toString() + "."; //XXX
@@ -101,14 +99,16 @@ abstract class CompileWorker {
         final Set<File> createdFiles;
         final Set<Indexable> finishedFiles;
         final Set<ElementHandle<TypeElement>> modifiedTypes;
+        final Set<CompileTuple> aptGenerated;
 
-        public ParsingOutput(boolean success, Map<JavaFileObject, List<String>> file2FQNs, Set<ElementHandle<TypeElement>> addedTypes, Set<File> createdFiles, Set<Indexable> finishedFiles, Set<ElementHandle<TypeElement>> modifiedTypes) {
+        public ParsingOutput(boolean success, Map<JavaFileObject, List<String>> file2FQNs, Set<ElementHandle<TypeElement>> addedTypes, Set<File> createdFiles, Set<Indexable> finishedFiles, Set<ElementHandle<TypeElement>> modifiedTypes, Set<CompileTuple> aptGenerated) {
             this.success = success;
             this.file2FQNs = file2FQNs;
             this.addedTypes = addedTypes;
             this.createdFiles = createdFiles;
             this.finishedFiles = finishedFiles;
             this.modifiedTypes = modifiedTypes;
+            this.aptGenerated = aptGenerated;
         }
     }    
 }

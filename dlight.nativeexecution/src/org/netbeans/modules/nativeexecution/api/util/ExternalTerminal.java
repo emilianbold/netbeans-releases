@@ -63,7 +63,8 @@ public final class ExternalTerminal {
             new ConcurrentHashMap<TermEnvPair, String>();
     private final TerminalProfile profile;
     private String title = null;
-    private String prompt = loc("Terminal.DefaultPrompt.text"); // NOI18N
+    private static final boolean CLOSE_TERMINAL = Boolean.getBoolean("org.netbeans.modules.nativeexecution.api.util.CloseTerminal"); // NOI18N
+    private String prompt = CLOSE_TERMINAL ? "NO" : loc("Terminal.DefaultPrompt.text"); // NOI18N
 
     static {
         ExternalTerminalAccessor.setDefault(new ExternalTerminalAccessorImpl());
@@ -203,7 +204,8 @@ public final class ExternalTerminal {
         return NbBundle.getMessage(ExternalTerminal.class, key, params);
     }
 
-    /*package*/final static class TermEnvPair {
+    /*package*/
+    final static class TermEnvPair {
 
         public final ExecutionEnvironment env;
         public final String termexec;

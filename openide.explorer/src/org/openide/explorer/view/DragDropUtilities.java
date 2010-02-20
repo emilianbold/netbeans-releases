@@ -41,6 +41,7 @@
 
 package org.openide.explorer.view;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.Transferable;
@@ -80,7 +81,8 @@ import org.openide.util.datatransfer.PasteType;
 * @author Dafe Simonek
 */
 final class DragDropUtilities extends Object {
-    static final boolean dragAndDropEnabled = Boolean.parseBoolean(System.getProperty("netbeans.dnd.enabled", "true")); // NOI18N
+    static final boolean dragAndDropEnabled = !GraphicsEnvironment.isHeadless() &&
+            Boolean.parseBoolean(System.getProperty("netbeans.dnd.enabled", "true")); // NOI18N
     static final int NODE_UP = -1;
     static final int NODE_CENTRAL = 0;
     static final int NODE_DOWN = 1;

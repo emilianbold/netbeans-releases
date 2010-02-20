@@ -44,7 +44,6 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.session;
 import java.awt.Image;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -66,7 +65,6 @@ import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -86,21 +84,20 @@ public class MethodChildren extends ComponentMethodModel {
         mvs = new SessionStrategy();
     }
 
+    @Override
     protected Collection<String> getInterfaces() {
-        switch (viewType){
-            case LOCAL: return controller.getLocalInterfaces();
-            case REMOTE: return controller.getRemoteInterfaces();
-            case NO_INTERFACE: return Arrays.asList(controller.getBeanClass());
-            default: return Collections.EMPTY_LIST;
-        }
+        Collection<String> intfs = super.getInterfaces();
+        return intfs != null ? intfs : Collections.EMPTY_LIST;
     }
     
+    @Override
     public ComponentMethodViewStrategy createViewStrategy() {
         return mvs;
     }
 
     private class SessionStrategy implements ComponentMethodViewStrategy {
         
+        @Override
         public void deleteImplMethod(MethodModel me, String implClass, FileObject implClassFO, Collection interfaces) throws IOException {
             switch (viewType){
                 case NO_INTERFACE:{
@@ -115,20 +112,24 @@ public class MethodChildren extends ComponentMethodModel {
             }
         }
 
+        @Override
         public Image getBadge(MethodModel me, Collection interfaces) {
             return null;
         }
 
+        @Override
         public Image getIcon(MethodModel me, Collection interfaces) {
             IconVisitor iv = new IconVisitor();
             return ImageUtilities.loadImage(iv.getIconUrl(controller.getMethodTypeFromInterface(me)));
         }
 
+        @Override
         public void openMethod(final MethodModel me, final String implClass, FileObject implClassFO, Collection interfaces) {
             final List<ElementHandle<ExecutableElement>> methodHandle = new ArrayList<ElementHandle<ExecutableElement>>();
             try {
                 JavaSource javaSource = JavaSource.forFileObject(implClassFO);
                 javaSource.runUserActionTask(new Task<CompilationController>() {
+                    @Override
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         TypeElement typeElement = controller.getElements().getTypeElement(implClass);

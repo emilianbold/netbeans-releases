@@ -1098,7 +1098,11 @@ public class PageFlowController {
     }
 
     public void serializeNodeLocations() {
-        view.serializeNodeLocations(PageFlowView.getStorageFile(configDataObj.getPrimaryFile()));
+        if (view != null && configDataObj !=null) {
+            view.serializeNodeLocations(PageFlowView.getStorageFile(configDataObj.getPrimaryFile()));
+        } else {
+            LOGGER.log(Level.WARNING, "Either Page Flow TopComponent of Faces Config DataObject is null" ); //NOI18N
+        }
     }
 
     public void openNavigationCase(NavigationCaseEdge navCaseEdge) {

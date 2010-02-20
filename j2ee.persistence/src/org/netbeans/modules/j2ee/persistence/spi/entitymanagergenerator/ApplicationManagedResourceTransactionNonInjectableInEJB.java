@@ -79,7 +79,7 @@ public final class ApplicationManagedResourceTransactionNonInjectableInEJB exten
         body += getMethodBody(em);
         
         ModifiersTree methodModifiers = getTreeMaker().Modifiers(
-                Collections.<Modifier>singleton(Modifier.PUBLIC),
+                getGenerationOptions().getModifiers(),
                 Collections.<AnnotationTree>emptyList()
                 );
         

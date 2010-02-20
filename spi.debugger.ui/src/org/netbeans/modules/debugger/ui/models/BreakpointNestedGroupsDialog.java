@@ -292,6 +292,7 @@ public class BreakpointNestedGroupsDialog extends javax.swing.JPanel {
         model.addElement(new GroupElement(Group.TYPE));
         model.addElement(new GroupElement(Group.PROJECT));
         model.addElement(new GroupElement(Group.FILE));
+        model.addElement(new GroupElement(Group.ENGINE));
         availableGroupsList.setModel(model);
     }
 

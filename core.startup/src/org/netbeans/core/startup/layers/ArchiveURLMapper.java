@@ -159,13 +159,8 @@ public class ArchiveURLMapper extends URLMapper {
         if (reference == null || (jfs = reference.get()) == null) {
             jfs = findJarFileSystemInRepository(file);
             if (jfs == null) {
-                try {
-                    jfs = new JarFileSystem();
-                    File aRoot = FileUtil.normalizeFile(file);
-                    jfs.setJarFile(aRoot);
-                } catch (PropertyVetoException pve) {
-                    throw new AssertionError(pve);
-                }
+                File aRoot = FileUtil.normalizeFile(file);
+                jfs = new JarFileSystem(aRoot);
             }
             mountRoots.put(file, new JFSReference(jfs));
         }

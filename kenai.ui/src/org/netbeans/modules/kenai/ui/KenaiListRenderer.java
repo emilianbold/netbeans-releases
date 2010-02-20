@@ -40,21 +40,21 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.Component;
+import java.awt.Font;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.openide.util.ImageUtilities;
+import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 
 /**
  *
  * @author Jan Becicka
  */
-public class KenaiListRenderer extends JLabel
-                       implements ListCellRenderer {
+public class KenaiListRenderer implements ListCellRenderer {
 
     public KenaiListRenderer() {
-        setOpaque(true);
     }
 
     /*
@@ -62,6 +62,7 @@ public class KenaiListRenderer extends JLabel
      * to the selected value and returns the label, set up
      * to display the text and image.
      */
+    @Override
     public Component getListCellRendererComponent(
                                        JList list,
                                        Object value,
@@ -69,23 +70,28 @@ public class KenaiListRenderer extends JLabel
                                        boolean isSelected,
                                        boolean cellHasFocus) {
 
+        JLabel ret = new JLabel();
+        ret.setBorder(new EmptyBorder(1,1,1,1));
+        ret.setOpaque(true);
+
         if (value instanceof Kenai) {
+            ret.setFont(ret.getFont().deriveFont(Font.BOLD));
             final Kenai kenai = (Kenai) value;
-            setText("<html><b>" + kenai.getName() + "</b> (" +  kenai.getUrl().getProtocol() + "://" + kenai.getUrl().getHost() + ")</html>");
-            //setIcon(((Kenai)value).getIcon());
-            setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/kenai-small.png", true));
+            ret.setText(kenai.getName());
+            ret.setIcon(kenai.getIcon());
+            ret.setToolTipText(kenai.getUrl().toString());
         } else {
-            setIcon(null);
-            setText(value==null?null:value.toString());
+            ret.setIcon(null);
+            ret.setText(value==null?null:value.toString());
         }
 
         if (isSelected) {
-            setBackground(list.getSelectionBackground());
-            setForeground(list.getSelectionForeground());
+            ret.setBackground(list.getSelectionBackground());
+            ret.setForeground(list.getSelectionForeground());
         } else {
-            setBackground(list.getBackground());
-            setForeground(list.getForeground());
+            ret.setBackground(ColorManager.getDefault().getDefaultBackground());
+            ret.setForeground(list.getForeground());
         }
-        return this;
+        return ret;
     }
 }

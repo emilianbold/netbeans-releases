@@ -5,7 +5,7 @@
 <%--CC
 <h|
 html
-<html>
+<html
 --%>
 
 <%-- completion for HTML attributes --%>
@@ -33,7 +33,7 @@ rtl
 <%--CC
 <b|
 body
-<body>
+<body
 --%>
 
 <%-- meta should not be offered --%>

@@ -66,6 +66,7 @@ import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -83,6 +84,9 @@ import org.openide.windows.InputOutput;
  */
 public final class RemoteClient implements Cancellable {
     private static final Logger LOGGER = Logger.getLogger(RemoteClient.class.getName());
+
+    public static final AtomicAction DOWNLOAD_ATOMIC_ACTION = new DownloadAtomicAction(null);
+
     private static final AdvancedProperties DEFAULT_ADVANCED_PROPERTIES = new AdvancedProperties();
     private static final OperationMonitor DEV_NULL_OPERATION_MONITOR = new DevNullOperationMonitor();
     private static final Set<String> IGNORED_DIRS = new HashSet<String>(Arrays.asList(".", "..", "nbproject")); // NOI18N
@@ -549,14 +553,14 @@ public final class RemoteClient implements Cancellable {
         ensureConnected();
 
         final long start = System.currentTimeMillis();
-        TransferInfo transferInfo = new TransferInfo();
+        final TransferInfo transferInfo = new TransferInfo();
 
-        File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
+        final File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
 
         // XXX order filesToDownload?
         try {
             operationMonitor.operationStart(Operation.DOWNLOAD, filesToDownload);
-            for (TransferFile file : filesToDownload) {
+            for (final TransferFile file : filesToDownload) {
                 if (cancelled) {
                     LOGGER.fine("Download cancelled");
                     break;
@@ -564,13 +568,20 @@ public final class RemoteClient implements Cancellable {
 
                 operationMonitor.operationProcess(Operation.DOWNLOAD, file);
                 try {
-                    downloadFile(transferInfo, baseLocalDir, file);
-                } catch (IOException exc) {
-                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
-                    continue;
-                } catch (RemoteException exc) {
-                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
-                    continue;
+                    FileUtil.runAtomicAction(new DownloadAtomicAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                downloadFile(transferInfo, baseLocalDir, file);
+                            } catch (IOException exc) {
+                                transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
+                            } catch (RemoteException exc) {
+                                transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
+                            }
+                        }
+                    }));
+                } catch (IOException ex) {
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", ex.getMessage().trim()));
                 }
             }
         } finally {
@@ -1382,6 +1393,34 @@ public final class RemoteClient implements Cancellable {
         public AdvancedPropertiesBuilder setPhpVisibilityQuery(PhpVisibilityQuery phpVisibilityQuery) {
             this.phpVisibilityQuery = phpVisibilityQuery;
             return this;
+        }
+    }
+
+    private static final class DownloadAtomicAction implements AtomicAction {
+        private final Runnable runnable;
+
+        public DownloadAtomicAction(Runnable runnable) {
+            this.runnable = runnable;
+        }
+
+        @Override
+        public void run() throws IOException {
+            if (runnable != null) {
+                runnable.run();
+            }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            return getClass() == obj.getClass();
+        }
+
+        @Override
+        public int hashCode() {
+            return 42;
         }
     }
 }

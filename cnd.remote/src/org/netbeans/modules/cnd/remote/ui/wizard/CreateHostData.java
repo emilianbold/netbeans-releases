@@ -40,7 +40,7 @@
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import org.netbeans.modules.cnd.spi.remote.setup.support.HostSetupResultImpl;
-import org.netbeans.modules.cnd.toolchain.ui.api.ToolsCacheManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 
 /**
  * A structure that contains data used by wizard components

@@ -185,7 +185,13 @@ public final class GemFilesParser {
             LOGGER.fine("Couldn't parse name and version for " + fileName);
             return null;
         }
-        return new String[]{m.group(1), m.group(2)};
+        String name = m.group(1);
+        String version = m.group(2);
+        // strip out trailing "."
+        if (version.endsWith(".")) {
+            version = version.substring(0, version.length() - 1);
+        }
+        return new String[]{name, version};
     }
 
     /**
@@ -195,7 +201,7 @@ public final class GemFilesParser {
      * or <code>null</code> if parsing was unsuccessful.
      */
     public static String[] parseNameAndVersion(URL gemUrl) {
-        return parseNameAndVersion(Gem.getGemName(gemUrl));
+        return parseNameAndVersion(Gems.getGemName(gemUrl));
     }
 
 }

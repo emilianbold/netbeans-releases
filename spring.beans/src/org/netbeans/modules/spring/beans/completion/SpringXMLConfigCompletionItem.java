@@ -159,7 +159,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     public static SpringXMLConfigCompletionItem createBeanNameItem(int substitutionOffset, String text, int sortPriority) {
         return new BeanNameItem(substitutionOffset, text, sortPriority);
     }
-    
+
     protected int substitutionOffset;
     
     protected SpringXMLConfigCompletionItem(int substitutionOffset) {
@@ -175,24 +175,27 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         }
     }
     
-    protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
-        BaseDocument doc = (BaseDocument) c.getDocument();
+    protected void substituteText(JTextComponent c, final int offset, final int len, String toAdd) {
+        final BaseDocument doc = (BaseDocument) c.getDocument();
         CharSequence prefix = getSubstitutionText();
         String text = prefix.toString();
         if(toAdd != null) {
             text += toAdd;
         }
-        
-        doc.atomicLock();
-        try {
-            Position position = doc.createPosition(offset);
-            doc.remove(offset, len);
-            doc.insertString(position.getOffset(), text.toString(), null);
-        } catch (BadLocationException ble) {
-            // nothing can be done to update
-        } finally {
-            doc.atomicUnlock();
-        }
+        final String finalText = text;
+        doc.runAtomic(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    Position position = doc.createPosition(offset);
+                    doc.remove(offset, len);
+                    doc.insertString(position.getOffset(), finalText.toString(), null);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
     }
     
     protected CharSequence getSubstitutionText() {
@@ -238,7 +241,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     protected ImageIcon getIcon() {
         return null;
     }
-    
+
     private static class BeanRefItem extends SpringXMLConfigCompletionItem {
 
         private static final String CLASS_COLOR = "<font color=#808080>"; //NOI18N

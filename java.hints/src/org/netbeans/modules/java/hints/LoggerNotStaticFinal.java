@@ -47,6 +47,7 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
@@ -101,12 +102,16 @@ public class LoggerNotStaticFinal {
             this.loggerFieldHandle = loggerFieldHandle;
         }
 
+        @Override
         public String getText() {
             return text;
         }
 
+        @Override
         public ChangeInfo implement() throws Exception {
             JavaSource.forFileObject(loggerFieldHandle.getFileObject()).runModificationTask(new Task<WorkingCopy>() {
+
+                @Override
                 public void run(WorkingCopy wc) throws Exception {
                     wc.toPhase(Phase.RESOLVED);
                     TreePath tp = loggerFieldHandle.resolve(wc);

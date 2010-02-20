@@ -42,10 +42,12 @@ package org.netbeans.modules.php.project.ui.actions;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.TransferFile;
@@ -99,7 +101,8 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
         InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
         DefaultOperationMonitor downloadOperationMonitor = new DefaultOperationMonitor("LBL_Downloading"); // NOI18N
         RemoteClient remoteClient = getRemoteClient(remoteLog, downloadOperationMonitor);
-        download(remoteClient, remoteLog, downloadOperationMonitor, getProject().getName(), true, sources, selectedFiles);
+        String projectName = getProject().getName();
+        download(remoteClient, remoteLog, downloadOperationMonitor, projectName, true, sources, selectedFiles, null, getProject());
     }
 
     public String getDisplayName() {
@@ -108,16 +111,11 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
 
     public static void download(RemoteClient remoteClient, InputOutput remoteLog, DefaultOperationMonitor operationMonitor, String projectName,
             FileObject sources, Set<TransferFile> forDownload) {
-        download(remoteClient, remoteLog, operationMonitor, projectName, false, sources, null, forDownload);
-    }
-
-    public static void download(RemoteClient remoteClient, InputOutput remoteLog, DefaultOperationMonitor operationMonitor, String projectName,
-            boolean showDownloadDialog, FileObject sources, FileObject... filesToDownload) {
-        download(remoteClient, remoteLog, operationMonitor, projectName, showDownloadDialog, sources, filesToDownload, null);
+        download(remoteClient, remoteLog, operationMonitor, projectName, false, sources, null, forDownload, null);
     }
 
     private static void download(RemoteClient remoteClient, InputOutput remoteLog, DefaultOperationMonitor operationMonitor, String projectName,
-            boolean showDownloadDialog, FileObject sources, FileObject[] filesToDownload, Set<TransferFile> transferFilesToDownload) {
+            boolean showDownloadDialog, FileObject sources, FileObject[] filesToDownload, Set<TransferFile> transferFilesToDownload, PhpProject project) {
         String progressTitle = NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadingFiles", projectName);
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
         TransferInfo transferInfo = null;
@@ -128,7 +126,8 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
             if (showDownloadDialog) {
                 // avoid timeout errors
                 remoteClient.disconnect();
-                forDownload = TransferFilter.showDownloadDialog(forDownload);
+                long timestamp = project != null ? ProjectSettings.getLastDownload(project) : -1;
+                forDownload = TransferFilter.showDownloadDialog(forDownload, timestamp);
             }
 
             if (forDownload.size() > 0) {
@@ -144,6 +143,11 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
                 transferInfo = remoteClient.download(sources, forDownload);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadFinished", projectName));
+                if (project != null
+                        && !remoteClient.isCancelled()
+                        && transferInfo.hasAnyTransfered()) { // #153406
+                    rememberLastDownload(project, sources, filesToDownload);
+                }
             }
         } catch (RemoteException ex) {
             processRemoteException(ex);
@@ -157,6 +161,18 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
                 processTransferInfo(transferInfo, remoteLog);
             }
             progressHandle.finish();
+        }
+    }
+
+    // #142955 - but remember only if one of the selected files is source directory
+    //  (otherwise it would make no sense, consider this scenario: upload just one file -> remember timestamp
+    //  -> upload another file or the whole project [timestamp is irrelevant])
+    private static void rememberLastDownload(PhpProject project, FileObject sources, FileObject[] selectedFiles) {
+        for (FileObject fo : selectedFiles) {
+            if (sources.equals(fo)) {
+                ProjectSettings.setLastDownload(project, TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
+                return;
+            }
         }
     }
 }

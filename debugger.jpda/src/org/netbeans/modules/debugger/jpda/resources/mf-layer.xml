@@ -61,9 +61,11 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
-                <file name="org-netbeans-modules-debugger-jpda-actions-MethodChooserHighlightsLayerFactory.instance"/>
+                <file name="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.jpda.actions.MethodChooser.createHighlihgtsLayerFactory"/>
+                </file>
             </folder>
         </folder>
     </folder>
-
+    
 </filesystem>

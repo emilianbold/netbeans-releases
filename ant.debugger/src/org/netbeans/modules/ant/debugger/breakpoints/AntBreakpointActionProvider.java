@@ -48,6 +48,7 @@ import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.spi.debugger.ActionsProvider.Registration;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.filesystems.FileObject;
@@ -58,6 +59,7 @@ import org.openide.util.WeakListeners;
  *
  * @author  Honza
  */
+@Registration(actions={"toggleBreakpoint"}, activateForMIMETypes={"text/x-ant+xml"})
 public class AntBreakpointActionProvider extends ActionsProviderSupport
                                          implements PropertyChangeListener {
     
