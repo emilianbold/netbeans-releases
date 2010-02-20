@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import javax.swing.AbstractAction;
@@ -52,7 +53,6 @@ import javax.swing.Action;
 import javax.swing.JOptionPane;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.ui.HostPropertiesDialog;
@@ -62,8 +62,11 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -79,10 +82,19 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
     private final ExecutionEnvironment env;
 
     public HostNode(ExecutionEnvironment execEnv) {
-        super(Children.LEAF, Lookups.singleton(execEnv));
+        super(createChildren(execEnv), Lookups.singleton(execEnv));
         this.env = execEnv;
         ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, null));
         ServerList.addPropertyChangeListener(WeakListeners.propertyChange(this, null));
+    }
+
+    private static Children createChildren(ExecutionEnvironment execEnv) {
+        final Collection<? extends HostNodesProvider> providers = Lookup.getDefault().lookupAll(HostNodesProvider.class);
+        if (providers.isEmpty()) {
+            return Children.LEAF;
+        } else {
+            return Children.create(new HostSubnodeChildren(execEnv, providers), true);
+        }
     }
 
     @Override
@@ -160,6 +172,28 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
 
     public ExecutionEnvironment getExecutionEnvironment() {
         return getLookup().lookup(ExecutionEnvironment.class);
+    }
+
+    private static class HostSubnodeChildren extends ChildFactory<HostNodesProvider> {
+
+        private final Collection<? extends HostNodesProvider> providers;
+        private final ExecutionEnvironment execEnv;
+
+        public HostSubnodeChildren(ExecutionEnvironment execEnv, Collection<? extends HostNodesProvider> providers) {
+            this.execEnv = execEnv;
+            this.providers = providers;
+        }
+
+        @Override
+        protected boolean createKeys(List<HostNodesProvider> toPopulate) {
+            toPopulate.addAll(providers);
+            return true;
+        }
+
+        @Override
+        protected Node createNodeForKey(HostNodesProvider key) {
+            return key.createNode(execEnv);
+        }
     }
 
     private class RemoveHostAction extends AbstractAction { // extends HostAction
