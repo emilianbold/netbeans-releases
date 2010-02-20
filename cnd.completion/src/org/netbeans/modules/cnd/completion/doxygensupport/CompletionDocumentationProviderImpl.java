@@ -59,18 +59,20 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jan Lahoda
  */
-@ServiceProvider(service=CompletionDocumentationProvider.class)
+@ServiceProvider(service = CompletionDocumentationProvider.class)
 public class CompletionDocumentationProviderImpl implements CompletionDocumentationProvider {
 
     public CompletionTask createDocumentationTask(CompletionItem item) {
-        if (!(item instanceof CsmResultItem)) return null;
+        if (!(item instanceof CsmResultItem)) {
+            return null;
+        }
 
         Object assoc = ((CsmResultItem) item).getAssociatedObject();
 
         if (assoc instanceof CsmObject) {
             return new AsyncCompletionTask(new DocQuery((CsmObject) assoc));
         }
-        
+
         return null;
     }
 
@@ -99,15 +101,16 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
                 documentation = new EmptyCompletionDocumentationImpl(w.toString());
             }
 
-            if (documentation != null)
+            if (documentation != null) {
                 resultSet.setDocumentation(documentation);
+            }
 
             resultSet.finish();
         }
-
     }
-    
+
     private static final class EmptyCompletionDocumentationImpl implements CompletionDocumentation {
+
         private final String text;
 
         public EmptyCompletionDocumentationImpl(String text) {
