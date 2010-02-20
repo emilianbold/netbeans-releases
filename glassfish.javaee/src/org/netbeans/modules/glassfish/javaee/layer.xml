@@ -44,6 +44,11 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2ModuleConfigFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
                 </file>
+                <file name="J2eeVerifierSupport.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.verifier.VerifierImpl"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.verifier.VerifierImpl"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport"/>
+                </file>
                 <!-- -->
                 <folder name="DeploymentFileNames">
                     <folder name="WAR">
@@ -74,6 +79,11 @@
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.Hk2ModuleConfigFactory"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2ModuleConfigFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
+                </file>
+                <file name="J2eeVerifierSupport.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.verifier.VerifierImpl"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.verifier.VerifierImpl"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport"/>
                 </file>
                 <!-- -->
                 <folder name="DeploymentFileNames">

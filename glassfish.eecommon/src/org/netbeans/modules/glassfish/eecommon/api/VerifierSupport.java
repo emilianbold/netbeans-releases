@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,13 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-/*
- * Created on August 8, 2004, 1:47 PM
- */
 
-package org.netbeans.modules.j2ee.sun.ide.j2ee;
+package org.netbeans.modules.glassfish.eecommon.api;
 
-import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -75,10 +71,12 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.glassfish.spi.ExecSupport;
 import org.netbeans.modules.j2ee.sun.dd.impl.verifier.Appclient;
 import org.netbeans.modules.j2ee.sun.dd.impl.verifier.Application;
 import org.netbeans.modules.j2ee.sun.dd.impl.verifier.Connector;
@@ -90,12 +88,13 @@ import org.netbeans.modules.j2ee.sun.dd.impl.verifier.StaticVerification;
 import org.netbeans.modules.j2ee.sun.dd.impl.verifier.Test;
 import org.netbeans.modules.j2ee.sun.dd.impl.verifier.Warning;
 import org.netbeans.modules.j2ee.sun.dd.impl.verifier.Web;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openide.windows.Mode;
-import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.db.ExecSupport;
 
 /**
  * Main TopComponent to display the output of the Sun J2EE Verifier Tool from an archive file.
@@ -149,58 +148,72 @@ public class VerifierSupport extends TopComponent{
     private Vector notRunResults = new Vector();
     private Vector defaultResults = new Vector();
     
-    public static  void launchVerifier(final String fileName, OutputStream outs){
+    /**
+     *
+     * @param fileName
+     * @param outs
+     * @param irf
+     */
+    public static  void launchVerifier(final String fileName, OutputStream outs, File irf){
         final File f = new File(fileName);
         final File dir = f.getParentFile();
         final VerifierSupport verifierSupport=new VerifierSupport(fileName);
         
-        File irf = org.netbeans.modules.j2ee.sun.api.ServerLocationManager.getLatestPlatformLocation();
+        //File irf = org.netbeans.modules.j2ee.sun.api.ServerLocationManager.getLatestPlatformLocation();
         if (null == irf || !irf.exists()) {
-            org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util.showWarning(NbBundle.getMessage(VerifierSupport.class, "ERR_CannotFind"));// NOI18N
+            //org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util.showWarning(NbBundle.getMessage(VerifierSupport.class, "ERR_CannotFind"));// NOI18N
             return;
         }
         String installRoot = irf.getAbsolutePath();
-        SwingUtilities.invokeLater( new Runnable(){
-            public void run() {
-                verifierSupport.initUI();
-                verifierSupport.showInMode();
-            }
-        });
         
         try{
             String cmd = installRoot+File.separator+"bin"+File.separator+"verifier";//NOI18N
             if (File.separatorChar != '/') {
                 cmd =cmd + ".bat";      // NOI18N
             }
-            Runtime rt = Runtime.getRuntime();
-            String arr[] = {cmd, "-ra", "-d" , dir.getAbsolutePath(), fileName};//NOI18N
-            
-            String cmdName="";      // NOI18N
-            for (int j=0;j<arr.length;j++){
-                cmdName= cmdName+arr[j]+" ";        // NOI18N
-            }
-            System.out.println(NbBundle.getMessage(VerifierSupport.class,"running_", cmdName));     // NOI18N
-            final Process child = rt.exec(arr);
-            
-            //
-            // Attach to the process's stdout, and ignore what comes back.
-            //
-            final Thread[] copyMakers = new Thread[2];
-            OutputStreamWriter oss=null;
-            if (outs!=null) {
-                oss=new OutputStreamWriter(outs);
-            }
-            (copyMakers[0] = new ExecSupport.OutputCopier(new InputStreamReader(child.getInputStream()), oss, true)).start();
-            (copyMakers[1] = new ExecSupport.OutputCopier(new InputStreamReader(child.getErrorStream()), oss, true)).start();
-            try {
-                child.waitFor();
-                Thread.sleep(1000);  // time for copymakers
-            } catch (InterruptedException e) {
-            } finally {
+            File verifierFile = new File(cmd);
+            if (!verifierFile.exists()) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(VerifierSupport.class, "MSG_INSTALL_VERIFIER")); // NOI18N
+                DialogDisplayer.getDefault().notify(nd);
+                return;
+            } else {
+                SwingUtilities.invokeLater( new Runnable(){
+                    @Override
+                    public void run() {
+                        verifierSupport.initUI();
+                        verifierSupport.showInMode();
+                    }
+                });
+                Runtime rt = Runtime.getRuntime();
+                String arr[] = {cmd, "-ra", "-d" , dir.getAbsolutePath(), fileName};//NOI18N
+
+                String cmdName="";      // NOI18N
+                for (int j=0;j<arr.length;j++){
+                    cmdName= cmdName+arr[j]+" ";        // NOI18N
+                }
+                System.out.println(NbBundle.getMessage(VerifierSupport.class,"running_", cmdName));     // NOI18N
+                final Process child = rt.exec(arr);
+
+                //
+                // Attach to the process's stdout, and ignore what comes back.
+                //
+                final Thread[] copyMakers = new Thread[2];
+                OutputStreamWriter oss=null;
+                if (outs!=null) {
+                    oss=new OutputStreamWriter(outs);
+                }
+                (copyMakers[0] = new ExecSupport.OutputCopier(new InputStreamReader(child.getInputStream()), oss, true)).start();
+                (copyMakers[1] = new ExecSupport.OutputCopier(new InputStreamReader(child.getErrorStream()), oss, true)).start();
                 try {
-                    copyMakers[0].interrupt();
-                    copyMakers[1].interrupt();
-                } catch (Exception e) {
+                    child.waitFor();
+                    Thread.sleep(1000);  // time for copymakers
+                } catch (InterruptedException e) {
+                } finally {
+                    try {
+                        copyMakers[0].interrupt();
+                        copyMakers[1].interrupt();
+                    } catch (Exception e) {
+                    }
                 }
             }
         } catch (Exception e) {
@@ -406,11 +419,16 @@ public class VerifierSupport extends TopComponent{
         verifierSupport.updateDisplay();
     }
     
-    /** Creates a new instance of VerifierOuput */
+    /** Creates a new instance of VerifierOuput
+     * @param archiveName
+     */
     public VerifierSupport(String archiveName) {
         _archiveName = archiveName;
     }
     
+    /**
+     *
+     */
     public void initUI(){
         setLayout(new BorderLayout());
         setName(NbBundle.getMessage(VerifierSupport.class,"LBL_Verifier",       //NOI18N
@@ -525,6 +543,7 @@ public class VerifierSupport extends TopComponent{
         });
         // add action listener to table to show details
         tableSelectionListener =  new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e){
                 if (!e.getValueIsAdjusting()){
                     if(table.getSelectionModel().isSelectedIndex(e.getLastIndex())){
@@ -570,6 +589,7 @@ public class VerifierSupport extends TopComponent{
     }
     
     class RadioListener implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (verifierIsStillRunning){
                 if(e.getSource() == allButton){
@@ -620,6 +640,10 @@ public class VerifierSupport extends TopComponent{
         }
     }
     
+    /**
+     *
+     * @param details
+     */
     public void setDetailText(String details) {
         detailText.setText(details);
         JScrollBar scrollBar = textScrollPane.getVerticalScrollBar();
@@ -628,6 +652,9 @@ public class VerifierSupport extends TopComponent{
         }
     }
     
+    /**
+     *
+     */
     public void clearResults() {
         //clear the table
         tableModel = new DefaultTableModel(columnNames, 0);
@@ -770,6 +797,9 @@ public class VerifierSupport extends TopComponent{
         updateTableRows("???",getDefaultResultsForDisplay());   // NOI18N
     }
     
+    /**
+     *
+     */
     public void updateDisplay(){
         // update display approriately
         clearResults();
@@ -799,6 +829,10 @@ public class VerifierSupport extends TopComponent{
         failResults.addElement(r);
     }
     
+    /**
+     *
+     * @param r
+     */
     public void saveErrorResultsForDisplay(org.netbeans.modules.j2ee.sun.dd.impl.verifier.Error r){
         errorResults.addElement(r);
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,34 +38,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-/*
- * VerifierImpl.java
- *
- * Created on December 8, 2004, 2:54 PM
- */
 
-package org.netbeans.modules.j2ee.sun.ide.j2ee;
+package org.netbeans.modules.glassfish.javaee.verifier;
 
+import java.io.File;
 import java.io.OutputStream;
-
+import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.glassfish.eecommon.api.VerifierSupport;
+import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
+import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.FileOwnerQuery;
-import javax.enterprise.deploy.spi.DeploymentManager;
-import org.netbeans.modules.glassfish.eecommon.api.VerifierSupport;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
-import org.netbeans.modules.j2ee.sun.api.InstrumentAVK; 
-import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
-
-/**
- *
- * @author ludo
- */
 public  class VerifierImpl extends org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport {
     
     /** Creates a new instance of VerifierImpl */
@@ -82,21 +71,14 @@ public  class VerifierImpl extends org.netbeans.modules.j2ee.deployment.plugins.
      * @param logger Log stream to write verification output to.
      * @exception ValidationException if the target fails the validation.
      */
+    @Override
     public void verify(FileObject target, OutputStream logger) throws ValidationException {
-        //System.out.println("In Verifier...."+target);
         final String jname = FileUtil.toFile(target).getAbsolutePath();
         DeploymentManager dm = getAssociatedSunDM(target);
-        SunDeploymentManagerInterface sdm = (SunDeploymentManagerInterface)dm;
-        InstrumentAVK avkSupport = getAVKImpl();
-        if((avkSupport != null) && (dm != null) && sdm.isLocal()){
-            J2eeModuleProvider modProvider = getModuleProvider(target);
-            boolean verificationType = avkSupport.createAVKSupport(dm, modProvider);
-            if(verificationType){ 
-                VerifierSupport.launchVerifier(jname, logger,sdm.getPlatformRoot());
-            }
-        }else{
-            VerifierSupport.launchVerifier(jname,logger,sdm.getPlatformRoot());
-        }   
+        if (dm instanceof Hk2DeploymentManager) {
+            Hk2DeploymentManager hk2dm = (Hk2DeploymentManager) dm;
+            VerifierSupport.launchVerifier(jname,logger, new File(hk2dm.getProperties().getGlassfishRoot()));
+        }
     }
     
     private DeploymentManager getAssociatedSunDM(FileObject target){
@@ -109,11 +91,6 @@ public  class VerifierImpl extends org.netbeans.modules.j2ee.deployment.plugins.
         return dm;
     }
 
-    private InstrumentAVK getAVKImpl(){
-        InstrumentAVK avkSupport = AVKLayerUtil.getAVKImplemenation();
-        return avkSupport;
-    }
-    
     private J2eeModuleProvider getModuleProvider(FileObject target){
         J2eeModuleProvider modProvider = null;
         Project holdingProj = FileOwnerQuery.getOwner(target);
