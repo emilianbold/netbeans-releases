@@ -62,18 +62,21 @@ import org.netbeans.spi.editor.completion.CompletionDocumentation;
 public class DoxygenDocumentation {
 
     private static final Pattern STRIP_STARS = Pattern.compile("^[ \t]*\\*[ \t]*", Pattern.MULTILINE); // NOI18N
+    private static final String[] formatItalic = new String[]{"<i>", "</i>"}; // NOI18N
 
     static String doxygen2HTML(String doxygen) {
         doxygen = doxygen.substring(3, doxygen.length() - 2);
-
         doxygen = STRIP_STARS.matcher(doxygen).replaceAll("");
+        doxygen = doxygen.trim();
 
         StringBuilder output = new StringBuilder();
         List<String> wordEnd = new LinkedList<String>();
         List<String> lineEnd = new LinkedList<String>();
         List<String> parEnd = new LinkedList<String>();
+        String[] nextWordFormat = null;
 
         for (Token t : lex(doxygen)) {
+            //System.out.println("---" + t.id + " " + t.image); // NOI18N
             switch (t.id) {
                 case WHITESPACE:
                     output.append(t.image);
@@ -83,7 +86,14 @@ public class DoxygenDocumentation {
                         output.append(s);
                     }
                     wordEnd.clear();
+                    if (nextWordFormat != null) {
+                        output.append(nextWordFormat[0]);
+                    }
                     output.append(t.image);
+                    if (nextWordFormat != null) {
+                        output.append(nextWordFormat[1]);
+                    }
+                    nextWordFormat = null;
                     break;
                 case LINE_END:
                     for (String s : wordEnd) {//should be empty...
@@ -120,9 +130,18 @@ public class DoxygenDocumentation {
                     }
                     output.append(cd.htmlStart);
                     switch (cd.end) {
-                        case WORD: wordEnd.add(cd.htmlEnd); break;
-                        case LINE: lineEnd.add(cd.htmlEnd); break;
-                        case PAR: parEnd.add(cd.htmlEnd); break;
+                        case WORD:
+                            wordEnd.add(cd.htmlEnd);
+                            break;
+                        case LINE:
+                            lineEnd.add(cd.htmlEnd);
+                            break;
+                        case PAR:
+                            parEnd.add(cd.htmlEnd);
+                            break;
+                    }
+                    if (t.image.equals("\\param")) { // NOI18N
+                        nextWordFormat = formatItalic;
                     }
                     break;
             }
@@ -130,15 +149,14 @@ public class DoxygenDocumentation {
 
         return "<html><body><p>" + output.toString() + "</p>"; // NOI18N
     }
-
     private static final Map<String, CommandDescription> commands = new HashMap<String, CommandDescription>();
 
     static {
         commands.put("\\fn", new CommandDescription(EndsOn.LINE, "<strong>", "</strong></p><p>")); // NOI18N
         commands.put("\\c", new CommandDescription(EndsOn.WORD, "<tt>", "</tt>")); // NOI18N
-        commands.put("\\return", new CommandDescription(EndsOn.PAR, "<strong>Returns:</strong>", "")); // NOI18N
-        commands.put("\\param", new CommandDescription(EndsOn.PAR, "<strong>Parameters:</strong>", "")); // NOI18N
-        commands.put("\\sa", new CommandDescription(EndsOn.PAR, "<strong>See Also:</strong>", "")); // NOI18N
+        commands.put("\\return", new CommandDescription(EndsOn.PAR, "<strong>Returns:</strong><br>&nbsp; ", "")); // NOI18N
+        commands.put("\\param", new CommandDescription(EndsOn.PAR, "<strong>Parameter:</strong><br>&nbsp; ", "")); // NOI18N
+        commands.put("\\sa", new CommandDescription(EndsOn.PAR, "<strong>See Also:</strong><br>&nbsp; ", "")); // NOI18N
         commands.put("\\brief", new CommandDescription(EndsOn.PAR, "", "")); // NOI18N
         commands.put("\\code", new CommandDescription(EndsOn.NONE, "<pre>", ""));//XXX: does not work properly - the content will still be processed, '<', '>' will not be escaped. // NOI18N
         commands.put("\\endcode", new CommandDescription(EndsOn.NONE, "</pre>", "")); // NOI18N
@@ -147,6 +165,7 @@ public class DoxygenDocumentation {
 
     static final class CommandDescription {
 //        final String command;
+
         final EndsOn end;
         final String htmlStart;
         final String htmlEnd;
@@ -160,12 +179,15 @@ public class DoxygenDocumentation {
     }
 
     enum EndsOn {
+
         WORD, LINE, PAR, NONE;
     }
-    
+
     public static CompletionDocumentation create(CsmObject csmObject) {
-        if (!(csmObject instanceof CsmOffsetable)) return null;
-        
+        if (!(csmObject instanceof CsmOffsetable)) {
+            return null;
+        }
+
         CsmOffsetable csmOffsetable = (CsmOffsetable) csmObject;
         TokenHierarchy<?> h = TokenHierarchy.create(csmOffsetable.getContainingFile().getText(), CppTokenId.languageHeader());
         TokenSequence<CppTokenId> ts = h.tokenSequence(CppTokenId.languageHeader());
@@ -174,7 +196,8 @@ public class DoxygenDocumentation {
 
         String docText = null;
 
-        OUTER: while (ts.movePrevious()) {
+        OUTER:
+        while (ts.movePrevious()) {
             switch (ts.token().id()) {
                 case LINE_COMMENT:
                 case BLOCK_COMMENT:
@@ -182,8 +205,8 @@ public class DoxygenDocumentation {
                 case NEW_LINE:
                     continue;
                 case DOXYGEN_COMMENT:
-                   docText = ts.token().text().toString();
-                   break OUTER;
+                    docText = ts.token().text().toString();
+                    break OUTER;
                 case SEMICOLON:
                 case RBRACKET:
                     break OUTER;
@@ -195,7 +218,7 @@ public class DoxygenDocumentation {
         if (docText == null) {
             return null;
         }
-        
+
         String htmlDocText = doxygen2HTML(docText);
 
         return new CompletionDocumentationImpl(htmlDocText);
@@ -207,13 +230,14 @@ public class DoxygenDocumentation {
         int i = 0;
         boolean wasContent = true;
 
-        OUTER: while (i < text.length()) {
+        OUTER:
+        while (i < text.length()) {
             switch (text.charAt(i)) {
                 case '\n': // NOI18N
                     result.add(new Token(wasContent ? TokenId.LINE_END : TokenId.PAR_END, "\n")); // NOI18N
                     i++;
                     wasContent = false;
-                    break ;
+                    break;
                 case ' ': // NOI18N
                 case '\t': // NOI18N
                     img.append(text.charAt(i++));
@@ -222,7 +246,7 @@ public class DoxygenDocumentation {
                     }
                     result.add(new Token(TokenId.WHITESPACE, img.toString()));
                     img = new StringBuilder();
-                    break ;
+                    break;
                 case '@':
                 case '\\': // NOI18N
                     img.append('\\');
@@ -233,7 +257,7 @@ public class DoxygenDocumentation {
                     result.add(new Token(TokenId.COMMAND, img.toString()));
                     img = new StringBuilder();
                     wasContent = true;
-                    break ;
+                    break;
                 default:
                     img.append(text.charAt(i++));
                     while (i < text.length() && (text.charAt(i) != ' ' && text.charAt(i) != '\t' && text.charAt(i) != '\n' && text.charAt(i) != '\\')) { // NOI18N
@@ -242,7 +266,7 @@ public class DoxygenDocumentation {
                     result.add(new Token(TokenId.WORD, img.toString()));
                     img = new StringBuilder();
                     wasContent = true;
-                    break ;
+                    break;
             }
         }
 
@@ -250,6 +274,7 @@ public class DoxygenDocumentation {
     }
 
     static class Token {
+
         final TokenId id;
         final String image;
 
@@ -265,10 +290,12 @@ public class DoxygenDocumentation {
     }
 
     enum TokenId {
+
         COMMAND, WHITESPACE, PAR_END, LINE_END, WORD//, LINE_START;
     }
 
     private static final class CompletionDocumentationImpl implements CompletionDocumentation {
+
         private final String text;
 
         public CompletionDocumentationImpl(String text) {

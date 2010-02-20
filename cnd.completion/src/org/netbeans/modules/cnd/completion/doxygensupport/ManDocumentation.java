@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
 public class ManDocumentation {
 
     private static final Logger LOG = Logger.getLogger(ManDocumentation.class.getName());
-    
+
     public static CompletionDocumentation getDocumentation(CsmObject obj) {
         if (obj instanceof CsmFunction) {
             return getDocumentation(((CsmFunction) obj).getName().toString());
@@ -82,16 +82,17 @@ public class ManDocumentation {
     }
 
     public static CompletionDocumentation getDocumentation(String name) {
-        return getDocumentation(name, 3/**Supposing all functions goes from chapter 3*/);
+        return getDocumentation(name, 3/**Supposing all functions goes from chapter 3*/
+                );
     }
 
     public static CompletionDocumentation getDocumentation(String name, int chapter) {
         String doc = getDocumentationForName(name, chapter);
-        
+
         if (doc == null) {
             return null;
         }
-        
+
         return new CompletionDocumentationImpl(doc);
     }
 
@@ -182,10 +183,10 @@ public class ManDocumentation {
         InputStream in = new ByteArrayInputStream(text.getBytes());
 
         try {
-            Process p = Runtime.getRuntime().exec(new String[] {
-                "/usr/bin/man2html", // NOI18N
+            Process p = Runtime.getRuntime().exec(new String[]{
+                        "/usr/bin/man2html", // NOI18N
                         "-", // NOI18N
-            });
+                    });
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             StreamCopier inC = new StreamCopier("in", in, p.getOutputStream()); // NOI18N
@@ -204,7 +205,7 @@ public class ManDocumentation {
 
             String result = out.toString();
 
-            for (Iterator e = TRANSLATE.entrySet().iterator(); e.hasNext(); ) {
+            for (Iterator e = TRANSLATE.entrySet().iterator(); e.hasNext();) {
                 Map.Entry entry = (Map.Entry) e.next();
                 String key = (String) entry.getKey();
                 String value = (String) entry.getValue();
@@ -214,8 +215,9 @@ public class ManDocumentation {
 
             int htmlStart = result.indexOf("<HTML>"); // NOI18N
 
-            if (htmlStart != (-1))
+            if (htmlStart != (-1)) {
                 result = result.substring(htmlStart);
+            }
 
             return result;
         } catch (InterruptedException e) {
@@ -242,8 +244,9 @@ public class ManDocumentation {
             f = new File("/usr/share/man/", path + ".gz"); // NOI18N
         }
 
-        if (f.exists())
+        if (f.exists()) {
             return f;
+        }
 
         return null;
     }
@@ -251,12 +254,12 @@ public class ManDocumentation {
     private static String readManPage(String relativePath) throws IOException {
         File f = resolvePath(relativePath);
 
-        if (f == null)
+        if (f == null) {
             return null;
+        }
 
         return readFile(f);
     }
-
     private static final int MAX_DEPTH = 10;
 
     private static String soElim(String text, int depth) throws IOException {
@@ -295,7 +298,7 @@ public class ManDocumentation {
 
         public StreamCopier(String name, InputStream ins, OutputStream out) {
             this.ins = ins;
-            this.out  = out;
+            this.out = out;
         }
 
         public void run() {
@@ -313,7 +316,6 @@ public class ManDocumentation {
             }
         }
     }
-
     private static final Map<String, String> TRANSLATE;
 
     static {
@@ -365,6 +367,7 @@ public class ManDocumentation {
     }
 
     private static final class CompletionDocumentationImpl implements CompletionDocumentation {
+
         private String doc;
 
         public CompletionDocumentationImpl(String doc) {
@@ -382,13 +385,15 @@ public class ManDocumentation {
         public CompletionDocumentation resolveLink(String link) {
             String[] parts = link.split("\\?"); // NOI18N
 
-            if (parts.length != 2)
+            if (parts.length != 2) {
                 return null;
+            }
 
             String[] chapterAndName = parts[1].split("\\+"); // NOI18N
 
-            if (chapterAndName.length != 2)
+            if (chapterAndName.length != 2) {
                 return null;
+            }
 
             int chapter = Integer.parseInt(chapterAndName[0]);
             String name = chapterAndName[1];
