@@ -60,7 +60,7 @@
         <fileset dir="${build.classes.dir}" includes="${jar.contents.includes}"/>
         <mapper>
           <chainedmapper>
-            <globmapper handledirsep="true" from="${build.classes.dir.normalized}/" to=""/>
+            <globmapper handledirsep="true" from="${build.classes.dir.normalized}/*" to="*"/>
           </chainedmapper>
         </mapper>
         </pathconvert>
