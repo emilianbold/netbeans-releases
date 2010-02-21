@@ -99,6 +99,9 @@ public abstract class JPDADebugger {
     /** Property name constant.
      * @since 2.16     */
     public static final String          PROP_THREAD_GROUP_ADDED = "threadGroupAdded";  // NOI18N
+    /** Property name constant.
+     * @since 2.25     */
+    public static final String          PROP_CLASSES_FIXED = "classesFixed";  // NOI18N
     
     /** Suspend property value constant. */
     public static final int             SUSPEND_ALL = EventRequest.SUSPEND_ALL;
