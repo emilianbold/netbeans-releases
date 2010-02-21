@@ -63,7 +63,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.modules.subversion.AbstractSvnTest;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.utils.TestUtilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;

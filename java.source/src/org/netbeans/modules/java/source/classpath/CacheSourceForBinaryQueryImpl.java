@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.net.URL;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
@@ -129,10 +130,15 @@ public class CacheSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
                     result = new FileObject[0];
                 }
                 else {
-                    FileObject aptRoot = resolveAptSourceCache(sourceRoot);
-                    result = aptRoot != null ?
-                          new FileObject[] {this.sourceRoot, aptRoot} :
-                          new FileObject[] {this.sourceRoot};
+                    final FileObject[] aptRoots = resolveAptSourceCache(sourceRoot);
+                    if (aptRoots.length == 0) {
+                        result = new FileObject[] {this.sourceRoot};
+                    }
+                    else {
+                        result = new FileObject[1+aptRoots.length];
+                        result[0] = this.sourceRoot;
+                        System.arraycopy(aptRoots, 0, result, 1, aptRoots.length);
+                    }
                 }
             }
             return result;
@@ -142,9 +148,19 @@ public class CacheSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
          * Resolves the APT sources cache root
          * Depends on the JavaIndex rather than on AptCacheForSourceQuery due to performance reasons
          */
-        private static FileObject resolveAptSourceCache(final FileObject sourceRoot) {
+        private static FileObject[] resolveAptSourceCache(final FileObject sourceRoot) {
             try {
-                return FileUtil.toFileObject(JavaIndex.getAptFolder(sourceRoot.getURL(), false));
+                final AnnotationProcessingQuery.Result result = AnnotationProcessingQuery.getAnnotationProcessingOptions(sourceRoot);
+                final URL annotationOutputURL = result.sourceOutputDirectory();
+                final FileObject userAnnotationOutput = annotationOutputURL == null ? null : URLMapper.findFileObject(annotationOutputURL);
+                final FileObject cacheAnnoationOutput = FileUtil.toFileObject(JavaIndex.getAptFolder(sourceRoot.getURL(), false));
+                return userAnnotationOutput == null ?
+                    cacheAnnoationOutput == null ?
+                        new FileObject[0] :
+                        new FileObject[] {cacheAnnoationOutput}
+                    : cacheAnnoationOutput == null ?
+                        new FileObject[] {userAnnotationOutput} :
+                        new FileObject[] {userAnnotationOutput, cacheAnnoationOutput};
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
                 return null;

@@ -193,12 +193,14 @@ made subject to such option by the copyright holder.
         <dynamic_library flags="-dynamic"/>
         <dynamic_library_basic flags="-shared "/>
         <output_file flags="-o "/>
+        <strip_flag flags="-s"/>
     </linker>
     <make>
         <tool name="gmake,make"/>
         <alternative_path>
-            <path toolchain_name="*"/>
             <path directory="$PATH"/>
+            <path toolchain_family="GNU"/>
+            <path toolchain_name="*"/>
         </alternative_path>
         <version flags="--version" />
         <dependency_support code="include $(wildcard $(addsuffix .d, ${OBJECTFILES}))\n" />
@@ -206,24 +208,24 @@ made subject to such option by the copyright holder.
     <debugger>
         <tool name="gdb"/>
         <alternative_path>
-            <path toolchain_family="GNU"/>
             <path directory="$PATH"/>
+            <path toolchain_family="GNU"/>
         </alternative_path>
         <version flags="--version" />
     </debugger>
     <qmake>
         <tool name="qmake"/>
         <alternative_path>
-            <path toolchain_name="*"/>
             <path directory="$PATH"/>
+            <path toolchain_name="*"/>
         </alternative_path>
         <version flags="-v" />
     </qmake>
     <cmake>
         <tool name="cmake"/>
         <alternative_path>
-            <path toolchain_name="*"/>
             <path directory="$PATH"/>
+            <path toolchain_name="*"/>
         </alternative_path>
         <version flags="--version" />
     </cmake>

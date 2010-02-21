@@ -58,13 +58,13 @@ import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -166,10 +166,10 @@ public class ErrorHintsProviderTest extends NbTestCase {
         
         doc.putProperty(Language.class, JavaTokenId.language());
         
-        for (ErrorDescription ed : new ErrorHintsProvider().computeErrors(info, doc))
+        for (ErrorDescription ed : new ErrorHintsProvider().computeErrors(info, doc, Utilities.JAVA_MIME_TYPE))
             ref(ed.toString().replaceAll("\\p{Space}*:\\p{Space}*", ":"));
 
-        if (!Utilities.isMac() && specialMacTreatment) {
+        if (!org.openide.util.Utilities.isMac() && specialMacTreatment) {
             compareReferenceFiles(this.getName()+".ref",this.getName()+"-nonmac.pass",this.getName()+".diff");
         } else {
             compareReferenceFiles();

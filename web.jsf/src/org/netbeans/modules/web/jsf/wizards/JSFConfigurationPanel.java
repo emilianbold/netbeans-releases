@@ -204,7 +204,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     public String getServletName(){
         return component.getServletName();
     }
-    
+
     public void setServletName(String name){
         component.setServletName(name);
     }

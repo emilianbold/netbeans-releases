@@ -42,12 +42,15 @@ package org.netbeans.modules.kenai.collab.chat;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
@@ -188,13 +191,19 @@ public class ChatNotifications {
         return handle;
     }
 
-    synchronized void clearAll() {
-        for (MessagingHandleImpl h:groupMessages.values()) {
-            h.disposeNotification();
-            h.setMessageCount(0);
-            h.setOnlineCount(-1);
+    synchronized void clearAll(Kenai kenai) {
+        String name = "@muc." + kenai.getUrl().getHost();
+        Iterator<Entry<String, MessagingHandleImpl>> iterator = groupMessages.entrySet().iterator();
+        while (iterator.hasNext()) {
+            java.util.Map.Entry<String, MessagingHandleImpl> entry = iterator.next();
+            if (entry.getKey().endsWith(name)) {
+                MessagingHandleImpl h = entry.getValue();
+                h.disposeNotification();
+                h.setMessageCount(0);
+                h.setOnlineCount(-1);
+                iterator.remove();
+            }
         }
-        groupMessages.clear();
     }
 
     boolean isEnabled(String name) {

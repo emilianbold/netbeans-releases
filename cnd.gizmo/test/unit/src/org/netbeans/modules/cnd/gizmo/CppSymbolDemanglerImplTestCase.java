@@ -124,7 +124,7 @@ public class CppSymbolDemanglerImplTestCase extends NativeExecutionBaseTestCase 
     private void addMangled(List<String> list, List<String> toAdd) {
         for (int i = 0; i < toAdd.size(); i += 2) {
             String sym = toAdd.get(i);
-            if (Utilities.isMac()) {
+            if (Utilities.isMac() || Utilities.isWindows()) {
                 sym = "_" + sym;
             }
             list.add(sym);

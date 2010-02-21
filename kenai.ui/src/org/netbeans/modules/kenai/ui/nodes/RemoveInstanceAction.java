@@ -58,12 +58,13 @@ public class RemoveInstanceAction extends AbstractAction {
     }
 
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         KenaiManager.getDefault().removeKenai(key);
     }
 
-//    @Override
-//    public boolean isEnabled() {
-//        return !key.getUrl().equals(Kenai.getDefault().getUrl().toString());
-//    }
+    @Override
+    public boolean isEnabled() {
+        return !"https://kenai.com".equals(key.getUrl().toString());
+    }
 }

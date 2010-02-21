@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.utils.ConfigureFileFilter;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.MakefileFileFilter;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -507,7 +506,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             return;
         }
         String path = fileChooser.getSelectedFile().getPath();
-        path = FilePathAdaptor.normalize(path);
+        path = IpeUtils.normalize(path);
         configureNameTextField.setText(path);
     }//GEN-LAST:event_configureBrowseButtonActionPerformed
     
@@ -533,7 +532,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             return;
         }
         String path = fileChooser.getSelectedFile().getPath();
-        path = FilePathAdaptor.normalize(path);
+        path = IpeUtils.normalize(path);
         makefileNameTextField.setText(path);
     }//GEN-LAST:event_makefileBrowseButtonActionPerformed
     

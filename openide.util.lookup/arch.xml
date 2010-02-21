@@ -328,7 +328,7 @@ org.my.netbeans.extramodule.ExtraTip
  <answer id="exec-property">
   <ul>
     <li>
-    <api type="export" group="property" name="org.openide.util.Lookup" category="devel">
+    <api type="export" group="systemproperty" name="org.openide.util.Lookup" category="devel">
         checked by the initialization of the 
         <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
         and can
@@ -356,7 +356,7 @@ org.my.netbeans.extramodule.ExtraTip
     </li>
 
     <li>
-    <api type="export" group="property" name="org.openide.util.Lookup.paths" category="devel">
+    <api type="export" group="systemproperty" name="org.openide.util.Lookup.paths" category="devel">
         Sometimes it may be useful for the Lookup to contains objects from
         some system file system folder. This can be done with
         <code>org.openide.util.Lookup.paths=Folder1:Folder2:Folder3</code>.
@@ -424,7 +424,7 @@ org.my.netbeans.extramodule.ExtraTip
 
  <answer id="lookup-lookup">
     <ul>
-    <li><api name="LookupInitializationLookup" category="devel" group="lookup" type="export" url="#property-org.openide.util.Lookup">
+    <li><api name="LookupInitializationLookup" category="devel" group="lookup" type="export" url="#systemproperty-org.openide.util.Lookup">
     during 
     initialization of the <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
     the <a href="@TOP@/org/openide/util/Lookup.Provider.html">Lookup.Provider</a>

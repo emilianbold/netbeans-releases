@@ -43,6 +43,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.LinkedList;
@@ -55,12 +56,17 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import javax.swing.Action;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.extexecution.InputOutputManager;
 import org.netbeans.api.extexecution.input.TestInputUtils;
 import org.netbeans.api.extexecution.input.TestLineProcessor;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputListener;
+import org.openide.windows.OutputWriter;
 
 /**
  *
@@ -377,6 +383,43 @@ public class ExecutionServiceTest extends NbTestCase {
         }
     }
 
+    public void testIOReset() throws InterruptedException, InvocationTargetException, ExecutionException {
+        TestProcess process = new TestProcess(0);
+        TestCallable callable = new TestCallable();
+        callable.addProcess(process);
+
+        InputOutput io = IOProvider.getDefault().getIO("Test", new Action[] {});
+        TestInputOutput testIO = new TestInputOutput(io);
+
+        ExecutionDescriptor descriptor = new ExecutionDescriptor()
+                .inputOutput(testIO).noReset(true);
+        ExecutionService service = ExecutionService.newService(
+                callable, descriptor, "Test");
+
+        Future<Integer> task = service.run();
+        assertNotNull(task);
+        process.destroy();
+        assertEquals(0, task.get().intValue());
+
+        assertFalse(testIO.isReset());
+
+        // now with enabled
+        process = new TestProcess(0);
+        callable = new TestCallable();
+        callable.addProcess(process);
+
+        testIO = new TestInputOutput(io);
+        descriptor = new ExecutionDescriptor().inputOutput(testIO);
+        service = ExecutionService.newService(callable, descriptor, "Test");
+
+        task = service.run();
+        assertNotNull(task);
+        process.destroy();
+        assertEquals(0, task.get().intValue());
+
+        assertTrue(testIO.isReset());
+    }
+
     private static InputOutputManager.InputOutputData getInputOutput(String name,
             boolean actions, String optionsPath) {
 
@@ -586,4 +629,105 @@ public class ExecutionServiceTest extends NbTestCase {
         }
     }
 
+    private static class TestInputOutput implements InputOutput {
+
+        private final InputOutput io;
+
+        private volatile boolean reset;
+
+        public TestInputOutput(InputOutput io) {
+            this.io = io;
+        }
+
+        public boolean isReset() {
+            return reset;
+        }
+
+        public void reset() {
+            this.reset = true;
+        }
+
+        public void setOutputVisible(boolean value) {
+            io.setOutputVisible(value);
+        }
+
+        public void setInputVisible(boolean value) {
+            io.setInputVisible(value);
+        }
+
+        public void setFocusTaken(boolean value) {
+            io.setFocusTaken(value);
+        }
+
+        public void setErrVisible(boolean value) {
+            io.setErrVisible(value);
+        }
+
+        public void setErrSeparated(boolean value) {
+            io.setErrSeparated(value);
+        }
+
+        public void select() {
+            io.select();
+        }
+
+        public boolean isFocusTaken() {
+            return io.isFocusTaken();
+        }
+
+        public boolean isErrSeparated() {
+            return io.isErrSeparated();
+        }
+
+        public boolean isClosed() {
+            return io.isClosed();
+        }
+
+        public OutputWriter getOut() {
+            return new TestOutputWriter(this, io.getOut());
+        }
+
+        public Reader getIn() {
+            return io.getIn();
+        }
+
+        public OutputWriter getErr() {
+            return io.getErr();
+        }
+
+        public Reader flushReader() {
+            return io.flushReader();
+        }
+
+        public void closeInputOutput() {
+            io.closeInputOutput();
+        }
+    }
+
+    private static class TestOutputWriter extends OutputWriter {
+
+        private final TestInputOutput io;
+
+        private final OutputWriter ow;
+
+        public TestOutputWriter(TestInputOutput io, OutputWriter ow) {
+            super(ow);
+            this.io = io;
+            this.ow = ow;
+        }
+
+        public void reset() throws IOException {
+            ow.reset();
+            io.reset();
+        }
+
+        public void println(String s, OutputListener l, boolean important) throws IOException {
+            ow.println(s, l, important);
+        }
+
+        public void println(String s, OutputListener l) throws IOException {
+            ow.println(s, l);
+        }
+
+    }
 }

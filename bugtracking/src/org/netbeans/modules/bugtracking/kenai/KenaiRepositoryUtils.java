@@ -45,7 +45,6 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.hintsimpl;
@@ -95,4 +95,47 @@ public class LoggerStringConcatTest extends TestBase {
                         "}\n").replaceAll("[ \t\n]+", " "));
     }
 
+    public void testEscape1() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.util.logging.Level;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test {\n" +
+                       "    private void t(Logger l, int a, int b, int c) {\n" +
+                       "        l.severe(\"a'=\" + a + \",' b'='\" + b + \", c=\" + c);\n" +
+                       "    }\n" +
+                       "}\n",
+                       "5:17-5:55:verifier:Inefficient use of string concatenation in logger",
+                       "FixImpl",
+                      ("package test;\n" +
+                        "import java.util.logging.Level;\n" +
+                        "import java.util.logging.Logger;\n" +
+                        "public class Test {\n" +
+                        "    private void t(Logger l, int a, int b, int c) {\n" +
+                        "        l.log(Level.SEVERE, \"a''={0},'' b''=''{1}, c={2}\", new Object[]{a, b, c});\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void testEscape2() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.util.logging.Level;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test {\n" +
+                       "    private void t(Logger l, int a, int b, int c) {\n" +
+                       "        l.severe(\"a=${\" + a + \"}.\");\n" +
+                       "    }\n" +
+                       "}\n",
+                       "5:17-5:34:verifier:Inefficient use of string concatenation in logger",
+                       "FixImpl",
+                      ("package test;\n" +
+                        "import java.util.logging.Level;\n" +
+                        "import java.util.logging.Logger;\n" +
+                        "public class Test {\n" +
+                        "    private void t(Logger l, int a, int b, int c) {\n" +
+                        "        l.log(Level.SEVERE, \"a=$'{'{0}'}'.\", a);\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "));
+    }
 }

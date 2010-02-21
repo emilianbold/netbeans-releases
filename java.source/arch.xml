@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
  <answer id="arch-overall">
   <p>
    Provides Java Model API access.
-   <api type="export" category="devel" group="property" name="ensure.built.source.roots">
+   <api type="export" category="devel" group="systemproperty" name="ensure.built.source.roots">
        When the <code>ensure.built.source.roots</code> property is set during ant script execution,
        the <code>javac</code> task will not actually build the classfiles from scratch, but rather copy classfiles
        produced by the Java infrastructure into the output folder. The content of the property will

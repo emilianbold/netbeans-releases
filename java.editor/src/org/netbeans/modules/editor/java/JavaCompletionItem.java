@@ -747,53 +747,57 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             Iterator<? extends TypeMirror> tas = type != null ? type.getTypeArguments().iterator() : null;
                             if (tas != null && tas.hasNext()) {
                                 sb.append('<'); //NOI18N
-                                while (tas.hasNext()) {
-                                    TypeMirror ta = tas.next();
-                                    sb.append("${PAR"); //NOI18N
-                                    sb.append(cnt++);
-                                    if (ta.getKind() == TypeKind.TYPEVAR) {
-                                        TypeVariable tv = (TypeVariable)ta;
-                                        if (elem == tv.asElement().getEnclosingElement()) {
-                                            sb.append(" typeVar=\""); //NOI18N
-                                            sb.append(tv.asElement().getSimpleName());
-                                            sb.append("\" type=\""); //NOI18N
-                                            ta = tv.getUpperBound();
+                                if (!insideNew || controller.getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) {
+                                    while (tas.hasNext()) {
+                                        TypeMirror ta = tas.next();
+                                        sb.append("${PAR"); //NOI18N
+                                        sb.append(cnt++);
+                                        if (ta.getKind() == TypeKind.TYPEVAR) {
+                                            TypeVariable tv = (TypeVariable)ta;
+                                            if (elem == tv.asElement().getEnclosingElement()) {
+                                                sb.append(" typeVar=\""); //NOI18N
+                                                sb.append(tv.asElement().getSimpleName());
+                                                sb.append("\" type=\""); //NOI18N
+                                                ta = tv.getUpperBound();
+                                                sb.append(Utilities.getTypeName(ta, true));
+                                                sb.append("\" default=\""); //NOI18N
+                                                sb.append(Utilities.getTypeName(ta, false));
+                                                if (addTypeVars && SourceVersion.RELEASE_5.compareTo(controller.getSourceVersion()) <= 0)
+                                                    asTemplate = true;
+                                            } else {
+                                                sb.append(" editable=false default=\""); //NOI18N
+                                                sb.append(Utilities.getTypeName(ta, true));
+                                                asTemplate = true;
+                                            }
+                                            sb.append("\"}"); //NOI18N
+                                        } else if (ta.getKind() == TypeKind.WILDCARD) {
+                                            sb.append(" type=\""); //NOI18N
+                                            TypeMirror bound = ((WildcardType)ta).getExtendsBound();
+                                            if (bound == null)
+                                                bound = ((WildcardType)ta).getSuperBound();
+                                            sb.append(bound != null ? Utilities.getTypeName(bound, true) : "Object"); //NOI18N
+                                            sb.append("\" default=\""); //NOI18N
+                                            sb.append(bound != null ? Utilities.getTypeName(bound, false) : "Object"); //NOI18N
+                                            sb.append("\"}"); //NOI18N
+                                            asTemplate = true;
+                                        } else if (ta.getKind() == TypeKind.ERROR) {
+                                            sb.append(" default=\""); //NOI18N
+                                            sb.append(((ErrorType)ta).asElement().getSimpleName());
+                                            sb.append("\"}"); //NOI18N
+                                            asTemplate = true;
+                                        } else {
+                                            sb.append(" type=\""); //NOI18N
                                             sb.append(Utilities.getTypeName(ta, true));
                                             sb.append("\" default=\""); //NOI18N
                                             sb.append(Utilities.getTypeName(ta, false));
-                                            if (addTypeVars && SourceVersion.RELEASE_5.compareTo(controller.getSourceVersion()) <= 0)
-                                                asTemplate = true;
-                                        } else {
-                                            sb.append(" editable=false default=\""); //NOI18N
-                                            sb.append(Utilities.getTypeName(ta, true));
+                                            sb.append("\" editable=false}"); //NOI18N
                                             asTemplate = true;
                                         }
-                                        sb.append("\"}"); //NOI18N
-                                    } else if (ta.getKind() == TypeKind.WILDCARD) {
-                                        sb.append(" type=\""); //NOI18N
-                                        TypeMirror bound = ((WildcardType)ta).getExtendsBound();
-                                        if (bound == null)
-                                            bound = ((WildcardType)ta).getSuperBound();
-                                        sb.append(bound != null ? Utilities.getTypeName(bound, true) : "Object"); //NOI18N
-                                        sb.append("\" default=\""); //NOI18N
-                                        sb.append(bound != null ? Utilities.getTypeName(bound, false) : "Object"); //NOI18N
-                                        sb.append("\"}"); //NOI18N
-                                        asTemplate = true;
-                                    } else if (ta.getKind() == TypeKind.ERROR) {
-                                        sb.append(" default=\""); //NOI18N
-                                        sb.append(((ErrorType)ta).asElement().getSimpleName());
-                                        sb.append("\"}"); //NOI18N
-                                        asTemplate = true;
-                                    } else {
-                                        sb.append(" type=\""); //NOI18N
-                                        sb.append(Utilities.getTypeName(ta, true));
-                                        sb.append("\" default=\""); //NOI18N
-                                        sb.append(Utilities.getTypeName(ta, false));
-                                        sb.append("\" editable=false}"); //NOI18N
-                                        asTemplate = true;
+                                        if (tas.hasNext())
+                                            sb.append(", "); //NOI18N
                                     }
-                                    if (tas.hasNext())
-                                        sb.append(", "); //NOI18N
+                                } else {
+                                    asTemplate = true;
                                 }
                                 sb.append('>'); //NOI18N
                             }
@@ -1918,6 +1922,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 offset += len;
                 len = 0;
             }
+            final boolean lpar = "(".equals(toAdd); //NOI18N
             final int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
             if (semiPos > -2)
                 toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
@@ -1970,7 +1975,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
             final String text2 = text;
             final int length = len;
             final int offset2 = offset;
-            final String toAdd2 = toAdd;
             final Position[] position = new Position [1];
             doc.runAtomic (new Runnable () {
                 public void run () {
@@ -1987,7 +1991,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         }
                         if (semiPosition != null)
                             doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
-                        else if (!isAbstract && params.isEmpty() && "(".equals(toAdd2)) //NOI18N
+                        else if (!isAbstract && params.isEmpty() && lpar)
                             c.setCaretPosition(c.getCaretPosition() - 1);
                     } catch (BadLocationException e) {
                     }
@@ -2122,6 +2126,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected void substituteText(final JTextComponent c, final int offset, int len, String toAdd) {
+            final boolean lpar = "(".equals(toAdd); //NOI18N
             final int[] offset2 = new int[] {offset + len};
             len = 0;
             final int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
@@ -2172,7 +2177,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             final Position[] position = new Position [1];
             final String text2 = text;
-            final String toAdd2 = toAdd;
             final int length = len;
             doc.runAtomic (new Runnable () {
                 public void run () {
@@ -2185,7 +2189,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         position [0] = doc.createPosition(offset2 [0]);
                         if (semiPosition != null)
                             doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
-                        else if (!isAbstract && "(".equals(toAdd2)) //NOI18N
+                        else if (!isAbstract && lpar)
                             c.setCaretPosition(c.getCaretPosition() - 1);
                     } catch (BadLocationException e) {
                     }

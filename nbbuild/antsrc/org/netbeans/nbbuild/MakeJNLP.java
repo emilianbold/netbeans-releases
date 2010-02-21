@@ -277,7 +277,7 @@ public class MakeJNLP extends Task {
             }
             
             JarFile theJar = new JarFile(jar);
-            String codenamebase = theJar.getManifest().getMainAttributes().getValue("OpenIDE-Module");
+            String codenamebase = JarWithModuleAttributes.extractCodeName(theJar.getManifest().getMainAttributes());
             if (codenamebase == null) {
                 throw new BuildException("Not a NetBeans Module: " + jar);
             }
@@ -327,7 +327,7 @@ public class MakeJNLP extends Task {
             
             StringWriter writeJNLP = new StringWriter();
             writeJNLP.write("<?xml version='1.0' encoding='UTF-8'?>\n");
-            writeJNLP.write("<!DOCTYPE jnlp PUBLIC \"-//Sun Microsystems, Inc//DTD JNLP Discriptor 1.5//EN\" \"http://java.sun.com/dtd/JNLP-1.5.dtd\">\n");
+            writeJNLP.write("<!DOCTYPE jnlp PUBLIC \"-//Sun Microsystems, Inc//DTD JNLP Descriptor 6.0//EN\" \"http://java.sun.com/dtd/JNLP-6.0.dtd\">\n");
             writeJNLP.write("<jnlp spec='1.0+' codebase='" + codebase + "'>\n");
             writeJNLP.write("  <information>\n");
             writeJNLP.write("   <title>" + XMLUtil.toElementContent(title) + "</title>\n");
@@ -549,7 +549,7 @@ public class MakeJNLP extends Task {
 
                 FileWriter writeJNLP = new FileWriter(jnlp);
                 writeJNLP.write("<?xml version='1.0' encoding='UTF-8'?>\n");
-                writeJNLP.write("<!DOCTYPE jnlp PUBLIC \"-//Sun Microsystems, Inc//DTD JNLP Discriptor 1.5//EN\" \"http://java.sun.com/dtd/JNLP-1.5.dtd\">\n");
+                writeJNLP.write("<!DOCTYPE jnlp PUBLIC \"-//Sun Microsystems, Inc//DTD JNLP Descriptor 6.0//EN\" \"http://java.sun.com/dtd/JNLP-6.0.dtd\">\n");
                 writeJNLP.write("<jnlp spec='1.0+' codebase='" + codebase + "'>\n");
                 writeJNLP.write("  <information>\n");
                 writeJNLP.write("    <title>" + n + "</title>\n");

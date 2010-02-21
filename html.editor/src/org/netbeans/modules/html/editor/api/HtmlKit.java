@@ -51,7 +51,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -69,12 +68,11 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.BaseKit.DeleteCharAction;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
+import org.netbeans.modules.csl.api.InstantRenameAction;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
-import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
-import org.netbeans.modules.csl.core.SelectCodeElementAction;
-import org.netbeans.modules.csl.editor.InstantRenameAction;
-import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
+import org.netbeans.modules.csl.api.SelectCodeElementAction;
+import org.netbeans.modules.csl.api.ToggleBlockCommentAction;
+import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.html.editor.gsf.HtmlCommentHandler;
 import org.openide.util.Exceptions;
@@ -87,7 +85,7 @@ import org.openide.util.Exceptions;
  */
 public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider {
 
-    public org.openide.util.HelpCtx getHelpCtx() {
+    public @Override org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(HtmlKit.class);
     }
     static final long serialVersionUID = -1381945567613910297L;
@@ -140,23 +138,11 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
             new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
             new InstantRenameAction(),
-            new ToggleBlockCommentAction(new HtmlCommentHandler()),
+            new ToggleBlockCommentAction(),
             new ExtKit.CommentAction(""), //NOI18N
             new ExtKit.UncommentAction("") //NOI18N
         };
         return TextAction.augmentList(super.createActions(), HtmlActions);
-    }
-
-    static KeystrokeHandler getBracketCompletion(Document doc, int offset) {
-        BaseDocument baseDoc = (BaseDocument) doc;
-        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
-        for (Language l : list) {
-            if (l.getBracketCompletion() != null) {
-                return l.getBracketCompletion();
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -174,7 +160,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         @Override
         protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
             if (completionSettingEnabled()) {
-                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, caret.getDot());
+                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, caret.getDot());
 
                 if (bracketCompletion != null) {
                     try {
@@ -230,7 +216,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 boolean overwrite) throws BadLocationException {
                 
             if (completionSettingEnabled()) {
-                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
+                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 
                 if (bracketCompletion != null) {
                     // TODO - check if we're in a comment etc. and if so, do nothing
@@ -262,7 +248,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 BaseDocument doc = (BaseDocument) document;
 
                 if (completionSettingEnabled()) {
-                    KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
+                    KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 
                     if (bracketCompletion != null) {
                         try {
@@ -323,7 +309,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         @Override
         protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException {
               if (completionSettingEnabled()) {
-                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
+                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 
                 if (bracketCompletion != null) {
                     boolean success = bracketCompletion.charBackspaced(doc, dotPos, currentTarget, ch);

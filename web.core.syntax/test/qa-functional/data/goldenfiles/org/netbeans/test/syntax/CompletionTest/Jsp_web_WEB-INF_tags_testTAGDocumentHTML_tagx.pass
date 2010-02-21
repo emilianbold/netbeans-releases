@@ -1,4 +1,4 @@
-[<jsp:body><h|, html, <jsp:body><html>, 148]
+[<jsp:body><h|, html, <jsp:body><html, 147]
 <h1 >
 <h2 >
 <h3 >
@@ -8,20 +8,20 @@
 <head >
 <hr >
 <html >
-End cursor position = 165
-[<jsp:body><html |, lang, <jsp:body><html lang="", 248]
+End cursor position = 163
+[<jsp:body><html |, lang, <jsp:body><html lang="", 247]
 dir
 lang
 version
-End cursor position = 271
-[<jsp:body><html dir="|, rtl, <jsp:body><html dir="rtl, 349]
+End cursor position = 270
+[<jsp:body><html dir="|, rtl, <jsp:body><html dir="rtl, 348]
 ltr
 rtl
-End cursor position = 374
-[&q|, &quot;, &quot;, 418]
+End cursor position = 373
+[&q|, &quot;, &quot;, 417]
 " &quot;
-End cursor position = 425
-[<jsp:body><html></|, /html,     <jsp:body><html></html>, 523]
+End cursor position = 424
+[<jsp:body><html></|, /html,     <jsp:body><html></html>, 522]
 < /jsp:body >
 </html >
-End cursor position = 547
+End cursor position = 546

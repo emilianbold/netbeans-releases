@@ -57,6 +57,7 @@ public class GridLayoutSupport extends AbstractLayoutSupport
     /** Gets the supported layout manager class - GridLayout.
      * @return the class supported by this delegate
      */
+    @Override
     public Class getSupportedClass() {
         return GridLayout.class;
     }

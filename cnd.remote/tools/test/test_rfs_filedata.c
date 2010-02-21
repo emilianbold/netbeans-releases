@@ -30,10 +30,7 @@ static void test_trivial() {
 }
 
 static int test_tree_search_printing_visitor(file_data *fd, void* data) {
-    #if !TRACE
-    #error TRACE should be defined
-    #endif
-    printf("VISITOR: \"%s\" cnt=%d\n", fd->filename, fd->cnt);
+    printf("VISITOR: \"%s\"\n", fd->filename);
 }
 
 static void print_tree() {
@@ -57,8 +54,7 @@ static void fill_tree_from_file(const char* test_file_name, int trace) {
         if (trace) printf("Adding \"%s\"\n", filename);
         file_data *fd = add_file_data(filename, INITIAL);
         if (fd) {
-            fd->cnt++;
-            if (trace) printf("Added %s: %X %d\n", filename, fd, fd->cnt);
+            if (trace) printf("Added %s: %X\n", filename, fd);
         } else {
             fprintf(stderr, "Error: find_file_data returned NULL for %s\n", filename);
         }
@@ -85,8 +81,7 @@ static void find_tree_from_file(const char* test_file_name, int trace) {
         if (trace) printf("Searching \"%s\"\n", filename);
         file_data *fd = find_file_data(filename);
         if (fd) {
-            fd->cnt++;
-            if (trace) printf("Got data for %s: %X %d %s\n", filename, fd, fd->cnt, fd->filename);
+            if (trace) printf("Got data for %s: %X%s\n", filename, fd, fd->filename);
         } else {
             fprintf(stderr, "Error: find_file_data returned NULL for %s\n", filename);
         }

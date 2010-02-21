@@ -28,5 +28,5 @@ void setName (String name )
 String toString ()
 void wait ()
 void wait (long timeout )
-void wait (long timeout , int nanos )
+void wait (long timeout , int 
 End cursor position = 795

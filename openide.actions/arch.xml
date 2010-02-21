@@ -531,7 +531,7 @@ No.
 <answer id="exec-property">
         <ul>
             <li>
-                <api type="export" group="property" name="org.openide.util.actions.CallableSystemAction.synchronousByDefault" category="friend">
+                <api type="export" group="systemproperty" name="org.openide.util.actions.CallableSystemAction.synchronousByDefault" category="friend">
                     If set to <code>true</code>, changes default value of the
                     <code>asynchronous()</code> method. Useful for unit tests
                     which would prefer to run all tested actions synchronously.

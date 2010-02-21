@@ -83,7 +83,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
@@ -95,6 +94,7 @@ import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.swing.outline.Outline;
 import org.openide.DialogDisplayer;
@@ -194,9 +194,6 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         assert project != null;
         SuiteProject thisPrj = getProperties().getProject();
 
-        if (project == null)
-            return ;
-
         if (thisPrj.getProjectDirectory().equals(project.getProjectDirectory())) {
             if (showMessages)
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
@@ -223,7 +220,9 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             assert sprv != null;
             cnode = createSuiteNode(ci);
         }
-        libChildren.extraNodes.add(cnode);
+        synchronized (libChildren.extraNodes) {
+            libChildren.extraNodes.add(cnode);
+        }
         libChildren.setMergedKeys();
     }
 
@@ -269,19 +268,23 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private void addExtCluster(ClusterInfo ci) {
+        Set<String> disabledModuleCNB = new HashSet<String>(Arrays.asList(getProperties().getDisabledModules()));
         Children.SortedArray moduleCh = new Children.SortedArray();
         try {
             ModuleList ml = ModuleList.scanCluster(ci.getClusterDir(), null, false, ci);
             moduleCh.setComparator(MODULES_COMPARATOR);
             for (ModuleEntry entry : ml.getAllEntries()) {
-                moduleCh.add(new Node[] { new BinaryModuleNode(entry, ci.isEnabled()) });
+                moduleCh.add(new Node[] { new BinaryModuleNode(entry, 
+                        ! disabledModuleCNB.contains(entry.getCodeNameBase()) && ci.isEnabled()) });
                 extraBinaryModules.add(entry);
             }
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
         }
         initNodes();
-        libChildren.extraNodes.add(new ClusterNode(ci, moduleCh));
+        synchronized (libChildren.extraNodes) {
+            libChildren.extraNodes.add(new ClusterNode(ci, moduleCh));
+        }
         libChildren.setMergedKeys();
     }
 
@@ -289,11 +292,13 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         assert ci.getProject() != null;
         assert ci.getProject().getLookup().lookup(SuiteProvider.class) != null;
 
+        Set<String> disabledModuleCNB = new HashSet<String>(Arrays.asList(getProperties().getDisabledModules()));
         Children.SortedArray moduleCh = new Children.SortedArray();
         moduleCh.setComparator(MODULES_COMPARATOR);
         Set<NbModuleProject> modules = SuiteUtils.getSubProjects(ci.getProject());
         for (NbModuleProject modPrj : modules) {
-            moduleCh.add(new Node[] { new SuiteComponentNode(modPrj, ci.isEnabled()) });
+            moduleCh.add(new Node[] { new SuiteComponentNode(modPrj, 
+                    ! disabledModuleCNB.contains(modPrj.getCodeNameBase()) && ci.isEnabled()) });
         }
         return new ClusterNode(ci, moduleCh);
     }
@@ -323,9 +328,11 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         Set<String> enabledClusters = new HashSet<String>(Arrays.asList(getProperties().getEnabledClusters()));
 
         Map<File, ClusterNode> clusterToNode = new HashMap<File, ClusterNode>();
-        libChildren.platformNodes.clear();
+        synchronized (libChildren.platformNodes) {
+            libChildren.platformNodes.clear();
+        }
 
-        boolean newPlaf = ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() >= NbPlatform.HARNESS_VERSION_67;
+        boolean newPlaf = ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion().compareTo(HarnessVersion.V67) >= 0;
 
         for (ModuleEntry platformModule : platformModules) {
             File clusterDirectory = platformModule.getClusterDirectory();
@@ -338,7 +345,9 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 ClusterInfo ci = ClusterInfo.create(clusterDirectory, true, enabled);
                 cluster = new ClusterNode(ci, modules);
                 clusterToNode.put(clusterDirectory, cluster);
-                libChildren.platformNodes.add(cluster);
+                synchronized (libChildren.platformNodes) {
+                    libChildren.platformNodes.add(cluster);
+                }
             }
 
             AbstractNode module = new BinaryModuleNode(platformModule,
@@ -355,7 +364,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         if (clusterPath.size() > 0) {
             // cluster.path exists, we enable/disabled platform nodes according to
             // cluster.path, not enabled.clusterPath & disabled.clusterPath
-            for (ClusterNode node : libChildren.platformNodes) {
+            for (ClusterNode node : libChildren.platformNodes()) {
                 if (!clusterPath.contains(node.getClusterInfo())) // must not call setEnabled(true), disabled modules would be enabled
                 {
                     node.setEnabled(false);
@@ -398,14 +407,14 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         Set<String> disabledModules = new TreeSet<String>();
         List<ClusterInfo> clusterPath = new ArrayList<ClusterInfo>();
 
-        boolean oldPlaf = getProperties().getActivePlatform().getHarnessVersion() < NbPlatform.HARNESS_VERSION_67;
+        boolean oldPlaf = getProperties().getActivePlatform().getHarnessVersion().compareTo(HarnessVersion.V67) < 0;
 
         assert refreshTask != null;
         if (! refreshTask.isFinished()) {
             // trying to store before nodes are up-to-date, just bail out
             return;
         }
-        for (ClusterNode e : libChildren.platformNodes) {
+        for (ClusterNode e : libChildren.platformNodes()) {
             if (e.isEnabled()) {
                 if (oldPlaf)
                     enabledClusters.add(e.getName());
@@ -424,7 +433,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         if (oldPlaf) {
             getProperties().setEnabledClusters(enabledClusters.toArray(new String[enabledClusters.size()]));
         } else {
-            for (ClusterNode e : libChildren.extraNodes) {
+            for (ClusterNode e : libChildren.extraNodes()) {
                 clusterPath.add(e.getClusterInfo());
 
                 if (e.isEnabled()) {
@@ -794,7 +803,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         return manager;
     }
     
-    public static final Set<String> DISABLED_PLATFORM_MODULES = new HashSet<String>();
+    public static final Set<String> DISABLED_PLATFORM_MODULES = new TreeSet<String>();
     
     static {
         // Probably not needed for most platform apps, and won't even work under JNLP.
@@ -821,6 +830,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         // #110085: some more unwanted ones...
         DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.templates"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.netbeans.libs.jsr223"); // NOI18N
+        DISABLED_PLATFORM_MODULES.add("org.jdesktop.layout"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.openide.options"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.netbeans.api.visual"); // NOI18N
         
@@ -1125,7 +1135,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 return getMessage("LBL_SuiteProject");
             if (nbmp.getModuleType() == NbModuleProvider.STANDALONE)
                 return getMessage("LBL_StandaloneProject");
-            assert false : "Shouldn't contain NB.org module or suite component project";
+            Logger.getLogger(SuiteCustomizerLibraries.class.getName()).log(Level.WARNING,
+                    "#166594: {0} should not contain NB.org module or suite component project", ci);
             return null;
         }
 
@@ -1245,8 +1256,20 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private class LibrariesChildren extends Children.Keys<ClusterNode> {
-        private SortedSet<ClusterNode> platformNodes = new TreeSet<ClusterNode>(MODULES_COMPARATOR);
-        private List<ClusterNode> extraNodes = new ArrayList<ClusterNode>();
+        private final SortedSet<ClusterNode> platformNodes = new TreeSet<ClusterNode>(MODULES_COMPARATOR);
+        private final List<ClusterNode> extraNodes = new ArrayList<ClusterNode>();
+
+        Collection<? extends ClusterNode> platformNodes() {
+            synchronized (platformNodes) {
+                return new ArrayList<ClusterNode>(platformNodes);
+            }
+        }
+
+        Collection<? extends ClusterNode> extraNodes() {
+            synchronized (extraNodes) {
+                return new ArrayList<ClusterNode>(extraNodes);
+            }
+        }
 
         @Override
         protected Node[] createNodes(ClusterNode key) {
@@ -1273,11 +1296,11 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
          * @return Node for found cluster or null if not found
          */
         private ClusterNode findCluster(File clusterDir) {
-            for (ClusterNode node : extraNodes) {
+            for (ClusterNode node : extraNodes()) {
                 if (node.getClusterInfo().getClusterDir().equals(clusterDir))
                     return node;
             }
-            for (ClusterNode node : platformNodes) {
+            for (ClusterNode node : platformNodes()) {
                 if (node.getClusterInfo().getClusterDir().equals(clusterDir))
                     return node;
             }
@@ -1295,7 +1318,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         // TODO C.P rewrite cast to lookup - but there is not enough stuff in prj lookup
         // to do this now, would need custom AuxConfigImpl that translates /2 -> /3 schema
         private void getProjectModules(Set<NbModuleProject> suiteModules) {
-            for (ClusterNode node : extraNodes) {
+            for (ClusterNode node : extraNodes()) {
                 ClusterInfo ci = node.getClusterInfo();
                 final Project prj = ci.getProject();
                 if (prj != null) {
@@ -1315,14 +1338,16 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         }
 
         private void removeClusters(Node[] selectedNodes) {
-            extraNodes.removeAll(Arrays.asList(selectedNodes));
+            synchronized (extraNodes) {
+                extraNodes.removeAll(Arrays.asList(selectedNodes));
+            }
             setMergedKeys();
             updateDependencyWarnings(true);
         }
 
         private void setMergedKeys() {
-            ArrayList<ClusterNode> allNodes = new ArrayList<ClusterNode>(platformNodes);
-            allNodes.addAll(extraNodes);
+            ArrayList<ClusterNode> allNodes = new ArrayList<ClusterNode>(platformNodes());
+            allNodes.addAll(extraNodes());
             for (ClusterNode cluster : allNodes) {
                 cluster.updateClusterState();
             }
@@ -1442,23 +1467,23 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             dependencies = new HashSet<Dependency>();
             // Cannot use ProjectXMLManager since we need to report also deps on nonexistent modules.
             Element dataE = project.getPrimaryConfigurationData();
-            Element depsE = Util.findElement(dataE, "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+            Element depsE = Util.findElement(dataE, "module-dependencies", NbModuleProject.NAMESPACE_SHARED); // NOI18N
             assert depsE != null : "Malformed metadata in " + project;
             for (Element dep : Util.findSubElements(depsE)) {
-                Element run = Util.findElement(dep, "run-dependency", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+                Element run = Util.findElement(dep, "run-dependency", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                 if (run == null) {
                     continue;
                 }
-                String text = Util.findText(Util.findElement(dep, "code-name-base", NbModuleProjectType.NAMESPACE_SHARED)); // NOI18N
-                Element relverE = Util.findElement(run, "release-version", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+                String text = Util.findText(Util.findElement(dep, "code-name-base", NbModuleProject.NAMESPACE_SHARED)); // NOI18N
+                Element relverE = Util.findElement(run, "release-version", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                 if (relverE != null) {
                     text += '/' + Util.findText(relverE);
                 }
-                Element specverE = Util.findElement(run, "specification-version", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+                Element specverE = Util.findElement(run, "specification-version", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                 if (specverE != null) {
                     text += " > " + Util.findText(specverE);
                 } else {
-                    Element implver = Util.findElement(run, "implementation-version", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+                    Element implver = Util.findElement(run, "implementation-version", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                     if (implver != null) {
                         // Will special-case '*' as an impl version to mean "match anything".
                         text += " = *"; // NOI18N
@@ -1717,6 +1742,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             }
         });
         String mdn = m.getDisplayName();
+        initNodes();
         ClusterNode node = libChildren.findCluster(m.getCluster());
         if (node == null) {
             // #162155: dirty hack of race conditions; proper solution would be to copy everything for doUpdateDependencyWarnings,
@@ -1829,7 +1855,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private void updateJavaPlatformEnabled() { // #71631
-        boolean enabled = ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1;
+        boolean enabled = ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion().compareTo(HarnessVersion.V50u1) >= 0;
         javaPlatformCombo.setEnabled(enabled);
         javaPlatformButton.setEnabled(enabled); // #72061
     }

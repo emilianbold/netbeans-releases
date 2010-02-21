@@ -111,13 +111,14 @@ public class ModuleProjectClassPathExtenderTest extends NbTestCase {
         assertTrue(ProjectClassPathModifier.addRoots(new URL[] {root}, src, ClassPath.COMPILE));
         assertFalse(ProjectClassPathModifier.addRoots(new URL[] {root}, src, ClassPath.COMPILE));
         assertEquals(2, releaseModulesExt.getChildren().length);
-        InputSource input = new InputSource(prj.getProjectDirectory().getFileObject("nbproject/project.xml").getURL().toString());
+        String projectXml = prj.getProjectDirectory().getFileObject("nbproject/project.xml").getURL().toString();
+        InputSource input = new InputSource(projectXml);
         XPath xpath = XPathFactory.newInstance().newXPath();
         xpath.setNamespaceContext(Util.nbmNamespaceContext());
-        assertEquals("ext/a.jar", xpath.evaluate("//nbm:class-path-extension[1]/nbm:runtime-relative-path", input));
-        assertEquals("release/modules/ext/a.jar", xpath.evaluate("//nbm:class-path-extension[1]/nbm:binary-origin", input));
-        assertEquals("ext/b.jar", xpath.evaluate("//nbm:class-path-extension[2]/nbm:runtime-relative-path", input));
-        assertEquals("release/modules/ext/b.jar", xpath.evaluate("//nbm:class-path-extension[2]/nbm:binary-origin", input));
+        assertEquals(projectXml, "ext/a.jar", xpath.evaluate("//nbm:class-path-extension[1]/nbm:runtime-relative-path", input));
+        assertEquals(projectXml, "release/modules/ext/a.jar", xpath.evaluate("//nbm:class-path-extension[1]/nbm:binary-origin", input));
+        assertEquals(projectXml, "ext/b.jar", xpath.evaluate("//nbm:class-path-extension[2]/nbm:runtime-relative-path", input));
+        assertEquals(projectXml, "release/modules/ext/b.jar", xpath.evaluate("//nbm:class-path-extension[2]/nbm:binary-origin", input));
     }
 
     private static class LibImpl implements LibraryImplementation {

@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.api.xml;
 
 import java.io.IOException;
-import java.io.File;
 import java.io.InputStream;
 
 import java.text.MessageFormat;
@@ -50,7 +49,6 @@ import java.text.MessageFormat;
 import org.xml.sax.SAXException;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.SAXParseException;
@@ -61,6 +59,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -105,7 +104,7 @@ abstract public class XMLDocReader extends XMLDecoder {
     public boolean read(InputStream inputStream, String sourceName) {
 	this.sourceName = sourceName;
 	if (sourceName == null)
-	    this.sourceName = Catalog.get("UNKNOWN_sourceName");// NOI18N
+	    this.sourceName = getString("UNKNOWN_sourceName");// NOI18N
 
 	SAXParserFactory spf = SAXParserFactory.newInstance();
 	spf.setValidating(false);
@@ -125,7 +124,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 	xmlReader.setEntityResolver(parser);
 	xmlReader.setErrorHandler(new ErrHandler());
 
-	String fmt = Catalog.get("MSG_Whilereading");	// NOI18N
+	String fmt = getString("MSG_Whilereading");	// NOI18N
 	String whileMsg = MessageFormat.format(fmt, new Object[] {sourceName});
 
 	try {
@@ -144,7 +143,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 		int expectedVersion = versionException.expectedVersion();
 		int actualVersion = versionException.actualVersion();
 
-		fmt = Catalog.get("MSG_versionerror");	// NOI18N
+		fmt = getString("MSG_versionerror");	// NOI18N
 		String errmsg = whileMsg + MessageFormat.format(fmt,
 		    new Object[] {what,
 				  "" + actualVersion, // NOI18N
@@ -314,7 +313,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 	} 
 
 	private void annotate(SAXParseException ex) {
-	    String fmt = Catalog.get("MSG_sax_error_location");	// NOI18N
+	    String fmt = getString("MSG_sax_error_location");	// NOI18N
 	    String msg = MessageFormat.format(fmt, new Object[] {
 			    ex.getSystemId(),
 			    "" + ex.getLineNumber() // NOI18N
@@ -338,5 +337,9 @@ abstract public class XMLDocReader extends XMLDecoder {
 	public void warning(SAXParseException ex) throws SAXException {
 	    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
 	}
+    }
+
+    private static String getString(String key) {
+        return NbBundle.getMessage(XMLDocReader.class, key);
     }
 }

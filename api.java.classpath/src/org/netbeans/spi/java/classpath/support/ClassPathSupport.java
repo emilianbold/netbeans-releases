@@ -72,19 +72,6 @@ public class ClassPathSupport {
      * @return PathResourceImplementation
      */
     public static PathResourceImplementation createResource (URL url) {
-        if (url == null) {
-            throw new NullPointerException("Cannot pass null URL to ClassPathSupport.createResource"); // NOI18N
-        }
-        // FU.iAF is a bit slow, so don't call it except when assertions are on:
-        boolean assertions = false;
-        assert assertions = true;
-        if (assertions && FileUtil.isArchiveFile(url)) {
-            throw new IllegalArgumentException("File URL pointing to " + // NOI18N
-                "JAR is not valid classpath entry. Use jar: URL. Was: "+url); // NOI18N
-        }
-        if (!url.toExternalForm().endsWith("/")) { // NOI18N
-            throw new IllegalArgumentException("URL must be a folder URL (append '/' if necessary): " + url); // NOI18N
-        }
         return new SimplePathResourceImplementation (url);
     }
 

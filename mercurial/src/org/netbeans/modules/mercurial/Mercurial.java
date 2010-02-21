@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -85,7 +86,7 @@ public class Mercurial {
     public static final String MERCURIAL_OUTPUT_TAB_TITLE = org.openide.util.NbBundle.getMessage(Mercurial.class, "CTL_Mercurial_DisplayName"); // NOI18N
     public static final String CHANGESET_STR = "changeset:"; // NOI18N
 
-    static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; // NOI18N
+    public static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; // NOI18N
     static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged"; // NOI18N
     public static final String PROP_CHANGESET_CHANGED = "changesetChanged"; // NOI18N
 
@@ -286,6 +287,15 @@ public class Mercurial {
      */
     public void refreshWorkingCopyTimestamp(File repository) {
         getMercurialInterceptor().refreshHgFolderTimestamp(repository);
+    }
+
+    /**
+     * Returns a set of known repository roots (those visible or open in IDE)
+     * @param repositoryRoot
+     * @return
+     */
+    public Set<File> getSeenRoots (File repositoryRoot) {
+        return getMercurialInterceptor().getSeenRoots(repositoryRoot);
     }
 
    /**

@@ -121,11 +121,4 @@
             </file>
         </folder>
     </folder>
-    <folder name="Actions">
-        <folder name="Build">
-            <file name="org-netbeans-modules-cnd-toolchain-actions-BuildToolsAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.toolchain.actions.BuildToolsAction"/>
-            </file>
-        </folder>
-    </folder> <!-- Actions -->
 </filesystem>

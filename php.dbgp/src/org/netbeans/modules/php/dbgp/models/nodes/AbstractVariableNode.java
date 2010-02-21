@@ -184,11 +184,13 @@ public abstract class AbstractVariableNode extends AbstractModelNode
     }
     
     public boolean isChildrenFilled(){
-        int pages = getProperty().getPageSize();
-        if ( pages == 0 ){
+        int pageSize = getProperty().getPageSize();
+        if ( pageSize == 0 ){
             return true;
         }
-        return getProperty().getChildren().size() == 0;
+        int childrenSize = getProperty().getChildrenSize();
+        int page = getProperty().getPage();
+        return childrenSize <= (page+1)*pageSize;
     }
         
     public int getContext() {

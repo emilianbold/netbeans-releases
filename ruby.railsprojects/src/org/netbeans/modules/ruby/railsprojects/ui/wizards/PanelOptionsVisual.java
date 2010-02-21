@@ -46,11 +46,13 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import javax.swing.ComboBoxModel;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerUiUtils;
 import org.netbeans.modules.ruby.rubyproject.Util;
 import org.openide.WizardDescriptor;
@@ -61,16 +63,22 @@ import org.openide.util.Utilities;
 public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeListener {
     
     private final PanelConfigureProject panel;
+    /**
+     * Keeps track of platforms for which local gems have already been reloaded 
+     */
+    private final Set<RubyPlatform> reloaded = new HashSet<RubyPlatform>();
     
     public PanelOptionsVisual(PanelConfigureProject panel) {
         this.panel = panel;
         initComponents();
         
         PlatformComponentFactory.addPlatformChangeListener(platforms, new PlatformComponentFactory.PlatformChangeListener() {
+            @Override
             public void platformChanged() {
                 initServerComboBox();
                 fireChangeEvent();
                 initWarCheckBox();
+                reloadLocalGems();
             }
         });
 
@@ -79,12 +87,25 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         fireChangeEvent();
         initWarCheckBox();
         initServerComboBox();
+        reloadLocalGems();
     }
 
     public @Override void removeNotify() {
         Util.storeWizardPlatform(platforms);
         super.removeNotify();
     }
+    private void reloadLocalGems() {
+        // reload local gems to pick up external changes in gems
+        RubyPlatform platform = getPlatform();
+        if (platform != null && !reloaded.contains(platform)) {
+            GemManager gemManager = platform.getGemManager();
+            if (gemManager != null) {
+                gemManager.reloadLocalGems(true);
+                reloaded.add(platform);
+            }
+        }
+    }
+
 
     private void initWarCheckBox() {
         warCheckBox.addItemListener(new ItemListener() {

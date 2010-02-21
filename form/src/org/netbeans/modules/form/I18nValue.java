@@ -54,5 +54,6 @@ public interface I18nValue extends ExternalValue, FormDesignValue {
      * Returns the represented value stored in a resource bundle (always a String).
      * @return String value stored in the resource bundle
      */
+    @Override
     String getValue();
 }

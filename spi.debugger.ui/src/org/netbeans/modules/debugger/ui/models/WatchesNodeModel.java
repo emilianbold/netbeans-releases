@@ -57,7 +57,6 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.spi.viewmodel.DnDNodeModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
-import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -104,6 +103,11 @@ public class WatchesNodeModel implements ExtendedNodeModel, DnDNodeModel {
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT)
             return NbBundle.getBundle(WatchesNodeModel.class).getString("CTL_WatchesModel_Column_Name_Name");
+        if (o instanceof WatchesTreeModel.EmptyWatch) {
+            return "<_html><font color=\"#808080\">&lt;" + // [TODO] <_html> tag used as workaround, see TreeModelNode.setName()
+                        NbBundle.getBundle (WatchesNodeModel.class).getString("CTL_WatchesModel_Empty_Watch_Hint") +
+                        "&gt;</font></html>";
+        }
         Watch w = getWatch(o);
         if (w != null) {
             return w.getExpression ();
@@ -114,6 +118,9 @@ public class WatchesNodeModel implements ExtendedNodeModel, DnDNodeModel {
     public String getShortDescription (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT)
             return TreeModel.ROOT;
+        if (o instanceof WatchesTreeModel.EmptyWatch) {
+            return NbBundle.getMessage(WatchesNodeModel.class, "TTP_NewWatch");
+        }
         Watch w = getWatch(o);
         if (w != null) {
             return w.getExpression () + NbBundle.getBundle(WatchesNodeModel.class).getString("CTL_WatchesModel_Column_NameNoContext_Desc");
@@ -128,6 +135,9 @@ public class WatchesNodeModel implements ExtendedNodeModel, DnDNodeModel {
     public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT)
             return WATCH;
+        if (node instanceof WatchesTreeModel.EmptyWatch) {
+            return null;
+        }
         if (getWatch(node) != null)
             return WATCH;
         throw new UnknownTypeException (node);
@@ -150,7 +160,7 @@ public class WatchesNodeModel implements ExtendedNodeModel, DnDNodeModel {
     }
     
     public boolean canRename(Object node) throws UnknownTypeException {
-        return getWatch(node) != null;
+        return (node instanceof WatchesTreeModel.EmptyWatch) || getWatch(node) != null;
     }
 
     public boolean canCopy(Object node) throws UnknownTypeException {
@@ -204,7 +214,15 @@ public class WatchesNodeModel implements ExtendedNodeModel, DnDNodeModel {
     }
 
     public void setName(Object node, String name) throws UnknownTypeException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (node instanceof Watch) {
+            ((Watch)node).setExpression(name);
+            return;
+        }
+        if (node instanceof WatchesTreeModel.EmptyWatch) {
+            ((WatchesTreeModel.EmptyWatch)node).setExpression(name);
+            return;
+        }
+        throw new UnknownTypeException(node);
     }
 
     public int getAllowedDragActions() {

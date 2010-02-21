@@ -118,7 +118,13 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         elementView.requestFocusInWindow();
         return result;
     }
-    
+
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
+        elementView.requestFocus();
+    }
+
     public org.openide.util.Lookup getLookup() {
         // XXX Check for chenge of FileObject
         return lookup;

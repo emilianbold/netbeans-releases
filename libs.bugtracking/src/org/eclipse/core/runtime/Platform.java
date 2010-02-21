@@ -40,12 +40,14 @@
  */
 package org.eclipse.core.runtime;
 
+import java.io.File;
 import org.eclipse.core.runtime.content.IContentType;
 import org.osgi.framework.Bundle;
 
 import java.net.URL;
 import java.util.*;
 import org.eclipse.core.runtime.content.IContentTypeManager;
+import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 
 /**
  * @author Maros Sandor
@@ -53,6 +55,7 @@ import org.eclipse.core.runtime.content.IContentTypeManager;
 public final class Platform {
 
     private static IContentTypeManager contentTypeManager;
+    private static IPath stateLocation;
     
     public static boolean isRunning() {
         return false; // prevents TaskRepository from using o.e.equinox.security.storage.
@@ -82,7 +85,11 @@ public final class Platform {
     }
     
     public static IPath getStateLocation(Bundle bundle) {
-        return null;
+        if(stateLocation == null) {
+            File f = new File(BugtrackingRuntime.getInstance().getCacheStore(), "statelocation");
+            stateLocation = new StateLocation(f);
+        }
+        return stateLocation;
     }
     
     public static String getOS() {
@@ -106,5 +113,23 @@ public final class Platform {
             };
         }
         return contentTypeManager;
+    }
+
+    private static class StateLocation implements IPath {
+        private final File file;
+
+        private StateLocation(File file) {
+            this.file = file;
+        }
+
+        public IPath append(String path) {
+            File f = new File(file, path);
+            return new StateLocation(f);
+        }
+
+        public File toFile() {
+            return file;
+        }
+
     }
 }

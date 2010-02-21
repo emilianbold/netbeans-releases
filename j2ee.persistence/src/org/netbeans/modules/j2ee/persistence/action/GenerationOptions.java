@@ -41,6 +41,12 @@
 
 package org.netbeans.modules.j2ee.persistence.action;
 
+import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
+import javax.lang.model.element.Modifier;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 
 /**
@@ -52,28 +58,30 @@ import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 public final class GenerationOptions {
     
     public enum Operation {
-        // {0} the name of the entity manager instance
+        // {0} the Classname of the entity Class object
         // {1} the name of the given parameter, i.e. <code>parameterName</code>.
         // {2} the class of the given parameter, i.e. <code>parameterType</code>.
         // {3} the return type of the method, i.e. <code>returnType</code>.
         // {4} a query attribute for the query, i.e. <code>queryAttribute</code>.
+        // {5} the java.lang.Class object of the entity class
         PERSIST("{0}.persist({1});"),
         MERGE("{0}.merge({1});"),
         REMOVE("{0}.remove({0}.merge({1}));"),
-        FIND("return {0}.find({3}.class, {1});"),
+        FIND("return {0}.find({5}, {1});"),
         // here the query attribute represents the name of the entity class
         FIND_ALL(
-                "return {0}.createQuery(\"select object(o) from {4} as o\").getResultList();",
-                "javax.persistence.criteria.CriteriaQuery cq = {0}.getCriteriaBuilder().createQuery();cq.select(cq.from({4}.class));return {0}.createQuery(cq).getResultList();"
+                "return {0}.createQuery(\"select object(o) from \" + {5}.getSimpleName() + \" as o\").getResultList();",
+                "javax.persistence.criteria.CriteriaQuery cq = {0}.getCriteriaBuilder().createQuery();cq.select(cq.from({5}));return {0}.createQuery(cq).getResultList();"
                 ),
         //querry to get only items starting from {1}[0] up to {1}[1]-1
         FIND_SUBSET(
-                "javax.persistence.Query q = {0}.createQuery(\"select object(o) from {4} as o\");\nq.setMaxResults({1}[1]-{1}[0]);\nq.setFirstResult({1}[0]);\nreturn q.getResultList();",
-                "javax.persistence.criteria.CriteriaQuery cq = {0}.getCriteriaBuilder().createQuery();cq.select(cq.from({4}.class));javax.persistence.Query q = {0}.createQuery(cq);q.setMaxResults({1}[1]-{1}[0]);q.setFirstResult({1}[0]);return q.getResultList();"),
+                "javax.persistence.Query q = {0}.createQuery(\"select object(o) from \" + {5}.getSimpleName() + \" as o\");\nq.setMaxResults({1}[1]-{1}[0]);\nq.setFirstResult({1}[0]);\nreturn q.getResultList();",
+                "javax.persistence.criteria.CriteriaQuery cq = {0}.getCriteriaBuilder().createQuery();cq.select(cq.from({5}));javax.persistence.Query q = {0}.createQuery(cq);q.setMaxResults({1}[1]-{1}[0]);q.setFirstResult({1}[0]);return q.getResultList();"),
         //qurrry to get count(*) on a table
         COUNT(
-                "return ((Long) {0}.createQuery(\"select count(o) from {4} as o\").getSingleResult()).intValue();",
-                "javax.persistence.criteria.CriteriaQuery cq = {0}.getCriteriaBuilder().createQuery();javax.persistence.criteria.Root<{4}> rt = cq.from({4}.class);cq.select({0}.getCriteriaBuilder().count(rt));javax.persistence.Query q = {0}.createQuery(cq);return ((Long) q.getSingleResult()).intValue();");
+                "return ((Long) {0}.createQuery(\"select count(o) from \" + {5}.getSimpleName() + \" as o\").getSingleResult()).intValue();",
+                "javax.persistence.criteria.CriteriaQuery cq = {0}.getCriteriaBuilder().createQuery();javax.persistence.criteria.Root<{4}> rt = cq.from({5});cq.select({0}.getCriteriaBuilder().count(rt));javax.persistence.Query q = {0}.createQuery(cq);return ((Long) q.getSingleResult()).intValue();"),
+        GET_EM("return {0};");
 
         private String body;
         private String body2_0;
@@ -112,7 +120,8 @@ public final class GenerationOptions {
     private String parameterName;
     private String parameterType;
     private String queryAttribute;
-    
+    private Set<Modifier> modifiers = EnumSet.of(Modifier.PUBLIC);
+
     /** Creates a new instance of GenerationOptions */
     public GenerationOptions() {
     }
@@ -148,7 +157,34 @@ public final class GenerationOptions {
     public String getReturnType() {
         return returnType;
     }
-    
+
+    public Set<Modifier> getModifiers() {
+        return modifiers;
+    }
+
+    public void setModifiers(Set<Modifier> modifiers) {
+        this.modifiers = new HashSet<Modifier>(modifiers);
+    }
+
+
+    public String getCallLines(){
+        return getCallLines(null, null);
+    }
+
+    public String getCallLines(String emName, String ecName){
+        return getCallLines(emName, ecName, Persistence.VERSION_1_0);
+    }
+
+    public String getCallLines(String emName, String ecName, String version){
+        return operation == null ? null : MessageFormat.format(operation.getBody(version), new Object[] {
+            emName,
+            getParameterName(),
+            getParameterType(),
+            getReturnType(),
+            getQueryAttribute(),
+            ecName});
+    }
+
     public void setMethodName(String methodName) {
         this.methodName = methodName;
     }

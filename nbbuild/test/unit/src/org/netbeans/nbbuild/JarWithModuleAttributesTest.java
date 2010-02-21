@@ -182,7 +182,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
             "<target name=\"all\" >" +
             "  <mkdir dir='" + output + "' />" +
             "  <property name='javac.target' value='2.87'/>" +
-            "  <property name='public.packages' value=''/>" +
+            "  <property name='public.packages' value='x.y.ahoj'/>" +
             "  <property name='buildnumber' value='BLDprivateTESTBuild'/>" +
             "  <property name='code.name.base.slashes' value='org/netbeans/modules/sendopts'/>" +
             "  <njar manifest='" + manifest + "'   destfile='" + jar + "'>" +
@@ -231,6 +231,12 @@ public class JarWithModuleAttributesTest extends NbTestCase {
 
         String manV = file.getManifest().getMainAttributes().getValue("Bundle-ManifestVersion");
         assertEquals("Manifest version shall be specified", "2", manV);
+
+        String pkgs = file.getManifest().getMainAttributes().getValue("OpenIDE-Module-Public-Packages");
+        assertNull("No exported packages, we are in Netigso mode", pkgs);
+
+        pkgs = file.getManifest().getMainAttributes().getValue("Export-Package");
+        assertEquals("We want exported packages", "x.y.ahoj", pkgs);
     }
 
     public void testIgnoreWeirdJavacTarget() throws Exception {
@@ -292,7 +298,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
             "  <property name='buildnumber' value='BLDprivateTESTBuild'/>" +
             "  <property name='code.name.base.slashes' value='org/netbeans/modules/sendopts'/>" +
             "  <property name='spec.version.base' value='1.9'/>" +
-            "  <property name='module.dependencies' value='com.othercom.anothermodule > 2.1.3,org.netbeans.modules.applet/1 > 1.0'/>" +
+            "  <property name='module.dependencies' value='com.othercom.anothermodule > 2.1.3,org.netbeans.modules.applet/1 > 1.7'/>" +
             "  <njar manifest='" + manifest + "'   destfile='" + jar + "'>" +
             "  </njar>" +
             "  <unzip src='" + jar + "' dest='" + output + "'/>" +
@@ -317,7 +323,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
             fail("Wrong dependency on com.othercom.anothermodule:\n" + req);
         }
 
-        if (req.indexOf("org.netbeans.modules.applet/1;bundle-version=\"[1.0, 2)\"") == -1) {
+        if (req.indexOf("org.netbeans.modules.applet;bundle-version=\"[101.7, 102)\"") == -1) {
             fail("Wrong dependency on applet/1:\n" + req);
         }
 

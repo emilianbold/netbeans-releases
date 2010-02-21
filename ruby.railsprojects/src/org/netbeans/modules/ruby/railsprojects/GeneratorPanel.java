@@ -49,6 +49,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
@@ -60,6 +67,8 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.gems.GemAction;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.railsprojects.Generator.Script;
+import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil.RailsVersion;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -81,14 +90,28 @@ import org.openide.util.NbBundle;
  * @author  Tor Norbye
  */
 public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(GeneratorPanel.class.getName());
+    private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
+
     private ChangeListener changeListener;
     private List<Generator> generators = new ArrayList<Generator>();
-    private Project project;
+    private final Project project;
+    private final Future<RailsVersion> railsVersion;
 
     /** Creates new form GeneratorPanel */
     public GeneratorPanel(Project project, Generator initialGenerator) {
         this.project = project;
+        // might take some time due to reading files etc, so run outside of EDT
+        this.railsVersion = EXECUTOR.submit(new Callable<RailsVersion>() {
+
+            @Override
+            public RailsVersion call() throws Exception {
+                String version = RailsProjectUtil.getRailsVersion(GeneratorPanel.this.project);
+                return version != null ? RailsProjectUtil.versionFor(version) : new RailsVersion(0);
+            }
+        });
+
         initComponents();
         actionTypeButtonGroup.add(generateButton);
         actionTypeButtonGroup.add(destroyButton);
@@ -130,13 +153,25 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
             }
         });
     }
-    
+
     void setInitialState(String name, String params) {
         assert name != null;
         nameText.setText(name);
         if (params != null) {
             parameter1Text.setText(params);
         }
+    }
+
+    private RailsVersion getRailsVersion() {
+        try {
+            return railsVersion.get();
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
         
     private Generator getSelectedGenerator() {
@@ -398,8 +433,15 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         return o != null ? o.toString() : "";
     }
     
-    public String getScript() {
-        return destroyButton.isSelected() ? "destroy" : "generate";
+    Script getScript() {
+        String action = destroyButton.isSelected() ? "destroy" : "generate"; //NOI18N
+        boolean rails3 = getRailsVersion().compareTo(new RailsVersion(3)) >= 0;
+        if (!rails3) {
+            return new Script(action);
+        }
+        // in rails 3 there is just the 'rails' script; usage is
+        // e.g. 'rails generate scaffold ...'
+        return new Script("rails").addArgs(action);
     }
     
     public boolean isForce() {

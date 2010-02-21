@@ -226,10 +226,7 @@ public final class ProjectXMLManager {
                 continue;
             }
             if (!_directDeps.add(depToAdd)) {
-                String errMessage = "Corrupted project metadata (project.xml). " + // NOI18N
-                        "Duplicate dependency entry found: " + depToAdd; // NOI18N
-                Util.err.log(ErrorManager.WARNING, errMessage);
-                throw new IllegalStateException(errMessage);
+                throw new IOException("#175879: corrupted metadata in " + project + "; duplicate dep found: " + depToAdd);
             }
             if (findElement(depEl, ProjectXMLManager.RUN_DEPENDENCY) == null) {
                 continue;
@@ -457,7 +454,7 @@ public final class ProjectXMLManager {
 
     public void removeClassPathExtensions() {
         Element _confData = getConfData();
-        NodeList nl = _confData.getElementsByTagNameNS(NbModuleProjectType.NAMESPACE_SHARED,
+        NodeList nl = _confData.getElementsByTagNameNS(NbModuleProject.NAMESPACE_SHARED,
                 ProjectXMLManager.CLASS_PATH_EXTENSION);
         int len = nl.getLength();
         for (int i = 0; i < len; i++) {
@@ -564,7 +561,7 @@ public final class ProjectXMLManager {
                 final Set<TestModuleDependency> tdSet = testDependenciesSet;
 
                 AuxiliaryConfiguration auxConf = project.getHelper().createAuxiliaryConfiguration();
-                auxConf.removeConfigurationFragment(NbModuleProjectType.NAME_SHARED, NbModuleProjectType.NAMESPACE_SHARED_2, true);
+                auxConf.removeConfigurationFragment(NbModuleProject.NAME_SHARED, NbModuleProject.NAMESPACE_SHARED_2, true);
 
                 //? new or existing test type?
                 if (ttEl == null) {
@@ -878,7 +875,7 @@ public final class ProjectXMLManager {
     }
 
     private static Element findElement(Element parentEl, String elementName) {
-        return Util.findElement(parentEl, elementName, NbModuleProjectType.NAMESPACE_SHARED);
+        return Util.findElement(parentEl, elementName, NbModuleProject.NAMESPACE_SHARED);
     }
 
     /** Package-private for unit tests only. */
@@ -899,7 +896,7 @@ public final class ProjectXMLManager {
     }
 
     private static Element createModuleElement(Document doc, String name) {
-        return doc.createElementNS(NbModuleProjectType.NAMESPACE_SHARED, name);
+        return doc.createElementNS(NbModuleProject.NAMESPACE_SHARED, name);
     }
 
     private static Element createModuleElement(Document doc, String name, String innerText) {
@@ -983,7 +980,7 @@ public final class ProjectXMLManager {
 
         // generate general project elements
         Element typeEl = prjDoc.createElementNS(PROJECT_NS, "type"); // NOI18N
-        typeEl.appendChild(prjDoc.createTextNode(NbModuleProjectType.TYPE));
+        typeEl.appendChild(prjDoc.createTextNode(NbModuleProject.TYPE));
         prjDoc.getDocumentElement().appendChild(typeEl);
         Element confEl = prjDoc.createElementNS(PROJECT_NS, "configuration"); // NOI18N
         prjDoc.getDocumentElement().appendChild(confEl);
@@ -1025,7 +1022,7 @@ public final class ProjectXMLManager {
 
         // generate general project elements
         Element typeEl = prjDoc.createElementNS(PROJECT_NS, "type"); // NOI18N
-        typeEl.appendChild(prjDoc.createTextNode(NbModuleProjectType.TYPE));
+        typeEl.appendChild(prjDoc.createTextNode(NbModuleProject.TYPE));
         prjDoc.getDocumentElement().appendChild(typeEl);
         Element confEl = prjDoc.createElementNS(PROJECT_NS, "configuration"); // NOI18N
         prjDoc.getDocumentElement().appendChild(confEl);

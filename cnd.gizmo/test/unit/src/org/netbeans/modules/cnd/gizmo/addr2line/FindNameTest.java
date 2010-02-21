@@ -73,6 +73,11 @@ public class FindNameTest extends NbTestCase {
         super("FindNameTest");
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testFftImageTransformer() {
         baseTest(0x381, "FastFourierTransform::Transform", "fftimagetransformer", false);
     }

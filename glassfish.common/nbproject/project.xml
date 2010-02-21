@@ -137,6 +137,14 @@
                         <specification-version>6.19</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.keyring</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <test-dependencies>
                 <test-type>
@@ -160,6 +168,7 @@
                 <friend>org.netbeans.modules.glassfish.jruby</friend>
                 <friend>org.netbeans.modules.glassfish.phobos</friend>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
+                <friend>org.netbeans.modules.glassfish.eecommon</friend>
                 <friend>org.netbeans.modules.jbi.fuji.server.gfsupport</friend>
                 <friend>org.netbeans.modules.jbi.fuji.server.plugin</friend>
                 <package>org.netbeans.modules.glassfish.spi</package>

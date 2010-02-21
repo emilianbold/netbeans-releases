@@ -134,6 +134,12 @@ public interface NbModuleProvider {
      * @throws IOException
      */ 
     SpecificationVersion getDependencyVersion(String codenamebase) throws IOException;
+
+    /**
+     * Checks whether the project currently has a (direct) dependency on the given module.
+     * @since 1.37
+     */
+    boolean hasDependency(String codeNameBase) throws IOException;
     
     /**
      * get the NetBeans platform for the module

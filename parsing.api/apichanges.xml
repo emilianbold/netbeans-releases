@@ -107,6 +107,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="adding-PathRecognizerRegistration-annotation">
+      <api name="ParsingAPI"/>
+      <summary>Adding PathRecognizerRegistration annotation</summary>
+      <version major="1" minor="32"/>
+      <date day="26" month="1" year="2010"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Added <code>PathRecognizerRegistration</code> annotation that simplyfies registering <code>PathRecognizer</code>s.
+          </p>
+      </description>
+      <class package="org.netbeans.modules.parsing.spi.indexing" name="PathRecognizerRegistration"/>
+      <issue number="169991"/>
+  </change>
   <change id="errors-cache">
       <api name="ParsingAPI"/>
       <summary>Adding ErrorsCache</summary>

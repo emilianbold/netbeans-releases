@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.java.navigation;
 
 import java.awt.Color;
@@ -81,17 +80,14 @@ import org.openide.util.RequestProcessor;
  */
 public class JavaHierarchyPanel extends javax.swing.JPanel {
 
-    private static final RequestProcessor RP = new RequestProcessor(JavaHierarchyPanel.class.getName(),1);
-
+    private static final RequestProcessor RP = new RequestProcessor (JavaHierarchyPanel.class.getName (), 1);
     private static TreeModel pleaseWaitTreeModel;
-    static
-    {
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-        root.add(new DefaultMutableTreeNode(NbBundle.getMessage(JavaHierarchyPanel.class, "LBL_WaitNode"))); // NOI18N
-        pleaseWaitTreeModel = new DefaultTreeModel(root);
+
+    static {
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode ();
+        root.add (new DefaultMutableTreeNode (NbBundle.getMessage (JavaHierarchyPanel.class, "LBL_WaitNode"))); // NOI18N
+        pleaseWaitTreeModel = new DefaultTreeModel (root);
     }
-    
-    private FileObject fileObject;
     private JavaHierarchyModel javaHierarchyModel;
 
     /**
@@ -99,37 +95,39 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
      * @param fileObject
      * @param elements
      */
-    public JavaHierarchyPanel(final FileObject fileObject,
-            final Element[] elements) {
-        this.fileObject = fileObject;
-        initComponents();
-        
-        docPane = new DocumentationScrollPane( true );
-        splitPane.setRightComponent( docPane );
-        splitPane.setDividerLocation(JavaMembersAndHierarchyOptions.getHierarchyDividerLocation());        
-        
-        ToolTipManager.sharedInstance().registerComponent(javaHierarchyTree);
-        ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
+    public JavaHierarchyPanel (final FileObject fileObject, final Element[] elements) {
+        initComponents ();
 
-        caseSensitiveFilterCheckBox.setSelected(JavaMembersAndHierarchyOptions.isCaseSensitive());
-        showSuperTypeHierarchyToggleButton.setSelected(JavaMembersAndHierarchyOptions.isShowSuperTypeHierarchy());
-        showSubTypeHierarchyToggleButton.setSelected(JavaMembersAndHierarchyOptions.isShowSubTypeHierarchy());
-        showFQNToggleButton.setSelected(JavaMembersAndHierarchyOptions.isShowFQN());
-        showInnerToggleButton.setSelected(JavaMembersAndHierarchyOptions.isShowInner());
+        docPane = new DocumentationScrollPane (true);
+        splitPane.setRightComponent (docPane);
+        splitPane.setDividerLocation (JavaMembersAndHierarchyOptions.getHierarchyDividerLocation ());
 
-        javaHierarchyTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        javaHierarchyTree.setRootVisible(false);
-        javaHierarchyTree.setShowsRootHandles(true);
-        javaHierarchyTree.setCellRenderer(new JavaTreeCellRenderer());
-        javaHierarchyModel = new JavaHierarchyModel(fileObject, elements);
-        registerActions();
-        enterBusy();
-        RP.post(new Runnable() {
-            public void run() {
-                javaHierarchyModel.update();
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        leaveBusy();
+        ToolTipManager.sharedInstance ().registerComponent (javaHierarchyTree);
+        ToolTipManager.sharedInstance ().setLightWeightPopupEnabled (false);
+
+        caseSensitiveFilterCheckBox.setSelected (JavaMembersAndHierarchyOptions.isCaseSensitive ());
+        showSuperTypeHierarchyToggleButton.setSelected (JavaMembersAndHierarchyOptions.isShowSuperTypeHierarchy ());
+        showSubTypeHierarchyToggleButton.setSelected (JavaMembersAndHierarchyOptions.isShowSubTypeHierarchy ());
+        showFQNToggleButton.setSelected (JavaMembersAndHierarchyOptions.isShowFQN ());
+        showInnerToggleButton.setSelected (JavaMembersAndHierarchyOptions.isShowInner ());
+
+        javaHierarchyTree.getSelectionModel ().setSelectionMode (TreeSelectionModel.SINGLE_TREE_SELECTION);
+        javaHierarchyTree.setRootVisible (false);
+        javaHierarchyTree.setShowsRootHandles (true);
+        javaHierarchyTree.setCellRenderer (new JavaTreeCellRenderer ());
+        javaHierarchyModel = new JavaHierarchyModel (fileObject, elements);
+        registerActions ();
+        enterBusy ();
+        RP.post (new Runnable () {
+
+            @Override
+            public void run () {
+                javaHierarchyModel.update ();
+                SwingUtilities.invokeLater (new Runnable () {
+
+                    @Override
+                    public void run () {
+                        leaveBusy ();
                     }
                 });
             }
@@ -137,495 +135,557 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
     }
 
     //<editor-fold defaultstate="collapsed" desc="Registration of Swing event handlers">
-    private void registerActions() {
-        registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                close();
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
-                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+    private void registerActions () {
+        registerKeyboardAction (
+            new ActionListener () {
 
-        filterTextField.getDocument().addDocumentListener(
-                new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
-                selectMatchingRow();
-            }
-            public void insertUpdate(DocumentEvent e) {
-                selectMatchingRow();
-            }
-            public void removeUpdate(DocumentEvent e) {
-                selectMatchingRow();
-            }
-        }
-        );
+                @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    close ();
+                }
+            },
+            KeyStroke.getKeyStroke (KeyEvent.VK_ESCAPE, 0, true),
+            JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-        filterTextField.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                Utils.firstRow(javaHierarchyTree);
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0, false),
-                JComponent.WHEN_FOCUSED);
+        filterTextField.getDocument ().addDocumentListener (
+            new DocumentListener () {
 
-        filterTextField.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                Utils.previousRow(javaHierarchyTree);
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0, false),
-                JComponent.WHEN_FOCUSED);
+                @Override
+                public void changedUpdate (DocumentEvent e) {
+                    selectMatchingRow ();
+                }
 
-        filterTextField.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                Utils.nextRow(javaHierarchyTree);
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, false),
-                JComponent.WHEN_FOCUSED);
+                @Override
+                public void insertUpdate (DocumentEvent e) {
+                    selectMatchingRow ();
+                }
 
-        filterTextField.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                Utils.lastRow(javaHierarchyTree);
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_END, 0, false),
-                JComponent.WHEN_FOCUSED);
+                @Override
+                public void removeUpdate (DocumentEvent e) {
+                    selectMatchingRow ();
+                }
+            });
 
-        signatureEditorPane.putClientProperty(
+        filterTextField.registerKeyboardAction (
+            new ActionListener () {
+
+                @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    Utils.firstRow (javaHierarchyTree);
+                }
+            },
+            KeyStroke.getKeyStroke (KeyEvent.VK_HOME, 0, false),
+            JComponent.WHEN_FOCUSED);
+
+        filterTextField.registerKeyboardAction (
+            new ActionListener () {
+
+            @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    Utils.previousRow (javaHierarchyTree);
+                }
+            },
+            KeyStroke.getKeyStroke (KeyEvent.VK_UP, 0, false),
+            JComponent.WHEN_FOCUSED);
+
+        filterTextField.registerKeyboardAction (
+            new ActionListener () {
+
+            @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    Utils.nextRow (javaHierarchyTree);
+                }
+            },
+            KeyStroke.getKeyStroke (KeyEvent.VK_DOWN, 0, false),
+            JComponent.WHEN_FOCUSED);
+
+        filterTextField.registerKeyboardAction (
+            new ActionListener () {
+
+            @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    Utils.lastRow (javaHierarchyTree);
+                }
+            },
+            KeyStroke.getKeyStroke (KeyEvent.VK_END, 0, false),
+            JComponent.WHEN_FOCUSED);
+
+        signatureEditorPane.putClientProperty (
             "HighlightsLayerExcludes", // NOI18N
             "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" // NOI18N
-        );
+            );
 
-        signatureEditorPane.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                Utils.firstRow(javaHierarchyTree);
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0, false),
-                JComponent.WHEN_FOCUSED);
+        signatureEditorPane.registerKeyboardAction (
+            new ActionListener () {
 
-        signatureEditorPane.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                Utils.previousRow(javaHierarchyTree);
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0, false),
-                JComponent.WHEN_FOCUSED);
-
-        signatureEditorPane.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                Utils.nextRow(javaHierarchyTree);
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, false),
-                JComponent.WHEN_FOCUSED);
-
-        signatureEditorPane.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                Utils.lastRow(javaHierarchyTree);
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_END, 0, false),
-                JComponent.WHEN_FOCUSED);
-
-        filterTextField.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                TreePath treePath = javaHierarchyTree.getSelectionPath();
-                if (treePath != null) {
-                    Object node = treePath.getLastPathComponent();
-                    if (node instanceof JavaElement) {
-                        // TODO
-                        applyFilter();
-                    }
+            @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    Utils.firstRow (javaHierarchyTree);
                 }
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(), true),
-                JComponent.WHEN_FOCUSED);
+            },
+            KeyStroke.getKeyStroke (KeyEvent.VK_HOME, 0, false),
+            JComponent.WHEN_FOCUSED);
 
-        filterTextField.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                TreePath treePath = javaHierarchyTree.getSelectionPath();
-                if (treePath != null) {
-                    Object node = treePath.getLastPathComponent();
-                    if (node instanceof JavaElement) {
-                        gotoElement((JavaElement) node);
-                    }
+        signatureEditorPane.registerKeyboardAction (
+            new ActionListener () {
+
+            @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    Utils.previousRow (javaHierarchyTree);
                 }
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
-                JComponent.WHEN_FOCUSED);
+            },
+            KeyStroke.getKeyStroke (KeyEvent.VK_UP, 0, false),
+            JComponent.WHEN_FOCUSED);
 
-        filterTextField.registerKeyboardAction(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        Component view = docPane.getViewport().getView();
-                        if (view instanceof JEditorPane) {
-                            JEditorPane editorPane = (JEditorPane) view;
-                            ActionListener actionForKeyStroke =
-                                editorPane.getActionForKeyStroke(
-                                        KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0, false));
-                            actionForKeyStroke.actionPerformed(
-                                    new ActionEvent(editorPane, ActionEvent.ACTION_PERFORMED, ""));
+        signatureEditorPane.registerKeyboardAction (
+            new ActionListener () {
+
+            @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    Utils.nextRow (javaHierarchyTree);
+                }
+            },
+            KeyStroke.getKeyStroke (KeyEvent.VK_DOWN, 0, false),
+            JComponent.WHEN_FOCUSED);
+
+        signatureEditorPane.registerKeyboardAction (
+            new ActionListener () {
+
+            @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    Utils.lastRow (javaHierarchyTree);
+                }
+            },
+            KeyStroke.getKeyStroke (KeyEvent.VK_END, 0, false),
+            JComponent.WHEN_FOCUSED);
+
+        filterTextField.registerKeyboardAction (
+            new ActionListener () {
+
+            @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    TreePath treePath = javaHierarchyTree.getSelectionPath ();
+                    if (treePath != null) {
+                        Object node = treePath.getLastPathComponent ();
+                        if (node instanceof JavaElement) {
+                            // TODO
+                            applyFilter ();
                         }
                     }
-                },
-                KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, KeyEvent.SHIFT_MASK, false),
-                JComponent.WHEN_FOCUSED);
-        filterTextField.registerKeyboardAction(
-                new ActionListener() {
-                    private boolean firstTime = true;
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        Component view = docPane.getViewport().getView();
-                        if (view instanceof JEditorPane) {
-                            JEditorPane editorPane = (JEditorPane) view;
-                            ActionListener actionForKeyStroke =
-                                editorPane.getActionForKeyStroke(
-                                        KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0, false));
-                            actionEvent = new ActionEvent(editorPane, ActionEvent.ACTION_PERFORMED, "");
-                            actionForKeyStroke.actionPerformed(actionEvent);
-                            if (firstTime) {
-                                actionForKeyStroke.actionPerformed(actionEvent);
-                                firstTime = false;
-                            }
+                }
+            },
+            KeyStroke.getKeyStroke (KeyEvent.VK_ENTER, Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask (), true),
+            JComponent.WHEN_FOCUSED);
+
+        filterTextField.registerKeyboardAction (
+            new ActionListener () {
+
+            @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    TreePath treePath = javaHierarchyTree.getSelectionPath ();
+                    if (treePath != null) {
+                        Object node = treePath.getLastPathComponent ();
+                        if (node instanceof JavaElement) {
+                            gotoElement ((JavaElement) node);
                         }
                     }
-                },
-                KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, KeyEvent.SHIFT_MASK, false),
-                JComponent.WHEN_FOCUSED);
+                }
+            },
+            KeyStroke.getKeyStroke (KeyEvent.VK_ENTER, 0, true),
+            JComponent.WHEN_FOCUSED);
 
-        caseSensitiveFilterCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JavaMembersAndHierarchyOptions.setCaseSensitive(caseSensitiveFilterCheckBox.isSelected());
-                if (filterTextField.getText().trim().length() > 0) {
+        filterTextField.registerKeyboardAction (
+            new ActionListener () {
+
+            @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    Component view = docPane.getViewport ().getView ();
+                    if (view instanceof JEditorPane) {
+                        JEditorPane editorPane = (JEditorPane) view;
+                        ActionListener actionForKeyStroke =
+                            editorPane.getActionForKeyStroke (
+                            KeyStroke.getKeyStroke (KeyEvent.VK_PAGE_UP, 0, false));
+                        actionForKeyStroke.actionPerformed (
+                            new ActionEvent (editorPane, ActionEvent.ACTION_PERFORMED, ""));
+                    }
+                }
+            },
+            KeyStroke.getKeyStroke (KeyEvent.VK_PAGE_UP, KeyEvent.SHIFT_MASK, false),
+            JComponent.WHEN_FOCUSED);
+        filterTextField.registerKeyboardAction (
+            new ActionListener () {
+
+                private boolean firstTime = true;
+
+            @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    Component view = docPane.getViewport ().getView ();
+                    if (view instanceof JEditorPane) {
+                        JEditorPane editorPane = (JEditorPane) view;
+                        ActionListener actionForKeyStroke =
+                            editorPane.getActionForKeyStroke (
+                            KeyStroke.getKeyStroke (KeyEvent.VK_PAGE_DOWN, 0, false));
+                        actionEvent = new ActionEvent (editorPane, ActionEvent.ACTION_PERFORMED, "");
+                        actionForKeyStroke.actionPerformed (actionEvent);
+                        if (firstTime) {
+                            actionForKeyStroke.actionPerformed (actionEvent);
+                            firstTime = false;
+                        }
+                    }
+                }
+            },
+            KeyStroke.getKeyStroke (KeyEvent.VK_PAGE_DOWN, KeyEvent.SHIFT_MASK, false),
+            JComponent.WHEN_FOCUSED);
+
+        caseSensitiveFilterCheckBox.addActionListener (new ActionListener () {
+
+            @Override
+            public void actionPerformed (ActionEvent actionEvent) {
+                JavaMembersAndHierarchyOptions.setCaseSensitive (caseSensitiveFilterCheckBox.isSelected ());
+                if (filterTextField.getText ().trim ().length () > 0) {
                     // apply filters again only if there is some filter text
-                    selectMatchingRow();
+                    selectMatchingRow ();
                 }
             }
         });
 
-        javaHierarchyTree.addMouseListener(
-                new MouseAdapter() {
-            public void mouseClicked(MouseEvent me) {
-                Point point = me.getPoint();
-                TreePath treePath = javaHierarchyTree.getPathForLocation(point.x, point.y);
-                if (treePath != null) {
-                    Object node = treePath.getLastPathComponent();
-                    if (node instanceof JavaElement) {
-                        if (me.getClickCount() == 1) {
-                            if (me.isControlDown()) {
-                                JavaElement javaToolsJavaElement = (JavaElement) node;
-                                applyFilter();
+        javaHierarchyTree.addMouseListener (
+            new MouseAdapter () {
+
+            @Override
+                public void mouseClicked (MouseEvent me) {
+                    Point point = me.getPoint ();
+                    TreePath treePath = javaHierarchyTree.getPathForLocation (point.x, point.y);
+                    if (treePath != null) {
+                        Object node = treePath.getLastPathComponent ();
+                        if (node instanceof JavaElement) {
+                            if (me.getClickCount () == 1) {
+                                if (me.isControlDown ()) {
+                                    JavaElement javaToolsJavaElement = (JavaElement) node;
+                                    applyFilter ();
+                                }
+                            } else if (me.getClickCount () == 2) {
+                                gotoElement ((JavaElement) node);
                             }
-                        }  else if (me.getClickCount() == 2){
-                            gotoElement((JavaElement) node);
                         }
                     }
                 }
-            }
-        }
-        );
+            });
 
-        javaHierarchyTree.addTreeSelectionListener(new TreeSelectionListener() {
-            public void valueChanged(TreeSelectionEvent e) {
-                showSignature();
-                showJavaDoc();
+        javaHierarchyTree.addTreeSelectionListener (new TreeSelectionListener () {
+
+            @Override
+            public void valueChanged (TreeSelectionEvent e) {
+                showSignature ();
+                showJavaDoc ();
             }
         });
 
-        javaHierarchyTree.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                TreePath treePath = javaHierarchyTree.getLeadSelectionPath();
-                if (treePath != null) {
-                    Object node = treePath.getLastPathComponent();
-                    if (node instanceof JavaElement) {
-                        gotoElement((JavaElement) node);
+        javaHierarchyTree.registerKeyboardAction (
+            new ActionListener () {
+
+            @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    TreePath treePath = javaHierarchyTree.getLeadSelectionPath ();
+                    if (treePath != null) {
+                        Object node = treePath.getLastPathComponent ();
+                        if (node instanceof JavaElement) {
+                            gotoElement ((JavaElement) node);
+                        }
                     }
                 }
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
-                JComponent.WHEN_FOCUSED);
+            },
+            KeyStroke.getKeyStroke (KeyEvent.VK_ENTER, 0, true),
+            JComponent.WHEN_FOCUSED);
 
-        javaHierarchyTree.registerKeyboardAction(
-                new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                TreePath treePath = javaHierarchyTree.getLeadSelectionPath();
-                if (treePath != null) {
-                    Object node = treePath.getLastPathComponent();
-                    if (node instanceof JavaElement) {
-                        // TODO
-                        applyFilter();
+        javaHierarchyTree.registerKeyboardAction (
+            new ActionListener () {
+
+            @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    TreePath treePath = javaHierarchyTree.getLeadSelectionPath ();
+                    if (treePath != null) {
+                        Object node = treePath.getLastPathComponent ();
+                        if (node instanceof JavaElement) {
+                            // TODO
+                            applyFilter ();
+                        }
                     }
                 }
-            }
-        },
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(), true),
-                JComponent.WHEN_FOCUSED);
+            },
+            KeyStroke.getKeyStroke (KeyEvent.VK_ENTER, Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask (), true),
+            JComponent.WHEN_FOCUSED);
 
-        showSuperTypeHierarchyToggleButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
+        showSuperTypeHierarchyToggleButton.addActionListener (new ActionListener () {
+
+            @Override
+            public void actionPerformed (ActionEvent actionEvent) {
                 // Prevent reloading of super type hierarchy
-                if (!JavaMembersAndHierarchyOptions.isShowSuperTypeHierarchy()) {
-                    applyFilter(true);
+                if (!JavaMembersAndHierarchyOptions.isShowSuperTypeHierarchy ()) {
+                    applyFilter (true);
                 }
             }
         });
 
-        showSubTypeHierarchyToggleButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
+        showSubTypeHierarchyToggleButton.addActionListener (new ActionListener () {
+
+            @Override
+            public void actionPerformed (ActionEvent actionEvent) {
                 // Prevent reloading of sub type hierarchy
-                if (!JavaMembersAndHierarchyOptions.isShowSubTypeHierarchy()) {
-                    applyFilter(true);
+                if (!JavaMembersAndHierarchyOptions.isShowSubTypeHierarchy ()) {
+                    applyFilter (true);
                 }
             }
         });
 
-        showFQNToggleButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                JavaMembersAndHierarchyOptions.setShowFQN(showFQNToggleButton.isSelected());
-                javaHierarchyModel.fireTreeNodesChanged();
+        showFQNToggleButton.addActionListener (new ActionListener () {
+
+            @Override
+            public void actionPerformed (ActionEvent actionEvent) {
+                JavaMembersAndHierarchyOptions.setShowFQN (showFQNToggleButton.isSelected ());
+                javaHierarchyModel.fireTreeStructureChanged ();
             }
         });
 
-        showInnerToggleButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                applyFilter(true);
+        showInnerToggleButton.addActionListener (new ActionListener () {
+
+            @Override
+            public void actionPerformed (ActionEvent actionEvent) {
+                applyFilter (true);
             }
         });
 
-        expandAllButton.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        expandAll();
-                    }
-                });
+        expandAllButton.addActionListener (new ActionListener () {
 
-        closeButton.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        close();
-                    }
-                });
+            @Override
+            public void actionPerformed (ActionEvent actionEvent) {
+                expandAll ();
+            }
+        });
+
+        closeButton.addActionListener (new ActionListener () {
+
+            @Override
+            public void actionPerformed (ActionEvent actionEvent) {
+                close ();
+            }
+        });
     }
     //</editor-fold>
 
-    public void addNotify() {
-        super.addNotify();
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                applyFilter(true);
-                filterTextField.requestFocusInWindow();
-            }           
+    @Override
+    public void addNotify () {
+        super.addNotify ();
+        SwingUtilities.invokeLater (new Runnable () {
+
+            @Override
+            public void run () {
+                applyFilter (true);
+                filterTextField.requestFocusInWindow ();
+            }
         });
     }
 
-    public void removeNotify() {
-        JavaMembersAndHierarchyOptions.setHierarchyDividerLocation(splitPane.getDividerLocation());
-        docPane.setData( null );
-        super.removeNotify();
-    }
-    
-    // Hack to allow showing of Help window when F1 or HELP key is pressed.
     @Override
-    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-        if (e.getKeyCode() == KeyEvent.VK_F1 || e.getKeyCode() == KeyEvent.VK_HELP)  {
-            JComponent rootPane = SwingUtilities.getRootPane(this);
-            if (rootPane != null) {
-                rootPane.putClientProperty(ResizablePopup.HELP_COOKIE, Boolean.TRUE); // NOI18N
-            }
-        }
-        return super.processKeyBinding(ks, e, condition, pressed);
+    public void removeNotify () {
+        JavaMembersAndHierarchyOptions.setHierarchyDividerLocation (splitPane.getDividerLocation ());
+        docPane.setData (null);
+        super.removeNotify ();
     }
 
-    private Component lastFocusedComponent;
-    
-    private void enterBusy() {
-        javaHierarchyTree.setModel(pleaseWaitTreeModel);
-        JRootPane rootPane = SwingUtilities.getRootPane(JavaHierarchyPanel.this);
-        if (rootPane != null) {
-            rootPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    // Hack to allow showing of Help window when F1 or HELP key is pressed.
+    @Override
+    protected boolean processKeyBinding (KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+        if (e.getKeyCode () == KeyEvent.VK_F1 || e.getKeyCode () == KeyEvent.VK_HELP) {
+            JComponent rootPane = SwingUtilities.getRootPane (this);
+            if (rootPane != null) {
+                rootPane.putClientProperty (ResizablePopup.HELP_COOKIE, Boolean.TRUE); // NOI18N
+            }
         }
-        Window window = SwingUtilities.getWindowAncestor(this);
-        if (window != null) {
-            lastFocusedComponent = window.getFocusOwner();
-        }
-        filterTextField.setEnabled(false);  
-        caseSensitiveFilterCheckBox.setEnabled(false);
-        showSubTypeHierarchyToggleButton.setEnabled(false);
-        showSuperTypeHierarchyToggleButton.setEnabled(false);
-        showFQNToggleButton.setEnabled(false);
-        showInnerToggleButton.setEnabled(false);
-        expandAllButton.setEnabled(false);
+        return super.processKeyBinding (ks, e, condition, pressed);
     }
-    
-    private void leaveBusy() {
-        javaHierarchyTree.setModel(javaHierarchyModel);
-        JRootPane rootPane = SwingUtilities.getRootPane(JavaHierarchyPanel.this);
+    private Component lastFocusedComponent;
+
+    private void enterBusy () {
+        javaHierarchyTree.setModel (pleaseWaitTreeModel);
+        JRootPane rootPane = SwingUtilities.getRootPane (JavaHierarchyPanel.this);
         if (rootPane != null) {
-            rootPane.setCursor(Cursor.getDefaultCursor());
+            rootPane.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
         }
-        filterTextField.setEnabled(true);  
-        caseSensitiveFilterCheckBox.setEnabled(true);
-        showSubTypeHierarchyToggleButton.setEnabled(true);
-        showSuperTypeHierarchyToggleButton.setEnabled(true);
-        showFQNToggleButton.setEnabled(true);
-        showInnerToggleButton.setEnabled(true);
-        expandAllButton.setEnabled(true);
+        Window window = SwingUtilities.getWindowAncestor (this);
+        if (window != null) {
+            lastFocusedComponent = window.getFocusOwner ();
+        }
+        filterTextField.setEnabled (false);
+        caseSensitiveFilterCheckBox.setEnabled (false);
+        showSubTypeHierarchyToggleButton.setEnabled (false);
+        showSuperTypeHierarchyToggleButton.setEnabled (false);
+        showFQNToggleButton.setEnabled (false);
+        showInnerToggleButton.setEnabled (false);
+        expandAllButton.setEnabled (false);
+    }
+
+    private void leaveBusy () {
+        javaHierarchyTree.setModel (javaHierarchyModel);
+        JRootPane rootPane = SwingUtilities.getRootPane (JavaHierarchyPanel.this);
+        if (rootPane != null) {
+            rootPane.setCursor (Cursor.getDefaultCursor ());
+        }
+        filterTextField.setEnabled (true);
+        caseSensitiveFilterCheckBox.setEnabled (true);
+        showSubTypeHierarchyToggleButton.setEnabled (true);
+        showSuperTypeHierarchyToggleButton.setEnabled (true);
+        showFQNToggleButton.setEnabled (true);
+        showInnerToggleButton.setEnabled (true);
+        expandAllButton.setEnabled (true);
         if (lastFocusedComponent != null) {
-            if (lastFocusedComponent.isDisplayable()) {
-                lastFocusedComponent.requestFocusInWindow();
+            if (lastFocusedComponent.isDisplayable ()) {
+                lastFocusedComponent.requestFocusInWindow ();
             }
             lastFocusedComponent = null;
         }
     }
-    
-    private void applyFilter() {
-        applyFilter(true);
+
+    private void applyFilter () {
+        applyFilter (true);
     }
-    
-    private void applyFilter(final boolean structural) {
+
+    private void applyFilter (final boolean structural) {
         if (structural) {
-            enterBusy();
+            enterBusy ();
         }
 
-        JavaMembersAndHierarchyOptions.setCaseSensitive(caseSensitiveFilterCheckBox.isSelected());
-        JavaMembersAndHierarchyOptions.setShowSuperTypeHierarchy(showSuperTypeHierarchyToggleButton.isSelected());
-        JavaMembersAndHierarchyOptions.setShowSubTypeHierarchy(showSubTypeHierarchyToggleButton.isSelected());
-        JavaMembersAndHierarchyOptions.setShowFQN(showFQNToggleButton.isSelected());
-        JavaMembersAndHierarchyOptions.setShowInner(showInnerToggleButton.isSelected());
+        JavaMembersAndHierarchyOptions.setCaseSensitive (caseSensitiveFilterCheckBox.isSelected ());
+        JavaMembersAndHierarchyOptions.setShowSuperTypeHierarchy (showSuperTypeHierarchyToggleButton.isSelected ());
+        JavaMembersAndHierarchyOptions.setShowSubTypeHierarchy (showSubTypeHierarchyToggleButton.isSelected ());
+        JavaMembersAndHierarchyOptions.setShowFQN (showFQNToggleButton.isSelected ());
+        JavaMembersAndHierarchyOptions.setShowInner (showInnerToggleButton.isSelected ());
 
-        RequestProcessor.getDefault().post(
-            new Runnable() {
-                public void run() {
+        RequestProcessor.getDefault ().post (
+            new Runnable () {
+
+            @Override
+                public void run () {
                     try {
-    
+
                         if (structural) {
-                                javaHierarchyModel.update();
+                            javaHierarchyModel.update ();
                         }
                     } finally {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
+                        SwingUtilities.invokeLater (new Runnable () {
+
+                        @Override
+                            public void run () {
                                 if (structural) {
-                                    leaveBusy();
+                                    leaveBusy ();
                                 }
                                 // expand the tree
-                                for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
-                                    TreePath treePath = javaHierarchyTree.getPathForRow(row);
-                                    if (JavaMembersAndHierarchyOptions.isShowSubTypeHierarchy()) {
-                                        if (treePath.getPathCount() < JavaMembersAndHierarchyOptions.getSubTypeHierarchyDepth()) {
-                                            javaHierarchyTree.expandRow(row);
+                                for (int row = 0; row < javaHierarchyTree.getRowCount (); row++) {
+                                    TreePath treePath = javaHierarchyTree.getPathForRow (row);
+                                    if (JavaMembersAndHierarchyOptions.isShowSubTypeHierarchy ()) {
+                                        if (treePath.getPathCount () < JavaMembersAndHierarchyOptions.getSubTypeHierarchyDepth ()) {
+                                            javaHierarchyTree.expandRow (row);
                                         }
                                     } else {
-                                        javaHierarchyTree.expandRow(row);
+                                        javaHierarchyTree.expandRow (row);
                                     }
                                 }
-                            }});
+                            }
+                        });
                     }
                 }
             });
     }
 
-    private void expandAll() {
-        SwingUtilities.invokeLater(
-                new Runnable() {
-            public void run() {
-                JRootPane rootPane = SwingUtilities.getRootPane(JavaHierarchyPanel.this);
-                if (rootPane != null) {
-                    rootPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                }
-            }
-        }
-        );
+    private void expandAll () {
+        SwingUtilities.invokeLater (
+            new Runnable () {
 
-        SwingUtilities.invokeLater(
-                new Runnable() {
-            public void run() {
-                try {
-                    // expand the tree
-                    for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
-                        javaHierarchyTree.expandRow(row);
-                    }
-                    selectMatchingRow();
-                } finally {
-                    JRootPane rootPane = SwingUtilities.getRootPane(JavaHierarchyPanel.this);
+            @Override
+                public void run () {
+                    JRootPane rootPane = SwingUtilities.getRootPane (JavaHierarchyPanel.this);
                     if (rootPane != null) {
-                        rootPane.setCursor(Cursor.getDefaultCursor());
+                        rootPane.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
                     }
                 }
-            }
-        }
-        );
+            });
+
+        SwingUtilities.invokeLater (
+            new Runnable () {
+
+            @Override
+                public void run () {
+                    try {
+                        // expand the tree
+                        for (int row = 0; row < javaHierarchyTree.getRowCount (); row++) {
+                            javaHierarchyTree.expandRow (row);
+                        }
+                        selectMatchingRow ();
+                    } finally {
+                        JRootPane rootPane = SwingUtilities.getRootPane (JavaHierarchyPanel.this);
+                        if (rootPane != null) {
+                            rootPane.setCursor (Cursor.getDefaultCursor ());
+                        }
+                    }
+                }
+            });
     }
 
-    private void selectMatchingRow() {
-        filterTextField.setForeground(UIManager.getColor("TextField.foreground"));
-        javaHierarchyTree.setSelectionRow(-1);
+    private void selectMatchingRow () {
+        filterTextField.setForeground (UIManager.getColor ("TextField.foreground"));
+        javaHierarchyTree.setSelectionRow (-1);
         // select first matching
-        for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
-            Object o = javaHierarchyTree.getPathForRow(row).getLastPathComponent();
+        for (int row = 0; row < javaHierarchyTree.getRowCount (); row++) {
+            Object o = javaHierarchyTree.getPathForRow (row).getLastPathComponent ();
             if (o instanceof JavaElement) {
-                String filterText = filterTextField.getText();
-                if (Utils.patternMatch((JavaElement)o, filterText, filterText.toLowerCase())) {
-                    javaHierarchyTree.setSelectionRow(row);
-                    javaHierarchyTree.scrollRowToVisible(row);
+                String filterText = filterTextField.getText ();
+                if (Utils.patternMatch ((JavaElement) o, filterText, filterText.toLowerCase ())) {
+                    javaHierarchyTree.setSelectionRow (row);
+                    javaHierarchyTree.scrollRowToVisible (row);
                     return;
                 }
             }
         }
-        filterTextField.setForeground(Color.RED);
+        filterTextField.setForeground (Color.RED);
     }
 
-    private void gotoElement(JavaElement javaToolsJavaElement) {
+    private void gotoElement (JavaElement javaToolsJavaElement) {
         try {
-            javaToolsJavaElement.gotoElement();
+            javaToolsJavaElement.gotoElement ();
         } finally {
-            close();
+            close ();
         }
     }
 
-    private void showSignature() {
-        signatureEditorPane.setText("");
-        signatureEditorPane.setToolTipText(null);
-        TreePath treePath = javaHierarchyTree.getSelectionPath();
+    private void showSignature () {
+        signatureEditorPane.setText ("");
+        signatureEditorPane.setToolTipText (null);
+        TreePath treePath = javaHierarchyTree.getSelectionPath ();
         if (treePath != null) {
-            Object node = treePath.getLastPathComponent();
+            Object node = treePath.getLastPathComponent ();
             if (node instanceof JavaElement) {
-                signatureEditorPane.setText(((JavaElement)node).getTooltip());
-                signatureEditorPane.setCaretPosition(0);
-                signatureEditorPane.setToolTipText(((JavaElement)node).getTooltip());
+                signatureEditorPane.setText (((JavaElement) node).getTooltip ());
+                signatureEditorPane.setCaretPosition (0);
+                signatureEditorPane.setToolTipText (((JavaElement) node).getTooltip ());
             }
         }
     }
 
-    private void showJavaDoc() {
-        TreePath treePath = javaHierarchyTree.getSelectionPath();
+    private void showJavaDoc () {
+        TreePath treePath = javaHierarchyTree.getSelectionPath ();
         if (treePath != null) {
-            Object node = treePath.getLastPathComponent();
+            Object node = treePath.getLastPathComponent ();
             if (node instanceof JavaElement) {
-                docPane.setData( ((JavaElement)node).getJavaDoc() );
+                docPane.setData (((JavaElement) node).getJavaDoc ());
             }
         }
     }
-
     private DocumentationScrollPane docPane;
-    
-    private void close() {
-        Window window = SwingUtilities.getWindowAncestor(JavaHierarchyPanel.this);
+
+    private void close () {
+        Window window = SwingUtilities.getWindowAncestor (JavaHierarchyPanel.this);
         if (window != null) {
-            ResizablePopup.cleanup(window);
+            ResizablePopup.cleanup (window);
         }
     }
 
@@ -766,7 +826,6 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
 
         caseSensitiveFilterCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JavaHierarchyPanel.class, "caseSensitiveFilterCheckBox_ACSD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JCheckBox caseSensitiveFilterCheckBox;
     public javax.swing.JButton closeButton;

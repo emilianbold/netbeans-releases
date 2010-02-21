@@ -3,7 +3,7 @@ echo 1;
 echo 2;
 echo 3;
 
-for ($i = 0 ; $i < 5 ; $i++) {
+for ($i = 0; $i < 5; $i++) {
   echo 1;
 }
 

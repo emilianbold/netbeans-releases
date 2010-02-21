@@ -79,7 +79,7 @@ import org.netbeans.modules.subversion.client.cli.CommandlineClient;
 import org.netbeans.modules.subversion.config.CertificateFile;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
-import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.ProxySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;

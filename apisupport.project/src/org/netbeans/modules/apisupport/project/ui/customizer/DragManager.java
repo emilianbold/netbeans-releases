@@ -71,7 +71,6 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.JComponent;
 
@@ -118,18 +117,19 @@ final class DragManager implements DragGestureListener, DragSourceListener,
         this.translateX = -translateX;
         this.translateY = -translateY;
         
-        SplashComponentPreview scomp = (SplashComponentPreview)component;        
-        Rectangle bounds = new Rectangle(new Dimension(scomp.image.getWidth(null),scomp.image.getHeight(null)));
-        for (DragItem elem : allItems) {
-            elem.setBounds(bounds);
-        }                            
+        SplashComponentPreview scomp = (SplashComponentPreview)component;
+        if (scomp.image != null) {
+            Rectangle bounds = new Rectangle(new Dimension(scomp.image.getWidth(null),scomp.image.getHeight(null)));
+            for (DragItem elem : allItems) {
+                elem.setBounds(bounds);
+            }
+        }
     }
     
     public void paint(Graphics g) {
         g.setXORMode(Color.white); //Color of line varies
         
-        for (Iterator it = allItems.iterator(); it.hasNext();) {
-            DragItem elem = (DragItem) it.next();
+        for (DragItem elem : allItems) {
             elem.paint(g);
         }
     }
@@ -212,8 +212,7 @@ final class DragManager implements DragGestureListener, DragSourceListener,
     public void mouseMoved(MouseEvent e) {
         activeDragItem = null;
         DragItem item = null;
-        for (Iterator it = allItems.iterator(); it.hasNext();) {
-            DragItem elem = (DragItem) it.next();
+        for (DragItem elem : allItems) {
             if (elem.contains(transformMousePoint(e.getPoint()))) {
                 item = elem;
                 break;
@@ -229,8 +228,7 @@ final class DragManager implements DragGestureListener, DragSourceListener,
     
     DragItem getDragItem(Point p2Compare) {
         DragItem retval = null;
-        for (Iterator it = allItems.iterator(); it.hasNext();) {
-            DragItem elem = (DragItem) it.next();
+        for (DragItem elem : allItems) {
             if (elem.contains(p2Compare)) {
                 retval = elem;
                 break;

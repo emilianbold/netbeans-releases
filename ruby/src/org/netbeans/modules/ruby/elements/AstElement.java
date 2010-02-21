@@ -84,7 +84,7 @@ public abstract class AstElement extends RubyElement {
         super();
         this.info = info;
         this.node = node;
-        this.type = RubyType.createUnknown(); // by defaul unknown
+        this.type = RubyType.unknown(); // by defaul unknown
     }
 
     public String getFqn() {
