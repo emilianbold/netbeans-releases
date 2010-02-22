@@ -40,6 +40,7 @@
  */
 package demo.rest.explorer;
 
+import com.sun.jersey.api.client.UniformInterfaceException;
 import demo.rest.client.MessageBoardClient;
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -56,6 +57,10 @@ import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import demo.rest.Message;
+import java.net.ConnectException;
+import javax.swing.SwingUtilities;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /**
  * Top component which displays something.
@@ -74,7 +79,6 @@ public final class ExplorerTopComponent extends TopComponent implements Explorer
         initComponents();
         setName(NbBundle.getMessage(ExplorerTopComponent.class, "CTL_ExplorerTopComponent"));
         setToolTipText(NbBundle.getMessage(ExplorerTopComponent.class, "HINT_ExplorerTopComponent"));
-        refresh();
         ActionMap map = this.getActionMap();
         map.put("delete", ExplorerUtils.actionDelete(em, true));
         associateLookup(ExplorerUtils.createLookup(em, map));
@@ -160,7 +164,21 @@ public final class ExplorerTopComponent extends TopComponent implements Explorer
 
     @Override
     public void componentOpened() {
-        // TODO add custom code on component opening
+        try {
+            refresh();
+        } catch (Exception re) {
+            final NotifyDescriptor d = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(ExplorerTopComponent.class, "MSG_Cannotconnect"),
+                    NotifyDescriptor.INFORMATION_MESSAGE);
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    DialogDisplayer.getDefault().notify(d);
+                }
+            });
+            return;
+        }
     }
 
     @Override
