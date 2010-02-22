@@ -100,17 +100,8 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
     }
 
     @Override
-    public PasswordAuthentication getPasswordAuthentication(String url, boolean forceLogin) {
-        KenaiProject kp = null;
-        try {
-            kp = KenaiProject.forRepository(url);
-        } catch (KenaiException ex) {
-            LOG.log(Level.FINE, null, ex);
-        }
-        if(kp == null) {
-            return null;
-        }
-        Kenai kenai = kp.getKenai();
+    public PasswordAuthentication getPasswordAuthentication(String url, boolean forceLogin) {        
+        Kenai kenai = getKenai(url);
         PasswordAuthentication a = kenai.getPasswordAuthentication();
         if(a != null) {
             return a;
@@ -150,12 +141,14 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
     @Override
     public KenaiUser forName(String user, String url) {
         assert url != null;
-        try {
-            return new KenaiUserImpl(new org.netbeans.modules.kenai.ui.spi.KenaiUserUI(isKenai(url) ? user + "@" + new URL(url).getHost() : user)); //NOI18N
-        } catch (MalformedURLException ex) {
-            LOG.log(Level.WARNING, url, ex);
-            return new KenaiUserImpl(new org.netbeans.modules.kenai.ui.spi.KenaiUserUI(user));
+        String fqUserName;
+        if(isKenai(url)){
+            Kenai kenai = getKenai(url);
+            fqUserName = user + "@" + kenai.getUrl().getHost(); // NOI18N
+        } else {
+            fqUserName = user;
         }
+        return new KenaiUserImpl(new org.netbeans.modules.kenai.ui.spi.KenaiUserUI(fqUserName));
     }
 
     @Override
@@ -299,6 +292,19 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
             }
         }
         return repositoryName;
+    }
+
+    private Kenai getKenai(String repositoryUr) {
+        KenaiProject kp = null;
+        try {
+            kp = KenaiProject.forRepository(repositoryUr);
+        } catch (KenaiException ex) {
+            LOG.log(Level.FINE, null, ex);
+        }
+        if(kp == null) {
+            return null;
+        }
+        return kp.getKenai();
     }
 
     private static class KenaiUserImpl extends KenaiUser {
