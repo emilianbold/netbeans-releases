@@ -67,8 +67,8 @@ import javax.swing.event.TableModelListener;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.client.PanelProgressSupport;
-import org.netbeans.modules.subversion.hooks.spi.SvnHook;
-import org.netbeans.modules.subversion.hooks.spi.SvnHookContext;
+import org.netbeans.modules.versioning.hooks.SvnHook;
+import org.netbeans.modules.versioning.hooks.SvnHookContext;
 import org.netbeans.modules.subversion.ui.diff.DiffNode;
 import org.netbeans.modules.subversion.ui.status.SyncFileNode;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -711,7 +711,12 @@ public class CommitAction extends ContextAction {
         }
         List<SvnHookContext.LogEntry> entries = new ArrayList<SvnHookContext.LogEntry>(logs.size());
         for (int i = 0; i < logs.size(); i++) {
-            entries.add(new SvnHookContext.LogEntry(logs.get(i)));
+            entries.add(
+                new SvnHookContext.LogEntry(
+                        logs.get(i).getMessage(),
+                        logs.get(i).getAuthor(),
+                        logs.get(i).getRevision().getNumber(),
+                        logs.get(i).getDate()));
         }
         SvnHookContext context = new SvnHookContext(files.toArray(new File[files.size()]), message, entries);
         for (SvnHook hook : hooks) {

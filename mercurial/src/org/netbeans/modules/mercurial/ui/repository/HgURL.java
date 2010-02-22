@@ -46,7 +46,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
-import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
+import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -514,7 +514,7 @@ public final class HgURL {
     }
 
     public boolean isKenaiURL() {
-        return HgKenaiSupport.getInstance().isKenai(toUrlStringWithoutUserInfo());
+        return HgKenaiAccessor.getInstance().isKenai(toUrlStringWithoutUserInfo());
     }
 
     /**
