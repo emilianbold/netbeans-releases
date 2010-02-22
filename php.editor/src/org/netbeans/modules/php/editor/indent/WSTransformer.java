@@ -71,6 +71,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
@@ -259,7 +260,7 @@ class WSTransformer extends DefaultTreePathVisitor {
         
         if (node.isCurly()){
 	    CodeStyle.BracePlacement openingBraceStyle;
-	    if (parent instanceof ClassDeclaration) {
+	    if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
 		openingBraceStyle = CodeStyle.get(context.document()).getClassDeclBracePlacement();
 	    } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
 		openingBraceStyle = CodeStyle.get(context.document()).getMethodDeclBracePlacement();
@@ -281,7 +282,7 @@ class WSTransformer extends DefaultTreePathVisitor {
 		    || CodeStyle.BracePlacement.NEW_LINE_INDENTED == openingBraceStyle ? "\n" : " "; //NOI18N
             if (CodeStyle.BracePlacement.NEW_LINE != openingBraceStyle &&
 		    CodeStyle.BracePlacement.NEW_LINE_INDENTED != openingBraceStyle && getPath().size() > 0) {
-                if (parent instanceof ClassDeclaration) {
+                if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
                     newLineReplacement = CodeStyle.get(context.document()).spaceBeforeClassDeclLeftBrace() ? " " : ""; //NOI18N
                 }
                 else if (parent instanceof FunctionDeclaration) {

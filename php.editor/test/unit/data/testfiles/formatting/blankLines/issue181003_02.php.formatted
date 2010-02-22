@@ -7,7 +7,8 @@ abstract class GenericObject
     
 }
 
-interface GenericInterface {
+interface GenericInterface
+{
     
     public abstract function toString();
     
