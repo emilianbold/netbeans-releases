@@ -77,6 +77,7 @@ import org.netbeans.modules.diff.PatchAction;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.options.AnnotationColorProvider;
 import org.netbeans.modules.subversion.ui.cleanup.CleanupAction;
+import org.netbeans.modules.subversion.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
 import org.openide.util.ImageUtilities;
 
@@ -465,6 +466,10 @@ public class Annotator {
                                                                 ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(nodes) == IgnoreAction.UNIGNORING ?
                                                                         loc.getString("CTL_PopupMenuItem_Unignore") :
                                                                         loc.getString("CTL_PopupMenuItem_Ignore"), context));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(ExcludeFromCommitAction.class),
+                        ((ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class)).getActionStatus(nodes) == ExcludeFromCommitAction.INCLUDING
+                        ? loc.getString("CTL_PopupMenuItem_IncludeInCommit") //NOI18N
+                        : loc.getString("CTL_PopupMenuItem_ExcludeFromCommit"), context)); //NOI18N
                 }
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(
