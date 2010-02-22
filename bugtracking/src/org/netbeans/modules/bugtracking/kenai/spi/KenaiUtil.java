@@ -80,7 +80,7 @@ public class KenaiUtil {
      */
     public static boolean isLoggedIn(String url) {
         KenaiAccessor ka = getKenaiAccessor();
-        return ka != null ? ka.isLoggedIn(url) : null;
+        return ka != null ? ka.isLoggedIn(url) : false;
     }
 
     /**
