@@ -462,7 +462,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
         }
     }
 
-private class KenaiListener implements PropertyChangeListener {
+    private class KenaiListener implements PropertyChangeListener {
         private final String kenaiHost;
 
         public KenaiListener(String kenaiHost) {
