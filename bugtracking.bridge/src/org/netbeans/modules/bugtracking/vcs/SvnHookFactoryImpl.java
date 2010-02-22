@@ -39,8 +39,8 @@
 
 package org.netbeans.modules.bugtracking.vcs;
 
-import org.netbeans.modules.subversion.hooks.spi.SvnHook;
-import org.netbeans.modules.subversion.hooks.spi.SvnHookFactory;
+import org.netbeans.modules.versioning.hooks.SvnHook;
+import org.netbeans.modules.versioning.hooks.SvnHookFactory;
 
 /**
  *
