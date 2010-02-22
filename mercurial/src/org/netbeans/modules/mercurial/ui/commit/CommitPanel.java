@@ -67,7 +67,6 @@ import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -153,10 +152,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
                 if(ts.isAutofill()) {
                     messageTextArea.setText(ts.getTemplate());
                 } else {
-                    List<String> messages = Utils.getStringList(HgModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
-                    if (messages.size() > 0) {
-                        messageTextArea.setText(messages.get(0));
-                    }
+                    messageTextArea.setText(HgModuleConfig.getDefault().getLastCommitMessage());
                 }
                 messageTextArea.selectAll();
             }
