@@ -212,14 +212,17 @@
                                 Windows users are in a more complicated situation. However you can find out
                                 where your include_path directives point from phpinfo() output or add symfony
                                 to the include path. Example of php include path on Windows is
-                                <i>include_path=".;C:\php5\pear"</i>                            </li>
-                            <li>Make sure Jobeet's cache folder is writable by everyone (or webserver full access at least)                            </li>
-                            <li>Make sure Jobeet's log folder is writable by everyone (or webserver full access at least)                            </li>
+                                <i>include_path=".;C:\php5\pear"</i>
+                            </li>
+                            <li>Create Jobeet's cache folder in your_project_folder/ and make sure it is writable by everyone (or webserver full access at least)</li>
+                            <li>Create Jobeet's log folder in your_project_folder/ and make sure it is writable by everyone (or webserver full access at least)</li>
+                            <li>Make sure Jobeet's data/job.dev.index folder is writable by everyone (or webserver full access at least)</li>
                             <li>Set up database connection in  config/databases.yml so
-                                that it will correspond to your database connection settings                            </li>
+                                that it will correspond to your database connection settings</li>
                             <li>Call symfony command (right click on project name -> Symfony -> Run Command)
                                 <br><br>
-                                <code>doctrine:build-all-load</code>                            </li>
+                                <code>doctrine:build-all-load</code>
+                            </li>
                             <li>Set up web server doc root to point to
                             <JobeetFolder>/web.
                                 <br />
@@ -250,7 +253,7 @@
                                         guard:promote admin                                    </code>
 
                                     <br /><br />
-                                    This will create the user admin/admin and make him/her super administrator.
+                                    This will create user 'admin' with password 'admin' and make him/her super administrator.
                                     You need these credentials to enter the backend application
                                     <a href="http://localhost/backend.php">http://localhost/backend.php</a>                                </li>
                         </ol>

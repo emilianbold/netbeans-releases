@@ -13,8 +13,7 @@ class sfJobeetLanguageActions extends sfActions
   public function executeChangeLanguage(sfWebRequest $request)
   {
     $form = new sfFormLanguage($this->getUser(), array('languages' => array('en', 'fr')));
-    unset($form[$this->form->getCSRFFieldName()]);
-
+    unset($form[$form->getCSRFFieldName()]);
     $form->process($request);
  
     return $this->redirect('@localized_homepage');
