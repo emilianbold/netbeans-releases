@@ -39,13 +39,10 @@
 
 package org.netbeans.modules.bugzilla.repository;
 
-import java.net.URL;
-import java.util.Collection;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -98,19 +95,15 @@ public class NBRepositorySupport extends BugzillaRepository {
             }
         }
 
-        Collection<Kenai> kenais = KenaiManager.getDefault().getKenais();
-        for (Kenai kenai : kenais) {
-            URL url = kenai.getUrl();
-            if(BugtrackingUtil.isNbRepository(url.toString())) {
+        if(KenaiUtil.isNetbeansKenaiRegistered()) {
                 isKenai = true;
-                // there is a nb kenai registered in the ide
-                // create a new repo but _do not register_ in services
-                nbRepository = createRepositoryIntern(); // XXX for now we keep a repository for each
-                                                         //     nb kenai project. there will be no need
-                                                         //     to create a new instance as soon as we will
-                                                         //     have only one repository instance for all
-                                                         //     kenai projects. see also issue #177578
-            }
+            // there is a nb kenai registered in the ide
+            // create a new repo but _do not register_ in services
+            nbRepository = createRepositoryIntern(); // XXX for now we keep a repository for each
+                                                     //     nb kenai project. there will be no need
+                                                     //     to create a new instance as soon as we will
+                                                     //     have only one repository instance for all
+                                                     //     kenai projects. see also issue #177578
         }
 
         if(nbRepository == null) {                              // no nb repo yet ...

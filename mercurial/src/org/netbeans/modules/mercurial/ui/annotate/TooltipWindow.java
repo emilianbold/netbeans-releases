@@ -79,8 +79,8 @@ import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.AuthorLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Linker;
-import org.netbeans.modules.versioning.util.HyperlinkProvider;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
+import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -296,8 +296,8 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
 
                 // commit msg
                 String commitMessage = annotateLine.getCommitMessage();
-                List<HyperlinkProvider> providers = Mercurial.getInstance().getHyperlinkProviders();
-                for (HyperlinkProvider hp : providers) {
+                List<VCSHyperlinkProvider> providers = Mercurial.getInstance().getHyperlinkProviders();
+                for (VCSHyperlinkProvider hp : providers) {
                     l = IssueLinker.create(hp, hyperlinkStyle, master.getRepositoryRoot(), doc, commitMessage);
                     if (l != null) {
                         linkerSupport.add(l, 0);

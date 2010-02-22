@@ -1122,23 +1122,23 @@ public final class Utils {
     // -----
     // Usages logging based on repository URL (for Kenai)
 
-    private static VCSKenaiSupport kenaiSupport;
+    private static VCSKenaiAccessor kenaiAccessor;
     private static final LinkedList<File> loggedRoots = new LinkedList<File>();
     private static final List<File> foldersToCheck = new LinkedList<File>();
     private static Runnable loggingTask = null;
 
     public static void logVCSKenaiUsage(String vcs, String repositoryUrl) {
-        VCSKenaiSupport kenaiSup = getKenaiSupport();
+        VCSKenaiAccessor kenaiSup = getKenaiAccessor();
         if (kenaiSup != null) {
             kenaiSup.logVcsUsage(vcs, repositoryUrl);
         }
     }
 
-    private static VCSKenaiSupport getKenaiSupport() {
-        if (kenaiSupport == null) {
-            kenaiSupport = Lookup.getDefault().lookup(VCSKenaiSupport.class);
+    private static VCSKenaiAccessor getKenaiAccessor() {
+        if (kenaiAccessor == null) {
+            kenaiAccessor = Lookup.getDefault().lookup(VCSKenaiAccessor.class);
         }
-        return kenaiSupport;
+        return kenaiAccessor;
     }
 
     /*

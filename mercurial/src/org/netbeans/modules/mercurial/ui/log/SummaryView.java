@@ -58,7 +58,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
+import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -71,8 +71,8 @@ import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.AuthorLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Linker;
-import org.netbeans.modules.versioning.util.HyperlinkProvider;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
+import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.util.Lookup;
 
 /**
@@ -129,7 +129,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
         if(results.size() > 0) {
             String url = HgUtils.getRemoteRepository(results.get(0).getRepositoryRoot());
-            boolean isKenaiRepository = url != null && HgKenaiSupport.getInstance().isKenai(url);
+            boolean isKenaiRepository = url != null && HgKenaiAccessor.getInstance().isKenai(url);
             if(isKenaiRepository) {
                 kenaiUsersMap = new HashMap<String, KenaiUser>();
                 for (RepositoryRevision repositoryRevision : results) {
@@ -137,7 +137,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     String username = repositoryRevision.getLog().getUsername();
                     if(author != null && !author.equals("") && username != null && !"".equals(username)) {
                         if(!kenaiUsersMap.keySet().contains(author)) {
-                            KenaiUser kenaiUser = HgKenaiSupport.getInstance().forName(username, url);
+                            KenaiUser kenaiUser = HgKenaiAccessor.getInstance().forName(username, url);
                             if(kenaiUser != null) {
                                 kenaiUsersMap.put(author, kenaiUser);
                             }
@@ -682,8 +682,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             this.index = index;
                         
             // XXX cache
-            Lookup.Result<HyperlinkProvider> hpResult = Lookup.getDefault().lookupResult(HyperlinkProvider.class);
-            Collection<HyperlinkProvider> hpInstances = (Collection<HyperlinkProvider>) hpResult.allInstances();
+            Lookup.Result<VCSHyperlinkProvider> hpResult = Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
+            Collection<VCSHyperlinkProvider> hpInstances = (Collection<VCSHyperlinkProvider>) hpResult.allInstances();
 
             try {
                 // clear document
@@ -725,7 +725,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 // compute issue hyperlinks
                 l = linkerSupport.getLinker(IssueLinker.class, index);
                 if(l == null) {
-                    for (HyperlinkProvider hp : hpInstances) {
+                    for (VCSHyperlinkProvider hp : hpInstances) {
                         l = IssueLinker.create(hp, issueHyperlinkStyle, master.getRoots()[0], sd, commitMessage);
                         if(l != null) {
                             linkerSupport.add(l, index);
