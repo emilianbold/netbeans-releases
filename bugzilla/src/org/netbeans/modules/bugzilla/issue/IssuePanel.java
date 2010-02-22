@@ -307,6 +307,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 selection = WindowManager.getDefault().getRegistry().getActivatedNodes();
             }
             ownerInfo = ((BugzillaRepository) issue.getRepository()).getOwnerInfo(selection);
+            if(issue.isNew()) {
+                addNetbeansInfo();
+            }
         }
         selectProduct();
 
@@ -2541,6 +2544,40 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
         return unitIncrement;
+    }
+
+    private void addNetbeansInfo() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Product Version = ");                                        // NOI18N
+        sb.append(getProductVersionValue ());
+        sb.append("\n");                                                        // NOI18N
+
+        sb.append("Operating System = ");                                       // NOI18N
+        sb.append(System.getProperty("os.name", "unknown"));                    // NOI18N
+        sb.append("version");                                                   // NOI18N
+        sb.append(System.getProperty("os.version", "unknown"));                 // NOI18N
+        sb.append("running on");                                                // NOI18N
+        sb.append(System.getProperty("os.arch", "unknown"));                    // NOI18N
+        sb.append("\n");                                                        // NOI18N
+
+        sb.append("Java; VM; Vendor = ");                                       // NOI18N
+        sb.append(System.getProperty("java.version", "unknown"));               // NOI18N
+        sb.append("\n");                                                        // NOI18N
+
+        sb.append("Runtime = ");                                                // NOI18N
+        sb.append(System.getProperty("java.vm.name", "unknown"));               // NOI18N
+        sb.append(" ");                                                         // NOI18N
+        sb.append(System.getProperty("java.vm.version", ""));                   // NOI18N
+        sb.append("\n");                                                        // NOI18N
+
+        addCommentArea.setText(sb.toString());
+    }
+
+    public static String getProductVersionValue () {
+        return MessageFormat.format(
+            NbBundle.getBundle("org.netbeans.core.startup.Bundle").getString("currentVersion"), // NOI18N
+            new Object[] {System.getProperty("netbeans.buildnumber")});                         // NOI18N
     }
 
     class CancelHighlightDocumentListener implements DocumentListener {
