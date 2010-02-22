@@ -42,7 +42,6 @@
 package org.netbeans.core.validation;
 
 import java.io.ByteArrayOutputStream;
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -117,7 +116,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     public @Override void setUp() throws Exception {
         clearWorkDir();
         Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
-            public Void run() {
+            public @Override Void run() {
                 contextClassLoader = Thread.currentThread().getContextClassLoader();
                 Thread.currentThread().setContextClassLoader(Lookup.getDefault().lookup(ClassLoader.class));
                 return null;
@@ -127,7 +126,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     
     public @Override void tearDown() {
         Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
-            public Void run() {
+            public @Override Void run() {
                 Thread.currentThread().setContextClassLoader(contextClassLoader);
                 return null;
             }
@@ -331,7 +330,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 try {
                     for (;;) {
                         int len = is.read (buffer);
-                        if (len == -1) break;
+                        if (len == -1) {
+                            break;
+                        }
                         read += len;
                     }
                 } finally {
@@ -529,9 +530,13 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 is.close();
             }
             String module = mf.getMainAttributes ().getValue ("OpenIDE-Module");
-            if (module == null) continue;
+            if (module == null) {
+                continue;
+            }
             String layer = mf.getMainAttributes ().getValue ("OpenIDE-Module-Layer");
-            if (layer == null) continue;
+            if (layer == null) {
+                continue;
+            }
             
             atLeastOne = true;
             URL base = new URL(u, "../");
@@ -575,10 +580,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     list = new ArrayList<String>();
                     files.put (path, list);
                     list.add (module);
-                    contents.put(path, new ContentAndAttrs(getFileContent(fo), attributes, layerURL));
+                    contents.put(path, new ContentAndAttrs(fo.asBytes(), attributes, layerURL));
                 } else {
                     ContentAndAttrs contentAttrs = contents.get(path);
-                    ContentAndAttrs nue = new ContentAndAttrs(getFileContent(fo), attributes, layerURL);
+                    ContentAndAttrs nue = new ContentAndAttrs(fo.asBytes(), attributes, layerURL);
                     if (!nue.equals(contentAttrs)) {
                         //System.err.println("Found differences in " + path + " between " + nue + " and " + contentAttrs);
                         Map<String,ContentAndAttrs> diffs = differentContents.get(path);
@@ -599,7 +604,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         
         for (Map.Entry<String,List<String>> e : files.entrySet()) {
             List<String> list = e.getValue();
-            if (list.size () == 1) continue;
+            if (list.size() == 1) {
+                continue;
+            }
             
             Collection<? extends ModuleInfo> res = Lookup.getDefault().lookupAll(ModuleInfo.class);
             assertFalse("Some modules found", res.isEmpty());
@@ -616,7 +623,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 }
             }
             // ok, modules depend on each other
-            if (list2.size() <= 1) continue;
+            if (list2.size() <= 1) {
+                continue;
+            }
             
             sb.append (e.getKey ()).append( " is provided by: " ).append(list).append('\n');
             Map<String,ContentAndAttrs> diffList = differentContents.get(e.getKey());
@@ -650,7 +659,8 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 } else {
                     for (String module : list) {
                         ContentAndAttrs contentAttrs = diffList.get(module);
-                        sb.append(" " + module + ": content = '" + new String(contentAttrs.contents) + "', attributes = " + contentAttrs.attrs + "\n");
+                        sb.append(" ").append(module).append(": content = '").append(new String(contentAttrs.contents)).
+                                append("', attributes = ").append(contentAttrs.attrs).append("\n");
                     }
                 }
             }
@@ -662,7 +672,8 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             for (Map.Entry<String,Map<String,Object>> entry2 : entry1.getValue().entrySet()) {
                 if (new HashSet<Object>(entry2.getValue().values()).size() > 1) {
                     // XXX currently do not check if the modules are unrelated by dependency.
-                    sb.append("Some modules conflict on the definition of " + entry2.getKey() + " for " + entry1.getKey() + ": " + entry2.getValue() + "\n");
+                    sb.append("Some modules conflict on the definition of ").append(entry2.getKey()).append(" for ").
+                            append(entry1.getKey()).append(": ").append(entry2.getValue()).append("\n");
                 }
             }
         }
@@ -677,7 +688,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             if (allFiles.contains(p)) {
                 continue;
             }
-            sb.append("file " + e.getKey() + " from " + e.getValue() + " does not hide any other file\n");
+            sb.append("file ").append(e.getKey()).append(" from ").append(e.getValue()).append(" does not hide any other file\n");
         }
 
         if (sb.length () > 0) {
@@ -705,7 +716,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             for (FileObject fo : NbCollections.iterable(new XMLFileSystem(layerURL).getRoot().getChildren(true))) {
                 Object v = getAttributes(fo, base).get(SFS_LB);
                 if (v instanceof Exception) {
-                    sb.append(layerURL + ": " + v + "\n");
+                    sb.append(layerURL).append(": ").append(v).append("\n");
                 }
             }
         }
@@ -733,9 +744,13 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 is.close();
             }
             String module = mf.getMainAttributes ().getValue ("OpenIDE-Module");
-            if (module == null) continue;
+            if (module == null) {
+                continue;
+            }
             String layer = mf.getMainAttributes ().getValue ("OpenIDE-Module-Layer");
-            if (layer == null) continue;
+            if (layer == null) {
+                continue;
+            }
             URL layerURL = new URL(u, "../" + layer);
             urls.add(layerURL);
         }
@@ -763,7 +778,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         
         LayerParseHandler () {}
         
-        public void publish(LogRecord rec) {
+        public @Override void publish(LogRecord rec) {
             if (Level.WARNING.equals(rec.getLevel()) || Level.SEVERE.equals(rec.getLevel())) {
                 errors.add(MessageFormat.format(rec.getMessage(), rec.getParameters()));
             }
@@ -773,11 +788,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             return errors;
         }
 
-        public void flush() {
-        }
+        public @Override void flush() {}
 
-        public void close() throws SecurityException {
-        }
+        public @Override void close() throws SecurityException {}
     }
 
     public void testFolderOrdering() throws Exception {
@@ -834,21 +847,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         FileUtil.getOrder(kids, true);
     }
 
-    private static byte[] getFileContent(FileObject fo) throws IOException {
-        BufferedInputStream in = new BufferedInputStream(fo.getInputStream());
-        int size = (int) fo.getSize();
-        byte[] content = new byte[size];
-        int length = 0;
-        while(length < size) {
-            int readLength = in.read(content, length, size - length);
-            if (readLength <= 0) {
-                throw new IOException("Bad size for "+fo+", size = "+size+", but actual length is "+length);
-            }
-            length +=readLength;
-        }
-        return content;
-    }
-    
     private static Map<String,Object> getAttributes(FileObject fo, URL base) {
         Map<String,Object> attrs = new TreeMap<String,Object>();
         Enumeration<String> en = fo.getAttributes();
@@ -882,34 +880,37 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         }
         return attrs;
     }
-    
+
+    private static final String[] SKIPPED = {
+        "Templates/GUIForms",
+        "Palette/Borders/javax-swing-border-",
+        "Palette/Layouts/javax-swing-BoxLayout",
+        "Templates/Beans/",
+        "PaletteUI/org-netbeans-modules-form-palette-CPComponent",
+        "Templates/Ant/CustomTask.java",
+        "Templates/Privileged/Main.shadow",
+        "Templates/Privileged/JFrame.shadow",
+        "Templates/Privileged/Class.shadow",
+        "Templates/Classes",
+        "Templates/JSP_Servlet",
+        "EnvironmentProviders/ProfileTypes/Execution/nb-j2ee-deployment.instance",
+        "Shortcuts/D-BACK_QUOTE.shadow",
+        "Windows2/Components/", // cannot be loaded with a headless toolkit, so we have to skip these for now
+    };
     private boolean skipFile(FileObject fo) {
         String s = fo.getPath();
-
-        if (s.startsWith("Windows2/Components/")) {
-            // cannot be loaded with a headless toolkit, so we have to skip these for now
-            return true;
-        }
 
         if (s.startsWith ("Templates/") && !s.startsWith ("Templates/Services")) {
             if (s.endsWith (".shadow") || s.endsWith (".java")) {
                 return true;
             }
         }
-        
-        if (s.startsWith ("Templates/GUIForms")) return true;
-        if (s.startsWith ("Palette/Borders/javax-swing-border-")) return true;
-        if (s.startsWith ("Palette/Layouts/javax-swing-BoxLayout")) return true;
-        if (s.startsWith ("Templates/Beans/")) return true;
-        if (s.startsWith ("PaletteUI/org-netbeans-modules-form-palette-CPComponent")) return true;
-        if (s.startsWith ("Templates/Ant/CustomTask.java")) return true;
-        if (s.startsWith ("Templates/Privileged/Main.shadow")) return true;
-        if (s.startsWith ("Templates/Privileged/JFrame.shadow")) return true;
-        if (s.startsWith ("Templates/Privileged/Class.shadow")) return true;
-        if (s.startsWith ("Templates/Classes")) return true;
-        if (s.startsWith ("Templates/JSP_Servlet")) return true;
-        if (s.startsWith ("EnvironmentProviders/ProfileTypes/Execution/nb-j2ee-deployment.instance")) return true;
-        if (s.startsWith ("Shortcuts/D-BACK_QUOTE.shadow")) return true;
+
+        for (String skipped : SKIPPED) {
+            if (s.startsWith(skipped)) {
+                return true;
+            }
+        }
         
         String iof = (String) fo.getAttribute("instanceOf");
         if (iof != null) {
