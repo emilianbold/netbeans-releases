@@ -238,7 +238,7 @@ public class CommitAction extends ContextAction {
             File file = it.next();
             SvnFileNode node = new SvnFileNode(file);
             // initialize node properties
-            node.getRelativePath();
+            node.getLocation();
             node.getCopy();
             nodesList.add(node);
         }

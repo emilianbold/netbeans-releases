@@ -53,6 +53,7 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 
 /**
  * Visible in the Search History Diff view.
@@ -167,7 +168,7 @@ public class DiffNode extends AbstractNode {
         public LocationProperty() {
             super(COLUMN_NAME_LOCATION, String.class, COLUMN_NAME_LOCATION, COLUMN_NAME_LOCATION);
             try {
-                location = SvnUtils.getRelativePath(setup.getBaseFile());
+                location = SvnModuleConfig.getDefault().isRepositoryPathPrefixed() ? SvnUtils.getRepositoryUrl(setup.getBaseFile()).toString() : SvnUtils.getRelativePath(setup.getBaseFile());
             } catch (SVNClientException e) {
                 location = "";
             }

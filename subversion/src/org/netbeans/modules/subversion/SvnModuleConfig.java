@@ -84,6 +84,7 @@ public class SvnModuleConfig {
     public static final String KEY_CERT_PASSWORD = "versioning.subversion.cert."; //NOI18N
     private static final String PROP_EXCLUDE_NEW_FILES = "excludeNewFiles"; //NOI18N
     private static final String LAST_COMMIT_MESSAGE = "lastCommitMessage"; //NOI18N
+    private static final String PREFIX_REPOSITORY_PATH = "prefixRepositoryPath"; //NOI18N
 
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
         
@@ -348,6 +349,14 @@ public class SvnModuleConfig {
 
     public void setLastCommitMessage(String message) {
         getPreferences().put(LAST_COMMIT_MESSAGE, message);
+    }
+
+    public boolean isRepositoryPathPrefixed() {
+        return getPreferences().getBoolean(PREFIX_REPOSITORY_PATH, false);
+    }
+
+    public void setRepositoryPathPrefixed(boolean prefixRepositoryPath) {
+        getPreferences().putBoolean(PREFIX_REPOSITORY_PATH, prefixRepositoryPath);
     }
 
     // private methods ~~~~~~~~~~~~~~~~~~
