@@ -469,11 +469,15 @@ class WSTransformer extends DefaultTreePathVisitor {
 	List<FormalParameter> parameters = null;
         // line before end of function (before })
         List<Statement> statements = null;
+	int endOffset = node.getEndOffset() - 1;
         if (node instanceof MethodDeclaration) {
             MethodDeclaration md = (MethodDeclaration)node;
             if (md.getFunction().getBody() != null) { // is it an abstract method
                 statements = md.getFunction().getBody().getStatements();
             }
+	    else {
+		endOffset = node.getEndOffset();
+	    }
 	    parameters = md.getFunction().getFormalParameters();
         }
         else if (node instanceof FunctionDeclaration) {
@@ -482,11 +486,10 @@ class WSTransformer extends DefaultTreePathVisitor {
 	    parameters = fd.getFormalParameters();
         }
 
-
-        insertLines = (statements == null || statements.size() == 0)
-                ? insertLineBeforeAfter(ElemType.FUNCTION, ElemType.FUNCTION_BEFORE_END)
-                : insertLineBeforeAfter(astNodeToType(statements.get(statements.size() - 1)), ElemType.FUNCTION_BEFORE_END);
-        checkEmptyLinesBefore(node.getEndOffset() - 1, insertLines, true);
+	insertLines = (statements == null || statements.size() == 0)
+		? insertLineBeforeAfter(ElemType.FUNCTION, ElemType.FUNCTION_BEFORE_END)
+		: insertLineBeforeAfter(astNodeToType(statements.get(statements.size() - 1)), ElemType.FUNCTION_BEFORE_END);
+	checkEmptyLinesBefore(endOffset, insertLines, true);
 
         // format the end of the function method after }
         ASTNode nextNode = nextNode(node);
@@ -1079,14 +1082,14 @@ class WSTransformer extends DefaultTreePathVisitor {
             }
         }
 
-        if (beforeElem == ElemType.FUNCTION_BEFORE_END) {
-            if (afterElem == ElemType.FUNCTION) {
-                return Math.max(before, 1);
-            }
-            else {
-                return before;
-            }
-        }
+//        if (beforeElem == ElemType.FUNCTION_BEFORE_END) {
+//            if (afterElem == ElemType.FUNCTION) {
+//                return Math.max(before, 1);
+//            }
+//            else {
+//                return before;
+//            }
+//        }
 
         return Math.max(after, before);
     }
