@@ -71,6 +71,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
@@ -259,7 +260,7 @@ class WSTransformer extends DefaultTreePathVisitor {
         
         if (node.isCurly()){
 	    CodeStyle.BracePlacement openingBraceStyle;
-	    if (parent instanceof ClassDeclaration) {
+	    if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
 		openingBraceStyle = CodeStyle.get(context.document()).getClassDeclBracePlacement();
 	    } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
 		openingBraceStyle = CodeStyle.get(context.document()).getMethodDeclBracePlacement();
@@ -281,7 +282,7 @@ class WSTransformer extends DefaultTreePathVisitor {
 		    || CodeStyle.BracePlacement.NEW_LINE_INDENTED == openingBraceStyle ? "\n" : " "; //NOI18N
             if (CodeStyle.BracePlacement.NEW_LINE != openingBraceStyle &&
 		    CodeStyle.BracePlacement.NEW_LINE_INDENTED != openingBraceStyle && getPath().size() > 0) {
-                if (parent instanceof ClassDeclaration) {
+                if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
                     newLineReplacement = CodeStyle.get(context.document()).spaceBeforeClassDeclLeftBrace() ? " " : ""; //NOI18N
                 }
                 else if (parent instanceof FunctionDeclaration) {
@@ -469,11 +470,15 @@ class WSTransformer extends DefaultTreePathVisitor {
 	List<FormalParameter> parameters = null;
         // line before end of function (before })
         List<Statement> statements = null;
+	int endOffset = node.getEndOffset() - 1;
         if (node instanceof MethodDeclaration) {
             MethodDeclaration md = (MethodDeclaration)node;
             if (md.getFunction().getBody() != null) { // is it an abstract method
                 statements = md.getFunction().getBody().getStatements();
             }
+	    else {
+		endOffset = node.getEndOffset();
+	    }
 	    parameters = md.getFunction().getFormalParameters();
         }
         else if (node instanceof FunctionDeclaration) {
@@ -482,11 +487,10 @@ class WSTransformer extends DefaultTreePathVisitor {
 	    parameters = fd.getFormalParameters();
         }
 
-
-        insertLines = (statements == null || statements.size() == 0)
-                ? insertLineBeforeAfter(ElemType.FUNCTION, ElemType.FUNCTION_BEFORE_END)
-                : insertLineBeforeAfter(astNodeToType(statements.get(statements.size() - 1)), ElemType.FUNCTION_BEFORE_END);
-        checkEmptyLinesBefore(node.getEndOffset() - 1, insertLines, true);
+	insertLines = (statements == null || statements.size() == 0)
+		? insertLineBeforeAfter(ElemType.FUNCTION, ElemType.FUNCTION_BEFORE_END)
+		: insertLineBeforeAfter(astNodeToType(statements.get(statements.size() - 1)), ElemType.FUNCTION_BEFORE_END);
+	checkEmptyLinesBefore(endOffset, insertLines, true);
 
         // format the end of the function method after }
         ASTNode nextNode = nextNode(node);
@@ -1079,14 +1083,14 @@ class WSTransformer extends DefaultTreePathVisitor {
             }
         }
 
-        if (beforeElem == ElemType.FUNCTION_BEFORE_END) {
-            if (afterElem == ElemType.FUNCTION) {
-                return Math.max(before, 1);
-            }
-            else {
-                return before;
-            }
-        }
+//        if (beforeElem == ElemType.FUNCTION_BEFORE_END) {
+//            if (afterElem == ElemType.FUNCTION) {
+//                return Math.max(before, 1);
+//            }
+//            else {
+//                return before;
+//            }
+//        }
 
         return Math.max(after, before);
     }
