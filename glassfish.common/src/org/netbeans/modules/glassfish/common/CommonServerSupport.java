@@ -636,6 +636,10 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     private final AtomicBoolean refreshRunning = new AtomicBoolean(false);
 
     public void refresh() {
+        refresh(null,null);
+    }
+
+    public void refresh(String expected, String unexpected) {
         // !PW FIXME we can do better here, but for now, make sure we only change
         // server state from stopped or running states -- leave stopping or starting
         // states alone.

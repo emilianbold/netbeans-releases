@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -70,24 +70,25 @@ public class UndeployModuleAction extends NodeAction {
             if(uCookie != null) {
                 final Future<OperationState> result = uCookie.undeploy();
                 final Node pNode = node.getParentNode().getParentNode();
+                final Node fnode = node;
 
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
                             result.get(ServerUtilities.ACTION_TIMEOUT, ServerUtilities.ACTION_TIMEOUT_UNIT);
-                            if(pNode != null) {
-                                Node[] nodes = pNode.getChildren().getNodes();
-                                for(Node node : nodes) {
-                                    RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
-                                    if(cookie != null) {
-                                        cookie.refresh();
-                                    }
-                                }
-                            }
                         } catch(TimeoutException ex) {
-                            Logger.getLogger("glassfish").log(Level.WARNING, "Timeout waiting on undeploy.", ex);
+                            Logger.getLogger("glassfish").log(Level.WARNING, "Undeploy action timed out for " + fnode.getDisplayName());
                         } catch(Exception ex) {
                             Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        }
+                        if(pNode != null) {
+                            Node[] nodes = pNode.getChildren().getNodes();
+                            for(Node node : nodes) {
+                                RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
+                                if(cookie != null) {
+                                    cookie.refresh(null, fnode.getDisplayName());
+                                }
+                            }
                         }
                     }
                 });
