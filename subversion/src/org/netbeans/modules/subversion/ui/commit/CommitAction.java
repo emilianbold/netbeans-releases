@@ -69,6 +69,8 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.client.PanelProgressSupport;
 import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.hooks.spi.SvnHookContext;
+import org.netbeans.modules.subversion.ui.diff.DiffNode;
+import org.netbeans.modules.subversion.ui.status.SyncFileNode;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.util.VersioningListener;
@@ -100,7 +102,7 @@ public class CommitAction extends ContextAction {
 
     @Override
     protected boolean enable(Node[] nodes) {
-        if(isDeepRefresh()) {
+        if(!isSvnNodes(nodes) && !isDeepRefreshDisabledGlobally()) {
             // allway true as we have will accept and check for external changes
             // and we don't about them yet
             return true;
@@ -111,7 +113,7 @@ public class CommitAction extends ContextAction {
     }
 
     /** Run commit action. Shows UI */
-    public static void commit(String contentTitle, final Context ctx) {
+    public static void commit(String contentTitle, Context ctx, boolean deepScanEnabled) {
         if(!Subversion.getInstance().checkClientAvailable()) {
             return;
         }
@@ -119,12 +121,28 @@ public class CommitAction extends ContextAction {
             Subversion.LOG.info("Svn context contains no files");       //NOI18N
             return;
         }
-        commitChanges(contentTitle, ctx);
+        commitChanges(contentTitle, ctx, deepScanEnabled && !isDeepRefreshDisabledGlobally());
     }
 
-    private static boolean isDeepRefresh() {
-        String noDeepRefresh = System.getProperty("netbeans.subversion.commit.deepStatusRefresh");  // NOI18N
-        return noDeepRefresh != null && !noDeepRefresh.trim().equals("");
+    /**
+     * Returns true if the given nodes are from the versioning view or the diff view.
+     * In such case the deep scan is not required because the files and their statuses should already be known
+     * @param nodes
+     * @return
+     */
+    private static boolean isSvnNodes (Node[] nodes) {
+        boolean fromSubversionView = true;
+        for (Node node : nodes) {
+            if (!(node instanceof SyncFileNode || node instanceof DiffNode)) {
+                fromSubversionView = false;
+                break;
+            }
+        }
+        return fromSubversionView;
+    }
+
+    private static boolean isDeepRefreshDisabledGlobally () {
+        return "false".equals(System.getProperty("netbeans.subversion.commit.deepStatusRefresh")); // NOI18N
     }
 
     /**
@@ -134,8 +152,9 @@ public class CommitAction extends ContextAction {
      *
      * @param contentTitle
      * @param ctx
+     * @param deepScanEnabled
      */
-    public static void commitChanges(String contentTitle, final Context ctx) {
+    private static void commitChanges(String contentTitle, final Context ctx, boolean deepScanEnabled) {
         final CommitPanel panel = new CommitPanel();
         Collection<SvnHook> hooks = VCSHooks.getInstance().getHooks(SvnHook.class);
         File file = ctx.getRootFiles()[0];
@@ -152,7 +171,7 @@ public class CommitAction extends ContextAction {
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
         }
-        SvnProgressSupport prepareSupport = getProgressSupport(ctx, data, panel.progressPanel);
+        SvnProgressSupport prepareSupport = getProgressSupport(ctx, data, panel.progressPanel, deepScanEnabled);
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         prepareSupport.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "BK1009")); // NOI18N
 
@@ -297,7 +316,7 @@ public class CommitAction extends ContextAction {
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
     }
 
-    private static SvnProgressSupport getProgressSupport(final Context ctx, final CommitTable data, JPanel progressPanel) {
+    private static SvnProgressSupport getProgressSupport (final Context ctx, final CommitTable data, JPanel progressPanel, final boolean deepScanEnabled) {
         SvnProgressSupport support = new PanelProgressSupport(progressPanel) {
             
             @Override
@@ -319,7 +338,7 @@ public class CommitAction extends ContextAction {
                 contextFiles = filesSet.toArray(new File[filesSet.size()]);
 
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                if (isDeepRefresh()) {
+                if (deepScanEnabled) {
                     // make a deep refresh to get the not yet notified external changes
                     for (File f : contextFiles) {
                         if (isCanceled()) {
@@ -459,7 +478,7 @@ public class CommitAction extends ContextAction {
             return;
         }
         final Context ctx = getContext(nodes);
-        commit(getContextDisplayName(nodes), ctx);
+        commit(getContextDisplayName(nodes), ctx, !isSvnNodes(nodes));
     }
 
     private static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, Collection<SvnHook> hooks) {

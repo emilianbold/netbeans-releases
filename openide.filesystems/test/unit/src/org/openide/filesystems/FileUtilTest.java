@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.test.TestFileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -394,6 +395,7 @@ public class FileUtilTest extends NbTestCase {
     }
 
     /** Tests that refreshAll runs just once in time (see #170556). */
+    @RandomlyFails // NB-Core-Build #4062: FileUtil.refreshAll not called. expected:<2> but was:<1>
     public void testRefreshConcurrency() throws Exception {
         Logger logger = Logger.getLogger(FileUtil.class.getName());
         logger.setLevel(Level.FINE);

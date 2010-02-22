@@ -99,19 +99,21 @@ public class RESTClientGenerator implements CodeGenerator {
     @Override
     public void invoke() {
 
-        RESTExplorerPanel explorerPanel = new RESTExplorerPanel();
-        DialogDescriptor descriptor = new DialogDescriptor(explorerPanel,
+        RESTResourcesPanel resourcesPanel = new RESTResourcesPanel();
+        DialogDescriptor descriptor = new DialogDescriptor(resourcesPanel,
                 NbBundle.getMessage(RESTClientGenerator.class,"TTL_RESTResources")); //NOI18N
-        explorerPanel.setDescriptor(descriptor);
+        resourcesPanel.setDescriptor(descriptor);
         if (DialogDisplayer.getDefault().notify(descriptor).equals(NotifyDescriptor.OK_OPTION)) {
-            Node resourceNode = explorerPanel.getSelectedService();
-            // Generate Jersey Client
-            ClientJavaSourceHelper.generateJerseyClient(resourceNode, targetSource);
-            // logging usage of action
-            Object[] params = new Object[2];
-            params[0] = LogUtils.WS_STACK_JAXRS;
-            params[1] = "GENERATE REST RESOURCE"; // NOI18N
-            LogUtils.logWsAction(params);
+            Node resourceNode = resourcesPanel.getResourceNode();
+            if (resourceNode != null) {
+                // Generate Jersey Client
+                ClientJavaSourceHelper.generateJerseyClient(resourceNode, targetSource, resourcesPanel.getClassName());
+                // logging usage of action
+                Object[] params = new Object[2];
+                params[0] = LogUtils.WS_STACK_JAXRS;
+                params[1] = "GENERATE REST RESOURCE"; // NOI18N
+                LogUtils.logWsAction(params);
+            }
         }
     }
 }

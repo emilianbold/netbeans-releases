@@ -566,7 +566,10 @@ public class ClassPathTest extends NbTestCase {
         }
         ClassPath cp = ClassPathSupport.createClassPath(Arrays.asList(fpri1, fpri2));
         L l = new L();
-        cp.addPropertyChangeListener(l);        
+        cp.addPropertyChangeListener(l);
+        fpri1.fire(null);
+        assertEquals(0, l.cnt);
+        cp.entries();
         fpri1.fire(null);
         assertEquals(1, l.cnt);
         fpri2.fire(null);

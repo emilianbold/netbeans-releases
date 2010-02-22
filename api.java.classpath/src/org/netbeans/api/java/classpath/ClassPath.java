@@ -220,6 +220,7 @@ public final class ClassPath {
         Lookup.getDefault().lookupResult(ClassPathProvider.class);
 
     private final ClassPathImplementation impl;
+    private final Throwable caller;
     private FileObject[] rootsCache;
     /**
      * Associates entry roots with the matching filter, if there is one.
@@ -337,7 +338,7 @@ public final class ClassPath {
                 pr.addPropertyChangeListener(weakPListener = WeakListeners.propertyChange(pListener, pr));
                 for (URL root : roots) {
                     if (!(pr instanceof SimplePathResourceImplementation)) { // ctor already checks these things
-                        SimplePathResourceImplementation.verify(root, " From: " + pr.getClass().getName());
+                        SimplePathResourceImplementation.verify(root, " From: " + pr.getClass().getName(), caller);
                     }
                     cache.add(new Entry(root,
                             pr instanceof FilteringPathResourceImplementation ? (FilteringPathResourceImplementation) pr : null));
@@ -352,7 +353,7 @@ public final class ClassPath {
         this.impl = impl;
         this.pListener = new SPIListener ();
         this.impl.addPropertyChangeListener (weakPListener = WeakListeners.propertyChange(this.pListener, this.impl));
-        entries(); // perform IAE checks early
+        caller = new IllegalArgumentException();
     }
 
     /**
@@ -793,11 +794,6 @@ public final class ClassPath {
         }
 
         Entry(URL url, FilteringPathResourceImplementation filter) {
-            if (url == null)
-                throw new IllegalArgumentException ();
-            if ("jar".equals (url.getProtocol ()) && //NOI18N
-                FileUtil.getArchiveFile (url) == null
-            ) throw new IllegalArgumentException ("Invalid URL: " + url);
             this.url = url;
             this.filter = filter;
         }

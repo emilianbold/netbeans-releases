@@ -58,19 +58,44 @@ public final class SimplePathResourceImplementation  extends PathResourceBase {
      * Must be folder URL, and JARs must use jar protocol.
      * @param context additional information to include in exception, or null if stack trace suffices
      */
-    public static void verify(URL root, String context) throws IllegalArgumentException {
+    public static void verify(final URL root, String context) throws IllegalArgumentException {
+        verify(root, context, null);
+    }
+
+    /**
+     * Check URL for correct syntax for a classpath root.
+     * Must be folder URL, and JARs must use jar protocol.
+     * @param root to verify
+     * @param context additional information to include in exception, or null if stack trace suffices
+     * @param initiatedIn the root case
+     */
+    public static void verify(final URL root,
+            String context,
+            final Throwable initiatedIn) throws IllegalArgumentException {
         if (context == null) {
             context = "";
         }
         if (root == null) {
-            throw new IllegalArgumentException("Root cannot be null." + context);
+            final IllegalArgumentException iae = new IllegalArgumentException("Root cannot be null." + context);
+            if (initiatedIn != null) {
+                iae.initCause(initiatedIn);
+            }
+            throw iae;
         }
         String rootS = root.toString();
         if (rootS.matches("file:.+[.]jar/?")) {
-            throw new IllegalArgumentException(rootS + " is not a valid classpath entry; use a jar-protocol URL." + context);
+            final IllegalArgumentException iae = new IllegalArgumentException(rootS + " is not a valid classpath entry; use a jar-protocol URL." + context);
+            if (initiatedIn != null) {
+                iae.initCause(initiatedIn);
+            }
+            throw iae;
         }
         if (!rootS.endsWith("/")) {
-            throw new IllegalArgumentException(rootS + " is not a valid classpath entry; it must end with a slash." + context);
+            final IllegalArgumentException iae = new IllegalArgumentException(rootS + " is not a valid classpath entry; it must end with a slash." + context);
+            if (initiatedIn != null) {
+                iae.initCause(initiatedIn);
+            }
+            throw iae;
         }
     }
 

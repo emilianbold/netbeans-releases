@@ -549,7 +549,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             if (confs == null) {
                 return;
             }
-            for (Configuration conf : confs.getConfs()) {
+            for (Configuration conf : confs.toArray()) {
                 MakeConfiguration makeConfiguration = (MakeConfiguration) conf;
                 if (makeConfiguration.isMakefileConfiguration()) {
                     MakefileConfiguration makefileConfiguration = makeConfiguration.getMakefileConfiguration();

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -281,7 +282,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (makeConfigurationDescriptor == null) {
             return new ItemConfiguration[0];
         }
-        Configuration[] configurations = makeConfigurationDescriptor.getConfs().getConfs();
+        Configuration[] configurations = makeConfigurationDescriptor.getConfs().toArray();
         itemConfigurations = new ItemConfiguration[configurations.length];
         for (int i = 0; i < configurations.length; i++) {
             itemConfigurations[i] = getItemConfiguration(configurations[i]);
@@ -299,7 +300,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             return;
         }
 
-        for (Configuration conf : makeConfigurationDescriptor.getConfs().getConfs()) {
+        for (Configuration conf : makeConfigurationDescriptor.getConfs().toArray()) {
             ItemConfiguration srcItemConfiguration = src.getItemConfiguration(conf);
             ItemConfiguration dstItemConfiguration = getItemConfiguration(conf);
             if (srcItemConfiguration != null && dstItemConfiguration != null) {
@@ -319,7 +320,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     private static void copyItemConfigurations(Item src, Item dst) {
         MakeConfigurationDescriptor makeConfigurationDescriptor = src.getMakeConfigurationDescriptor();
         if (makeConfigurationDescriptor != null) {
-            for (Configuration conf : makeConfigurationDescriptor.getConfs().getConfs()) {
+            for (Configuration conf : makeConfigurationDescriptor.getConfs().toArray()) {
                 ItemConfiguration newConf = new ItemConfiguration(conf, dst);
                 newConf.assignValues(src.getItemConfiguration(conf));
                 conf.addAuxObject(newConf);

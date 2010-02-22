@@ -63,7 +63,13 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
     private HashMap<ExecutionEnvironment, CompilerSetManager> copiedManagers =
             new HashMap<ExecutionEnvironment, CompilerSetManager>();
 
-    public ToolsCacheManagerImpl() {
+    public ToolsCacheManagerImpl(boolean initialize) {
+        if (initialize) {
+            for (ServerRecord record : ServerList.getRecords()) {
+                CompilerSetManager csm = CompilerSetManager.get(record.getExecutionEnvironment());
+                addCompilerSetManager(csm);
+            }
+        }
     }
 
     @Override

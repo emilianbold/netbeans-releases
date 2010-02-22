@@ -44,6 +44,8 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
@@ -78,7 +80,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private static final String PROCESSOR_PATH = "processorPath"; //NOI18N
     private static final String APT_ENABLED = "aptEnabled"; //NOI18N
     private static final String ANNOTATION_PROCESSORS = "annotationProcessors"; //NOI18N
-    private static final Map<FileObject, APTUtils> map = new WeakHashMap<FileObject, APTUtils>();
+    private static final Map<FileObject,Reference<APTUtils>> map = new WeakHashMap<FileObject,Reference<APTUtils>>();
     private final FileObject root;
     private final ClassPath processorPath;
     private final AnnotationProcessingQuery.Result aptOptions;
@@ -93,7 +95,8 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         if (root == null) {
             return null;
         }
-        APTUtils utils = map.get(root);
+        Reference<APTUtils> utilsRef = map.get(root);
+        APTUtils utils = utilsRef != null ? utilsRef.get() : null;
         if (utils == null) {
             ClassPath pp = ClassPath.getClassPath(root, JavaClassPathConstants.PROCESSOR_PATH);
             if (pp == null) {
@@ -103,7 +106,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             utils = new APTUtils(root, pp, options);
             pp.addPropertyChangeListener(WeakListeners.propertyChange(utils, pp));
             options.addChangeListener(WeakListeners.change(utils, options));
-            map.put(root, utils);
+            map.put(root, new WeakReference<APTUtils>(utils));
         }
         return utils;
     }

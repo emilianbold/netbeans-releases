@@ -203,6 +203,7 @@ is divided into following sections:
   </fail>
                 </xsl:if>
                 <available file="${{manifest.file}}" property="manifest.available"/>
+                <available file="${{application.splash}}" property="splashscreen.available"/>
                 <condition property="main.class.available">
                     <and>
                         <isset property="main.class"/>
@@ -229,6 +230,12 @@ is divided into following sections:
                     <and>
                         <istrue value="${{manifest.available+main.class}}"/>
                         <isset property="do.mkdist"/>
+                    </and>
+                </condition>
+                <condition property="manifest.available+main.class+mkdist.available+splashscreen.available">
+                    <and>
+                        <istrue value="${{manifest.available+main.class+mkdist.available}}"/>
+                        <istrue value="${{splashscreen.available}}"/>
                     </and>
                 </condition>
                 <condition property="manifest.available+mkdist.available">
@@ -1097,11 +1104,48 @@ is divided into following sections:
                         <xsl:otherwise>java</xsl:otherwise>
                 </xsl:choose> -cp "${run.classpath.with.dist.jar}" ${main.class}</echo>
             </target>
-            
+
+            <target name="-do-jar-with-libraries-and-splashscreen">
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
+                <xsl:attribute name="if">manifest.available+main.class+mkdist.available+splashscreen.available</xsl:attribute>
+
+                <property name="build.classes.dir.resolved" location="${{build.classes.dir}}"/>
+                <pathconvert property="run.classpath.without.build.classes.dir">
+                    <path path="${{run.classpath}}"/>
+                    <map from="${{build.classes.dir.resolved}}" to=""/>
+                </pathconvert>
+                <pathconvert property="jar.classpath" pathsep=" ">
+                    <path path="${{run.classpath.without.build.classes.dir}}"/>
+                    <chainedmapper>
+                        <flattenmapper/>
+                        <globmapper from="*" to="lib/*"/>
+                    </chainedmapper>
+                </pathconvert>
+                <basename property="splashscreen.basename" file="${{application.splash}}"/>
+                <mkdir dir="${{build.classes.dir}}/META-INF"/>
+                <copy file="${{application.splash}}" todir="${{build.classes.dir}}/META-INF" failonerror="false"/>
+                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" name="copylibs" classpath="${{libs.CopyLibs.classpath}}"/>
+                <copylibs manifest="${{manifest.file}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" jarfile="${{dist.jar}}" compress="${{jar.compress}}">
+                    <fileset dir="${{build.classes.dir}}"/>
+                    <manifest>
+                        <attribute name="Main-Class" value="${{main.class}}"/>
+                        <attribute name="Class-Path" value="${{jar.classpath}}"/>
+                        <attribute name="SplashScreen-Image" value="META-INF/${{splashscreen.basename}}"/>
+                    </manifest>
+                </copylibs>
+                <echo>To run this application from the command line without Ant, try:</echo>
+                <property name="dist.jar.resolved" location="${{dist.jar}}"/>
+                <echo><xsl:choose>
+                        <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">${platform.java}</xsl:when>
+                        <xsl:otherwise>java</xsl:otherwise>
+                </xsl:choose> -jar "${dist.jar.resolved}"</echo>
+            </target>
+
             <target name="-do-jar-with-libraries">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
                 <xsl:attribute name="if">manifest.available+main.class+mkdist.available</xsl:attribute>
-                
+                <xsl:attribute name="unless">splashscreen.available</xsl:attribute>
+
                 <property name="build.classes.dir.resolved" location="${{build.classes.dir}}"/>
                 <pathconvert property="run.classpath.without.build.classes.dir">
                     <path path="${{run.classpath}}"/>
@@ -1187,7 +1231,7 @@ is divided into following sections:
             </target>
             
             <target name="jar">
-                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries,-do-jar-with-libraries-without-mainclass,-do-jar-with-libraries-without-manifest,-post-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries-and-splashscreen,-do-jar-with-libraries,-do-jar-with-libraries-without-mainclass,-do-jar-with-libraries-without-manifest,-post-jar</xsl:attribute>
                 <xsl:attribute name="description">Build JAR.</xsl:attribute>
             </target>
             
@@ -1315,6 +1359,7 @@ is divided into following sections:
             
             <target name="-javadoc-build">
                 <xsl:attribute name="depends">init</xsl:attribute>
+                <xsl:attribute name="if">have.sources</xsl:attribute>
                 <mkdir dir="${{dist.javadoc.dir}}"/>
                 <!-- XXX do an up-to-date check first -->
                 <javadoc>

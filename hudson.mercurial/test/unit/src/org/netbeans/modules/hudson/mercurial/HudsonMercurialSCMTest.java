@@ -61,19 +61,24 @@ public class HudsonMercurialSCMTest extends NbTestCase {
         assertPullURI("http://host/repo/", "[paths]", "default-pull = http://host/repo/", "default = http://host/other/");
         assertPullURI(getWorkDir().toURI().toString(), "[paths]", "default=" + getWorkDirPath().replace(File.separatorChar, '/'));
         assertPullURI(getWorkDir().toURI() + "foo/", "[paths]", "default = foo");
-        assertPullURI(null, "[paths]");
+        assertPullURI(getWorkDir().toURI().toString(), "[paths]");
         assertPullURI("https://host/repo/", "[paths]", "default = https://bob:sEcReT@host/repo/");
         assertPullURI("https://host/repo/", "[paths]", "default = https://bob@host/repo/");
         assertPullURI("ssh://host/repo/", "[paths]", "default = ssh://bob@host/repo");
         assertPullURI(null, "[paths");
+        assertPullURI(getWorkDir().toURI().toString());
     }
 
     private void assertPullURI(String pull, String... hgrc) throws Exception {
-        StringBuilder b = new StringBuilder();
-        for (String line : hgrc) {
-            b.append(line).append('\n');
+        clearWorkDir();
+        TestFileUtils.writeFile(new File(getWorkDir(), ".hg/requires"), "revlogv1\nstore\n");
+        if (hgrc.length > 0) {
+            StringBuilder b = new StringBuilder();
+            for (String line : hgrc) {
+                b.append(line).append('\n');
+            }
+            TestFileUtils.writeFile(new File(getWorkDir(), ".hg/hgrc"), b.toString());
         }
-        TestFileUtils.writeFile(new File(getWorkDir(), ".hg/hgrc"), b.toString());
         assertEquals(pull != null ? URI.create(pull) : null, HudsonMercurialSCM.getDefaultPull(getWorkDir().toURI()));
     }
 

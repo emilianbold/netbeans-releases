@@ -220,7 +220,9 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             assert sprv != null;
             cnode = createSuiteNode(ci);
         }
-        libChildren.extraNodes.add(cnode);
+        synchronized (libChildren.extraNodes) {
+            libChildren.extraNodes.add(cnode);
+        }
         libChildren.setMergedKeys();
     }
 
@@ -280,7 +282,9 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
         }
         initNodes();
-        libChildren.extraNodes.add(new ClusterNode(ci, moduleCh));
+        synchronized (libChildren.extraNodes) {
+            libChildren.extraNodes.add(new ClusterNode(ci, moduleCh));
+        }
         libChildren.setMergedKeys();
     }
 
@@ -324,7 +328,9 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         Set<String> enabledClusters = new HashSet<String>(Arrays.asList(getProperties().getEnabledClusters()));
 
         Map<File, ClusterNode> clusterToNode = new HashMap<File, ClusterNode>();
-        libChildren.platformNodes.clear();
+        synchronized (libChildren.platformNodes) {
+            libChildren.platformNodes.clear();
+        }
 
         boolean newPlaf = ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion().compareTo(HarnessVersion.V67) >= 0;
 
@@ -339,7 +345,9 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 ClusterInfo ci = ClusterInfo.create(clusterDirectory, true, enabled);
                 cluster = new ClusterNode(ci, modules);
                 clusterToNode.put(clusterDirectory, cluster);
-                libChildren.platformNodes.add(cluster);
+                synchronized (libChildren.platformNodes) {
+                    libChildren.platformNodes.add(cluster);
+                }
             }
 
             AbstractNode module = new BinaryModuleNode(platformModule,
@@ -356,7 +364,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         if (clusterPath.size() > 0) {
             // cluster.path exists, we enable/disabled platform nodes according to
             // cluster.path, not enabled.clusterPath & disabled.clusterPath
-            for (ClusterNode node : libChildren.platformNodes) {
+            for (ClusterNode node : libChildren.platformNodes()) {
                 if (!clusterPath.contains(node.getClusterInfo())) // must not call setEnabled(true), disabled modules would be enabled
                 {
                     node.setEnabled(false);
@@ -406,7 +414,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             // trying to store before nodes are up-to-date, just bail out
             return;
         }
-        for (ClusterNode e : libChildren.platformNodes) {
+        for (ClusterNode e : libChildren.platformNodes()) {
             if (e.isEnabled()) {
                 if (oldPlaf)
                     enabledClusters.add(e.getName());
@@ -425,7 +433,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         if (oldPlaf) {
             getProperties().setEnabledClusters(enabledClusters.toArray(new String[enabledClusters.size()]));
         } else {
-            for (ClusterNode e : libChildren.extraNodes) {
+            for (ClusterNode e : libChildren.extraNodes()) {
                 clusterPath.add(e.getClusterInfo());
 
                 if (e.isEnabled()) {
@@ -1127,7 +1135,8 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
                 return getMessage("LBL_SuiteProject");
             if (nbmp.getModuleType() == NbModuleProvider.STANDALONE)
                 return getMessage("LBL_StandaloneProject");
-            assert false : "Shouldn't contain NB.org module or suite component project";
+            Logger.getLogger(SuiteCustomizerLibraries.class.getName()).log(Level.WARNING,
+                    "#166594: {0} should not contain NB.org module or suite component project", ci);
             return null;
         }
 
@@ -1247,8 +1256,20 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private class LibrariesChildren extends Children.Keys<ClusterNode> {
-        private SortedSet<ClusterNode> platformNodes = new TreeSet<ClusterNode>(MODULES_COMPARATOR);
-        private List<ClusterNode> extraNodes = new ArrayList<ClusterNode>();
+        private final SortedSet<ClusterNode> platformNodes = new TreeSet<ClusterNode>(MODULES_COMPARATOR);
+        private final List<ClusterNode> extraNodes = new ArrayList<ClusterNode>();
+
+        Collection<? extends ClusterNode> platformNodes() {
+            synchronized (platformNodes) {
+                return new ArrayList<ClusterNode>(platformNodes);
+            }
+        }
+
+        Collection<? extends ClusterNode> extraNodes() {
+            synchronized (extraNodes) {
+                return new ArrayList<ClusterNode>(extraNodes);
+            }
+        }
 
         @Override
         protected Node[] createNodes(ClusterNode key) {
@@ -1275,11 +1296,11 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
          * @return Node for found cluster or null if not found
          */
         private ClusterNode findCluster(File clusterDir) {
-            for (ClusterNode node : extraNodes) {
+            for (ClusterNode node : extraNodes()) {
                 if (node.getClusterInfo().getClusterDir().equals(clusterDir))
                     return node;
             }
-            for (ClusterNode node : platformNodes) {
+            for (ClusterNode node : platformNodes()) {
                 if (node.getClusterInfo().getClusterDir().equals(clusterDir))
                     return node;
             }
@@ -1297,7 +1318,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         // TODO C.P rewrite cast to lookup - but there is not enough stuff in prj lookup
         // to do this now, would need custom AuxConfigImpl that translates /2 -> /3 schema
         private void getProjectModules(Set<NbModuleProject> suiteModules) {
-            for (ClusterNode node : extraNodes) {
+            for (ClusterNode node : extraNodes()) {
                 ClusterInfo ci = node.getClusterInfo();
                 final Project prj = ci.getProject();
                 if (prj != null) {
@@ -1317,14 +1338,16 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         }
 
         private void removeClusters(Node[] selectedNodes) {
-            extraNodes.removeAll(Arrays.asList(selectedNodes));
+            synchronized (extraNodes) {
+                extraNodes.removeAll(Arrays.asList(selectedNodes));
+            }
             setMergedKeys();
             updateDependencyWarnings(true);
         }
 
         private void setMergedKeys() {
-            ArrayList<ClusterNode> allNodes = new ArrayList<ClusterNode>(platformNodes);
-            allNodes.addAll(extraNodes);
+            ArrayList<ClusterNode> allNodes = new ArrayList<ClusterNode>(platformNodes());
+            allNodes.addAll(extraNodes());
             for (ClusterNode cluster : allNodes) {
                 cluster.updateClusterState();
             }

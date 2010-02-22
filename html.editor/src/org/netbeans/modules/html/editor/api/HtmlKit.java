@@ -138,7 +138,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
             new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
             new InstantRenameAction(),
-            new ToggleBlockCommentAction(new HtmlCommentHandler()),
+            new ToggleBlockCommentAction(),
             new ExtKit.CommentAction(""), //NOI18N
             new ExtKit.UncommentAction("") //NOI18N
         };

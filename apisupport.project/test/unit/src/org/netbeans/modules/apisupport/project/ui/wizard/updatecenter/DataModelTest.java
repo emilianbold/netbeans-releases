@@ -107,7 +107,7 @@ public class DataModelTest extends LayerTestBase {
                             "<attr name=\"instanceCreate\" " +
                             "methodvalue=\"org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider\"/>",
                             "<attr name=\"instanceOf\" stringvalue=\"org.netbeans.spi.autoupdate.UpdateProvider\"/>",                            
-                            "<attr name=\"url_key\" stringvalue=\"org_example_module1_update_center\"/>",
+                            "<attr name=\"url\" bundlevalue=\"org.example.module1.resources.Bundle#org_example_module1_update_center\"/>",
                         "</file>",
                     "</folder>",
                 "</folder>",
@@ -129,7 +129,7 @@ public class DataModelTest extends LayerTestBase {
                             "<attr name=\"instanceCreate\" " +
                             "methodvalue=\"org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider\"/>",
                             "<attr name=\"instanceOf\" stringvalue=\"org.netbeans.spi.autoupdate.UpdateProvider\"/>",
-                            "<attr name=\"url_key\" stringvalue=\"org_example_module1_update_center\"/>",                            
+                            "<attr name=\"url\" bundlevalue=\"org.example.module1.resources.Bundle#org_example_module1_update_center\"/>",
                         "</file>",
                         "<file name=\"org_example_module1_update_center_1.instance\">",
                             "<attr name=\"displayName\" bundlevalue=\"org.example.module1.resources.Bundle#" +
@@ -138,7 +138,7 @@ public class DataModelTest extends LayerTestBase {
                             "<attr name=\"instanceCreate\" " +
                             "methodvalue=\"org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider\"/>",
                             "<attr name=\"instanceOf\" stringvalue=\"org.netbeans.spi.autoupdate.UpdateProvider\"/>",                            
-                            "<attr name=\"url_key\" stringvalue=\"org_example_module1_update_center_1\"/>",
+                            "<attr name=\"url\" bundlevalue=\"org.example.module1.resources.Bundle#org_example_module1_update_center_1\"/>",
                         "</file>",
                     "</folder>",
                 "</folder>",

@@ -479,4 +479,24 @@ public class Util {
         }
     }
 
+    public static void checkMetroRtLibrary(Project p, boolean askFirst) {
+        if (p == null) {
+            return;
+        }
+        WsitProvider wsitProvider = p.getLookup().lookup(WsitProvider.class);
+        if (wsitProvider == null) return;
+        if (wsitProvider.isWsitSupported() && !wsitProvider.isWsitRtOnClasspath()) {
+            if (askFirst) {
+                Object button = DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Confirmation(
+                                NbBundle.getMessage(Util.class, "TXT_AddRtLibrary"), NotifyDescriptor.YES_NO_OPTION));
+                if (NotifyDescriptor.OK_OPTION.equals(button)) {
+                    wsitProvider.addMetroRtLibrary();
+                }
+            } else {
+                wsitProvider.addMetroRtLibrary();
+            }
+        }
+    }
+
 }

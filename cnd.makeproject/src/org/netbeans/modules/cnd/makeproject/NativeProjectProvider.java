@@ -438,6 +438,12 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                     list.add(items[i]);
                     continue;
                 }
+                if (oldCompilerSet == null || newCompilerSet == null) {
+                    if (oldCompilerSet != null || newCompilerSet != null) {
+                        list.add(items[i]);
+                    }
+                    continue;
+                }
                 if (!oldItemConf.getCCompilerConfiguration().getPreprocessorOptions(oldCompilerSet).equals(newItemConf.getCCompilerConfiguration().getPreprocessorOptions(newCompilerSet))) {
                     list.add(items[i]);
                     continue;
@@ -450,6 +456,12 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             if (newItemConf.getTool() == PredefinedToolKind.CCCompiler) {
                 if (oldItemConf.getTool() != PredefinedToolKind.CCCompiler) {
                     list.add(items[i]);
+                    continue;
+                }
+                if (oldCompilerSet == null || newCompilerSet == null) {
+                    if (oldCompilerSet != null || newCompilerSet != null) {
+                        list.add(items[i]);
+                    }
                     continue;
                 }
                 if (!oldItemConf.getCCCompilerConfiguration().getPreprocessorOptions(oldCompilerSet).equals(newItemConf.getCCCompilerConfiguration().getPreprocessorOptions(newCompilerSet))) {

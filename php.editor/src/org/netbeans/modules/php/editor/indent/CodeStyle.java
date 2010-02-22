@@ -390,14 +390,14 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceAfterComma, getDefaultAsBoolean(spaceAfterComma));
     }
 
-//    public boolean spaceBeforeSemi() {
-//        return preferences.getBoolean(spaceBeforeSemi, getDefaultAsBoolean(spaceBeforeSemi));
-//    }
-//
-//    public boolean spaceAfterSemi() {
-//        return preferences.getBoolean(spaceAfterSemi, getDefaultAsBoolean(spaceAfterSemi));
-//    }
-//
+    public boolean spaceBeforeSemi() {
+        return preferences.getBoolean(spaceBeforeSemi, getDefaultAsBoolean(spaceBeforeSemi));
+    }
+
+    public boolean spaceAfterSemi() {
+        return preferences.getBoolean(spaceAfterSemi, getDefaultAsBoolean(spaceAfterSemi));
+    }
+
 //    public boolean spaceBeforeColon() {
 //        return preferences.getBoolean(spaceBeforeColon, getDefaultAsBoolean(spaceBeforeColon));
 //    }
@@ -408,6 +408,10 @@ public final class CodeStyle {
 
     public boolean spaceAfterTypeCast() {
         return preferences.getBoolean(spaceAfterTypeCast, getDefaultAsBoolean(spaceAfterTypeCast));
+    }
+
+    public boolean spaceCheckAfterKeywords() {
+        return preferences.getBoolean(spaceCheckAfterKeywords, getDefaultAsBoolean(spaceCheckAfterKeywords));
     }
 
     

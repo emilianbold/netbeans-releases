@@ -66,9 +66,7 @@
 
  
 
-#if TRACE
 static int emulate = false;
-#endif
 
 typedef struct connection_data {
     int sd;
@@ -147,11 +145,9 @@ static void serve_connection(void* data) {
                         fprintf(stdout, "%c %s\n", LC_PROTOCOL_REQUEST, filename);
                         fflush(stdout);
 
-                        #if TRACE
-                            if (emulate) {
-                                response[0] = response_ok;
-                            } else
-                        #endif
+                        if (emulate) {
+                            response[0] = response_ok;
+                        } else
                         fgets(response, sizeof response, stdin);
                         fd->state = (response[0] == response_ok) ? COPIED : ERROR;
                         pthread_mutex_unlock(&mutex);
@@ -334,7 +330,7 @@ typedef struct file_elem {
  * adds info about new file to the tail of the list
  */
 static file_elem* add_file_to_list(file_elem* tail, const char* filename) {
-     trace("File %s is added to the list to be send to LC as not yet copied files\n", filename);
+    trace("File %s is added to the list to be send to LC as not yet copied files\n", filename);
     int namelen = strlen(filename);
     int size = sizeof(file_elem) + namelen + 1;
     file_elem *fe = (file_elem*) malloc(size);
@@ -452,17 +448,16 @@ static int init_files() {
 }
 
 int main(int argc, char* argv[]) {
+    init_trace_flag("RFS_CONTROLLER_TRACE");
     trace_startup("RFS_C", "RFS_CONTROLLER_LOG", argv[0]);
     int port = default_controller_port;
     if (argc > 1) {
         port = atoi(argv[1]);
     }
-    #if TRACE
     // auto mode for test purposes
     if (argc > 2 && strcmp(argv[2], "emulate") == 0) {
         emulate = true;
     }
-    #endif
     int sd = socket(AF_INET, SOCK_STREAM, 0);
     if (sd == -1) {
         perror("Socket");

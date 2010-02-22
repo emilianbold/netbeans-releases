@@ -113,7 +113,7 @@ public class ConfigurationMakefileWriter {
 
     public void writeMissingMakefiles() {
         Collection<MakeConfiguration> okConfs = getOKConfigurations(false);
-        long xmlFileTimeStamp = new File(projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "configurations.xml").lastModified(); // NOI18N
+        long xmlFileTimeStamp = new File(new File(projectDescriptor.getBaseDir(), MakeConfiguration.NBPROJECT_FOLDER), MakeConfiguration.CONFIGURATIONS_XML).lastModified();
         for (MakeConfiguration conf : okConfs) {
             File file = new File(getMakefilePath(conf));
             if (!file.exists() || file.lastModified() < xmlFileTimeStamp) {
@@ -127,11 +127,11 @@ public class ConfigurationMakefileWriter {
     }
 
     private String getMakefilePath(MakeConfiguration conf) {
-        return projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Makefile-" + conf.getName() + ".mk"; // NOI18N
+        return projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Makefile-" + conf.getName() + ".mk"; // NOI18N
     }
 
     private String getPackageScriptPath(MakeConfiguration conf) {
-        return projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Package-" + conf.getName() + ".bash"; // NOI18N
+        return projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Package-" + conf.getName() + ".bash"; // NOI18N
     }
 
     /**
@@ -143,7 +143,7 @@ public class ConfigurationMakefileWriter {
         List<MakeConfiguration> ok = new ArrayList<MakeConfiguration>();
         List<MakeConfiguration> noCompilerSet = new ArrayList<MakeConfiguration>();
         List<MakeConfiguration> wrongPlatform = new ArrayList<MakeConfiguration>();
-        Configuration[] confs = projectDescriptor.getConfs().getConfs();
+        Configuration[] confs = projectDescriptor.getConfs().toArray();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration conf = (MakeConfiguration) confs[i];
             if (conf.getDevelopmentHost().isLocalhost() &&
@@ -189,15 +189,15 @@ public class ConfigurationMakefileWriter {
      */
     private void cleanup(Collection<MakeConfiguration> okConfs) {
         List<MakeConfiguration> protectedConfs = new ArrayList<MakeConfiguration>();
-        Configuration[] confs = projectDescriptor.getConfs().getConfs();
-        for (Configuration c : projectDescriptor.getConfs().getConfs()) {
+        Configuration[] confs = projectDescriptor.getConfs().toArray();
+        for (Configuration c : projectDescriptor.getConfs().toArray()) {
             MakeConfiguration conf = (MakeConfiguration)c;
             if (!okConfs.contains(conf)) {
                protectedConfs.add(conf);
             }
         }
 
-        File folder = new File(projectDescriptor.getBaseDir() + '/' + "nbproject"); // UNIX path // NOI18N
+        File folder = new File(projectDescriptor.getBaseDir(), MakeConfiguration.NBPROJECT_FOLDER);
         File[] children = folder.listFiles();
         if (children != null) {
             for (int i = 0; i < children.length; i++) {
@@ -230,11 +230,11 @@ public class ConfigurationMakefileWriter {
             is = MakeConfigurationDescriptor.class.getResourceAsStream(resource);
         }
 
-        String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + MakeConfiguration.MAKEFILE_IMPL; // UNIX path // NOI18N
+        String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.MAKEFILE_IMPL; // UNIX path // NOI18N
         try {
             os = new FileOutputStream(outputFileName);
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            ioe.printStackTrace(System.err);
         }
 
         if (is == null || os == null) {
@@ -250,8 +250,8 @@ public class ConfigurationMakefileWriter {
 
         // Configurations
         StringBuilder configurations = new StringBuilder();
-        for (int i = 0; i < projectDescriptor.getConfs().getConfs().length; i++) {
-            configurations.append(projectDescriptor.getConfs().getConfs()[i].getName());
+        for (int i = 0; i < projectDescriptor.getConfs().toArray().length; i++) {
+            configurations.append(projectDescriptor.getConfs().toArray()[i].getName());
             configurations.append(" "); // NOI18N
         }
 
@@ -279,7 +279,7 @@ public class ConfigurationMakefileWriter {
     }
 
     private void writeMakefileConf(MakeConfiguration conf) {
-        String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Makefile-" + conf.getName() + ".mk"; // UNIX path // NOI18N
+        String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Makefile-" + conf.getName() + ".mk"; // UNIX path // NOI18N
 
         FileOutputStream os = null;
         try {
@@ -831,7 +831,7 @@ public class ConfigurationMakefileWriter {
     }
 
     private void writeMakefileVariables(MakeConfigurationDescriptor conf) {
-        String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Makefile-variables.mk"; // UNIX path // NOI18N
+        String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Makefile-variables.mk"; // UNIX path // NOI18N
 
 
         FileOutputStream os = null;
@@ -860,7 +860,7 @@ public class ConfigurationMakefileWriter {
         bw.write("CND_BUILDDIR=" + MakeConfiguration.BUILD_FOLDER + "\n"); // NOI18N
         bw.write("CND_DISTDIR=" + MakeConfiguration.DIST_FOLDER + "\n"); // NOI18N
 
-        Configuration[] confs = projectDescriptor.getConfs().getConfs();
+        Configuration[] confs = projectDescriptor.getConfs().toArray();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration makeConf = (MakeConfiguration) confs[i];
             bw.write("# " + makeConf.getName() + " configuration"); // NOI18N
@@ -904,7 +904,7 @@ public class ConfigurationMakefileWriter {
     }
 
     private void writePackagingScript(MakeConfiguration conf) {
-        String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Package-" + conf.getName() + ".bash"; // UNIX path // NOI18N
+        String outputFileName = projectDescriptor.getBaseDir() + '/' + MakeConfiguration.NBPROJECT_FOLDER + '/' + "Package-" + conf.getName() + ".bash"; // UNIX path // NOI18N
 
         if (conf.getPackagingConfiguration().getFiles().getValue().isEmpty()) {
             // Nothing to do

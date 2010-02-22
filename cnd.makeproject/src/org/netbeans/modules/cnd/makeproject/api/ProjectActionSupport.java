@@ -153,6 +153,7 @@ public class ProjectActionSupport {
     private InputOutput mainTab = null;
     private HandleEvents mainTabHandler = null;
     private ArrayList<String> tabNames = new ArrayList<String>();
+    private final Object lock = new Object();
 
     private final class HandleEvents implements ExecutionListener {
 
@@ -165,7 +166,6 @@ public class ProjectActionSupport {
         private RerunAction ra = null;
         private List<BuildAction> additional;
         private ProgressHandle progressHandle = null;
-        private final Object lock = new Object();
         private final ProjectActionHandler customHandler;
         private ProjectActionHandler currentHandler = null;
 
@@ -445,7 +445,7 @@ public class ProjectActionSupport {
             if (project != null) { // paranoidal null checks are better than latent NPE :)
                 FileObject projectDirectory = project.getProjectDirectory();
                 if (projectDirectory != null) {
-                    FileObject nbproject = projectDirectory.getFileObject("nbproject"); // NOI18N
+                    FileObject nbproject = projectDirectory.getFileObject(MakeConfiguration.NBPROJECT_FOLDER); // NOI18N
                     if (nbproject != null) {
                         // I'm more sure in java.io.File.exists() - practice shows that FileObjects might be sometimes cached...
                         File file = FileUtil.toFile(nbproject);

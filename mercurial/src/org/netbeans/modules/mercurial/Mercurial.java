@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -286,6 +287,15 @@ public class Mercurial {
      */
     public void refreshWorkingCopyTimestamp(File repository) {
         getMercurialInterceptor().refreshHgFolderTimestamp(repository);
+    }
+
+    /**
+     * Returns a set of known repository roots (those visible or open in IDE)
+     * @param repositoryRoot
+     * @return
+     */
+    public Set<File> getSeenRoots (File repositoryRoot) {
+        return getMercurialInterceptor().getSeenRoots(repositoryRoot);
     }
 
    /**

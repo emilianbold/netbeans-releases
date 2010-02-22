@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.editor.url;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -69,6 +68,7 @@ public class ParserTest {
         performTest("    f t p://www.test-test.test/a.jsp?tt\\&t$=$\n", null);
         performTest("    ftp://www.test-test.test/a.jsp?tt\\&t$=$", 4, 43);
         performTest("    \"http://www.netbeans.org/\"", 5, 29);
+        performTest("    h", null);
     }
 
     @Test

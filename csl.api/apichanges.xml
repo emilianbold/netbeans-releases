@@ -46,6 +46,22 @@ made subject to such option by the copyright holder.
 <apidef name="csl.api">Common Scripting Language API</apidef>
 </apidefs>
 <changes>
+    <change id="ToggleBlockCommentAction-noarg-ctor">
+        <api name="csl.api"/>
+        <summary>Adding no-arg constructor to ToggleBlockCommentAction</summary>
+        <version major="2" minor="2"/>
+        <date day="15" month="2" year="2010"/>
+        <author login="vstejskal"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" source="compatible" deprecation="yes"/>
+        <description>
+            <p>
+            Adding no-arg constructor to <code>ToggleBlockCommentAction</code> class and deprecated
+            the <code>ToggleBlockCommentAction(CommentHandler cH)</code> constructor. The action dynamically
+            determines the type of comments for the document section where it is invoked.
+            </p>
+        </description>
+        <issue number="167300"/>
+    </change>
     <change id="api-cleanup">
         <api name="csl.api"/>
         <summary>Removing o.n.m.csl.core and o.n.m.csl.editor from public API</summary>

@@ -298,7 +298,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
             "  <property name='buildnumber' value='BLDprivateTESTBuild'/>" +
             "  <property name='code.name.base.slashes' value='org/netbeans/modules/sendopts'/>" +
             "  <property name='spec.version.base' value='1.9'/>" +
-            "  <property name='module.dependencies' value='com.othercom.anothermodule > 2.1.3,org.netbeans.modules.applet/1 > 1.0'/>" +
+            "  <property name='module.dependencies' value='com.othercom.anothermodule > 2.1.3,org.netbeans.modules.applet/1 > 1.7'/>" +
             "  <njar manifest='" + manifest + "'   destfile='" + jar + "'>" +
             "  </njar>" +
             "  <unzip src='" + jar + "' dest='" + output + "'/>" +
@@ -323,7 +323,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
             fail("Wrong dependency on com.othercom.anothermodule:\n" + req);
         }
 
-        if (req.indexOf("org.netbeans.modules.applet/1;bundle-version=\"[1.0, 2)\"") == -1) {
+        if (req.indexOf("org.netbeans.modules.applet;bundle-version=\"[101.7, 102)\"") == -1) {
             fail("Wrong dependency on applet/1:\n" + req);
         }
 

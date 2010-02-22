@@ -39,141 +39,226 @@
 package org.netbeans.modules.csl.api;
 
 import java.awt.event.ActionEvent;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.spi.CommentHandler;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.openide.util.Exceptions;
 
-public class ToggleBlockCommentAction extends ExtKit.ToggleCommentAction {
+public class ToggleBlockCommentAction extends BaseAction {
 
     static final long serialVersionUID = -1L;
-    private final CommentHandler commentHandler;
-    private final int COMMENT_START_LENGTH;
-    private final int COMMENT_END_LENGTH;
 
+    private final CommentHandler commentHandler;
+
+    /**
+     * Creates an action, which toggles block comments according to the supplied
+     * <code>CommentHandler</code>.
+     *
+     * @param commentHandler The <code>CommentHandler</code> to use in this action.
+     * 
+     * @deprecated Use the no-arg constructir and supply your <code>CommentHandler</code> implementation
+     *   from <code>DefaultLanguageConfig.getCommentHandler</code>.
+     */
     public ToggleBlockCommentAction(CommentHandler commentHandler) {
-        super("");
-        this.COMMENT_START_LENGTH = commentHandler.getCommentStartDelimiter().length();
-        this.COMMENT_END_LENGTH = commentHandler.getCommentEndDelimiter().length();
+        super(ExtKit.toggleCommentAction);
         this.commentHandler = commentHandler;
+    }
+
+    /**
+     * Creates a general toggle comment action. This action will dynamically determine
+     * the language of the document section, where it is invoked and use correct comments.
+     *
+     * <p class="nonnormative">
+     * It uses <code>CommentHandler</code> implementations from <code>DefaultLanguageConfig.getCommentHandler</code>
+     * for the section's language. If there is no <code>CommentHandler</code> the action
+     * assumes that the language uses line comments and the action will use <code>DefaultLanguageConfig.getLineCommentPrefix</code>.
+     *
+     * @since 2.2
+     */
+    public ToggleBlockCommentAction() {
+        this(null);
     }
 
     @Override
     public void actionPerformed(ActionEvent evt, final JTextComponent target) {
         if (target != null) {
-            if (!target.isEditable() || !target.isEnabled()) {
+            if (!target.isEditable() || !target.isEnabled() || !(target.getDocument() instanceof BaseDocument)) {
                 target.getToolkit().beep();
                 return;
             }
 
-            final Caret caret = target.getCaret();
-            final BaseDocument doc = (BaseDocument) target.getDocument();
-
-            int from = Utilities.isSelectionShowing(caret) ? target.getSelectionStart() : caret.getDot();
-            int to = Utilities.isSelectionShowing(caret) ? target.getSelectionEnd() : caret.getDot();
-
-            boolean lineSelection = false;
-            boolean inComment = isInComment(doc, from);
-            if (from == to) {
-                //no selection
-                if (!inComment) {
-                    try {
-                        //check for commenting empty line
-                        if (Utilities.isRowEmpty(doc, from) || Utilities.isRowWhite(doc, from)) {
-                            return;
-                        }
-
-                        //extend the range to the whole line
-                        from = Utilities.getFirstNonWhiteFwd(doc, Utilities.getRowStart(doc, from));
-                        to = Utilities.getFirstNonWhiteBwd(doc, Utilities.getRowEnd(doc, to)) + 1;
-                        lineSelection = true;
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-
-            if(!inComment && from == to) {
-                return ; //no-op
-            }
-
-            int[] adjustedRange = commentHandler.getAdjustedBlocks(doc, from, to);
-            if(adjustedRange.length == 0) {
-                return; //no-op
-            }
-
-            from = adjustedRange[0];
-            to = adjustedRange[1];
-
-            if(!inComment && from == to) {
-                return ; //no-op
-            }
-            
-            final int comments[] = commentHandler.getCommentBlocks(doc, from, to);
-
-            assert comments != null;
-
-//            debug(doc, comments, from, to);
-
-            check(comments, from, to);
-
-            final int _from = from;
-            final int _to = to;
-            final boolean _lineSelection = lineSelection;
-
+            BaseDocument doc = (BaseDocument) target.getDocument();
             doc.runAtomic(new Runnable() {
-
-                public void run() {
+                public @Override void run() {
                     try {
-                        int[] commentRange = getCommentRange(comments, _from);
-                        if (commentRange == null) {
-                            //comment
-                            comment(target, doc, comments, _from, _to, _lineSelection);
-                        } else if (comments.length > 0) {
-                            //uncomment
-                            uncomment(target, doc, comments, _from, _to, _lineSelection);
+                        int offset = Utilities.isSelectionShowing(target) ? target.getSelectionStart() : target.getCaretPosition();
+
+                        TokenHierarchy<?> th = TokenHierarchy.get(target.getDocument());
+
+                        if (ToggleBlockCommentAction.this.commentHandler == null) {
+                            List<TokenSequence<?>> seqs = th.embeddedTokenSequences(offset, false);
+                            if (seqs.isEmpty()) {
+                                return;
+                            }
+                            
+                            Language lang = null;
+                            for(int i = seqs.size() - 1; i >= 0; i--) {
+                                TokenSequence<?> ts = seqs.get(i);
+                                lang = LanguageRegistry.getInstance().getLanguageByMimeType(ts.language().mimeType());
+                                if (lang != null) {
+                                    break;
+                                }
+                            }
+                            if (lang == null) {
+                                return;
+                            }
+
+                            CommentHandler commentHandler = null;
+                            if (lang.getGsfLanguage() instanceof DefaultLanguageConfig) {
+                                commentHandler = ((DefaultLanguageConfig) lang.getGsfLanguage()).getCommentHandler();
+                            }
+
+                            if (commentHandler != null) {
+                                commentUncommentBlock(target, th, commentHandler, true);
+                            } else if (lang.getGsfLanguage().getLineCommentPrefix() != null) {
+                                commentUncommentLines(target, th, lang.getGsfLanguage().getLineCommentPrefix());
+                            }
+                        } else {
+                            commentUncommentBlock(target, th, ToggleBlockCommentAction.this.commentHandler, false);
                         }
                     } catch (BadLocationException e) {
                         Exceptions.printStackTrace(e);
                     }
                 }
             });
-
-
         }
-
     }
 
-    private void comment(JTextComponent target, BaseDocument doc, int[] comments, int from, int to, boolean lineSelection) throws BadLocationException {
+    private void commentUncommentBlock(JTextComponent target, TokenHierarchy<?> th, final CommentHandler commentHandler, boolean dynamicCH) throws BadLocationException {
+        final Caret caret = target.getCaret();
+        final BaseDocument doc = (BaseDocument) target.getDocument();
+
+        int from, to;
+        if (Utilities.isSelectionShowing(caret)) {
+            from = Utilities.getRowStart(doc, target.getSelectionStart());
+            to = target.getSelectionEnd();
+            if (to > 0 && Utilities.getRowStart(doc, to) == to) {
+                to--;
+            }
+            to = Utilities.getRowEnd(doc, to);
+        } else { // selection not visible
+            from = Utilities.getRowStart(doc, caret.getDot());
+            to = Utilities.getRowEnd(doc, caret.getDot());
+        }
+
+        boolean lineSelection = false;
+        boolean inComment = isInComment(doc, commentHandler, from);
+        if (from == to) {
+            //no selection
+            if (!inComment) {
+                //check for commenting empty line
+                if (Utilities.isRowEmpty(doc, from) || Utilities.isRowWhite(doc, from)) {
+                    return;
+                }
+
+                //extend the range to the whole line
+                from = Utilities.getFirstNonWhiteFwd(doc, Utilities.getRowStart(doc, from));
+                to = Utilities.getFirstNonWhiteBwd(doc, Utilities.getRowEnd(doc, to)) + 1;
+                lineSelection = true;
+            }
+        }
+
+        if(!inComment && from == to) {
+            return ; //no-op
+        }
+
+        // check that we are still using the same handler (ie. we are still in the same language section)
+        if (dynamicCH && !sameCommentHandler(th, from, false, commentHandler)) {
+            return;
+        }
+
+        int[] adjustedRange = commentHandler.getAdjustedBlocks(doc, from, to);
+        if(adjustedRange.length == 0) {
+            return; //no-op
+        }
+
+        from = adjustedRange[0];
+        to = adjustedRange[1];
+
+        // check that we are still using the same handler (ie. we are still in the same language section)
+        // and that the start language section (from) is the same as the end language section (to)
+        if (dynamicCH && (!sameCommentHandler(th, from, false, commentHandler) || !sameCommentHandler(th, to, true, commentHandler))) {
+            return;
+        }
+
+        if(!inComment && from == to) {
+            return ; //no-op
+        }
+
+        final int comments[] = commentHandler.getCommentBlocks(doc, from, to);
+
+        assert comments != null;
+
+//            debug(doc, comments, from, to);
+
+        check(comments, from, to);
+
+        final int _from = from;
+        final int _to = to;
+        final boolean _lineSelection = lineSelection;
+
+        int[] commentRange = getCommentRange(comments, _from);
+        if (commentRange == null) {
+            //comment
+            comment(target, doc, commentHandler, comments, _from, _to, _lineSelection);
+        } else if (comments.length > 0) {
+            //uncomment
+            uncomment(target, doc, commentHandler, comments, _from, _to, _lineSelection);
+        }
+    }
+
+    private void comment(JTextComponent target, BaseDocument doc, CommentHandler commentHandler, int[] comments, int from, int to, boolean lineSelection) throws BadLocationException {
 //        System.out.println("comment");
 
         int diff = 0;
+        String startDelim = commentHandler.getCommentStartDelimiter();
+        String endDelim = commentHandler.getCommentEndDelimiter();
 
         //put the comment start
-        diff += insert(doc, from, commentHandler.getCommentStartDelimiter());
+        diff += insert(doc, from, startDelim);
 
         for (int i = 0; i < comments.length; i += 2) {
             int commentStart = comments[i];
             int commentEnd = comments[i + 1];
 
-            diff += remove(doc, commentStart + diff, COMMENT_START_LENGTH);
+            diff += remove(doc, commentStart + diff, startDelim.length());
 
             if (commentEnd <= to) {
-                diff += remove(doc, commentEnd + diff - COMMENT_END_LENGTH, COMMENT_END_LENGTH);
+                diff += remove(doc, commentEnd + diff - endDelim.length(), endDelim.length());
             }
 
         }
 
         //add closing comment if the last comment doesn't contain the 'to' offset
         if (comments.length == 0 || comments[comments.length - 1] <= to) {
-            diff += insert(doc, to + diff, commentHandler.getCommentEndDelimiter());
+            diff += insert(doc, to + diff, endDelim);
         }
 
         if (!lineSelection) {
@@ -184,10 +269,12 @@ public class ToggleBlockCommentAction extends ExtKit.ToggleCommentAction {
 
     }
 
-    private void uncomment(JTextComponent target, BaseDocument doc, int[] comments, int from, int to, boolean lineSelection) throws BadLocationException {
+    private void uncomment(JTextComponent target, BaseDocument doc, CommentHandler commentHandler, int[] comments, int from, int to, boolean lineSelection) throws BadLocationException {
 //        System.out.println("uncomment");
 
         int diff = 0;
+        String startDelim = commentHandler.getCommentStartDelimiter();
+        String endDelim = commentHandler.getCommentEndDelimiter();
 
         //no selection handling
         if (from == to) {
@@ -202,7 +289,7 @@ public class ToggleBlockCommentAction extends ExtKit.ToggleCommentAction {
 
         if (comments[0] < from) {
             //we need to end the existing comment
-            diff += insert(doc, from, commentHandler.getCommentEndDelimiter());
+            diff += insert(doc, from, endDelim);
         }
 
         int selectionStart = from + diff;
@@ -212,11 +299,11 @@ public class ToggleBlockCommentAction extends ExtKit.ToggleCommentAction {
             int commentEnd = comments[i + 1];
 
             if (commentStart >= from) {
-                diff += remove(doc, commentStart + diff, COMMENT_START_LENGTH);
+                diff += remove(doc, commentStart + diff, startDelim.length());
             }
 
             if (commentEnd <= to) {
-                diff += remove(doc, commentEnd + diff - COMMENT_END_LENGTH, COMMENT_END_LENGTH);
+                diff += remove(doc, commentEnd + diff - endDelim.length(), endDelim.length());
             }
 
         }
@@ -260,13 +347,32 @@ public class ToggleBlockCommentAction extends ExtKit.ToggleCommentAction {
 
     }
 
-    private boolean isInComment(Document doc, int offset) {
+    private boolean isInComment(Document doc, CommentHandler commentHandler, int offset) {
         CharSequence text = DocumentUtilities.getText(doc); //shared instance, low cost
         int lastCommentStartIndex = CharSequenceUtilities.lastIndexOf(text, commentHandler.getCommentStartDelimiter(), offset);
         int lastCommentEndIndex = CharSequenceUtilities.lastIndexOf(text, commentHandler.getCommentEndDelimiter(), offset);
 
         return lastCommentStartIndex > -1 && (lastCommentStartIndex > lastCommentEndIndex || lastCommentEndIndex == -1);
 
+    }
+
+    private boolean sameCommentHandler(TokenHierarchy<?> th, int offset, boolean backwardBias, CommentHandler cH) {
+        CommentHandler cH2 = null;
+        List<TokenSequence<?>> seqs = th.embeddedTokenSequences(offset, backwardBias);
+        if (!seqs.isEmpty()) {
+            for(int i = seqs.size() - 1; i >= 0; i--) {
+                TokenSequence<?> ts = seqs.get(i);
+                Language lang = LanguageRegistry.getInstance().getLanguageByMimeType(ts.language().mimeType());
+                if (lang != null) {
+                    if (lang.getGsfLanguage() instanceof DefaultLanguageConfig) {
+                        cH2 = ((DefaultLanguageConfig) lang.getGsfLanguage()).getCommentHandler();
+                    }
+                    break;
+                }
+            }
+        }
+
+        return cH2 != null && cH.getClass() == cH2.getClass();
     }
 
     private void debug(Document doc, int[] comments, int start, int end) {
@@ -300,5 +406,134 @@ public class ToggleBlockCommentAction extends ExtKit.ToggleCommentAction {
             }
         }
     }
+
+    // -- copied from ExtKit.ToggleCommentAction
+
+    private void commentUncommentLines(JTextComponent target, TokenHierarchy<?> th, String lineCommentString) throws BadLocationException {
+        final Caret caret = target.getCaret();
+        final BaseDocument doc = (BaseDocument)target.getDocument();
+
+        // determine all language blocks between <startPos, endPos>
+        int from, to;
+        if (Utilities.isSelectionShowing(caret)) {
+            from = Utilities.getRowStart(doc, target.getSelectionStart());
+            to = target.getSelectionEnd();
+            if (to > 0 && Utilities.getRowStart(doc, to) == to) {
+                to--;
+            }
+            to = Utilities.getRowEnd(doc, to);
+        } else { // selection not visible
+            from = Utilities.getRowStart(doc, caret.getDot());
+            to = Utilities.getRowEnd(doc, caret.getDot());
+        }
+
+        List<TokenSequence<?>> seqs = th.embeddedTokenSequences(from, false);
+        LanguagePath lp = seqs.get(seqs.size() - 1).languagePath();
+        seqs = th.tokenSequenceList(lp, from, to);
+        List<int []> blocks = new LinkedList<int []>();
+
+        for(int i = 0; i < seqs.size(); i++) {
+            int startPos = -1;
+            int endPos = -1;
+
+            TokenSequence<?> ts = seqs.get(i);
+            ts.moveStart();
+            while (ts.moveNext()) {
+                if (ts.embedded() != null) {
+                    blocks.add(new int [] { startPos, endPos });
+                    startPos = endPos = -1;
+                    continue;
+                }
+
+                if (startPos == -1) {
+                    startPos = Math.max(ts.offset(), from);
+                }
+
+                int tokenEnd = ts.offset() + ts.token().length();
+                if (endPos < tokenEnd) {
+                    endPos = Math.min(tokenEnd, to);
+                }
+
+                if (tokenEnd > to) {
+                    break;
+                }
+            }
+
+            blocks.add(new int [] { startPos, endPos });
+        }
+        
+        for(ListIterator<int []> i = blocks.listIterator(blocks.size()); i.hasPrevious(); ) {
+            int [] block = i.previous();
+            int startPos = block[0];
+            int endPos = block[1];
+
+            if (startPos == -1 || endPos == -1) {
+                continue;
+            }
+
+            startPos = Math.max(Utilities.getRowStart(doc, startPos), startPos);
+            endPos = Math.max(Utilities.getRowEnd(doc, endPos), startPos);
+            
+            int lineCount = Utilities.getRowCount(doc, startPos, endPos);
+            boolean comment = !allComments(doc, startPos, lineCount, lineCommentString);
+
+            if (comment) {
+                comment(doc, startPos, lineCount, lineCommentString);
+            } else {
+                uncomment(doc, startPos, lineCount, lineCommentString);
+            }
+        }
+    }
+
+    private boolean allComments(BaseDocument doc, int startOffset, int lineCount, String lineCommentString) throws BadLocationException {
+        final int lineCommentStringLen = lineCommentString.length();
+        for (int offset = startOffset; lineCount > 0; lineCount--) {
+            int firstNonWhitePos = Utilities.getRowFirstNonWhite(doc, offset);
+            if (firstNonWhitePos == -1) {
+                return false;
+            }
+
+            if (Utilities.getRowEnd(doc, firstNonWhitePos) - firstNonWhitePos < lineCommentStringLen) {
+                return false;
+            }
+
+            CharSequence maybeLineComment = DocumentUtilities.getText(doc, firstNonWhitePos, lineCommentStringLen);
+            if (!CharSequenceUtilities.textEquals(maybeLineComment, lineCommentString)) {
+                return false;
+            }
+
+            offset = Utilities.getRowStart(doc, offset, +1);
+        }
+        return true;
+    }
+
+    private void comment(BaseDocument doc, int startOffset, int lineCount, String lineCommentString) throws BadLocationException {
+        for (int offset = startOffset; lineCount > 0; lineCount--) {
+            doc.insertString(offset, lineCommentString, null); // NOI18N
+            offset = Utilities.getRowStart(doc, offset, +1);
+        }
+    }
+
+    private void uncomment(BaseDocument doc, int startOffset, int lineCount, String lineCommentString) throws BadLocationException {
+        final int lineCommentStringLen = lineCommentString.length();
+        for (int offset = startOffset; lineCount > 0; lineCount--) {
+            // Get the first non-whitespace char on the current line
+            int firstNonWhitePos = Utilities.getRowFirstNonWhite(doc, offset);
+
+            // If there is any, check wheter it's the line-comment-chars and remove them
+            if (firstNonWhitePos != -1) {
+                if (Utilities.getRowEnd(doc, firstNonWhitePos) - firstNonWhitePos >= lineCommentStringLen) {
+                    CharSequence maybeLineComment = DocumentUtilities.getText(doc, firstNonWhitePos, lineCommentStringLen);
+                    if (CharSequenceUtilities.textEquals(maybeLineComment, lineCommentString)) {
+                        doc.remove(firstNonWhitePos, lineCommentStringLen);
+                    }
+                }
+            }
+
+            offset = Utilities.getRowStart(doc, offset, +1);
+        }
+    }
+
+
 }
 

@@ -45,7 +45,9 @@
 
 package org.netbeans.modules.websvc.rest.client;
 
-import java.awt.event.ItemEvent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
 import org.openide.DialogDescriptor;
@@ -62,15 +64,47 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
 
     private Node resourceNode;
     private DialogDescriptor descriptor;
+    private boolean nameChangedByUser = false;
 
     /** Creates new form RESTResourcesPanel */
     public RESTResourcesPanel() {
         initComponents();
-        ItemListener listener = new ItemListener();
-        jRadioButton1.addItemListener(listener);
-        jRadioButton2.addItemListener(listener);
-        jRadioButton3.addItemListener(listener);
+        jTextField1.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                resourceChanged();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                resourceChanged();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                resourceChanged();
+            }
+        });
+        jTextField2.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                nameChanged();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                nameChanged();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                nameChanged();
+            }
+        });
     }
+
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -85,12 +119,10 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jRadioButton1 = new javax.swing.JRadioButton();
         jRadioButton2 = new javax.swing.JRadioButton();
-        jRadioButton3 = new javax.swing.JRadioButton();
         jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jComboBox1 = new javax.swing.JComboBox();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
-        jButton3 = new javax.swing.JButton();
         jTextField2 = new javax.swing.JTextField();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RESTResourcesPanel.class, "RESTResourcesPanel.jLabel1.text")); // NOI18N
@@ -102,9 +134,6 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
         buttonGroup1.add(jRadioButton2);
         org.openide.awt.Mnemonics.setLocalizedText(jRadioButton2, org.openide.util.NbBundle.getMessage(RESTResourcesPanel.class, "RESTResourcesPanel.jRadioButton2.text")); // NOI18N
 
-        buttonGroup1.add(jRadioButton3);
-        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton3, org.openide.util.NbBundle.getMessage(RESTResourcesPanel.class, "RESTResourcesPanel.jRadioButton3.text")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(RESTResourcesPanel.class, "RESTResourcesPanel.jButton1.text")); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -112,21 +141,12 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton2, org.openide.util.NbBundle.getMessage(RESTResourcesPanel.class, "RESTResourcesPanel.jButton2.text")); // NOI18N
-        jButton2.setEnabled(false);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RESTResourcesPanel.class, "RESTResourcesPanel.jLabel2.text")); // NOI18N
 
-        jComboBox1.setEnabled(false);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(RESTResourcesPanel.class, "RESTResourcesPanel.jLabel3.text")); // NOI18N
 
         jTextField1.setEditable(false);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButton3, org.openide.util.NbBundle.getMessage(RESTResourcesPanel.class, "RESTResourcesPanel.jButton3.text")); // NOI18N
-        jButton3.setActionCommand(org.openide.util.NbBundle.getMessage(RESTResourcesPanel.class, "RESTResourcesPanel.jButton3.actionCommand")); // NOI18N
-        jButton3.setEnabled(false);
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
+        jTextField1.setOpaque(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -135,26 +155,19 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addComponent(jTextField2, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE))
+                    .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
                     .addComponent(jLabel1)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jRadioButton1)
-                                .addGap(14, 14, 14)
-                                .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE))
-                            .addComponent(jRadioButton3)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jRadioButton2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jComboBox1, 0, 330, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jRadioButton1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 68, Short.MAX_VALUE)
-                            .addComponent(jButton2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 68, Short.MAX_VALUE)
-                            .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 68, Short.MAX_VALUE))))
+                        .addComponent(jRadioButton2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 63, Short.MAX_VALUE)
+                        .addComponent(jButton1))
+                    .addComponent(jLabel3)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jTextField2, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -163,58 +176,88 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jRadioButton1)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jButton1)))
-                .addGap(10, 10, 10)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jRadioButton2)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(jButton1))
+                .addGap(18, 18, 18)
+                .addComponent(jLabel3)
+                .addGap(4, 4, 4)
+                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jRadioButton3)
-                    .addComponent(jButton3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(47, Short.MAX_VALUE))
+                    .addComponent(jLabel2)
+                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    public void setDescriptor(DialogDescriptor descriptor) {
+    void setDescriptor(DialogDescriptor descriptor) {
         this.descriptor = descriptor;
         descriptor.setValid(false);
     }
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        RESTExplorerPanel explorerPanel = new RESTExplorerPanel();
-        DialogDescriptor desc = new DialogDescriptor(explorerPanel,
-                NbBundle.getMessage(RESTResourcesPanel.class,"TTL_RESTResources")); //NOI18N
-        explorerPanel.setDescriptor(desc);
-        if (DialogDisplayer.getDefault().notify(desc).equals(NotifyDescriptor.OK_OPTION)) {
-            resourceNode = explorerPanel.getSelectedService();
-            jTextField1.setText(resourceNode.getDisplayName());
+    private void resourceChanged() {
+        if (!nameChangedByUser || jTextField2.getText().trim().length() == 0) {
+            if (resourceNode != null) {
+                WadlSaasResource saasResource = resourceNode.getLookup().lookup(WadlSaasResource.class);
+                if (saasResource != null) {
+                    jTextField2.setText(Wadl2JavaHelper.getClientClassName(saasResource));
+                } else {
+                    RestServiceDescription restServiceDesc = resourceNode.getLookup().lookup(RestServiceDescription.class);
+                    if (restServiceDesc != null) {
+                        jTextField2.setText(restServiceDesc.getName()+"_JerseyClient"); //NOI18N
+                    }
+                }
+            }
         }
-        if (resourceNode != null) {
+    }
+    private void nameChanged() {
+        if (jTextField2.getText().trim().length() == 0) {
+            descriptor.setValid(false);
+        } else if (resourceNode == null) {
+            descriptor.setValid(false);
+        } else {
             descriptor.setValid(true);
+        }
+        nameChangedByUser = true;
+    }
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        if (jRadioButton1.isSelected()) {
+            RESTExplorerPanel explorerPanel = new RESTExplorerPanel();
+            DialogDescriptor desc = new DialogDescriptor(explorerPanel,
+                    NbBundle.getMessage(RESTResourcesPanel.class,"TTL_RESTResources")); //NOI18N
+            explorerPanel.setDescriptor(desc);
+            if (DialogDisplayer.getDefault().notify(desc).equals(NotifyDescriptor.OK_OPTION)) {
+                resourceNode = explorerPanel.getSelectedService();
+                boolean isChangedByUser = nameChangedByUser;
+                jTextField1.setText(resourceNode.getDisplayName());
+                if (!isChangedByUser) {
+                    nameChangedByUser = false;
+                }
+            }
+            if (resourceNode != null) {
+                descriptor.setValid(true);
+            }
+        } else {
+            SaasExplorerPanel explorerPanel = new SaasExplorerPanel();
+            DialogDescriptor desc = new DialogDescriptor(explorerPanel,
+                    NbBundle.getMessage(RESTResourcesPanel.class,"TTL_RESTResources")); //NOI18N
+            explorerPanel.setDescriptor(desc);
+            if (DialogDisplayer.getDefault().notify(desc).equals(NotifyDescriptor.OK_OPTION)) {
+                resourceNode = explorerPanel.getSelectedService();
+                boolean isChangedByUser = nameChangedByUser;
+                jTextField1.setText(getSaasResourceName(resourceNode));
+                if (!isChangedByUser) {
+                    nameChangedByUser = false;
+                }
+            }
+            if (resourceNode != null) {
+                descriptor.setValid(true);
+            }
         }
     }//GEN-LAST:event_jButton1ActionPerformed
-
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        SaasExplorerPanel explorerPanel = new SaasExplorerPanel();
-        DialogDescriptor desc = new DialogDescriptor(explorerPanel,
-                NbBundle.getMessage(RESTResourcesPanel.class,"TTL_RESTResources")); //NOI18N
-        explorerPanel.setDescriptor(desc);
-        if (DialogDisplayer.getDefault().notify(desc).equals(NotifyDescriptor.OK_OPTION)) {
-            resourceNode = explorerPanel.getSelectedService();
-            jTextField2.setText(getSaasResourceName(resourceNode));
-        }
-        if (resourceNode != null) {
-            descriptor.setValid(true);
-        }
-    }//GEN-LAST:event_jButton3ActionPerformed
 
     private String getSaasResourceName(Node node) {
         WadlSaasResource saasResource = node.getLookup().lookup(WadlSaasResource.class);
@@ -253,63 +296,20 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
         return resourceNode;
     }
 
+    public String getClassName() {
+        return jTextField2.getText().trim();
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JRadioButton jRadioButton1;
     private javax.swing.JRadioButton jRadioButton2;
-    private javax.swing.JRadioButton jRadioButton3;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     // End of variables declaration//GEN-END:variables
 
-
-    private class ItemListener implements java.awt.event.ItemListener {
-
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-            if (jRadioButton1.isSelected()) {
-                jTextField1.setEnabled(true);
-                jComboBox1.setEnabled(false);
-                jTextField2.setEnabled(false);
-                jButton1.setEnabled(true);
-                jButton2.setEnabled(false);
-                jButton3.setEnabled(false);
-                if (jTextField1.getText().length() == 0) {
-                    descriptor.setValid(false);
-                } else {
-                    descriptor.setValid(true);
-                }
-            } else if (jRadioButton2.isSelected()) {
-                jTextField1.setEnabled(false);
-                jComboBox1.setEnabled(true);
-                jTextField2.setEnabled(false);
-                jButton1.setEnabled(false);
-                jButton2.setEnabled(true);
-                jButton3.setEnabled(false);
-                if (jComboBox1.getSelectedItem() == null) {
-                    descriptor.setValid(false);
-                } else {
-                    descriptor.setValid(true);
-                }
-            } else {
-                jTextField1.setEnabled(false);
-                jComboBox1.setEnabled(false);
-                jTextField2.setEnabled(true);
-                jButton1.setEnabled(false);
-                jButton2.setEnabled(false);
-                jButton3.setEnabled(true);
-                if (jTextField2.getText().length() == 0) {
-                    descriptor.setValid(false);
-                } else {
-                    descriptor.setValid(true);
-                }
-            }
-        }
-
-    }
 }

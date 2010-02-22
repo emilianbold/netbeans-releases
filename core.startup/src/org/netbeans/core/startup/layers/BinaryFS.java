@@ -553,7 +553,7 @@ final class BinaryFS extends FileSystem {
                         throw new IllegalStateException("Bad index: " + index); // NOI18N
                 }
             } catch (Exception exc) {
-                LOG.log(Level.WARNING, "value = " + value + " from " + foProvider.getPath(), exc); // NOI18N
+                LOG.log(Level.INFO, "value = " + value + " from " + foProvider.getPath(), exc); // NOI18N
             }
             return null; // problem getting the value...
         }
@@ -584,7 +584,7 @@ final class BinaryFS extends FileSystem {
                 }
             } catch (Exception exc) {
                 Exceptions.attachMessage(exc, "value = " + value + " from " + foProvider.getPath()); //NOI18N
-                LOG.log(Level.WARNING, null, exc);
+                LOG.log(Level.INFO, null, exc);
             }
             return null; // problem getting the value...
         }

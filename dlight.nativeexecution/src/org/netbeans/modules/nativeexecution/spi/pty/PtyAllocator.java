@@ -43,7 +43,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.spi.ExecutionEnvironmentServiceProvider;
 
 /**
- *
+ * SPI for allocating unconnected ptys
+ * 
  * @author ak119685
  */
 public interface PtyAllocator extends ExecutionEnvironmentServiceProvider {

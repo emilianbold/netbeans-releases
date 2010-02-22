@@ -173,7 +173,7 @@ public final class PersistenceScopesHelper {
 
         if (oldPersistenceExists != newPersistenceExists) {
             LOG.fine("fileEvent: firing PROP_PERSISTENCE_SCOPES change"); // NOI18N
-            propChangeSupport.firePropertyChange(PersistenceScopes.PROP_PERSISTENCE_SCOPES, null, null);
+            propChangeSupport.firePropertyChange(PersistenceScopes.PROP_PERSISTENCE_SCOPES, oldPersistenceExists, newPersistenceExists);
         }
     }
 

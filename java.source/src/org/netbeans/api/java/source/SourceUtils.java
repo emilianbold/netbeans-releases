@@ -417,7 +417,8 @@ public class SourceUtils {
             List<FileObject> fos = cp.findAllResources(pkgName);
             for (FileObject fo : fos) {
                 FileObject root = cp.findOwnerRoot(fo);
-                assert root != null;
+                if (root == null)
+                    continue;
                 FileObject[] sourceRoots = SourceForBinaryQuery.findSourceRoots(root.getURL()).getRoots();                        
                 ClassPath sourcePath = ClassPathSupport.createClassPath(sourceRoots);
                 LinkedList<FileObject> folders = new LinkedList<FileObject>(sourcePath.findAllResources(pkgName));

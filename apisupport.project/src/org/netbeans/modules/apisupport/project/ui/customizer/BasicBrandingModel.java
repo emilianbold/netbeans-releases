@@ -52,6 +52,8 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.BrandingSupport;
 import org.netbeans.modules.apisupport.project.suite.BrandingSupport.BrandedFile;
@@ -89,7 +91,7 @@ public class BasicBrandingModel {
     /** for properties (app.name, app.title, app.icon)*/
     private String name;
     private String title;
-    private BrandingSupport.BrandedFile icon = null;
+    private @NullAllowed BrandingSupport.BrandedFile icon = null;
     private BrandingSupport.BrandedFile icon16 = null;    
     
     /** representation of bundle keys depending on app.title */
@@ -131,7 +133,6 @@ public class BasicBrandingModel {
     
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     
-    /** Creates a new instance of ApplicationDetails */
     public BasicBrandingModel(final SuiteProperties suiteProps) {
         this.suiteProps = suiteProps;
         init();
@@ -208,14 +209,19 @@ public class BasicBrandingModel {
     
     public void setIconSource(final URL url) {
         if (isBrandingEnabled()) {
-            icon.setBrandingSource(url);
+            if (icon != null) {
+                icon.setBrandingSource(url);
+            }
             suiteProps.setProperty(ICON_LOCATION_PROPERTY, getIconLocation());
         }
     }
     
-    public String getIconLocation() {
+    public @CheckForNull String getIconLocation() {
+        if (icon == null) {
+            return null;
+        }
         File prj = suiteProps.getProjectDirectoryFile();
-        String relativePath = PropertyUtils.relativizeFile(prj ,icon.getFileLocation());
+        String relativePath = PropertyUtils.relativizeFile(prj, icon.getFileLocation());
         
         return relativePath;
     }
@@ -248,7 +254,9 @@ public class BasicBrandingModel {
             }
                                     
             getBranding().brandBundleKeys(splashKeys);
-            getBranding().brandFile(splash);                        
+            if (splash != null) {
+                getBranding().brandFile(splash);
+            }
             getBranding().brandBundleKeys(winsysKeys);
         } else {
             if (brandingChanged) {//#115737
@@ -539,79 +547,79 @@ public class BasicBrandingModel {
         winsysKeys.remove(null);
 }
     
-    public BrandingSupport.BundleKey getSplashWidth() {
+    public @CheckForNull BrandingSupport.BundleKey getSplashWidth() {
         return splashWidth;
     }
     
-    public BrandingSupport.BundleKey getSplashHeight() {
+    public @CheckForNull BrandingSupport.BundleKey getSplashHeight() {
         return splashHeight;
     }
     
-    public BrandingSupport.BundleKey getSplashShowProgressBar() {
+    public @CheckForNull BrandingSupport.BundleKey getSplashShowProgressBar() {
         return splashShowProgressBar;
     }
     
-    public BrandingSupport.BundleKey getSplashRunningTextBounds() {
+    public @CheckForNull BrandingSupport.BundleKey getSplashRunningTextBounds() {
         return splashRunningTextBounds;
     }
     
-    public BrandingSupport.BundleKey getSplashProgressBarBounds() {
+    public @CheckForNull BrandingSupport.BundleKey getSplashProgressBarBounds() {
         return splashProgressBarBounds;
     }
     
-    public BrandingSupport.BundleKey getSplashRunningTextFontSize() {
+    public @CheckForNull BrandingSupport.BundleKey getSplashRunningTextFontSize() {
         return splashRunningTextFontSize;
     }
     
-    public BrandingSupport.BundleKey getSplashRunningTextColor() {
+    public @CheckForNull BrandingSupport.BundleKey getSplashRunningTextColor() {
         return splashRunningTextColor;
     }
     
-    public BrandingSupport.BundleKey getSplashProgressBarColor() {
+    public @CheckForNull BrandingSupport.BundleKey getSplashProgressBarColor() {
         return splashProgressBarColor;
     }
     
-    public BrandingSupport.BundleKey getSplashProgressBarEdgeColor() {
+    public @CheckForNull BrandingSupport.BundleKey getSplashProgressBarEdgeColor() {
         return splashProgressBarEdgeColor;
     }
     
-    public BrandingSupport.BundleKey getSplashProgressBarCornerColor() {
+    public @CheckForNull BrandingSupport.BundleKey getSplashProgressBarCornerColor() {
         return splashProgressBarCornerColor;
     }
     
-    public BrandingSupport.BrandedFile getSplash() {
+    public @CheckForNull BrandingSupport.BrandedFile getSplash() {
         return splash;
     }
 
-    public BundleKey getWsEnableClosingEditors() {
+    public @CheckForNull BundleKey getWsEnableClosingEditors() {
         return wsEnableClosingEditors;
     }
 
-    public BundleKey getWsEnableClosingViews() {
+    public @CheckForNull BundleKey getWsEnableClosingViews() {
         return wsEnableClosingViews;
     }
 
-    public BundleKey getWsEnableDragAndDrop() {
+    public @CheckForNull BundleKey getWsEnableDragAndDrop() {
         return wsEnableDragAndDrop;
     }
 
-    public BundleKey getWsEnableFloating() {
+    public @CheckForNull BundleKey getWsEnableFloating() {
         return wsEnableFloating;
     }
 
-    public BundleKey getWsEnableMaximization() {
+    public @CheckForNull BundleKey getWsEnableMaximization() {
         return wsEnableMaximization;
     }
 
-    public BundleKey getWsEnableMinimumSize() {
+    public @CheckForNull BundleKey getWsEnableMinimumSize() {
         return wsEnableMinimumSize;
     }
 
-    public BundleKey getWsEnableResizing() {
+    public @CheckForNull BundleKey getWsEnableResizing() {
         return wsEnableResizing;
     }
 
-    public BundleKey getWsEnableSliding() {
+    public @CheckForNull BundleKey getWsEnableSliding() {
         return wsEnableSliding;
     }
 }

@@ -47,7 +47,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -70,6 +69,7 @@ public final class SelectedItemsTable extends JTable {
         setShowGrid(false);
 
         final Action switchAction = new AbstractAction() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 int row = getSelectedRow();
                 if (row == -1) {
@@ -122,14 +122,17 @@ public final class SelectedItemsTable extends JTable {
             fireTableDataChanged();
         }
 
+        @Override
         public int getRowCount() {
             return pkgNames.length;
         }
 
+        @Override
         public int getColumnCount() {
             return 2;
         }
 
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             if (columnIndex == 0) {
                 return selected[rowIndex];

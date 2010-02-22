@@ -133,6 +133,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
             NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletParams.value")
         };
 
+        signedChanged(null);
     }
 
     private static void setEnabledRunComponent(boolean enable) {
@@ -171,6 +172,10 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         appletParamsButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
         warningArea = new javax.swing.JTextArea();
+        jPanel2 = new javax.swing.JPanel();
+        mixedCodeLabel = new javax.swing.JLabel();
+        mixedCodeCombo = new javax.swing.JComboBox();
+        jPanel3 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -293,6 +298,11 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         panelDescLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "ACSD_WebStartTitle_Label")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(signedCheckBox, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.signedCheckBox.text")); // NOI18N
+        signedCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                signedChanged(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -398,7 +408,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -408,7 +418,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         add(jPanel1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
@@ -424,12 +434,42 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         warningArea.setBorder(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
         add(warningArea, gridBagConstraints);
+
+        jPanel2.setLayout(new java.awt.GridBagLayout());
+
+        mixedCodeLabel.setLabelFor(mixedCodeCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(mixedCodeLabel, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "TXT_MixedCodeLabel")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel2.add(mixedCodeLabel, gridBagConstraints);
+
+        mixedCodeCombo.setModel(jwsProps.mixedCodeModel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel2.add(mixedCodeCombo, gridBagConstraints);
+        mixedCodeCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "AN_MixedCodeLabel")); // NOI18N
+        mixedCodeCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "AD_MixedCodeLabel")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel2.add(jPanel3, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 18, 0, 0);
+        add(jPanel2, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.AccessibleContext.accessibleDescription")); // NOI18N
@@ -510,6 +550,12 @@ private void appletParamsButtonActionPerformed(java.awt.event.ActionEvent evt) {
     dialog.dispose();
 
 }//GEN-LAST:event_appletParamsButtonActionPerformed
+
+private void signedChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_signedChanged
+    final boolean enabled = signedCheckBox.isSelected();
+    mixedCodeLabel.setEnabled(enabled);
+    mixedCodeCombo.setEnabled(enabled);
+}//GEN-LAST:event_signedChanged
 
     private void setEnabledAppletControls(boolean b) {
         appletClassLabel.setEnabled(b);
@@ -616,7 +662,11 @@ private void appletParamsButtonActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JLabel iconLabel;
     private javax.swing.JTextField iconTextField;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JComboBox mixedCodeCombo;
+    private javax.swing.JLabel mixedCodeLabel;
     private javax.swing.JCheckBox offlineCheckBox;
     private javax.swing.JLabel panelDescLabel;
     private javax.swing.JCheckBox signedCheckBox;
