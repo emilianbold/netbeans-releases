@@ -56,7 +56,6 @@ import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
-import java.util.List;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.Cursor;
@@ -160,10 +159,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
                 if(ts.isAutofill()) {
                     messageTextArea.setText(ts.getTemplate());
                 } else {
-                    final List<String> messages = Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
-                    if (messages.size() > 0) {
-                        messageTextArea.setText(messages.get(0));
-                    }
+                    messageTextArea.setText(SvnModuleConfig.getDefault().getLastCommitMessage());
                 }
                 messageTextArea.selectAll();
             }

@@ -176,7 +176,12 @@ public class CommitAction extends ContextAction {
         prepareSupport.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "BK1009")); // NOI18N
 
         // show commit dialog
-        if (showCommitDialog(panel, data, commitButton, contentTitle, ctx) == commitButton) {
+        boolean startCommit = showCommitDialog(panel, data, commitButton, contentTitle, ctx) == commitButton;
+        String message = panel.getCommitMessage().trim();
+        if (!message.isEmpty()) {
+            SvnModuleConfig.getDefault().setLastCommitMessage(message);
+        }
+        if (startCommit) {
             // if OK setup sequence of add, remove and commit calls
             startCommitTask(panel, data, ctx, hooks);
         } else {
