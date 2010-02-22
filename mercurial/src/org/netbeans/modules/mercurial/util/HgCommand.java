@@ -79,7 +79,7 @@ import org.netbeans.modules.mercurial.FileStatus;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
-import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
+import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
@@ -1739,7 +1739,7 @@ public class HgCommand {
         boolean retry = true;
         // acquire credentials for kenai
         PasswordAuthentication credentials = null;
-        HgKenaiSupport supp = HgKenaiSupport.getInstance();
+        HgKenaiAccessor supp = HgKenaiAccessor.getInstance();
         String rawUrl = repository.toUrlStringWithoutUserInfo();
         if (supp.isKenai(rawUrl) && supp.isLoggedIntoKenai(rawUrl)) {
             credentials = supp.getPasswordAuthentication(rawUrl, false);
@@ -3080,7 +3080,7 @@ public class HgCommand {
         PasswordAuthentication credentials = null;
         String msg = cmdOutput.get(cmdOutput.size() - 1).toLowerCase();
         if (isAuthMsg(msg)) {
-            HgKenaiSupport support = HgKenaiSupport.getInstance();
+            HgKenaiAccessor support = HgKenaiAccessor.getInstance();
             if(support.isKenai(url) && showKenaiLoginDialog) {
                 // try to login
                 credentials = handleKenaiAuthorisation(support, url);
@@ -3091,7 +3091,7 @@ public class HgCommand {
         return credentials;
     }
 
-    private static PasswordAuthentication handleKenaiAuthorisation(HgKenaiSupport support, String url) {
+    private static PasswordAuthentication handleKenaiAuthorisation(HgKenaiAccessor support, String url) {
         PasswordAuthentication pa = support.getPasswordAuthentication(url, true);
         return pa;
     }
@@ -3570,7 +3570,7 @@ public class HgCommand {
             boolean retry = true;
             boolean showLoginWindow = true;
             credentials = null;
-            HgKenaiSupport supp = HgKenaiSupport.getInstance();
+            HgKenaiAccessor supp = HgKenaiAccessor.getInstance();
             String rawUrl = remoteUrl.toUrlStringWithoutUserInfo();
             acquireCredentialsFirst |= supp.isLoggedIntoKenai(rawUrl);
             if (supp.isKenai(rawUrl)) {

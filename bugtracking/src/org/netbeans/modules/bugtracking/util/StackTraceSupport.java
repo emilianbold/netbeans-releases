@@ -67,7 +67,7 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.VCSSupport;
+import org.netbeans.modules.bugtracking.spi.VCSAccessor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
@@ -319,11 +319,11 @@ public class StackTraceSupport {
                 // XXX any chance to disable the action if it's not a real io.File - e.g. a jdk class?
                 return;
             }
-            Collection<? extends VCSSupport> supports = Lookup.getDefault().lookupAll(VCSSupport.class);
+            Collection<? extends VCSAccessor> supports = Lookup.getDefault().lookupAll(VCSAccessor.class);
             if(supports == null) {
                 return;
             }
-            for (final VCSSupport s : supports) {
+            for (final VCSAccessor s : supports) {
                 // XXX this is messy - we implicitly expect that unrelevant VCS modules
                 // will skip the action
                 BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
