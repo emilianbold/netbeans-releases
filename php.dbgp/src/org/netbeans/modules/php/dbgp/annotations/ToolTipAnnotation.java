@@ -42,6 +42,7 @@ package org.netbeans.modules.php.dbgp.annotations;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -120,6 +121,7 @@ public class ToolTipAnnotation extends Annotation
     /* (non-Javadoc)
      * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
      */
+    @Override
     public void propertyChange( PropertyChangeEvent event ) {
         if ( event.getSource() instanceof EvalCommand ){
             Property value = (Property)event.getNewValue();
@@ -129,11 +131,16 @@ public class ToolTipAnnotation extends Annotation
     }
 
     private String getStringValue( Property value ) {
+        return getStringValue(value, 0);
+    }
+    private String getStringValue( Property value, int tabCount ) {
         if ( value == null ){
             return null;
         }
         String result = null;
+        String type = null;
         try {
+            type = value.getType();
             result = value.getStringValue();
         }
         catch (UnsufficientValueException e) {
@@ -142,22 +149,46 @@ public class ToolTipAnnotation extends Annotation
              *  not able to retrieve value via property_value command.
              *  So this should never happened. Otherwise this is a bug in XDebug.   
              */
-            return null;
         }
-        if ( result != null ){
-            return (result.trim().length()==0) ? null : result;
+        StringBuilder builder = new StringBuilder();
+        printTabs(tabCount, builder);
+        if (type != null && type.length() > 0) {
+            builder.append("{");//NOI18N
+            builder.append(type);
+            builder.append("}");//NOI18N
         }
-        boolean notFirst = false;
-        StringBuilder builder = new StringBuilder(LEFT_BRACKET);
-        for( Property property : value.getChildren() ){
-            if ( notFirst ){
-                builder.append(COMMA);
+        if (result != null && result.length() > 0) {
+            if (builder.length() > 0) {                
+                builder.append(": ");//NOI18N                
             }
-            builder.append( getStringValue( property) );
-            notFirst = true;
+            builder.append(result);
         }
-        builder.append(RIGHT_BRACKET);
-        return builder.toString();
+        StringBuilder childsBuilder = new StringBuilder();
+        final List<Property> children = value.getChildren();
+        if (children.size() > 0) {
+            if (builder.length() > 0) {
+                builder.append("\n");//NOI18N
+            }
+            for (int i = 0; i < children.size(); i++) {
+                Property property = children.get(i);
+                printTabs(tabCount+1, childsBuilder);
+                childsBuilder.append(LEFT_BRACKET);
+                childsBuilder.append(property.getName());
+                childsBuilder.append(RIGHT_BRACKET);
+                childsBuilder.append(" => ");//NOI18N
+                childsBuilder.append(getStringValue(property, tabCount+2));
+                childsBuilder.append("\n");//NOI18N
+            }
+            
+        }
+        builder.append(childsBuilder);
+        return (builder.length() == 0) ? null : builder.toString();
+    }
+
+    private void printTabs(int count, StringBuilder builder) {
+        for (int i = 0; i < count; i++) {
+            builder.append(" "); //NOI18N
+        }
     }
 
     private void evaluate( Line.Part part ){
