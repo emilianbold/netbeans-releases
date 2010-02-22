@@ -241,7 +241,7 @@ public class KenaiUtil {
     /**
      * @see KenaiAccessor#getKenaiProject(java.lang.String, java.lang.String)
      */
-    private static KenaiProject getKenaiProject(String url, String projectName) throws IOException {
+    public static KenaiProject getKenaiProject(String url, String projectName) throws IOException {
         KenaiAccessor ka = getKenaiAccessor();
         return ka != null? ka.getKenaiProject(url, projectName) : null;
     }
