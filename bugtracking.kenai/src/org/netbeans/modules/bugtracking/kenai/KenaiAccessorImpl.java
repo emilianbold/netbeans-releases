@@ -319,7 +319,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     }
 
     private Map<String, DelegateKenaiListener> kenaiListeners;
-    private DelegateKenaiListener getKenaiListener(Kenai kenai) {
+    private synchronized DelegateKenaiListener getKenaiListener(Kenai kenai) {
         if(kenaiListeners == null) {
             kenaiListeners = new HashMap<String, DelegateKenaiListener>();
         }
@@ -351,11 +351,15 @@ public class KenaiAccessorImpl extends KenaiAccessor {
         }
         private synchronized void add(PropertyChangeListener l) {
             delegates.add(l);
-            kenai.addPropertyChangeListener(l);
+            if(delegates.size() == 1) {
+                kenai.addPropertyChangeListener(this);
+            }
         }
         private synchronized void remove(PropertyChangeListener l) {
             delegates.remove(l);
-            kenai.removePropertyChangeListener(l);
+            if(delegates.isEmpty()) {
+                kenai.removePropertyChangeListener(this);
+            }
         }
     }
 }
