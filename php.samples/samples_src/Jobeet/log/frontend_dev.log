@@ -1,0 +1,1305 @@
+Feb 15 16:43:17 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 15 16:43:17 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 15 16:43:17 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 15 16:43:17 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 15 16:43:17 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 15 16:43:17 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 15 16:43:17 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 15 16:43:17 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 15 16:43:17 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 15 16:43:17 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 15 16:43:17 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 15 16:43:17 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 15 16:43:17 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:43:17 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:43:17 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:43:17 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 15 16:43:17 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Match route "homepage" (/) for / with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',)
+Feb 15 16:43:18 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 15 16:43:18 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 15 16:43:18 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 15 16:43:18 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 15 16:43:18 symfony [info] {sfFrontWebController} Redirect to "http://localhost/frontend_dev.php/en/"
+Feb 15 16:43:18 symfony [info] {sfWebResponse} Send status "HTTP/1.1 302 Found"
+Feb 15 16:43:18 symfony [info] {sfWebResponse} Send header "Location: http://localhost/frontend_dev.php/en/"
+Feb 15 16:43:18 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 15 16:43:18 symfony [info] {sfWebDebugLogger} Configuration 31.93 ms (9)
+Feb 15 16:43:18 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 2.73 ms (1)
+Feb 15 16:43:18 symfony [info] {sfWebResponse} Send content (108 o)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 15 16:43:18 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 15 16:43:18 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 15 16:43:18 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 15 16:43:18 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 15 16:43:18 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 15 16:43:18 symfony [err] {Doctrine_Connection_Exception} PDO Connection Error: SQLSTATE[28000] [1045] Access denied for user 'root'@'localhost' (using password: NO)
+Feb 15 16:43:18 symfony [info] {sfWebResponse} Send status "HTTP/1.1 500 Internal Server Error"
+Feb 15 16:43:18 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Match route "homepage" (/) for / with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',)
+Feb 15 16:44:41 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 15 16:44:41 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 15 16:44:41 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 15 16:44:41 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 15 16:44:41 symfony [info] {sfFrontWebController} Redirect to "http://localhost/frontend_dev.php/en/"
+Feb 15 16:44:41 symfony [info] {sfWebResponse} Send status "HTTP/1.1 302 Found"
+Feb 15 16:44:41 symfony [info] {sfWebResponse} Send header "Location: http://localhost/frontend_dev.php/en/"
+Feb 15 16:44:41 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 15 16:44:41 symfony [info] {sfWebDebugLogger} Configuration 8.94 ms (9)
+Feb 15 16:44:41 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 2.98 ms (1)
+Feb 15 16:44:41 symfony [info] {sfWebResponse} Send content (108 o)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 15 16:44:41 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 15 16:44:41 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 15 16:44:41 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 15 16:44:41 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 15 16:44:41 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 15 16:44:41 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at, j2.id AS j2__id, j2.category_id AS j2__category_id, j2.type AS j2__type, j2.company AS j2__company, j2.logo AS j2__logo, j2.url AS j2__url, j2.position AS j2__position, j2.location AS j2__location, j2.description AS j2__description, j2.how_to_apply AS j2__how_to_apply, j2.token AS j2__token, j2.is_public AS j2__is_public, j2.is_activated AS j2__is_activated, j2.email AS j2__email, j2.expires_at AS j2__expires_at, j2.created_at AS j2__created_at, j2.updated_at AS j2__updated_at FROM jobeet_category j LEFT JOIN jobeet_job j2 ON j.id = j2.category_id WHERE j2.expires_at > ? AND j2.is_activated = ? - (2010-02-15 04:44:41, 1 )
+Feb 15 16:44:41 symfony [err] {Doctrine_Connection_Mysql_Exception} SQLSTATE[42S02]: Base table or view not found: 1146 Table 'jobeet.jobeet_category' doesn't exist
+Feb 15 16:44:41 symfony [info] {sfWebResponse} Send status "HTTP/1.1 500 Internal Server Error"
+Feb 15 16:44:41 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Match route "homepage" (/) for / with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',)
+Feb 15 16:45:04 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 15 16:45:04 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 15 16:45:04 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 15 16:45:04 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 15 16:45:04 symfony [info] {sfFrontWebController} Redirect to "http://localhost/frontend_dev.php/en/"
+Feb 15 16:45:04 symfony [info] {sfWebResponse} Send status "HTTP/1.1 302 Found"
+Feb 15 16:45:04 symfony [info] {sfWebResponse} Send header "Location: http://localhost/frontend_dev.php/en/"
+Feb 15 16:45:04 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 15 16:45:04 symfony [info] {sfWebDebugLogger} Configuration 1.74 ms (8)
+Feb 15 16:45:04 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 2.93 ms (1)
+Feb 15 16:45:04 symfony [info] {sfWebResponse} Send content (108 o)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 15 16:45:04 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 15 16:45:04 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 15 16:45:04 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 15 16:45:04 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 15 16:45:04 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 15 16:45:04 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at, j2.id AS j2__id, j2.category_id AS j2__category_id, j2.type AS j2__type, j2.company AS j2__company, j2.logo AS j2__logo, j2.url AS j2__url, j2.position AS j2__position, j2.location AS j2__location, j2.description AS j2__description, j2.how_to_apply AS j2__how_to_apply, j2.token AS j2__token, j2.is_public AS j2__is_public, j2.is_activated AS j2__is_activated, j2.email AS j2__email, j2.expires_at AS j2__expires_at, j2.created_at AS j2__created_at, j2.updated_at AS j2__updated_at FROM jobeet_category j LEFT JOIN jobeet_job j2 ON j.id = j2.category_id WHERE j2.expires_at > ? AND j2.is_activated = ? - (2010-02-15 04:45:04, 1 )
+Feb 15 16:45:04 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/indexSuccess.php"
+Feb 15 16:45:04 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 15 16:45:04 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 15 16:45:04 symfony [info] {main} Get slot "title"
+Feb 15 16:45:04 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 15 16:45:04 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 15 16:45:04 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 15 16:45:04 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 15 16:45:04 symfony [info] {sfWebDebugLogger} Configuration 12.85 ms (11)
+Feb 15 16:45:04 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 79.39 ms (1)
+Feb 15 16:45:04 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.01 ms (2)
+Feb 15 16:45:04 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/index" 46.94 ms (1)
+Feb 15 16:45:04 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 13.32 ms (1)
+Feb 15 16:45:04 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 3.10 ms (1)
+Feb 15 16:45:04 symfony [info] {sfWebResponse} Send content (168441 o)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Match route "homepage" (/) for / with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',)
+Feb 15 16:45:20 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 15 16:45:20 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 15 16:45:20 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 15 16:45:20 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 15 16:45:20 symfony [info] {sfFrontWebController} Redirect to "http://localhost/frontend_dev.php/en/"
+Feb 15 16:45:20 symfony [info] {sfWebResponse} Send status "HTTP/1.1 302 Found"
+Feb 15 16:45:20 symfony [info] {sfWebResponse} Send header "Location: http://localhost/frontend_dev.php/en/"
+Feb 15 16:45:20 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 15 16:45:20 symfony [info] {sfWebDebugLogger} Configuration 1.85 ms (8)
+Feb 15 16:45:20 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 2.92 ms (1)
+Feb 15 16:45:20 symfony [info] {sfWebResponse} Send content (108 o)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 15 16:45:20 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 15 16:45:20 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 15 16:45:20 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 15 16:45:20 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 15 16:45:20 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 15 16:45:20 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at, j2.id AS j2__id, j2.category_id AS j2__category_id, j2.type AS j2__type, j2.company AS j2__company, j2.logo AS j2__logo, j2.url AS j2__url, j2.position AS j2__position, j2.location AS j2__location, j2.description AS j2__description, j2.how_to_apply AS j2__how_to_apply, j2.token AS j2__token, j2.is_public AS j2__is_public, j2.is_activated AS j2__is_activated, j2.email AS j2__email, j2.expires_at AS j2__expires_at, j2.created_at AS j2__created_at, j2.updated_at AS j2__updated_at FROM jobeet_category j LEFT JOIN jobeet_job j2 ON j.id = j2.category_id WHERE j2.expires_at > ? AND j2.is_activated = ? - (2010-02-15 04:45:20, 1 )
+Feb 15 16:45:20 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/indexSuccess.php"
+Feb 15 16:45:20 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 15 16:45:20 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 15 16:45:20 symfony [info] {main} Get slot "title"
+Feb 15 16:45:20 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 15 16:45:20 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 15 16:45:20 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 15 16:45:20 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 15 16:45:20 symfony [info] {sfWebDebugLogger} Configuration 2.11 ms (10)
+Feb 15 16:45:20 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 41.40 ms (1)
+Feb 15 16:45:20 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.01 ms (2)
+Feb 15 16:45:20 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/index" 27.36 ms (1)
+Feb 15 16:45:20 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 11.77 ms (1)
+Feb 15 16:45:20 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 2.54 ms (1)
+Feb 15 16:45:20 symfony [info] {sfWebResponse} Send content (168408 o)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 15 16:45:29 symfony [info] {sfPatternRouting} Match route "change_language" (/change_language) for /change_language with parameters array (  'module' => 'sfJobeetLanguage',  'action' => 'changeLanguage',)
+Feb 15 16:45:29 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 15 16:45:29 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 15 16:45:29 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 15 16:45:29 symfony [info] {sfJobeetLanguageActions} Call "sfJobeetLanguageActions->executeChangeLanguage()"
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 15 16:45:59 symfony [info] {sfPatternRouting} Match route "job_new" (/:sf_culture/job/new.:sf_format) for /en/job/new with parameters array (  'module' => 'sfJobeetJob',  'action' => 'new',  'sf_format' => 'html',  'sf_culture' => 'en',)
+Feb 15 16:45:59 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 15 16:45:59 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 15 16:45:59 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 15 16:45:59 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeNew()"
+Feb 15 16:45:59 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/newSuccess.php"
+Feb 15 16:45:59 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/_form.php"
+Feb 15 16:45:59 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at FROM jobeet_category j
+Feb 15 16:45:59 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.name AS j__name, j.lang AS j__lang, j.slug AS j__slug FROM jobeet_category_translation j WHERE j.id IN (?) - (1 )
+Feb 15 16:45:59 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.name AS j__name, j.lang AS j__lang, j.slug AS j__slug FROM jobeet_category_translation j WHERE j.id IN (?) - (2 )
+Feb 15 16:45:59 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.name AS j__name, j.lang AS j__lang, j.slug AS j__slug FROM jobeet_category_translation j WHERE j.id IN (?) - (3 )
+Feb 15 16:45:59 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.name AS j__name, j.lang AS j__lang, j.slug AS j__slug FROM jobeet_category_translation j WHERE j.id IN (?) - (4 )
+Feb 15 16:45:59 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 15 16:45:59 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 15 16:45:59 symfony [info] {main} Get slot "title"
+Feb 15 16:45:59 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 15 16:45:59 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 15 16:45:59 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 15 16:45:59 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 15 16:45:59 symfony [info] {sfWebDebugLogger} Configuration 2.18 ms (10)
+Feb 15 16:45:59 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/new" 27.93 ms (1)
+Feb 15 16:45:59 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/new" 93.22 ms (1)
+Feb 15 16:45:59 symfony [info] {sfWebDebugLogger} Partial "sfJobeetJob/_form" 68.49 ms (1)
+Feb 15 16:45:59 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.07 ms (9)
+Feb 15 16:45:59 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 9.44 ms (1)
+Feb 15 16:45:59 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 1.95 ms (1)
+Feb 15 16:45:59 symfony [info] {sfWebResponse} Send content (177830 o)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Match route "homepage" (/) for / with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',)
+Feb 15 16:54:57 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 15 16:54:57 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 15 16:54:57 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 15 16:54:57 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 15 16:54:57 symfony [info] {sfFrontWebController} Redirect to "http://localhost/frontend_dev.php/en/"
+Feb 15 16:54:57 symfony [info] {sfWebResponse} Send status "HTTP/1.1 302 Found"
+Feb 15 16:54:57 symfony [info] {sfWebResponse} Send header "Location: http://localhost/frontend_dev.php/en/"
+Feb 15 16:54:57 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 15 16:54:57 symfony [info] {sfWebDebugLogger} Configuration 1.77 ms (8)
+Feb 15 16:54:57 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 2.93 ms (1)
+Feb 15 16:54:57 symfony [info] {sfWebResponse} Send content (108 o)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 15 16:54:57 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 15 16:54:57 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 15 16:54:57 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 15 16:54:57 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 15 16:54:57 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 15 16:54:57 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at, j2.id AS j2__id, j2.category_id AS j2__category_id, j2.type AS j2__type, j2.company AS j2__company, j2.logo AS j2__logo, j2.url AS j2__url, j2.position AS j2__position, j2.location AS j2__location, j2.description AS j2__description, j2.how_to_apply AS j2__how_to_apply, j2.token AS j2__token, j2.is_public AS j2__is_public, j2.is_activated AS j2__is_activated, j2.email AS j2__email, j2.expires_at AS j2__expires_at, j2.created_at AS j2__created_at, j2.updated_at AS j2__updated_at FROM jobeet_category j LEFT JOIN jobeet_job j2 ON j.id = j2.category_id WHERE j2.expires_at > ? AND j2.is_activated = ? - (2010-02-15 04:54:57, 1 )
+Feb 15 16:54:57 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/indexSuccess.php"
+Feb 15 16:54:57 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 15 16:54:57 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 15 16:54:57 symfony [info] {main} Get slot "title"
+Feb 15 16:54:57 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 15 16:54:57 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 15 16:54:57 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 15 16:54:57 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 15 16:54:57 symfony [info] {sfWebDebugLogger} Configuration 2.14 ms (10)
+Feb 15 16:54:57 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 42.25 ms (1)
+Feb 15 16:54:57 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.01 ms (2)
+Feb 15 16:54:57 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/index" 30.60 ms (1)
+Feb 15 16:54:57 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 13.82 ms (1)
+Feb 15 16:54:57 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 3.24 ms (1)
+Feb 15 16:54:57 symfony [info] {sfWebResponse} Send content (168408 o)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 15 17:50:47 symfony [info] {sfPatternRouting} Match route "homepage" (/) for / with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',)
+Feb 15 17:50:48 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 15 17:50:48 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 15 17:50:48 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 15 17:50:48 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 15 17:50:48 symfony [info] {sfFrontWebController} Redirect to "http://localhost/frontend_dev.php/en/"
+Feb 15 17:50:48 symfony [info] {sfWebResponse} Send status "HTTP/1.1 302 Found"
+Feb 15 17:50:48 symfony [info] {sfWebResponse} Send header "Location: http://localhost/frontend_dev.php/en/"
+Feb 15 17:50:48 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 15 17:50:48 symfony [info] {sfWebDebugLogger} Configuration 775.26 ms (8)
+Feb 15 17:50:48 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 2.77 ms (1)
+Feb 15 17:50:48 symfony [info] {sfWebResponse} Send content (108 o)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 15 17:50:48 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 15 17:50:48 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 15 17:50:48 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 15 17:50:48 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 15 17:50:48 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 15 17:50:48 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at, j2.id AS j2__id, j2.category_id AS j2__category_id, j2.type AS j2__type, j2.company AS j2__company, j2.logo AS j2__logo, j2.url AS j2__url, j2.position AS j2__position, j2.location AS j2__location, j2.description AS j2__description, j2.how_to_apply AS j2__how_to_apply, j2.token AS j2__token, j2.is_public AS j2__is_public, j2.is_activated AS j2__is_activated, j2.email AS j2__email, j2.expires_at AS j2__expires_at, j2.created_at AS j2__created_at, j2.updated_at AS j2__updated_at FROM jobeet_category j LEFT JOIN jobeet_job j2 ON j.id = j2.category_id WHERE j2.expires_at > ? AND j2.is_activated = ? - (2010-02-15 05:50:48, 1 )
+Feb 15 17:50:48 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/indexSuccess.php"
+Feb 15 17:50:48 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 15 17:50:48 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 15 17:50:48 symfony [info] {main} Get slot "title"
+Feb 15 17:50:49 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 15 17:50:49 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 15 17:50:49 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 15 17:50:49 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 15 17:50:49 symfony [info] {sfWebDebugLogger} Configuration 22.98 ms (11)
+Feb 15 17:50:49 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 545.45 ms (1)
+Feb 15 17:50:49 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.01 ms (2)
+Feb 15 17:50:49 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/index" 494.14 ms (1)
+Feb 15 17:50:49 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 245.34 ms (1)
+Feb 15 17:50:49 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 36.96 ms (1)
+Feb 15 17:50:49 symfony [info] {sfWebResponse} Send content (160848 o)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Match route "homepage" (/) for / with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',)
+Feb 15 17:57:49 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 15 17:57:49 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 15 17:57:49 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 15 17:57:49 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 15 17:57:49 symfony [info] {sfFrontWebController} Redirect to "http://localhost/frontend_dev.php/en/"
+Feb 15 17:57:49 symfony [info] {sfWebResponse} Send status "HTTP/1.1 302 Found"
+Feb 15 17:57:49 symfony [info] {sfWebResponse} Send header "Location: http://localhost/frontend_dev.php/en/"
+Feb 15 17:57:49 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 15 17:57:49 symfony [info] {sfWebDebugLogger} Configuration 1.70 ms (8)
+Feb 15 17:57:49 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 2.65 ms (1)
+Feb 15 17:57:49 symfony [info] {sfWebResponse} Send content (108 o)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 15 17:57:49 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 15 17:57:49 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 15 17:57:49 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 15 17:57:49 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 15 17:57:49 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 15 17:57:49 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at, j2.id AS j2__id, j2.category_id AS j2__category_id, j2.type AS j2__type, j2.company AS j2__company, j2.logo AS j2__logo, j2.url AS j2__url, j2.position AS j2__position, j2.location AS j2__location, j2.description AS j2__description, j2.how_to_apply AS j2__how_to_apply, j2.token AS j2__token, j2.is_public AS j2__is_public, j2.is_activated AS j2__is_activated, j2.email AS j2__email, j2.expires_at AS j2__expires_at, j2.created_at AS j2__created_at, j2.updated_at AS j2__updated_at FROM jobeet_category j LEFT JOIN jobeet_job j2 ON j.id = j2.category_id WHERE j2.expires_at > ? AND j2.is_activated = ? - (2010-02-15 05:57:49, 1 )
+Feb 15 17:57:49 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/indexSuccess.php"
+Feb 15 17:57:49 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 15 17:57:49 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 15 17:57:49 symfony [info] {main} Get slot "title"
+Feb 15 17:57:49 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 15 17:57:49 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 15 17:57:49 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 15 17:57:49 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 15 17:57:49 symfony [info] {sfWebDebugLogger} Configuration 2.16 ms (10)
+Feb 15 17:57:49 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 93.57 ms (1)
+Feb 15 17:57:49 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.01 ms (2)
+Feb 15 17:57:49 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/index" 31.39 ms (1)
+Feb 15 17:57:49 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 14.29 ms (1)
+Feb 15 17:57:49 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 2.90 ms (1)
+Feb 15 17:57:49 symfony [info] {sfWebResponse} Send content (160841 o)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 15 17:57:53 symfony [info] {sfPatternRouting} Match route "job_new" (/:sf_culture/job/new.:sf_format) for /en/job/new with parameters array (  'module' => 'sfJobeetJob',  'action' => 'new',  'sf_format' => 'html',  'sf_culture' => 'en',)
+Feb 15 17:57:53 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 15 17:57:53 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 15 17:57:53 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 15 17:57:53 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeNew()"
+Feb 15 17:57:53 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/newSuccess.php"
+Feb 15 17:57:53 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/_form.php"
+Feb 15 17:57:53 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at FROM jobeet_category j
+Feb 15 17:57:53 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.name AS j__name, j.lang AS j__lang, j.slug AS j__slug FROM jobeet_category_translation j WHERE j.id IN (?) - (1 )
+Feb 15 17:57:53 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.name AS j__name, j.lang AS j__lang, j.slug AS j__slug FROM jobeet_category_translation j WHERE j.id IN (?) - (2 )
+Feb 15 17:57:53 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.name AS j__name, j.lang AS j__lang, j.slug AS j__slug FROM jobeet_category_translation j WHERE j.id IN (?) - (3 )
+Feb 15 17:57:53 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.name AS j__name, j.lang AS j__lang, j.slug AS j__slug FROM jobeet_category_translation j WHERE j.id IN (?) - (4 )
+Feb 15 17:57:53 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 15 17:57:53 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 15 17:57:53 symfony [info] {main} Get slot "title"
+Feb 15 17:57:53 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 15 17:57:53 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 15 17:57:53 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 15 17:57:53 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 15 17:57:53 symfony [info] {sfWebDebugLogger} Configuration 2.18 ms (10)
+Feb 15 17:57:53 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/new" 161.55 ms (1)
+Feb 15 17:57:53 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/new" 170.83 ms (1)
+Feb 15 17:57:53 symfony [info] {sfWebDebugLogger} Partial "sfJobeetJob/_form" 141.87 ms (1)
+Feb 15 17:57:53 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.07 ms (9)
+Feb 15 17:57:53 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 9.80 ms (1)
+Feb 15 17:57:53 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 2.88 ms (1)
+Feb 15 17:57:53 symfony [info] {sfWebResponse} Send content (169885 o)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:20:54 symfony [info] {sfPatternRouting} Match route "homepage" (/) for / with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',)
+Feb 16 14:20:55 symfony [info] {myUser} Automatic user logout due to timeout
+Feb 16 14:20:55 symfony [info] {myUser} User is not authenticated
+Feb 16 14:20:55 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:20:55 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:20:55 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:20:55 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:20:55 symfony [info] {sfFrontWebController} Redirect to "http://localhost/frontend_dev.php/en/"
+Feb 16 14:20:55 symfony [info] {sfWebResponse} Send status "HTTP/1.1 302 Found"
+Feb 16 14:20:55 symfony [info] {sfWebResponse} Send header "Location: http://localhost/frontend_dev.php/en/"
+Feb 16 14:20:55 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 14:20:55 symfony [info] {sfWebDebugLogger} Configuration 16.13 ms (8)
+Feb 16 14:20:55 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 21.03 ms (1)
+Feb 16 14:20:55 symfony [info] {sfWebResponse} Send content (108 o)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:20:55 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 16 14:20:55 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:20:55 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:20:55 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:20:55 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:20:55 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at, j2.id AS j2__id, j2.category_id AS j2__category_id, j2.type AS j2__type, j2.company AS j2__company, j2.logo AS j2__logo, j2.url AS j2__url, j2.position AS j2__position, j2.location AS j2__location, j2.description AS j2__description, j2.how_to_apply AS j2__how_to_apply, j2.token AS j2__token, j2.is_public AS j2__is_public, j2.is_activated AS j2__is_activated, j2.email AS j2__email, j2.expires_at AS j2__expires_at, j2.created_at AS j2__created_at, j2.updated_at AS j2__updated_at FROM jobeet_category j LEFT JOIN jobeet_job j2 ON j.id = j2.category_id WHERE j2.expires_at > ? AND j2.is_activated = ? - (2010-02-16 02:20:55, 1 )
+Feb 16 14:20:56 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/indexSuccess.php"
+Feb 16 14:20:56 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:20:56 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:20:56 symfony [info] {main} Get slot "title"
+Feb 16 14:20:56 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 16 14:20:56 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 16 14:20:56 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 16 14:20:56 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 14:20:56 symfony [info] {sfWebDebugLogger} Configuration 2.25 ms (10)
+Feb 16 14:20:56 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 674.14 ms (1)
+Feb 16 14:20:56 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.01 ms (2)
+Feb 16 14:20:56 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/index" 605.23 ms (1)
+Feb 16 14:20:56 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 246.55 ms (1)
+Feb 16 14:20:56 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 59.16 ms (1)
+Feb 16 14:20:56 symfony [info] {sfWebResponse} Send content (160914 o)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Match route "homepage" (/) for / with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',)
+Feb 16 14:28:33 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:28:33 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:28:33 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:28:33 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:28:33 symfony [info] {sfFrontWebController} Redirect to "http://localhost/frontend_dev.php/en/"
+Feb 16 14:28:33 symfony [info] {sfWebResponse} Send status "HTTP/1.1 302 Found"
+Feb 16 14:28:33 symfony [info] {sfWebResponse} Send header "Location: http://localhost/frontend_dev.php/en/"
+Feb 16 14:28:33 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 14:28:33 symfony [info] {sfWebDebugLogger} Configuration 2.30 ms (8)
+Feb 16 14:28:33 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 1.97 ms (1)
+Feb 16 14:28:33 symfony [info] {sfWebResponse} Send content (108 o)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:28:33 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 16 14:28:33 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:28:33 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:28:33 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:28:33 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:28:33 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at, j2.id AS j2__id, j2.category_id AS j2__category_id, j2.type AS j2__type, j2.company AS j2__company, j2.logo AS j2__logo, j2.url AS j2__url, j2.position AS j2__position, j2.location AS j2__location, j2.description AS j2__description, j2.how_to_apply AS j2__how_to_apply, j2.token AS j2__token, j2.is_public AS j2__is_public, j2.is_activated AS j2__is_activated, j2.email AS j2__email, j2.expires_at AS j2__expires_at, j2.created_at AS j2__created_at, j2.updated_at AS j2__updated_at FROM jobeet_category j LEFT JOIN jobeet_job j2 ON j.id = j2.category_id WHERE j2.expires_at > ? AND j2.is_activated = ? - (2010-02-16 02:28:33, 1 )
+Feb 16 14:28:33 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/indexSuccess.php"
+Feb 16 14:28:33 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:28:33 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:28:33 symfony [info] {main} Get slot "title"
+Feb 16 14:28:33 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 16 14:28:33 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 16 14:28:33 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 16 14:28:33 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 14:28:33 symfony [info] {sfWebDebugLogger} Configuration 2.82 ms (10)
+Feb 16 14:28:33 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 48.89 ms (1)
+Feb 16 14:28:33 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.02 ms (2)
+Feb 16 14:28:33 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/index" 32.10 ms (1)
+Feb 16 14:28:33 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 13.24 ms (1)
+Feb 16 14:28:33 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 3.24 ms (1)
+Feb 16 14:28:33 symfony [info] {sfWebResponse} Send content (37636 o)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:30:46 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 16 14:30:46 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:30:46 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:30:46 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:30:46 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:30:46 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at, j2.id AS j2__id, j2.category_id AS j2__category_id, j2.type AS j2__type, j2.company AS j2__company, j2.logo AS j2__logo, j2.url AS j2__url, j2.position AS j2__position, j2.location AS j2__location, j2.description AS j2__description, j2.how_to_apply AS j2__how_to_apply, j2.token AS j2__token, j2.is_public AS j2__is_public, j2.is_activated AS j2__is_activated, j2.email AS j2__email, j2.expires_at AS j2__expires_at, j2.created_at AS j2__created_at, j2.updated_at AS j2__updated_at FROM jobeet_category j LEFT JOIN jobeet_job j2 ON j.id = j2.category_id WHERE j2.expires_at > ? AND j2.is_activated = ? - (2010-02-16 02:30:46, 1 )
+Feb 16 14:30:46 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/indexSuccess.php"
+Feb 16 14:30:46 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:30:46 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:30:46 symfony [info] {main} Get slot "title"
+Feb 16 14:30:46 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 16 14:30:46 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 16 14:30:46 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 16 14:30:46 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 14:30:46 symfony [info] {sfWebDebugLogger} Configuration 2.92 ms (10)
+Feb 16 14:30:46 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 48.35 ms (1)
+Feb 16 14:30:46 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.02 ms (2)
+Feb 16 14:30:46 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/index" 33.15 ms (1)
+Feb 16 14:30:46 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 13.75 ms (1)
+Feb 16 14:30:46 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 3.27 ms (1)
+Feb 16 14:30:46 symfony [info] {sfWebResponse} Send content (37636 o)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Match route "homepage" (/) for / with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',)
+Feb 16 14:38:27 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:38:27 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:38:27 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:38:27 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:38:27 symfony [info] {sfFrontWebController} Redirect to "http://localhost/frontend_dev.php/en/"
+Feb 16 14:38:27 symfony [info] {sfWebResponse} Send status "HTTP/1.1 302 Found"
+Feb 16 14:38:27 symfony [info] {sfWebResponse} Send header "Location: http://localhost/frontend_dev.php/en/"
+Feb 16 14:38:27 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 14:38:27 symfony [info] {sfWebDebugLogger} Configuration 2.20 ms (8)
+Feb 16 14:38:27 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 1.86 ms (1)
+Feb 16 14:38:27 symfony [info] {sfWebResponse} Send content (108 o)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:38:27 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 16 14:38:27 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:38:27 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:38:27 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:38:27 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:38:28 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at, j2.id AS j2__id, j2.category_id AS j2__category_id, j2.type AS j2__type, j2.company AS j2__company, j2.logo AS j2__logo, j2.url AS j2__url, j2.position AS j2__position, j2.location AS j2__location, j2.description AS j2__description, j2.how_to_apply AS j2__how_to_apply, j2.token AS j2__token, j2.is_public AS j2__is_public, j2.is_activated AS j2__is_activated, j2.email AS j2__email, j2.expires_at AS j2__expires_at, j2.created_at AS j2__created_at, j2.updated_at AS j2__updated_at FROM jobeet_category j LEFT JOIN jobeet_job j2 ON j.id = j2.category_id WHERE j2.expires_at > ? AND j2.is_activated = ? - (2010-02-16 02:38:28, 1 )
+Feb 16 14:38:28 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/indexSuccess.php"
+Feb 16 14:38:28 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:38:28 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:38:28 symfony [info] {main} Get slot "title"
+Feb 16 14:38:28 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 16 14:38:28 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 16 14:38:28 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 16 14:38:28 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 14:38:28 symfony [info] {sfWebDebugLogger} Configuration 2.85 ms (10)
+Feb 16 14:38:28 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 48.83 ms (1)
+Feb 16 14:38:28 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.02 ms (2)
+Feb 16 14:38:28 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/index" 31.84 ms (1)
+Feb 16 14:38:28 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 13.19 ms (1)
+Feb 16 14:38:28 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 3.15 ms (1)
+Feb 16 14:38:28 symfony [info] {sfWebResponse} Send content (37636 o)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:38:58 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 16 14:38:58 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:38:58 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:38:58 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:38:58 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:38:58 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at, j2.id AS j2__id, j2.category_id AS j2__category_id, j2.type AS j2__type, j2.company AS j2__company, j2.logo AS j2__logo, j2.url AS j2__url, j2.position AS j2__position, j2.location AS j2__location, j2.description AS j2__description, j2.how_to_apply AS j2__how_to_apply, j2.token AS j2__token, j2.is_public AS j2__is_public, j2.is_activated AS j2__is_activated, j2.email AS j2__email, j2.expires_at AS j2__expires_at, j2.created_at AS j2__created_at, j2.updated_at AS j2__updated_at FROM jobeet_category j LEFT JOIN jobeet_job j2 ON j.id = j2.category_id WHERE j2.expires_at > ? AND j2.is_activated = ? - (2010-02-16 02:38:58, 1 )
+Feb 16 14:38:58 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/indexSuccess.php"
+Feb 16 14:38:58 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:38:58 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:38:58 symfony [info] {main} Get slot "title"
+Feb 16 14:38:58 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 16 14:38:58 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 16 14:38:58 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 16 14:38:58 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 14:38:58 symfony [info] {sfWebDebugLogger} Configuration 2.92 ms (10)
+Feb 16 14:38:58 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 49.73 ms (1)
+Feb 16 14:38:58 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.02 ms (2)
+Feb 16 14:38:58 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/index" 33.08 ms (1)
+Feb 16 14:38:58 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 13.80 ms (1)
+Feb 16 14:38:58 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 3.32 ms (1)
+Feb 16 14:38:58 symfony [info] {sfWebResponse} Send content (37806 o)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Match route "homepage" (/) for / with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',)
+Feb 16 14:39:05 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:39:05 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:39:05 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:39:05 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:39:05 symfony [info] {sfFrontWebController} Redirect to "http://localhost/frontend_dev.php/en/"
+Feb 16 14:39:05 symfony [info] {sfWebResponse} Send status "HTTP/1.1 302 Found"
+Feb 16 14:39:05 symfony [info] {sfWebResponse} Send header "Location: http://localhost/frontend_dev.php/en/"
+Feb 16 14:39:05 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 14:39:05 symfony [info] {sfWebDebugLogger} Configuration 2.48 ms (8)
+Feb 16 14:39:05 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 1.91 ms (1)
+Feb 16 14:39:05 symfony [info] {sfWebResponse} Send content (108 o)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:39:05 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 16 14:39:05 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:39:05 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:39:05 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:39:05 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:39:05 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at, j2.id AS j2__id, j2.category_id AS j2__category_id, j2.type AS j2__type, j2.company AS j2__company, j2.logo AS j2__logo, j2.url AS j2__url, j2.position AS j2__position, j2.location AS j2__location, j2.description AS j2__description, j2.how_to_apply AS j2__how_to_apply, j2.token AS j2__token, j2.is_public AS j2__is_public, j2.is_activated AS j2__is_activated, j2.email AS j2__email, j2.expires_at AS j2__expires_at, j2.created_at AS j2__created_at, j2.updated_at AS j2__updated_at FROM jobeet_category j LEFT JOIN jobeet_job j2 ON j.id = j2.category_id WHERE j2.expires_at > ? AND j2.is_activated = ? - (2010-02-16 02:39:05, 1 )
+Feb 16 14:39:05 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/indexSuccess.php"
+Feb 16 14:39:05 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:39:05 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:39:05 symfony [info] {main} Get slot "title"
+Feb 16 14:39:05 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 16 14:39:05 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 16 14:39:05 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 16 14:39:05 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 14:39:05 symfony [info] {sfWebDebugLogger} Configuration 2.94 ms (10)
+Feb 16 14:39:05 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 50.38 ms (1)
+Feb 16 14:39:05 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.02 ms (2)
+Feb 16 14:39:05 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/index" 32.66 ms (1)
+Feb 16 14:39:05 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 13.61 ms (1)
+Feb 16 14:39:05 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 3.28 ms (1)
+Feb 16 14:39:05 symfony [info] {sfWebResponse} Send content (37636 o)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:39:13 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 16 14:39:13 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:39:13 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:39:13 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:39:13 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:39:13 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at, j2.id AS j2__id, j2.category_id AS j2__category_id, j2.type AS j2__type, j2.company AS j2__company, j2.logo AS j2__logo, j2.url AS j2__url, j2.position AS j2__position, j2.location AS j2__location, j2.description AS j2__description, j2.how_to_apply AS j2__how_to_apply, j2.token AS j2__token, j2.is_public AS j2__is_public, j2.is_activated AS j2__is_activated, j2.email AS j2__email, j2.expires_at AS j2__expires_at, j2.created_at AS j2__created_at, j2.updated_at AS j2__updated_at FROM jobeet_category j LEFT JOIN jobeet_job j2 ON j.id = j2.category_id WHERE j2.expires_at > ? AND j2.is_activated = ? - (2010-02-16 02:39:13, 1 )
+Feb 16 14:39:13 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/indexSuccess.php"
+Feb 16 14:39:13 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:39:13 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:39:13 symfony [info] {main} Get slot "title"
+Feb 16 14:39:13 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 16 14:39:13 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 16 14:39:13 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 16 14:39:13 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 14:39:13 symfony [info] {sfWebDebugLogger} Configuration 3.29 ms (10)
+Feb 16 14:39:13 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 41.98 ms (1)
+Feb 16 14:39:13 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.02 ms (2)
+Feb 16 14:39:13 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/index" 29.82 ms (1)
+Feb 16 14:39:13 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 11.95 ms (1)
+Feb 16 14:39:13 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 3.11 ms (1)
+Feb 16 14:39:13 symfony [info] {sfWebResponse} Send content (37806 o)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Match route "homepage" (/) for / with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',)
+Feb 16 14:48:29 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:48:29 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:48:29 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:48:29 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:48:29 symfony [info] {sfFrontWebController} Redirect to "http://localhost/frontend_dev.php/en/"
+Feb 16 14:48:29 symfony [info] {sfWebResponse} Send status "HTTP/1.1 302 Found"
+Feb 16 14:48:29 symfony [info] {sfWebResponse} Send header "Location: http://localhost/frontend_dev.php/en/"
+Feb 16 14:48:29 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 14:48:29 symfony [info] {sfWebDebugLogger} Configuration 2.02 ms (8)
+Feb 16 14:48:29 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 2.92 ms (1)
+Feb 16 14:48:29 symfony [info] {sfWebResponse} Send content (108 o)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:48:29 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 16 14:48:29 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:48:29 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:48:29 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:48:29 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:48:29 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at, j2.id AS j2__id, j2.category_id AS j2__category_id, j2.type AS j2__type, j2.company AS j2__company, j2.logo AS j2__logo, j2.url AS j2__url, j2.position AS j2__position, j2.location AS j2__location, j2.description AS j2__description, j2.how_to_apply AS j2__how_to_apply, j2.token AS j2__token, j2.is_public AS j2__is_public, j2.is_activated AS j2__is_activated, j2.email AS j2__email, j2.expires_at AS j2__expires_at, j2.created_at AS j2__created_at, j2.updated_at AS j2__updated_at FROM jobeet_category j LEFT JOIN jobeet_job j2 ON j.id = j2.category_id WHERE j2.expires_at > ? AND j2.is_activated = ? - (2010-02-16 02:48:29, 1 )
+Feb 16 14:48:29 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/indexSuccess.php"
+Feb 16 14:48:29 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:48:29 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:48:29 symfony [info] {main} Get slot "title"
+Feb 16 14:48:30 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 16 14:48:30 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 16 14:48:30 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 16 14:48:30 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 14:48:30 symfony [info] {sfWebDebugLogger} Configuration 2.70 ms (10)
+Feb 16 14:48:30 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 49.84 ms (1)
+Feb 16 14:48:30 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.01 ms (2)
+Feb 16 14:48:30 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/index" 30.67 ms (1)
+Feb 16 14:48:30 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 12.47 ms (1)
+Feb 16 14:48:30 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 4.32 ms (1)
+Feb 16 14:48:30 symfony [info] {sfWebResponse} Send content (160898 o)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Match route "homepage" (/) for / with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',)
+Feb 16 14:49:40 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:49:40 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:49:40 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:49:40 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:49:40 symfony [info] {sfFrontWebController} Redirect to "http://localhost/frontend_dev.php/en/"
+Feb 16 14:49:40 symfony [info] {sfWebResponse} Send status "HTTP/1.1 302 Found"
+Feb 16 14:49:40 symfony [info] {sfWebResponse} Send header "Location: http://localhost/frontend_dev.php/en/"
+Feb 16 14:49:40 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 14:49:40 symfony [info] {sfWebDebugLogger} Configuration 1.71 ms (8)
+Feb 16 14:49:40 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 2.77 ms (1)
+Feb 16 14:49:40 symfony [info] {sfWebResponse} Send content (108 o)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:49:40 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 16 14:49:40 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:49:40 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:49:40 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:49:40 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:49:40 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at, j2.id AS j2__id, j2.category_id AS j2__category_id, j2.type AS j2__type, j2.company AS j2__company, j2.logo AS j2__logo, j2.url AS j2__url, j2.position AS j2__position, j2.location AS j2__location, j2.description AS j2__description, j2.how_to_apply AS j2__how_to_apply, j2.token AS j2__token, j2.is_public AS j2__is_public, j2.is_activated AS j2__is_activated, j2.email AS j2__email, j2.expires_at AS j2__expires_at, j2.created_at AS j2__created_at, j2.updated_at AS j2__updated_at FROM jobeet_category j LEFT JOIN jobeet_job j2 ON j.id = j2.category_id WHERE j2.expires_at > ? AND j2.is_activated = ? - (2010-02-16 02:49:40, 1 )
+Feb 16 14:49:40 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/indexSuccess.php"
+Feb 16 14:49:40 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:49:40 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:49:40 symfony [info] {main} Get slot "title"
+Feb 16 14:49:40 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 16 14:49:40 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 16 14:49:40 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 16 14:49:40 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 14:49:40 symfony [info] {sfWebDebugLogger} Configuration 2.07 ms (10)
+Feb 16 14:49:40 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 40.87 ms (1)
+Feb 16 14:49:40 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.01 ms (2)
+Feb 16 14:49:40 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/index" 27.36 ms (1)
+Feb 16 14:49:40 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 11.65 ms (1)
+Feb 16 14:49:40 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 2.55 ms (1)
+Feb 16 14:49:40 symfony [info] {sfWebResponse} Send content (160898 o)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Match route "homepage" (/) for / with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',)
+Feb 16 14:55:10 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:55:10 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:55:10 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:55:10 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:55:10 symfony [info] {sfFrontWebController} Redirect to "http://localhost/frontend_dev.php/en/"
+Feb 16 14:55:10 symfony [info] {sfWebResponse} Send status "HTTP/1.1 302 Found"
+Feb 16 14:55:10 symfony [info] {sfWebResponse} Send header "Location: http://localhost/frontend_dev.php/en/"
+Feb 16 14:55:10 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 14:55:10 symfony [info] {sfWebDebugLogger} Configuration 196.15 ms (8)
+Feb 16 14:55:10 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 3.32 ms (1)
+Feb 16 14:55:10 symfony [info] {sfWebResponse} Send content (108 o)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:55:10 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 16 14:55:10 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:55:10 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:55:10 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:55:10 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:55:10 symfony [err] {Doctrine_Connection_Exception} PDO Connection Error: SQLSTATE[28000] [1045] Access denied for user 'root'@'localhost' (using password: NO)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 14:55:25 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 16 14:55:25 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 14:55:25 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 14:55:25 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 14:55:25 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 14:55:25 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at, j2.id AS j2__id, j2.category_id AS j2__category_id, j2.type AS j2__type, j2.company AS j2__company, j2.logo AS j2__logo, j2.url AS j2__url, j2.position AS j2__position, j2.location AS j2__location, j2.description AS j2__description, j2.how_to_apply AS j2__how_to_apply, j2.token AS j2__token, j2.is_public AS j2__is_public, j2.is_activated AS j2__is_activated, j2.email AS j2__email, j2.expires_at AS j2__expires_at, j2.created_at AS j2__created_at, j2.updated_at AS j2__updated_at FROM jobeet_category j LEFT JOIN jobeet_job j2 ON j.id = j2.category_id WHERE j2.expires_at > ? AND j2.is_activated = ? - (2010-02-16 02:55:25, 1 )
+Feb 16 14:55:25 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/indexSuccess.php"
+Feb 16 14:55:25 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:55:25 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 14:55:25 symfony [info] {main} Get slot "title"
+Feb 16 14:55:25 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 16 14:55:25 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 16 14:55:25 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 16 14:55:25 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 14:55:25 symfony [info] {sfWebDebugLogger} Configuration 17.40 ms (11)
+Feb 16 14:55:25 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 45.62 ms (1)
+Feb 16 14:55:25 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.01 ms (2)
+Feb 16 14:55:25 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/index" 36.32 ms (1)
+Feb 16 14:55:25 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 12.58 ms (1)
+Feb 16 14:55:25 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 3.28 ms (1)
+Feb 16 14:55:25 symfony [info] {sfWebResponse} Send content (160931 o)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Match route "homepage" (/) for / with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',)
+Feb 16 15:27:56 symfony [info] {myUser} Automatic user logout due to timeout
+Feb 16 15:27:56 symfony [info] {myUser} User is not authenticated
+Feb 16 15:27:56 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 15:27:56 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 15:27:56 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 15:27:56 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 15:27:56 symfony [info] {sfFrontWebController} Redirect to "http://localhost/frontend_dev.php/en/"
+Feb 16 15:27:56 symfony [info] {sfWebResponse} Send status "HTTP/1.1 302 Found"
+Feb 16 15:27:56 symfony [info] {sfWebResponse} Send header "Location: http://localhost/frontend_dev.php/en/"
+Feb 16 15:27:56 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 15:27:56 symfony [info] {sfWebDebugLogger} Configuration 254.51 ms (8)
+Feb 16 15:27:56 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 2.01 ms (1)
+Feb 16 15:27:56 symfony [info] {sfWebResponse} Send content (108 o)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfRoute "change_language" (/change_language)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfRoute "localized_homepage" (/:sf_culture/)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfRoute "job_search" (/:sf_culture/search)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_new" (/:sf_culture/affiliate/new.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_create" (/:sf_culture/affiliate.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "affiliate_wait" (/:sf_culture/affiliate/:id/wait.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "api_jobs" (/api/:token/jobs.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "category" (/:sf_culture/category/:slug.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job" (/:sf_culture/job.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_new" (/:sf_culture/job/new.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_create" (/:sf_culture/job.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_edit" (/:sf_culture/job/:token/edit.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_update" (/:sf_culture/job/:token.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_delete" (/:sf_culture/job/:token.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show" (/:sf_culture/job/:token.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_publish" (/:sf_culture/job/:token/publish.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_extend" (/:sf_culture/job/:token/extend.:sf_format)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfDoctrineRoute "job_show_user" (/:sf_culture/job/:company_slug/:location_slug/:id/:position_slug)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Connect sfRoute "homepage" (/)
+Feb 16 15:27:56 symfony [info] {sfPatternRouting} Match route "localized_homepage" (/:sf_culture/) for /en/ with parameters array (  'module' => 'sfJobeetJob',  'action' => 'index',  'sf_culture' => 'en',)
+Feb 16 15:27:56 symfony [info] {sfFilterChain} Executing filter "sfRenderingFilter"
+Feb 16 15:27:56 symfony [info] {sfFilterChain} Executing filter "sfCommonFilter"
+Feb 16 15:27:56 symfony [info] {sfFilterChain} Executing filter "sfExecutionFilter"
+Feb 16 15:27:56 symfony [info] {sfJobeetJobActions} Call "sfJobeetJobActions->executeIndex()"
+Feb 16 15:27:56 symfony [info] {sfDoctrineLogger} executeQuery : SELECT j.id AS j__id, j.created_at AS j__created_at, j.updated_at AS j__updated_at, j2.id AS j2__id, j2.category_id AS j2__category_id, j2.type AS j2__type, j2.company AS j2__company, j2.logo AS j2__logo, j2.url AS j2__url, j2.position AS j2__position, j2.location AS j2__location, j2.description AS j2__description, j2.how_to_apply AS j2__how_to_apply, j2.token AS j2__token, j2.is_public AS j2__is_public, j2.is_activated AS j2__is_activated, j2.email AS j2__email, j2.expires_at AS j2__expires_at, j2.created_at AS j2__created_at, j2.updated_at AS j2__updated_at FROM jobeet_category j LEFT JOIN jobeet_job j2 ON j.id = j2.category_id WHERE j2.expires_at > ? AND j2.is_activated = ? - (2010-02-16 03:27:56, 1 )
+Feb 16 15:27:56 symfony [info] {sfPHPView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetJob/templates/indexSuccess.php"
+Feb 16 15:27:56 symfony [info] {sfPHPView} Decorate content with "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 15:27:56 symfony [info] {sfPHPView} Render "/var/www/Jobeet/apps/frontend/templates/layout.php"
+Feb 16 15:27:56 symfony [info] {main} Get slot "title"
+Feb 16 15:27:56 symfony [info] {main} Call "sfJobeetLanguage->executeLanguage()"
+Feb 16 15:27:56 symfony [info] {sfPartialView} Render "/var/www/Jobeet/plugins/sfJobeetPlugin/modules/sfJobeetLanguage/templates/_language.php"
+Feb 16 15:27:56 symfony [info] {sfWebResponse} Send status "HTTP/1.1 200 OK"
+Feb 16 15:27:56 symfony [info] {sfWebResponse} Send header "Content-Type: text/html; charset=utf-8"
+Feb 16 15:27:56 symfony [info] {sfWebDebugLogger} Configuration 15.16 ms (11)
+Feb 16 15:27:56 symfony [info] {sfWebDebugLogger} Action "sfJobeetJob/index" 46.94 ms (1)
+Feb 16 15:27:56 symfony [info] {sfWebDebugLogger} Database (Doctrine) 0.02 ms (2)
+Feb 16 15:27:56 symfony [info] {sfWebDebugLogger} View "Success" for "sfJobeetJob/index" 45.72 ms (1)
+Feb 16 15:27:56 symfony [info] {sfWebDebugLogger} Component "sfJobeetLanguage/language" 13.37 ms (1)
+Feb 16 15:27:56 symfony [info] {sfWebDebugLogger} Partial "sfJobeetLanguage/_language" 3.23 ms (1)
+Feb 16 15:27:56 symfony [info] {sfWebResponse} Send content (37548 o)
