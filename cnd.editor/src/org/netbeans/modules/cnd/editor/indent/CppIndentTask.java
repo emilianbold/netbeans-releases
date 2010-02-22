@@ -162,8 +162,8 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                                 for (int i = 0; i < indent; i++) {
                                     buf.append(' ');
                                 }
-                                buf.append("* @return").append('\n'); // NOI18N
-                            }
+                                buf.append("* @return ...").append('\n'); // NOI18N
+                                }
                             for (int i = 0; i < indent; i++) {
                                 buf.append(' ');
                             }
