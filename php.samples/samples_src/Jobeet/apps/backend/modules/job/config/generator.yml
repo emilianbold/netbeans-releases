@@ -1,0 +1,47 @@
+generator:
+  class: sfDoctrineGenerator
+  param:
+    model_class:           JobeetJob
+    theme:                 admin
+    non_verbose_templates: true
+    with_show:             false
+    singular:              ~
+    plural:                ~
+    route_prefix:          jobeet_job
+    with_propel_route:     1
+ 
+    config:
+      actions: ~
+      fields:
+        is_activated: { label: Activated?, help: Whether the user has activated the job, or not }
+        is_public:    { label: Public? }
+      list:
+        title:         Job Management
+        layout:        stacked
+        display:       [company, position, location, url, is_activated, email]
+        params:  |
+          %%is_activated%% <small>%%JobeetCategory%%</small> - %%company%%
+           (<em>%%email%%</em>) is looking for a %%=position%% (%%location%%)
+        max_per_page:  10
+        sort:          [expires_at, desc]
+        batch_actions:
+          _delete:    ~
+          extend:     ~
+        object_actions:
+          extend:     ~
+          _edit:      ~
+          _delete:    ~
+        actions:
+          deleteNeverActivated: { label: Delete never activated jobs }
+        table_method: retrieveBackendJobList
+      filter:
+        display: [category_id, company, position, description, is_activated, is_public, email, expires_at]
+      form:
+        class:     BackendJobeetJobForm
+        display:
+          Content: [category_id, type, company, logo, url, position, location, description, how_to_apply, is_public, email]
+          Admin:   [_generated_token, is_activated, expires_at]
+      edit:
+        title: Editing Job "%%company%% is looking for a %%position%%"
+      new:
+        title: Job Creation
