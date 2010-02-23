@@ -45,11 +45,11 @@ package org.netbeans.modules.websvc.rest.client;
  */
 public class Security {
 
-    private boolean ssh;
+    private boolean ssl;
     private Authentication authentization;
 
-    public Security(boolean ssh, Authentication authentization) {
-        this.ssh = ssh;
+    public Security(boolean ssl, Authentication authentization) {
+        this.ssl = ssl;
         this.authentization = authentization;
     }
 
@@ -57,8 +57,8 @@ public class Security {
         return authentization;
     }
 
-    public boolean isSSH() {
-        return ssh;
+    public boolean isSSL() {
+        return ssl;
     }
 
     public static enum Authentication {
