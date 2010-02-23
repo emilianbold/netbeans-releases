@@ -187,7 +187,7 @@ public class MakeOSGi extends Task {
             if (requireBundles.length() > 0) {
                 osgi.getMainAttributes().putValue("Require-Bundle", requireBundles.toString());
             }
-            if (!importedPackages.isEmpty()) {
+            if (!importedPackages.isEmpty() && !cnb.equals("org.netbeans.libs.osgi")) {
                 StringBuilder b = new StringBuilder();
                 for (String pkg : importedPackages) {
                     if (b.length() > 0) {
@@ -195,8 +195,8 @@ public class MakeOSGi extends Task {
                     }
                     b.append(pkg);
                 }
-                // Import-Package does not work well since some modules have classes which are simply unlinkable:
-                osgi.getMainAttributes().putValue("DynamicImport-Package", b.toString());
+                // DynamicImport-Package can lead to deadlocks in Felix: ModuleImpl.findClassOrResourceByDelegation -> Felix.acquireGlobalLock
+                osgi.getMainAttributes().putValue("Import-Package", b.toString());
             }
             // XXX OpenIDE-Module-Java-Dependencies => Bundle-RequiredExecutionEnvironment: JavaSE-1.6
             // XXX OpenIDE-Module-Package-Dependencies => Import-Package
@@ -393,6 +393,10 @@ public class MakeOSGi extends Task {
         ClassLoader jre = ClassLoader.getSystemClassLoader().getParent();
         for (byte[] data : classfiles.values()) {
             for (String clazz : VerifyClassLinkage.dependencies(data)) {
+                if (clazz.startsWith("com.sun.")) {
+                    // JRE-specific dependencies will not be exported by Felix at least.
+                    continue;
+                }
                 if (!clazz.startsWith("java.") && (clazz.startsWith("org.osgi.") || jre.getResource(clazz.replace('.', '/') + ".class") != null)) {
                     imports.add(clazz.replaceFirst("[.][^.]+$", ""));
                 }
