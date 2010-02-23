@@ -1,0 +1,31 @@
+generator:
+  class: sfDoctrineGenerator
+  param:
+    model_class:           JobeetCategory
+    theme:                 admin
+    non_verbose_templates: true
+    with_show:             false
+    singular:              ~
+    plural:                ~
+    route_prefix:          jobeet_category
+    with_propel_route:     1
+ 
+    config:
+      actions: ~
+      fields:  ~
+      list:
+        title:   Category Management
+        display: [=name, slug]
+        batch_actions: {}
+        object_actions: {}
+      filter:
+        class: false
+      form:
+        actions:
+          _delete: ~
+          _list:   ~
+          _save:   ~
+      edit:
+        #title: Editing Category "%%name%%"
+      new:
+        title: New Category
