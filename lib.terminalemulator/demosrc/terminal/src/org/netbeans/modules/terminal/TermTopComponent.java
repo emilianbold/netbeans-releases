@@ -41,13 +41,16 @@
 
 package org.netbeans.modules.terminal;
 
-import org.netbeans.modules.terminal.api.*;
 import java.io.Serializable;
 import java.util.logging.Logger;
+
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
+import org.netbeans.modules.terminal.api.TerminalContainer;
+import org.netbeans.modules.terminal.api.TerminalProvider;
+import org.netbeans.modules.terminal.api.TerminalWindow;
 
 /**
  * Top component which displays something.
