@@ -62,6 +62,7 @@ import java.util.zip.GZIPInputStream;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -74,6 +75,38 @@ import org.openide.util.NbBundle;
 public class ManDocumentation {
 
     private static final Logger LOG = Logger.getLogger(ManDocumentation.class.getName());
+    private static String manPath = null;
+    private static String man2htmlPath = null;
+
+    private static String getPath(String cmd) {
+        String path = null;
+        path = Path.findCommand(cmd);
+        if (path == null) {
+            if (new File("/usr/bin/" + cmd).exists()) { // NOI18N
+                path = "/usr/bin/" + cmd; // NOI18N
+            }
+        }
+        if (path == null) {
+            if (new File("/bin/" + cmd).exists()) { // NOI18N
+                path = "/bin/" + cmd; // NOI18N
+            }
+        }
+        return path;
+    }
+
+    private static String getManPath() {
+        if (manPath == null) {
+            manPath = getPath("man");
+        }
+        return manPath;
+    }
+
+    private static String getMan2HtmlPath() {
+        if (man2htmlPath == null) {
+            man2htmlPath = getPath("man2html");
+        }
+        return man2htmlPath;
+    }
 
     public static CompletionDocumentation getDocumentation(CsmObject obj) {
         if (obj instanceof CsmFunction) {
@@ -140,13 +173,13 @@ public class ManDocumentation {
         if (obj instanceof CsmFunction) {
             StringBuilder w = new StringBuilder();
 
-            if (resolvePath(manPageRelativePath("printf", 3)) == null) { // NOI18N
+            if (getManPath() == null) { // NOI18N
                 w.append("<p>"); // NOI18N
                 w.append(getString("MAN_NOT_INSTALLED")); // NOI18N
                 w.append("</p>\n"); // NOI18N
             }
 
-            if (!new File("/usr/bin/man2html").exists() /*TODO: should be canExecute()*/) { // NOI18N
+            if (getMan2HtmlPath() == null) { // NOI18N
                 w.append("<p><tt>man2html</tt> "); // NOI18N
                 w.append(getString("IS_REQUIRED")); // NOI18N
                 w.append("</p>\n"); // NOI18N
@@ -174,8 +207,12 @@ public class ManDocumentation {
     }
 
     private static String createDocumentationForName(String name, int chapter) throws IOException {
+        if (getManPath() == null || getMan2HtmlPath() == null) {
+            return null;
+        }
+        
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        Process p0 = Runtime.getRuntime().exec("/usr/bin/man " + name); // NOI18N
+        Process p0 = Runtime.getRuntime().exec(getManPath() + " " + name); // NOI18N
         InputStream is = p0.getInputStream();
         InputStreamReader ist = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(ist);
@@ -200,7 +237,7 @@ public class ManDocumentation {
 
         try {
             Process p = Runtime.getRuntime().exec(new String[]{
-                        "/usr/bin/man2html", // NOI18N
+                        getMan2HtmlPath(), // NOI18N
                         "-compress", // NOI18N
                         "-", // NOI18N
                     });
