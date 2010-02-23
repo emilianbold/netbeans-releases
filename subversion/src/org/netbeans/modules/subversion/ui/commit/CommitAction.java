@@ -55,6 +55,8 @@ import org.tigris.subversion.svnclientadapter.SVNBaseDir;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.DateFormat;
 import java.util.*;
@@ -72,10 +74,13 @@ import org.netbeans.modules.subversion.hooks.spi.SvnHookContext;
 import org.netbeans.modules.subversion.ui.diff.DiffNode;
 import org.netbeans.modules.subversion.ui.status.SyncFileNode;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
+import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.cookies.SaveCookie;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -162,6 +167,7 @@ public class CommitAction extends ContextAction {
 
         final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });
         panel.setCommitTable(data);
+        data.setCommitPanel(panel);
         final JButton commitButton = new JButton();
 
         // start backround prepare
@@ -268,7 +274,7 @@ public class CommitAction extends ContextAction {
 
         commitButton.setEnabled(false);
 
-        DialogDescriptor dd = new DialogDescriptor(panel,
+        final DialogDescriptor dd = new DialogDescriptor(panel,
               org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_CommitDialog_Title", contentTitle), // NOI18N
               true,
               new Object[] {commitButton, cancelButton},
@@ -276,6 +282,27 @@ public class CommitAction extends ContextAction {
               DialogDescriptor.DEFAULT_ALIGN,
               new HelpCtx(CommitAction.class),
               null);
+        ActionListener al;
+        dd.setButtonListener(al = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dd.setClosingOptions(new Object[] {commitButton, cancelButton});
+                SaveCookie[] saveCookies = panel.getSaveCookies();
+                if (cancelButton == e.getSource()) {
+                    if (saveCookies.length > 0 && !SaveBeforeClosingDiffConfirmation.allSaved(saveCookies)) {
+                        dd.setClosingOptions(new Object[0]);
+                    }
+                    dd.setValue(cancelButton);
+                } else if (commitButton == e.getSource()) {
+                    if (saveCookies.length > 0 && !SaveBeforeCommitConfirmation.allSaved(saveCookies)) {
+                        dd.setClosingOptions(new Object[0]);
+                    } else if (!panel.canCommit()) {
+                        dd.setClosingOptions(new Object[0]);
+                    }
+                    dd.setValue(commitButton);
+                }
+            }
+        });
         panel.addVersioningListener(new VersioningListener() {
             @Override
             public void versioningEvent(VersioningEvent event) {
@@ -296,7 +323,9 @@ public class CommitAction extends ContextAction {
         dialog.addWindowListener(new DialogBoundsPreserver(SvnModuleConfig.getDefault().getPreferences(), "svn.commit.dialog")); // NOI18N
         dialog.pack();
         dialog.setVisible(true);
-
+        if (dd.getValue() == DialogDescriptor.CLOSED_OPTION) {
+            al.actionPerformed(new ActionEvent(cancelButton, ActionEvent.ACTION_PERFORMED, null));
+        }
         return dd.getValue();
     }
 

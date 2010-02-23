@@ -104,7 +104,7 @@ import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
  *
  * @author Maros Sandor
  */
-class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, VersioningListener, DiffSetupSource, PropertyChangeListener, PreferenceChangeListener {
+public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, VersioningListener, DiffSetupSource, PropertyChangeListener, PreferenceChangeListener {
     
     /**
      * Array of DIFF setups that we show in the DIFF view. Contents of this array is changed if
@@ -187,7 +187,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
      * Construct diff component showing just one file.
      * It hides All, Local, Remote toggles and file chooser combo.
      */
-    public MultiDiffPanel(File file, String rev1, String rev2) {
+    public MultiDiffPanel(File file, String rev1, String rev2, boolean forceNonEditable) {
         assert EventQueue.isDispatchThread();
         context = null;
         diffedFile = file;
@@ -201,7 +201,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         replaceVerticalSplitPane(diffViewPanel);
 
         // mimics refreshSetups()
-        setSetups(new Setup(file, rev1, rev2));
+        setSetups(new Setup(file, rev1, rev2, forceNonEditable));
         setDiffIndex(0, 0);
         dpt = new DiffPrepareTask(setups);
         prepareTask = RequestProcessor.getDefault().post(dpt);
@@ -280,13 +280,20 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             return true;
         }
 
-        EditorCookie[] editorCookiesCopy = copyArray(editorCookies);
-        DiffUtils.cleanThoseUnmodified(editorCookiesCopy);
-        DiffUtils.cleanThoseWithEditorPaneOpen(editorCookiesCopy);
-        SaveCookie[] saveCookies = getSaveCookies(setups, editorCookiesCopy);
+        SaveCookie[] saveCookies = getSaveCookies(true);
 
         return (saveCookies.length == 0)
                || SaveBeforeClosingDiffConfirmation.allSaved(saveCookies);
+    }
+
+    public SaveCookie[] getSaveCookies (boolean ommitOpened) {
+        EditorCookie[] editorCookiesCopy = copyArray(editorCookies);
+        DiffUtils.cleanThoseUnmodified(editorCookiesCopy);
+        if (ommitOpened) {
+            DiffUtils.cleanThoseWithEditorPaneOpen(editorCookiesCopy);
+        }
+        SaveCookie[] saveCookies = getSaveCookies(setups, editorCookiesCopy);
+        return saveCookies;
     }
 
     private static SaveCookie[] getSaveCookies(Setup[] setups,
@@ -369,6 +376,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             localToggle.setVisible(false);
             remoteToggle.setVisible(false);
             allToggle.setVisible(false);
+            refreshButton.setVisible(false);
         }
     }
 
