@@ -197,9 +197,8 @@ public class InstancePropertiesTest extends ServerRegistryTestBase {
 
     private static class MockDF extends org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentFactory {
 
-        @Override
-        public boolean handlesURI(String arg0) {
-            return arg0.startsWith("unknown:");
+        public MockDF() {
+            super("unknown:");
         }
     }
 

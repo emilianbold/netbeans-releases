@@ -908,6 +908,40 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceCheckAfterKeywords02.php", options);
     }
 
+    public void testIssue181003_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/issue181003_01.php", options);
+    }
+
+    public void testIssue181003_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatting/blankLines/issue181003_02.php", options);
+    }
+
+    public void testIssue181003_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+	options.put(FmtOptions.blankLinesAfterClassHeader, 0);
+	options.put(FmtOptions.blankLinesBeforeClassEnd, 0);
+	options.put(FmtOptions.blankLinesBeforeFunction, 0);
+	options.put(FmtOptions.blankLinesAfterFunction, 0);
+	options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
+        reformatFileContents("testfiles/formatting/blankLines/issue181003_03.php", options);
+    }
+
+    public void testIssue181003_04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.blankLinesAfterClassHeader, 0);
+	options.put(FmtOptions.blankLinesBeforeClassEnd, 0);
+	options.put(FmtOptions.blankLinesBeforeFunction, 0);
+	options.put(FmtOptions.blankLinesAfterFunction, 0);
+	options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
+        reformatFileContents("testfiles/formatting/blankLines/issue181003_04.php", options);
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
