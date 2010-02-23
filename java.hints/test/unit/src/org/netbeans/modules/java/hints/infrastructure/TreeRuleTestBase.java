@@ -107,7 +107,8 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         assertNotNull(dataFile);
         
         TestUtilities.copyStringToFile(dataFile, code);
-        
+
+        SourceUtilsTestUtil.setSourceLevel(data, sourceLevel);
         SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache, extraClassPath());
         
         DataObject od = DataObject.find(data);
@@ -127,10 +128,15 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         
         assertNotNull(info);
     }
-    
+
+    private String sourceLevel = "1.5";
     private FileObject sourceRoot;
     private CompilationInfo info;
     private Document doc;
+
+    protected void setSourceLevel(String sourceLevel) {
+        this.sourceLevel = sourceLevel;
+    }
     
     protected abstract List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path);
     

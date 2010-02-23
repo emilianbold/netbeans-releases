@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,13 +40,9 @@
  */
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.AddOverrideAnnotation;
 import com.sun.source.util.TreePath;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
@@ -69,7 +65,7 @@ public class AddOverrideAnnotationTest extends TreeRuleTestBase {
     }
     
     public void testAddOverride3() throws Exception {
-        sourceLevel = "1.6";
+        setSourceLevel("1.6");
         performAnalysisTest("test/Test.java", "package test; public class Test implements Runnable {public void run() {}}", 115-48, "0:65-0:68:verifier:Add @Override Annotation");
     }
     
@@ -81,10 +77,7 @@ public class AddOverrideAnnotationTest extends TreeRuleTestBase {
         if (!new AddOverrideAnnotation().getTreeKinds().contains(path.getLeaf().getKind()))
             return null;
         
-        SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
         return new AddOverrideAnnotation().run(info, path);
     }
-    
-    private String sourceLevel = "1.5";
     
 }
