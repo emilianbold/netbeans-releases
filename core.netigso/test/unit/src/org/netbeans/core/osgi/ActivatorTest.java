@@ -40,7 +40,6 @@
 package org.netbeans.core.osgi;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 
 public class ActivatorTest extends NbTestCase {
 
@@ -111,16 +110,14 @@ public class ActivatorTest extends NbTestCase {
         assertEquals("10", System.getProperty("my.url.length"));
     }
 
-    @RandomlyFails // XXX NB-Core-Build #4023, 4026: InstanceDataObject.resolveConvertor: "Invalid settings.providerPath ... for class custom.Install$Bean"
     public void testSettings() throws Exception {
         new OSGiProcess(getWorkDir()).manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: custom.Install",
                 "OpenIDE-Module-Module-Dependencies: org.netbeans.modules.settings/1, org.openide.loaders, " +
-                "org.openide.filesystems, org.openide.modules, org.openide.util, org.netbeans.core/2",
+                "org.openide.filesystems, org.openide.modules, org.openide.util",
                 "OpenIDE-Module-Specification-Version: 1.0").
-                // XXX consider moving Environment.Provider part of FileEntityResolver to settings module to avoid core dep:
-                module("org.netbeans.modules.settings").module("org.netbeans.core").sourceFile("custom/Install.java", "package custom;",
+                module("org.netbeans.modules.settings").sourceFile("custom/Install.java", "package custom;",
                 "public class Install extends org.openide.modules.ModuleInstall {",
                 "public @Override void restored() {",
                 "Bean b = new Bean(); b.setP(\"hello\");",

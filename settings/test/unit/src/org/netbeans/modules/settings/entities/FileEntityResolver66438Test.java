@@ -5,32 +5,34 @@
  * Created on 23. listopad 2005, 9:39
  */
 
-package org.netbeans.core.xml;
+package org.netbeans.modules.settings.entities;
 
 import java.io.IOException;
 import java.util.Date;
-import org.netbeans.core.LoggingTestCaseHid;
+import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
 import org.openide.cookies.InstanceCookie;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.Environment;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 /** Checks race condition in the Lkp.beforeLookup
  *
  * @author Jaroslav Tulach
  */
-public class FileEntityResolver66438Test extends LoggingTestCaseHid {
+public class FileEntityResolver66438Test extends NbTestCase {
     
     public FileEntityResolver66438Test(String testName) {
         super(testName);
     }
 
     public void testRaceCondition() throws Exception {
-        registerIntoLookup(new ErrManager());
+        MockLookup.setInstances(new ErrManager());
         
         // register Env as a handler for PublicIDs "-//NetBeans//Test//EN" which
         // is will contain the settings file we create
