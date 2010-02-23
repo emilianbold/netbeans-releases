@@ -667,8 +667,6 @@ public class Utilities {
     }
 
     public static ClasspathInfo createUniversalCPInfo() {
-        //TODO: cannot be a class constant, would break the standalone workers
-        final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
         JavaPlatform select = JavaPlatform.getDefault();
 
         for (JavaPlatform p : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
@@ -677,7 +675,7 @@ public class Utilities {
             }
         }
 
-        return ClasspathInfo.create(select.getBootstrapLibraries(), EMPTY, EMPTY);
+        return ClasspathInfo.create(select.getBootstrapLibraries(), ClassPath.EMPTY, ClassPath.EMPTY);
     }
 
     @SuppressWarnings("deprecation")
