@@ -45,6 +45,8 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.Rectangle;
+import java.awt.event.ActionListener;
+import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -54,6 +56,7 @@ import java.lang.ref.WeakReference;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.Collator;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -79,6 +82,8 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JDialog;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -103,7 +108,9 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -1065,6 +1072,7 @@ public final class OpenProjectList {
         for (ProjectOpenedHook hook : p.getLookup().lookupAll(ProjectOpenedHook.class)) {
             try {
                 ProjectOpenedTrampoline.DEFAULT.projectOpened(hook);
+                prepareTemplates(null, null, null, null, p, p.getLookup());
             } catch (RuntimeException e) {
                 log(Level.WARNING, null, e);
                 // Do not try to call its close hook if its open hook already failed:
@@ -1093,6 +1101,32 @@ public final class OpenProjectList {
         }
     }
     
+    public static boolean prepareTemplates(
+            JMenu menuItem, ActionListener menuListener,
+            MessageFormat templateName, String propertyName,
+            Project project, Lookup lookup) {
+        // check the action context for recommmended/privileged templates..
+        PrivilegedTemplates privs = lookup.lookup(PrivilegedTemplates.class);
+        List lruList = OpenProjectList.getDefault().getTemplatesLRU(project, privs);
+        boolean itemAdded = false;
+        for (Iterator it = lruList.iterator(); it.hasNext();) {
+            DataObject template = (DataObject) it.next();
+
+            Node delegate = template.getNodeDelegate();
+            Icon icon = ImageUtilities.image2Icon(delegate.getIcon(BeanInfo.ICON_COLOR_16x16));
+            if (templateName != null) {
+                JMenuItem item = new JMenuItem(
+                        templateName.format(new Object[]{delegate.getDisplayName()}),
+                        icon);
+                item.addActionListener(menuListener);
+                item.putClientProperty(propertyName, template);
+                menuItem.add(item);
+            }
+            itemAdded = true;
+        }
+        return itemAdded;
+    }
+
     private boolean doOpenProject(final Project p) {
         boolean recentProjectsChanged;
         LOGGER.finer("doOpenProject(): opening project " + p.toString());

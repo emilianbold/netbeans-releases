@@ -432,11 +432,14 @@ public class Util {
                 punit.setProvider(provider.getProviderClass());
             }
         } else {
-            ConnectionManager cm = ConnectionManager.getDefault();
-            DatabaseConnection[] connections = cm.getConnections();
-            DatabaseConnection connection = connections!=null && connections.length>0 ? connections[0] : null;
-            if(preselectedDB != null || preselectedDB.trim().equals("")){
+            DatabaseConnection connection = null;
+            if(preselectedDB != null && !preselectedDB.trim().equals("")){
                 connection = ConnectionManager.getDefault().getConnection(preselectedDB);
+            }
+            if(connection == null){
+                ConnectionManager cm = ConnectionManager.getDefault();
+                DatabaseConnection[] connections = cm.getConnections();
+                connection = connections!=null && connections.length>0 ? connections[0] : null;
             }
             punit = ProviderUtil.buildPersistenceUnit("tmp", provider, connection, version);
             punit.setTransactionType("RESOURCE_LOCAL"); //NOI18N

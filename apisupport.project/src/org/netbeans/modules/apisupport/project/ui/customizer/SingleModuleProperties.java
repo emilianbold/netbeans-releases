@@ -1069,6 +1069,16 @@ public final class SingleModuleProperties extends ModuleProperties {
 
     // XXX should be something similar provided be EditableManifest?
     private void setManifestAttribute(EditableManifest em, String key, String value) {
+        boolean isOSGi = em.getAttribute(ManifestManager.BUNDLE_SYMBOLIC_NAME, null) != null;
+        if (isOSGi) {
+            if (ManifestManager.OPENIDE_MODULE.equals(key)) {
+                key = ManifestManager.BUNDLE_SYMBOLIC_NAME;
+            }
+            if (ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION.equals(key)) {
+                key = ManifestManager.BUNDLE_VERSION;
+            }
+        }
+
         assert value != null;
         if ("".equals(value)) {
             if (em.getAttribute(key, null) != null) {

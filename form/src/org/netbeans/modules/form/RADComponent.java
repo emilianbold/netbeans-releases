@@ -1096,6 +1096,7 @@ public class RADComponent {
                 bundle.getString("CTL_PropertiesTab"), // NOI18N
                 bundle.getString("CTL_PropertiesTabHint")) // NOI18N
         {
+            @Override
             public Node.Property[] getProperties() {
                 return getBeanProperties1();
             }
@@ -1111,6 +1112,7 @@ public class RADComponent {
                 Map.Entry entry = (Map.Entry)entries.next();
                 final String category = (String)entry.getKey();
                 ps = new Node.PropertySet(category, category, category) {        
+                    @Override
                     public Node.Property[] getProperties() {
                         if (otherProperties == null) {
                             createBeanProperties();
@@ -1128,6 +1130,7 @@ public class RADComponent {
                         bundle.getString("CTL_Properties2Tab"), // NOI18N
                         bundle.getString("CTL_Properties2TabHint")) // NOI18N
                 {
+                    @Override
                     public Node.Property[] getProperties() {
                         return getBeanProperties2();
                     }
@@ -1143,6 +1146,7 @@ public class RADComponent {
                             bundle.getString("CTL_BindingTab" + i), // NOI18N
                             bundle.getString("CTL_BindingTabHint" + i)) // NOI18N
                     {
+                        @Override
                         public Node.Property[] getProperties() {
                             return getBindingProperties()[index];
                         }
@@ -1157,6 +1161,7 @@ public class RADComponent {
                     bundle.getString("CTL_EventsTab"), // NOI18N
                     bundle.getString("CTL_EventsTabHint")) // NOI18N
             {
+                @Override
                 public Node.Property[] getProperties() {
                     return getEventProperties();
                 }
@@ -1172,6 +1177,7 @@ public class RADComponent {
                 bundle.getString("CTL_SyntheticTab"), // NOI18N
                 bundle.getString("CTL_SyntheticTabHint")) // NOI18N
         {
+            @Override
             public Node.Property[] getProperties() {
                 return getSyntheticProperties();
             }
@@ -1189,6 +1195,7 @@ public class RADComponent {
                 FormUtils.getBundleString("CTL_AccessibilityTab"), // NOI18N
                 FormUtils.getBundleString("CTL_AccessibilityTabHint")) // NOI18N
             {
+                @Override
                 public Node.Property[] getProperties() {
                     return getAccessibilityProperties();
                 }
@@ -1471,6 +1478,7 @@ public class RADComponent {
                 || JComboBox.class.isAssignableFrom(beanClass))) {
             prop.addPropertyChangeListener(new PropertyChangeListener() {
 
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (FormProperty.CURRENT_EDITOR.equals(evt.getPropertyName())) {
                         // Another event will come later, now it is too soon
@@ -1621,6 +1629,7 @@ public class RADComponent {
     /** Listener class for listening to changes in component's properties.
      */
     private class PropertyListenerConvertor implements PropertyChangeListener, FormProperty.ValueConvertor {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             Object source = evt.getSource();
             if (!(source instanceof FormProperty))
@@ -1660,6 +1669,7 @@ public class RADComponent {
             }
         }
 
+        @Override
         public Object convert(Object value, FormProperty property) {
             return resourcePropertyConvert(value, property);
         }
@@ -1709,12 +1719,14 @@ public class RADComponent {
             this.filter = filter;
         }
 
+        @Override
         public boolean hasNext() {
             if (next == null)
                 next = getNextProperty();
             return next != null;
         }
 
+        @Override
         public T next() {
             if (next == null)
                 next = getNextProperty();
@@ -1726,6 +1738,7 @@ public class RADComponent {
             throw new NoSuchElementException();
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
@@ -1835,6 +1848,7 @@ public class RADComponent {
                     // ide is loading form right now, try later ...
                     EventQueue.invokeLater(new Runnable() {
 
+                        @Override
                         public void run() {
                             synchronizeButtonGroupInAWT(button,
                                     (FormDesignValue) originalComponent,
@@ -1973,10 +1987,12 @@ public class RADComponent {
                         FormUtils.getBundleString("PROP_AccessibleName"), // NOI18N
                         FormUtils.getBundleString("PROP_AccessibleName")) // NOI18N
                     {
+                        @Override
                         public Object getTargetValue() {
                             return accName != BeanSupport.NO_VALUE ?
                                        accName : getDefaultValue();
                         }
+                        @Override
                         public void setTargetValue(Object value) {
                             accName = (String) value;
                         }
@@ -2009,10 +2025,12 @@ public class RADComponent {
                         FormUtils.getBundleString("PROP_AccessibleDescription"), // NOI18N
                         FormUtils.getBundleString("PROP_AccessibleDescription")) // NOI18N
                     {
+                        @Override
                         public Object getTargetValue() {
                             return accDescription != BeanSupport.NO_VALUE ?
                                        accDescription : getDefaultValue();
                         }
+                        @Override
                         public void setTargetValue(Object value) {
                             accDescription = (String) value;
                         }
@@ -2057,10 +2075,12 @@ public class RADComponent {
                         FormUtils.getBundleString("PROP_AccessibleParent"), // NOI18N
                         FormUtils.getBundleString("PROP_AccessibleParent")) // NOI18N
                     {
+                        @Override
                         public Object getTargetValue() {
                             return accParent != BeanSupport.NO_VALUE ?
                                        accParent : getDefaultValue();
                         }
+                        @Override
                         public void setTargetValue(Object value) {
                             accParent = value;
                         }

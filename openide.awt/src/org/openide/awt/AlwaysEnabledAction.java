@@ -194,7 +194,7 @@ implements PropertyChangeListener, ContextAwareAction {
                 return ImageUtilities.image2Icon((Image)icon);
             }
             if (icon instanceof String) {
-                return ImageUtilities.loadImageIcon((String)icon, false);
+                return ImageUtilities.loadImageIcon((String)icon, true);
             }
         }
         if ("iconBase".equals(name)) { // NOI18N

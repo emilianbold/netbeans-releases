@@ -90,6 +90,11 @@ import org.netbeans.modules.versioning.util.CollectionUtils;
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.lookup.Lookups;
+import org.openide.windows.TopComponent;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -488,6 +493,14 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             if (baseFile != null) {
                 fileObj = FileUtil.toFileObject(baseFile);
             }
+            TopComponent tc = (TopComponent) getClientProperty(TopComponent.class);
+            if (tc != null) {
+                Node node = Node.EMPTY;
+                if (fileObj != null) {
+                    node = new AbstractNode(Children.LEAF, Lookups.singleton(fileObj));
+                }
+                tc.setActivatedNodes(new Node[] {node});
+            }
             EditorCookie editorCookie = editorCookies[currentModelIndex];
             if (editorCookie instanceof EditorCookie.Observable) {
                 observableEditorCookie = (EditorCookie.Observable) editorCookie;
@@ -597,7 +610,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
 
         if ((saveCookies.length == 0)
                 || SaveBeforeCommitConfirmation.allSaved(saveCookies)) {
-            CommitAction.commit(contextName, context);
+            CommitAction.commit(contextName, context, false);
         }
     }
 

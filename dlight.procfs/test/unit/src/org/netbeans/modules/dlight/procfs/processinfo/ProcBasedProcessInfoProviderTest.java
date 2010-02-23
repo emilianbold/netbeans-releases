@@ -54,7 +54,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.ProcessInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.spi.ProcessInfoProvider;
+import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import static org.junit.Assert.*;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
@@ -76,6 +76,7 @@ public class ProcBasedProcessInfoProviderTest extends NativeExecutionBaseTestCas
         super(name, execEnv);
     }
 
+    @SuppressWarnings("unchecked")
     public static Test suite() {
         return new NativeExecutionBaseTestSuite(ProcBasedProcessInfoProviderTest.class);
     }

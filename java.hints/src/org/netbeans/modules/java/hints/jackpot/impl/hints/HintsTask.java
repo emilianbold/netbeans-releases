@@ -69,9 +69,10 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
     public static final String KEY_SUGGESTIONS = HintsInvoker.class.getName() + "-suggestions";
 
     private static final Logger TIMER = Logger.getLogger("TIMER");
+    private static final Logger TIMER_EDITOR = Logger.getLogger("TIMER.editor");
+    private static final Logger TIMER_CARET = Logger.getLogger("TIMER.caret");
     
     private final AtomicBoolean cancel = new AtomicBoolean();
-    private final Map<String, Long> timeLog = new HashMap<String, Long>();
 
     private final boolean caretAware;
 
@@ -81,11 +82,11 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
     
     public void run(CompilationInfo info) {
         cancel.set(false);
-        timeLog.clear();
 
         long startTime = System.currentTimeMillis();
 
-        List<ErrorDescription> result = caretAware ? new HintsInvoker(info, CaretAwareJavaSourceTaskFactory.getLastPosition(info.getFileObject()), cancel).computeHints(info) : new HintsInvoker(info, cancel).computeHints(info);
+        HintsInvoker inv = caretAware ? new HintsInvoker(info, CaretAwareJavaSourceTaskFactory.getLastPosition(info.getFileObject()), cancel) : new HintsInvoker(info, cancel);
+        List<ErrorDescription> result = inv.computeHints(info);
 
         if (cancel.get()) {
             return;
@@ -95,10 +96,12 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
 
         long endTime = System.currentTimeMillis();
         
-        TIMER.log(Level.FINE, "Jackpot 3.0 Hints Task", new Object[] {info.getFileObject(), endTime - startTime});
+        TIMER.log(Level.FINE, "Jackpot 3.0 Hints Task" + (caretAware ? " - Caret Aware" : ""), new Object[] {info.getFileObject(), endTime - startTime});
 
-        for (Entry<String, Long> e : timeLog.entrySet()) {
-            TIMER.log(Level.FINE, e.getKey(), new Object[] {info.getFileObject(), e.getValue()});
+        Logger l = caretAware ? TIMER_CARET : TIMER_EDITOR;
+
+        for (Entry<String, Long> e : inv.getTimeLog().entrySet()) {
+            l.log(Level.FINE, e.getKey(), new Object[] {info.getFileObject(), e.getValue()});
         }
     }
 

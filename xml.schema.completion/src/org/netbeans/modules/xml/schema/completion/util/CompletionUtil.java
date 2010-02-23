@@ -48,6 +48,7 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -88,6 +89,10 @@ public class CompletionUtil {
         TAG_LAST_CHAR  = ">", //NOI18N
         END_TAG_PREFIX = "</", //NOI18N
         END_TAG_SUFFIX = "/>"; //NOI18N
+
+    // Pattern: ("<" + ("blank space" or "\n") + "any characters")
+    //          ("<" + "/" + ("blank space" or "\n") + "any characters")
+    public static final Pattern PATTERN_TEXT_TAG_EOLs = Pattern.compile("</?[\\s]+.*");
     
     private static final Logger _logger = Logger.getLogger(CompletionUtil.class.getName());
     
@@ -131,10 +136,10 @@ public class CompletionUtil {
         if (index == -1) return null;
 
         String prefixName = tagName.substring(0, index);
-        if (prefixName.startsWith(TAG_FIRST_CHAR)) {
-            prefixName = prefixName.substring(TAG_FIRST_CHAR.length());
-        } else if (prefixName.startsWith(END_TAG_PREFIX)) {
+        if (prefixName.startsWith(END_TAG_PREFIX)) {
             prefixName = prefixName.substring(END_TAG_PREFIX.length());
+        } else if (prefixName.startsWith(TAG_FIRST_CHAR)) {
+            prefixName = prefixName.substring(TAG_FIRST_CHAR.length());
         }
         return prefixName;
     }
@@ -326,34 +331,50 @@ public class CompletionUtil {
         CompletionContextImpl context, CompletionModel cm, List<CompletionResultItem> results) {
         String typedChars = context.getTypedChars();
         CompletionResultItem item = null;
-        if(!isFormQualified(axi)) {
+        if (! isFormQualified(axi)) {
             item = createResultItem(axi, null, context);
-            if(item == null)
+            if (item == null)
                 return;
-            if(typedChars == null) {
+            if (typedChars == null) {
                 results.add(item);
-            } else if(item.getReplacementText().startsWith(typedChars)) {
+            } else if (isResultItemTextStartsWith(item, typedChars)) {
                 results.add(item);
             }
             return;
         }
-        //namespace aware items
+        // namespace aware items
         List<String> prefixes = getPrefixes(context, axi, cm);
-        if(prefixes.size() == 0) {
+        if (prefixes.size() == 0) {
            prefixes.add(null);
         }
-        for(String prefix: prefixes) {
+        for (String prefix: prefixes) {
             item = createResultItem(axi, prefix, context);
-            if(item == null)
+            if (item == null)
                 continue;
-            if(typedChars == null) {
+            if (typedChars == null) {
                 results.add(item);
-            } else if(item.getReplacementText().startsWith(typedChars)) {
+            } else if (isResultItemTextStartsWith(item, typedChars)) {
                 results.add(item);
             }
         }
     }
     
+    private static boolean isResultItemTextStartsWith(CompletionResultItem resultItem, 
+        String text) {
+        if ((resultItem == null) || (text == null)) return false;
+
+        String resultText = resultItem.getReplacementText();
+        int startIndex = 0;
+        if (resultText.startsWith(END_TAG_PREFIX) && (! text.startsWith(END_TAG_PREFIX))) {
+            startIndex = END_TAG_PREFIX.length();
+        } else if (resultText.startsWith(TAG_FIRST_CHAR) &&
+                  (! text.startsWith(TAG_FIRST_CHAR))) {
+            startIndex = TAG_FIRST_CHAR.length();
+        }
+        boolean result = resultText.startsWith(text, startIndex);
+        return result;
+    }
+
     private static CompletionResultItem createResultItem(AXIComponent axi,
             String prefix, CompletionContextImpl context) {
         CompletionResultItem item = null;
@@ -787,28 +808,36 @@ public class CompletionUtil {
 
     public static CompletionResultItem getEndTagCompletionItem(JTextComponent component,
         BaseDocument document) {
-        int caretOffset = component.getCaret().getDot();
+        int caretPos = component.getCaret().getDot();
         try {
             ((AbstractDocument) document).readLock();
             
             TokenHierarchy tokenHierarchy = TokenHierarchy.get(document);
             TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
-            if (isCaretInsideTag(caretOffset, tokenSequence)) return null;
 
-            boolean beforeUnclosedStartTagFound = isBeforeUnclosedStartTagFound(
-                caretOffset, tokenSequence);
+            String incompleteTagName = findIncompleteTagName(caretPos, tokenSequence);
+            if (isCaretInsideTag(caretPos, tokenSequence)) return null;
+
+            boolean beforeUnclosedStartTagFound = isUnclosedStartTagFoundBefore(
+                caretPos, tokenSequence);
             if (! beforeUnclosedStartTagFound) return null;
 
             Token token = tokenSequence.token();
             String startTagName = getTokenTagName(token);
             if (startTagName == null) return null;
 
-            boolean closingTagFound = isAfterClosingEndTagFound(caretOffset,
+            boolean closingTagFound = isClosingEndTagFoundAfter(caretPos,
                 tokenSequence, startTagName);
             if (closingTagFound) return null;
 
-            CompletionResultItem endTagCompletionItem = new EndTagResultItem(startTagName);
-            return endTagCompletionItem;
+            CompletionResultItem resultItem;
+            if ((incompleteTagName != null) && 
+                (! startTagName.startsWith(incompleteTagName))) {
+                resultItem = new TagLastCharResultItem(incompleteTagName, tokenSequence);
+            } else {
+                resultItem = new EndTagResultItem(startTagName, tokenSequence);
+            }
+            return resultItem;
         } catch(Exception e) {
             _logger.log(Level.WARNING,
                 e.getMessage() == null ? e.getClass().getName() : e.getMessage(), e);
@@ -818,9 +847,9 @@ public class CompletionUtil {
         }
     }
 
-    private static boolean isBeforeUnclosedStartTagFound(int caretOffset,
+    private static boolean isUnclosedStartTagFoundBefore(int caretPos,
         TokenSequence tokenSequence) {
-        tokenSequence.move(caretOffset);
+        tokenSequence.move(caretPos);
 
         boolean startTagFound = false, tagLastCharFound = false;
         Stack<String> existingEndTags = new Stack<String>();
@@ -842,6 +871,7 @@ public class CompletionUtil {
                 if ((startTagName != null) && (endTagName != null) &&
                     startTagName.equals(endTagName)) {
                     existingEndTags.pop();
+                    tagLastCharFound = startTagFound = false;
                     continue;
                 }
                 startTagFound = true;
@@ -851,9 +881,57 @@ public class CompletionUtil {
         return startTagFound;
     }
 
-    private static boolean isAfterClosingEndTagFound(int caretOffset,
+    private static String findIncompleteTagName(int caretPos, TokenSequence tokenSequence) {
+        if (! isTokenSequenceUsable(tokenSequence)) return null;
+
+        boolean tagFirstCharFound = false;
+        Token token = null;
+        String incompleteTagName = null;
+
+        tokenSequence.move(caretPos);
+        tokenSequence.moveNext();
+        do {
+            token = tokenSequence.token();
+            TokenId tokenID = token.id();
+            if (tokenID.equals(XMLTokenId.TAG)) {
+                String tokenText = token.text().toString();
+                if ((tokenText == null) || tokenText.isEmpty()) continue;
+
+                if (tokenText.startsWith(TAG_FIRST_CHAR)) {
+                    if (tokenSequence.offset() < caretPos) {
+                        tagFirstCharFound = true;
+                        incompleteTagName = getTokenTagName(token);
+                        break;
+                    }
+                } else {
+                    return null;
+                }
+            }
+        } while (tokenSequence.movePrevious());
+
+        if (! tagFirstCharFound) return null;
+
+        tokenSequence.move(caretPos);
+        while (tokenSequence.moveNext()) {
+            token = tokenSequence.token();
+            TokenId tokenID = token.id();
+            if (tokenID.equals(XMLTokenId.TAG)) {
+                String tokenText = token.text().toString();
+                if ((tokenText == null) || tokenText.isEmpty()) continue;
+
+                if (tokenText.contains(TAG_LAST_CHAR)) {
+                    return null;
+                } else {
+                    return incompleteTagName;
+                }
+            }
+        }
+        return incompleteTagName;
+    }
+
+    private static boolean isClosingEndTagFoundAfter(int caretPos,
         TokenSequence tokenSequence, String startTagName) {
-        tokenSequence.move(caretOffset);
+        tokenSequence.move(caretPos);
 
         boolean closingTagFound = false,  endTagPrefixFound = false;
         while (tokenSequence.moveNext()) {
@@ -874,13 +952,13 @@ public class CompletionUtil {
                 (! tokenSequence.isEmpty()));
     }
 
-    public static boolean isCaretInsideTag(int caretOffset, TokenSequence tokenSequence) {
+    public static boolean isCaretInsideTag(int caretPos, TokenSequence tokenSequence) {
         if (! isTokenSequenceUsable(tokenSequence)) return false;
 
         boolean tagFirstCharFound = false, tagLastCharFound = false;
         Token token = null;
 
-        tokenSequence.move(caretOffset);
+        tokenSequence.move(caretPos);
         tokenSequence.moveNext();
         do {
             token = tokenSequence.token();
@@ -897,8 +975,8 @@ public class CompletionUtil {
             int tokenOffset = tokenSequence.offset();
             boolean isEndTagSuffix = isEndTagSuffix(token);
             if (isTagLastChar(token) || isEndTagSuffix) {
-                if ((tokenOffset >= caretOffset) ||
-                    (isEndTagSuffix && (tokenOffset == caretOffset - 1))) {
+                if ((tokenOffset >= caretPos) ||
+                    (isEndTagSuffix && (tokenOffset == caretPos - 1))) {
                     tagLastCharFound = true;
                 }
                 break;
@@ -957,6 +1035,17 @@ public class CompletionUtil {
             }
         }
         return false;
+    }
+
+    public static boolean isTextTag(Token token) {
+        if (token == null) return false;
+
+        TokenId tokenID = token.id();
+        if (! tokenID.equals(XMLTokenId.TEXT)) return false;
+
+        String tokenText = token.text().toString();
+        boolean result = PATTERN_TEXT_TAG_EOLs.matcher(tokenText).matches();
+        return result;
     }
 
     public static String getTokenTagName(Token token) {

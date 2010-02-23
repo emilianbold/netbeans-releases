@@ -87,7 +87,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             return new ClassPath[]{ getBootClassPath() };
         }
         if (ClassPathSupport.ENDORSED.equals(type)) {
-            return new ClassPath[]{ getEndorserdClassPath() };
+            return new ClassPath[]{ getEndorsedClassPath() };
         }
         if (ClassPath.COMPILE.equals(type)) {
             List<ClassPath> l = new ArrayList<ClassPath>(2);
@@ -120,13 +120,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             return getBootClassPath();
         }
         if (ClassPathSupport.ENDORSED.equals(type)) {
-            return getEndorserdClassPath();
+            return getEndorsedClassPath();
         }
         if (ClassPath.COMPILE.equals(type)) {
             return getCompileTimeClasspath(TYPE_SRC);
         }
         if (ClassPath.SOURCE.equals(type)) {
             return getSourcepath(TYPE_SRC);
+        }
+        if (ClassPath.EXECUTE.equals(type)) {
+            return getRuntimeClasspath(TYPE_SRC);
         }
         assert false;
         return null;
@@ -148,7 +151,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         } else if (type.equals(ClassPath.BOOT)) {
             return getBootClassPath();
         } else if (type.equals(ClassPathSupport.ENDORSED)) {
-            return getEndorserdClassPath();
+            return getEndorsedClassPath();
         } else if (type.equals("classpath/packaged")) { //NOI18N
             //a semi-private contract with visual web.
             return getProvidedClassPath();
@@ -272,28 +275,36 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[6];
         if (cp == null) {
-            getEndorserdClassPath();
-            bcpImpl = new BootClassPathImpl(project, ecpImpl);
-            cp = ClassPathFactory.createClassPath(bcpImpl);
+            cp = ClassPathFactory.createClassPath(getBootClassPathImpl());
             cache[6] = cp;
         }
         return cp;
     }
     
     private BootClassPathImpl bcpImpl;
+    private synchronized BootClassPathImpl getBootClassPathImpl() {
+        if (bcpImpl == null) {
+            bcpImpl = new BootClassPathImpl(project, getEndorsedClassPathImpl());
+        }
+        return bcpImpl;
+    }
 
     public JavaPlatform getJavaPlatform() {
-        getBootClassPath();
-        return bcpImpl.findActivePlatform();
+        return getBootClassPathImpl().findActivePlatform();
     }
 
     private EndorsedClassPathImpl ecpImpl;
+    private synchronized EndorsedClassPathImpl getEndorsedClassPathImpl() {
+        if (ecpImpl == null) {
+            ecpImpl = new EndorsedClassPathImpl(project);
+        }
+        return ecpImpl;
+    }
 
-    private ClassPath getEndorserdClassPath() {
+    private ClassPath getEndorsedClassPath() {
         ClassPath cp = cache[8];
         if (cp == null) {
-            ecpImpl = new EndorsedClassPathImpl(project);
-            cp = ClassPathFactory.createClassPath(ecpImpl);
+            cp = ClassPathFactory.createClassPath(getEndorsedClassPathImpl());
             cache[8] = cp;
         }
         return cp;

@@ -38,9 +38,14 @@
  */
 package org.netbeans.lib.html.lexer;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -65,7 +70,7 @@ public class HtmlLexerTest extends NbTestCase {
 
     public static Test xsuite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new HtmlLexerTest("testIssue149968"));
+        suite.addTest(new HtmlLexerTest("testEmbeddedCss"));
         return suite;
     }
 
@@ -115,12 +120,39 @@ public class HtmlLexerTest extends NbTestCase {
         checkTokens("<div @@@/>", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " @@@|WS", "/>|TAG_CLOSE_SYMBOL");
     }
 
-    private void checkTokens(String text, String... descriptions) {
-        TokenHierarchy th = TokenHierarchy.create(text, HTMLTokenId.language());
+    public void testEmbeddedCss() {
+        //not css attribute
+        checkTokens("<div align=\"center\"/>", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "align|ARGUMENT",
+                "=|OPERATOR", "\"center\"|VALUE", "/>|TAG_CLOSE_SYMBOL");
+
+        //css attribute
+        checkTokens("<div class=\"myclass\"/>", "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "class|ARGUMENT",
+                "=|OPERATOR", "\"myclass\"|VALUE_CSS");
+    }
+
+    public void testGenericCssClassEmbedding() {
+        Map<String, Collection<String>> map = new HashMap<String, Collection<String>>();
+        map.put("c:button", Collections.singletonList("styleClass"));
+
+        InputAttributes inputAttributes = new InputAttributes();
+        inputAttributes.setValue(HTMLTokenId.language(), "cssClassTagAttrMap", map, false); //NOI18N
+
+        String text = "<c:button styleClass=\"myclass\"/>";
+        TokenHierarchy th = TokenHierarchy.create(text, true, HTMLTokenId.language(), Collections.<HTMLTokenId>emptySet(), inputAttributes);
         TokenSequence ts = th.tokenSequence();
 
-//        System.out.println(ts);
+        checkTokens(ts, "<|TAG_OPEN_SYMBOL", "c:button|TAG_OPEN", " |WS", "styleClass|ARGUMENT",
+                "=|OPERATOR", "\"myclass\"|VALUE_CSS");
         
+    }
+
+    private void checkTokens(String text, String... descriptions) {
+        TokenHierarchy<String> th = TokenHierarchy.create(text, HTMLTokenId.language());
+        TokenSequence<HTMLTokenId> ts = th.tokenSequence(HTMLTokenId.language());
+        checkTokens(ts, descriptions);
+    }
+
+    private void checkTokens(TokenSequence<HTMLTokenId> ts, String... descriptions) {
         ts.moveStart();
         for(String descr : descriptions) {
             //parse description

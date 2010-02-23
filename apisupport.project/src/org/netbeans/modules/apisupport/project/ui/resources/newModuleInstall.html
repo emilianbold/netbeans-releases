@@ -41,7 +41,10 @@ made subject to such option by the copyright holder.
 -->
 <html>
     <body>
-        Use this template to add a class which manages the module installation
-        (and uninstallation) lifecycle.
+        Creates a class which allows you to manage the module's lifecycle
+        (installation and uninstallation).
+        Either a <code>ModuleInstall</code> is created if this module is
+        a regular NetBeans module, or a <code>BundleActivator</code> is created
+        if you have chosen that the module project generates OSGi bundle.
     </body>
 </html>

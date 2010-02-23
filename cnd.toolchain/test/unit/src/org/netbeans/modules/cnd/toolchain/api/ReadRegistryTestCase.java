@@ -40,15 +40,16 @@
  */
 package org.netbeans.modules.cnd.toolchain.api;
 
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.BaseFolder;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.BaseFolder;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainManagerImpl;
 
 /**
  *
@@ -72,8 +73,13 @@ public class ReadRegistryTestCase extends NbTestCase {
         super.tearDown();
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testCygwin() throws Exception {
-        ToolchainDescriptor d = ToolchainManager.getImpl().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
+        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
         assertNotNull(d);
         assertTrue("Cygwin".equals(d.getName()));
         List<BaseFolder> list = d.getBaseFolders();
@@ -107,7 +113,7 @@ public class ReadRegistryTestCase extends NbTestCase {
     }
 
     public void testCygwin17() throws Exception {
-        ToolchainDescriptor d = ToolchainManager.getImpl().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
+        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
         assertNotNull(d);
         assertTrue("Cygwin".equals(d.getName()));
         List<BaseFolder> list = d.getBaseFolders();
@@ -141,7 +147,7 @@ public class ReadRegistryTestCase extends NbTestCase {
     }
 
     public void testMinGW() throws Exception {
-        ToolchainDescriptor d = ToolchainManager.getImpl().getToolchain("MinGW", PlatformTypes.PLATFORM_WINDOWS);
+        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("MinGW", PlatformTypes.PLATFORM_WINDOWS);
         assertNotNull(d);
         assertTrue("MinGW".equals(d.getName()));
         List<BaseFolder> list = d.getBaseFolders();
@@ -241,7 +247,7 @@ public class ReadRegistryTestCase extends NbTestCase {
             "-Wall", // More Warnings // NOI18N
             "-Werror", // Convert Warnings to Errors // NOI18N
         };
-        ToolchainDescriptor d = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
         assertNotNull(d);
         assertTrue("GNU".equals(d.getName()));
         CompilerDescriptor c = d.getC();
@@ -291,7 +297,7 @@ public class ReadRegistryTestCase extends NbTestCase {
             "", // Default // NOI18N
             "", // All // NOI18N
         };
-        ToolchainDescriptor d = ToolchainManager.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         assertNotNull(d);
         assertTrue("SunStudio".equals(d.getName()));
         CompilerDescriptor c = d.getC();
@@ -343,7 +349,7 @@ public class ReadRegistryTestCase extends NbTestCase {
             "", // Default // NOI18N
             "-features=extensions,tmplrefstatic,iddollar", // All // NOI18N
         };
-        ToolchainDescriptor d = ToolchainManager.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         assertNotNull(d);
         assertTrue("SunStudio".equals(d.getName()));
         CompilerDescriptor c = d.getCpp();
@@ -371,7 +377,7 @@ public class ReadRegistryTestCase extends NbTestCase {
             "-w2", // More Warnings // NOI18N
             "-errwarn", // Convert Warnings to Errors // NOI18N
         };
-        ToolchainDescriptor d = ToolchainManager.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         assertNotNull(d);
         CompilerDescriptor c = d.getFortran();
         assertNotNull(c);
@@ -381,25 +387,25 @@ public class ReadRegistryTestCase extends NbTestCase {
 
     public void testUnknownService() throws Exception {
         ToolchainDescriptor d;
-        d = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_SOLARIS_SPARC);
+        d = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_SOLARIS_SPARC);
         assertNotNull(d);
         assertTrue("GNU".equals(d.getName()));
-        d = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        d = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         assertNotNull(d);
         assertTrue("GNU".equals(d.getName()));
-        d = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+        d = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
         assertNotNull(d);
         assertTrue("GNU".equals(d.getName()));
-        d = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_WINDOWS);
+        d = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_WINDOWS);
         assertNotNull(d);
         assertTrue("GNU".equals(d.getName()));
-        d = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_MACOSX);
+        d = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_MACOSX);
         assertNotNull(d);
         assertTrue("GNU".equals(d.getName()));
-        d = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_GENERIC);
+        d = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_GENERIC);
         assertNotNull(d);
         assertTrue("GNU".equals(d.getName()));
-        d = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_NONE);
+        d = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_NONE);
         assertNotNull(d);
         assertTrue("GNU".equals(d.getName()));
 
@@ -455,7 +461,7 @@ public class ReadRegistryTestCase extends NbTestCase {
 //Copyright (C) 2008 Free Software Foundation, Inc.
 //This is free software; see the source for copying conditions.  There is NO
 //warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-        ToolchainDescriptor d = ToolchainManager.getImpl().getToolchain("Cygwin_4.x", PlatformTypes.PLATFORM_WINDOWS);
+        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("Cygwin_4.x", PlatformTypes.PLATFORM_WINDOWS);
         assertNotNull(d);
         String s = d.getC().getVersionPattern();
 //.*\\(GCC\\) 4\\.[3-9]

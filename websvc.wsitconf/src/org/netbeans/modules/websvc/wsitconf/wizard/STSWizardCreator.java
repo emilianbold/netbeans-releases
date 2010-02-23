@@ -164,6 +164,7 @@ public class STSWizardCreator {
                 projectType = ProjectInfo.EJB_PROJECT_TYPE;
             } else if (J2eeModule.Type.WAR.equals(moduleType)) {
                 projectType = ProjectInfo.WEB_PROJECT_TYPE;
+                Util.checkMetroRtLibrary(project, false);
             } else if (J2eeModule.Type.CAR.equals(moduleType)) {
                 projectType = ProjectInfo.CAR_PROJECT_TYPE;
             } else {
@@ -197,6 +198,7 @@ public class STSWizardCreator {
             WsdlModeler wsdlModeler = (WsdlModeler) wiz.getProperty(WizardProperties.WSDL_MODELER);
             // don't set the packageName for modeler (use the default one generated from target Namespace)
             wsdlModeler.generateWsdlModel(new WsdlModelListener() {
+                @Override
                 public void modelCreated(WsdlModel model) {
                     WsdlService service1 = model.getServiceByName(service.getName());
                     WsdlPort port1 = service1.getPortByName(port.getName());

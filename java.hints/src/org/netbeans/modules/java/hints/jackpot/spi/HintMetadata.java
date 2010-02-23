@@ -86,11 +86,11 @@ public class HintMetadata {
         return new HintMetadata(id, displayName, description, category, enabled, kind, severity, customizer, suppressWarnings);
     }
 
-    public static HintMetadata create(String id, String bundleForFQN, String category, boolean enabled, HintSeverity severity, String... suppressWarnings) {
-        return create(id, bundleForFQN, category, enabled, severity, null, suppressWarnings);
+    public static HintMetadata create(String id, String bundleForFQN, String category, boolean enabled, HintSeverity severity, Kind kind, String... suppressWarnings) {
+        return create(id, bundleForFQN, category, enabled, severity, kind, suppressWarnings);
     }
 
-    public static HintMetadata create(String id, String bundleForFQN, String category, boolean enabled, HintSeverity severity, CustomizerProvider customizer, String... suppressWarnings) {
+    public static HintMetadata create(String id, String bundleForFQN, String category, boolean enabled, HintSeverity severity, Kind kind, CustomizerProvider customizer, String... suppressWarnings) {
         ResourceBundle bundle;
 
         try {
@@ -104,14 +104,14 @@ public class HintMetadata {
             bundle = null;
         }
 
-        return create(id, bundle, category, enabled, severity, customizer, suppressWarnings);
+        return create(id, bundle, category, enabled, severity, kind, customizer, suppressWarnings);
     }
 
-    public static HintMetadata create(String id, ResourceBundle bundle, String category, boolean enabled, HintSeverity severity, CustomizerProvider customizer, String... suppressWarnings) {
+    public static HintMetadata create(String id, ResourceBundle bundle, String category, boolean enabled, HintSeverity severity, Kind kind, CustomizerProvider customizer, String... suppressWarnings) {
         String displayName = lookup(bundle, "DN_" + id, "No Display Name");
         String description = lookup(bundle, "DESC_" + id, "No Description");
 
-        return new HintMetadata(id, displayName, description, category, enabled, Kind.HINT, severity, customizer, Arrays.asList(suppressWarnings));
+        return new HintMetadata(id, displayName, description, category, enabled, kind, severity, customizer, Arrays.asList(suppressWarnings));
     }
 
     private static String lookup(ResourceBundle bundle, String key, String def) {

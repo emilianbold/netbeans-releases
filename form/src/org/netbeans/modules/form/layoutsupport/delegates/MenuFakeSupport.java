@@ -54,6 +54,7 @@ import org.netbeans.modules.form.layoutsupport.AbstractLayoutSupport;
  */
 public class MenuFakeSupport extends AbstractLayoutSupport {
 
+    @Override
     public Class getSupportedClass() {
         return null;
     }

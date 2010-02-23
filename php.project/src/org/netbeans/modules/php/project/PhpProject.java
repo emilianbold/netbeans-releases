@@ -82,6 +82,7 @@ import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
+import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -103,6 +104,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -112,6 +114,9 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
+import org.openidex.search.FileObjectFilter;
+import org.openidex.search.SearchInfo;
+import org.openidex.search.SearchInfoFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -141,6 +146,8 @@ public class PhpProject implements Project {
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
     private final SourceRoots seleniumRoots;
+
+    private final FileObjectFilter fileObjectFilter = new PhpFileObjectFilter();
 
     // all next properties are guarded by PhpProject.this lock as well so it could be possible to break this lock to individual locks
     // #165136
@@ -201,6 +208,10 @@ public class PhpProject implements Project {
 
         VisibilityQuery visibilityQuery = VisibilityQuery.getDefault();
         visibilityQuery.addChangeListener(WeakListeners.change(listener, visibilityQuery));
+    }
+
+    public FileObjectFilter getFileObjectFilter() {
+        return fileObjectFilter;
     }
 
     private PropertyEvaluator createEvaluator() {
@@ -622,7 +633,9 @@ public class PhpProject implements Project {
                 new PhpTemplates(),
                 new PhpSources(this, getHelper(), getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
                 getHelper(),
-                getEvaluator()
+                getEvaluator(),
+                PhpSearchInfo.create(this),
+                new ProjectWebRootProviderImpl()
                 // ?? getRefHelper()
         });
     }
@@ -846,5 +859,93 @@ public class PhpProject implements Project {
 
         public void propertiesChanged(AntProjectEvent ev) {
         }
+    }
+
+    private final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
+
+        @Override
+        public FileObject getWebRoot(FileObject file) {
+            return ProjectPropertiesSupport.getWebRootDirectory(PhpProject.this);
+        }
+    }
+
+    private static final class PhpSearchInfo implements SearchInfo.Files, PropertyChangeListener {
+        private final PhpProject project;
+        // @GuardedBy(this)
+        private SearchInfo.Files delegate = null;
+
+        private PhpSearchInfo(PhpProject project) {
+            this.project = project;
+            delegate = createDelegate();
+        }
+
+        public static SearchInfo create(PhpProject project) {
+            PhpSearchInfo phpSearchInfo = new PhpSearchInfo(project);
+            project.getSourceRoots().addPropertyChangeListener(phpSearchInfo);
+            project.getTestRoots().addPropertyChangeListener(phpSearchInfo);
+            project.getSeleniumRoots().addPropertyChangeListener(phpSearchInfo);
+            return phpSearchInfo;
+        }
+
+        private SearchInfo.Files createDelegate() {
+            SearchInfo searchInfo = SearchInfoFactory.createSearchInfo(getSourceFileObjects(), true, new FileObjectFilter[]{project.getFileObjectFilter()});
+            // XXX ugly, see #178634 for more info
+            assert searchInfo instanceof SearchInfo.Files : "Unknown type: " + searchInfo.getClass().getName();
+            return (SearchInfo.Files) searchInfo;
+        }
+
+        @Override
+        public boolean canSearch() {
+            return true;
+        }
+
+        @Override
+        public synchronized Iterator<DataObject> objectsToSearch() {
+            return delegate.objectsToSearch();
+        }
+
+        @Override
+        public Iterator<FileObject> filesToSearch() {
+            return delegate.filesToSearch();
+        }
+
+        private FileObject[] getSourceFileObjects() {
+            List<FileObject> roots = new LinkedList<FileObject>(Arrays.asList(project.getSourceRoots().getRoots()));
+            roots.addAll(Arrays.asList(project.getTestRoots().getRoots()));
+            roots.addAll(Arrays.asList(project.getSeleniumRoots().getRoots()));
+            return roots.toArray(new FileObject[roots.size()]);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (SourceRoots.PROP_ROOTS.equals(evt.getPropertyName())) {
+                synchronized (this) {
+                    delegate = createDelegate();
+                }
+            }
+        }
+    }
+
+    private final class PhpFileObjectFilter implements FileObjectFilter {
+
+        @Override
+        public boolean searchFile(FileObject file) {
+            if (!file.isData()) {
+                throw new IllegalArgumentException("File expected");
+            }
+            return PhpVisibilityQuery.forProject(PhpProject.this).isVisible(file);
+        }
+
+        @Override
+        public int traverseFolder(FileObject folder) {
+            if (!folder.isFolder()) {
+                throw new IllegalArgumentException("Folder expected");
+            }
+            if (PhpVisibilityQuery.forProject(PhpProject.this).isVisible(folder)) {
+                return TRAVERSE;
+            }
+            return DO_NOT_TRAVERSE;
+        }
+
     }
 }

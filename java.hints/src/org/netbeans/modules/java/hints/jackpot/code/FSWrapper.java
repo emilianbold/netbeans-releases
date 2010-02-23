@@ -61,10 +61,10 @@ import org.openide.util.Lookup;
 public class FSWrapper {
 
     public static Iterable<? extends ClassWrapper> listClasses() {
-        ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+        ClassLoader loader = FSWrapper.class.getClassLoader();
 
         if (loader == null) {
-            loader = FSWrapper.class.getClassLoader();
+            loader = ClassLoader.getSystemClassLoader();
         }
 
         List<ClassWrapper> result = new LinkedList<ClassWrapper>();

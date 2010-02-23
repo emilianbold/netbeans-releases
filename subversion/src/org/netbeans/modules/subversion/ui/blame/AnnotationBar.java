@@ -46,7 +46,7 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.fold.*;
 import org.netbeans.api.diff.*;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.netbeans.spi.diff.*;
 import org.netbeans.modules.subversion.ui.update.RevertModifications;
 import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
@@ -83,7 +83,7 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
+import org.netbeans.modules.subversion.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
@@ -333,7 +333,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 SVNUrl url = null;
                 try {
                     url = SvnUtils.getRepositoryUrl(file);
-                    isKenaiRepository = url != null && SvnKenaiSupport.getInstance().isKenai(url.toString());
+                    isKenaiRepository = url != null && SvnKenaiAccessor.getInstance().isKenai(url.toString());
                     if(isKenaiRepository) {
                         kenaiUsersMap = new HashMap<String, KenaiUser>();
                     }
@@ -353,7 +353,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                         if(isKenaiRepository) {
                             String author = line.getAuthor();
                             if(author != null && !author.equals("") && !kenaiUsersMap.keySet().contains(author)) {
-                                KenaiUser ku = SvnKenaiSupport.getInstance().forName(author, url.toString());
+                                KenaiUser ku = SvnKenaiAccessor.getInstance().forName(author, url.toString());
                                 if(ku != null) {
                                     kenaiUsersMap.put(author, ku);
                                 }

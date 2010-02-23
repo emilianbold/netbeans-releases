@@ -144,7 +144,7 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
                 SOURCE_PACKAGES + "|" + packageName + "|" + SIMPLE_1);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
 
     public void test2() {
@@ -156,7 +156,7 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
                 SOURCE_PACKAGES + "|" + packageName + "|" + DYNAMIC_3);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
 
     public void test3() {
@@ -170,7 +170,7 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
 
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -199,7 +199,7 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
 
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -246,7 +246,7 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         // Check menu item
         EditorOperator eo = new EditorOperator(SIMPLE_1);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
 
     public void test6() {
@@ -261,7 +261,7 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         // Check menu item
         EditorOperator eo = new EditorOperator(DYNAMIC_3);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
 
     public void test7() {
@@ -280,7 +280,7 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
 
         // Call menu item
         System.out.println("Call action menu " + popupPath);

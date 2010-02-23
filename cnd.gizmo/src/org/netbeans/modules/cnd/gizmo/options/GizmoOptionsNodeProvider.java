@@ -41,14 +41,13 @@
 package org.netbeans.modules.cnd.gizmo.options;
 
 import java.util.ResourceBundle;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
@@ -59,28 +58,29 @@ public class GizmoOptionsNodeProvider implements CustomizerNodeProvider {
      */
     private CustomizerNode customizerNode = null;
 
-    public CustomizerNode factoryCreate() {
+    @Override
+    public CustomizerNode factoryCreate(Lookup lookup) {
         if (customizerNode == null) {
-            customizerNode = createProfileNode();
+            customizerNode = createProfileNode(lookup);
         }
         return customizerNode;
     }
 
-    public CustomizerNode createProfileNode() {
+    public CustomizerNode createProfileNode(Lookup lookup) {
         return new GizmoOptionsCustomizerNode(
                 "Profile", // NOI18N
                 getString("ProfileNodeTxt"),
-                null);
+                null, lookup);
     }
 
-    class GizmoOptionsCustomizerNode extends CustomizerNode {
+    private class GizmoOptionsCustomizerNode extends CustomizerNode {
 
-        public GizmoOptionsCustomizerNode(String name, String displayName, CustomizerNode[] children) {
-            super(name, displayName, children);
+        public GizmoOptionsCustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
+            super(name, displayName, children, lookup);
         }
 
         @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
+        public Sheet getSheet(Configuration configuration) {
             GizmoOptionsImpl gizmoOptions = GizmoOptionsImpl.getOptions(configuration);
             return createSheet(gizmoOptions);
         }

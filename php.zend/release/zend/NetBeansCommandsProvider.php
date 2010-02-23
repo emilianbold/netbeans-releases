@@ -38,9 +38,6 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-require_once 'Zend/Tool/Framework/Provider/Interface.php';
-require_once 'Zend/Tool/Framework/Registry/EnabledInterface.php';
-
 /**
  * Zend Tool Framework Provider which lists all available commands.
  *
@@ -48,20 +45,17 @@ require_once 'Zend/Tool/Framework/Registry/EnabledInterface.php';
  *
  * @package NetBeans
  */
-class NetBeans_NbCommandsProvider implements Zend_Tool_Framework_Provider_Interface, Zend_Tool_Framework_Registry_EnabledInterface {
-    private $registry = null;
-    private $response = null;
+class NetBeansCommandsProvider extends Zend_Tool_Framework_Provider_Abstract {
 
-    public function setRegistry(Zend_Tool_Framework_Registry_Interface $registry) {
-        $this->registry = $registry;
-        $this->response = $registry->getResponse();
+    public function getName() {
+        return "NbCommands";
     }
 
     /**
      * @see Zend_Tool_Framework_Client_Console_HelpSystem
      */
     public function show($separator = " ", $includeAllSpecialties = true) {
-        $manifest = $this->registry->getManifestRepository();
+        $manifest = $this->_registry->getManifestRepository();
 
         $providerMetadatasSearch = array(
                 'type'       => 'Tool',
@@ -142,7 +136,7 @@ class NetBeans_NbCommandsProvider implements Zend_Tool_Framework_Provider_Interf
                 ));
 
                 if (!$actionIsGlobal && count($actionableGlobalMetadatas) == 1) {
-                    $this->response->appendContent('single special action/provider');
+                    $this->_registry->getResponse()->appendContent('single special action/provider');
                 }
 
                 if ($includeAllSpecialties) {
@@ -184,16 +178,17 @@ class NetBeans_NbCommandsProvider implements Zend_Tool_Framework_Provider_Interf
 
     private function respondWithCommand($separator, Zend_Tool_Framework_Metadata_Tool $providerMetadata, Zend_Tool_Framework_Metadata_Tool $actionMetadata,
             Zend_Tool_Framework_Metadata_Tool $specialtyMetadata, Zend_Tool_Framework_Metadata_Tool $parameterLongMetadata) {
-        $this->response->appendContent(
+        $response = $this->_registry->getResponse();
+        $response->appendContent(
                 $actionMetadata->getValue().' '.$providerMetadata->getValue(),
                 array('separator' => false)
         );
 
         if ($specialtyMetadata->getSpecialtyName() != '_Global') {
-            $this->response->appendContent('.'.$specialtyMetadata->getValue(), array('separator' => false));
+            $response->appendContent('.'.$specialtyMetadata->getValue(), array('separator' => false));
         }
 
-        $this->response->appendContent($separator, array('separator' => false));
+        $response->appendContent($separator, array('separator' => false));
         $params = "";
         foreach ($parameterLongMetadata->getValue() as $paramName => $consoleParamName) {
             $methodInfo = $parameterLongMetadata->getReference();
@@ -204,7 +199,7 @@ class NetBeans_NbCommandsProvider implements Zend_Tool_Framework_Provider_Interf
             $params .= $paramString.' ';
         }
 
-        $this->response->appendContent(trim($params), array('separator' => true));
+        $response->appendContent(trim($params), array('separator' => true));
         return $this;
     }
 }

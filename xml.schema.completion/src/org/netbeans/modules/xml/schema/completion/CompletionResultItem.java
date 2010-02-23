@@ -51,6 +51,9 @@ import javax.swing.Icon;
 import javax.xml.XMLConstants;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.modules.xml.axi.AXIComponent;
@@ -79,6 +82,7 @@ public abstract class CompletionResultItem implements CompletionItem {
     protected CompletionPaintComponent component;
     protected AXIComponent axiComponent;
     protected int extraPaintGap = CompletionPaintComponent.DEFAULT_ICON_WIDTH;
+    protected TokenSequence tokenSequence;
 
     private CompletionContextImpl context;
 
@@ -86,8 +90,14 @@ public abstract class CompletionResultItem implements CompletionItem {
      * Creates a new instance of CompletionUtil
      */
     public CompletionResultItem(AXIComponent component, CompletionContext context) {
+        this(component, context, null);
+    }
+
+    public CompletionResultItem(AXIComponent component, CompletionContext context,
+        TokenSequence tokenSequence) {
         this.context = (CompletionContextImpl) context;
         this.axiComponent = component;
+        setTokenSequence(tokenSequence);
         if (context != null) {
             this.typedChars = context.getTypedChars();
         }
@@ -145,6 +155,14 @@ public abstract class CompletionResultItem implements CompletionItem {
         this.extraPaintGap = extraPaintGap;
     }
 
+    public TokenSequence getTokenSequence() {
+        return tokenSequence;
+    }
+
+    public void setTokenSequence(TokenSequence tokenSequence) {
+        this.tokenSequence = tokenSequence;
+    }
+
     /**
      * Actually replaces a piece of document by passes text.
      * @param component a document source
@@ -156,14 +174,24 @@ public abstract class CompletionResultItem implements CompletionItem {
         final int offset, final int len) {
         final BaseDocument doc = (BaseDocument) component.getDocument();
         doc.runAtomic(new Runnable() {
+            @Override
             public void run() {
                 try {
                     if ((context != null) && (context.canReplace(text))) {
-                        doc.remove(offset, len);
-                        doc.insertString(offset, text, null);
+                        if (len > 0) doc.remove(offset, len);
+
+                        String insertingText = getInsertingText(component, text);
+                        doc.insertString(offset, insertingText, null);
                     }
-                    //position the caret
-                    component.setCaretPosition(offset + getCaretPosition());
+                    // change the caret position
+                    int caretPos = offset + getCaretPosition(), docLength = doc.getLength();
+                    if (docLength == 0) {
+                        caretPos = 0;
+                    } else if (caretPos > doc.getLength()) {
+                        caretPos = doc.getLength();
+                    }
+                    component.setCaretPosition(caretPos);
+                    
                     String prefix = CompletionUtil.getPrefixFromTag(text);
                     if (prefix == null) {
                         return;
@@ -184,17 +212,79 @@ public abstract class CompletionResultItem implements CompletionItem {
         });
     }
 
+    protected String getInsertingText(JTextComponent component, String primaryText) {
+        if ((primaryText == null) || (primaryText.length() < 1)) {
+            return primaryText;
+        }
+        int textPos = component.getCaret().getDot();
+
+        if (tokenSequence == null) {
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(component.getDocument());
+            this.tokenSequence = tokenHierarchy.tokenSequence();
+        }
+
+        tokenSequence.move(textPos);
+        tokenSequence.moveNext();
+        Token token = tokenSequence.token();
+        boolean isTextTag = CompletionUtil.isTextTag(token);
+        if ((! isTextTag) && tokenSequence.movePrevious()) {
+            token = tokenSequence.token();
+        }
+        if (! (isTextTag || CompletionUtil.isEndTagPrefix(token) ||
+            CompletionUtil.isTagFirstChar(token))) {
+            return primaryText;
+        }
+
+        int tokenOffset = tokenSequence.offset();
+        if (isTextTag) {
+            String tokenText = token.text().toString();
+            boolean isCaretAfterTag =
+                (tokenText.startsWith(CompletionUtil.END_TAG_PREFIX) &&
+                (textPos == tokenOffset + CompletionUtil.END_TAG_PREFIX.length()))
+                ||
+                (tokenText.startsWith(CompletionUtil.TAG_FIRST_CHAR) &&
+                (textPos == tokenOffset + CompletionUtil.TAG_FIRST_CHAR.length()));
+            if (! isCaretAfterTag) {
+                return primaryText;
+            }
+        }
+
+        if ((tokenOffset > -1) && (tokenOffset < textPos)) {
+            textPos = tokenOffset;
+        }
+
+        boolean isDifferentTextFound = false;
+        int i = 0;
+        for (; i < primaryText.length(); ++i, ++textPos) {
+            try {
+                String strDoc  = component.getText(textPos, 1),
+                       strText = primaryText.substring(i, i + 1);
+                isDifferentTextFound = (! strDoc.equals(strText));
+                if (isDifferentTextFound) break;
+            } catch(BadLocationException e) {
+                _logger.log(Level.WARNING,
+                    e.getMessage() == null ? e.getClass().getName() : e.getMessage(), e);
+                isDifferentTextFound = true;
+            }
+        }
+        String text = isDifferentTextFound ? primaryText.substring(i) : "";
+        return text;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
     ///////////////////methods from CompletionItem interface////////////////////////
     ////////////////////////////////////////////////////////////////////////////////
+    @Override
     public CompletionTask createDocumentationTask() {
         return new AsyncCompletionTask(new DocumentationQuery(this));
     }
 
+    @Override
     public CompletionTask createToolTipTask() {
         return new AsyncCompletionTask(new ToolTipQuery(this));
     }
 
+    @Override
     public void defaultAction(JTextComponent component) {
         int charsToRemove = (typedChars==null)?0:typedChars.length();
         int substOffset = component.getCaretPosition() - charsToRemove;
@@ -204,36 +294,43 @@ public abstract class CompletionResultItem implements CompletionItem {
         replaceText(component, getReplacementText(), substOffset, charsToRemove);
     }
 
+    @Override
     public CharSequence getInsertPrefix() {
         return getItemText();
     }
 
     public abstract CompletionPaintComponent getPaintComponent();
 
+    @Override
     public int getPreferredWidth(Graphics g, Font defaultFont) {
         CompletionPaintComponent renderComponent = getPaintComponent();
         return renderComponent.getPreferredSize().width;
     //return getPaintComponent().getWidth(getItemText(), defaultFont);
     }
 
+    @Override
     public int getSortPriority() {
         return 0;
     }
 
+    @Override
     public CharSequence getSortText() {
         return getItemText();
     }
 
+    @Override
     public boolean instantSubstitution(JTextComponent component) {
         defaultAction(component);
         return true;
     }
 
+    @Override
     public void processKeyEvent(KeyEvent e) {
         shift = (e.getKeyCode() == KeyEvent.VK_ENTER &&
                  e.getID() == KeyEvent.KEY_PRESSED && e.isShiftDown());
     }
 
+    @Override
     public void render(Graphics g, Font defaultFont,
             Color defaultColor, Color backgroundColor,
             int width, int height, boolean selected) {

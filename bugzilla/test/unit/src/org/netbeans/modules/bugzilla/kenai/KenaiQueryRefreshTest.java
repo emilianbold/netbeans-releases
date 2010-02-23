@@ -42,11 +42,14 @@ package org.netbeans.modules.bugzilla.kenai;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import org.netbeans.modules.bugzilla.query.*;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
@@ -54,16 +57,12 @@ import org.netbeans.modules.bugzilla.LogHandler;
 import org.netbeans.modules.bugzilla.TestConstants;
 import org.netbeans.modules.bugzilla.TestUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiManager;
 
 /**
  *
  * @author tomas
  */
 public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, QueryConstants {
-    private Kenai instance;
 
     public KenaiQueryRefreshTest(String arg0) {
         super(arg0);
@@ -79,12 +78,10 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
 
         System.setProperty("kenai.com.url","https://testkenai.com");
-        instance = KenaiManager.getDefault().createKenai("testkenai", "https://testkenai.com");
         BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
         String username = br.readLine();
         String password = br.readLine();
         br.close();
-        instance.login(username, password.toCharArray());
 
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
@@ -155,9 +152,10 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
         return TestUtil.getRepository(REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD);
     }
 
-    private KenaiRepository getKenaiRepository() throws KenaiException {
+    private KenaiRepository getKenaiRepository() throws IOException {
+        KenaiProject kp = KenaiUtil.getKenaiProject("https://testkenai.com", "koliba");
         // using kenai project 'koliba' - even if the actually used repository is different, it should have no effect on the result
-        return new KenaiRepository(instance.getProject("koliba"), REPO_NAME, REPO_URL, REPO_HOST, REPO_USER, REPO_PASSWD, "product=" + TEST_PROJECT, TEST_PROJECT);
+        return new KenaiRepository(kp, REPO_NAME, REPO_URL, REPO_HOST, REPO_USER, REPO_PASSWD, "product=" + TEST_PROJECT, TEST_PROJECT);
     }
 
 

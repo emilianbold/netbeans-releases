@@ -40,11 +40,15 @@
  */
 package org.netbeans.modules.cnd.makefile.lexer;
 
-import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
 import java.util.Collection;
 
 import java.util.EnumSet;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.cnd.script.lexer.ShTokenId;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -55,18 +59,28 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public class MakefileLanguageHierarchy extends LanguageHierarchy<MakefileTokenId> {
 
+    @Override
     protected synchronized Collection<MakefileTokenId> createTokenIds() {
         return EnumSet.allOf(MakefileTokenId.class);
     }
 
+    @Override
     protected Lexer<MakefileTokenId> createLexer(LexerRestartInfo<MakefileTokenId> info) {
         return new MakefileLexer(info);
     }
 
+    @Override
+    protected LanguageEmbedding<?> embedding(Token<MakefileTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+        switch (token.id()) {
+            case SHELL:
+                return LanguageEmbedding.create(ShTokenId.language(), 0, 0, true);
+            default:
+                return null;
+        }
+    }
+
+    @Override
     protected String mimeType() {
         return MIMENames.MAKEFILE_MIME_TYPE;
     }
 }
-
-
-

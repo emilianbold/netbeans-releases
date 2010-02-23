@@ -77,7 +77,9 @@ public class AntBasedProcessor extends LayerGeneratingProcessor {
         if (roundEnv.processingOver()) {
             return false;
         }
-        TypeMirror antHelper = processingEnv.getElementUtils().getTypeElement(AntProjectHelper.class.getName()).asType();
+        TypeElement aphType = processingEnv.getElementUtils().getTypeElement(AntProjectHelper.class.getName());
+        assert aphType != null : "Cannot find AntProjectHelper in " + processingEnv;
+        TypeMirror antHelper = aphType.asType();
         TypeMirror project = processingEnv.getElementUtils().getTypeElement(Project.class.getName()).asType();
         for (Element e : roundEnv.getElementsAnnotatedWith(AntBasedProjectRegistration.class)) {
             AntBasedProjectRegistration reg = e.getAnnotation(AntBasedProjectRegistration.class);

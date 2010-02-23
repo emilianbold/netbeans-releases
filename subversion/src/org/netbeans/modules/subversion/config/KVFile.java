@@ -53,7 +53,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.versioning.util.FileUtils;
 
 /**
  * Handles the credential or property files used by Subversion.

@@ -68,6 +68,12 @@ public class DefragmentationTest extends NbTestCase {
 //    protected void tearDown() throws Exception {
 //	super.tearDown();
 //    }
+
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     private DoubleFileStorage createStorage() throws IOException {
         File file = new File(getWorkDir(), "double_file_storage.dat");
         DoubleFileStorage dfs = new DoubleFileStorage(file, true);

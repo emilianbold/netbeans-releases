@@ -553,7 +553,7 @@
             and the <a href="http://openide.netbeans.org/tutorial/api-design.html#life">stability category</a>
             of this API. You may use
             <pre>
-                &lt;api type="export" group="property" name="id" category="private" url="http://..."&gt;
+                &lt;api type="export" group="systemproperty" name="id" category="private" url="http://..."&gt;
                     description of the property, where it is used, what it influence, etc.
                 &lt;/api&gt;            
             </pre>

@@ -47,6 +47,7 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.jira.JiraUpdater;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
  *
@@ -91,7 +92,7 @@ public class RepositorySelector {
     }
 
     private BugtrackingConnector[] addJiraProxyIfNeeded(BugtrackingConnector[] connectors) {
-        if(!JiraUpdater.isJiraInstalled()) {
+        if(!BugtrackingUtil.isJiraInstalled()) {
             BugtrackingConnector[] ret = new BugtrackingConnector[connectors.length + 1];
             System.arraycopy(connectors, 0, ret, 0, connectors.length);
             ret[ret.length - 1] = JiraUpdater.getInstance().getConnector();

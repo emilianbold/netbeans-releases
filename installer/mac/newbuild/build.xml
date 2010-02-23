@@ -236,6 +236,8 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/netBeans/baseide/build/scripts/clean_receipts.sh" todir="${scriptsdir}"/>
         <copy file="${basedir}/netBeans/baseide/build/scripts/servicetag.sh"    todir="${scriptsdir}"/>
         <copy file="${basedir}/netBeans/baseide/build/scripts/servicetag.jar"   todir="${scriptsdir}"/>        
+
+        <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
         
         <echo message="Building ${module.name} into ${basedir}/build/${module.name}-${nb.id}.pkg"/>
         <exec executable="sh" failonerror="yes">

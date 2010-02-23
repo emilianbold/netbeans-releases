@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
@@ -55,7 +54,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -70,7 +68,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.NbCollections;
 
 /**
@@ -92,31 +89,7 @@ public class ModuleListTest extends TestBase {
         standaloneSuite3 = resolveEEPFile("suite3");
     }
 
-    // #150856: CME on system props does happen...
-    @RandomlyFails  // not guarantied that ConcurrentModificationException will always happen
-    public void testConcurrentModificationOfSystemProperties1() {
-        try {
-            Thread t = new Thread(new Runnable() {
-
-                public void run() {
-                    for (int i = 0; i < 20000; i++) {
-                        System.setProperty("whatever", "anything" + i);
-                    }
-                }
-            });
-            t.start();
-            for (int i = 0; i < 2000; i++) {
-                Map<String, String> props = NbCollections.checkedMapByCopy(System.getProperties(), String.class, String.class, false);
-            }
-            t.join();
-        } catch (ConcurrentModificationException e) {
-            return;
-        } catch (Exception e2) {
-        }
-        fail("Expected to throw ConcurrentModificationException, but caught none");
-    }
-
-    // #150856: ... but not when cloned first ...
+    // #150856: CME on system props does happen ... but not when cloned first ...
     public void testConcurrentModificationOfSystemProperties2() throws InterruptedException {
         Thread t = new Thread(new Runnable() {
 
@@ -153,7 +126,7 @@ public class ModuleListTest extends TestBase {
         t.join();
     }
 
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    // XXX cannot be run in binary dist, requires sources; test against fake platform
     public void testParseProperties() throws Exception {
         File basedir = file("ant.browsetask");
         PropertyEvaluator eval = ModuleList.parseProperties(basedir, nbRootFile(), NbModuleType.NETBEANS_ORG, "org.netbeans.modules.ant.browsetask");
@@ -221,7 +194,7 @@ public class ModuleListTest extends TestBase {
 
     }
 
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    // XXX cannot be run in binary dist, requires sources; test against fake platform
     public void testConcurrentScanningNBOrg() throws Exception {
         ModuleList.refresh();   // disable cache
         final ModuleList mlref[] = new ModuleList[1];
@@ -380,7 +353,7 @@ public class ModuleListTest extends TestBase {
 //        // XXX test that getAllEntries() also includes nonstandard modules, and so does getKnownEntries() if necessary
 //    }
 
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    // XXX cannot be run in binary dist, requires sources; test against fake platform
     public void testExternalEntries() throws Exception {
         // Start with suite1 - should find also nb_all.
         long start = System.currentTimeMillis();

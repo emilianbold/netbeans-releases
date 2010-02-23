@@ -1310,27 +1310,27 @@ public class FilterNode extends Node {
         @Override
         EntrySupport entrySupport() {
             FilterChildrenSupport support = null;
-            synchronized (Children.class) {
-                if (entrySupport != null && !entrySupport.isInitialized()) {
+            synchronized (org.openide.nodes.Children.class) {
+                if (getEntrySupport() != null && !getEntrySupport().isInitialized()) {
                     // support is not initialized, it should be checked against original
-                    support = (FilterChildrenSupport) entrySupport;
+                    support = (FilterChildrenSupport) getEntrySupport();
                 }
             }
 
             if (support != null) {
                 // get original support without lock
                 EntrySupport origSupport = original.getChildren().entrySupport();
-                synchronized (Children.class) {
-                    if (entrySupport == support && support.originalSupport() != origSupport) {
+                synchronized (org.openide.nodes.Children.class) {
+                    if (getEntrySupport() == support && support.originalSupport() != origSupport) {
                         // original support was changed, force new support creation
-                        entrySupport = null;
+                        setEntrySupport(null);
                     }
                 }
             }
 
-            synchronized (Children.class) {
-                if (entrySupport != null) {
-                    return entrySupport;
+            synchronized (org.openide.nodes.Children.class) {
+                if (getEntrySupport() != null) {
+                    return getEntrySupport();
                 }
             }
 
@@ -1339,14 +1339,14 @@ public class FilterNode extends Node {
             EntrySupport os = origChildren.entrySupport();
             boolean osIsLazy = origChildren.isLazy();
 
-            synchronized (Children.class) {
-                if (entrySupport != null) {
-                    return entrySupport;
+            synchronized (org.openide.nodes.Children.class) {
+                if (getEntrySupport() != null) {
+                    return getEntrySupport();
                 }
                 lazySupport = osIsLazy;
-                entrySupport = lazySupport ? new LazySupport(this, (Lazy) os) : new DefaultSupport(this, (Default) os);
+                setEntrySupport(lazySupport ? new LazySupport(this, (Lazy) os) : new DefaultSupport(this, (Default) os));
                 postInitializeEntrySupport();
-                return entrySupport;
+                return getEntrySupport();
             }
         }
         
@@ -1409,7 +1409,9 @@ public class FilterNode extends Node {
                         this.original = newOriginal;
                     }
                     changed = true;
-                    entrySupport = null;
+                    synchronized (org.openide.nodes.Children.class) {
+                        setEntrySupport(null);
+                    }
 
                     if (LOG_ENABLED) {
                         LOGGER.finer("   firing node removal: " + snapshot); // NOI18N
@@ -1421,7 +1423,9 @@ public class FilterNode extends Node {
                 if (newOriginal != null) {
                     this.original = newOriginal;
                 }
-                entrySupport = null;
+                synchronized (org.openide.nodes.Children.class) {
+                    setEntrySupport(null);
+                }
             }
 
             if (init || newOriginal == null) {

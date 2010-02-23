@@ -71,6 +71,7 @@ import org.netbeans.modules.kenai.ProjectData;
 import org.netbeans.modules.kenai.ServicesListData.ServicesListItem;
 import org.netbeans.modules.kenai.UserData;
 import org.netbeans.modules.kenai.api.KenaiProjectMember.Role;
+import org.openide.util.ImageUtilities;
 
 /**
  * Main entry point to Kenai integration.
@@ -172,7 +173,23 @@ public final class Kenai implements Comparable<Kenai> {
 
     private Icon icon;
     public Icon getIcon() {
-        return null;
+        //hardcoded icons
+        //temporary solution for
+        //http://kenai.com/jira/browse/KENAI-1761
+        if (icon == null) {
+            if (getUrl().getHost().contains("netbeans.org")) { //NOI18N
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/netbeans-small.png", false);
+            } else if (getUrl().getHost().contains("testkenai.com")) { //NOI18N
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/testkenai-small.png", false);
+            } else if (getUrl().getHost().contains("odftoolkit.org")) { //NOI18N
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/odftoolkit-small.png", false);
+            } else if (getUrl().getHost().contains("java.net")) { //NOI18N
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/javanet.png", false);
+            } else {
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/kenai-small.png", false);
+            }
+        }
+        return icon;
 //        if (icon==null) {
 //            //assert !SwingUtilities.isEventDispatchThread();
 //            try {
@@ -734,7 +751,7 @@ public final class Kenai implements Comparable<Kenai> {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 79 * hash + (this.getUrl() != null ? this.getUrl().hashCode() : 0);
+        hash = 79 * hash + (this.getUrl() != null ? this.getUrl().toString().hashCode() : 0);
         return hash;
     }
 

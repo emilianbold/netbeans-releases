@@ -65,10 +65,12 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.java.classpath.ClassPathAccessor;
+import org.netbeans.modules.java.classpath.SimplePathResourceImplementation;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -204,13 +206,21 @@ public final class ClassPath {
      * @since org.netbeans.api.java/1 1.13
      */
     public static final String PROP_INCLUDES = "includes";
-    
+
+    /**
+     * The empty ClassPath.
+     * Contains no entries and never fires events.
+     * @since 1.24
+     */
+    public static final ClassPath EMPTY = new ClassPath();
+
     private static final Logger LOG = Logger.getLogger(ClassPath.class.getName());
     
     private static final Lookup.Result<? extends ClassPathProvider> implementations =
         Lookup.getDefault().lookupResult(ClassPathProvider.class);
 
     private final ClassPathImplementation impl;
+    private final Throwable caller;
     private FileObject[] rootsCache;
     /**
      * Associates entry roots with the matching filter, if there is one.
@@ -320,12 +330,6 @@ public final class ClassPath {
     }
     
     private List<ClassPath.Entry> createEntries (final List<Object[]> resources) {
-        //The ClassPathImplementation.getResources () should never return
-        // null but it was not explicitly stated in the javadoc
-        if (resources == null) {
-            return Collections.<ClassPath.Entry>emptyList();
-        }
-        else {
             List<ClassPath.Entry> cache = new ArrayList<ClassPath.Entry> ();
             for (Object[] pair : resources) {
                 PathResourceImplementation pr = (PathResourceImplementation) pair[0];
@@ -333,20 +337,44 @@ public final class ClassPath {
                 pr.removePropertyChangeListener(weakPListener);
                 pr.addPropertyChangeListener(weakPListener = WeakListeners.propertyChange(pListener, pr));
                 for (URL root : roots) {
+                    if (!(pr instanceof SimplePathResourceImplementation)) { // ctor already checks these things
+                        SimplePathResourceImplementation.verify(root, " From: " + pr.getClass().getName(), caller);
+                    }
                     cache.add(new Entry(root,
                             pr instanceof FilteringPathResourceImplementation ? (FilteringPathResourceImplementation) pr : null));
                 }
             }
             return Collections.unmodifiableList(cache);
-        }
     }
 
     private ClassPath (ClassPathImplementation impl) {
         if (impl == null)
             throw new IllegalArgumentException ();
+        this.propSupport = new PropertyChangeSupport(this);
         this.impl = impl;
         this.pListener = new SPIListener ();
         this.impl.addPropertyChangeListener (weakPListener = WeakListeners.propertyChange(this.pListener, this.impl));
+        caller = new IllegalArgumentException();
+    }
+
+    private ClassPath() {
+        this.propSupport = new PropertyChangeSupport(this) {
+            @Override
+            public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {}
+            @Override
+            public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {}
+            @Override
+            public void firePropertyChange(PropertyChangeEvent evt) {}
+        };
+        this.impl = new ClassPathImplementation() {
+            public List<? extends PathResourceImplementation> getResources() {
+                return Collections.emptyList();
+            }
+            public void addPropertyChangeListener(PropertyChangeListener listener) {}
+            public void removePropertyChangeListener(PropertyChangeListener listener) {}
+        };
+        this.pListener = new SPIListener ();
+        caller = new IllegalArgumentException();
     }
 
     /**
@@ -787,11 +815,6 @@ public final class ClassPath {
         }
 
         Entry(URL url, FilteringPathResourceImplementation filter) {
-            if (url == null)
-                throw new IllegalArgumentException ();
-            if ("jar".equals (url.getProtocol ()) && //NOI18N
-                FileUtil.getArchiveFile (url) == null
-            ) throw new IllegalArgumentException ("Invalid URL: " + url);
             this.url = url;
             this.filter = filter;
         }
@@ -816,7 +839,7 @@ public final class ClassPath {
 
     //-------------------- Implementation details ------------------------//
 
-    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport propSupport;
     
     
     /**

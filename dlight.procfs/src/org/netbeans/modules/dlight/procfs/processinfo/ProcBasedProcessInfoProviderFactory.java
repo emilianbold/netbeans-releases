@@ -42,9 +42,9 @@ import java.io.IOException;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
-import org.netbeans.modules.nativeexecution.api.ProcessInfoProviderFactory;
+import org.netbeans.modules.nativeexecution.spi.ProcessInfoProviderFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.spi.ProcessInfoProvider;
+import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -57,6 +57,7 @@ import org.openide.util.lookup.ServiceProviders;
 })
 public class ProcBasedProcessInfoProviderFactory implements ProcessInfoProviderFactory {
 
+    @Override
     public ProcessInfoProvider getProvider(ExecutionEnvironment execEnv, int pid) {
         try {
             HostInfo hinfo = HostInfoUtils.getHostInfo(execEnv);

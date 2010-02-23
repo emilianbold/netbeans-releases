@@ -51,7 +51,6 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 import java.util.logging.Level;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.RandomlyFails;
 
 /**
@@ -86,7 +85,7 @@ public class FileObjectTestHid extends TestBaseHid {
     
     @Override
     protected void setUp() throws java.lang.Exception {
-        MockServices.setServices();
+        FileSystemFactoryHid.setServices(this);
         
         super.setUp();
         
@@ -106,7 +105,7 @@ public class FileObjectTestHid extends TestBaseHid {
         root = null;
         //assertGC("", ref);
     }
-    
+
     public void testEventsDelivery81746() throws Exception {
         doEventsDelivery81746(1);
     }
@@ -435,6 +434,34 @@ public class FileObjectTestHid extends TestBaseHid {
         } finally {
             lock.releaseLock();
         }
+    }
+
+    public void  testMoveFolder() throws IOException {
+        checkSetUp();
+        if (fs.isReadOnly()) return;
+        FileObject fold = getTestFolder1(root);
+
+        FileObject fold1 = fold.createFolder("A");
+        FileObject fold2 = fold.createFolder("B");
+
+        FileObject toMove = fold1.createFolder("something");
+        toMove.createData("kid");
+        FileLock lock = toMove.lock();
+        FileObject last = null;
+        try {
+            FileObject toMove2 = null;
+            assertNotNull (toMove2 = toMove.move(lock, fold2, toMove.getName(), toMove.getExt()));
+            lock.releaseLock();
+            lock = toMove2.lock();
+            assertNotNull(last = toMove2.move(lock, fold1, toMove.getName(), toMove.getExt()));
+        } finally {
+            lock.releaseLock();
+        }
+        assertTrue("Folder remains folder", last.isFolder());
+        assertEquals("One child remains", 1, last.getChildren().length);
+        FileObject created = last.getChildren()[0];
+        assertEquals("kid", created.getNameExt());
+        assertTrue("is data", created.isData());
     }
 
     /** Test of move method, of class org.openide.filesystems.FileObject. */
@@ -1128,7 +1155,7 @@ public class FileObjectTestHid extends TestBaseHid {
     public void testGetMIMETypeWithResolver() {
         checkSetUp();
         FileObject fo = getTestFile1(root);
-        MockServices.setServices(MR.class);
+        FileSystemFactoryHid.setServices(this, MR.class);
         
         String actualMT = fo.getMIMEType();
         assertNotNull("MIMEResolver not accessed at all.", MR.tested);
@@ -1142,7 +1169,7 @@ public class FileObjectTestHid extends TestBaseHid {
     public void testGetMIMETypeCached() throws IOException {
         checkSetUp();
         FileObject fo = getTestFile1(root);
-        MockServices.setServices(MR.class);
+        FileSystemFactoryHid.setServices(this, MR.class);
 
         StatFiles accessCounter = new StatFiles();
         accessCounter.register();

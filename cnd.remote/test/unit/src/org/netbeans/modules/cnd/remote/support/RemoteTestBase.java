@@ -43,9 +43,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,21 +50,15 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
-import org.netbeans.modules.cnd.toolchain.ui.api.ToolsCacheManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -232,7 +223,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     }
 
     protected static void setupHost(ExecutionEnvironment execEnv) {
-        ToolsCacheManager tcm = new ToolsCacheManager();
+        ToolsCacheManager tcm = ToolsCacheManager.createInstance(true);
         HostValidatorImpl validator = new HostValidatorImpl(tcm);
         boolean ok = validator.validate(execEnv, null, false, new PrintWriter(System.out));
         assertTrue(ok);
@@ -321,43 +312,6 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         String value = rcFile.get(section, varName, defaultValue);
         if (value != null && value.length() > 0) {
             System.setProperty(varName, value);
-        }
-    }
-
-    public static class FakeCompilerSet extends CompilerSet {
-
-        private List<Tool> tools = Collections.<Tool>singletonList(new FakeTool());
-
-        public FakeCompilerSet() {
-            super(PlatformTypes.getDefaultPlatform());
-        }
-
-        @Override
-        public List<Tool> getTools() {
-            return tools;
-        }
-
-        private static class FakeTool extends BasicCompiler {
-
-            private List<String> fakeIncludes = new ArrayList<String>();
-
-            private FakeTool() {
-                super(ExecutionEnvironmentFactory.fromUniqueID("fake"), CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
-                fakeIncludes.add("/usr/include"); //NOI18N
-                fakeIncludes.add("/usr/local/include"); //NOI18N
-                fakeIncludes.add("/usr/sfw/include"); //NOI18N
-                //fakeIncludes.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include");
-            }
-
-            @Override
-            public List<String> getSystemIncludeDirectories() {
-                return fakeIncludes;
-            }
-
-            @Override
-            public CompilerDescriptor getDescriptor() {
-                return null;
-            }
         }
     }
 }

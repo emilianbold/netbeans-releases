@@ -73,6 +73,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -83,6 +84,7 @@ import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.KenaiSearchPanel.KenaiProjectSearchInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
@@ -119,6 +121,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             kenai = (Kenai) kenaiCombo.getModel().getSelectedItem();
         } else {
             kenai = prjAndFeature.kenaiProject.getKenai();
+            kenaiCombo.setSelectedItem(kenai);
         }
 
         refreshUsername();
@@ -416,7 +419,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 
     private void browseKenaiButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseKenaiButtonActionPerformed
         
-        KenaiSearchPanel browsePanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.BROWSE, false);
+        KenaiSearchPanel browsePanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.BROWSE, false, kenai);
         String title = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
                 "GetSourcesFromKenaiPanel.BrowseKenaiProjectsTitle"); // NOI18N
         DialogDescriptor dialogDesc = new KenaiDialogDescriptor(browsePanel, title, true, null);
@@ -506,9 +509,18 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_localFolderTextFieldKeyTyped
 
     private void kenaiComboActionPerformed(ActionEvent evt) {//GEN-FIRST:event_kenaiComboActionPerformed
-        kenai = (Kenai) kenaiCombo.getModel().getSelectedItem();
-        kenaiRepoComboBox.setModel(new KenaiRepositoriesComboModel());
-        refreshUsername();
+        final ActionEvent e = evt;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (!(kenaiCombo.getSelectedItem() instanceof Kenai)) {
+                    new AddInstanceAction().actionPerformed(e);
+                }
+                kenai = (Kenai) kenaiCombo.getModel().getSelectedItem();
+                kenaiRepoComboBox.setModel(new KenaiRepositoriesComboModel());
+                refreshUsername();
+            }
+        });
     }//GEN-LAST:event_kenaiComboActionPerformed
 
     private class KenaiRepositoriesComboModel extends DefaultComboBoxModel  {

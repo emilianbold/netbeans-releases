@@ -72,34 +72,42 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
         super(dObj);
     }
 
+    @Override
     public void componentDeactivated() {
     }
 
+    @Override
     public void componentHidden() {
     }
     
+    @Override
     public void componentActivated() {
-        xmlEditor.componentActivated();
+        getXmlEditor().componentActivated();
     }
     
+    @Override
     public void componentShowing() {
-        xmlEditor.componentShowing();
+        getXmlEditor().componentShowing();
     }
     
+    @Override
     public void componentOpened() {
-        xmlEditor.componentOpened();
+        getXmlEditor().componentOpened();
     }
     
+    @Override
     public void componentClosed() {
-        xmlEditor.componentClosed();
+        getXmlEditor().componentClosed();
     }
     
+    @Override
     public org.openide.util.Lookup getLookup() {
         return new ProxyLookup(new org.openide.util.Lookup[] {
             dObj.getNodeDelegate().getLookup()
         });
     }
 
+    @Override
     public javax.swing.JComponent getToolbarRepresentation() {
         if (toolbar == null) {
             final JEditorPane editorPane = getXmlEditor().getEditorPane();
@@ -117,11 +125,12 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
         return toolbar;
     }
 
+    @Override
     public javax.swing.JComponent getVisualRepresentation() {
         return getXmlEditor();
     }
 
-    private CloneableEditor getXmlEditor() {
+    private XmlMultiViewEditorSupport.XmlCloneableEditor getXmlEditor() {
         if (xmlEditor == null) {
             xmlEditor = (XmlMultiViewEditorSupport.XmlCloneableEditor) dObj.getEditorSupport().createCloneableEditor();
             final ActionMap map = xmlEditor.getActionMap();

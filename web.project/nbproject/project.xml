@@ -329,6 +329,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.web.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.web.jspparser</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -554,6 +562,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.portalpack.commons.palette</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.jsf.wizards</friend>
+                <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <friend>org.netbeans.modules.projectimport.eclipse.web</friend>
                 <friend>org.netbeans.modules.gwt4nb</friend>
                 <package>org.netbeans.modules.web.project.api</package>

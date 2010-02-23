@@ -58,6 +58,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -105,6 +106,12 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
      */
     public void run() {
         try {
+            //Verify all needed tools
+            for (String toolName : PlatformConvertor.IMPORTANT_TOOLS) {
+                if (findTool(toolName) == null) {
+                    return;
+                }
+            }
             FileObject java = findTool("java");
             if (java == null)
                 return;

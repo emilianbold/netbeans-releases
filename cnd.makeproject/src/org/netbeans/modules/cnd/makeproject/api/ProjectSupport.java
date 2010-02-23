@@ -41,12 +41,9 @@
 
 package org.netbeans.modules.cnd.makeproject.api;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Date;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -55,13 +52,17 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.openide.filesystems.FileObject;
 
 public class ProjectSupport {
+    private ProjectSupport() {
+    }
+
     public static boolean saveAllProjects(String extraMessage) {
 	boolean ok = true;
 	Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
 	for (int i = 0; i < openProjects.length; i++) {
 	    MakeConfigurationDescriptor projectDescriptor = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(openProjects[i]);
-	    if (projectDescriptor != null)
-		ok = ok && projectDescriptor.save(extraMessage);
+	    if (projectDescriptor != null) {
+                ok = ok && projectDescriptor.save(extraMessage);
+            }
 	}
 	return ok;
     }
@@ -69,13 +70,14 @@ public class ProjectSupport {
     public static Date lastModified(Project project) {
 	FileObject projectFile = null;
 	try {
-	    projectFile = project.getProjectDirectory().getFileObject("nbproject" + File.separator + "Makefile-impl.mk"); // NOI18N
+	    projectFile = project.getProjectDirectory().getFileObject(MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.MAKEFILE_IMPL); // NOI18N
 	}
 	catch (Exception e) {
 	    // happens if project is not a MakeProject
 	}
-	if (projectFile == null)
-	    projectFile = project.getProjectDirectory();
+	if (projectFile == null) {
+            projectFile = project.getProjectDirectory();
+        }
 	return projectFile.lastModified();
     }
 
@@ -95,15 +97,6 @@ public class ProjectSupport {
             return;
         }
 
-        ProjectInformation info = project.getLookup().lookup(ProjectInformation.class );
-        String projectName = info.getDisplayName();
-
-        ap.invokeCustomAction(projectName, projectDescriptor, conf, customProjectActionHandler);
-//        ArrayList actionEvents = new ArrayList();
-//        ap.addAction(actionEvents, projectName, projectDescriptor, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null);
-//	ActionEvent ae = new ActionEvent((ProjectActionEvent[])actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]), 0, null);
-//        DefaultProjectActionHandler defaultProjectActionHandler = new DefaultProjectActionHandler();
-//        defaultProjectActionHandler.setCustomActionHandlerProvider(customProjectActionHandler);
-//        defaultProjectActionHandler.actionPerformed(ae);
+        ap.invokeCustomAction(projectDescriptor, conf, customProjectActionHandler);
     }
 }

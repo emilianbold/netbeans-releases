@@ -143,7 +143,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
 
         Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
 
-        RubyType type = RubyType.createUnknown();
+        RubyType type = RubyType.unknown();
         final RubyType callType = call.getType();
         if (callType.isKnown() && !call.isLHSConstant()) {
             type = callType;
@@ -317,7 +317,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                 }
             }
         }
-        return RubyType.createUnknown();
+        return RubyType.unknown();
     }
 
     private Node findClosestMatchingNode(Node target) {
@@ -691,7 +691,7 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                 }
             }
         }
-        return RubyType.createUnknown();
+        return RubyType.unknown();
 
     }
 }

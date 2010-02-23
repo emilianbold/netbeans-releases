@@ -490,8 +490,6 @@ public final class ProjectSelectionPanel extends JPanel {
         jRadioSeparate = new javax.swing.JRadioButton();
         prjLocationLBL1 = new javax.swing.JLabel();
 
-        setBorder(null);
-
         projectListLabel.setLabelFor(projectTable);
         org.openide.awt.Mnemonics.setLocalizedText(projectListLabel, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "LBL_ProjectsToImport")); // NOI18N
         projectListLabel.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
@@ -531,48 +529,48 @@ public final class ProjectSelectionPanel extends JPanel {
         prjLocationLBL1.setLabelFor(destination);
         org.openide.awt.Mnemonics.setLocalizedText(prjLocationLBL1, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "LBL_LocationOfNBProjects2")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(prjLocationLBL)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(prjLocationLBL)
                 .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(34, 34, 34)
-                .add(prjLocationLBL1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(destination, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(chooseDestButton))
-            .add(projectTableSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
+                .addGap(34, 34, 34)
+                .addComponent(prjLocationLBL1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(destination, javax.swing.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(chooseDestButton))
+            .addComponent(projectTableSP, javax.swing.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jRadioInsideEclipse, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
+                .addComponent(jRadioInsideEclipse, javax.swing.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jRadioSeparate, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(projectListLabel)
+                .addComponent(jRadioSeparate, javax.swing.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(projectListLabel)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(projectListLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(projectTableSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(prjLocationLBL)
-                .add(0, 0, 0)
-                .add(jRadioInsideEclipse)
-                .add(0, 0, 0)
-                .add(jRadioSeparate)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(prjLocationLBL1)
-                    .add(chooseDestButton)
-                    .add(destination, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(projectListLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(projectTableSP, javax.swing.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(prjLocationLBL)
+                .addGap(0, 0, 0)
+                .addComponent(jRadioInsideEclipse)
+                .addGap(0, 0, 0)
+                .addComponent(jRadioSeparate)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(prjLocationLBL1)
+                    .addComponent(chooseDestButton)
+                    .addComponent(destination, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
         projectListLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N

@@ -84,6 +84,9 @@ import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.VariableDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.VariableImpl;
+import org.netbeans.modules.cnd.modelimpl.fsm.ModuleImpl;
+import org.netbeans.modules.cnd.modelimpl.fsm.ProgramImpl;
+import org.netbeans.modules.cnd.modelimpl.fsm.SubroutineImpl;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -254,6 +257,12 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = CLASSIFIER_CONTAINER;
         } else if (object instanceof TemplateParameterImpl) {
             aHandler = TEMPLATE_PARAMETER_IMPL;
+        } else if (object instanceof ProgramImpl) {
+            aHandler = PROGRAM_IMPL;
+        } else if (object instanceof SubroutineImpl) {
+            aHandler = SUBROUTINE_IMPL;
+        } else if (object instanceof ModuleImpl) {
+            aHandler = MODULE_IMPL;
         } else {
             throw new IllegalArgumentException("instance of unknown class " + object.getClass().getName());  //NOI18N
         }
@@ -468,6 +477,18 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new TemplateParameterImpl(stream);
                 break;
 
+            case PROGRAM_IMPL:
+                obj = new ProgramImpl(stream);
+                break;
+
+            case SUBROUTINE_IMPL:
+                obj = new SubroutineImpl(stream);
+                break;
+
+            case MODULE_IMPL:
+                obj = new ModuleImpl(stream);
+                break;
+
             default:
                 throw new IllegalArgumentException("unknown handler" + handler);  //NOI18N
         }
@@ -519,7 +540,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     // functions
     private static final int FUNCTION_IMPL                  = FRIEND_CLASS_IMPL + 1;
     private static final int FUNCTION_IMPL_EX               = FUNCTION_IMPL + 1;
-    
+
     //// function definitons 
     private static final int DESTRUCTOR_DEF_IMPL            = FUNCTION_IMPL_EX + 1;
     private static final int CONSTRUCTOR_DEF_IMPL           = DESTRUCTOR_DEF_IMPL + 1;
@@ -558,7 +579,14 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int MACRO_IMPL                     = FUNCTION_KR_PARAM_LIST_IMPL + 1;
     private static final int TEMPLATE_PARAMETER_IMPL        = MACRO_IMPL + 1;
 
+
+    // fortran
+
+    private static final int PROGRAM_IMPL                  = TEMPLATE_PARAMETER_IMPL + 1;
+    private static final int SUBROUTINE_IMPL               = PROGRAM_IMPL + 1;
+    private static final int MODULE_IMPL                   = SUBROUTINE_IMPL + 1;
+
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX        
-    public static final int LAST_INDEX = TEMPLATE_PARAMETER_IMPL;
+    public static final int LAST_INDEX = MODULE_IMPL;
 }

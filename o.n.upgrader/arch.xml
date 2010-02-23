@@ -161,11 +161,11 @@ made subject to such option by the copyright holder.
   <code>platform*/lib/nbexec</code> executable. In case of first
   invocations it can also get a callback from the NetBeans platform
   code via
-    <api name="netbeans.importclass" category="friend" group="property" type="import" >
+    <api name="netbeans.importclass" category="friend" group="systemproperty" type="import" >
         to handle the import of settings from previous version
     </api>
     or via
-    <api name="netbeans.accept_license_class" category="friend" group="property" type="import" >
+    <api name="netbeans.accept_license_class" category="friend" group="systemproperty" type="import" >
         to show dialog with license.
     </api>. 
   </p>

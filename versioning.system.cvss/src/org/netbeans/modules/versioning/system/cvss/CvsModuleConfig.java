@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.versioning.system.cvss;
 
+import java.awt.Color;
 import java.util.regex.Pattern;
 import java.util.*;
 import java.util.prefs.Preferences;
@@ -194,6 +195,15 @@ public class CvsModuleConfig {
         storeRootsMap();
     }
     
+    public Color getColor(String colorName, Color defaultColor) {
+         int colorRGB = getPreferences().getInt(colorName, defaultColor.getRGB());
+         return new Color(colorRGB);
+    }
+
+    public void setColor(String colorName, Color value) {
+         getPreferences().putInt(colorName, value.getRGB());
+    }
+
     private Map<String, RootSettings> getRootsMap() {
         if (rootsMap == null) {
             rootsMap = loadRootsMap();
