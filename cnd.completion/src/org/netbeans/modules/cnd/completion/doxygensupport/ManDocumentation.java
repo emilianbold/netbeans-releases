@@ -96,14 +96,14 @@ public class ManDocumentation {
 
     private static String getManPath() {
         if (manPath == null) {
-            manPath = getPath("man");
+            manPath = getPath("man"); // NOI18N
         }
         return manPath;
     }
 
     private static String getMan2HtmlPath() {
         if (man2htmlPath == null) {
-            man2htmlPath = getPath("man2html");
+            man2htmlPath = getPath("man2html"); // NOI18N
         }
         return man2htmlPath;
     }
