@@ -277,6 +277,13 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         }
         return false;
     }
+
+    @Override
+    public boolean prepareContext() throws IllegalStateException {
+        //todo if PROP_NETBEANS_INSTALL isn't set yet then ask user to browse for
+        //app suite module to provide correct 'layer in context' class path
+        return true;
+    }
     
     private class DependencyAdder implements Runnable {
         List<Dependency> toAdd = new ArrayList<Dependency>();
