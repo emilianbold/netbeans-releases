@@ -80,7 +80,7 @@ public class GemFilesParserTest extends NbTestCase {
 
         String gem6 = "rails-3.0.0.beta";
         assertEquals("rails", GemFilesParser.parseNameAndVersion(gem6)[0]);
-        assertEquals("3.0.0", GemFilesParser.parseNameAndVersion(gem6)[1]);
+        assertEquals("3.0.0.beta", GemFilesParser.parseNameAndVersion(gem6)[1]);
 
     }
 
