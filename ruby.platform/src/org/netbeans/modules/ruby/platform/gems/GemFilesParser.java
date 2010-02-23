@@ -66,7 +66,7 @@ public final class GemFilesParser {
     /**
      * The pattern for capturing the gem name and version from file names.
      */
-    private static final Pattern PATTERN = Pattern.compile("([\\w-]+)\\-([\\d.]+)"); //NOI18N
+    private static final Pattern PATTERN = Pattern.compile("([\\w-]+)\\-(\\d(?:\\.\\d)*(\\.beta)?)"); //NOI18N
     private static final Logger LOGGER = Logger.getLogger(GemFilesParser.class.getName());
     /**
      * The files to check for gems.
@@ -187,10 +187,6 @@ public final class GemFilesParser {
         }
         String name = m.group(1);
         String version = m.group(2);
-        // strip out trailing "."
-        if (version.endsWith(".")) {
-            version = version.substring(0, version.length() - 1);
-        }
         return new String[]{name, version};
     }
 
