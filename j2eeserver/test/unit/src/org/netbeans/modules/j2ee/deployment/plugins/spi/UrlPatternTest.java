@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,20 +31,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.common.nodes.actions;
+package org.netbeans.modules.j2ee.deployment.plugins.spi;
 
-import org.openide.nodes.Node;
+import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
+import org.netbeans.modules.j2ee.deployment.impl.ServerRegistryTestBase;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 /**
  *
- * @author Michal Mocnak
+ * @author Petr Hejl
  */
-public interface RefreshModulesCookie extends Node.Cookie {
-    
-    public void refresh();
+public class UrlPatternTest extends ServerRegistryTestBase {
 
-    public void refresh(String expectedChild, String unexpectedChild);
-    
+    private static final String TEST_URL_PREFIX_PERMITTED = "permittedfooservice:";
+
+    private static final String TEST_URL_PREFIX_FORBIDDEN = "forbiddenfooservice:";
+
+    public UrlPatternTest(String name) {
+        super(name);
+    }
+
+    public void testPermittedPattern() throws InstanceCreationException {
+        InstanceProperties.createInstanceProperties(
+                TEST_URL_PREFIX_PERMITTED + "testPermitted", "test", "password", "Permitted instance");
+    }
+
+    public void testForbiddenPattern() throws InstanceCreationException {
+        try {
+        InstanceProperties.createInstanceProperties(
+                TEST_URL_PREFIX_FORBIDDEN + "testForbidden", "test", "password", "Forbidden instance");
+        fail("Forbidden instance registered");
+        } catch (InstanceCreationException ex) {
+            // expected
+        }
+    }
 }

@@ -48,8 +48,10 @@ made subject to such option by the copyright holder.
             <folder name="GENERIC">
                 <file name="Descriptor" url="nbdep.xml"/>
                 <file name="Factory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.genericserver.GSDeploymentFactory.create"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.genericserver.GSDeploymentFactory"/>
+                    <attr name="urlPattern" stringvalue="^generic.*$"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.j2ee.genericserver.GSDeploymentFactory.create"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
                 <file name="RegistryNodeFactory.instance">

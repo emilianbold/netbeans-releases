@@ -37,73 +37,61 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
+package org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.enterprise.deploy.shared.ModuleType;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.exceptions.TargetException;
+import javax.enterprise.deploy.spi.status.ProgressEvent;
+import javax.enterprise.deploy.spi.status.ProgressListener;
+import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
-import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.RefreshModulesCookie;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Petr Hejl
  */
-public class WLModuleChildFactory
-        extends org.openide.nodes.ChildFactory<WLModuleNode> implements RefreshModulesCookie {
+public final class ModuleCookieSupport {
 
-    private static final Logger LOGGER = Logger.getLogger(WLModuleChildFactory.class.getName());
+    private static final int MANAGER_TIMEOUT = 60000;
+
+    private final TargetModuleID module;
 
     private final Lookup lookup;
 
-    private final ModuleType moduleType;
-
-    public WLModuleChildFactory(Lookup lookup, ModuleType moduleType) {
+    public ModuleCookieSupport(TargetModuleID module, Lookup lookup) {
+        this.module = module;
         this.lookup = lookup;
-        this.moduleType = moduleType;
     }
 
-    public final void refresh() {
-        refresh(false);
-    }
+    public void performAction(Action action) {
+        WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
+        if (manager != null) {
+            // TODO should we make it batch somehow (it is rare case)
+            ProgressObject obj = action.execute(manager, module);
+            final CountDownLatch latch = new CountDownLatch(1);
+            obj.addProgressListener(new ProgressListener() {
 
-    @Override
-    protected Node createNodeForKey(WLModuleNode key) {
-        return key;
-    }
-
-    @Override
-    protected boolean createKeys(List<WLModuleNode> toPopulate) {
-        WLDeploymentManager dm = lookup.lookup(WLDeploymentManager.class);
-        try {
-            TargetModuleID[] modules = dm.getAvailableModules(moduleType, dm.getTargets());
-            TargetModuleID[] stopped = dm.getNonRunningModules(moduleType, dm.getTargets());
-            Set<String> stoppedByName = new HashSet<String>();
-            if (stopped != null) {
-                for (TargetModuleID module : stopped) {
-                    stoppedByName.add(module.getModuleID());
+                @Override
+                public void handleProgressEvent(ProgressEvent pe) {
+                    if (pe.getDeploymentStatus().isCompleted() || pe.getDeploymentStatus().isFailed()) {
+                        latch.countDown();
+                    }
                 }
+            });
+            try {
+                latch.await(MANAGER_TIMEOUT, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
             }
-
-            if (modules != null) {
-                for (TargetModuleID module : modules) {
-                    toPopulate.add(new WLModuleNode(module, lookup, moduleType,
-                            stoppedByName.contains(module.getModuleID())));
-                }
-            }
-        } catch (IllegalStateException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        } catch (TargetException ex) {
-            LOGGER.log(Level.INFO, null, ex);
         }
-        // perhaps we should return false on exception, however it would most likely fail again
-        return true;
     }
+
+    public static interface Action {
+
+        ProgressObject execute(DeploymentManager manager, TargetModuleID module);
+    }
+
 }

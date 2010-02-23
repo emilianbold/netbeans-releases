@@ -89,9 +89,12 @@ public class WebUtils {
 
                 if (!file.isAbsolute()) {
                     //relative to the current file's folder - let's resolve
-                    FileObject resolvedFileObject = source.getParent().getFileObject(importedFileName);
-                    if (resolvedFileObject != null && resolvedFileObject.isValid()) {
-                        return resolvedFileObject;
+                    FileObject parent = source.getParent();
+                    if(parent != null) {
+                        FileObject resolvedFileObject = parent.getFileObject(importedFileName);
+                        if (resolvedFileObject != null && resolvedFileObject.isValid()) {
+                            return resolvedFileObject;
+                        }
                     }
                 } else {
                     //absolute web path
