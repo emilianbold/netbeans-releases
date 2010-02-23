@@ -156,6 +156,37 @@ public class UtilitiesTest extends TestBase {
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " ").trim());
     }
 
+    public void testParseAndAttributeMultipleStatements2() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "$type $name = $map.get($key); if ($name == null) { $map.put($key, $name = $init); }", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.BLOCK);
+
+        String golden = "{" +
+                        "    $$1$;" +
+                        "    $type $name = $map.get($key);" +
+                        "    if ($name == null) {" +
+                        "        $map.put($key, $name = $init);" +
+                        "    }" +
+                        "    $$2$;\n" +
+                        "}";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
+
+    public void testSimpleExpression() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "$1.isDirectory()", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.METHOD_INVOCATION);
+
+        String golden = "$1.isDirectory()";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
+
     public void testToHumanReadableTime() {
         long time = 202;
         assertEquals(    "5s", Utilities.toHumanReadableTime(time +=           5 * 1000));
