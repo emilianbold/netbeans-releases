@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.options.indentation;
+package org.netbeans.modules.editor.indent.project;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -65,10 +65,15 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.editor.indent.project.api.Customizers;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
 import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import org.netbeans.modules.options.indentation.CustomizerSelector;
+import org.netbeans.modules.options.indentation.FormattingPanel;
+import org.netbeans.modules.options.indentation.FormattingPanelController;
+import org.netbeans.modules.options.indentation.ProxyPreferences;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
@@ -104,10 +109,12 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
      * @param attrs The map of <code>FileObject</code> attributes
      *
      * @return A new 'Formatting' category provider.
-     * @since 1.10
+     * @since 1.0
+     * @deprecated Use {@link Customizers#createFormattingCategoryProvider(java.util.Map) } instead.
      */
+    @Deprecated
     public static ProjectCustomizer.CompositeCategoryProvider createCategoryProvider(Map attrs) {
-        return new Factory((String)attrs.get("allowedMimeTypes")); //NOI18N
+        return Customizers.createFormattingCategoryProvider(attrs);
     }
 
     public static class Factory implements ProjectCustomizer.CompositeCategoryProvider {
@@ -241,7 +248,7 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
                     .add(loadButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
             .add(layout.createSequentialGroup()
                 .add(12, 12, 12)
-                .add(customizerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 490, Short.MAX_VALUE))
+                .add(customizerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
