@@ -312,9 +312,9 @@ is divided into following sections:
                 <xsl:if test="not(/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform)">
                     <property name="javac.fork" value="false"/>
                 </xsl:if>
-
+                <property name="jar.index" value="false"/>
             </target>
-            
+
             <target name="-post-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
@@ -848,7 +848,7 @@ is divided into following sections:
                             </chainedmapper>
                         </pathconvert>
                         <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${{libs.CopyLibs.classpath}}" name="copylibs"/>
-                        <copylibs compress="${{jar.compress}}" jarfile="${{dist.jar}}" manifest="${{manifest.file}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}">
+                        <copylibs compress="${{jar.compress}}" jarfile="${{dist.jar}}" manifest="${{manifest.file}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" index="${{jar.index}}">
                             <fileset dir="${{build.classes.dir}}"/>
                             <manifest>
                                 <attribute name="Class-Path" value="${{jar.classpath}}"/>
@@ -863,13 +863,13 @@ is divided into following sections:
                 <presetdef>
                     <xsl:attribute name="name">jar</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
-                    <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
+                    <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}" index="${{jar.index}}">
                         <j2seproject1:fileset dir="${{build.classes.dir}}"/>
                         <!-- XXX should have a property serving as the excludes list -->
                     </jar>
                 </presetdef>
             </target>
-            
+
             <target name="-init-ap-cmdline-properties">
                 <property name="annotation.processing.enabled" value="true" />
                 <property name="annotation.processing.processors.list" value="" />
