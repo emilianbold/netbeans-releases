@@ -96,6 +96,10 @@ import org.openide.util.NbBundle;
 public class ClientJavaSourceHelper {
 
     public static void generateJerseyClient(Node resourceNode, FileObject targetFo, String className) {
+        generateJerseyClient(resourceNode, targetFo, className, new Security(false, Security.Authentication.NONE));
+    }
+
+    public static void generateJerseyClient(Node resourceNode, FileObject targetFo, String className, Security security) {
 
         // add REST and Jersey dependencies
         ClassPath cp = ClassPath.getClassPath(targetFo, ClassPath.COMPILE);
@@ -158,7 +162,8 @@ public class ClientJavaSourceHelper {
                         baseURL,
                         restServiceDesc,
                         null,
-                        pf);
+                        pf,
+                        security);
             }
         } else {
             WadlSaasResource saasResource = resourceNode.getLookup().lookup(WadlSaasResource.class);
@@ -176,7 +181,8 @@ public class ClientJavaSourceHelper {
                         resourceUri,
                         null,
                         saasResource,
-                        pf);
+                        pf,
+                        security);
             }
         }
     }
@@ -187,7 +193,8 @@ public class ClientJavaSourceHelper {
             final String resourceUri,
             final RestServiceDescription restServiceDesc,
             final WadlSaasResource saasResource,
-            final PathFormat pf) {
+            final PathFormat pf,
+            final Security security) {
         try {
             ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
 
@@ -198,9 +205,9 @@ public class ClientJavaSourceHelper {
                     ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
                     ClassTree modifiedTree = null;
                     if (className == null) {
-                        modifiedTree = modifyJerseyClientClass(copy, tree, resourceUri, restServiceDesc, saasResource, pf);
+                        modifiedTree = modifyJerseyClientClass(copy, tree, resourceUri, restServiceDesc, saasResource, pf, security);
                     } else {
-                        modifiedTree = addJerseyClientClass(copy, tree, className, resourceUri, restServiceDesc, saasResource, pf);
+                        modifiedTree = addJerseyClientClass(copy, tree, className, resourceUri, restServiceDesc, saasResource, pf, security);
                     }
 
                     copy.rewrite(tree, modifiedTree);
@@ -219,9 +226,10 @@ public class ClientJavaSourceHelper {
             String resourceURI,
             RestServiceDescription restServiceDesc,
             WadlSaasResource saasResource,
-            PathFormat pf) {
+            PathFormat pf,
+            Security security) {
 
-        return generateClassArtifacts(copy, classTree, resourceURI, restServiceDesc, saasResource, pf);
+        return generateClassArtifacts(copy, classTree, resourceURI, restServiceDesc, saasResource, pf, security);
     }
 
     private static ClassTree addJerseyClientClass (
@@ -231,7 +239,8 @@ public class ClientJavaSourceHelper {
             String resourceURI,
             RestServiceDescription restServiceDesc,
             WadlSaasResource saasResource,
-            PathFormat pf) {
+            PathFormat pf,
+            Security security) {
 
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree modifs = maker.Modifiers(Collections.<Modifier>singleton(Modifier.STATIC));
@@ -244,18 +253,19 @@ public class ClientJavaSourceHelper {
                 Collections.<Tree>emptyList());
 
         ClassTree modifiedInnerClass =
-                generateClassArtifacts(copy, innerClass, resourceURI, restServiceDesc, saasResource, pf);
+                generateClassArtifacts(copy, innerClass, resourceURI, restServiceDesc, saasResource, pf, security);
 
         return maker.addClassMember(classTree, modifiedInnerClass);
     }
 
-    private static ClassTree generateClassArtifacts(
+    private static ClassTree generateClassArtifacts (
             WorkingCopy copy,
             ClassTree classTree,
             String resourceURI,
             RestServiceDescription restServiceDesc,
             WadlSaasResource saasResource,
-            PathFormat pf) {
+            PathFormat pf,
+            Security security) {
 
         TreeMaker maker = copy.getTreeMaker();
         // add 3 fields
@@ -315,6 +325,32 @@ public class ClientJavaSourceHelper {
                 Collections.<ExpressionTree>emptyList(),
                 body);
         modifiedClass = maker.addClassMember(modifiedClass, constructorTree);
+
+        // add security stuff
+        if (Security.Authentication.BASIC == security.getAuthentization()) {
+            List<VariableTree> authParams = new ArrayList<VariableTree>();
+            Tree argTypeTree = maker.Identifier("String"); //NOI18N
+            ModifiersTree fieldModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+            VariableTree argFieldTree = maker.Variable(fieldModifier, "username", argTypeTree, null); //NOI18N
+            authParams.add(argFieldTree);
+            argFieldTree = maker.Variable(fieldModifier, "password", argTypeTree, null); //NOI18N
+            authParams.add(argFieldTree);
+
+            body =
+                "{"+ //NOI18N
+                "   client.addFilter(new com.sun.jersey.api.client.filter.HTTPBasicAuthFilter(username, password));"+ //NOI18N
+                "}"; //NOI18N
+            MethodTree methodTree = maker.Method (
+                    methodModifier,
+                    "setUsernamePassword", //NOI18N
+                    JavaSourceHelper.createTypeTree(copy, "void"), //NOI18N
+                    Collections.<TypeParameterTree>emptyList(),
+                    authParams,
+                    Collections.<ExpressionTree>emptyList(),
+                    body,
+                    null); //NOI18N
+            modifiedClass = maker.addClassMember(modifiedClass, methodTree);
+        }
 
         // add setResourcePath() method for SubresourceLocators
         if (isSubresource) {

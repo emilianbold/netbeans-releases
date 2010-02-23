@@ -95,6 +95,9 @@ public class JerseyClientWizardPanel implements WizardDescriptor.Panel<WizardDes
     public String getResourceName() {
         return component.getResourceName();
     }
+    public Security getSecurity() {
+        return component.getSecurity();
+    }
     
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
 
