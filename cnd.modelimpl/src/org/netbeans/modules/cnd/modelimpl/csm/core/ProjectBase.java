@@ -1848,14 +1848,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         } else if (fileType == FileImpl.FileType.HEADER_FILE && !impl.isHeaderFile()) {
             impl.setHeaderFile();
         }
-        if (initial != null) {
-            synchronized (getFileContainer().getLock(file)) {
-                Collection<APTPreprocHandler.State> states = getFileContainer().getPreprocStates(file);
-                if (states.isEmpty()) {
-                    putPreprocState(file, initial);
-                }
-            }
-        }
         return impl;
     }
 
