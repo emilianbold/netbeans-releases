@@ -47,7 +47,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,6 +61,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.implspi.SharedClassObjectBridge;
 
 /**
  * @author Jaroslav Tulach, Jesse Glick
@@ -466,7 +466,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         }
 
                         if (o == null) {
-                            o = createInstance(c);
+                            o = SharedClassObjectBridge.newInstance(c);
 
                             synchronized (knownInstances) { // guards only the static cache
                                 hashPut(o);
@@ -549,33 +549,5 @@ final class MetaInfServicesLookup extends AbstractLookup {
             }
         }
 
-        private static boolean findSharedClassObjectSkip;
-        private static Method findSharedClassObject;
-        /** Basically does c.newInstance(), however the method is complicated
-         * with a special behaviour for old and almost obsoleted NetBeans
-         * class: SharedClassObject.
-         */
-        private static Object createInstance(Class<?> c) throws InstantiationException, IllegalAccessException {
-            if (!findSharedClassObjectSkip) {
-                try {
-                    if (findSharedClassObject == null) {
-                        Class<?> sco;
-                        try {
-                            sco = Class.forName("org.openide.util.SharedClassObject"); // NOI18N
-                        } catch (ClassNotFoundException ex) {
-                            findSharedClassObjectSkip = true;
-                            return c.newInstance();
-                        }
-                        findSharedClassObject = sco.getMethod("findObject", Class.class, boolean.class);
-                    }
-                    if (findSharedClassObject.getReturnType().isAssignableFrom(c)) {
-                        return findSharedClassObject.invoke(null, c, true);
-                    }
-                } catch (Exception problem) {
-                    throw (InstantiationException)new InstantiationException(problem.getMessage()).initCause(problem);
-                }
-            }
-            return c.newInstance();
-        }
     }
 }
