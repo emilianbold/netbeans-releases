@@ -56,13 +56,13 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JComponent;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -86,8 +86,7 @@ import org.openide.util.NbBundle;
  * @author Jan Lahoda
  */
 public class AddOverrideAnnotation extends AbstractHint {
-    
-    /** Creates a new instance of AddOverrideAnnotation */
+
     public AddOverrideAnnotation() {
         super( true, true, AbstractHint.HintSeverity.WARNING );
     }
@@ -130,10 +129,7 @@ public class AddOverrideAnnotation extends AbstractHint {
                 addHint = true;
             } else {
                 if (type == AnnotationType.IMPLEMENTS) {
-                    String sourceLevel = SourceLevelQuery.getSourceLevel(compilationInfo.getFileObject());
-
-                    if (!"1.5".equals(sourceLevel))
-                        addHint = true;
+                    addHint = compilationInfo.getSourceVersion() != SourceVersion.RELEASE_5;
                 }
             }
 
