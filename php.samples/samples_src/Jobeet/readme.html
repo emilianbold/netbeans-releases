@@ -1,0 +1,278 @@
+<!--
+    Document   : readme.html
+    Created on : 19.02.2010
+    Author     : Filip Zamboj
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>Jobeet - Readme</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link href="web/css/readme.css" rel="stylesheet" type="text/css" />
+    </head>
+    <body>
+
+
+        <div id="wrapper">
+            <div id="header">
+                <h1><a></a></h1>
+            </div>
+
+            <div id="page">
+                <div id="content">
+                    <div id="welcome">
+
+                        <h1>Jobeet Sample Application - Readme</h1>
+                        <h2>NetBeans PHP Sample Application for Symfony Framework</h2>
+
+                        <p><b>
+                                Application Author:
+                            </b>
+                            Fabien Potencier, Symfony
+                            <br />
+                            <b>
+                                Readme Author:
+                            </b>
+                            PHP Netbeans Team with help of Symfony official documentation
+                        </p>
+
+                        <h2>What is Jobeet?</h2>
+                        <p> Jobeet is a PHP application built on the Symfony framework. It was created                              by the Symfony team and used in their beginners tutorial. It's a fully working                              imaginary application with a frontend for visitors and a backend for                              administrators and demonstrates use of the Doctrine ORM and                              the sfFormExtraPlugin. </p>
+                        <h2>This sample demonstrates the following features:</h2>
+                        <ul>
+                            <li>Symfony framework support in NetBeans</li>
+                            <li>Symfony features such as
+                                <ul>
+                                    <li>Doctrine ORM usage</li>
+                                    <li>Working frontend and backend application with sfFormExtraPlugin</li>
+                                    <li>Symphony i18N usage</li>
+                                    <li>And much more</li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <h2>Requirements</h2>
+                        Set up the following before you run the sample:
+                        <ul>
+                            <li>PHP server (<a moz-do-not-send="true" href="http://httpd.apache.org">Apache</a>, for example)</li>
+                            <li><a moz-do-not-send="true" href="http://www.php.net">PHP 5.2.x or higher</a></li>
+                            <li><a moz-do-not-send="true" href="http://dev.mysql.com/">MySQL server</a></li>
+                            <li><a moz-do-not-send="true" href="http://www.symfony-project.org">symfony 1.2.x</a> <em>(installation manual below)</em></li>
+                            <li><a moz-do-not-send="true" href="http://pear.php.net/">PEAR (optional)</a></li>
+                        </ul>
+                        <h2>What is included?</h2>
+                        <ul>
+                            <li>The entire Symfony jobeet project as it is on <a moz-do-not-send="true" href="http://svn.jobeet.org">svn.jobeet.org</a> with documentation and without symfony sources </li>
+                        </ul>
+                        <h2>Installation</h2>
+                        <p> You need to set up this project to run it and this document is here to help you.                              Since this is a symfony project you need to have symfony installed, but we ran into problems with symfony installation, so we include streamlined installation instructions here. </p>
+                        <p>
+                            There is official Symfony documentation for jobeet but if you are using symfony for the first
+                            time you won't be able to set up this
+                            project quickly by following that documentation.
+                            On the other hand, most of the instructions in that documentation are needed here. So, no matter
+                            how hard we tried to make this simple, we had to use those instructions in
+                            this document as well. We hope you will forgive us for copying and pasting some
+                            information but we did it for you ;).                        </p>
+                        <p><b>
+                                We recommend that you read the documents  in the /doc folder. They will
+                                let you explore Symfony more deeply and show you how this project was developed.
+                                Or you can just browse and read the documentation on the <a href="http://www.symfony-project.org">symfony pages</a>.
+                            </b>
+                        </p>
+                        <h3>Symfony Installation</h3>
+                        <p>
+                            Before you begin, stop for a moment and think. Do you just want to try out symfony or
+                            do you want to have symfony installed and develop real applications?
+                        </p>
+                        <ol class="capital-letter">
+                            <li>Try only - continue with setup without installation</li>
+                            <li>For longer - continue with pear installation (slower but will work for all future projects)
+                                (if you prefer svn checkout read doc/03-Running-Symfony.txt)</li>
+                        </ol>
+                        <h4>Setting Up Without Installation</h4>
+                        <ol>
+                            <li>
+                                Download symfony 1.2 from <a href="http://www.symfony-project.org/installation">http://www.symfony-project.org/installation</a>
+                            </li>
+                            <li>
+                                Extract
+                            </li>
+                            <li>
+
+                                Copy to the sample project's lib/vendor/symfony directory. So the structure will be like
+                                <br /><br />
+                                <code>
+                                    lib/vendor/<br />
+                                    |-- Zend<br />
+                                    |   | ... some Zend framework files for jobeet project<br />
+                                    `-- symfony<br />
+                                    |-- CHANGELOG<br />
+                                    |-- COPYRIGHT<br />
+                                    |-- LICENSE<br />
+                                    |-- README<br />
+                                    |-- UPGRADE_TO_1_1<br />
+                                    |-- UPGRADE_TO_1_2<br />
+                                    |-- data<br />
+                                    |-- doc<br />
+                                    |-- lib<br />
+                                    |-- licenses<br />
+                                    |-- package.xml.tmpl<br />
+                                    `-- test
+                                </code>
+                            </li>
+                            <li>
+                                Symfony is not on your include path now so you need to provide path to
+                                symfony.bat on windows or symfony file on linux.
+                                <br /><br />
+                                Open the Tools -> Options -> Php -> Symfony
+                                menu. If you followed instructions above then the symfony file will be in
+                                lib\vendor\symfony\data\bin\symfony.bat for Windows users and
+                                lib/vendor/symfony/data/bin/symfony for Ubuntu users
+                                <br /><br />
+                                Symfony is done. Now continue with project setup.
+                            </li>
+                        </ol>
+                        <h4>Installing the symfony PEAR Package</h4>
+                        <ol>
+                            <li>
+                                Make sure you have <a href="http://pear.php.net/">PEAR</a> installed.
+                                <br /><br />
+                                The symfony PEAR package contains the symfony libraries and all its dependencies.
+                                It also contains a script that will extend your CLI to include the `symfony` command.
+                            </li>
+                            <li>
+                                Add the symfony channel to PEAR, by issuing this command:
+                                <br /><br />
+                                <code>pear channel-discover pear.symfony-project.com></code>
+
+                            </li>
+                            <li>
+                                To see the libraries available in this channel, type the following:
+                                <br /><br />
+                                <code>pear remote-list -c symfony</code>
+
+                            </li>
+                            <li>
+                                Install the latest stable version of symfony. Issue this command:
+                                <br /><br />
+                                <code>pear install symfony/symfony-1.2.11</code>
+                                <br /><br />
+                                <code>
+                                    downloading symfony-1.2.11.tgz ...<br />
+                                    Starting to download symfony-1.2.11.tgz (1,283,270 bytes)<br />
+                                    .................................................................<br />
+                                    .................................................................<br />
+                                    .............done: 1,283,270 bytes<br />
+                                    install ok: channel://pear.symfony-project.com/symfony-1.2.11<br />
+                                </code>
+
+                            </li>
+                            <li>
+                                That's it. The symfony files and CLI are installed. Check that the installation succeeded by calling the new `symfony` command line and asking for the version number:
+                                <br /><br />
+                                <code>symfony -V
+                                    <br />
+                                    symfony version 1.2.11 (/path/to/the/pear/symfony/lib/dir)
+                                </code>
+                                <br /><br />
+                                The symfony libraries are now installed in directories as follows:
+                                <br /><br />
+                                <code>
+                                    * `$php_dir/symfony/` contains the main libraries.<br />
+                                    * `$data_dir/symfony/` contains the web assets used by symfony default modules.<br />
+                                    * `$doc_dir/symfony/` contains the documentation.<br />
+                                    * `$test_dir/symfony/` contains symfony core unit and functional tests.<br />
+                                </code>
+                                <br /><br />
+                                The `_dir` variables are part of your PEAR configuration. To see their values, type the following:
+                                <br /><br />
+                                <code>pear config-show</code>
+                                <br /><br />
+                                Symfony is ready. Now, continue with project setup.
+                            </li>
+                        </ol>
+                        <h3>Project Setup</h3>
+                        <ol>
+                            <li>Change line 3 of <i>config/ProjectConfiguration.class</i> so that it will include
+                                <i>sfCoreAutoload.class.php</i> from your symfony folder in directory.
+                                <br /><br />
+
+                                If you just copied symfony to <i>lib/vendor/,</i>
+                                set  path to
+                                <i>dirname(__FILE__).'/../lib/vendor/symfony/lib/autoloadsfCoreAutoload.class.php</i>
+                                <br />
+                                <br />
+
+                                If you installed using PEAR then you should have symfony on your include path.
+                                <br /><br />
+                                Your include path is listed in <i>phpinfo()</i> output.
+                                <br /><br />
+                                Linux users usually have <i>include_path=".:/usr/share/php"</i>. The symfony folder should be in <i>/usr/share/php</i>. Your path therefore is <i>symfony/autoload/sfCoreAutoload.class.php</i>.
+                                <br /><br />
+                                Windows users are in a more complicated situation. However you can find out
+                                where your include_path directives point from phpinfo() output or add symfony
+                                to the include path. Example of php include path on Windows is
+                                <i>include_path=".;C:\php5\pear"</i>
+                            </li>
+                            <li>Create Jobeet's cache folder in your_project_folder/ and make sure it is writable by everyone (or webserver full access at least)</li>
+                            <li>Create Jobeet's log folder in your_project_folder/ and make sure it is writable by everyone (or webserver full access at least)</li>
+                            <li>Make sure Jobeet's data/job.dev.index folder is writable by everyone (or webserver full access at least)</li>
+                            <li>Set up database connection in  config/databases.yml so
+                                that it will correspond to your database connection settings</li>
+                            <li>Call symfony command (right click on project name -> Symfony -> Run Command)
+                                <br><br>
+                                <code>doctrine:build-all-load</code>
+                            </li>
+                            <li>Set up web server doc root to point to
+                            <JobeetFolder>/web.
+                                <br />
+                                Example:<br /><br />
+                                <code>
+                                    &lt;VirtualHost *:80&gt;<br />
+                                    <br /><br />
+                                    ServerAdmin webmaster@localhost<br />
+                                    DocumentRoot /your_web_folder/Jobeet/web<br />
+                                    AccessFileName .htaccess<br />
+                                    <br /><br />
+                                    &lt;Directory /your_web_folder/Jobeet/web&gt;<br />
+                                    Options Indexes FollowSymLinks MultiViews<br />
+                                    AllowOverride all<br />
+                                    Order allow,deny<br />
+                                    allow from all<br />
+                                    &lt;/Directory&gt;<br />
+                                    <br /><br />
+                                    &lt;/VirtualHost&gt;                                </code>                                </li>
+                                <li>Don't forget to change <i>your_web_folder</i> to correct path. Type <a href="http://localhost">http://localhost</a> to your browser.
+                                    If something is wrong then you can try
+                                    <a href="http://localhost/frontend_dev.php">http://localhost/frontend_dev.php</a>,
+                                    which should have debugging output. <i>You can set up your project to be called from a different
+                                        url, of course, such as http://localhost/var/www/Jobeet/web, and it should work.</i>                                </li>
+                                <li>Invoke symfony commands<br /><br />
+                                    <code>
+                                        guard:create-user admin admin<br />
+                                        guard:promote admin                                    </code>
+
+                                    <br /><br />
+                                    This will create user 'admin' with password 'admin' and make him/her super administrator.
+                                    You need these credentials to enter the backend application
+                                    <a href="http://localhost/backend.php">http://localhost/backend.php</a>                                </li>
+                        </ol>
+
+                        <h3>Note</h3>
+                        <p>
+                            Check if you have the path to the php interpreter set correctly if you don't see Symfony commands.
+                            If you are using wamp/xampp or a similar product then you need to provide the path to php.exe or php
+                            (depends on platform) in Tools -> Options -> PHP.
+                        </p>
+                        <p>
+                            If you find any problems, don't hesitate to file a bug at
+                            <a href="http://netbeans.org/community/issues.html">http://netbeans.org/community/issues.html</a>
+                            against product PHP, component Project. We fixed some bugs we found in downloaded Jobeet project, actually.
+                            However, there is no guarantee everything is all right.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
