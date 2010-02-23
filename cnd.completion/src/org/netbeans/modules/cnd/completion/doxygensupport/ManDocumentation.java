@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.cnd.completion.doxygensupport;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -175,7 +174,7 @@ public class ManDocumentation {
     }
 
     private static String createDocumentationForName(String name, int chapter) throws IOException {
-        ByteOutputStream bos = new ByteOutputStream();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
         Process p0 = Runtime.getRuntime().exec("/usr/bin/man " + name); // NOI18N
         InputStream is = p0.getInputStream();
         InputStreamReader ist = new InputStreamReader(is);
