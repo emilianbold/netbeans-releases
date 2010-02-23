@@ -60,6 +60,8 @@ public abstract class CsmDocGeneratorProvider {
     public abstract Function getFunction(Document doc, int position);
 
     public static interface Function {
+        String getName();
+        String getSignature();
         String getReturnType();
         List<Parameter> getParametes();
     }

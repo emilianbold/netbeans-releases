@@ -302,7 +302,7 @@ public class RailsProjectUtil {
             if (splitted.length == 2) {
                 return new RailsVersion(Integer.parseInt(splitted[0]),
                         Integer.parseInt(splitted[1]));
-            } else if (splitted.length == 3) {
+            } else if (splitted.length >= 3) {
                 return new RailsVersion(Integer.parseInt(splitted[0]),
                         Integer.parseInt(splitted[1]),
                         Integer.parseInt(splitted[2]));
