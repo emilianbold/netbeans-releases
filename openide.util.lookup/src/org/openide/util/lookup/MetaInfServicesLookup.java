@@ -207,13 +207,11 @@ final class MetaInfServicesLookup extends AbstractLookup {
                 if (realMcCoy != clazz) {
                     // Either the interface class is not available at all in our loader,
                     // or it is not the same version as we expected. Don't provide results.
-                    if (LOGGER.isLoggable(Level.WARNING)) {
-                        if (realMcCoy != null) {
-                            LOGGER.log(Level.WARNING, "{0} is not the real McCoy! Actually found it in {1}",
-                                    new Object[] {clazz.getName(), realMcCoy.getClassLoader()}); // NOI18N
-                        } else {
-                            LOGGER.log(Level.WARNING, "{0} could not be found in {1}", new Object[] {clazz.getName(), loader}); // NOI18N
-                        }
+                    if (realMcCoy != null) {
+                        LOGGER.log(Level.WARNING, "{0} is not the real McCoy! Actually found it in {1}",
+                                new Object[] {clazz.getName(), realMcCoy.getClassLoader()}); // NOI18N
+                    } else {
+                        LOGGER.log(Level.WARNING, "{0} could not be found in {1}", new Object[] {clazz.getName(), loader}); // NOI18N
                     }
 
                     return;
@@ -229,6 +227,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                 try {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8")); // NOI18N
 
+                    // XXX consider using ServiceLoaderLine instead
                     while (true) {
                         String line = reader.readLine();
 
