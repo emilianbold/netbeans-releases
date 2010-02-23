@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.cnd.completion.doxygensupport;
 
+import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -47,6 +49,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.HashMap;
@@ -172,7 +175,20 @@ public class ManDocumentation {
     }
 
     private static String createDocumentationForName(String name, int chapter) throws IOException {
-        String text = readManPage(manPageRelativePath(name, chapter));
+        ByteOutputStream bos = new ByteOutputStream();
+        Process p0 = Runtime.getRuntime().exec("/usr/bin/man " + name); // NOI18N
+        InputStream is = p0.getInputStream();
+        InputStreamReader ist = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(ist);
+        StringBuffer stringBuffer = new StringBuffer();
+        String buf = null;
+        while ((buf = br.readLine()) != null) {
+            stringBuffer.append(buf + "\n"); // NOI18N
+        }
+        String text = stringBuffer.toString();
+        bos.flush();
+        bos.close();
+        br.close();
 
         if (text == null) {
             return null;
@@ -212,6 +228,7 @@ public class ManDocumentation {
 
                 result = result.replace(key, value); //1.5 API!!!!
             }
+            result = result.replaceAll("\n\n\n", "\n"); // NOI18N
 
             int htmlStart = result.indexOf("<HTML>"); // NOI18N
 
