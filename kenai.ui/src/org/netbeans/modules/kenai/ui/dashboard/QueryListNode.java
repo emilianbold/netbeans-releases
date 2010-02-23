@@ -132,7 +132,8 @@ public class QueryListNode extends SectionNode {
                     panel.add(btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                     panel.add(new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 }
-                btn.setForeground(foreground, isSelected);
+                if (btn!=null)
+                    btn.setForeground(foreground, isSelected);
                 return panel;
             }
         }
