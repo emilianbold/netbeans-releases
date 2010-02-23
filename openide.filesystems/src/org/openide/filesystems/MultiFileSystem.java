@@ -221,19 +221,19 @@ public class MultiFileSystem extends FileSystem {
 
     /** This filesystem is readonly if it has not writable system.
     */
-    public boolean isReadOnly() {
+    public @Override boolean isReadOnly() {
         return WRITE_SYSTEM_INDEX >= systems.length || systems[WRITE_SYSTEM_INDEX] == null || systems[WRITE_SYSTEM_INDEX].isReadOnly();
     }
 
     /** The name of the filesystem.
     */
-    public String getDisplayName() {
+    public @Override String getDisplayName() {
         return NbBundle.getMessage(MultiFileSystem.class, "CTL_MultiFileSystem");
     }
 
     /** Root of the filesystem.
     */
-    public FileObject getRoot() {
+    public @Override FileObject getRoot() {
         return getMultiRoot();
     }
 
@@ -335,7 +335,7 @@ public class MultiFileSystem extends FileSystem {
     * @return FileObject that represents file with given name or
     *   <CODE>null</CODE> if the file does not exist
     */
-    public FileObject findResource(String name) {
+    public @Override FileObject findResource(String name) {
         if (name.length() == 0) {
             return getMultiRoot();
         } else {
@@ -402,7 +402,7 @@ public class MultiFileSystem extends FileSystem {
         Enumeration<? extends FileObject> allFiles = folder.getChildren(rec);
 
         class OnlyHidden implements Enumerations.Processor<FileObject, String> {
-            public String process(FileObject obj, Collection<FileObject> ignore) {
+            public @Override String process(FileObject obj, Collection<FileObject> ignore) {
                 String sf = obj.getPath();
 
                 if (sf.endsWith(MASK)) {
@@ -556,7 +556,7 @@ public class MultiFileSystem extends FileSystem {
         Enumeration<FileSystem> en = Enumerations.array(systems);
 
         class Resources implements Enumerations.Processor<FileSystem, FileObject> {
-            public FileObject process(FileSystem fs, Collection<FileSystem> ignore) {
+            public @Override FileObject process(FileSystem fs, Collection<FileSystem> ignore) {
                 if (fs == null) {
                     return null;
                 } else {
