@@ -160,7 +160,7 @@ public class ManDocumentation {
 
     private static File getCacheDir() {
         String nbuser = System.getProperty("netbeans.user"); //XXX // NOI18N
-        File cache = new File(nbuser, "var/cache/cpplite"); // NOI18N
+        File cache = new File(nbuser, "var/cache/cnd/doxygen"); // NOI18N
 
         cache.mkdirs();
 
@@ -185,9 +185,10 @@ public class ManDocumentation {
             stringBuffer.append(buf + "\n"); // NOI18N
         }
         String text = stringBuffer.toString();
-        bos.flush();
-        bos.close();
         br.close();
+        ist.close();
+        is.close();
+        bos.close();
 
         if (text == null) {
             return null;
@@ -200,6 +201,7 @@ public class ManDocumentation {
         try {
             Process p = Runtime.getRuntime().exec(new String[]{
                         "/usr/bin/man2html", // NOI18N
+                        "-compress", // NOI18N
                         "-", // NOI18N
                     });
 
@@ -227,7 +229,6 @@ public class ManDocumentation {
 
                 result = result.replace(key, value); //1.5 API!!!!
             }
-            result = result.replaceAll("\n\n\n", "\n"); // NOI18N
 
             int htmlStart = result.indexOf("<HTML>"); // NOI18N
 
