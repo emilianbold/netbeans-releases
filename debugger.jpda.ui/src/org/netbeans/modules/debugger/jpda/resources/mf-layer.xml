@@ -66,6 +66,10 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
                         <attr name="position" intvalue="1760"/>
                     </file>
+                    <file name="org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.instance"/>
+                        <attr name="position" intvalue="1790"/>
+                    </file>
                     <file name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
                         <attr name="position" intvalue="1800"/>
