@@ -87,7 +87,7 @@ public class WLModuleChildFactory
             TargetModuleID[] stopped = dm.getNonRunningModules(moduleType, dm.getTargets());
             Set<String> stoppedByName = new HashSet<String>();
             if (stopped != null) {
-                for (TargetModuleID module : modules) {
+                for (TargetModuleID module : stopped) {
                     stoppedByName.add(module.getModuleID());
                 }
             }
