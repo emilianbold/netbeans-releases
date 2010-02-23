@@ -60,6 +60,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.remote.fs.ui.RemoteFileSystemNotifier;
@@ -207,9 +208,12 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings("RV") // it's ok to ignore File.createNewFile() return value
-    private void syncDirStruct(final File dir, final String remoteDir) throws IOException, CancellationException {
+    private void syncDirStruct(final File dir, String remoteDir) throws IOException, CancellationException {
         if (dir.exists()) {
             CndUtils.assertTrue(dir.isDirectory(), dir.getAbsolutePath() + " is not a directory"); //NOI18N
+        }
+        if (remoteDir.length() == 0) {
+            remoteDir = "/"; //NOI18N
         }
         checkConnection(dir, remoteDir, true);
         NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(execEnv);
@@ -222,9 +226,9 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         final BufferedReader rdr = new BufferedReader(new InputStreamReader(is));
         final BufferedReader erdr = new BufferedReader(new InputStreamReader(er));
         String inputLine;
-        RemoteUtil.LOGGER.finest("Synchronizing dir " + dir.getAbsolutePath() + " with " + execEnv + ':' + remoteDir);
+        RemoteUtil.LOGGER.log(Level.FINEST, "Synchronizing dir {0} with {1}{2}{3}", new Object[]{dir.getAbsolutePath(), execEnv, ':', remoteDir});
         while ((inputLine = erdr.readLine()) != null) {
-            RemoteUtil.LOGGER.finest("Error [" + inputLine + "]\n\ton Synchronizing dir " + dir.getAbsolutePath() + " with " + execEnv + ':' + remoteDir);
+            RemoteUtil.LOGGER.log(Level.FINEST, "Error [{0}]\n\ton Synchronizing dir {1} with {2}{3}{4}", new Object[]{inputLine, dir.getAbsolutePath(), execEnv, ':', remoteDir});
         }
         boolean dirCreated = false;
         while ((inputLine = rdr.readLine()) != null) {
@@ -242,7 +246,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
             }
             File file = new File(dir, fileName);
             try {
-                RemoteUtil.LOGGER.finest("\tcreating " + fileName);
+                RemoteUtil.LOGGER.log(Level.FINEST, "\tcreating {0}", fileName);
                 if (directory) {
                     if (!file.mkdirs() && !file.exists()) {
                         throw new IOException("can't create directory " + file.getAbsolutePath()); // NOI18N
@@ -251,8 +255,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
                     file.createNewFile();
                 }
             } catch (IOException ex) {
-                RemoteUtil.LOGGER.warning("Error creating " + (directory ? "directory" : "file") +
-                        ' ' + file.getAbsolutePath() + ": " + ex.getMessage());
+                RemoteUtil.LOGGER.log(Level.WARNING, "Error creating {0}{1}{2}: {3}", new Object[]{directory ? "directory" : "file", ' ', file.getAbsolutePath(), ex.getMessage()});
                 throw ex;
             }
         }
@@ -262,11 +265,11 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         er.close();
         if (dirCreated) {
             File flag = new File(dir, FLAG_FILE_NAME);
-            RemoteUtil.LOGGER.finest("Creating Flag file " + flag.getAbsolutePath());
+            RemoteUtil.LOGGER.log(Level.FINEST, "Creating Flag file {0}", flag.getAbsolutePath());
             try {
                 flag.createNewFile(); // TODO: error processing
             } catch (IOException ie) {
-                RemoteUtil.LOGGER.finest("FAILED creating Flag file " + flag.getAbsolutePath());
+                RemoteUtil.LOGGER.log(Level.FINEST, "FAILED creating Flag file {0}", flag.getAbsolutePath());
                 throw ie;
             }
             dirSyncCount++;
@@ -288,7 +291,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
 
     private void checkConnection(File localFile, String remotePath, boolean isDirectory) throws IOException, CancellationException {
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-            RemoteUtil.LOGGER.finest("Adding notification for " + execEnv + ":" + remotePath); //NOI18N
+            RemoteUtil.LOGGER.log(Level.FINEST, "Adding notification for {0}:{1}", new Object[]{execEnv, remotePath}); //NOI18N
             pendingFilesQueue.add(localFile, remotePath, isDirectory);
             getNotifier().showIfNeed();
             throw new CancellationException();
