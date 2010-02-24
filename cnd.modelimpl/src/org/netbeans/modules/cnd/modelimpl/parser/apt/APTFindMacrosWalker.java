@@ -328,11 +328,11 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
                 if (current != null && macroContainerFile.length() > 0) {
                     ProjectBase targetPrj = ((ProjectBase) current.getProject()).findFileProject(macroContainerFile);
                     if (targetPrj != null) {
-                        target = targetPrj.findFile(macroContainerFile);
+                        target = targetPrj.findFile(macroContainerFile, false);
                     }
                     // try full model?
                     if (target == null) {
-                        target = CsmModelAccessor.getModel().findFile(macroContainerFile);
+                        target = CsmModelAccessor.getModel().findFile(macroContainerFile, false);
                     }
                     if (target == null && targetPrj != null) {
                         target = targetPrj.getUnresolvedFile();

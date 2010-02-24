@@ -75,7 +75,7 @@ public class CsmFunctionCallsProviderImpl implements FunctionCallsProvider {
             return Collections.emptyList();
         }
 
-        CsmFile csmFile = CsmUtilities.getCsmFile(document, false);
+        CsmFile csmFile = CsmUtilities.getCsmFile(document, false, false);
         if (csmFile == null || !csmFile.isParsed()) {
             return Collections.emptyList();
         }
