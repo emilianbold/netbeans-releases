@@ -89,6 +89,7 @@ import org.netbeans.modules.css.editor.PropertyModel;
 import org.netbeans.modules.css.editor.model.HtmlTags;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.indexing.CssIndex;
+import org.netbeans.modules.css.indexing.CssIndexer;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
@@ -397,12 +398,15 @@ public class CssCompletion implements CodeCompletionHandler {
                     addSpaceBeforeItem = true;
                 }
 
-                return wrapPropertyValues(prop,
+                return wrapPropertyValues(context,
+                        prefix,
+                        prop,
                         filteredByPrefix,
                         CompletionItemKind.VALUE,
                         completionItemInsertPosition,
                         false,
-                        addSpaceBeforeItem);
+                        addSpaceBeforeItem,
+                        false);
 
 
             }
@@ -410,8 +414,14 @@ public class CssCompletion implements CodeCompletionHandler {
             //Why we need the (prefix.length() > 0 || astCaretOffset == node.startOffset())???
             //please refer to the comment above
 //        } else if (node.kind() == CssParserTreeConstants.JJTTERM && (prefix.length() > 0 || astCaretOffset == node.startOffset())) {
-        } else if (node.kind() == CssParserTreeConstants.JJTTERM) {
+        } else if (node.kind() == CssParserTreeConstants.JJTTERM || 
+                (node.kind() == CssParserTreeConstants.JJTERROR_SKIPDECL &&
+                ((SimpleNode)node.jjtGetParent()).kind() == CssParserTreeConstants.JJTDECLARATION)) {
             //value cc with prefix
+            //a. for term nodes
+            //b. for error skip declaration nodes with declaration parent,
+            //for example if user types color: # and invokes the completion
+
             //find property node
 
             //1.find declaration node first
@@ -449,8 +459,14 @@ public class CssCompletion implements CodeCompletionHandler {
                 return CodeCompletionResult.NONE;
             }
 
-            SimpleNode expression = (SimpleNode) node.jjtGetParent();
-            String expressionText = expression.image();
+            String expressionText;
+            if(node.kind() == CssParserTreeConstants.JJTTERM) {
+                SimpleNode expression = (SimpleNode) node.jjtGetParent();
+                expressionText = expression.image();
+            } else {
+                //error skip decl - no expression to parse
+                expressionText = "";
+            }
 
             //use just the current line, if the expression spans to multiple
             //lines it is likely because of parsing error
@@ -482,12 +498,23 @@ public class CssCompletion implements CodeCompletionHandler {
                 addSpaceBeforeItem = true;
             }
 
-            return wrapPropertyValues(prop,
+            //hack for color: #| completion >>>
+            boolean extendedItemsOnly = false;
+            if(prefix.equals("#")) {
+                completionItemInsertPosition--;
+                extendedItemsOnly = true; //do not add any default alternatives items
+            }
+            //<<<
+
+            return wrapPropertyValues(context,
+                    prefix,
+                    prop,
                     filteredByPrefix,
                     CompletionItemKind.VALUE,
                     completionItemInsertPosition,
                     false,
-                    addSpaceBeforeItem);
+                    addSpaceBeforeItem,
+                    extendedItemsOnly);
 
 
         } else if (node.kind() == CssParserTreeConstants.JJTELEMENTNAME) {
@@ -535,12 +562,15 @@ public class CssCompletion implements CodeCompletionHandler {
         return new DefaultCompletionResult(proposals, false);
     }
 
-    private CodeCompletionResult wrapPropertyValues(Property property,
+    private CodeCompletionResult wrapPropertyValues(CodeCompletionContext context,
+            String prefix,
+            Property property,
             Collection<Element> props,
             CompletionItemKind kind,
             int anchor,
             boolean addSemicolon,
-            boolean addSpaceBeforeItem) {
+            boolean addSpaceBeforeItem,
+            boolean extendedItemsOnly) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         boolean colorChooserAdded = false;
         for (Element e : props) {
@@ -550,19 +580,57 @@ public class CssCompletion implements CodeCompletionHandler {
                 }
             }
             CssValueElement handle = new CssValueElement(property, e);
-
             String origin = e.getResolvedOrigin();
             if("color".equals(origin)) { //NOI18N
                 if(!colorChooserAdded) {
+                    //add color chooser item
                     proposals.add(new ColorChooserItem(anchor, origin, addSemicolon));
+                    //add used colors items
+                    proposals.addAll(getUsedColorsItems(context, prefix, handle, origin, kind, anchor, addSemicolon, addSpaceBeforeItem));
                     colorChooserAdded = true;
                 }
-                proposals.add(createColorValueCompletionItem(handle, e, kind, anchor, addSemicolon, addSpaceBeforeItem));
+                if(!extendedItemsOnly) {
+                    proposals.add(createColorValueCompletionItem(handle, e, kind, anchor, addSemicolon, addSpaceBeforeItem));
+                }
             } else {
-                proposals.add(createValueCompletionItem(handle, e, kind, anchor, addSemicolon, addSpaceBeforeItem));
+                if(!extendedItemsOnly) {
+                    proposals.add(createValueCompletionItem(handle, e, kind, anchor, addSemicolon, addSpaceBeforeItem));
+                }
             }
         }
         return new DefaultCompletionResult(proposals, false);
+    }
+
+    private Collection<CompletionProposal> getUsedColorsItems(CodeCompletionContext context, String prefix,
+            CssElement element, String origin, CompletionItemKind kind, int anchor, boolean addSemicolon,
+            boolean addSpaceBeforeItem) {
+        FileObject current = context.getParserResult().getSnapshot().getSource().getFileObject();
+        if(current == null) {
+            return Collections.emptyList();
+        }
+        CssProjectSupport support = CssProjectSupport.findFor(current);
+        CssIndex index = support.getIndex();
+        Map<FileObject, Collection<String>> result = index.findAll(CssIndexer.COLORS_KEY);
+
+        //resort the files collection so the current file it first
+        //we need that to ensure the color from current file has precedence
+        //over the others
+        List<FileObject> resortedKeys = new ArrayList<FileObject>(result.keySet());
+        resortedKeys.remove(current);
+        resortedKeys.add(0, current);
+
+        Collection<CompletionProposal> proposals = new HashSet<CompletionProposal>();
+        for(FileObject file : resortedKeys) {
+            Collection<String> colors = result.get(file);
+            boolean usedInCurrentFile = file.equals(current);
+            for(String color : colors) {
+                if(color.startsWith(prefix)) {
+                    proposals.add(new HashColorCompletionItem(element, color, origin,
+                            kind, anchor, addSemicolon, addSpaceBeforeItem, usedInCurrentFile));
+                }
+            }
+        }
+        return proposals;
     }
 
     private Collection<String> filterStrings(Collection<String> values, String propertyNamePrefix) {
@@ -950,6 +1018,67 @@ public class CssCompletion implements CodeCompletionHandler {
         public ImageIcon getIcon() {
             return createIcon(colors().get(getName()));
         }
+    }
+
+    private class HashColorCompletionItem extends ColorCompletionItem {
+
+        private boolean usedInCurrentFile;
+
+        private HashColorCompletionItem(CssElement element,
+                String value,
+                String origin,
+                CompletionItemKind kind,
+                int anchorOffset,
+                boolean addSemicolon,
+                boolean addSpaceBeforeItem,
+                boolean usedInCurrentFile) {
+
+            super(element, value, origin, kind, anchorOffset, addSemicolon, addSpaceBeforeItem);
+            this.usedInCurrentFile = usedInCurrentFile;
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return createIcon(getName().substring(1)); //strip off the hash
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            return new StringBuilder().append(usedInCurrentFile ? "" : "<font color=999999>").
+                    append(getName()).append(usedInCurrentFile ? "" : "</font>").toString();
+        }
+
+        @Override
+        public int getSortPrioOverride() {
+            return super.getSortPrioOverride() + (usedInCurrentFile ? 1 : 0);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final HashColorCompletionItem other = (HashColorCompletionItem) obj;
+
+            if ((this.getName() == null) ? (other.getName() != null) : !this.getName().equals(other.getName())) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 37 * hash + (this.getName() != null ? this.getName().hashCode() : 0);
+            return hash;
+        }
+
+        
+
+
     }
 
     private static final JColorChooser COLOR_CHOOSER = new JColorChooser();
