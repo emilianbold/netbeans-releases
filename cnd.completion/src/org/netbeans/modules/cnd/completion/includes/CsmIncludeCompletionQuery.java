@@ -63,7 +63,7 @@ public class CsmIncludeCompletionQuery {
         results = new HashMap<String, CsmIncludeCompletionItem>(100);
         CsmFile docFile = this.file;
         if (docFile == null) {
-            docFile = CsmUtilities.getCsmFile(doc, false);
+            docFile = CsmUtilities.getCsmFile(doc, false, false);
         }
         String usrFilePath;
         Collection<String> usrPaths = Collections.<String>emptyList();

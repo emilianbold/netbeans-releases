@@ -86,7 +86,7 @@ public class CsmAutosProviderImpl implements AutosProvider {
             return Collections.emptySet();
         }
 
-        CsmFile csmFile = CsmUtilities.getCsmFile(document, false);
+        CsmFile csmFile = CsmUtilities.getCsmFile(document, false, false);
         if (csmFile == null || !csmFile.isParsed()) {
             return Collections.emptySet();
         }

@@ -139,7 +139,7 @@ public class CompletionTestPerformer {
             int caretOffset,
             boolean      unsorted) {
         doc = doc == null ? Utilities.getDocument(editor) : doc;
-        CsmFile csmFile = CsmUtilities.getCsmFile(doc, false);
+        CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
         assert csmFile != null : "Must be csmFile for document " + doc;        
         CsmCompletionQuery query = CsmCompletionProvider.getCompletionQuery(csmFile, this.queryScope, null);
         CsmCompletionQuery.CsmCompletionResult res = query.query(editor, doc, caretOffset, false, !unsorted, true);
@@ -258,7 +258,7 @@ public class CompletionTestPerformer {
     
     private FileObject getTestFile(File testFile, PrintWriter log) throws IOException, InterruptedException, PropertyVetoException {
         FileObject test = FileUtil.toFileObject(testFile);
-        CsmFile csmFile = CsmModelAccessor.getModel().findFile(testFile.getAbsolutePath());
+        CsmFile csmFile = CsmModelAccessor.getModel().findFile(testFile.getAbsolutePath(), false);
         if (test == null || csmFile == null) {
             throw new IllegalStateException("Given test file does not exist.");
         }
@@ -287,9 +287,9 @@ public class CompletionTestPerformer {
 //                System.err.println("document after cookie saving " + fo.getPath() + "\ntext:\n" + docText);
 //            }
 //        }
-        CsmFile csmFile = CsmUtilities.getCsmFile(dob, false);
+        CsmFile csmFile = CsmUtilities.getCsmFile(dob, false, false);
         if (csmFile == null) {
-            csmFile = CsmUtilities.getCsmFile(dob, false);
+            csmFile = CsmUtilities.getCsmFile(dob, false, false);
         }
         assert csmFile != null : "Must be csmFile for data object " + dob;
         CsmProject prj = csmFile.getProject();

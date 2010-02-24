@@ -107,7 +107,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         if (inDoc == null || outDoc == null) {
             return 0;
         }
-        final CsmFile file = CsmUtilities.getCsmFile(inDoc, true);
+        final CsmFile file = CsmUtilities.getCsmFile(inDoc, true, false);
         if (file == null) {
             return 0;
         }
@@ -297,7 +297,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         if(doc == null) {
             return null;
         }
-        return expand(doc, CsmUtilities.getCsmFile(doc, true), startOffset, endOffset);
+        return expand(doc, CsmUtilities.getCsmFile(doc, true, false), startOffset, endOffset);
     }
 
     public String expand(Document doc, CsmFile file, int startOffset, int endOffset) {
@@ -309,7 +309,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         int[] span = new int[]{offset, offset};
         TransformationTable tt;
         if (wait) {
-            CsmFile file = CsmUtilities.getCsmFile(doc, true);
+            CsmFile file = CsmUtilities.getCsmFile(doc, true, false);
             tt = updateMacroTableIfNeeded(doc, file);
         } else {
             synchronized (doc) {
@@ -399,7 +399,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         if (doc == null) {
             return code;
         }
-        CsmFile file = CsmUtilities.getCsmFile(doc, true);
+        CsmFile file = CsmUtilities.getCsmFile(doc, true, false);
         if (!(file instanceof FileImpl)) {
             return code;
         }
