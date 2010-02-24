@@ -319,8 +319,8 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            Vector<String> vector = super.getListData();
-            Object[] arr = super.getListData().toArray();
+            List<String> vector = super.getListData();
+            Object[] arr = vector.toArray();
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] == o) {
                     vector.remove(i);
