@@ -52,6 +52,12 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.mercurial.HgFileNode;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Visible in the Search History Diff view.
@@ -68,8 +74,8 @@ class DiffNode extends AbstractNode {
     private final Setup     setup;
     private String          htmlDisplayName;
 
-    public DiffNode(Setup setup) {
-        super(Children.LEAF, Lookups.singleton(setup));
+    public DiffNode(Setup setup, HgFileNode node) {
+        super(Children.LEAF, getLookupFor(setup, node.getLookupObjects()));
         this.setup = setup;
         setName(setup.getBaseFile().getName());
         initProperties();
@@ -101,6 +107,28 @@ class DiffNode extends AbstractNode {
         if (context) return null;
         return new Action [0];
     }
+
+    /**
+     * Provide cookies to actions.
+     * If a node represents primary file of a DataObject
+     * it has respective DataObject cookies.
+     */
+    @SuppressWarnings("unchecked") // Adding getCookie(Class<Cookie> klass) results in name clash
+    @Override
+    public Cookie getCookie(Class klass) {
+        FileObject fo = FileUtil.toFileObject(getSetup().getBaseFile());
+        if (fo != null) {
+            try {
+                DataObject dobj = DataObject.find(fo);
+                if (fo.equals(dobj.getPrimaryFile())) {
+                    return dobj.getCookie(klass);
+                }
+            } catch (DataObjectNotFoundException e) {
+                // ignore file without data objects
+            }
+        }
+        return super.getCookie(klass);
+    }
     
     private void initProperties() {
         Sheet sheet = Sheet.createDefault();
@@ -115,6 +143,13 @@ class DiffNode extends AbstractNode {
         
         sheet.put(ps);
         setSheet(sheet);        
+    }
+
+    private static org.openide.util.Lookup getLookupFor (Setup setup, Object[] lookupObjects) {
+        Object[] allLookupObjects = new Object[lookupObjects.length + 1];
+        allLookupObjects[0] = setup;
+        System.arraycopy(lookupObjects, 0, allLookupObjects, 1, lookupObjects.length);
+        return Lookups.fixed(allLookupObjects);
     }
 
     private abstract class DiffNodeProperty extends PropertySupport.ReadOnly {

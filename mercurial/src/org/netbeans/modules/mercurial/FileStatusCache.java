@@ -545,6 +545,7 @@ public class FileStatusCache {
         assert check = true;
         File parent = file;
         FileInformation info;
+        FileInformation childInfo = newInfo;
         // update all managed parents
         File child = file;
         while ((parent = parent.getParentFile()) != null && (info = getCachedStatus(parent, false)) != null && (info.getStatus() & FileInformation.STATUS_MANAGED) != 0) {
@@ -561,9 +562,12 @@ public class FileStatusCache {
                     throw new IllegalStateException("Wrong info, expected an own instance for " + parent + ", " + info.getStatusText() + " - " + info.getStatus()); //NOI18N
                     }
             }
-            if (!info.setModifiedChild(child, newInfo)) {
+            if (!info.setModifiedChild(child, childInfo)) {
                 // do not notify parent
                 break;
+            }
+            if (!info.getModifiedChildren(true).isEmpty() && (newInfo.getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT) == 0) {
+                childInfo = new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, true);
             }
             child = parent;
         }
