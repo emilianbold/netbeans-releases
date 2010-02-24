@@ -176,7 +176,7 @@ public final class Actions extends Object {
 
         @Override
         protected String iconResource() {
-            return "org/netbeans/modules/favorites/resources/actionSelect.png"; // NOI18N
+            return "org/netbeans/modules/favorites/resources/actionView.png"; // NOI18N
         }
 
         public HelpCtx getHelpCtx() {

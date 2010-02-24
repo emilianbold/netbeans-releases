@@ -37,20 +37,43 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.ui;
+package org.openide.util.lookup.implspi;
 
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.nodes.Node;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import org.netbeans.junit.NbTestCase;
 
-/**
- * @author Vladimir Kvashin
- */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.remote.ui.HostNodesProvider.class)
-public class ToolchainNodeProvider implements HostNodesProvider {
+public class ServiceLoaderLineTest extends NbTestCase {
 
-    @Override
-    public Node createNode(ExecutionEnvironment execEnv) {
-        return new FileSystemNode(execEnv);
+    public ServiceLoaderLineTest(String n) {
+        super(n);
+    }
+
+    public void testParseAndRewriteLines() throws Exception {
+        assertEquals("", parseAndRewrite(""));
+        assertEquals("a ", parseAndRewrite("a "));
+        assertEquals("a b ", parseAndRewrite("b a "));
+        assertEquals("a b ", parseAndRewrite("b a b "));
+        assertEquals("a #position=1 c #position=2 b #position=3 ", parseAndRewrite("a #position=1 b #position=3 c #position=2 "));
+        assertEquals("b #position=55 a c ", parseAndRewrite("a b #position=55 c "));
+        assertEquals("a #position=1 b #position=1 ", parseAndRewrite("b #position=1 a #position=1 "));
+        assertEquals("a #-b c d #-e #-f ", parseAndRewrite("d #-e #-f a #-b c "));
+    }
+
+    private static String parseAndRewrite(String input) throws IOException {
+        SortedSet<ServiceLoaderLine> lines = new TreeSet<ServiceLoaderLine>();
+        ServiceLoaderLine.parse(new StringReader(input.replace(' ', '\n')), lines);
+        StringWriter w = new StringWriter();
+        PrintWriter pw = new PrintWriter(w);
+        for (ServiceLoaderLine line : lines) {
+            line.write(pw);
+        }
+        pw.flush();
+        return w.toString().replace('\n', ' ');
     }
 
 }

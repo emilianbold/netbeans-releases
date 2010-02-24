@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints;
 
@@ -67,48 +67,54 @@ import org.openide.util.NbBundle;
  * @author Jaroslav tulach
  */
 public class MissingHashCode extends AbstractHint {
-    transient volatile boolean[] stop = { false };
+    transient volatile boolean[] stop = { false }; //XXX: no write barriers for writing to the array!
     
-    /** Creates a new instance of AddOverrideAnnotation */
     public MissingHashCode() {
         super( true, true, AbstractHint.HintSeverity.WARNING );
     }
     
     public Set<Kind> getTreeKinds() {
-        return EnumSet.of(Kind.METHOD);
+        return EnumSet.of(Kind.CLASS);
     }
 
     public List<ErrorDescription> run(CompilationInfo compilationInfo,
                                       TreePath treePath) {
         stop = new boolean [1];
-        Element e = compilationInfo.getTrees().getElement(treePath);
-        if (e == null) {
+        Element clazz = compilationInfo.getTrees().getElement(treePath);
+        if (clazz == null || !clazz.getKind().isClass()) {
             return null;
         }
 
-        Element parent = e.getEnclosingElement();
-        ExecutableElement[] ret = EqualsHashCodeGenerator.overridesHashCodeAndEquals(compilationInfo, parent, stop);
-        if (e != ret[0] && e != ret[1]) {
-            return null;
-        }
+        ExecutableElement[] ret = EqualsHashCodeGenerator.overridesHashCodeAndEquals(compilationInfo, clazz, stop);
+        ExecutableElement warningToElement = null;
 
         String addHint = null;
         if (ret[0] == null && ret[1] != null) {
             addHint = "MSG_GenEquals"; // NOI18N
+            warningToElement = ret[1];
         }
         if (ret[1] == null && ret[0] != null) {
             addHint = "MSG_GenHashCode"; // NOI18N
+            warningToElement = ret[0];
         }
 
         if (addHint != null) {
+            assert warningToElement != null;
 
+            TreePath warningTo = compilationInfo.getTrees().getPath(warningToElement);
+
+            if (warningTo == null || warningTo.getLeaf().getKind() != Kind.METHOD) {
+                //XXX: should not happen, log
+                return null;
+            }
+            
             List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
                 addHint, 
-                TreePathHandle.create(parent, compilationInfo), 
+                TreePathHandle.create(clazz, compilationInfo),
                 compilationInfo.getFileObject()
             ));
 
-            int[] span = compilationInfo.getTreeUtilities().findNameSpan((MethodTree) treePath.getLeaf());
+            int[] span = compilationInfo.getTreeUtilities().findNameSpan((MethodTree) warningTo.getLeaf());
 
             if (span != null) {
                 ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
@@ -167,8 +173,6 @@ public class MissingHashCode extends AbstractHint {
         public String getText() {
             return NbBundle.getMessage(MissingHashCode.class, msg);
         }
-        
-        private static final Set<Kind> DECLARATION = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
         
         public ChangeInfo implement() throws IOException {
             ModificationResult result = JavaSource.forFileObject(file).runModificationTask(this);

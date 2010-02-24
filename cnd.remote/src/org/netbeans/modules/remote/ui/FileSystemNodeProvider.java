@@ -46,11 +46,11 @@ import org.openide.nodes.Node;
  * @author Vladimir Kvashin
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.remote.ui.HostNodesProvider.class)
-public class ToolchainNodeProvider implements HostNodesProvider {
+public class FileSystemNodeProvider implements HostNodesProvider {
 
     @Override
     public Node createNode(ExecutionEnvironment execEnv) {
-        return new FileSystemNode(execEnv);
+        return new ToolchainListRootNode(execEnv);
     }
 
 }

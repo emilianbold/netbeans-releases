@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,78 +34,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.fs;
+package org.netbeans.modules.remote.ui;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
+import java.awt.Image;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class RemotePlainFile extends RemoteFileObjectBase {
+public class NotConnectedNode extends AbstractNode {
 
-    public RemotePlainFile(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
-            FileObject parent, String remotePath, File cache) {
-        super(fileSystem, execEnv, parent, remotePath, cache);
+    private final ExecutionEnvironment env;
+
+    public NotConnectedNode(ExecutionEnvironment env) {
+        super(Children.LEAF, Lookups.singleton(env));
+        this.env = env;        
     }
 
     @Override
-    public final FileObject[] getChildren() {
-        return new FileObject[0];
+    public String getDisplayName() {
+        return NbBundle.getMessage(getClass(), "LBL_NotConnected");
     }
 
     @Override
-    public final boolean isFolder() {
-        return false;
+    public Image getOpenedIcon(int type) {
+       return getIcon(type);
     }
 
     @Override
-    public boolean isData() {
-        return true;
+    public Image getIcon(int type) {
+        return ImageUtilities.loadImage("org/netbeans/modules/remote/ui/disconnected.png"); // NOI18N
     }
 
-    @Override
-    public final FileObject getFileObject(String name, String ext) {
-        return null;
-    }
-
-    @Override
-    public FileObject getFileObject(String relativePath) {
-        return null;
-    }
-
-    @Override
-    public InputStream getInputStream() throws FileNotFoundException {
-        // TODO: check error processing
-        try {
-            getRemoteFileSupport().ensureFileSync(cache, remotePath);
-        } catch (IOException ex) {             
-            throw new FileNotFoundException(cache.getAbsolutePath());
-        } catch (InterruptedException ex) {
-            throwFileNotFoundException(ex);
-        } catch (ExecutionException ex) {
-            throwFileNotFoundException(ex);
-        } catch (CancellationException ex) {
-            // TODO: clear CndUtils cache
-            return null;
-        }
-        return new FileInputStream(cache);
-    }
-
-    private void throwFileNotFoundException(Exception cause) throws FileNotFoundException {
-        FileNotFoundException ex = new FileNotFoundException(cache.getAbsolutePath());
-        ex.initCause(cause);
-        throw ex;
-    }
+    
 }
