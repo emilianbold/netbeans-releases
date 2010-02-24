@@ -378,19 +378,24 @@ public class ToolTipAnnotation extends Annotation
         }
 
         public String getChildrenLeft() {
-            throw new UnsupportedOperationException();
+            return getEmptyString();
         }
 
         public String getChildrenRight() {
-            throw new UnsupportedOperationException();
+            return getEmptyString();
         }
 
         public String getChildLeft() {
-            throw new UnsupportedOperationException();
+            return getEmptyString();
         }
 
         public String getChildRight() {
-            throw new UnsupportedOperationException();
+            return getEmptyString();
+        }
+
+        private String getEmptyString() {
+            assert false : "Unknown type: " + type;
+            return ""; // NOI18N
         }
 
         protected void appendSpaces(int count, StringBuilder builder) {

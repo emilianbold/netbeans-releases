@@ -39,65 +39,14 @@
 
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions;
 
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Petr Hejl
  */
-public class StartModuleAction extends NodeAction {
+public interface ModuleStateCookie extends Node.Cookie {
 
-    @Override
-    protected boolean enable(org.openide.nodes.Node[] nodes) {
-        ControlModuleCookie cookie;
-        for (int i = 0; i < nodes.length; i++) {
-            cookie = nodes[i].getCookie(ControlModuleCookie.class);
-            if (cookie == null || cookie.isRunning()) {
-                return false;
-            }
-        }
 
-        return true;
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(StartModuleAction.class, "LBL_StartModuleAction"); // NOI18N
-    }
-
-    @Override
-    protected void performAction(org.openide.nodes.Node[] nodes) {
-        for (int i = 0; i < nodes.length; i++) {
-            final ControlModuleCookie cookie = nodes[i].getCookie(ControlModuleCookie.class);
-            if (cookie != null) {
-                final Node node = nodes[i].getParentNode();
-                WLDeploymentFactory.getInstance().getExecutorService().submit(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        cookie.start();
-                        RefreshModulesCookie refresh = node.getCookie(RefreshModulesCookie.class);
-                        if (refresh != null) {
-                            refresh.refresh();
-                        }
-                    }
-                });
-            }
-        }
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    @Override
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
+    boolean isRunning();
 }
