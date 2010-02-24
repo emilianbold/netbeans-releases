@@ -78,12 +78,8 @@ public class DefaultLocaleQueryImplementation implements LocaleQueryImplementati
     public static Locale getDefaultLocale() {
         FileObject file = getDefaultLocaleFile();
         
-        if (file == null) {
-            //setDefaultLocale(Locale.getDefault());
-            file = getDefaultLocaleFile();
-            
-            assert file != null;
-        }
+        if (file == null)
+            return Locale.getDefault ();
         
         Charset UTF8 = Charset.forName("UTF-8");
         
