@@ -40,16 +40,25 @@
  */
 package org.netbeans.modules.web.jsf.metamodel;
 
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import org.netbeans.api.j2ee.core.Profile;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
 import org.netbeans.modules.web.jsf.api.metamodel.ModelUnit;
+import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
+import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.util.test.MockLookup;
 
 
 /**
@@ -58,12 +67,18 @@ import org.netbeans.modules.web.jsf.api.metamodel.ModelUnit;
  */
 public class CommonTestCase extends JavaSourceTestCase {
 
+    WebModuleProvider webModuleProvider;
+
     public CommonTestCase( String testName ) {
         super(testName);
     }
     
     protected void setUp() throws Exception {
         super.setUp();
+        webModuleProvider = new FakeWebModuleProvider(srcFO);
+        MockLookup.setInstances(webModuleProvider,
+                new ClassPathProviderImpl()
+                );
     }
     
     public MetadataModel<JsfModel> createJsfModel() throws IOException, InterruptedException {
@@ -71,12 +86,69 @@ public class CommonTestCase extends JavaSourceTestCase {
         ModelUnit modelUnit = ModelUnit.create(
                 ClassPath.getClassPath(srcFO, ClassPath.BOOT),
                 ClassPath.getClassPath(srcFO, ClassPath.COMPILE),
-                ClassPath.getClassPath(srcFO, ClassPath.SOURCE));
+                ClassPath.getClassPath(srcFO, ClassPath.SOURCE),
+                webModuleProvider.findWebModule(srcFO));
         return JsfModelFactory.createMetaModel(modelUnit);
     }
 
     public String getFileContent( String relativePath ) throws IOException{
         return TestUtilities.copyStreamToString(SeveralXmlModelTest.class.
                 getResourceAsStream( relativePath));
+    }
+
+     protected static class FakeWebModuleProvider implements WebModuleProvider {
+
+        private FileObject webRoot;
+
+        public FakeWebModuleProvider(FileObject webRoot) {
+            this.webRoot = webRoot;
+        }
+
+        public WebModule findWebModule(FileObject file) {
+            return WebModuleFactory.createWebModule(new FakeWebModuleImplementation2(webRoot));
+        }
+    }
+
+       private static class FakeWebModuleImplementation2 implements WebModuleImplementation2 {
+
+        private FileObject webRoot;
+
+        public FakeWebModuleImplementation2(FileObject webRoot) {
+            this.webRoot = webRoot;
+        }
+
+        public FileObject getDocumentBase() {
+            return webRoot;
+        }
+
+        public String getContextPath() {
+            return "/";
+        }
+
+        public Profile getJ2eeProfile() {
+            return Profile.JAVA_EE_6_FULL;
+        }
+
+        public FileObject getWebInf() {
+            return null;
+        }
+
+        public FileObject getDeploymentDescriptor() {
+            return null;
+        }
+
+        public FileObject[] getJavaSources() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public MetadataModel<WebAppMetadata> getMetadataModel() {
+            return null;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        }
     }
 }
