@@ -72,6 +72,7 @@ public class KenaiComboModel extends AbstractListModel implements ComboBoxModel 
     }
 
     public KenaiComboModel(boolean addNew, Kenai.Status... statuses) {
+        this();
         this.statuses = Arrays.asList(statuses);
         this.addNew = addNew?1:0;
     }

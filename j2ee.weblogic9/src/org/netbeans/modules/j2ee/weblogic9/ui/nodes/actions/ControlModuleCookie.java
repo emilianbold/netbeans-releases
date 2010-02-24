@@ -45,7 +45,12 @@ import org.openide.nodes.Node;
  *
  * @author Petr Hejl
  */
-public interface StartModuleCookie extends Node.Cookie {
+public interface ControlModuleCookie extends Node.Cookie {
 
     void start();
+
+    void stop();
+
+    boolean isRunning();
+
 }

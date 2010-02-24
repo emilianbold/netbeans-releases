@@ -38,18 +38,15 @@
  */
 package org.netbeans.modules.web.common.api;
 
+import java.awt.Color;
 import java.io.File;
 import java.net.URI;
-import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Various web utilities
@@ -146,5 +143,20 @@ public class WebUtils {
             return ((value.charAt(0) == '\'' || value.charAt(0) == '"')
                     && (value.charAt(value.length() - 1) == '\'' || value.charAt(value.length() - 1) == '"'));
         }
+    }
+
+    /**
+     * Returns hex color code in the #xxyyzz form.
+     */
+    public static String toHexCode(Color color) {
+        return new StringBuilder().append('#').append(toTwoDigitsHexCode(color.getRed())).append(toTwoDigitsHexCode(color.getGreen())).append(toTwoDigitsHexCode(color.getBlue())).toString();
+    }
+
+    private static String toTwoDigitsHexCode(int code) {
+        StringBuilder sb = new StringBuilder(Integer.toHexString(code));
+        if (sb.length() == 1) {
+            sb.insert(0, '0');
+        }
+        return sb.toString();
     }
 }
