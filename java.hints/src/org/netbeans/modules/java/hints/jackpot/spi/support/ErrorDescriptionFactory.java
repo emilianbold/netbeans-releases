@@ -46,13 +46,22 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import java.util.Arrays;
+import java.text.MessageFormat;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
+import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 
@@ -129,36 +138,75 @@ public class ErrorDescriptionFactory {
     }
 
     private static List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided) {
+        List<Fix> auxiliaryFixes = new LinkedList<Fix>();
+
+        if (ctx.getHintMetadata() != null) {
+            Set<String> suppressWarningsKeys = new LinkedHashSet<String>();
+
+            for (String key : ctx.getHintMetadata().suppressWarnings) {
+                if (key == null || key.length() == 0) {
+                    break;
+                }
+
+                suppressWarningsKeys.add(key);
+            }
+
+
+            auxiliaryFixes.add(new DisableConfigure(ctx.getHintMetadata(), true));
+            auxiliaryFixes.add(new DisableConfigure(ctx.getHintMetadata(), false));
+
+            if (!suppressWarningsKeys.isEmpty()) {
+                auxiliaryFixes.addAll(FixFactory.createSuppressWarnings(ctx.getInfo(), ctx.getPath(), suppressWarningsKeys.toArray(new String[0])));
+            }
+
+            if (provided == null || provided.length == 0) {
+                provided = new Fix[] {new DisableConfigure(ctx.getHintMetadata(), false)};
+            }
+        }
+
         List<Fix> result = new LinkedList<Fix>();
-        boolean wasSuppressWarnings = false;
         
         for (Fix f : provided) {
             if (f == null) continue;
             if (FixFactory.isSuppressWarningsFix(f)) {
-                wasSuppressWarnings = true;
+                Logger.getLogger(ErrorDescriptionFactory.class.getName()).log(Level.FINE, "Eliminated SuppressWarnings fix");
+                continue;
             }
-            result.add(f);
-        }
 
-        if (wasSuppressWarnings) {
-            return result;
-        }
-
-        Set<String> suppressWarningsKeys = new LinkedHashSet<String>();
-
-        for (String key : ctx.getSuppressWarningsKeys()) {
-            if (key == null || key.length() == 0) {
-                break;
-            }
-            
-            suppressWarningsKeys.add(key);
-        }
-
-        if (!suppressWarningsKeys.isEmpty()) {
-            result.addAll(FixFactory.createSuppressWarnings(ctx.getInfo(), ctx.getPath(), suppressWarningsKeys.toArray(new String[0])));
+            result.add(org.netbeans.spi.editor.hints.ErrorDescriptionFactory.attachSubfixes(f, auxiliaryFixes));
         }
 
         return result;
+    }
+
+    private static final class DisableConfigure implements Fix {
+        private final @NonNull HintMetadata metadata;
+        private final boolean disable;
+
+        public DisableConfigure(@NonNull HintMetadata metadata, boolean disable) {
+            this.metadata = metadata;
+            this.disable = disable;
+        }
+
+        @Override
+        public String getText() {
+            String displayName = metadata.displayName;
+            String pattern = disable ? "Disable \"{0}\" Hint" : "Configure \"{0}\" Hint";
+            
+            return MessageFormat.format(pattern, displayName);
+        }
+
+        @Override
+        public ChangeInfo implement() throws Exception {
+            if (disable) {
+                HintsSettings.setEnabled(RulesManager.getPreferences(metadata.id, HintsSettings.getCurrentProfileId()), false);
+                //XXX: re-run hints task
+            } else {
+                OptionsDisplayer.getDefault().open("Editor/Hints/text/x-java/" + metadata.id);
+            }
+
+            return null;
+        }
     }
 
 }
