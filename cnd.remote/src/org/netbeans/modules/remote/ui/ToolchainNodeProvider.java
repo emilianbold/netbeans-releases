@@ -50,7 +50,7 @@ public class ToolchainNodeProvider implements HostNodesProvider {
 
     @Override
     public Node createNode(ExecutionEnvironment execEnv) {
-        return new ToolchainListRootNode(execEnv);
+        return new FileSystemNode(execEnv);
     }
 
 }

@@ -124,7 +124,9 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     
     public static final String DEFAULT_APPLET_WIDTH = "300";
     public static final String DEFAULT_APPLET_HEIGHT = "300";
-    
+
+    private static final String JAR_INDEX = "jar.index";    //NOI18N
+
     public enum DescType {
         application, applet, component;
     }
@@ -353,6 +355,10 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         //Store Mixed Code
         final MixedCodeOptions option = (MixedCodeOptions) mixedCodeModel.getSelectedItem();
         editableProps.setProperty(JNLP_MIXED_CODE, option.getPropertyValue());
+        //Store jar indexing
+        if (editableProps.getProperty(JAR_INDEX) == null) {
+            editableProps.setProperty(JAR_INDEX, String.format("${%s}", JNLP_ENABLED));   //NOI18N
+        }
         // store properties
         storeProperties(editableProps, extResProperties, JNLP_EXT_RES_PREFIX);
         storeProperties(editableProps, appletParamsProperties, JNLP_APPLET_PARAMS_PREFIX);

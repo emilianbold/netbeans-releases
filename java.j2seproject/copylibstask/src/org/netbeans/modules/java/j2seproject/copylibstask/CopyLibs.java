@@ -50,6 +50,7 @@ import java.util.ResourceBundle;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Jar;
+import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.util.FileUtils;
 
@@ -60,9 +61,9 @@ import org.apache.tools.ant.util.FileUtils;
 public class CopyLibs extends Jar {
 
     private static final String LIB = "lib";    //NOI18N
-    
+
     Path runtimePath;
-    
+
     /** Creates a new instance of CopyLibs */
     public CopyLibs () {
     }
@@ -93,8 +94,6 @@ public class CopyLibs extends Jar {
                 filesToCopy[i] = f;
             }
         }        
-        super.execute();
-        
         final File destFile = this.getDestFile();
         final File destFolder = destFile.getParentFile();
         assert destFolder != null && destFolder.canWrite();
@@ -134,11 +133,16 @@ public class CopyLibs extends Jar {
                     throw new BuildException (ioe);
                 }
             }
+            final FileSet fs = new FileSet();
+            fs.setDir(libFolder);
+            final Path p = new Path(getProject());
+            p.addFileset(fs);
+            addConfiguredIndexJars(p);
         }
         else {
             this.log("Not copying the libraries.");
         }
-        
+
+        super.execute();
     }
-    
 }

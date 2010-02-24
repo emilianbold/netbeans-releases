@@ -46,6 +46,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.model.JavacElements;
 import java.io.IOException;
@@ -265,7 +266,7 @@ public class CompilationInfo {
      */
     public @NonNull Trees getTrees() {
         checkConfinement();
-        return Trees.instance(impl.getJavacTask());
+        return JavacTrees.instance(impl.getJavacTask().getContext());
     }
     
     /**

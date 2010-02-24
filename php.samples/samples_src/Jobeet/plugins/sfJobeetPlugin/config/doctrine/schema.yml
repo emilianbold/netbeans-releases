@@ -1,0 +1,109 @@
+JobeetCategory:
+  actAs:
+    Timestampable: ~
+    I18n:
+      fields: [name]
+      actAs:
+        Sluggable:
+          fields: [name]
+          uniqueBy: [lang, name]
+  columns:
+    name:
+      type: string(255)
+      notnull:  true
+
+JobeetJob:
+  actAs:
+    Timestampable: ~
+  columns:
+    category_id:
+      type: integer
+      notnull:  true
+    type:
+      type: string(255)
+    company:
+      type: string(255)
+      notnull:  true
+    logo:
+      type: string(255)
+    url:
+      type: string(255)
+    position:
+      type: string(255)
+      notnull:  true
+    location:
+      type: string(255)
+      notnull:  true
+    description:
+      type: string(4000)
+      notnull:  true
+    how_to_apply:
+      type: string(4000)
+      notnull:  true
+    token:
+      type: string(255)
+      notnull:  true
+      unique: true
+    is_public:
+      type: boolean
+      notnull:  true
+      default:  1
+    is_activated:
+      type: boolean
+      notnull:  true
+      default:  0
+    email:
+      type: string(255)
+      notnull:  true
+    expires_at:
+      type: timestamp
+      notnull:  true
+  relations:
+    JobeetCategory:
+      local:  category_id
+      foreign:  id
+      foreignAlias: JobeetJobs
+
+JobeetAffiliate:
+  actAs:
+    Timestampable: ~
+  columns:
+    url:
+      type: string(255)
+      notnull:  true
+    email:
+      type: string(255)
+      notnull:  true
+      unique: true
+    token:
+      type: string(255)
+      notnull:  true
+    is_active:
+      type: boolean
+      notnull:  true
+      default:  0
+  relations:
+    JobeetCategories:
+      class: JobeetCategory
+      refClass: JobeetCategoryAffiliate
+      local: affiliate_id
+      foreign: category_id
+      foreignAlias: JobeetAffiliates
+
+JobeetCategoryAffiliate:
+  columns:
+    category_id:
+      type: integer
+      primary:  true
+    affiliate_id:
+      type: integer
+      primary:  true
+  relations:
+    JobeetCategory:
+      onDelete: CASCADE
+      local:  category_id
+      foreign:  id
+    JobeetAffiliate:
+      onDelete: CASCADE
+      local:  affiliate_id
+      foreign:  id

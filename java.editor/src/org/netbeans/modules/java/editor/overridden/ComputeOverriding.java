@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,12 +42,16 @@
 package org.netbeans.modules.java.editor.overridden;
 
 import com.sun.source.tree.CompilationUnitTree;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -61,9 +65,11 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.openide.util.Utilities;
 
 
 /**
@@ -81,24 +87,11 @@ public class ComputeOverriding {
     }
     
     public static AnnotationType detectOverrides(CompilationInfo info, TypeElement type, ExecutableElement ee, List<ElementDescription> result) {
-        final Map<Name, List<ExecutableElement>> name2Method = new HashMap<Name, List<ExecutableElement>>();
-        
-        sortOutMethods(info, name2Method, type, false);
-        
-        List<ExecutableElement> lee = name2Method.get(ee.getSimpleName());
-        
-        if (lee == null || lee.isEmpty()) {
-            return null;
-        }
-        
-        Set<ExecutableElement> seenMethods = new HashSet<ExecutableElement>();
-        
-        for (ExecutableElement overridee : lee) {
-            if (info.getElements().overrides(ee, overridee, SourceUtils.getEnclosingTypeElement(ee))) {
-                if (seenMethods.add(overridee)) {
-                    result.add(new ElementDescription(info, overridee, false));
-                }
-            }
+        Map<ElementHandle<ExecutableElement>, List<ElementDescription>> method2Overriding = compute(info, ElementHandle.create(type), new AtomicBoolean());
+        List<ElementDescription> res = method2Overriding.get(ElementHandle.create(ee));
+
+        if (res != null) {
+            result.addAll(res);
         }
         
         if (!result.isEmpty()) {
@@ -132,52 +125,8 @@ public class ComputeOverriding {
         for (ElementHandle<TypeElement> td : v.type2Declaration.keySet()) {
             if (isCanceled())
                 return null;
-            
-            LOG.log(Level.FINE, "type: {0}", td.getQualifiedName()); //NOI18N
-            
-            final Map<Name, List<ExecutableElement>> name2Method = new HashMap<Name, List<ExecutableElement>>();
-            
-            TypeElement resolvedType = td.resolve(info);
-            
-            if (resolvedType == null)
-                continue;
-            
-            sortOutMethods(info, name2Method, resolvedType, false);
-            
-            for (ElementHandle<ExecutableElement> methodHandle : v.type2Declaration.get(td)) {
-                if (isCanceled())
-                    return null;
-                
-                ExecutableElement ee = methodHandle.resolve(info);
-                
-                if (ee == null)
-                    continue;
-                
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "method: {0}", ee.toString()); //NOI18N
-                }
-                
-                List<ExecutableElement> lee = name2Method.get(ee.getSimpleName());
-                
-                if (lee == null || lee.isEmpty()) {
-                    continue;
-                }
-                
-                Set<ExecutableElement> seenMethods = new HashSet<ExecutableElement>();
-                List<ElementDescription> descriptions = new LinkedList<ElementDescription>();
 
-                for (ExecutableElement overridee : lee) {
-                    if (info.getElements().overrides(ee, overridee, SourceUtils.getEnclosingTypeElement(ee))) {
-                        if (seenMethods.add(overridee)) {
-                            descriptions.add(new ElementDescription(info, overridee, false));
-                        }
-                    }
-                }
-
-                if (!descriptions.isEmpty()) {
-                    result.put(methodHandle, descriptions);
-                }
-            }
+            result.putAll(compute(info, td, cancel));
         }
         
         if (isCanceled())
@@ -229,6 +178,103 @@ public class ComputeOverriding {
         for (TypeMirror superType : info.getTypes().directSupertypes(td.asType())) {
             if (superType.getKind() == TypeKind.DECLARED) {
                 sortOutMethods(info, where, ((DeclaredType) superType).asElement(), true);
+            }
+        }
+    }
+
+    private static Map<ElementHandle<ExecutableElement>, List<ElementDescription>> compute(CompilationInfo info, ElementHandle<TypeElement> forType, AtomicBoolean cancel) {
+        DataHolder data = getDataFromCache(info);
+        Map<ElementHandle<ExecutableElement>, List<ElementDescription>> result = data.data.get(forType);
+
+        if (result == null) {
+            data.data.put(forType, result = new HashMap<ElementHandle<ExecutableElement>, List<ElementDescription>>());
+            
+            if (cancel.get())
+                return null;
+
+            LOG.log(Level.FINE, "type: {0}", forType.getQualifiedName()); //NOI18N
+
+            final Map<Name, List<ExecutableElement>> name2Method = new HashMap<Name, List<ExecutableElement>>();
+
+            TypeElement resolvedType = forType.resolve(info);
+
+            if (resolvedType == null)
+                return result;
+
+            sortOutMethods(info, name2Method, resolvedType, false);
+
+            for (ExecutableElement ee : ElementFilter.methodsIn(resolvedType.getEnclosedElements())) {
+                if (cancel.get())
+                    return null;
+
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "method: {0}", ee.toString()); //NOI18N
+                }
+
+                List<ExecutableElement> lee = name2Method.get(ee.getSimpleName());
+
+                if (lee == null || lee.isEmpty()) {
+                    continue;
+                }
+
+                Set<ExecutableElement> seenMethods = new HashSet<ExecutableElement>();
+                List<ElementDescription> descriptions = new LinkedList<ElementDescription>();
+
+                for (ExecutableElement overridee : lee) {
+                    if (info.getElements().overrides(ee, overridee, SourceUtils.getEnclosingTypeElement(ee))) {
+                        if (seenMethods.add(overridee)) {
+                            descriptions.add(new ElementDescription(info, overridee, false));
+                        }
+                    }
+                }
+
+                if (!descriptions.isEmpty()) {
+                    result.put(ElementHandle.create(ee), descriptions);
+                }
+            }
+        }
+
+        return result;
+    }
+    
+    private static final Map<Reference<Elements>, DataHolder> CACHE = new HashMap<Reference<Elements>, DataHolder>();
+
+    private static DataHolder getDataFromCache(CompilationInfo info) {
+        Elements elements = info.getElements();
+        
+        synchronized(CACHE) {
+            for (Iterator<Entry<Reference<Elements>, DataHolder>> it = CACHE.entrySet().iterator(); it.hasNext(); ) {
+                Entry<Reference<Elements>, DataHolder> e = it.next();
+
+                if (e.getKey().get() == elements) {
+                    return e.getValue();
+                }
+
+                it.remove();
+            }
+
+            DataHolder holder = new DataHolder();
+
+            CACHE.put(new CleaningWR(info.getElements()), new DataHolder());
+
+            return holder;
+        }
+    }
+    
+    private static final class DataHolder {
+        private final Map<ElementHandle<TypeElement>, Map<ElementHandle<ExecutableElement>, List<ElementDescription>>> data;
+        public DataHolder() {
+            data = new HashMap<ElementHandle<TypeElement>, Map<ElementHandle<ExecutableElement>, List<ElementDescription>>>();
+        }
+    }
+
+    private static final class CleaningWR extends WeakReference<Elements> implements Runnable {
+        public CleaningWR(Elements el) {
+            super(el, Utilities.activeReferenceQueue());
+        }
+        public void run() {
+            synchronized(CACHE) {
+                CACHE.remove(this);
             }
         }
     }
