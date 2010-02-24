@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 public class FileSnapshot implements CsmFile {
     private final CharSequence absPath;
     private final CsmProject project;
-    private final CharSequence text;
     private final CharSequence name;
     private final Collection<CsmInclude> includes;
     private final Collection<CsmErrorDirective> errors;
@@ -64,11 +63,11 @@ public class FileSnapshot implements CsmFile {
     private final Collection<CsmScopeElement> scoped;
     private final boolean isSource;
     private final boolean isHeader;
+    private final FileImpl delegate;
     
     FileSnapshot(FileImpl impl) {
         absPath = impl.getAbsolutePath();
         project = impl.getProject();
-        text = impl.getText();
         name = impl.getName();
         includes = impl.getIncludes();
         errors = impl.getErrors();
@@ -77,6 +76,7 @@ public class FileSnapshot implements CsmFile {
         scoped = impl.getScopeElements();
         isSource = impl.isSourceFile();
         isHeader = impl.isHeaderFile();
+        delegate = impl;
     }
 
     @Override
@@ -91,12 +91,14 @@ public class FileSnapshot implements CsmFile {
 
     @Override
     public CharSequence getText() {
-        return text;
+        assert false;
+        return delegate.getText();
     }
 
     @Override
     public CharSequence getText(int start, int end) {
-        return text.subSequence(start, end);
+        assert false;
+        return delegate.getText(start, end);
     }
 
     @Override
