@@ -356,13 +356,13 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         });
     }
 
-    public CsmFile findFile(CharSequence absPath) {
+    public CsmFile findFile(CharSequence absPath, boolean snapShot) {
         Collection<CsmProject> projects = projects();
         for (CsmProject curPrj : projects) {
             if (curPrj instanceof ProjectBase) {
                 ProjectBase ownerPrj = ((ProjectBase) curPrj).findFileProject(absPath);
                 if (ownerPrj != null) {
-                    CsmFile csmFile = ownerPrj.findFile(absPath);
+                    CsmFile csmFile = ownerPrj.findFile(absPath, snapShot);
                     if (csmFile != null) {
                         return csmFile;
                     }
@@ -377,7 +377,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
             canonical = null;
         }
         if (canonical != null && !canonical.equals(absPath)) {
-            return findFile(canonical);
+            return findFile(canonical, snapShot);
         }
         return null;
     }

@@ -37,72 +37,16 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.ui;
+package org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions;
 
-import java.awt.Image;
-import javax.swing.Action;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Petr Hejl
  */
-public class NotConnectedNode extends AbstractNode implements ConnectionListener {
+public interface ModuleStateCookie extends Node.Cookie {
 
-    private final ExecutionEnvironment env;
 
-    public NotConnectedNode(ExecutionEnvironment env) {
-        super(Children.LEAF, Lookups.singleton(env));
-        this.env = env;
-        ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, null));
-    }
-
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(getClass(), "LBL_NotConnected");
-    }
-
-    @Override
-    public Image getOpenedIcon(int type) {
-       return getIcon(type);
-    }
-
-    @Override
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/remote/ui/disconnected.png"); // NOI18N
-    }
-
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-            new ConnectAction(env)
-        };
-    }
-
-    @Override
-    public Action getPreferredAction() {
-        return new ConnectAction(env);
-    }
-
-    @Override
-    public void connected(ExecutionEnvironment env) {
-        Node parent = getParentNode();
-        if (parent instanceof FileSystemNode) {
-            FileSystemNode fsn = (FileSystemNode) parent;
-            fsn.refresh();
-        }
-    }
-
-    @Override
-    public void disconnected(ExecutionEnvironment env) {
-    }
+    boolean isRunning();
 }

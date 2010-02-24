@@ -126,11 +126,11 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         }
         TokenItem<CppTokenId> jumpToken = getJumpToken();
         CsmOffsetable primary = (CsmOffsetable) findTargetObject(doc, jumpToken, offset, false);
-        CsmOffsetable item = toJumpObject(primary, CsmUtilities.getCsmFile(doc, true), offset);
+        CsmOffsetable item = toJumpObject(primary, CsmUtilities.getCsmFile(doc, true, false), offset);
         if (CsmKindUtilities.isMethod(item)) {
             // popup should only be shown on *usages*, not on declaraions (definitions);
             // for latter annotatations should be used instead
-            if (!isInDeclaration((CsmFunction) primary, CsmUtilities.getCsmFile(doc, true), offset)) {
+            if (!isInDeclaration((CsmFunction) primary, CsmUtilities.getCsmFile(doc, true, false), offset)) {
                 CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) item);
                 if (showOverridesPopup(meth, target, offset)) {
                     return true;
@@ -177,7 +177,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     /*package*/ CsmObject findTargetObject(final Document doc, final TokenItem<CppTokenId> jumpToken, final int offset, boolean toOffsetable) {
         CsmObject item = null;
         assert jumpToken != null;
-        CsmFile file = CsmUtilities.getCsmFile(doc, true);
+        CsmFile file = CsmUtilities.getCsmFile(doc, true, false);
         CsmObject csmObject = file == null ? null : ReferencesSupport.findDeclaration(file, doc, jumpToken, offset);
         if (csmObject != null) {
             // convert to jump object

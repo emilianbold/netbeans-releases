@@ -198,7 +198,7 @@ public class IncludeResolverImplTestCase extends TraceModelTestBase {
             
             CsmReferenceResolver rr = new ReferenceResolverImpl();
             
-            CsmFile objectFile = CsmUtilities.getCsmFile(doc, true);
+            CsmFile objectFile = CsmUtilities.getCsmFile(doc, true, false);
             assertNotNull(objectFile);
             CsmReference objectReference = rr.findReference(objectFile, offset);
             assertNotNull(objectReference);
