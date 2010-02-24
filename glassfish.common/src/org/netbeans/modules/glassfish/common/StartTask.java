@@ -467,7 +467,7 @@ public class StartTask extends BasicTask<OperationState> {
                     if ("true".equals(ip.get(GlassfishModule.USE_SHARED_MEM_ATTR))) { // NOI18N
                         debugPortString = Integer.toString(
                                 Math.abs((ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR) +
-                                ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) +
+                                support.getDomainsRoot() + // ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) +
                                 ip.get(GlassfishModule.DOMAIN_NAME_ATTR)).hashCode() + 1));
                     } else {
                         int debugPort = 9009;
@@ -562,7 +562,7 @@ public class StartTask extends BasicTask<OperationState> {
     }
     
     private File getDomainFolder() {
-        return new File(ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) + 
+        return new File(support.getDomainsRoot()+ // ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) +
                 File.separatorChar + getDomainName());
     }
     
