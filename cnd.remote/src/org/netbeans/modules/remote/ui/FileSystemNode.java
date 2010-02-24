@@ -40,23 +40,19 @@
 package org.netbeans.modules.remote.ui;
 
 import java.awt.Image;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.remote.fs.RemoteFileSystemManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -80,7 +76,6 @@ public class FileSystemNode extends AbstractNode {
     }
 
     private static Children createChildren(ExecutionEnvironment env) {
-        FileObject fo = getRootFileObject(env);
         return Children.create(new FileSystemChildren(env), true);
     }
 
@@ -98,6 +93,10 @@ public class FileSystemNode extends AbstractNode {
     public Image getIcon(int type) {
         return ImageUtilities.loadImage("org/netbeans/modules/remote/ui/fs.gif"); // NOI18N
     }
+
+    /*package*/ void refresh() {
+        setChildren(createChildren(env));
+    }
     
     private static class FileSystemChildren extends ChildFactory<FileObject> {
 
@@ -109,6 +108,9 @@ public class FileSystemNode extends AbstractNode {
             rootFileObject = getRootFileObject(env);
         }
 
+        /*package*/ void refresh() {
+            super.refresh(false);
+        }
 
         @Override
         protected boolean createKeys(List<FileObject> toPopulate) {
