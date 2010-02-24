@@ -35,7 +35,9 @@ import com.sun.syndication.fetcher.impl.HashMapFeedInfoCache;
 import com.sun.syndication.fetcher.impl.HttpURLFeedFetcher;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URL;
+import org.openide.util.NbBundle;
 
 public class Feed implements Serializable {
 
@@ -66,7 +68,7 @@ public class Feed implements Serializable {
                     name = title;
                 }
             } catch (Exception ex) {
-                throw (IOException) new IOException(ex.toString()).initCause(ex);
+                throw new IOException(ex);
             }
         }
         return syndFeed;
@@ -75,6 +77,14 @@ public class Feed implements Serializable {
     @Override
     public String toString() {
         return name;
+    }
+
+    public static Feed getSample() {
+        try {
+            return new Feed(new URL(NbBundle.getMessage(Feed.class, "URL_sample_feed")));
+        } catch (MalformedURLException x) {
+            throw new AssertionError(x);
+        }
     }
     
 }
