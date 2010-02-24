@@ -377,19 +377,26 @@ public class MethodChooser {
             return;
         }
         final EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    JEditorPane[] openedPanes = ec.getOpenedPanes();
-                    if (openedPanes != null) {
-                        editorPane = openedPanes[0];
+        if (SwingUtilities.isEventDispatchThread()) {
+            JEditorPane[] openedPanes = ec.getOpenedPanes();
+            if (openedPanes != null) {
+                editorPane = openedPanes[0];
+            }
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        JEditorPane[] openedPanes = ec.getOpenedPanes();
+                        if (openedPanes != null) {
+                            editorPane = openedPanes[0];
+                        }
                     }
-                }
-            });
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 
