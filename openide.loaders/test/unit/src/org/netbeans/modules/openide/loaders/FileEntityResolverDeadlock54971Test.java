@@ -39,9 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.settings.entities;
+package org.netbeans.modules.openide.loaders;
 
-import org.netbeans.modules.settings.entities.FileEntityResolver;
+import org.netbeans.modules.openide.loaders.FileEntityResolver;
 import java.io.IOException;
 import java.net.URL;
 import junit.framework.TestCase;

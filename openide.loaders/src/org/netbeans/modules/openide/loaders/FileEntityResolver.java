@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.settings.entities;
+package org.netbeans.modules.openide.loaders;
 
 import java.io.IOException;
 import java.beans.PropertyChangeListener;

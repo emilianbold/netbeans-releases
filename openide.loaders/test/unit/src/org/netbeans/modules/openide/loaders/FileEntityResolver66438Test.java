@@ -5,7 +5,7 @@
  * Created on 23. listopad 2005, 9:39
  */
 
-package org.netbeans.modules.settings.entities;
+package org.netbeans.modules.openide.loaders;
 
 import java.io.IOException;
 import java.util.Date;

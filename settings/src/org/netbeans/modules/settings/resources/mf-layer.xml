@@ -56,10 +56,6 @@ made subject to such option by the copyright holder.
                     <attr name="settings.convertor" methodvalue="org.netbeans.modules.settings.convertors.XMLBeanConvertor.create"/>
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD XML beans 1.0//EN"/>
               </file>
-                <file name="Entity_Mapping_Registration_1_0.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.loaders.XMLDataObject$Processor"/>
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.settings.entities.EntityCatalogImpl$RegistrationProcessor" />
-                </file>
             </folder>
         </folder>
         <!-- registered convertors used by InstanceDataObject.create -->
@@ -81,20 +77,6 @@ made subject to such option by the copyright holder.
             	<file name="DTD_XML_beans_1_0" url="javabeans-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD XML beans 1.0//EN"/>
             	</file>
-                <file name="Entity_Mapping_Registration_1_0" url="nbres:/org/openide/xml/EntityCatalog.dtd" >
-                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//Entity Mapping Registration 1.0//EN"/>
-                </file>
-                <file name="DTD_Module_Status_1_0" url="nbres:/org/netbeans/core/startup/module-status-1_0.dtd">
-                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Module Status 1.0//EN"/>
-                </file>
-                <file name="DTD_Module_Automatic_Dependencies_1_0" url="nbres:/org/netbeans/core/startup/module-auto-deps-1_0.dtd">
-                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Module Automatic Dependencies 1.0//EN"/>
-                </file>
-            </folder>
-            <folder name="NetBeans_IDE">
-                <file name="DTD_xmlinfo" url="nbres:/org/netbeans/modules/openide/loaders/xmlinfo.dtd">
-                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans IDE//DTD xmlinfo//EN"/>
-                </file>
             </folder>
         </folder>
     </folder>
