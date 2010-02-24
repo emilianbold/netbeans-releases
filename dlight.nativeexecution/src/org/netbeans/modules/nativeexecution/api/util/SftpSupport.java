@@ -160,13 +160,13 @@ class SftpSupport {
                 work();
                 rc = 0;
             } catch (JSchException ex) {
-                ex.printStackTrace();
+                logException(ex);
                 rc = 1;
             } catch (SftpException ex) {
-                ex.printStackTrace();
+                logException(ex);
                 rc = 2;
             } catch(IOException ex) {
-                ex.printStackTrace();
+                logException(ex);
                 rc = 3;
             } catch (CancellationException ex) {
                 // no trace
@@ -174,7 +174,11 @@ class SftpSupport {
             }
             LOG.log(Level.FINE, "{0}{1}", new Object[]{getTraceName(), rc == 0 ? " OK" : " FAILED"});
             return rc;
-        }        
+        }
+
+        protected void logException(Exception ex) {
+            LOG.log(Level.WARNING, "Error " + getTraceName(), ex);
+        }
     }
 
     private class Uploader extends Worker implements Callable<Integer> {
