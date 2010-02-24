@@ -139,7 +139,7 @@ public class ActivatorTest extends NbTestCase {
         assertTrue(settings, settings.contains("<string>hello</string>"));
     }
 
-    public void testDynamicImport() throws Exception {
+    public void testJREPackageImport() throws Exception {
         new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom;",
                 "public class Install extends org.openide.modules.ModuleInstall {",
                 "public @Override void restored() {",
@@ -152,6 +152,21 @@ public class ActivatorTest extends NbTestCase {
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules",
                 "OpenIDE-Module-Specification-Version: 1.0").run();
         assertTrue(Boolean.getBoolean("my.bundle.worked"));
+    }
+
+    public void testModuleInfo() throws Exception {
+        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom;",
+                "public class Install extends org.openide.modules.ModuleInstall {",
+                "public @Override void restored() {System.setProperty(\"number.of.modules\",",
+                "String.valueOf(org.openide.util.Lookup.getDefault().lookupAll(org.openide.modules.ModuleInfo.class).size()));}",
+                "}").manifest(
+                "OpenIDE-Module: custom",
+                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.util.lookup",
+                "OpenIDE-Module-Specification-Version: 1.0").run();
+        String numberOfModules = System.getProperty("number.of.modules");
+        assertNotNull(numberOfModules);
+        assertTrue(numberOfModules, Integer.parseInt(numberOfModules) > 2);
     }
 
 }
