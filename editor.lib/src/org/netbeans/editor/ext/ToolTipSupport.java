@@ -181,6 +181,7 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
 
     /** Construct new support for tooltips.
      */
+    @SuppressWarnings({"OverridableMethodCallInConstructor", "LeakingThisInConstructor"})
     public ToolTipSupport(EditorUI extEditorUI) {
         this.extEditorUI = extEditorUI;
 
@@ -368,7 +369,7 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
         return tt;
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
+    public @Override void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
 
         if (EditorUI.COMPONENT_PROPERTY.equals(propName)) {
@@ -423,7 +424,7 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
     private void disableSwingToolTip(final JComponent component) {
         javax.swing.SwingUtilities.invokeLater(
             new Runnable() {
-                public void run() {
+                public @Override void run() {
                     // Prevent default swing tooltip manager
                     javax.swing.ToolTipManager.sharedInstance().unregisterComponent(component);
                     
@@ -547,7 +548,7 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
         if( str == null || f == null){
             return str;
         }
-        StringBuffer buf = new StringBuffer(str.length());
+        StringBuilder buf = new StringBuilder(str.length());
         char[] chars = str.toCharArray();
         for (int i = 0; i < chars.length; i++) {
             char c = chars[i];
@@ -582,7 +583,7 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
         final String displayableText = makeDisplayable(text, UIManager.getFont(UI_PREFIX + ".font")); //NOI18N
         
         Utilities.runInEventDispatchThread(new Runnable() {
-            public void run() {
+            public @Override void run() {
                 String oldText = toolTipText;
                 toolTipText = displayableText;
 
@@ -756,7 +757,7 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
         }
     }
 
-    public void actionPerformed(ActionEvent evt) {
+    public @Override void actionPerformed(ActionEvent evt) {
         if (evt.getSource() == enterTimer) {
             setToolTipVisible(true);
 
@@ -799,12 +800,12 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
         setToolTipVisible(false);
     }
 
-    public void mouseDragged(MouseEvent evt) {
+    public @Override void mouseDragged(MouseEvent evt) {
         lastMouseEvent = evt;
         setToolTipVisible(false);
     }
 
-    public void mouseMoved(MouseEvent evt) {
+    public @Override void mouseMoved(MouseEvent evt) {
         setToolTipVisible(false);
         if (enabled) {
             enterTimer.restart();
@@ -887,7 +888,7 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
         getPCS().firePropertyChange(propertyName, oldValue, newValue);
     }
     
-    public void focusGained(FocusEvent e) {
+    public @Override void focusGained(FocusEvent e) {
 //        JComponent component = (JComponent)e.getSource();
 //        component.addMouseListener(this);
 //        component.addMouseMotionListener(this);
@@ -899,7 +900,7 @@ public class ToolTipSupport extends MouseAdapter implements MouseMotionListener,
         }
     }
 
-    public void focusLost(FocusEvent e) {
+    public @Override void focusLost(FocusEvent e) {
         /*
         JComponent component = (JComponent)e.getSource();
         component.removeMouseListener(this);
