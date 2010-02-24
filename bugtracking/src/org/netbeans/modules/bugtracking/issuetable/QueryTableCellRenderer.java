@@ -30,6 +30,8 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  */
 public class QueryTableCellRenderer extends DefaultTableCellRenderer {
+    public static final String PROPERTY_FORMAT = "format";                      // NOI18N
+    public static final String PROPERTY_HIGHLIGHT_PATTERN = "highlightPattern"; // NOI18N
 
     private Query query;
     private IssueTable issueTable;
@@ -91,8 +93,8 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
 
     public void setStyleProperties(JLabel renderer, TableCellStyle style) {
         if (style != null) {
-            renderer.putClientProperty("format", style.format); // NOI18N
-            renderer.putClientProperty("highlightPattern", style.highlightPattern); // NOI18N
+            renderer.putClientProperty(PROPERTY_FORMAT, style.format); // NOI18N
+            renderer.putClientProperty(PROPERTY_HIGHLIGHT_PATTERN, style.highlightPattern); // NOI18N
             ((JComponent) renderer).setToolTipText(style.tooltip);
             setRowColors(style, renderer);
         }
@@ -105,8 +107,8 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     }
 
     public static void processText(JLabel label) {
-        MessageFormat format = (MessageFormat) label.getClientProperty("format");     // NOI18N
-        Pattern pattern = (Pattern) label.getClientProperty("highlightPattern");     // NOI18N
+        MessageFormat format = (MessageFormat) label.getClientProperty(PROPERTY_FORMAT);     // NOI18N
+        Pattern pattern = (Pattern) label.getClientProperty(PROPERTY_HIGHLIGHT_PATTERN);     // NOI18N
         String s = computeFitText(label);
         if(format != null || pattern != null) {
             StringBuffer sb = new StringBuffer();

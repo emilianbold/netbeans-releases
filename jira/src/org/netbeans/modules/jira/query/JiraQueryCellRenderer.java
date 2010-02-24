@@ -111,8 +111,8 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             String s = values[i];
             label.setFont(defaultIssueRenderer.getFont());
             label.setText(s);
-            label.putClientProperty("format", style.getFormat()); // NOI18N
-            label.putClientProperty("highlightPattern", style.getHighlightPattern()); // NOI18N
+            label.putClientProperty(QueryTableCellRenderer.PROPERTY_FORMAT, style.getFormat()); // NOI18N
+            label.putClientProperty(QueryTableCellRenderer.PROPERTY_HIGHLIGHT_PATTERN, style.getHighlightPattern()); // NOI18N
             QueryTableCellRenderer.setRowColors(style, label);
             QueryTableCellRenderer.setRowColors(style, panel);
             label.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -137,11 +137,11 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         String southtext = issue.hasSubtasks() ? getSubtaskKeys(issue) : summary;
         panel.setFontSize(table.getFont(), label);
         panel.north.setText(northtext);
-        panel.north.putClientProperty("format", northformat); // NOI18N
-        panel.north.putClientProperty("highlightPattern", style.getHighlightPattern()); // NOI18N
+        panel.north.putClientProperty(QueryTableCellRenderer.PROPERTY_FORMAT, northformat);
+        panel.north.putClientProperty(QueryTableCellRenderer.PROPERTY_HIGHLIGHT_PATTERN, style.getHighlightPattern());
         panel.south.setText(southtext);
-        panel.south.putClientProperty("format", southformat); // NOI18N
-        panel.south.putClientProperty("highlightPattern", style.getHighlightPattern()); // NOI18N
+        panel.south.putClientProperty(QueryTableCellRenderer.PROPERTY_FORMAT, southformat);
+        panel.south.putClientProperty(QueryTableCellRenderer.PROPERTY_HIGHLIGHT_PATTERN, style.getHighlightPattern());
         panel.setToolTipText(summary);
         setRowColors(style, panel);
         adjustRowHeightIfNeeded(panel, table, row, true);
