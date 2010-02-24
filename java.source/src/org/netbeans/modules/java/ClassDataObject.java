@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
@@ -99,9 +100,14 @@ public final class ClassDataObject extends MultiDataObject {
                 } else if (binaryRoot != null) {
                     resourceName = cp.getResourceName(fo,'.',false);  //NOI18N
                 }
+                ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
+                if (bootPath == null) {
+                    //No boot cp, try the default platform boot cp
+                    bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+                }
                 FileObject resource = null;
                 final ElementHandle<TypeElement> handle = resourceName != null ? ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, resourceName.replace('/', '.')) : null;
-                final ClasspathInfo cpInfo = cp != null ? ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[0]), cp, ClassPathSupport.createClassPath(new URL[0])) : null;
+                final ClasspathInfo cpInfo = cp != null && bootPath != null ? ClasspathInfo.create(bootPath, cp, ClassPathSupport.createClassPath(new URL[0])) : null;
                 if (binaryRoot != null) {
                     //Todo: Ideally it should do the same as ElementOpen.open () but it will require a copy of it because of the reverese module dep.
                     resource = SourceUtils.getFile(handle, cpInfo);

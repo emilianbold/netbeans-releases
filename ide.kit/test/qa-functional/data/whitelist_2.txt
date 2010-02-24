@@ -5549,3 +5549,8 @@ org.netbeans.modules.progress.spi.TaskModel
 org.openide.util.NbPreferences$Provider
 org.openide.util.actions.ActionPresenterProvider
 org.openide.util.lookup.implspi.NamedServicesProvider
+
+# classes loaded to make VersioningAnnotator asynchronous and much more responsive
+# permitted in #180830
+org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache
+org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache$AnnotationRefreshTask

@@ -65,16 +65,28 @@ public class CsmDocGeneratorProviderImpl extends CsmDocGeneratorProvider {
         final CsmOffsetableDeclaration decl = getFunction(CsmUtilities.getCsmFile(doc, false), position);
         if (decl instanceof CsmFunction) {
             return new Function() {
+                @Override
+                public String getName() {
+                    return ((CsmFunction)decl).getName().toString();
+                }
+                @Override
+                public String getSignature() {
+                    return ((CsmFunction)decl).getSignature().toString();
+                }
+                @Override
                 public String getReturnType() {
                     return ((CsmFunction)decl).getReturnType().getCanonicalText().toString();
                 }
+                @Override
                 public List<Parameter> getParametes() {
                     List<Parameter> list = new ArrayList<Parameter>();
                     for (final CsmParameter par : ((CsmFunction)decl).getParameters()){
                         list.add(new Parameter(){
+                            @Override
                             public String getType() {
                                 return par.getType().getCanonicalText().toString();
                             }
+                            @Override
                             public String getName() {
                                 return par.getName().toString();
                             }

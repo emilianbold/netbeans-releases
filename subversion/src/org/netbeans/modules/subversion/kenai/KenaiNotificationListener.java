@@ -49,19 +49,20 @@ import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.notifications.NotificationsManager;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiModification;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiNotification;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.VCSKenaiModification;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.VCSKenaiNotification;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotificationListener {
+public class KenaiNotificationListener extends VCSKenaiAccessor.KenaiNotificationListener {
     
+    @Override
     protected void handleVCSNotification(final VCSKenaiNotification notification) {
-        if(notification.getService() != VCSKenaiSupport.Service.VCS_SVN) {
+        if(notification.getService() != VCSKenaiAccessor.Service.VCS_SVN) {
             LOG.fine("rejecting VCS notification " + notification + " because not from svn"); // NOI18N
             return;
         }

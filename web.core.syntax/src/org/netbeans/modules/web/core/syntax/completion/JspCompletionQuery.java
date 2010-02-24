@@ -42,14 +42,12 @@
 package org.netbeans.modules.web.core.syntax.completion;
 
 import java.io.File;
-import java.io.IOException;
 import org.netbeans.modules.web.core.syntax.completion.api.JspCompletionItem;
 import java.util.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.servlet.jsp.tagext.TagInfo;
 import javax.servlet.jsp.tagext.TagAttributeInfo;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -151,44 +149,6 @@ public class JspCompletionQuery {
             
         } catch (BadLocationException e) {
             e.printStackTrace();
-        }
-    }
-
-    private void insertTagImportDirective(final BaseDocument doc, String tokenPart, int semiColonPos) {
-        final String tagLibPrefix = tokenPart.substring(0, semiColonPos);
-        //String tagPrefix = tokenPart.substring(semiColonPos + 1);
-        final String tagLibURI = StandardTagLibraryPrefixes.get(tagLibPrefix);
-        if (tagLibURI != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    doc.runAtomic(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            try {
-                                doc.insertString(Util.findPositionForJspDirective(doc),
-                                        "<%@ taglib prefix=\""  //NOI18N
-                                            + tagLibPrefix + "\" uri=\""        //NOI18N
-                                            + tagLibURI + "\" %>\n", null);     //NOI18N
-
-                            } catch (BadLocationException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                    });
-                }
-            });
-
-//            SwingUtilities.invokeLater(new Runnable() {
-//
-//                @Override
-//                public void run() {
-//                    Completion.get().showCompletion();
-//                }
-//            });
-
         }
     }
     
@@ -525,38 +485,41 @@ public class JspCompletionQuery {
             int semiColonPos = tokenPart.indexOf(':');
 
             if (semiColonPos >= 0){
-                int anchor = offset - tokenPart.length();
-                //insertTagImportDirective(doc, tokenPart, semiColonPos);
-                String prefix = tokenPart.substring(0, semiColonPos);
-                String tagNamePrefix = tokenPart.substring(semiColonPos + 1);
-                String uri = StandardTagLibraryPrefixes.get(prefix);
-                Object v = sup.getTagLibraryMappings().get(uri);
+                Map tagLibMappings = sup.getTagLibraryMappings();
 
-                if (v instanceof String[]) {
-                    String[] vals = (String[]) v;
-                    String jarPath = vals[0];
-                    String tldPath = vals[1];
+                if (tagLibMappings != null) {
+                    int anchor = offset - tokenPart.length();
+                    String prefix = tokenPart.substring(0, semiColonPos);
+                    String tagNamePrefix = tokenPart.substring(semiColonPos + 1);
+                    String uri = StandardTagLibraryPrefixes.get(prefix);
+                    Object v = tagLibMappings.get(uri);
 
-                    String FILE_PREFIX = "file:/"; //NOI18N
-                    
-                    if (jarPath.startsWith(FILE_PREFIX)){
-                        jarPath = '/' + jarPath.substring(FILE_PREFIX.length());
-                    }
+                    if (v instanceof String[]) {
+                        String[] vals = (String[]) v;
+                        String jarPath = vals[0];
+                        String tldPath = vals[1];
 
-                    try {
-                        JarFileSystem jfs = new JarFileSystem(FileUtil.normalizeFile(new File(jarPath)));
-                        FileObject tldFile = jfs.getRoot().getFileObject(tldPath);
-                        TldLibrary tldLib = TldLibrary.create(tldFile);
-                        
-                        for (String tagName : tldLib.getTags().keySet()){
-                            if (tagName.startsWith(tagNamePrefix)){
-                                result.addItem(new JspCompletionItem.UnresolvedPrefixTag(prefix + ":" + tagName,
-                                anchor, uri, prefix));
-                            }
+                        String FILE_PREFIX = "file:/"; //NOI18N
+
+                        if (jarPath.startsWith(FILE_PREFIX)) {
+                            jarPath = '/' + jarPath.substring(FILE_PREFIX.length());
                         }
 
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
+                        try {
+                            JarFileSystem jfs = new JarFileSystem(FileUtil.normalizeFile(new File(jarPath)));
+                            FileObject tldFile = jfs.getRoot().getFileObject(tldPath);
+                            TldLibrary tldLib = TldLibrary.create(tldFile);
+
+                            for (String tagName : tldLib.getTags().keySet()) {
+                                if (tagName.startsWith(tagNamePrefix)) {
+                                    result.addItem(new JspCompletionItem.UnresolvedPrefixTag(prefix + ":" + tagName,
+                                            anchor, uri, prefix));
+                                }
+                            }
+
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 }
                 

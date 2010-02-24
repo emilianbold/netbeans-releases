@@ -144,6 +144,19 @@ public final class BundlerAction extends AbstractAction implements ContextAwareA
                     });
                     add(item);
                 }
+                if (support.canUpdateIndices()) {
+                    addSeparator();
+                    JMenuItem updateIndices = new JMenuItem(NbBundle.getMessage(BundlerAction.class, "UpdateIndices"));
+                    updateIndices.setToolTipText(NbBundle.getMessage(BundlerAction.class, "UpdateIndicesDesc"));
+                    updateIndices.addActionListener(new ActionListener() {
+
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            support.updateIndices();
+                        }
+                    });
+                    add(updateIndices);
+                }
             }
             return super.getPopupMenu();
         }

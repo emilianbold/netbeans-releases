@@ -53,6 +53,7 @@ import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.WizardDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -65,9 +66,38 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
     private Node resourceNode;
     private DialogDescriptor descriptor;
     private boolean nameChangedByUser = false;
+    private JerseyClientWizardPanel wizardPanel;
 
     /** Creates new form RESTResourcesPanel */
+    public RESTResourcesPanel(JerseyClientWizardPanel wizardPanel) {
+        init();
+        this.wizardPanel = wizardPanel;
+        jLabel2.setVisible(false);
+        jTextField2.setVisible(false);
+    }
+    
     public RESTResourcesPanel() {
+        init();
+        jTextField2.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                nameChanged();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                nameChanged();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                nameChanged();
+            }
+        });
+    }
+
+    private void init() {
         initComponents();
         jTextField1.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -84,23 +114,6 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
             @Override
             public void changedUpdate(DocumentEvent e) {
                 resourceChanged();
-            }
-        });
-        jTextField2.getDocument().addDocumentListener(new DocumentListener() {
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                nameChanged();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                nameChanged();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                nameChanged();
             }
         });
     }
@@ -198,29 +211,47 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
     }
 
     private void resourceChanged() {
-        if (!nameChangedByUser || jTextField2.getText().trim().length() == 0) {
-            if (resourceNode != null) {
-                WadlSaasResource saasResource = resourceNode.getLookup().lookup(WadlSaasResource.class);
-                if (saasResource != null) {
-                    jTextField2.setText(ClientJavaSourceHelper.getClientClassName(saasResource));
-                } else {
-                    RestServiceDescription restServiceDesc = resourceNode.getLookup().lookup(RestServiceDescription.class);
-                    if (restServiceDesc != null) {
-                        jTextField2.setText(restServiceDesc.getName()+"_JerseyClient"); //NOI18N
+        if (wizardPanel == null) {
+            if (!nameChangedByUser || jTextField2.getText().trim().length() == 0) {
+                if (resourceNode != null) {
+                    WadlSaasResource saasResource = resourceNode.getLookup().lookup(WadlSaasResource.class);
+                    if (saasResource != null) {
+                        jTextField2.setText(Wadl2JavaHelper.getClientClassName(saasResource));
+                    } else {
+                        RestServiceDescription restServiceDesc = resourceNode.getLookup().lookup(RestServiceDescription.class);
+                        if (restServiceDesc != null) {
+                            jTextField2.setText(restServiceDesc.getName()+"_JerseyClient"); //NOI18N
+                        }
                     }
                 }
             }
+        } else {
+            wizardPanel.fireChangeEvent();
         }
     }
     private void nameChanged() {
-        if (jTextField2.getText().trim().length() == 0) {
-            descriptor.setValid(false);
-        } else if (resourceNode == null) {
-            descriptor.setValid(false);
-        } else {
-            descriptor.setValid(true);
+        if (wizardPanel == null) {
+            if (jTextField2.getText().trim().length() == 0) {
+                descriptor.setValid(false);
+            } else if (resourceNode == null) {
+                descriptor.setValid(false);
+            } else {
+                descriptor.setValid(true);
+            }
+            nameChangedByUser = true;
         }
-        nameChangedByUser = true;
+    }
+
+    boolean isValid(WizardDescriptor wiz) {
+        if (wizardPanel != null && wiz != null) {
+            if (resourceNode != null) {
+                return true;
+            } else {
+                wiz.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(RESTResourcesPanel.class, "LBL_SelectRestResource")); //NOI18N
+                return false;
+            }
+        }
+        return true;
     }
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -237,9 +268,6 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
                     nameChangedByUser = false;
                 }
             }
-            if (resourceNode != null) {
-                descriptor.setValid(true);
-            }
         } else {
             SaasExplorerPanel explorerPanel = new SaasExplorerPanel();
             DialogDescriptor desc = new DialogDescriptor(explorerPanel,
@@ -253,10 +281,10 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
                     nameChangedByUser = false;
                 }
             }
-            if (resourceNode != null) {
+        }
+            if (resourceNode != null && wizardPanel == null) {
                 descriptor.setValid(true);
             }
-        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private String getSaasResourceName(Node node) {
@@ -294,6 +322,10 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
 
     public Node getResourceNode() {
         return resourceNode;
+    }
+    
+    public String getResourceName() {
+        return jTextField1.getText().trim();
     }
 
     public String getClassName() {

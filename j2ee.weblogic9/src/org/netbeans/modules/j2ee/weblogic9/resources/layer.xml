@@ -60,8 +60,10 @@ made subject to such option by the copyright holder.
                     plugin
                 -->
                 <file name="Factory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory.getInstance"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory"/>
+                    <attr name="urlPattern" stringvalue="^deployer:WebLogic:http://.*$"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory.getInstance"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
                 

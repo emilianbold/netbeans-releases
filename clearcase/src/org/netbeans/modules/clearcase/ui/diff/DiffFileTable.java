@@ -72,12 +72,13 @@ import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.util.CollectionUtils;
 import org.netbeans.modules.versioning.util.SortedTable;
 import org.openide.cookies.EditorCookie;
+import org.openide.util.WeakListeners;
 
 /**
  * 
  * @author Maros Sandor
  */
-class DiffFileTable implements MouseListener, ListSelectionListener, AncestorListener, PropertyChangeListener {
+class DiffFileTable implements MouseListener, ListSelectionListener, AncestorListener {
     
     private NodeTableModel tableModel;
     private JTable table;
@@ -136,6 +137,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         }
     };
     private final MultiDiffPanel master;
+    private PropertyChangeListener changeListener;
 
     public DiffFileTable(MultiDiffPanel master) {
         this.master = master;
@@ -241,31 +243,23 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
     }
 
     void setTableModel(Setup[] setups, EditorCookie[] editorCookies) {
-        if (this.editorCookies != null) {
-            for (EditorCookie editorCookie : this.editorCookies) {
-                if (editorCookie instanceof EditorCookie.Observable) {
-                    ((EditorCookie.Observable) editorCookie).removePropertyChangeListener(this);
-                }
-            }
-        }
-
         this.editorCookies = editorCookies;
         tableModel.setNodes(nodes = setupsToNodes(setups));
-
+        changeListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent e) {
+                Object source = e.getSource();
+                String propertyName = e.getPropertyName();
+                if (EditorCookie.Observable.PROP_MODIFIED.equals(propertyName)
+                        && (source instanceof EditorCookie.Observable)) {
+                    statusModifiedChanged((EditorCookie.Observable) source);
+                }
+            }
+        };
         for (EditorCookie editorCookie : this.editorCookies) {
             if (editorCookie instanceof EditorCookie.Observable) {
-                ((EditorCookie.Observable) editorCookie).addPropertyChangeListener(this);
+                ((EditorCookie.Observable) editorCookie).addPropertyChangeListener(WeakListeners.propertyChange(changeListener, editorCookie));
             }
-        }
-    }
-
-    public void propertyChange(PropertyChangeEvent e) {
-        Object source = e.getSource();
-        String propertyName = e.getPropertyName();
-
-        if (EditorCookie.Observable.PROP_MODIFIED.equals(propertyName)
-                && (source instanceof EditorCookie.Observable)) {
-            statusModifiedChanged((EditorCookie.Observable) source);
         }
     }
 

@@ -77,13 +77,24 @@ made subject to such option by the copyright holder.
         </makeosgi>
     </target>
 
+    <target name="obr" depends="init">
+        <taskdef name="bindex" classname="org.osgi.impl.bundle.bindex.ant.BindexTask">
+            <classpath>
+                <fileset dir="${harness.dir}/antlib" includes="bindex*.jar"/>
+            </classpath>
+        </taskdef>
+        <bindex repositoryfile="${osgi.dest.dir}/repository.xml" quiet="true" root="${osgi.dest.dir}">
+            <fileset dir="${osgi.dest.dir}" includes="*.jar"/>
+        </bindex>
+    </target>
+
     <target name="run" depends="init">
         <!-- XXX Felix cache does not seem to work correctly, uses stale JARs; and org.osgi.framework.storage.clean=onFirstInit broken too: -->
         <delete dir="${osgi.cache.dir}"/>
         <mkdir dir="${osgi.cache.dir}"/>
         <!-- From felix/main/src/main/resources/config.properties; XXX is there a better way to grab these? -->
         <property name="felix-sys-prop.felix.auto.deploy.action" value="install,start"/>
-        <property name="felix-sys-prop.felix.log.level" value="4"/>
+        <property name="felix-sys-prop.felix.log.level" value="3"/> <!-- config.properties defaults to 4 but it is too noisy -->
         <property name="felix-sys-prop.org.osgi.service.http.port" value="8080"/>
         <property name="felix-sys-prop.obr.repository.url" value="http://felix.apache.org/obr/releases.xml"/>
         <java fork="true" classname="org.apache.felix.main.Main">

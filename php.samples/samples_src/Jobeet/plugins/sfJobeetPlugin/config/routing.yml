@@ -1,0 +1,74 @@
+change_language:
+  url:   /change_language
+  param: { module: sfJobeetLanguage, action: changeLanguage }
+
+localized_homepage:
+  url:   /:sf_culture/
+  param: { module: sfJobeetJob, action: index }
+  requirements:
+    sf_culture: (?:fr|en)
+
+job_search:
+  url:   /:sf_culture/search
+  param: { module: sfJobeetJob, action: search, sf_format: html }
+  requirements:
+    sf_format: (?:html|js)
+    sf_culture: (?:fr|en)
+
+affiliate:
+  class:   sfDoctrineRouteCollection
+  options:
+    model: JobeetAffiliate
+    actions: [new, create]
+    object_actions: { wait: get }
+    prefix_path:    /:sf_culture/affiliate
+    module:         sfJobeetAffiliate
+  requirements:
+    sf_culture: (?:fr|en)
+
+api_jobs:
+  url:     /api/:token/jobs.:sf_format
+  class:   sfDoctrineRoute
+  param:   { module: sfJobeetApi, action: list }
+  options: { model: JobeetJob, type: list, method: getForToken }
+  requirements:
+    sf_format: (?:xml|json|yaml)
+    sf_culture: (?:fr|en)
+
+category:
+  url:     /:sf_culture/category/:slug.:sf_format
+  class:   sfDoctrineRoute
+  param:   { module: sfJobeetCategory, action: show, sf_format: html }
+  options: { model: JobeetCategory, type: object, method: doSelectForSlug }
+  requirements:
+    sf_format: (?:html|atom)
+
+job:
+  class:   sfDoctrineRouteCollection
+  options:
+    model:          JobeetJob
+    column:         token
+    object_actions: { publish: PUT, extend: PUT }
+    prefix_path:    /:sf_culture/job
+    module:         sfJobeetJob
+  requirements:
+    token: \w+
+    sf_culture: (?:fr|en)
+
+job_show_user:
+  url:     /:sf_culture/job/:company_slug/:location_slug/:id/:position_slug
+  class:   sfDoctrineRoute
+  options:
+    model: JobeetJob
+    type:  object
+    method_for_query: retrieveActiveJob
+  param:   { module: sfJobeetJob, action: show }
+  requirements:
+    id: \d+
+    sf_method: [GET]
+    sf_culture: (?:fr|en)
+
+# default rules
+homepage:
+  url:   /
+  param: { module: sfJobeetJob, action: index }

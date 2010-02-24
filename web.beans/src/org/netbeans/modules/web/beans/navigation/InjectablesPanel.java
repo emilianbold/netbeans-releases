@@ -129,6 +129,12 @@ public class InjectablesPanel extends javax.swing.JPanel {
             CompilationController controller, MetadataModel<WebBeansModel> model ) 
     {
         initComponents();
+
+        // disable filtering for now: list of injectables will be always short
+        mySeparator.setVisible(false);
+        myFilterLabel.setVisible(false);
+        myFilterTextField.setVisible(false);
+        myCaseSensitiveFilterCheckBox.setVisible(false);
         
         myModel = model;
         myDocPane = new DocumentationScrollPane( true );

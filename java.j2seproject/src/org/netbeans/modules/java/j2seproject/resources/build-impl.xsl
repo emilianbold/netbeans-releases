@@ -312,9 +312,9 @@ is divided into following sections:
                 <xsl:if test="not(/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform)">
                     <property name="javac.fork" value="false"/>
                 </xsl:if>
-
+                <property name="jar.index" value="false"/>
             </target>
-            
+
             <target name="-post-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
@@ -825,18 +825,51 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-            
+
+            <target name="-init-macrodef-copylibs">
+                <macrodef>
+                    <xsl:attribute name="name">copylibs</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <property location="${{build.classes.dir}}" name="build.classes.dir.resolved"/>
+                        <pathconvert property="run.classpath.without.build.classes.dir">
+                            <path path="${{run.classpath}}"/>
+                            <map from="${{build.classes.dir.resolved}}" to=""/>
+                        </pathconvert>
+                        <pathconvert pathsep=" " property="jar.classpath">
+                            <path path="${{run.classpath.without.build.classes.dir}}"/>
+                            <chainedmapper>
+                                <flattenmapper/>
+                                <globmapper from="*" to="lib/*"/>
+                            </chainedmapper>
+                        </pathconvert>
+                        <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${{libs.CopyLibs.classpath}}" name="copylibs"/>
+                        <copylibs compress="${{jar.compress}}" jarfile="${{dist.jar}}" manifest="${{manifest.file}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" index="${{jar.index}}">
+                            <fileset dir="${{build.classes.dir}}"/>
+                            <manifest>
+                                <attribute name="Class-Path" value="${{jar.classpath}}"/>
+                                <customize/>
+                            </manifest>
+                        </copylibs>
+                    </sequential>
+                </macrodef>
+            </target>
+
             <target name="-init-presetdef-jar">
                 <presetdef>
                     <xsl:attribute name="name">jar</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
-                    <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
+                    <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}" index="${{jar.index}}">
                         <j2seproject1:fileset dir="${{build.classes.dir}}"/>
                         <!-- XXX should have a property serving as the excludes list -->
                     </jar>
                 </presetdef>
             </target>
-            
+
             <target name="-init-ap-cmdline-properties">
                 <property name="annotation.processing.enabled" value="true" />
                 <property name="annotation.processing.processors.list" value="" />
@@ -1106,33 +1139,18 @@ is divided into following sections:
             </target>
 
             <target name="-do-jar-with-libraries-and-splashscreen">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-init-macrodef-copylibs</xsl:attribute>
                 <xsl:attribute name="if">manifest.available+main.class+mkdist.available+splashscreen.available</xsl:attribute>
 
-                <property name="build.classes.dir.resolved" location="${{build.classes.dir}}"/>
-                <pathconvert property="run.classpath.without.build.classes.dir">
-                    <path path="${{run.classpath}}"/>
-                    <map from="${{build.classes.dir.resolved}}" to=""/>
-                </pathconvert>
-                <pathconvert property="jar.classpath" pathsep=" ">
-                    <path path="${{run.classpath.without.build.classes.dir}}"/>
-                    <chainedmapper>
-                        <flattenmapper/>
-                        <globmapper from="*" to="lib/*"/>
-                    </chainedmapper>
-                </pathconvert>
                 <basename property="splashscreen.basename" file="${{application.splash}}"/>
                 <mkdir dir="${{build.classes.dir}}/META-INF"/>
                 <copy file="${{application.splash}}" todir="${{build.classes.dir}}/META-INF" failonerror="false"/>
-                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" name="copylibs" classpath="${{libs.CopyLibs.classpath}}"/>
-                <copylibs manifest="${{manifest.file}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" jarfile="${{dist.jar}}" compress="${{jar.compress}}">
-                    <fileset dir="${{build.classes.dir}}"/>
-                    <manifest>
+                <j2seproject3:copylibs>
+                    <customize>
                         <attribute name="Main-Class" value="${{main.class}}"/>
-                        <attribute name="Class-Path" value="${{jar.classpath}}"/>
                         <attribute name="SplashScreen-Image" value="META-INF/${{splashscreen.basename}}"/>
-                    </manifest>
-                </copylibs>
+                    </customize>
+                </j2seproject3:copylibs>
                 <echo>To run this application from the command line without Ant, try:</echo>
                 <property name="dist.jar.resolved" location="${{dist.jar}}"/>
                 <echo><xsl:choose>
@@ -1142,64 +1160,28 @@ is divided into following sections:
             </target>
 
             <target name="-do-jar-with-libraries">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-init-macrodef-copylibs</xsl:attribute>
                 <xsl:attribute name="if">manifest.available+main.class+mkdist.available</xsl:attribute>
                 <xsl:attribute name="unless">splashscreen.available</xsl:attribute>
-
-                <property name="build.classes.dir.resolved" location="${{build.classes.dir}}"/>
-                <pathconvert property="run.classpath.without.build.classes.dir">
-                    <path path="${{run.classpath}}"/>
-                    <map from="${{build.classes.dir.resolved}}" to=""/>
-                </pathconvert>        
-                <pathconvert property="jar.classpath" pathsep=" ">
-                    <path path="${{run.classpath.without.build.classes.dir}}"/>
-                    <chainedmapper>
-                        <flattenmapper/>
-                        <globmapper from="*" to="lib/*"/>
-                    </chainedmapper>
-                </pathconvert>        
-                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" name="copylibs" classpath="${{libs.CopyLibs.classpath}}"/>
-                <copylibs manifest="${{manifest.file}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" jarfile="${{dist.jar}}" compress="${{jar.compress}}">
-                    <fileset dir="${{build.classes.dir}}"/>
-                    <manifest>
+                <j2seproject3:copylibs>
+                    <customize>
                         <attribute name="Main-Class" value="${{main.class}}"/>
-                        <attribute name="Class-Path" value="${{jar.classpath}}"/>
-                    </manifest>
-                </copylibs>                                
+                    </customize>
+                </j2seproject3:copylibs>
                 <echo>To run this application from the command line without Ant, try:</echo>
                 <property name="dist.jar.resolved" location="${{dist.jar}}"/>
                 <echo><xsl:choose>
                         <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">${platform.java}</xsl:when>
                         <xsl:otherwise>java</xsl:otherwise>
-                </xsl:choose> -jar "${dist.jar.resolved}"</echo>                
+                </xsl:choose> -jar "${dist.jar.resolved}"</echo>
             </target>
 
             <target name="-do-jar-with-libraries-without-mainclass">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-init-macrodef-copylibs</xsl:attribute>
                 <xsl:attribute name="if">manifest.available+mkdist.available</xsl:attribute>
                 <xsl:attribute name="unless">main.class.available</xsl:attribute>
-                <property name="build.classes.dir.resolved" location="${{build.classes.dir}}"/>
-                <pathconvert property="run.classpath.without.build.classes.dir">
-                    <path path="${{run.classpath}}"/>
-                    <map from="${{build.classes.dir.resolved}}" to=""/>
-                </pathconvert>
-                <pathconvert property="jar.classpath" pathsep=" ">
-                    <path path="${{run.classpath.without.build.classes.dir}}"/>
-                    <chainedmapper>
-                        <flattenmapper/>
-                        <globmapper from="*" to="lib/*"/>
-                    </chainedmapper>
-                </pathconvert>
-                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" name="copylibs" classpath="${{libs.CopyLibs.classpath}}"/>
-                <copylibs manifest="${{manifest.file}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" jarfile="${{dist.jar}}" compress="${{jar.compress}}">
-                    <fileset dir="${{build.classes.dir}}"/>
-                    <manifest>
-                        <attribute name="Class-Path" value="${{jar.classpath}}"/>
-                    </manifest>
-                </copylibs>
+                <j2seproject3:copylibs/>
             </target>
-            
-
 
             <target name="-do-jar-with-libraries-without-manifest">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -70,6 +71,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
@@ -134,12 +136,70 @@ class WSTransformer extends DefaultTreePathVisitor {
 	super.visit(node);
 	TokenSequence<PHPTokenId> ts = tokenSequence(node.getStartOffset());
         Token<? extends PHPTokenId> token;
+	boolean spaceCheckAfterKeywords = CodeStyle.get(context.document()).spaceCheckAfterKeywords();
+	List <PHPTokenId> keywordsToCheckSpaceAfter =  Arrays.asList(
+		PHPTokenId.PHP_ABSTRACT, PHPTokenId.PHP_CLASS, PHPTokenId.PHP_CONST, PHPTokenId.PHP_DECLARE, PHPTokenId.PHP_ECHO,
+		PHPTokenId.PHP_FINAL, PHPTokenId.PHP_FUNCTION, PHPTokenId.PHP__FILE__, PHPTokenId.PHP__FUNCTION__,
+		PHPTokenId.PHP_GLOBAL, PHPTokenId.PHP_GOTO, PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.PHP_INCLUDE,
+		PHPTokenId.PHP_INCLUDE_ONCE, PHPTokenId.PHP_INTERFACE, PHPTokenId.PHP_NAMESPACE, PHPTokenId.PHP_NEW,
+		PHPTokenId.PHP_PRINT, PHPTokenId.PHP_PRIVATE, PHPTokenId.PHP_PROTECTED, PHPTokenId.PHP_PUBLIC,
+		PHPTokenId.PHP_REQUIRE, PHPTokenId.PHP_REQUIRE_ONCE, PHPTokenId.PHP_RETURN,
+		PHPTokenId.PHP_STATIC, PHPTokenId.PHP_THROW, PHPTokenId.PHP_USE, PHPTokenId.PHP_VAR);
+	List <PHPTokenId> lookingForTokens = new ArrayList<PHPTokenId>();
+	lookingForTokens.addAll(Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_OPERATOR,
+		    PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_INSTANCEOF));
+	lookingForTokens.addAll(keywordsToCheckSpaceAfter);
 
 	while (ts.moveNext()) {
-	    token = LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_OPERATOR, 
-		    PHPTokenId.PHP_OBJECT_OPERATOR));
+	    token = LexUtilities.findNextToken(ts, lookingForTokens);
 	    if (token.id() == PHPTokenId.PHP_OBJECT_OPERATOR) {
 		checkSpaceAroundToken(ts, CodeStyle.get(context.document()).spaceAroundObjectOps());
+	    }
+	    else if (token.id() == PHPTokenId.PHP_INSTANCEOF) {
+		// always keep 1 space around
+		checkSpaceAroundToken(ts, true);
+	    }
+	    else if (token.id() == PHPTokenId.PHP_RETURN && ts.moveNext()) {
+		if (ts.token().id() !=  PHPTokenId.PHP_SEMICOLON) {
+		    LexUtilities.findNext(ts, Arrays.asList(PHPTokenId.WHITESPACE));
+		    if (ts.token().id() != PHPTokenId.PHP_SEMICOLON) {
+			replaceSpaceBeforeToken(ts, true, null);
+		    }
+		    else {
+			replaceSpaceBeforeToken(ts, false, null);
+		    }
+		}
+
+	    }
+	    else if ((token.id() == PHPTokenId.PHP_REQUIRE || token.id() == PHPTokenId.PHP_REQUIRE_ONCE
+		    || token.id() == PHPTokenId.PHP_INCLUDE || token.id() == PHPTokenId.PHP_INCLUDE_ONCE)
+		    && ts.moveNext()) {
+		LexUtilities.findNext(ts, Arrays.asList(PHPTokenId.WHITESPACE));
+		if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
+		    replaceSpaceBeforeToken(ts,  CodeStyle.get(context.document()).spaceBeforeMethodDeclParen(), null);
+		}
+		else {
+		    replaceSpaceBeforeToken(ts, true, null);
+		}
+	    }
+	    else if (keywordsToCheckSpaceAfter.contains(ts.token().id())
+		    && spaceCheckAfterKeywords && ts.moveNext()) {
+		LexUtilities.findNext(ts, WS_AND_COMMENT_TOKENS);
+		replaceSpaceBeforeToken(ts, true, null);
+	    }
+	    else if (token.id() == PHPTokenId.PHP_SEMICOLON) {
+		replaceSpaceBeforeToken(ts, CodeStyle.get(context.document()).spaceBeforeSemi(), null);
+		LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_SEMICOLON));
+		if (ts.moveNext() && ts.token().id() == PHPTokenId.WHITESPACE
+			&& !textContainsBreak(ts.token().text())
+			&& ts.moveNext()
+			&& !(ts.token().id() == PHPTokenId.WHITESPACE
+			|| isComment(ts.token()))) {
+		    int offset = ts.offset();
+		    replaceSpaceBeforeToken(ts, CodeStyle.get(context.document()).spaceAfterSemi(), null);
+		    ts.move(offset);
+		    ts.moveNext();
+		}
 	    }
 	    else {
 		String text = token.text().toString();
@@ -200,7 +260,7 @@ class WSTransformer extends DefaultTreePathVisitor {
         
         if (node.isCurly()){
 	    CodeStyle.BracePlacement openingBraceStyle;
-	    if (parent instanceof ClassDeclaration) {
+	    if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
 		openingBraceStyle = CodeStyle.get(context.document()).getClassDeclBracePlacement();
 	    } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
 		openingBraceStyle = CodeStyle.get(context.document()).getMethodDeclBracePlacement();
@@ -222,7 +282,7 @@ class WSTransformer extends DefaultTreePathVisitor {
 		    || CodeStyle.BracePlacement.NEW_LINE_INDENTED == openingBraceStyle ? "\n" : " "; //NOI18N
             if (CodeStyle.BracePlacement.NEW_LINE != openingBraceStyle &&
 		    CodeStyle.BracePlacement.NEW_LINE_INDENTED != openingBraceStyle && getPath().size() > 0) {
-                if (parent instanceof ClassDeclaration) {
+                if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration) {
                     newLineReplacement = CodeStyle.get(context.document()).spaceBeforeClassDeclLeftBrace() ? " " : ""; //NOI18N
                 }
                 else if (parent instanceof FunctionDeclaration) {
@@ -410,11 +470,15 @@ class WSTransformer extends DefaultTreePathVisitor {
 	List<FormalParameter> parameters = null;
         // line before end of function (before })
         List<Statement> statements = null;
+	int endOffset = node.getEndOffset() - 1;
         if (node instanceof MethodDeclaration) {
             MethodDeclaration md = (MethodDeclaration)node;
             if (md.getFunction().getBody() != null) { // is it an abstract method
                 statements = md.getFunction().getBody().getStatements();
             }
+	    else {
+		endOffset = node.getEndOffset();
+	    }
 	    parameters = md.getFunction().getFormalParameters();
         }
         else if (node instanceof FunctionDeclaration) {
@@ -423,11 +487,10 @@ class WSTransformer extends DefaultTreePathVisitor {
 	    parameters = fd.getFormalParameters();
         }
 
-
-        insertLines = (statements == null || statements.size() == 0)
-                ? insertLineBeforeAfter(ElemType.FUNCTION, ElemType.FUNCTION_BEFORE_END)
-                : insertLineBeforeAfter(astNodeToType(statements.get(statements.size() - 1)), ElemType.FUNCTION_BEFORE_END);
-        checkEmptyLinesBefore(node.getEndOffset() - 1, insertLines, true);
+	insertLines = (statements == null || statements.size() == 0)
+		? insertLineBeforeAfter(ElemType.FUNCTION, ElemType.FUNCTION_BEFORE_END)
+		: insertLineBeforeAfter(astNodeToType(statements.get(statements.size() - 1)), ElemType.FUNCTION_BEFORE_END);
+	checkEmptyLinesBefore(endOffset, insertLines, true);
 
         // format the end of the function method after }
         ASTNode nextNode = nextNode(node);
@@ -1020,14 +1083,14 @@ class WSTransformer extends DefaultTreePathVisitor {
             }
         }
 
-        if (beforeElem == ElemType.FUNCTION_BEFORE_END) {
-            if (afterElem == ElemType.FUNCTION) {
-                return Math.max(before, 1);
-            }
-            else {
-                return before;
-            }
-        }
+//        if (beforeElem == ElemType.FUNCTION_BEFORE_END) {
+//            if (afterElem == ElemType.FUNCTION) {
+//                return Math.max(before, 1);
+//            }
+//            else {
+//                return before;
+//            }
+//        }
 
         return Math.max(after, before);
     }

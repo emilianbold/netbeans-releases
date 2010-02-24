@@ -141,33 +141,15 @@ org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException
 org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor
 org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer
 org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver
-org.netbeans.modules.j2ee.genericserver.GSDeploymentFactory
+org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory
 org.netbeans.modules.j2ee.genericserver.ide.GSOptionalDeploymentManagerFactory
-org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory
 org.netbeans.modules.j2ee.jboss4.ide.JBOptionalDeploymentManagerFactory
-org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils
-org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils$Version
 org.netbeans.modules.j2ee.sun.api.ServerLocationManager
-org.netbeans.modules.j2ee.sun.ide.dm.Bundle
-org.netbeans.modules.j2ee.sun.ide.dm.Bundle_en
-org.netbeans.modules.j2ee.sun.ide.dm.Bundle_en_US
-org.netbeans.modules.j2ee.sun.ide.dm.Constants
-org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory
-org.netbeans.modules.j2ee.sun.ide.j2ee.Constants
 org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory
-org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties
 org.netbeans.modules.j2ee.sun.ide.j2ee.RunTimeDDCatalog
-org.netbeans.modules.j2ee.sun.share.CharsetMapping
-org.netbeans.modules.j2ee.sun.share.SecurityMasterListModel
-org.netbeans.modules.j2ee.weblogic9.WLBaseDeploymentManager
-org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory
-org.netbeans.modules.j2ee.weblogic9.optional.WLOptionalDeploymentManagerFactory
+org.netbeans.modules.j2ee.weblogic9.optional.WLOptionalFactory
 org.netbeans.modules.tomcat5.TomcatManager$TomcatVersion
 org.netbeans.modules.tomcat5.ide.OptionalFactory
-org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory
-org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory
-org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory
-org.netbeans.modules.tomcat5.TomcatFactory
 
 #IZ 177644
 org.netbeans.modules.schema2beans.AttrProp
@@ -7112,3 +7094,10 @@ org.openide.util.NbPreferences$Provider
 org.openide.util.actions.ActionPresenterProvider
 org.openide.util.lookup.implspi.NamedServicesProvider
 org.openide.windows.RetainLocation
+
+# classes loaded to make VersioningAnnotator asynchronous and much more responsive
+# permitted in #180830
+org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache
+org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache$AnnotationRefreshTask
+org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache$Item
+org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache$ItemKey

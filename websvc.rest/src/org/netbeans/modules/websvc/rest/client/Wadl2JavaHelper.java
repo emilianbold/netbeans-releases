@@ -47,7 +47,6 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Modifier;
@@ -63,8 +62,6 @@ import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
-import org.netbeans.modules.websvc.saas.model.wadl.Param;
-import org.netbeans.modules.websvc.saas.model.wadl.ParamStyle;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Request;
 import org.netbeans.modules.websvc.saas.model.wadl.Response;
@@ -79,24 +76,29 @@ class Wadl2JavaHelper {
         List<WadlSaasMethod> saasMethods = saasResource.getMethods();
         ClassTree modifiedInnerClass = innerClass;
         TreeMaker maker = copy.getTreeMaker();
-        boolean hasMultipleRequiredQParams = false;
-        boolean hasOptionalQParams = false;
-        QueryParamsInfo globalParams = new QueryParamsInfo(saasResource);
+        boolean hasMultipleParamsInList = false;
+        boolean hasOptionalQueryParams = false;
+        boolean hasFormParams = false;
+        HttpParams globalParams = new HttpParams(saasResource);
         for (WadlSaasMethod saasMethod : saasMethods) {
-            QueryParamsInfo paramsInfo = new QueryParamsInfo(saasMethod);
-            paramsInfo.merge(globalParams);
-            if (paramsInfo.hasMultipleRequiredParams()) {
-                hasMultipleRequiredQParams = true;
+            HttpParams httpParams = new HttpParams(saasMethod);
+            httpParams.mergeQueryandHeaderParams(globalParams);
+            if (httpParams.hasMultipleParamsInList()) {
+                hasMultipleParamsInList = true;
             }
-            if (paramsInfo.hasOptionalParams()) {
-                hasOptionalQParams = true;
+            if ((httpParams.hasOptionalQueryParams() && httpParams.hasRequiredQueryParams()) ||
+                    httpParams.hasDefaultQueryParams()) {
+                hasOptionalQueryParams = true;
             }
-            List<MethodTree> httpMethods = Wadl2JavaHelper.createHttpMethods(copy, saasMethod, paramsInfo);
+            if (httpParams.hasFormParams()) {
+                hasFormParams = true;
+            }
+            List<MethodTree> httpMethods = Wadl2JavaHelper.createHttpMethods(copy, saasMethod, httpParams);
             for (MethodTree httpMethod : httpMethods) {
                 modifiedInnerClass = maker.addClassMember(modifiedInnerClass, httpMethod);
             }
         }
-        if (hasMultipleRequiredQParams) {
+        if (hasMultipleParamsInList || hasFormParams) {
             // add new private method to compute MultivaluedMap
             String mvMapClass = "javax.ws.rs.core.MultivaluedMap"; //NOI18N
             TypeElement mvMapEl = copy.getElements().getTypeElement(mvMapClass);
@@ -106,7 +108,9 @@ class Wadl2JavaHelper {
             "{"+ //NOI18N
                 mvType+"<String,String> qParams = new com.sun.jersey.core.util.MultivaluedMapImpl();"+ //NOI18N
                 "for (int i=0;i< paramNames.length;i++) {" + //NOI18N
-                "    qParams.add(paramNames[i], paramValues[i]);"+ //NOI18N
+                "    if (paramValues[i] != null) {"+ //NOI18N
+                "        qParams.add(paramNames[i], paramValues[i]);"+ //NOI18N
+                "    }"+ //NOI18N
                 "}"+ //NOI18N
                 "return qParams;"+ //NOI18N
             "}"; //NOI18N
@@ -121,7 +125,7 @@ class Wadl2JavaHelper {
             paramList.add(maker.Variable(paramModifier, "paramValues", maker.Identifier("String[]"), null)); //NOI18N
             MethodTree methodTree = maker.Method (
                     methodModifier,
-                    "getQParams", //NOI18N
+                    "getQueryOrFormParams", //NOI18N
                     returnTree,
                     Collections.<TypeParameterTree>emptyList(),
                     paramList,
@@ -130,7 +134,7 @@ class Wadl2JavaHelper {
                     null); //NOI18N
             modifiedInnerClass = maker.addClassMember(modifiedInnerClass, methodTree);
         }
-        if (hasOptionalQParams) {
+        if (hasOptionalQueryParams) {
             // add new private method
             String mvMapClass = "javax.ws.rs.core.MultivaluedMap"; //NOI18N
             TypeElement mvMapEl = copy.getElements().getTypeElement(mvMapClass);
@@ -140,7 +144,7 @@ class Wadl2JavaHelper {
             "{"+ //NOI18N
                 mvType+"<String,String> qParams = new com.sun.jersey.core.util.MultivaluedMapImpl();"+ //NOI18N
                "for (String qParam : optionalParams) {" + //NOI18N
-                "    String[] qPar = qParam.split(\"[=:]\");"+ //NOI18N
+                "    String[] qPar = qParam.split(\"=\");"+ //NOI18N
                 "    if (qPar.length > 1) qParams.add(qPar[0], qPar[1])"+ //NOI18N
                 "}"+ //NOI18N
                 "return qParams;"+ //NOI18N
@@ -166,12 +170,12 @@ class Wadl2JavaHelper {
         return modifiedInnerClass;
     }
 
-    static List<MethodTree> createHttpMethods(WorkingCopy copy, WadlSaasMethod saasMethod, QueryParamsInfo paramsInfo) {
+    static List<MethodTree> createHttpMethods(WorkingCopy copy, WadlSaasMethod saasMethod, HttpParams httpParams) {
         List<MethodTree> httpMethods = new ArrayList<MethodTree>();
         String methodName = saasMethod.getName();
         Method wadlMethod = saasMethod.getWadlMethod();
         String methodType = wadlMethod.getName();
-        HeaderParamsInfo headerParamsInfo = new HeaderParamsInfo(saasMethod);
+        //HeaderParamsInfo headerParamsInfo = new HeaderParamsInfo(saasMethod);
         if (RestConstants.GET_ANNOTATION.equals(methodType)) { //GET
             List<RepresentationType> produces = new ArrayList<RepresentationType>();
             Response wadlResponse = wadlMethod.getResponse();
@@ -190,7 +194,7 @@ class Wadl2JavaHelper {
                 if (mediaType != null) {
                     for (HttpMimeType mimeType : HttpMimeType.values()) {
                         if (mediaType.equals(mimeType.getMimeType())) {
-                            MethodTree method = createHttpGETMethod(copy, saasMethod, mimeType, multipleMimeTypes, paramsInfo, headerParamsInfo);
+                            MethodTree method = createHttpGETMethod(copy, saasMethod, mimeType, multipleMimeTypes, httpParams);
                             if (method != null) {
                                 httpMethods.add(method);
                             }
@@ -201,7 +205,7 @@ class Wadl2JavaHelper {
                 }
             }
             if (!found) {
-                httpMethods.add(createHttpGETMethod(copy, saasMethod, null, false, paramsInfo, headerParamsInfo));
+                httpMethods.add(createHttpGETMethod(copy, saasMethod, null, false, httpParams));
             }
 
         } else if ( RestConstants.PUT_ANNOTATION.equals(methodType) ||
@@ -219,12 +223,12 @@ class Wadl2JavaHelper {
 
             boolean found = false;
             boolean multipleMimeTypes = consumes.size() > 1;
-            for (RepresentationType prod : consumes) {
-                String mediaType = prod.getMediaType();
+            for (RepresentationType cons : consumes) {
+                String mediaType = cons.getMediaType();
                 if (mediaType != null) {
                     for (HttpMimeType mimeType : HttpMimeType.values()) {
                         if (mediaType.equals(mimeType.getMimeType())) {
-                            MethodTree method = createHttpPOSTMethod(copy, saasMethod, mimeType, multipleMimeTypes, paramsInfo, headerParamsInfo);
+                            MethodTree method = createHttpPOSTMethod(copy, saasMethod, mimeType, multipleMimeTypes, httpParams);
                             if (method != null) {
                                 httpMethods.add(method);
                             }
@@ -235,13 +239,13 @@ class Wadl2JavaHelper {
                 }
             }
             if (!found) {
-                httpMethods.add(createHttpPOSTMethod(copy, saasMethod, null, false, paramsInfo, headerParamsInfo));
+                httpMethods.add(createHttpPOSTMethod(copy, saasMethod, null, false, httpParams));
             }
         }
         return httpMethods;
     }
 
-    static MethodTree createHttpGETMethod(WorkingCopy copy, WadlSaasMethod saasMethod, HttpMimeType mimeType, boolean multipleMimeTypes, QueryParamsInfo paramsInfo, HeaderParamsInfo headerParamsInfo) {
+    static MethodTree createHttpGETMethod(WorkingCopy copy, WadlSaasMethod saasMethod, HttpMimeType mimeType, boolean multipleMimeTypes, HttpParams httpParams) {
         String methodName = saasMethod.getName() + (multipleMimeTypes ? "_"+mimeType.name() : ""); //NOI18N
 
         TreeMaker maker = copy.getTreeMaker();
@@ -262,8 +266,8 @@ class Wadl2JavaHelper {
         StringBuffer queryParamPart = new StringBuffer();
         StringBuffer commentBuffer = new StringBuffer("@param responseType Class representing the response\n"); //NOI18N
 
-        if (paramsInfo.hasQueryParams() || headerParamsInfo.hasHeaderParams()) {
-            addQueryAndHeaderParams(maker, paramsInfo, headerParamsInfo, paramList, queryP, queryParamPart, commentBuffer);
+        if (httpParams.hasQueryParams() || httpParams.hasHeaderParams()) {
+            addQueryAndHeaderParams(maker, httpParams, paramList, queryP, queryParamPart, commentBuffer);
         }
 
         commentBuffer.append("@return response object (instance of responseType class)"); //NOI18N
@@ -292,7 +296,7 @@ class Wadl2JavaHelper {
         return method;
     }
 
-    static MethodTree createHttpPOSTMethod(WorkingCopy copy, WadlSaasMethod saasMethod, HttpMimeType requestMimeType, boolean multipleMimeTypes, QueryParamsInfo paramsInfo, HeaderParamsInfo headerParamsInfo) {
+    static MethodTree createHttpPOSTMethod(WorkingCopy copy, WadlSaasMethod saasMethod, HttpMimeType requestMimeType, boolean multipleMimeTypes, HttpParams httpParams) {
         String methodName = saasMethod.getName() + (multipleMimeTypes ? "_"+requestMimeType.name() : ""); //NOI18N
         String methodPrefix = saasMethod.getWadlMethod().getName().toLowerCase();
 
@@ -327,16 +331,16 @@ class Wadl2JavaHelper {
         StringBuffer queryParamPart = new StringBuffer();
         StringBuffer commentBuffer = new StringBuffer("@param responseType Class representing the response\n"); //NOI18N
 
-        if (paramsInfo.hasQueryParams() || headerParamsInfo.hasHeaderParams()) {
-            addQueryAndHeaderParams(maker, paramsInfo, headerParamsInfo, paramList, queryP, queryParamPart, commentBuffer);
+        if (httpParams.hasFormParams() || httpParams.hasQueryParams() || httpParams.hasHeaderParams()) {
+            addQueryAndHeaderParams(maker, httpParams, paramList, queryP, queryParamPart, commentBuffer);
         }
 
         if (requestMimeType != null) {
-            if (requestMimeType == HttpMimeType.FORM) {
-                // PENDING
+            if (requestMimeType == HttpMimeType.FORM && httpParams.hasFormParams()) {
+                bodyParam2=(bodyParam1.length() > 0 ? ", " : "") + "getQueryOrFormParams(formParamNames, formParamValues)"; //NOI18N
             } else {
                 VariableTree objectParam = maker.Variable(paramModifier, "requestEntity", maker.Identifier("Object"), null); //NOI18N
-                paramList.add(objectParam);
+                paramList.add(0, objectParam);
                 bodyParam2=(bodyParam1.length() > 0 ? ", " : "") + "requestEntity"; //NOI18N
                 commentBuffer.append("@param requestEntity request data");
             }
@@ -369,66 +373,111 @@ class Wadl2JavaHelper {
         return method;
     }
 
-
-    private static void addQueryAndHeaderParams(TreeMaker maker, QueryParamsInfo paramsInfo, HeaderParamsInfo headerParamsInfo,  List<VariableTree> paramList, StringBuffer queryP, StringBuffer queryParamPart, StringBuffer commentBuffer) {
+    private static void addQueryAndHeaderParams(TreeMaker maker, HttpParams httpParams,  List<VariableTree> paramList, StringBuffer queryP, StringBuffer queryParamPart, StringBuffer commentBuffer) {
         ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
-        if (paramsInfo.hasQueryParams()) {
-            // add required params
-            if (paramsInfo.hasRequiredParams()) {
-                for (String requiredParam : paramsInfo.getRequiredParams()) {
+        // adding form params
+        if (httpParams.hasFormParams()) {
+            for (String formParam : httpParams.getFormParams()) {
+                String javaIdentifier = makeJavaIdentifier(formParam);
+                VariableTree paramTree = maker.Variable(paramModifier, javaIdentifier, maker.Identifier("String"), null); //NOI18N
+                paramList.add(paramTree);
+                commentBuffer.append("@param "+javaIdentifier+" form parameter\n"); //NOI18N
+            }
+            Pair<String> paramPair = getParamList(httpParams.getFormParams(), httpParams.getFixedFormParams());
+            queryParamPart.append("String[] formParamNames = new String[] {"+paramPair.getKey()+"}"); //NOI18N
+            queryParamPart.append("String[] formParamValues = new String[] {"+paramPair.getValue()+"}"); //NOI18N
+            //queryP.append(".queryParams(getQParams(paramNames, paramValues))"); //NOI18N
+        }
+        // add query params
+        if (httpParams.hasQueryParams()) {
+            if (httpParams.hasRequiredQueryParams()) {
+                for (String requiredParam : httpParams.getRequiredQueryParams()) {
                     String javaIdentifier = makeJavaIdentifier(requiredParam);
                     VariableTree paramTree = maker.Variable(paramModifier, javaIdentifier, maker.Identifier("String"), null); //NOI18N
                     paramList.add(paramTree);
                     commentBuffer.append("@param "+javaIdentifier+" query parameter[REQUIRED]\n"); //NOI18N
                 }
-                if (paramsInfo.hasMultipleRequiredParams()) {
-                    ClientJavaSourceHelper.Pair paramPair = getParamList(paramsInfo.getRequiredParams(), paramsInfo.getFixedParams());
-                    queryParamPart.append("String[] paramNames = new String[] {"+paramPair.getKey()+"}"); //NOI18N
-                    queryParamPart.append("String[] paramValues = new String[] {"+paramPair.getValue()+"}"); //NOI18N
-                    queryP.append(".queryParams(getQParams(paramNames, paramValues))"); //NOI18N
+                if (httpParams.hasMultipleParamsInList()) {
+                    Pair<String> paramPair = getParamList(httpParams.getRequiredQueryParams(), httpParams.getFixedQueryParams());
+                    queryParamPart.append("String[] queryParamNames = new String[] {"+paramPair.getKey()+"}"); //NOI18N
+                    queryParamPart.append("String[] queryParamValues = new String[] {"+paramPair.getValue()+"}"); //NOI18N
+                    queryP.append(".queryParams(getQueryOrFormParams(queryParamNames, queryParamValues))"); //NOI18N
                 } else {
-                    List<String> requiredParams = paramsInfo.getRequiredParams();
+                    List<String> requiredParams = httpParams.getRequiredQueryParams();
                     if (requiredParams.size() > 0) {
                         String paramName = requiredParams.get(0);
                         String paramValue = makeJavaIdentifier(requiredParams.get(0));
                         queryP.append(".queryParam(\""+paramName+"\","+paramValue+")"); //NOI18N"
                     } else {
-                        Map<String, String> fixedParams = paramsInfo.getFixedParams();
+                        Map<String, String> fixedParams = httpParams.getFixedQueryParams();
                         for (String paramName : fixedParams.keySet()) {
                             String paramValue = fixedParams.get(paramName);
                             queryP.append(".queryParam(\""+paramName+"\",\""+paramValue+"\")"); //NOI18N"
                         }
                     }
                 }
+            } else if (httpParams.hasOptionalQueryParams()) {
+//                if (!httpParams.hasDefaultQueryParams()) {
+                    // optional params should be listed also when there are no required params
+                    for (String optionalParam : httpParams.getOptionalQueryParams()) {
+                        String javaIdentifier = makeJavaIdentifier(optionalParam);
+                        VariableTree paramTree = maker.Variable(paramModifier, javaIdentifier, maker.Identifier("String"), null); //NOI18N
+                        paramList.add(paramTree);
+                        commentBuffer.append("@param "+javaIdentifier+" query parameter\n"); //NOI18N
+                    }
+                    if (httpParams.hasMultipleParamsInList()) {
+                        Pair<String> paramPair = getParamList(httpParams.getOptionalQueryParams(), httpParams.getFixedQueryParams());
+                        queryParamPart.append("String[] queryParamNames = new String[] {"+paramPair.getKey()+"}"); //NOI18N
+                        queryParamPart.append("String[] queryParamValues = new String[] {"+paramPair.getValue()+"}"); //NOI18N
+                        queryP.append(".queryParams(getQueryOrFormParams(queryParamNames, queryParamValues))"); //NOI18N
+                    } else {
+                        List<String> optionalParams = httpParams.getOptionalQueryParams();
+                        if (optionalParams.size() > 0) {
+                            String paramName = optionalParams.get(0);
+                            String paramValue = makeJavaIdentifier(optionalParams.get(0));
+                            queryP.append(".queryParam(\""+paramName+"\","+paramValue+")"); //NOI18N"
+                        }
+                    }
+//                }
             }
-            // add optional params
-            if (paramsInfo.hasOptionalParams()) {
+
+            // add optional params (only when there are also some required params)
+            if ((httpParams.hasOptionalQueryParams() && httpParams.hasRequiredQueryParams()) || httpParams.hasDefaultQueryParams()) {
                 VariableTree paramTree = maker.Variable(paramModifier, "optionalQueryParams", maker.Identifier("String..."), null); //NOI18N
                 paramList.add(paramTree);
 
                 commentBuffer.append("@param optionalQueryParams List of optional query parameters in the form of \"param_name=param_value\",...<br>\nList of optional query parameters:\n"); //NOI18N
-                for (String otherParam : paramsInfo.getOtherParams()) {
+                for (String otherParam : httpParams.getOptionalQueryParams()) {
                     commentBuffer.append("<LI>"+otherParam+" [OPTIONAL]\n"); //NOI18N
                 }
-                Map<String,String> defaultParams = paramsInfo.getDefaultParams();
+                // add default params
+                Map<String,String> defaultParams = httpParams.getDefaultQueryParams();
                 for (String key : defaultParams.keySet()) {
                     commentBuffer.append("<LI>"+key+" [OPTIONAL, DEFAULT VALUE: \""+defaultParams.get(key)+"\"]\n"); //NOI18N
                 }
                 queryP.append(".queryParams(getQParams(optionalQueryParams))"); //NOI18N
             }
+
+
         }
         // add header params
-        for (String headerParam : headerParamsInfo.getHeaderParams()) {
-
-            String javaIdentifier = makeJavaIdentifier(headerParam);
-            VariableTree paramTree = maker.Variable(paramModifier, javaIdentifier, maker.Identifier("String"), null); //NOI18N
-            paramList.add(paramTree);
-            commentBuffer.append("@param "+javaIdentifier+" header parameter[REQUIRED]\n"); //NOI18N
-            queryP.append(".header(\""+headerParam+"\","+javaIdentifier+")"); //NOI18N
+        if (httpParams.hasHeaderParams()) {
+            for (String headerParam : httpParams.getHeaderParams()) {
+                String javaIdentifier = makeJavaIdentifier(headerParam);
+                VariableTree paramTree = maker.Variable(paramModifier, javaIdentifier, maker.Identifier("String"), null); //NOI18N
+                paramList.add(paramTree);
+                commentBuffer.append("@param "+javaIdentifier+" header parameter[REQUIRED]\n"); //NOI18N
+                queryP.append(".header(\""+headerParam+"\","+javaIdentifier+")"); //NOI18N
+            }
+            Map<String, String> fixedHeaderParams = httpParams.getFixedHeaderParams();
+            for (String paramName : fixedHeaderParams.keySet()) {
+                String paramValue = fixedHeaderParams.get(paramName);
+                queryP.append(".header(\""+paramName+"\",\""+paramValue+"\")"); //NOI18N
+            }
         }
     }
 
-    private static ClientJavaSourceHelper.Pair getParamList(List<String> requiredParams, Map<String,String> fixedParams) {
+    private static Pair<String> getParamList(List<String> requiredParams, Map<String,String> fixedParams) {
         StringBuffer paramNames = new StringBuffer();
         StringBuffer paramValues = new StringBuffer();
         boolean first = true;
@@ -454,7 +503,7 @@ class Wadl2JavaHelper {
             paramValues.append("\""+fixedParams.get(p)+"\"");
         }
 
-        return new ClientJavaSourceHelper.Pair(paramNames.toString(),paramValues.toString());
+        return new Pair<String>(paramNames.toString(), paramValues.toString());
     }
 
     private static String makeJavaIdentifier(String s) {
@@ -470,122 +519,55 @@ class Wadl2JavaHelper {
             if (!Character.isJavaIdentifierStart(result.charAt(0))) {
                 result = "_"+result;
             }
+            result = result.substring(0,1).toLowerCase()+result.substring(1);
         }
         return result;
     }
 
-    static class HeaderParamsInfo {
-        private boolean hasHeaderParams = false;
-        private List<String> headerParams = new ArrayList<String>();
-         HeaderParamsInfo(WadlSaasResource saasResource) {
-            initParams(saasResource.getResource().getParam());
-        }
-
-        HeaderParamsInfo(WadlSaasMethod saasMethod) {
-            Request request = saasMethod.getWadlMethod().getRequest();
-            if (request != null) {
-                initParams(request.getParam());
+    static String getClientClassName(WadlSaasResource saasResource) {
+        String path = saasResource.getResource().getPath();
+        int len = path.length();
+        for (int i=0; i<len; i++) {
+            char ch = path.charAt(i);
+            if (!Character.isJavaIdentifierPart(ch)) {
+                path = path.replace(ch, '_'); //NOI18N
             }
         }
+        while (path.startsWith("_")) { //NOI18N
+            path = path.substring(1);
+        }
+        while (path.endsWith("_")) { //NOI18N
+            path = path.substring(0, path.length()-1);
+        }
+        String saasName = saasResource.getSaas().getDisplayName();
+        saasName = saasName.replace(" ", "_"); //NOI18N
 
-        private void initParams (List<Param> params) {
-             for (Param param : params) {
-                if (ParamStyle.HEADER == param.getStyle()) {
-                    hasHeaderParams = true;
-                    headerParams.add(param.getName());
-                }
-            }
-        }
-        boolean hasHeaderParams() {
-            return hasHeaderParams;
+        if (saasName.length() == 0) {
+            saasName = "Resource"; //NOI18N
+        } else if (!Character.isJavaIdentifierStart(saasName.charAt(0))) {
+            saasName= "Resource_"+saasName; //NOI18N
+        } else if (Character.isLowerCase(saasName.charAt(0))) {
+            saasName = saasName.substring(0,1).toUpperCase()+saasName.substring(1);
         }
 
-        List<String> getHeaderParams() {
-            return headerParams;
-        }
+        return saasName+(path.length() == 0 ? "" : "_"+path)+"_JerseyClient"; //NOI18N
     }
 
+    static class Pair<T> {
+        private T key;
+        private T value;
 
-    static class QueryParamsInfo {
-        private boolean hasQueryParams = false;
-        private boolean hasRequiredParams = false;
-        private boolean hasOptionalParams = false;
-        private List<String> requiredParams = new ArrayList<String>();
-        private List<String> otherParams = new ArrayList<String>();
-        private Map<String, String> fixedParams = new HashMap<String,String>();
-        private Map<String, String> defaultParams = new HashMap<String,String>();
-
-        QueryParamsInfo(WadlSaasResource saasResource) {
-            initParams(saasResource.getResource().getParam());
+        public Pair(T key, T value) {
+            this.key = key;
+            this.value = value;
         }
 
-        QueryParamsInfo(WadlSaasMethod saasMethod) {
-            Request request = saasMethod.getWadlMethod().getRequest();
-            if (request != null) {
-                initParams(request.getParam());
-            }
+        public T getKey() {
+            return key;
         }
 
-        private void initParams (List<Param> params) {
-             for (Param param : params) {
-                if (ParamStyle.QUERY == param.getStyle()) {
-                    hasQueryParams = true;
-                    if (param.isRequired() && param.getFixed() == null && param.getDefault() == null) {
-                        hasRequiredParams = true;
-                        requiredParams.add(param.getName());
-                    } else if (param.getFixed() != null) {
-                        hasRequiredParams = true;
-                        fixedParams.put(param.getName(), param.getFixed());
-                    } else if (param.getDefault() != null) {
-                        hasOptionalParams = true;
-                        defaultParams.put(param.getName(), param.getDefault());
-                    } else {
-                        hasOptionalParams = true;
-                        otherParams.add(param.getName());
-                    }
-                }
-            }
+        public T getValue() {
+            return value;
         }
-
-        boolean hasMultipleRequiredParams() {
-            return hasRequiredParams && requiredParams.size() + fixedParams.size() > 1;
-        }
-
-        boolean hasQueryParams() {
-            return hasQueryParams;
-        }
-        boolean hasRequiredParams() {
-            return hasRequiredParams;
-        }
-        boolean hasOptionalParams() {
-            return hasOptionalParams;
-        }
-
-        Map<String, String> getDefaultParams() {
-            return defaultParams;
-        }
-
-        Map<String, String> getFixedParams() {
-            return fixedParams;
-        }
-
-        List<String> getOtherParams() {
-            return otherParams;
-        }
-
-        List<String> getRequiredParams() {
-            return requiredParams;
-        }
-
-        void merge(QueryParamsInfo qp) {
-            hasQueryParams = hasQueryParams || qp.hasQueryParams;
-            hasRequiredParams = hasRequiredParams || qp.hasRequiredParams;
-            hasOptionalParams = hasOptionalParams || qp.hasOptionalParams;
-            requiredParams.addAll(qp.requiredParams);
-            otherParams.addAll(qp.otherParams);
-            fixedParams.putAll(qp.fixedParams);
-            defaultParams.putAll(qp.defaultParams);
-        }
-
     }
 }
