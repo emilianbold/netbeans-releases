@@ -198,6 +198,13 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.spellchecker.bindings.java</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.websvc.jaxws21</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
@@ -211,16 +218,16 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.xml.tools.java</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.3</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.xml.jaxb</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.tools.java</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.3</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
