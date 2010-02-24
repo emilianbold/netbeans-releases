@@ -40,9 +40,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
@@ -94,10 +91,10 @@ public class FakeRegistrationTest1 extends ModelImplBaseTestCase  {
 	ModelImpl model = traceModel.getModel();
 	final CsmProject project = traceModel.getProject();
         
-        FileImpl csmSource = (FileImpl) project.findFile(sourceFile.getAbsolutePath());
+        FileImpl csmSource = (FileImpl) project.findFile(sourceFile.getAbsolutePath(), false);
         assert csmSource != null;
 
-        FileImpl csmHeader = (FileImpl) project.findFile(headerFile.getAbsolutePath());
+        FileImpl csmHeader = (FileImpl) project.findFile(headerFile.getAbsolutePath(), false);
         assert csmHeader != null;
 
         csmSource.scheduleParsing(true);
