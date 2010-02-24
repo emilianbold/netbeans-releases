@@ -109,14 +109,14 @@ public class SvnFileNode {
     }
 
     /**
-     * Returns relativePath of this node's file. 
+     * Returns relativePath of this node's file or the full resourceUrl if explicitly selected in Options.
      * @return relative path of this node's file.
      */
-    public String getRelativePath() {
+    public String getLocation() {
         if (relativePath == null) {
             try {
                 assert !java.awt.EventQueue.isDispatchThread();
-                relativePath = SvnUtils.getRelativePath(getFile());
+                relativePath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed() ? SvnUtils.getRepositoryUrl(getFile()).toString() : SvnUtils.getRelativePath(getFile());
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(ex, false, false);
             }

@@ -132,7 +132,7 @@ public class Utils {
      * @param nodes or null (then taken from windowsystem, it may be wrong on editor tabs #66700).
      */ 
     public static Context getCurrentContext(Node[] nodes) {
-        if (nodes == null || nodes.length == 0) {
+        if (nodes == null) {
             nodes = TopComponent.getRegistry().getActivatedNodes();
         }
         VCSContext ctx = VCSContext.forNodes(nodes);

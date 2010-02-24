@@ -62,6 +62,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
 import java.util.*;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.subversion.FileInformation;
@@ -97,6 +98,8 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     private TableSorter         sorter;
     private String[]            columns;
     private String[]            sortByColumns;
+    private CommitPanel commitPanel;
+    private Set<File> modifiedFiles = Collections.<File>emptySet();
     
     
     public CommitTable(JLabel label, String[] columns, String[] sortByColumns) {
@@ -385,6 +388,19 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
         });
         Mnemonics.setLocalizedText(item, item.getText());
         item.setEnabled(addAllowed);
+        item = menu.add(new AbstractAction(NbBundle.getMessage(CommitTable.class, "CTL_CommitTable_DiffAction")) { // NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int[] rows = table.getSelectedRows();
+                SvnFileNode[] nodes = new SvnFileNode[rows.length];
+                for (int i = 0; i < rows.length; ++i) {
+                    nodes[i] = tableModel.getNode(sorter.modelIndex(rows[i]));
+                }
+                commitPanel.openDiff(nodes);
+            }
+        });
+        Mnemonics.setLocalizedText(item, item.getText());
+        item.setEnabled(commitPanel != null);
         return menu;
     }
 
@@ -448,6 +464,14 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
         protected abstract void performAction (ActionEvent e);
     }
 
+    void setCommitPanel(CommitPanel panel) {
+        this.commitPanel = panel;
+    }
+
+    void setModifiedFiles(Set<File> modifiedFiles) {
+        this.modifiedFiles = modifiedFiles;
+    }
+
     private class CommitStringsCellRenderer extends DefaultTableCellRenderer {
 
         private FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
@@ -461,12 +485,15 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
                 SvnFileNode node = model.getNode(sorter.modelIndex(row));
                 CommitOptions options = model.getOptions(sorter.modelIndex(row));
                 if (!isSelected) {
-                    value = "<html>" + Subversion.getInstance().getAnnotator().annotateNameHtml(  // NOI18N
-                            node.getFile().getName(), node.getInformation(), null);
+                    value = Subversion.getInstance().getAnnotator().annotateNameHtml(node.getFile().getName(), node.getInformation(), null);
                 }
                 if (options == CommitOptions.EXCLUDE) {
-                    value = "<html><s>" + value + "</s></html>"; // NOI18N
+                    value = "<s>" + value + "</s>"; // NOI18N
                 }
+                if (modifiedFiles.contains(node.getFile())) {
+                    value = "<strong>" + value + "</strong>"; //NOI18N
+                }
+                value = "<html>" + value + "</html>"; //NOI18N
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else if (CommitTableModel.COLUMN_NAME_PATH.equals(columns[col])) {
                 return pathRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

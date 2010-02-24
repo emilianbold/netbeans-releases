@@ -390,7 +390,7 @@ public class CsmUtilities {
         return false;
     }
 
-    public static CsmFile[] getCsmFiles(DataObject dobj, boolean snapShot) {
+    private static CsmFile[] getCsmFiles(DataObject dobj, boolean snapShot) {
         if (dobj != null && dobj.isValid()) {
             try {
                 List<CsmFile> files = new ArrayList<CsmFile>();
