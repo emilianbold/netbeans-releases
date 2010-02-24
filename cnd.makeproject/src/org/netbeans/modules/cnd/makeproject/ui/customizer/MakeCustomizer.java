@@ -523,11 +523,16 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
                     } else if (currentConfigurationNode.customizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
                         panel.setBorder(new javax.swing.border.EtchedBorder());
                         PropertySheet propertySheet = new PropertySheet(); // See IZ 105525 for details.
-                        DummyNode[] dummyNodes = new DummyNode[selectedConfigurations.length];
-                        for (int i = 0; i < selectedConfigurations.length; i++) {
-                            dummyNodes[i] = new DummyNode(currentConfigurationNode.getSheet(selectedConfigurations[i]), selectedConfigurations[i].getName());
+                        List<DummyNode> dummyNodes = new ArrayList<DummyNode>(selectedConfigurations.length*nodes.length);
+                        for (Node selNode : nodes) {
+                            if (selNode instanceof PropertyNode && ((PropertyNode)selNode).customizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
+                                PropertyNode propNode = (PropertyNode) selNode;
+                                for (int i = 0; i < selectedConfigurations.length; i++) {
+                                    dummyNodes.add(new DummyNode(propNode.getSheet(selectedConfigurations[i]), selectedConfigurations[i].getName()));
+                                }
+                            }
                         }
-                        propertySheet.setNodes(dummyNodes);
+                        propertySheet.setNodes(dummyNodes.toArray(new DummyNode[dummyNodes.size()]));
                         panel.add(propertySheet, fillConstraints);
                         configurationLabel.setEnabled(true);
                         configurationComboBox.setEnabled(true);
