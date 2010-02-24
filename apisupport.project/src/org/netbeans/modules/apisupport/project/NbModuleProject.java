@@ -970,7 +970,11 @@ public final class NbModuleProject implements Project {
             }
             return false;
         }
-        
+
+        @Override
+        public boolean prepareContext() throws IllegalStateException {
+            return true;
+        }
     }
     
     private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates, RecommendedTemplates {

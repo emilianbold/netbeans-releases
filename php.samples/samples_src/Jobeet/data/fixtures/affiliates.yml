@@ -1,0 +1,14 @@
+JobeetAffiliate:
+  sensio_labs:
+    url:       http://www.sensio-labs.com/
+    email:     fabien.potencier@example.com
+    is_active: true
+    token:     sensio_labs
+    JobeetCategories: [programming]
+ 
+  symfony:
+    url:       http://www.symfony-project.org/
+    email:     fabien.potencier@example.org
+    is_active: false
+    token:     symfony
+    JobeetCategories: [design, programming]

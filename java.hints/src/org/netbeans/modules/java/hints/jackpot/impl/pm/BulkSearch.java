@@ -58,7 +58,7 @@ import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
  */
 public abstract class BulkSearch {
 
-    private static final BulkSearch INSTANCE = new CopyFinderBasedBulkSearch();
+    private static final BulkSearch INSTANCE = new NFABasedBulkSearch();
 //    private static final BulkSearch INSTANCE = new REBasedBulkSearch();
 
     public static BulkSearch getDefault() {

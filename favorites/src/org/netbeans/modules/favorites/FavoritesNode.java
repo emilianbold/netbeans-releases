@@ -210,12 +210,12 @@ public final class FavoritesNode extends FilterNode implements Index {
     
     @Override
     public Image getIcon (int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/favorites/resources/actionSelect.png"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/favorites/resources/actionView.png"); // NOI18N
     }
     
     @Override
     public Image getOpenedIcon (int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/favorites/resources/actionSelect.png"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/favorites/resources/actionView.png"); // NOI18N
     }
     
     @Override
