@@ -177,7 +177,7 @@ class SftpSupport {
         }
 
         protected void logException(Exception ex) {
-            LOG.log(Level.WARNING, "Error " + getTraceName(), ex);
+            LOG.log(Level.INFO, "Error " + getTraceName(), ex);
         }
     }
 
