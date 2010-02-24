@@ -36,73 +36,68 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.remote.ui;
 
-import java.awt.Image;
-import javax.swing.Action;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.concurrent.CancellationException;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class NotConnectedNode extends AbstractNode implements ConnectionListener {
+public class ConnectAction extends AbstractAction implements Runnable {
 
     private final ExecutionEnvironment env;
 
-    public NotConnectedNode(ExecutionEnvironment env) {
-        super(Children.LEAF, Lookups.singleton(env));
+    public ConnectAction(ExecutionEnvironment env) {
+        super(NbBundle.getMessage(HostListRootNode.class, "ConnectMenuItem"));
         this.env = env;
-        ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, null));
+        setEnabled(!ConnectionManager.getInstance().isConnectedTo(env));
     }
 
     @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(getClass(), "LBL_NotConnected");
+    public void actionPerformed(ActionEvent e) {
+        RequestProcessor.getDefault().post(this);
     }
 
-    @Override
-    public Image getOpenedIcon(int type) {
-       return getIcon(type);
-    }
-
-    @Override
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/remote/ui/disconnected.png"); // NOI18N
-    }
-
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-            new ConnectAction(env)
-        };
-    }
-
-    @Override
-    public Action getPreferredAction() {
-        return new ConnectAction(env);
-    }
-
-    @Override
-    public void connected(ExecutionEnvironment env) {
-        Node parent = getParentNode();
-        if (parent instanceof FileSystemNode) {
-            FileSystemNode fsn = (FileSystemNode) parent;
-            fsn.refresh();
+    public void run() {
+        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+            try {
+                ConnectionManager.getInstance().connectTo(env);
+                checkSetupAfterConnection();
+            } catch (IOException ex) {
+                conectionFailed(ex);
+            } catch (CancellationException ex) {
+                conectionFailed(ex);
+            }
         }
     }
 
-    @Override
-    public void disconnected(ExecutionEnvironment env) {
+    private void checkSetupAfterConnection() {
+        // TODO: implement (ideally in RAS)
+//            RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
+//            if (!record.isOnline()) {
+//                record.resetOfflineState(); // this is a do-over
+//                record.init(null);
+//                if (record.isOnline()) {
+//                    CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(record.getExecutionEnvironment(), false);
+//                    csm.initialize(false, true, null);
+//                }
+//
+//            }
+    }
+
+    private void conectionFailed(Exception e) {
+        StatusDisplayer.getDefault().setStatusText(
+                NbBundle.getMessage(HostNode.class, "UnableToConnectMessage", RemoteUtil.getDisplayName(env), e.getMessage()));
+
     }
 }
