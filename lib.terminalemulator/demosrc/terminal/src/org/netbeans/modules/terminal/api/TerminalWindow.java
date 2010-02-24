@@ -5,13 +5,15 @@
 
 package org.netbeans.modules.terminal.api;
 
+import org.openide.windows.IOContainer;
+
 /**
  *
  * @author ivan
  */
 public interface TerminalWindow {
     /**
-     * @return The TerminalContainer owned by this TerminalWindow.
+     * @return The IOContainer owned by this TerminalWindow.
      */
-    public TerminalContainer terminalContainer();
+    public IOContainer ioContainer();
 }

@@ -13,7 +13,6 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Icon;
-import org.netbeans.lib.richexecution.program.Program;
 import org.netbeans.lib.terminalemulator.ActiveRegion;
 import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.lib.terminalemulator.ActiveTermListener;
@@ -84,7 +83,6 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     private final Lookup lookup = Lookups.fixed(new MyIOColorLines(),
                                                 new MyIOColors(),
                                                 new MyIOPosition(),
-                                                new MyIOExecution(),
 						new MyIOResizable(),
 						new MyIOEmulation(),
                                                 new MyIOTab()
@@ -338,54 +336,15 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     }
 
 
+    /* OLD
     private class MyIOExecution extends IOExecution {
 
         @Override
         protected void execute(Program program) {
 	    terminal.startProgram(program, true);
-	    /* OLD
-            //
-            // Create a pty, handle window size changes
-            //
-            final Pty pty;
-            try {
-                pty = Pty.create(Pty.Mode.REGULAR);
-            } catch (PtyException ex) {
-                Exceptions.printStackTrace(ex);
-                return;
-            }
-
-            term().addListener(new TermListener() {
-                public void sizeChanged(Dimension cells, Dimension pixels) {
-                    pty.masterTIOCSWINSZ(cells.height, cells.width,
-                                         pixels.height, pixels.width);
-                }
-            });
-
-            //
-            // Create a process
-            //
-            if (term() != null) {
-                Map<String, String> env = program.environment();
-                env.put("TERM", term().getEmulation());
-            }
-            PtyExecutor executor = new PtyExecutor();
-            executor.start(program, pty);
-
-            //
-            // connect them up
-            //
-
-            // Hmm, what's the difference between the PtyProcess io streams
-            // and the Pty's io streams?
-            // Nothing.
-            OutputStream pin = pty.getOutputStream();
-            InputStream pout = pty.getInputStream();
-
-	    term.connect(pin, pout, null);
-	     */
         }
     }
+     */
 
 
 
