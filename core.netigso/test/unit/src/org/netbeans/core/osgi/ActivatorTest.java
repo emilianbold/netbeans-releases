@@ -40,6 +40,7 @@
 package org.netbeans.core.osgi;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 public class ActivatorTest extends NbTestCase {
 
@@ -110,6 +111,8 @@ public class ActivatorTest extends NbTestCase {
         assertEquals("10", System.getProperty("my.url.length"));
     }
 
+    @RandomlyFails // sometimes in NB-Core-Build:
+    // FNFE: Invalid settings.providerPath=xml/lookups/NetBeans/DTD_XML_beans_1_0.instance under SFS/xml/memory/ for class custom.Install$Bean
     public void testSettings() throws Exception {
         new OSGiProcess(getWorkDir()).manifest(
                 "OpenIDE-Module: custom",
