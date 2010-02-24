@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.discovery.wizard;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -403,13 +402,13 @@ public class ProviderControl {
                 getString("ADDITIONAL_LIBRARIES_TXT"));
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue()  == DialogDescriptor.OK_OPTION) {
-            Vector<String> newList = libPanel.getListData();
+            List<String> newList = libPanel.getListData();
             StringBuilder includes = new StringBuilder();
             for (int i = 0; i < newList.size(); i++) {
                 if (i > 0) {
                     includes.append(';'); // NOI18N
                 }
-                includes.append(newList.elementAt(i));
+                includes.append(newList.get(i));
             }
             field.setSelectedItem(includes.toString());
         }

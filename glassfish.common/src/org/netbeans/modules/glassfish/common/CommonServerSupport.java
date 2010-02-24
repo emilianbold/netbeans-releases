@@ -72,11 +72,13 @@ import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -245,8 +247,31 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return properties.get(HOSTNAME_ATTR);
     }
     
-    public String getDomainsRoot() {
+    public synchronized String getDomainsRoot() {
         String retVal = properties.get(DOMAINS_FOLDER_ATTR);
+        File candidate = new File(retVal);
+        if (candidate.exists() && !Utils.canWrite(candidate)) {
+            // we need to do some surgury here...
+            String foldername = FileUtil.findFreeFolderName(FileUtil.getConfigRoot(), "GF3");
+            FileObject destdir = null;
+            try {
+                destdir = FileUtil.createFolder(FileUtil.getConfigRoot(),foldername);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (null != destdir) {
+                candidate = new File(candidate, properties.get(DOMAIN_NAME_ATTR));
+                FileObject source = FileUtil.toFileObject(FileUtil.normalizeFile(candidate));
+                try {
+                    Utils.doCopy(source, destdir);
+
+                    retVal = FileUtil.toFile(destdir).getAbsolutePath();
+                    properties.put(DOMAINS_FOLDER_ATTR,retVal);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
 //        if (null == retVal) {
 //            retVal = properties.get(GLASSFISH_FOLDER_ATTR) + File.separator +
 //                    GlassfishInstance.DEFAULT_DOMAINS_FOLDER; // NOI18N
@@ -288,6 +313,8 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     // GlassfishModule interface implementation
     // ------------------------------------------------------------------------
     public Map<String, String> getInstanceProperties() {
+        // force the domains conversion
+        getDomainsRoot();
         return Collections.unmodifiableMap(properties);
     }
     

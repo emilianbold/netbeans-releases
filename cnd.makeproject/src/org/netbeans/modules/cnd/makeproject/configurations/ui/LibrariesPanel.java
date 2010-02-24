@@ -140,7 +140,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         myListEditorPanel.setListData(data);
     }
 
-    public Vector<LibraryItem> getListData() {
+    public List<LibraryItem> getListData() {
         return myListEditorPanel.getListData();
     }
 
