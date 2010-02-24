@@ -118,6 +118,9 @@ public final class SuiteActions implements ActionProvider {
             actions.add(ProjectSensitiveActions.projectCommandAction("nbms", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_nbms"), null)); // #64426
             actions.add(null);
         }
+        // XXX temporary measure for BuildInstallersAction to be added; better would be to load whole context menu declaratively
+        actions.addAll(Utilities.actionsForPath("Projects/org-netbeans-modules-apisupport-project-suite/Actions")); // NOI18N
+        actions.add(null);
         actions.add(CommonProjectActions.setAsMainProjectAction());
         actions.add(CommonProjectActions.openSubprojectsAction());
         actions.add(CommonProjectActions.closeProjectAction());
