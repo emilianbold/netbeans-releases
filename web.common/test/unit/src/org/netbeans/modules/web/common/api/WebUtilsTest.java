@@ -37,15 +37,34 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions;
-
-import org.openide.nodes.Node;
+import java.awt.Color;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.netbeans.modules.web.common.api.WebUtils;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author Petr Hejl
+ * @author marekfukala
  */
-public interface StopModuleCookie extends Node.Cookie {
+public class WebUtilsTest {
 
-    void stop();
+    public WebUtilsTest() {
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+    @Test
+    public void toHexColorCode() {
+        assertEquals("#ff0000", WebUtils.toHexCode(Color.RED));
+        assertEquals("#2201aa", WebUtils.toHexCode(Color.decode("#2201aa")));
+    }
+
 }

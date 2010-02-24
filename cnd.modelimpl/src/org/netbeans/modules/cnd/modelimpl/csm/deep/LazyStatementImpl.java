@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.lang.ref.SoftReference;
 import java.util.*;
@@ -68,6 +69,7 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
         ast.setFirstChild(null);
     }
 
+    @Override
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.COMPOUND;
     }
@@ -101,7 +103,7 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
         FileImpl file = (FileImpl) getContainingFile();
         TokenStream stream = file.getTokenStream(getStartOffset(), getEndOffset(), getFirstTokenID(), true);
         if (stream == null) {
-            Utils.LOG.severe("Can't create compound statement: can't create token stream for file " + file.getAbsolutePath()); // NOI18N
+            Utils.LOG.log(Level.SEVERE, "Can\'t create compound statement: can\'t create token stream for file {0}", file.getAbsolutePath()); // NOI18N
             return false;
         } else {
             AST resolvedAst = resolveLazyStatement(stream);
@@ -119,6 +121,7 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
         }
     }
 
+    @Override
     public Collection<CsmScopeElement> getScopeElements() {
         // statements are scope elements
         @SuppressWarnings("unchecked")

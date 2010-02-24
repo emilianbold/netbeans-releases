@@ -43,6 +43,7 @@ package dwarfvsmodel;
 
 import java.io.PrintStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmFileImplementation;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 /**
@@ -58,7 +59,7 @@ public class ComparationResult {
 
     public ComparationResult(CsmFile file, int total, int matched) {
 	this(file.getName() + "  " + file.getAbsolutePath(), total, matched, 1); // NOI18N
-	this.errors = (file instanceof  FileImpl) ? ((FileImpl) file).getErrorCount() : 0;
+	this.errors = (file instanceof  FileImpl) ? ((CsmFileImplementation) file).getErrorCount() : 0;
     }
 
     public ComparationResult(String label, int total, int matched, int files) {
