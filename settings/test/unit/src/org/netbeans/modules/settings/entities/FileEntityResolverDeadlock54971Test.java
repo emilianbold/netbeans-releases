@@ -39,8 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.xml;
+package org.netbeans.modules.settings.entities;
 
+import org.netbeans.modules.settings.entities.FileEntityResolver;
 import java.io.IOException;
 import java.net.URL;
 import junit.framework.TestCase;
@@ -65,7 +66,7 @@ public class FileEntityResolverDeadlock54971Test extends TestCase {
     }
     
     static {
-        System.setProperty("org.openide.util.Lookup", "org.netbeans.core.xml.FileEntityResolverDeadlock54971Test$Lkp");
+        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
     }
     
     protected void setUp() throws Exception {

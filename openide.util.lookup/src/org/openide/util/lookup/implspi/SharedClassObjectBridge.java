@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,39 +31,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.core.xml;
-
-import java.util.*;
-import org.openide.loaders.Environment;
-import org.openide.xml.EntityCatalog;
-
-/** Global utils for XML related stuff.
  *
- * @author  Jaroslav Tulach
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-public final class XML extends Object {
-    private static FileEntityResolver DEFAULT;
 
-    /** Getter of the default Environment.Provider
-     */
-    public static Environment.Provider getEnvironmentProvider () {
-        if (DEFAULT == null) {
-            DEFAULT = new FileEntityResolver ();
-        }
+package org.openide.util.lookup.implspi;
 
-        return DEFAULT;
+public abstract class SharedClassObjectBridge {
+
+    private static SharedClassObjectBridge INSTANCE;
+
+    public static synchronized void setInstance(SharedClassObjectBridge bridge) {
+        assert INSTANCE == null;
+        INSTANCE = bridge;
     }
 
-    /** Getter of the EntityCatalog of the system.
-     */
-    public static EntityCatalog getEntityCatalog () {
-        if (DEFAULT == null) {
-            DEFAULT = new FileEntityResolver ();
+    public static <T> T newInstance(Class<T> clazz) throws InstantiationException, IllegalAccessException{
+        SharedClassObjectBridge bridge;
+        synchronized (SharedClassObjectBridge.class) {
+            bridge = INSTANCE;
         }
-        
-        return DEFAULT;
+        T o = null;
+        if (bridge != null) {
+            o = bridge.findObject(clazz);
+        }
+        if (o == null) {
+            o = clazz.newInstance();
+        }
+        return o;
     }
-    
+
+    protected SharedClassObjectBridge() {}
+
+    protected abstract <T> T findObject(Class<T> c) throws InstantiationException, IllegalAccessException;
+
 }

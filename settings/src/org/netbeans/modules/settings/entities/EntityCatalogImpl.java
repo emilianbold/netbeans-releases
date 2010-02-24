@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.xml;
+package org.netbeans.modules.settings.entities;
 
 import java.io.*;
 import java.util.*;
