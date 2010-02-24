@@ -79,9 +79,10 @@ import org.openide.util.NbBundle;
  * @author  Tomas Mysik
  */
 public class PhpOptionsPanel extends JPanel {
-    private static final long serialVersionUID = 109856412432078L;
+    private static final long serialVersionUID = 10985641247986428L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final WatchesAndEvalListener watchesAndEvalListener = new WatchesAndEvalListener();
 
     public PhpOptionsPanel() {
         initComponents();
@@ -94,7 +95,7 @@ public class PhpOptionsPanel extends JPanel {
         phpInterpreterTextField.getDocument().addDocumentListener(documentListener);
         debuggerPortTextField.getDocument().addDocumentListener(documentListener);
         debuggerSessionIdTextField.getDocument().addDocumentListener(documentListener);
-        watchesAndEvalCheckBox.addItemListener(new WatchesAndEvalListener());
+        watchesAndEvalCheckBox.addItemListener(watchesAndEvalListener);
     }
 
     private void initPhpGlobalIncludePath() {
@@ -179,6 +180,16 @@ public class PhpOptionsPanel extends JPanel {
 
     public void setDebuggerStoppedAtTheFirstLine(boolean debuggerStoppedAtTheFirstLine) {
         stopAtTheFirstLineCheckBox.setSelected(debuggerStoppedAtTheFirstLine);
+    }
+
+    public boolean isDebuggerWatchesAndEval() {
+        return watchesAndEvalCheckBox.isSelected();
+    }
+
+    public void setDebuggerWatchesAndEval(boolean debuggerWatchesAndEval) {
+        watchesAndEvalCheckBox.removeItemListener(watchesAndEvalListener);
+        watchesAndEvalCheckBox.setSelected(debuggerWatchesAndEval);
+        watchesAndEvalCheckBox.addItemListener(watchesAndEvalListener);
     }
 
     public String getPhpGlobalIncludePath() {
