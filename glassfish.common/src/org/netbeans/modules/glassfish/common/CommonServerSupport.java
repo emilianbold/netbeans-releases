@@ -250,7 +250,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     public synchronized String getDomainsRoot() {
         String retVal = properties.get(DOMAINS_FOLDER_ATTR);
         File candidate = new File(retVal);
-        if (!Utils.canWrite(candidate)) {
+        if (candidate.exists() && !Utils.canWrite(candidate)) {
             // we need to do some surgury here...
             String foldername = FileUtil.findFreeFolderName(FileUtil.getConfigRoot(), "GF3");
             FileObject destdir = null;
