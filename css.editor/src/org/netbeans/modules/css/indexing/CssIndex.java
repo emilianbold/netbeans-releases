@@ -38,9 +38,7 @@
  */
 package org.netbeans.modules.css.indexing;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -135,7 +133,7 @@ public class CssIndex {
         try {
             Collection<? extends IndexResult> results;
             if(prefix.length() == 0) {
-                results = results = querySupport.query(keyName, "", QuerySupport.Kind.PREFIX, keyName);
+                results = querySupport.query(keyName, "", QuerySupport.Kind.PREFIX, keyName);
             } else {
                 String searchExpression = ".*("+prefix+").*"; //NOI18N
                 results = querySupport.query(keyName, searchExpression, QuerySupport.Kind.REGEXP, keyName);
@@ -160,19 +158,28 @@ public class CssIndex {
         return map;
     }
 
-    public Collection<FileObject> findAll(String keyName) {
+    public Map<FileObject, Collection<String>> findAll(String keyName) {
+        Map<FileObject, Collection<String>> map = new HashMap<FileObject, Collection<String>>();
         try {
-            Collection<FileObject> matchedFiles = new LinkedList<FileObject>();
-            Collection<? extends IndexResult> results = querySupport.query(keyName, "", QuerySupport.Kind.PREFIX, keyName);
+            Collection<? extends IndexResult> results =
+                    querySupport.query(keyName, "", QuerySupport.Kind.PREFIX, keyName);
+
             for (IndexResult result : results) {
-                matchedFiles.add(result.getFile());
+                Collection<String> elements = decodeListValue(result.getValue(keyName));
+                for (String e : elements) {
+                    Collection<String> col = map.get(result.getFile());
+                    if (col == null) {
+                        col = new LinkedList<String>();
+                        map.put(result.getFile(), col);
+                    }
+                    col.add(e);
+                }
+
             }
-            return matchedFiles;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-
-        return Collections.emptyList();
+        return map;
     }
 
     /**
