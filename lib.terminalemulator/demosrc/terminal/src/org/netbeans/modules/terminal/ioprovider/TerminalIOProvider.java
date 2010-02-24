@@ -56,6 +56,11 @@ public final class TerminalIOProvider extends IOProvider {
 
     }
 
+    @Override
+    public InputOutput getIO(String name, Action[] actions, IOContainer ioContainer) {
+        return new TerminalInputOutput(name, ioContainer);
+    }
+
     /**
      * This operation is not supported because standard Netbeans output are
      * is not Term based.

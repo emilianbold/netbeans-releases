@@ -20,6 +20,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.lib.termsupport.FindBar;
 import org.netbeans.lib.termsupport.FindState;
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.windows.IOContainer;
+import org.openide.windows.IOContainer.CallBacks;
 import org.openide.windows.TopComponent;
 
 /**
@@ -55,7 +57,7 @@ import org.openide.windows.TopComponent;
  * </ul>
  * @author ivan
  */
-public final class TerminalContainer extends JComponent {
+public final class TerminalContainer extends JComponent implements IOContainer.Provider {
 
     private final TopComponent owner;
     private final String originalName;
@@ -65,6 +67,23 @@ public final class TerminalContainer extends JComponent {
     private JTabbedPane tabbedPane;
     private JToolBar actionBar;
     private FindBar findBar;
+
+    private boolean activated = false;
+
+    private IOContainer ioContainer;
+
+    /**
+     * Utility for creating custom {@link Terminal}-based TopComponents.
+     * See the class comment for {@link TerminalContainer} for a description of
+     * how to do this.
+     * @param tc TopComponent the Terminals will go into.
+     * @param name The name of the TopComponent.
+     *        Usually @{link TopComponent.getName()}
+     * @return a TerminalContainer.
+     */
+    public static TerminalContainer create(TopComponent tc, String name) {
+        return new TerminalContainer(tc, name);
+    }
 
     TerminalContainer(TopComponent owner, String originalName) {
         super();
@@ -129,7 +148,7 @@ public final class TerminalContainer extends JComponent {
 
             public void close(FindBar fb) {
                 findBar.getState().setVisible(false);
-                remove(findBar);
+                TerminalContainer.super.remove(findBar);
                 validate();
             }
         });
@@ -173,22 +192,12 @@ public final class TerminalContainer extends JComponent {
         return b;
     }
 
-    void setActions(Terminal who, Action[] actions) {
-        if (nTerm == 1) {
-            setButtons(actions);
-        } else {
-            if (tabbedPane.getSelectedComponent() == who) {
-                setButtons(actions);
-            }
-        }
-    }
-
     private void setFindBar(FindState findState) {
         findBar.setState(findState);
         if (findState != null && findState.isVisible()) {
             add(findBar, BorderLayout.SOUTH);
         } else {
-            remove(findBar);
+            super.remove(findBar);
         }
         validate();
     }
@@ -245,7 +254,7 @@ public final class TerminalContainer extends JComponent {
      * Remove who from this.
      * Mostly manages whether we have tabs and the TopComponents title and such
      */
-    void removeTerminal(final Terminal who) {
+    void removeTerminal(final JComponent who) {
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
 
@@ -269,7 +278,7 @@ public final class TerminalContainer extends JComponent {
         if (nTerm == 1) {
             Terminal last = (Terminal) tabbedPane.getComponentAt(0);
             tabbedPane.remove(0);
-            remove(tabbedPane);
+            super.remove(tabbedPane);
             nTerm = 0;
             add(last);
             setFindBar(last.getFindState());
@@ -280,7 +289,7 @@ public final class TerminalContainer extends JComponent {
         }
     }
 
-    void setTitle(Terminal who, String title) {
+    public void setTitle(JComponent who, String title) {
         if (title == null) {
             title = originalName;
         }
@@ -296,6 +305,7 @@ public final class TerminalContainer extends JComponent {
         FindState findState = who.getFindState();
         if (findState.isVisible()) {
             return;
+
         }
         findState.setVisible(true);
         findBar.setState(findState);
@@ -307,6 +317,7 @@ public final class TerminalContainer extends JComponent {
      * Handle delegation from containing TopComponent.
      */
     public void componentActivated() {
+	activated = true;
         Component component;
         if (component0 != null)
             component = component0;
@@ -321,7 +332,9 @@ public final class TerminalContainer extends JComponent {
     /**
      * Handle delegation from containing TopComponent.
      */
+
     public void componentDeactivated() {
+	activated = false;
         Component component;
         if (component0 != null)
             component = component0;
@@ -331,5 +344,80 @@ public final class TerminalContainer extends JComponent {
             Terminal terminal = (Terminal) component;
             terminal.callBacks().deactivated();
         }
+    }
+
+    public void open() {
+	owner.open();
+    }
+
+    public void requestActive() {
+	owner.requestActive();
+    }
+
+    public void requestVisible() {
+	owner.requestVisible();
+    }
+
+    public boolean isActivated() {
+	return activated;
+    }
+
+    public void add(JComponent comp, CallBacks cb) {
+	super.add(comp);
+    }
+
+    public void remove(JComponent comp) {
+	removeTerminal(comp);
+    }
+
+    public void select(JComponent comp) {
+	if (comp instanceof Terminal) {
+	    select((Terminal) comp);
+	} else {
+	    throw new UnsupportedOperationException("Can't select non-Terminals");
+	}
+
+    }
+
+    public JComponent getSelected() {
+        if (nTerm > 1)
+            return (JComponent) tabbedPane.getSelectedComponent();
+	else
+	    return component0;
+    }
+
+    /* TMP
+    public void setTitle(JComponent comp, String name) {
+	throw new UnsupportedOperationException("Not supported yet.");
+    }
+     */
+
+    public void setToolTipText(JComponent comp, String text) {
+	throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setIcon(JComponent comp, Icon icon) {
+	throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void setToolbarActions(JComponent comp, Action[] toolbarActions) {
+	// was: setActions()
+        if (nTerm == 1) {
+            setButtons(toolbarActions);
+        } else {
+            if (tabbedPane.getSelectedComponent() == comp) {
+                setButtons(toolbarActions);
+            }
+        }
+    }
+
+    public boolean isCloseable(JComponent comp) {
+	throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public IOContainer ioContainer() {
+	if (ioContainer == null)
+	    ioContainer = IOContainer.create(this);
+	return ioContainer;
     }
 }
