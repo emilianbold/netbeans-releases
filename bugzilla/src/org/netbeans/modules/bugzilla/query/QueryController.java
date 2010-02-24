@@ -246,7 +246,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void setupRenderer(IssueTable issueTable) {
-        BugzillaQueryCellRenderer renderer = new BugzillaQueryCellRenderer(new QueryTableCellRenderer(query));
+        BugzillaQueryCellRenderer renderer = new BugzillaQueryCellRenderer(new QueryTableCellRenderer(query, issueTable));
         issueTable.setRenderer(renderer);
     }
 

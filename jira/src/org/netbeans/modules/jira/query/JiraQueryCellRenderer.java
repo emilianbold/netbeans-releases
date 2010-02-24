@@ -24,6 +24,7 @@ import javax.swing.Timer;
 import javax.swing.table.TableCellRenderer;
 import org.eclipse.mylyn.internal.jira.core.model.Priority;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode.SummaryProperty;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
@@ -31,7 +32,6 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.issue.JiraIssueNode.MultiValueFieldProperty;
 import org.netbeans.modules.jira.issue.JiraIssueNode.PriorityProperty;
-import org.netbeans.modules.jira.issue.JiraIssueNode.SummaryProperty;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -112,6 +112,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             label.setFont(defaultIssueRenderer.getFont());
             label.setText(s);
             label.putClientProperty("format", style.getFormat()); // NOI18N
+            label.putClientProperty("highlightPattern", style.getHighlightPattern()); // NOI18N
             QueryTableCellRenderer.setRowColors(style, label);
             QueryTableCellRenderer.setRowColors(style, panel);
             label.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -137,8 +138,10 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         panel.setFontSize(table.getFont(), label);
         panel.north.setText(northtext);
         panel.north.putClientProperty("format", northformat); // NOI18N
+        panel.north.putClientProperty("highlightPattern", style.getHighlightPattern()); // NOI18N
         panel.south.setText(southtext);
         panel.south.putClientProperty("format", southformat); // NOI18N
+        panel.south.putClientProperty("highlightPattern", style.getHighlightPattern()); // NOI18N
         panel.setToolTipText(summary);
         setRowColors(style, panel);
         adjustRowHeightIfNeeded(panel, table, row, true);
@@ -148,9 +151,9 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     private TableCellStyle getStyle(JTable table, IssueProperty p, boolean isSelected, int row) {
         TableCellStyle style = null;
         if (query.isSaved()) {
-            style = QueryTableCellRenderer.getCellStyle(table, query, p, isSelected, row);
+            style = QueryTableCellRenderer.getCellStyle(table, query, issueTable, p, isSelected, row);
         } else {
-            style = QueryTableCellRenderer.getDefaultCellStyle(table, isSelected, row);
+            style = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, p, isSelected, row);
         }
         return style;
     }
@@ -276,7 +279,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     private class RendererLabel extends JLabel {
         @Override
         public void paint(Graphics g) {
-            QueryTableCellRenderer.fitText(this);
+            QueryTableCellRenderer.processText(this);
             super.paint(g);
         }
         /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
