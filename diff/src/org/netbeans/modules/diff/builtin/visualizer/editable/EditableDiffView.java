@@ -94,6 +94,7 @@ import org.netbeans.editor.EditorUI;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 
 /**
  * Panel that shows differences between two files. The code here was originally distributed among DiffPanel and
@@ -167,6 +168,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     private Integer askedLineLocation;
     private static final String PROP_SMART_SCROLLING_DISABLED = "diff.smartScrollDisabled"; //NOI18N
+    private static final Logger LOG = Logger.getLogger(EditableDiffView.class.getName());
 
     public EditableDiffView(final StreamSource ss1, final StreamSource ss2) throws IOException {
         refreshDiffTask = RequestProcessor.getDefault().create(new RefreshDiffTask());
@@ -758,15 +760,18 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         jSplitPane1.setRightComponent(filePanel2);        
     }
 
+    WeakHashMap<JEditorPane, FoldHierarchyListener> hieararchyListeners = new WeakHashMap<JEditorPane, FoldHierarchyListener>(2);
     // Code for dispatching events from components to event handlers.
     private void expandFolds(JEditorPane pane) {
         final FoldHierarchy fh = FoldHierarchy.get(pane);
         FoldUtilities.expandAll(fh);
-        fh.addFoldHierarchyListener(new FoldHierarchyListener() {
+        FoldHierarchyListener list = new FoldHierarchyListener() {
             public void foldHierarchyChanged(FoldHierarchyEvent evt) {
                 FoldUtilities.expandAll(fh);
             }
-        });
+        };
+        hieararchyListeners.put(pane, list);
+        fh.addFoldHierarchyListener(WeakListeners.create(FoldHierarchyListener.class, list, fh));
     }
 
     private void expandFolds() {
@@ -836,9 +841,11 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             editor.setDocument(doc);
         }
     }
-    
+
+    WeakHashMap<JEditorPane, PropertyChangeListener> propertyChangeListeners = new WeakHashMap<JEditorPane, PropertyChangeListener>(2);
     private void addChangeListeners() {
-        jEditorPane1.getEditorPane().addPropertyChangeListener("font", new java.beans.PropertyChangeListener() { // NOI18N
+        // using rather weak listeners, repeated ancestorRemoved/ancestorAdded creates and attaches number of new listeners and consumes memory
+        PropertyChangeListener list = new java.beans.PropertyChangeListener() { // NOI18N
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
@@ -850,20 +857,24 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                     }
                 });
             }
-        });
-        jEditorPane2.getEditorPane().addPropertyChangeListener("font", new java.beans.PropertyChangeListener() { // NOI18N
+        };
+        propertyChangeListeners.put(jEditorPane1.getEditorPane(), list);
+        jEditorPane1.getEditorPane().addPropertyChangeListener("font", WeakListeners.propertyChange(list, jEditorPane1.getEditorPane())); //NOI18N
+        list = new java.beans.PropertyChangeListener() { // NOI18N
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         diffChanged();
                         initGlobalSizes();
-                        jEditorPane2.onUISettingsChanged();                        
+                        jEditorPane2.onUISettingsChanged();
                         getComponent().revalidate();
                         getComponent().repaint();
                     }
                 });
             }
-        });
+        };
+        propertyChangeListeners.put(jEditorPane2.getEditorPane(), list);
+        jEditorPane2.getEditorPane().addPropertyChangeListener("font", WeakListeners.propertyChange(list, jEditorPane2.getEditorPane())); //NOI18N
     }
 
     private synchronized void diffChanged() {
@@ -1103,7 +1114,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 try {
                     reader[0] = new StringReader(doc.getText(0, doc.getLength()));
                 } catch (BadLocationException ex) {
-                    Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
+                    LOG.log(Level.INFO, null, ex);
                 }
             }
         });

@@ -122,7 +122,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public Enumeration<String> getAttributes() {
-        return Collections.enumeration(Collections.singleton("java.io.File"));
+        return Collections.enumeration(Collections.singleton("java.io.File")); // NOI18N
     }
 
     @Override

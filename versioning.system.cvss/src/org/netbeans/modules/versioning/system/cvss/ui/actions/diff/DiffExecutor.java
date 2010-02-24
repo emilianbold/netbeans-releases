@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Performs diff action by fetching the appropriate file from repository
@@ -171,7 +172,7 @@ public class DiffExecutor {
         
         @Override
         public Lookup getLookup() {
-            return lookup;
+            return new ProxyLookup(super.getLookup(), lookup);
         }
 
         @Override

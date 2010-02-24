@@ -71,6 +71,7 @@ public class CssIndexer extends EmbeddingIndexer {
     static final String IDS_KEY = "ids"; //NOI18N
     static final String CLASSES_KEY = "classes"; //NOI18N
     static final String HTML_ELEMENTS_KEY = "htmlElements"; //NOI18N
+    public static final String COLORS_KEY = "colors"; //NOI18N
 
 //    static {
 //	LOG.setLevel(Level.ALL);
@@ -92,6 +93,7 @@ public class CssIndexer extends EmbeddingIndexer {
                 storeEntries(model.getClasses(), document, CLASSES_KEY);
                 storeEntries(model.getHtmlElements(), document, HTML_ELEMENTS_KEY);
                 storeEntries(model.getImports(), document, IMPORTS_KEY);
+                storeEntries(model.getColors(), document, COLORS_KEY);
 
                 support.addDocument(document);
             }
