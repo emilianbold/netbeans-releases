@@ -321,7 +321,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
             if (null != candidates && candidates.length > 0) {
                 // try to pick a candidate
                 for (File c : candidates) {
-                    if (isRegisterableDomain(retVal)) {
+                    if (isRegisterableDomain(c)) {
                         retVal = c;
                         break;
                     }
