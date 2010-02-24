@@ -25,8 +25,10 @@
                 <file name="Descriptor" url="nbdep.xml"/>
                 <!-- -->
                 <file name="Factory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory.createPrelude"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory"/>
+                    <attr name="urlPattern" stringvalue="^\[.*deployer:gfv3:.*$"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory.createPrelude"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
                 <file name="J2eePlatformFactory.instance">
@@ -44,6 +46,11 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2ModuleConfigFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
                 </file>
+                <file name="J2eeVerifierSupport.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.verifier.VerifierImpl"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.verifier.VerifierImpl"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport"/>
+                </file>
                 <!-- -->
                 <folder name="DeploymentFileNames">
                     <folder name="WAR">
@@ -56,8 +63,10 @@
                 <file name="Descriptor" url="nbdepee6.xml"/>
                 <!-- -->
                 <file name="Factory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory.createEe6"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory"/>
+                    <attr name="urlPattern" stringvalue="^\[.*deployer:gfv3ee6:.*$"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory.createEe6"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
                 <file name="J2eePlatformFactory.instance">
@@ -74,6 +83,11 @@
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.Hk2ModuleConfigFactory"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2ModuleConfigFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
+                </file>
+                <file name="J2eeVerifierSupport.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.glassfish.javaee.verifier.VerifierImpl"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.verifier.VerifierImpl"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport"/>
                 </file>
                 <!-- -->
                 <folder name="DeploymentFileNames">

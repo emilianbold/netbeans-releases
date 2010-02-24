@@ -86,7 +86,10 @@ class DynaMenuModel {
         while (it.hasNext()) {
             Object obj = it.next();
             if (obj instanceof Action) {
-                Toolbar.setAccelerator((Action) obj, cookiesToFiles.get(obj));
+                FileObject file = cookiesToFiles.get(obj);
+                if (file != null) {
+                    AcceleratorBinding.setAccelerator((Action) obj, file);
+                }
             }
             if (obj instanceof Presenter.Menu) {
                 // does this still apply??

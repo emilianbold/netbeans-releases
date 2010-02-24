@@ -11,5 +11,6 @@
         <zip basedir="samples_src/MavenCalculator"  destfile="${examples}/MavenCalculator.zip"/>
         <zip basedir="samples_src/MavenCalculatorClient"  destfile="${examples}/MavenCalculatorClient.zip"/>
         <zip basedir="samples_src/MavenScrumToys"  destfile="${examples}/MavenScrumToys.zip"/>
+        <zip basedir="samples_src/MavenCRUDSample"  destfile="${examples}/MavenCRUDSample.zip"/>
     </target>
 </project>

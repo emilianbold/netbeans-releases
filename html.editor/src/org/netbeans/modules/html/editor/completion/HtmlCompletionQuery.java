@@ -394,10 +394,6 @@ public class HtmlCompletionQuery extends UserTask {
             }
 
             if (node.type() == AstNode.NodeType.OPEN_TAG) {
-                DTD.Element tag = node.getDTDElement();
-                if (tag == null) {
-                    return null; // unknown tag
-                    }
 
                 ts.move(item.offset(hi));
                 ts.moveNext();
@@ -414,7 +410,8 @@ public class HtmlCompletionQuery extends UserTask {
                     argName = argName.toLowerCase(Locale.ENGLISH);
                 }
 
-                DTD.Attribute arg = tag.getAttribute(argName);
+                DTD.Element tag = node.getDTDElement();
+                DTD.Attribute arg = tag == null ? null : tag.getAttribute(argName);
 
                 result = new ArrayList<CompletionItem>();
 

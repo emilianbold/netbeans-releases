@@ -44,7 +44,7 @@ import java.awt.Dialog;
 import java.net.PasswordAuthentication;
 import java.util.Arrays;
 import javax.swing.JButton;
-import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
+import org.netbeans.modules.subversion.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.openide.DialogDescriptor;
@@ -171,7 +171,7 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
         return null;
     }
 
-    private void getKenaiAuthData(SvnKenaiSupport support) {
+    private void getKenaiAuthData(SvnKenaiAccessor support) {
         final String urlString = url.toString();
         
         PasswordAuthentication pa = support.getPasswordAuthentication(urlString, true);
@@ -194,7 +194,7 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     }    
     
     private void getAuthData() {        
-        SvnKenaiSupport support = SvnKenaiSupport.getInstance();
+        SvnKenaiAccessor support = SvnKenaiAccessor.getInstance();
         if(support != null && support.isKenai(url.toString())) {
             getKenaiAuthData(support);
         } else {

@@ -191,6 +191,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
      * e.g., when creating new file, when invalidating state of a *source* (not a header) file, etc
      */
     public void putPreprocState(File file, APTPreprocHandler.State state) {
+        assert state != null : "state can not be null state for file " + file;
         FileEntry f = getFileEntry(file, false, true);
         f.setState(state, FilePreprocessorConditionState.PARSING);
         put();
@@ -553,6 +554,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             modCount = input.readInt();
             if (input.readBoolean()) {
                 int cnt = input.readInt();
+                assert cnt > 0;
                 if (cnt == 1) {
                     data = readStatePair(input);
                 } else {
@@ -561,12 +563,14 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                         ((List<PreprocessorStatePair>) data).add(readStatePair(input));
                     }
                 }
+            } else {
+                data = null;
             }
         }
 
         private FileEntry(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey) {
             this.fileNew = fileNew;
-            this.data = new PreprocessorStatePair(state, FilePreprocessorConditionState.PARSING);
+            this.data = (state == null) ? null : new PreprocessorStatePair(state, FilePreprocessorConditionState.PARSING);
             this.canonical = getCanonicalKey(fileKey);
             this.modCount = 0;
         }
@@ -810,7 +814,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             
         public synchronized Collection<PreprocessorStatePair> getStatePairs() {
             if (data == null) {
-                return Collections.singleton(new PreprocessorStatePair(null, null));
+                return Collections.<PreprocessorStatePair>emptyList();
             } else if(data instanceof PreprocessorStatePair) {
                 return Collections.singleton((PreprocessorStatePair) data);
             } else {

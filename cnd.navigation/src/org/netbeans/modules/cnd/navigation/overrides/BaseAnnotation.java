@@ -201,7 +201,10 @@ import org.openide.text.NbDocument;
         if (baseUIDs.size() + descUIDs.size() == 1) {
             CsmUID<? extends CsmOffsetableDeclaration> uid =
                     baseUIDs.isEmpty() ? descUIDs.iterator().next() : baseUIDs.iterator().next();
-            CsmUtilities.openSource(uid.getObject());
+            CsmOffsetableDeclaration decl = uid.getObject();
+            if (decl != null) { // although openSource seems to process nulls ok, it's better to check here
+                CsmUtilities.openSource(decl);
+            }
         } else if (baseUIDs.size() + descUIDs.size() > 1) {
             String caption = getShortDescription();
             OverridesPopup popup = new OverridesPopup(caption, toDeclarations(baseUIDs), toDeclarations(descUIDs));

@@ -587,7 +587,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
         long startTimeMillis = System.currentTimeMillis();
 
-        repositories = BugtrackingUtil.getKnownRepositories();
+        repositories = BugtrackingUtil.getKnownRepositories(true);
 
         long endTimeMillis = System.currentTimeMillis();
         if (LOG.isLoggable(FINEST)) {

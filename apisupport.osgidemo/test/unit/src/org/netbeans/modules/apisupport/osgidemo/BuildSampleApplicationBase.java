@@ -72,6 +72,7 @@ public abstract class BuildSampleApplicationBase extends TestBase {
     static {
         // #65461: do not try to load ModuleInfo instances from ant module
         System.setProperty("org.netbeans.core.startup.ModuleSystem.CULPRIT", "true");
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
         LayerTestBase.Lkp.setLookup(new Object[0]);
         DialogDisplayerImpl.returnFromNotify(DialogDescriptor.NO_OPTION);
         FileUtil.setMIMEType("properties", "text/x-properties");

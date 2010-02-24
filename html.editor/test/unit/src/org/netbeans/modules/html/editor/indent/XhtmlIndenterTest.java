@@ -39,8 +39,12 @@
 
 package org.netbeans.modules.html.editor.indent;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -51,6 +55,7 @@ import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
+import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.xhtml.XhtmlElLanguage;
 import org.netbeans.modules.html.editor.xhtml.XhtmlElTokenId;
@@ -68,6 +73,7 @@ public class XhtmlIndenterTest extends CslTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         AbstractIndenter.inUnitTestRun = true;
+        MockMimeLookup.setInstances(MimePath.parse("text/x-el"), ELTokenId.language()); //NOI18N
     }
 
     protected DefaultLanguageConfig getPreferredLanguage() {

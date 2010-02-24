@@ -778,7 +778,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         }
     }
 
-    public Vector<E> getListData() {
+    public List<E> getListData() {
         return listData;
     }
 

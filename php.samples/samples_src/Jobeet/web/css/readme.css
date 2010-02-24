@@ -1,0 +1,52 @@
+/*
+    Document   : readme
+    Created on : Feb 19, 2010, 6:44:33 PM
+    Author     : Filip Zamboj
+
+    This document is not part of original Jobeet project
+
+*/
+
+body {
+    font: 14px "Lucida Grande", Lucida, Verdana, sans-serif;
+
+    margin-left: 20%;
+    margin-right: 20%;
+}
+
+#header {
+    background: url(../images/bg-header.jpg) repeat-x top;
+}
+
+#header h1 a {
+    display: block;
+    width: 150px;
+    height: 110px;
+    background: url(../images/logo.jpg) no-repeat;
+}
+
+h1, h2, h3, h4, h5 {
+    color: #828f95;
+}
+
+a {
+    color: #524F46;
+    outline: none;
+}
+
+.capital-letter {
+    list-style-type: upper-alpha;
+}
+
+li {
+    padding-bottom: 10px;
+}
+
+ul, ol {
+    padding-top: 10px;
+}
+
+code {
+    color:gray;
+
+}

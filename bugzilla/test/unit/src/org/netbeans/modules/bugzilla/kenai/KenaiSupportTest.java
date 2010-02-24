@@ -41,18 +41,19 @@ package org.netbeans.modules.bugzilla.kenai;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import org.netbeans.modules.bugzilla.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.logging.Level;
 import org.eclipse.mylyn.commons.net.WebUtil;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
@@ -236,7 +237,7 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
 
     }
 
-    private KenaiRepository createRepository(String location) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, KenaiException {
+    private KenaiRepository createRepository(String location) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
         KenaiSupportImpl support = new KenaiSupportImpl();
         Method m = support.getClass().getDeclaredMethod("createKenaiRepository", KenaiProject.class, String.class, String.class);
         m.setAccessible(true);
