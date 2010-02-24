@@ -20,6 +20,7 @@ derby\.log
 ^\.externalToolBuilders/.*$
 ^hs_err_pid[0-9]*\.log
 ^[^/]+/external/[^/]+\.(zip|jar|gz|bz2|gem|dll|xpi)$
+^apisupport.osgidemo/osgidemo/netbinox/.*$
 ^o.apache.tools.ant.module/external/lib$
 ^classfile/\.nbintdb$
 ^classfile/classfile\.jar$
@@ -29,6 +30,15 @@ derby\.log
 ^cnd.asm/src/org/netbeans/modules/cnd/asm/base/generated$
 ^cnd.modelimpl/src/org/netbeans/modules/cnd/modelimpl/parser/generated$
 ^cnd.modelimpl/src/org/netbeans/modules/cnd/modelimpl/impl/services/evaluator/parser/generated$
+^cnd.modelimpl/src/org/netbeans/modules/cnd/modelimpl/parser/FortranLexicalPrepass.java$
+^cnd.modelimpl/src/org/netbeans/modules/cnd/modelimpl/parser/FortranParser.g$
+^cnd.modelimpl/src/org/netbeans/modules/cnd/modelimpl/parser/FortranParser2.g$
+^cnd.modelimpl/src/org/netbeans/modules/cnd/modelimpl/parser/FortranParserActionFactory.java$
+^cnd.modelimpl/src/org/netbeans/modules/cnd/modelimpl/parser/FortranStream.java$
+^cnd.modelimpl/src/org/netbeans/modules/cnd/modelimpl/parser/FortranToken.java$
+^cnd.modelimpl/src/org/netbeans/modules/cnd/modelimpl/parser/FortranTokenStream.java$
+^cnd.modelimpl/src/org/netbeans/modules/cnd/modelimpl/parser/IActionEnums.java$
+^cnd.modelimpl/src/org/netbeans/modules/cnd/modelimpl/parser/IFortranParserAction.java$
 ^db/javahelp/org/netbeans/modules/usersguide$
 ^dbschema/src/org/netbeans/modules/dbschema/jdbcimpl/resources/templates\.jar$
 ^db.sample/test/unit/.*\.properties$

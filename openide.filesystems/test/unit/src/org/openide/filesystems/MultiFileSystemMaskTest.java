@@ -73,8 +73,8 @@ public class MultiFileSystemMaskTest extends NbTestCase {
             l.add(kids[i].getNameExt());
         }
         Collections.sort(l);
-        StringBuffer b = new StringBuffer();
-        Iterator i = l.iterator();
+        StringBuilder b = new StringBuilder();
+        Iterator<String> i = l.iterator();
         if (i.hasNext()) {
             b.append(i.next());
             while (i.hasNext()) {

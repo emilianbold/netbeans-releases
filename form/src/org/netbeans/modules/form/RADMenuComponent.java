@@ -44,7 +44,6 @@ package org.netbeans.modules.form;
 import org.openide.util.datatransfer.NewType;
 
 import java.awt.*;
-import javax.swing.*;
 import java.util.*;
 
 import org.netbeans.modules.form.project.ClassSource;
@@ -134,12 +133,14 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     // -----------------------------------------------------------------------------
     // SubComponents Management
 
+    @Override
     public RADComponent[] getSubBeans() {
         RADComponent[] components = new RADComponent [subComponents.size()];
         subComponents.toArray(components);
         return components;
     }
 
+    @Override
     public void initSubComponents(RADComponent[] initComponents) {
         if (subComponents == null)
             subComponents = new ArrayList<RADComponent>(initComponents.length);
@@ -157,6 +158,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         }
     }
 
+    @Override
     public void reorderSubComponents(int[] perm) {
         RADComponent[] components = new RADComponent[subComponents.size()];
         for (int i=0; i < perm.length; i++)
@@ -166,6 +168,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         subComponents.addAll(Arrays.asList(components));
     }
 
+    @Override
     public void add(RADComponent comp) {
         if (comp instanceof RADMenuItemComponent) {
             subComponents.add(comp);
@@ -174,12 +177,14 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         }
     }
 
+    @Override
     public void remove(RADComponent comp) {
         if (subComponents.remove(comp))
             comp.setParentComponent(null);
 //        getNodeReference().updateChildren();
     }
 
+    @Override
     public int getIndexOf(RADComponent comp) {
         return subComponents.indexOf(comp);
     }
@@ -216,6 +221,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         /** Create the object.
          * @exception IOException if something fails
          */
+        @Override
         public void create() throws java.io.IOException {
             getFormModel().getComponentCreator()
                 .createComponent(new ClassSource(item.getName()),

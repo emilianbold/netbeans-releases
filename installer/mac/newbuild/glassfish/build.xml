@@ -100,7 +100,9 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/../netBeans/baseide/build/scripts/add_gf.sh" tofile="${scriptsdir}/add_gf.sh"/>
         <copy file="${basedir}/../netBeans/baseide/build/scripts/perm.sh" tofile="${scriptsdir}/perm.sh"/>        
         <copy file="${basedir}/getport/dist/getport.jar" tofile="${scriptsdir}/getport.jar"/>
-        
+
+        <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
+
         <echo message="Building glassfish-${glassfish.id}.pkg into ${basedir}/../build/glassfish-${glassfish.id}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>

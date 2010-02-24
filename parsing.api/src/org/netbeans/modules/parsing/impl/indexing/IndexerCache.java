@@ -81,6 +81,7 @@ import org.openide.util.WeakListeners;
  * @author vita
  */
 public abstract class IndexerCache <T> {
+    private static final RequestProcessor RP = new RequestProcessor("Indexer Cache"); // NOI18N
 
     // -----------------------------------------------------------------------
     // Public implementation
@@ -428,7 +429,7 @@ public abstract class IndexerCache <T> {
                 }
 
                 if (fastTrackOnly) {
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
                         public void run() {
                             resetCache();
                             getData(null);
@@ -511,11 +512,15 @@ public abstract class IndexerCache <T> {
             if (props != null) {
                 for (Map.Entry<Object, Object> entry : props.entrySet()) {
                     String indexerName = ((String) entry.getKey()).trim();
-                    int indexerVersion = 0;
+                    int indexerVersion = -1;
                     Set<String> indexerMimeTypes = new HashSet<String>();
                     String[] indexerData = ((String) entry.getValue()).trim().split(","); //NOI18N
                     if (indexerData.length > 0) {
-                        indexerVersion = Integer.parseInt(indexerData[0]);
+                        try {
+                            indexerVersion = Integer.parseInt(indexerData[0]);
+                        } catch (NumberFormatException nfe) {
+                            // ignore
+                        }
                         if (indexerData.length > 1) {
                             for (int i = 1; i < indexerData.length; i++) {
                                 String mimeType = indexerData[i];
@@ -645,7 +650,7 @@ public abstract class IndexerCache <T> {
         // --------------------------------------------------------------------
 
         private final Map<String, Lookup.Result<T>> results = new HashMap<String, Lookup.Result<T>>();
-        private final RequestProcessor.Task task = RequestProcessor.getDefault().create(this);
+        private final RequestProcessor.Task task = RP.create(this);
 
     } // End of Tracker class
 

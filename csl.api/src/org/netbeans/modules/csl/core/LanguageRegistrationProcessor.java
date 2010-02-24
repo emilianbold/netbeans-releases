@@ -48,12 +48,15 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.JSeparator;
+import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.lib.editor.codetemplates.CodeTemplateCompletionProvider;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.modules.csl.editor.GsfCodeFoldingSideBarFactory;
@@ -68,6 +71,8 @@ import org.netbeans.modules.csl.hints.GsfUpToDateStateProviderFactory;
 import org.netbeans.modules.csl.navigation.ClassMemberPanel;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProviderCreator;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.netbeans.modules.editor.indent.spi.ReformatTask;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
@@ -107,6 +112,15 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
                 throw new LayerGenerationException("Class " + cls + " is not subclass of " + dlc, e); //NOI18N
             }
 
+            boolean isAnnotatedByPathRecognizerRegistration = false;
+            TypeElement prr = processingEnv.getElementUtils().getTypeElement("org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration"); //NOI18N
+            for(AnnotationMirror am : cls.getAnnotationMirrors()) {
+                if (am.getAnnotationType().asElement().equals(prr)) {
+                    isAnnotatedByPathRecognizerRegistration = true;
+                    break;
+                }
+            }
+
             List<ExecutableElement> methodsList = ElementFilter.methodsIn(cls.getEnclosedElements());
             Map<String, ExecutableElement> methods = new HashMap<String, ExecutableElement>(methodsList.size());
             for(ExecutableElement m : methodsList) {
@@ -126,10 +140,20 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
                 }
 
                 if (!languageRegistration.useCustomEditorKit()) {
+                    registerEditorKit(lb, mimeType);
                     registerLoader(lb, mimeType);
-                    registerPathRecognizer(lb, mimeType);
-                    registerParser(lb, mimeType);
-                    registerIndexer(lb, mimeType);
+                    if (methods.containsKey("getLexerLanguage")) { //NOI18N
+                        registerLexer(lb, mimeType);
+                    }
+                    if (methods.containsKey("getParser")) { //NOI18N
+                        registerParser(lb, mimeType);
+                    }
+                        if (methods.containsKey("getIndexerFactory")) { //NOI18N
+                        registerIndexer(lb, mimeType);
+                        if (!isAnnotatedByPathRecognizerRegistration) {
+                            registerPathRecognizer(lb, mimeType);
+                        }
+                    }
                     registerCodeCompletion(lb, mimeType);
                     registerCodeFolding(lb, mimeType);
                     registerCodeTemplates(lb, mimeType);
@@ -140,6 +164,9 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
                     registerUpToDateStatus(lb, mimeType);
                     registerContextMenu(lb, mimeType, methods);
                     registerCommentUncommentToolbarButtons(lb, mimeType);
+                    if (methods.containsKey("getFormatter")) { //NOI18N
+                        registerFormatterIndenter(lb, mimeType);
+                    }
                 }
             }
         }
@@ -308,11 +335,14 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
     private static void registerContextMenu(LayerBuilder b, String mimeType, Map<String, ExecutableElement> methods) {
         File f;
 
-        if (methods.containsKey("getInstantRenamer")) { //NOI18N
-            f = b.file("Editors/" + mimeType + "/Popup/in-place-refactoring"); //NOI18N
-            f.position(680);
-            f.write();
-        }
+// XXX: removed due to #180501, CSL pluguns now ought to reguster this action manually; this is
+// to give plugins control over what action (in-place-refactoring vs. full rename refactorig) is registered
+//        if (methods.containsKey("getInstantRenamer")) { //NOI18N
+//            f = b.file("Editors/" + mimeType + "/Popup/in-place-refactoring"); //NOI18N
+//            f.position(680);
+//            f.write();
+//        }
+
 //
 //        Element mimeFolder = mkdirs(doc, "Editors/" + mimeType); // NOI18N
 //
@@ -429,6 +459,19 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
 //            item = createFile(doc, toolbarFolder, "uncomment"); // NOI18N
 //            setFileAttribute(doc, item, "position", INTVALUE, "30200"); // NOI18N
 //        }
+    }
+
+    private static void registerEditorKit(LayerBuilder b, String mimeType) {
+        instanceFile(b, "Editors/" + mimeType, null, CslEditorKit.class, "createEditorKitInstance", EditorKit.class).write(); //NOI18N
+    }
+
+    private static void registerLexer(LayerBuilder b, String mimeType) {
+        instanceFile(b, "Editors/" + mimeType, null, CslEditorKit.class, "createLexerLanguageInstance", Language.class).write(); //NOI18N
+    }
+
+    private static void registerFormatterIndenter(LayerBuilder b, String mimeType) {
+        instanceFile(b, "Editors/" + mimeType, null, GsfReformatTaskFactory.class, null, ReformatTask.Factory.class).write(); //NOI18N
+        instanceFile(b, "Editors/" + mimeType, null, GsfIndentTaskFactory.class, null, IndentTask.Factory.class).write(); //NOI18N
     }
 
     private static String makeFilesystemName(String s) {

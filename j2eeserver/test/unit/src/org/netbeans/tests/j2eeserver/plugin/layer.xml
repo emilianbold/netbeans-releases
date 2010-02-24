@@ -52,7 +52,8 @@ made subject to such option by the copyright holder.
               <attr name="needsFindServerUI" stringvalue="true"/> <!-- default is false -->
             </file>
             <file name="Factory.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentFactory"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentFactory.create"/>
+                <attr name="prefix" stringvalue="fooservice"/>
             </file>
             <file name="TestRegistryNodeFactory.instance">
               <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.registry.NodeFactory"/> 
@@ -87,12 +88,101 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
 
+        <folder name="TestWithPermittedPattern">
+            <file name="Descriptor" url="nbdep.xml">
+              <attr name="needsFindServerUI" stringvalue="true"/> <!-- default is false -->
+            </file>
+            <file name="Factory.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
+                <attr name="delegate" methodvalue="org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentFactory.create"/>
+                <attr name="urlPattern" stringvalue="^permittedfooservice.*$"/>
+                <attr name="prefix" stringvalue="permittedfooservice"/>
+                <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+            </file>
+            <file name="TestRegistryNodeFactory.instance">
+              <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.registry.NodeFactory"/>
+              <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
+            </file>
+            <file name="OptionalFactory.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.ManagerWrapperFactory"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
+            </file>
+            <file name="PlatformFactory.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.TestPlatformFactory"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
+            </file>
+            <file name="ModuleConfigurationFactory.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.tests.j2eeserver.plugin.TestModuleConfigurationFactory.getInstance"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.TestModuleConfigurationFactory"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
+            </file>
+            <folder name="DeploymentFileNames">
+                <folder name="WAR">
+                    <file name="WEB-INF\test-web.xml"/>
+                </folder>
+                <folder name="EJB">
+                    <file name="META-INF\test-ejb.xml"/>
+                </folder>
+                <folder name="CAR">
+                    <file name="META-INF\test-client.xml"/>
+                </folder>
+                <folder name="EAR">
+                    <file name="META-INF\test-app.xml"/>
+                </folder>
+            </folder>
+        </folder>
+
+        <folder name="TestWithForbiddenPattern">
+            <file name="Descriptor" url="nbdep.xml">
+              <attr name="needsFindServerUI" stringvalue="true"/> <!-- default is false -->
+            </file>
+            <file name="Factory.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
+                <attr name="delegate" methodvalue="org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentFactory.create"/>
+                <attr name="urlPattern" stringvalue="^nothing.*$"/>
+                <attr name="prefix" stringvalue="forbiddenfooservice"/>
+                <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+            </file>
+            <file name="TestRegistryNodeFactory.instance">
+              <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.registry.NodeFactory"/>
+              <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
+            </file>
+            <file name="OptionalFactory.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.ManagerWrapperFactory"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
+            </file>
+            <file name="PlatformFactory.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.TestPlatformFactory"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
+            </file>
+            <file name="ModuleConfigurationFactory.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.tests.j2eeserver.plugin.TestModuleConfigurationFactory.getInstance"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.TestModuleConfigurationFactory"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
+            </file>
+            <folder name="DeploymentFileNames">
+                <folder name="WAR">
+                    <file name="WEB-INF\test-web.xml"/>
+                </folder>
+                <folder name="EJB">
+                    <file name="META-INF\test-ejb.xml"/>
+                </folder>
+                <folder name="CAR">
+                    <file name="META-INF\test-client.xml"/>
+                </folder>
+                <folder name="EAR">
+                    <file name="META-INF\test-app.xml"/>
+                </folder>
+            </folder>
+        </folder>
+
         <folder name="TestFailingInitialization">
             <file name="Descriptor" url="nbdep.xml">
               <attr name="needsFindServerUI" stringvalue="true"/> <!-- default is false -->
             </file>
             <file name="Factory.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentFactory"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentFactory.create"/>
+                <attr name="prefix" stringvalue="fooservice"/>
             </file>
             <file name="TestRegistryNodeFactory.instance">
               <attr name="instanceClass" stringvalue="org.netbeans.tests.j2eeserver.plugin.registry.NodeFactory"/>

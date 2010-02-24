@@ -111,20 +111,6 @@ public class ModelSupport implements PropertyChangeListener {
         return 8;
     }
 
-    public File locateFile(String fileName) {
-        InstalledFileLocator locator = InstalledFileLocator.getDefault();
-        if (locator != null) {
-            File file = locator.locate(fileName, "com.sun.tools.swdev.parser.impl/1", false); // NOI18N
-            if (file != null) {
-                return file;
-            }
-        }
-        // the above code is mostly for debugging purposes;
-        // but seems it didn't spoil anything :)
-        File file = new File(fileName);
-        return file.exists() ? file : null;
-    }
-
     public void setModel(ModelImpl model) {
         this.theModel = model;
         synchronized (this) {
@@ -278,6 +264,7 @@ public class ModelSupport implements PropertyChangeListener {
                 switch (item.getLanguage()) {
                     case C:
                     case CPP:
+                    case FORTRAN:
                         sources.add(item);
                         break;
                     case C_HEADER:
@@ -363,6 +350,7 @@ public class ModelSupport implements PropertyChangeListener {
                     switch (item.getLanguage()) {
                         case C:
                         case CPP:
+                        case FORTRAN:
                             sources.add(item);
                             break;
                         case C_HEADER:
@@ -722,7 +710,7 @@ public class ModelSupport implements PropertyChangeListener {
                             project.onFileExternalCreate(fo);
                         }
                    } else {
-                        CsmFile[] files = CsmUtilities.getCsmFiles(fo);
+                        CsmFile[] files = CsmUtilities.getCsmFiles(fo, false);
                         for (int i = 0; i < files.length; ++i) {
                             FileImpl file = (FileImpl) files[i];
                             ProjectBase project = file.getProjectImpl(true);

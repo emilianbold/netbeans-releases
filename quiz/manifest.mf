@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.quiz
-OpenIDE-Module-Install: org/netbeans/modules/quiz/Installer.class
-OpenIDE-Module-Layer: org/netbeans/modules/quiz/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/quiz/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0
-

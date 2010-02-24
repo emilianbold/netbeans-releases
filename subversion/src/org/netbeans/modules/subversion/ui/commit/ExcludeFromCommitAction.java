@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import org.netbeans.modules.subversion.ui.actions.*;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.*;
 
 /**
@@ -109,12 +111,18 @@ public final class ExcludeFromCommitAction extends ContextAction {
         ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
                 SvnModuleConfig config = SvnModuleConfig.getDefault();
-                int status = getActionStatus(nodes);                
+                int status = getActionStatus(nodes);
                 List<File> files = new ArrayList<File>();
-                for (Node node : nodes) {                    
+                for (Node node : nodes) {
                     File aFile = node.getLookup().lookup(File.class);
+                    FileObject fo = node.getLookup().lookup(FileObject.class);
                     if (aFile != null) {
-                        files.add(aFile);                        
+                        files.add(aFile);
+                    } else if (fo != null) {
+                        File f = FileUtil.toFile(fo);
+                        if (f != null) {
+                            files.add(f);
+                        }
                     }
                 }
                 List<String> paths = new ArrayList<String>(files.size());

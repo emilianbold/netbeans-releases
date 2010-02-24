@@ -40,10 +40,10 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.utils;
 
+import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.JFileChooser;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.DialogDisplayer;
@@ -81,9 +81,9 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
             return null;
         }
         String itemPath = fileChooser.getSelectedFile().getPath();
-        itemPath = FilePathAdaptor.naturalize(itemPath);
+        itemPath = IpeUtils.naturalize(itemPath);
         String bd = baseDir;
-        bd = FilePathAdaptor.naturalize(bd);
+        bd = IpeUtils.naturalize(bd);
         itemPath = IpeUtils.toRelativePath(bd, itemPath);
 //        if (pathPanel != null && pathPanel.getMode() == PathPanel.REL_OR_ABS) {
 //            itemPath = IpeUtils.toAbsoluteOrRelativePath(bd, itemPath);
@@ -92,7 +92,7 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
 //        } else {
 //            itemPath = itemPath;
 //        }
-        itemPath = FilePathAdaptor.normalize(itemPath);
+        itemPath = IpeUtils.normalize(itemPath);
         return itemPath;
     }
 
@@ -152,8 +152,8 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
             return;
         }
         String newS = notifyDescriptor.getInputText();
-        Vector<String> vector = getListData();
-        Object[] arr = getListData().toArray();
+        List<String> vector = getListData();
+        Object[] arr = vector.toArray();
         for (int i = 0; i < arr.length; i++) {
             if (arr[i] == o) {
                 vector.remove(i);

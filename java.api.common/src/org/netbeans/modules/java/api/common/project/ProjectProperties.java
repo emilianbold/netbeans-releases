@@ -53,7 +53,31 @@ import org.openide.util.ImageUtilities;
  */
 public final class ProjectProperties {
 
+    /**
+     * @since org.netbeans.modules.java.api.common/0 1.14
+     */
+    public static final String ANNOTATION_PROCESSING_ENABLED = "annotation.processing.enabled"; //NOI18N
+    /**
+     * @since org.netbeans.modules.java.api.common/0 1.14
+     */
+    public static final String ANNOTATION_PROCESSING_ENABLED_IN_EDITOR = "annotation.processing.enabled.in.editor"; //NOI18N
+    /**
+     * @since org.netbeans.modules.java.api.common/0 1.14
+     */
+    public static final String ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS = "annotation.processing.run.all.processors"; //NOI18N
+    /**
+     * @since org.netbeans.modules.java.api.common/0 1.14
+     */
+    public static final String ANNOTATION_PROCESSING_PROCESSORS_LIST = "annotation.processing.processors.list"; //NOI18N
+    /**
+     * @since org.netbeans.modules.java.api.common/0 1.14
+     */
+    public static final String ANNOTATION_PROCESSING_SOURCE_OUTPUT = "annotation.processing.source.output"; //NOI18N
     public static final String JAVAC_CLASSPATH = "javac.classpath"; //NOI18N
+    /**
+     * @since org.netbeans.modules.java.api.common/0 1.14
+     */
+    public static final String JAVAC_PROCESSORPATH = "javac.processorpath"; //NOI18N
     public static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath"; // NOI18N
     public static final String RUN_CLASSPATH = "run.classpath"; // NOI18N
     public static final String RUN_TEST_CLASSPATH = "run.test.classpath"; // NOI18N
@@ -63,6 +87,7 @@ public final class ProjectProperties {
 
     public static final String[] WELL_KNOWN_PATHS = new String[] {
         "${" + JAVAC_CLASSPATH + "}", // NOI18N
+        "${" + JAVAC_PROCESSORPATH + "}", // NOI18N
         "${" + JAVAC_TEST_CLASSPATH + "}", // NOI18N
         "${" + RUN_CLASSPATH + "}", // NOI18N
         "${" + RUN_TEST_CLASSPATH + "}", // NOI18N

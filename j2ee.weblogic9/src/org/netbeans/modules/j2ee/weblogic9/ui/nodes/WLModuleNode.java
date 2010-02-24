@@ -42,11 +42,28 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import java.awt.Image;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.ControlModuleCookie;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.ModuleCookieSupport;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.OpenModuleUrlAction;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.OpenModuleUrlCookie;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.StartModuleAction;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.StopModuleAction;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.UndeployModuleAction;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.UndeployModuleCookie;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
@@ -60,11 +77,27 @@ import org.openide.util.actions.SystemAction;
  */
 public class WLModuleNode extends AbstractNode {
 
+    private static final Logger LOGGER = Logger.getLogger(WLModuleNode.class.getName());
+
     private final ModuleType moduleType;
 
-    public WLModuleNode(String name, Lookup lookup, ModuleType moduleType, boolean stopped) {
+    private final boolean stopped;
+
+    private final String name;
+
+    private final String url;
+
+    private final TargetModuleID module;
+
+    public WLModuleNode(TargetModuleID module, Lookup lookup,
+            ModuleType moduleType, boolean stopped) {
         super(Children.LEAF);
+        this.module = module;
         this.moduleType = moduleType;
+        this.stopped = stopped;
+        this.url = module.getWebURL();
+        this.name = module.getModuleID();
+
         if (stopped) {
             setDisplayName(name + " " + "[" // NOI18N
                     + NbBundle.getMessage(WLModuleNode.class, "LBL_Stopped")
@@ -72,11 +105,24 @@ public class WLModuleNode extends AbstractNode {
         } else {
             setDisplayName(name);
         }
+
+        if (url != null) {
+            getCookieSet().add(new OpenModuleUrlCookieImpl(url));
+        }
+        getCookieSet().add(new ControlModuleCookieImpl(module, lookup, !stopped));
+        getCookieSet().add(new UndeployModuleCookieImpl(module, lookup));
     }
 
     @Override
     public Action[] getActions(boolean context) {
-        return new SystemAction[] {};
+        List<Action> actions = new ArrayList<Action>(7);
+        actions.add(SystemAction.get(StartModuleAction.class));
+        actions.add(SystemAction.get(StopModuleAction.class));
+        actions.add(null);
+        actions.add(SystemAction.get(OpenModuleUrlAction.class));
+        actions.add(null);
+        actions.add(SystemAction.get(UndeployModuleAction.class));
+        return actions.toArray(new Action[actions.size()]);
     }
 
     @Override
@@ -97,16 +143,81 @@ public class WLModuleNode extends AbstractNode {
         return getIcon(type);
     }
 
-//    private static class OpenURLActionCookieImpl implements OpenURLActionCookie {
-//
-//        private String url;
-//
-//        public OpenURLActionCookieImpl(String url) {
-//            this.url = url;
-//        }
-//
-//        public String getWebURL() {
-//            return url;
-//        }
-//    }
+    private static class OpenModuleUrlCookieImpl implements OpenModuleUrlCookie {
+
+        private final String url;
+
+        public OpenModuleUrlCookieImpl(String url) {
+            this.url = url;
+        }
+
+        @Override
+        public void openUrl() {
+            try {
+                URLDisplayer.getDefault().showURL(new URL(url));
+            } catch (MalformedURLException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+    }
+
+    private static class UndeployModuleCookieImpl implements UndeployModuleCookie {
+
+        private final ModuleCookieSupport support;
+
+        public UndeployModuleCookieImpl(TargetModuleID module, Lookup lookup) {
+            this.support = new ModuleCookieSupport(module, lookup);
+        }
+
+        @Override
+        public void undeploy() {
+            support.performAction(new ModuleCookieSupport.Action() {
+
+                @Override
+                public ProgressObject execute(DeploymentManager manager, TargetModuleID module) {
+                    return manager.undeploy(new TargetModuleID[] {module});
+                }
+            });
+        }
+    }
+
+    private static class ControlModuleCookieImpl implements ControlModuleCookie {
+
+        private final ModuleCookieSupport support;
+
+        private final boolean running;
+
+        public ControlModuleCookieImpl(TargetModuleID module, Lookup lookup, boolean running) {
+            this.support = new ModuleCookieSupport(module, lookup);
+            this.running = running;
+        }
+
+        @Override
+        public void start() {
+            support.performAction(new ModuleCookieSupport.Action() {
+
+                @Override
+                public ProgressObject execute(DeploymentManager manager, TargetModuleID module) {
+                    return manager.start(new TargetModuleID[] {module});
+                }
+            });
+        }
+
+        @Override
+        public void stop() {
+            support.performAction(new ModuleCookieSupport.Action() {
+
+                @Override
+                public ProgressObject execute(DeploymentManager manager, TargetModuleID module) {
+                    return manager.stop(new TargetModuleID[] {module});
+                }
+            });
+        }
+
+        @Override
+        public boolean isRunning() {
+            return running;
+        }
+    }
+
 }

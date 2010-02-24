@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.api.xml;
  * detected.
  */
 
-public class VersionException extends Exception {
+public final class VersionException extends Exception {
 
     private String element;
     private int expectedVersion;

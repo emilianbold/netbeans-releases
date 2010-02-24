@@ -938,7 +938,7 @@ public final class DrawEngine {
     private void drawTheRestOfTextLine(DrawInfo ctx) {
         handleEOL(ctx);
 
-        if (ctx.textLimitLineVisible) { // draw limit line
+        if (ctx.textLimitLineVisible && ctx.textLimitWidth > 0) { // draw limit line
             int lineX = ctx.textMargin.left + ctx.textLimitWidth * ctx.defaultSpaceWidth;
             if (ctx.graphics !=null){
                 ctx.graphics.setColor(ctx.textLimitLineColor);

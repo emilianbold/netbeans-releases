@@ -46,9 +46,18 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
@@ -60,6 +69,8 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.gems.GemAction;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.railsprojects.Generator.Script;
+import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil.RailsVersion;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -81,14 +92,28 @@ import org.openide.util.NbBundle;
  * @author  Tor Norbye
  */
 public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(GeneratorPanel.class.getName());
+    private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
+
     private ChangeListener changeListener;
     private List<Generator> generators = new ArrayList<Generator>();
-    private Project project;
+    private final Project project;
+    private final Future<RailsVersion> railsVersion;
 
     /** Creates new form GeneratorPanel */
     public GeneratorPanel(Project project, Generator initialGenerator) {
         this.project = project;
+        // might take some time due to reading files etc, so run outside of EDT
+        this.railsVersion = EXECUTOR.submit(new Callable<RailsVersion>() {
+
+            @Override
+            public RailsVersion call() throws Exception {
+                String version = RailsProjectUtil.getRailsVersion(GeneratorPanel.this.project);
+                return version != null ? RailsProjectUtil.versionFor(version) : new RailsVersion(0);
+            }
+        });
+
         initComponents();
         actionTypeButtonGroup.add(generateButton);
         actionTypeButtonGroup.add(destroyButton);
@@ -130,13 +155,25 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
             }
         });
     }
-    
+
     void setInitialState(String name, String params) {
         assert name != null;
         nameText.setText(name);
         if (params != null) {
             parameter1Text.setText(params);
         }
+    }
+
+    private RailsVersion getRailsVersion() {
+        try {
+            return railsVersion.get();
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
         
     private Generator getSelectedGenerator() {
@@ -299,6 +336,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         // always wants /
 
         scan(generators, dir, "lib/generators", null, added);  // NOI18N
+        scan(generators, dir, "lib/rails_generators", null, added);  // NOI18N
         scan(generators, dir, "vendor/generators", null, added); // NOI18N
         // TODO: Look recursively for a "generators" directory under vendor/plugins, e.g.
         //  RAILS_ROOT/vendor/plugins/**/generatorsi
@@ -354,40 +392,67 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         // UI configuration for known generators (labelling the arguments etc.)
         String railsVersion = RailsProjectUtil.getRailsVersion(project);
 
-        List<Generator> builtins = Generator.getBuiltinGenerators(railsVersion);
-        for (Generator builtin : builtins) {
-            if (!added.contains(builtin.getName())) {
-                generators.add(builtin);
-                added.add(builtin.getName());
-            }
-        }
+        List<Generator> foundBuiltins = new ArrayList<Generator>();
 
         FileObject railsInstall = project.getProjectDirectory().getFileObject("vendor/rails/railties"); // NOI18N
         if (railsInstall != null) {
             scan(generators, railsInstall, 
                 "lib/rails_generator/generators/components", null, added); // NOI18N
         } else if (gemManager != null) {
-            railsVersion = gemManager.getLatestVersion("rails"); // NOI18N
+            if (railsVersion == null) {
+                railsVersion = gemManager.getLatestVersion("rails"); // NOI18N
+            }
             if (railsVersion != null) {
                 for (File repo : gemManager.getRepositories()) {
                     File gemDir = new File(repo, "gems"); // NOI18N
-                    if (gemDir.exists()) {
-                        File railsDir = new File(gemDir, "rails" + "-" + railsVersion); // NOI18N
-                        if (railsDir.exists()) {
-                            railsInstall = FileUtil.toFileObject(railsDir);
-                            if (railsInstall != null) {
-                                scan(generators, railsInstall, 
-                                    "lib/rails_generator/generators/components", null, added); // NOI18N
-                            }
+                    if (!gemDir.exists()) {
+                        continue;
+                    }
+                    // both rails and railties may contain generators
+                    String[] gemsToTry = {"rails", "railties"};
+                    for (String gemToTry : gemsToTry) {
+                        String path = gemToTry + "-" + railsVersion;
+                        File railsDir = new File(gemDir, path); // NOI18N
+                        if (!railsDir.exists()) {
+                            continue;
                         }
+                        railsInstall = FileUtil.toFileObject(railsDir);
+                        scan(foundBuiltins, railsInstall,
+                                "lib/rails_generator/generators/components", null, added); // NOI18N
+                        scan(foundBuiltins, railsInstall,
+                                "lib//generators/rails", null, added); // NOI18N
                     }
                 }
             }
         }
 
+        List<Generator> builtins = Generator.getBuiltinGenerators(railsVersion, foundBuiltins);
+        for (Generator builtin : builtins) {
+            add(builtin, generators);
+        }
+
+        Collections.sort(generators, new Comparator<Generator>() {
+
+            @Override
+            public int compare(Generator o1, Generator o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+
+
         return generators;
     }
     
+    private static boolean add(Generator toAdd, List<Generator> result) {
+        for (Generator each : result) {
+            if (each.getName().equals(toAdd.getName())) {
+                return false;
+            }
+        }
+        return result.add(toAdd);
+        
+    }
+
     public String getGeneratedName() {
         return nameText.getText().trim();
     }
@@ -398,8 +463,15 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         return o != null ? o.toString() : "";
     }
     
-    public String getScript() {
-        return destroyButton.isSelected() ? "destroy" : "generate";
+    Script getScript() {
+        String action = destroyButton.isSelected() ? "destroy" : "generate"; //NOI18N
+        boolean rails3 = getRailsVersion().compareTo(new RailsVersion(3)) >= 0;
+        if (!rails3) {
+            return new Script(action);
+        }
+        // in rails 3 there is just the 'rails' script; usage is
+        // e.g. 'rails generate scaffold ...'
+        return new Script("rails").addArgs(action);
     }
     
     public boolean isForce() {

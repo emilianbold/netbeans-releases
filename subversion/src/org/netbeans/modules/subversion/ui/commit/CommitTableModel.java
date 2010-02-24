@@ -49,7 +49,6 @@ import javax.swing.table.AbstractTableModel;
 import java.util.*;
 import java.io.File;
 import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Table model for the Commit dialog table.
@@ -58,17 +57,20 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class CommitTableModel extends AbstractTableModel {
 
+    public static final String COLUMN_NAME_COMMIT    = "commit"; // NOI18N
     public static final String COLUMN_NAME_NAME    = "name"; // NOI18N
     public static final String COLUMN_NAME_STATUS  = "status"; // NOI18N
     public static final String COLUMN_NAME_ACTION  = "action"; // NOI18N
     public static final String COLUMN_NAME_PATH    = "path"; // NOI18N
     public static final String COLUMN_NAME_BRANCH  = "branch"; // NOI18N
 
+    private final int STATUS_DELETED = FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
+    private final int STATUS_NEW = FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
+
     private class RootFile {
         String repositoryPath;
         String rootLocalPath;
     }
-    private Set<SVNUrl> repositoryRoots;
     private RootFile rootFile;
 
     /**
@@ -78,6 +80,9 @@ public class CommitTableModel extends AbstractTableModel {
 
     {
         ResourceBundle loc = NbBundle.getBundle(CommitTableModel.class);
+        columnLabels.put(COLUMN_NAME_COMMIT, new String [] {
+                                          loc.getString("CTL_CommitTable_Column_Commit"),  // NOI18N
+                                          loc.getString("CTL_CommitTable_Column_Description")}); // NOI18N
         columnLabels.put(COLUMN_NAME_NAME, new String [] {
                                           loc.getString("CTL_CommitTable_Column_File"), 
                                           loc.getString("CTL_CommitTable_Column_File")});
@@ -97,6 +102,7 @@ public class CommitTableModel extends AbstractTableModel {
     
     private CommitOptions []    commitOptions;
     private SvnFileNode []      nodes;
+    private Index index;
     
     private String [] columns;
 
@@ -111,6 +117,7 @@ public class CommitTableModel extends AbstractTableModel {
 
     void setNodes(SvnFileNode [] nodes) {
         this.nodes = nodes;
+        this.index = new Index();
         defaultCommitOptions();
         fireTableDataChanged();
     }
@@ -132,35 +139,46 @@ public class CommitTableModel extends AbstractTableModel {
         return ret;
     }
     
+    @Override
     public String getColumnName(int column) {
         return columnLabels.get(columns[column])[0];
     }
 
+    @Override
     public int getColumnCount() {
         return columns.length;
     }
 
+    @Override
     public int getRowCount() {
         return nodes.length;
     }
 
+    @Override
     public Class getColumnClass(int columnIndex) {
         String col = columns[columnIndex];
-        if (col.equals(COLUMN_NAME_ACTION)) {
+        if (col.equals(COLUMN_NAME_COMMIT)) {
+            return Boolean.class;
+        } else if (col.equals(COLUMN_NAME_ACTION)) {
             return CommitOptions.class;
+        } else {
+            return String.class;
         }
-        return String.class;
     }
 
+    @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         String col = columns[columnIndex];
-        return col.equals(COLUMN_NAME_ACTION);
+        return col.equals(COLUMN_NAME_COMMIT);
     }
 
+    @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         SvnFileNode node;
         String col = columns[columnIndex];
-        if (col.equals(COLUMN_NAME_NAME)) {
+        if (col.equals(COLUMN_NAME_COMMIT)) {
+            return commitOptions[rowIndex] != CommitOptions.EXCLUDE;
+        } else if (col.equals(COLUMN_NAME_NAME)) {
             return nodes[rowIndex].getName();
         } else if (col.equals(COLUMN_NAME_BRANCH)) {
             String branch = nodes[rowIndex].getCopy();
@@ -180,7 +198,7 @@ public class CommitTableModel extends AbstractTableModel {
                 String relativePath = nodes[rowIndex].getFile().getAbsolutePath().substring(rootFile.rootLocalPath.length());
                 shortPath = rootFile.repositoryPath + relativePath.replace(File.separatorChar, '/');
             } else {
-                shortPath = nodes[rowIndex].getRelativePath();
+                shortPath = nodes[rowIndex].getLocation();
                 if (shortPath == null) {
                     shortPath = org.openide.util.NbBundle.getMessage(CommitTableModel.class, "CTL_CommitForm_NotInRepository"); // NOI18N
                 }
@@ -190,19 +208,24 @@ public class CommitTableModel extends AbstractTableModel {
         throw new IllegalArgumentException("Column index out of range: " + columnIndex); // NOI18N
     }
 
+    @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         String col = columns[columnIndex];
         if (col.equals(COLUMN_NAME_ACTION)) {
             commitOptions[rowIndex] = (CommitOptions) aValue;
-            fireTableCellUpdated(rowIndex, columnIndex);
+        } else if (col.equals(COLUMN_NAME_COMMIT)) {
+            commitOptions[rowIndex] = getCommitOptions(rowIndex, ((Boolean) aValue));
         } else {
             throw new IllegalArgumentException("Column index out of range: " + columnIndex); // NOI18N
         }
+        includeExcludeTree(new int[] {rowIndex}, commitOptions[rowIndex] != CommitOptions.EXCLUDE, false);
+        fireTableRowsUpdated(0, getRowCount() - 1);
     }
 
     private void defaultCommitOptions() {
         boolean excludeNew = SvnModuleConfig.getDefault().getExludeNewFiles();
         commitOptions = SvnUtils.createDefaultCommitOptions(nodes, excludeNew);
+        ensureFilesExcluded();
     }
 
     public SvnFileNode getNode(int row) {
@@ -213,17 +236,176 @@ public class CommitTableModel extends AbstractTableModel {
         return commitOptions[row];
     }
 
-    private Set<SVNUrl> getRepositoryRoots() {
-        if(repositoryRoots == null) {
-            repositoryRoots = new HashSet<SVNUrl>();
-        }
-        return repositoryRoots;
-    }
-
     void setRootFile(String repositoryPath, String rootLocalPath) {
         rootFile = new RootFile();
         rootFile.repositoryPath = repositoryPath;
         rootFile.rootLocalPath = rootLocalPath;
     }
 
+    void setIncluded (int[] rows, boolean include, boolean recursively) {
+        for (int rowIndex : rows) {
+            commitOptions[rowIndex] = getCommitOptions(rowIndex, include);
+        }
+        includeExcludeTree(rows, include, recursively);
+        fireTableRowsUpdated(0, getRowCount() - 1);
+    }
+
+    void setAdded (int[] rows, CommitOptions addOption) {
+        for (int rowIndex : rows) {
+            commitOptions[rowIndex] = addOption;
+        }
+        includeExcludeTree(rows, true, false);
+        fireTableRowsUpdated(0, getRowCount() - 1);
+    }
+
+    private void includeExcludeTree (int[] rows, boolean include, boolean recursively) {
+        LinkedList<Integer> rowList = new LinkedList<Integer>();
+        for (int row : rows) {
+            rowList.add(row);
+        }
+        if (include) {
+            includeExcludeChildren(rowList, recursively ? FileInformation.STATUS_ALL : STATUS_DELETED, true);
+            includeExcludeParents(rowList, STATUS_NEW, true);
+        } else {
+            includeExcludeChildren(rowList, recursively ? FileInformation.STATUS_ALL : STATUS_NEW, false);
+            includeExcludeParents(rowList, STATUS_DELETED, false);
+        }
+    }
+
+    private CommitOptions getCommitOptions (int rowIndex, boolean include) {
+        return include ? getCommitOptions(rowIndex) : CommitOptions.EXCLUDE;
+    }
+
+    private CommitOptions getCommitOptions (int rowIndex) {
+        SvnFileNode node = nodes[rowIndex];
+        return SvnUtils.getDefaultCommitOptions(node, false);
+    }
+
+    private void ensureFilesExcluded () {
+        LinkedList<Integer> newFilesExcluded = new LinkedList<Integer>();
+        LinkedList<Integer> deletedFilesExcluded = new LinkedList<Integer>();
+        for (int i = 0; i < nodes.length; ++i) {
+            SvnFileNode node = nodes[i];
+            if (CommitOptions.EXCLUDE.equals(commitOptions[i])
+                    && (node.getInformation().getStatus() & (STATUS_NEW)) != 0) {
+                newFilesExcluded.add(i);
+            } else if (CommitOptions.EXCLUDE.equals(commitOptions[i])
+                    && (node.getInformation().getStatus() & (STATUS_DELETED)) != 0) {
+                deletedFilesExcluded.add(i);
+            }
+        }
+        includeExcludeChildren(newFilesExcluded, STATUS_NEW, false);
+        includeExcludeParents(deletedFilesExcluded, STATUS_DELETED, false);
+    }
+
+    private void includeExcludeParents (Collection<Integer> nodeIndexes, int statusMask, boolean include) {
+        boolean includeExcludeWholeTree = include && (statusMask & (STATUS_DELETED)) != 0
+                || !include && (statusMask & (STATUS_NEW)) != 0;
+        HashSet<Integer> toCheck = new HashSet<Integer>();
+        boolean[] checkedNodes = new boolean[nodes.length];
+        outer:
+        for (int nodeIndex : nodeIndexes) {
+            checkedNodes[nodeIndex] = true;
+            Integer parentIndex = nodeIndex;
+            while (parentIndex != null && (nodes[parentIndex].getInformation().getStatus() & statusMask) != 0) {
+                nodeIndex = parentIndex;
+                if (!includeExcludeWholeTree
+                        && includeExcludeEnabled(nodeIndex, include)) { // do not include already included file, which could reset Add as Binary to Add as Text and vice versa
+                    commitOptions[nodeIndex] = getCommitOptions(nodeIndex, include);
+                }
+                parentIndex = index.getParent(nodeIndex);
+                if (parentIndex != null && checkedNodes[parentIndex]) {
+                    continue outer;
+                }
+            }
+            toCheck.add(nodeIndex);
+        }
+        if (includeExcludeWholeTree) {
+            includeExcludeChildren(toCheck, statusMask, include);
+        }
+    }
+
+    private void includeExcludeChildren (Collection<Integer> nodeIndexes, int statusMask, boolean include) {
+        boolean[] checkedNodes = new boolean[nodes.length];
+        HashSet<Integer> toCheck = new HashSet<Integer>();
+        for (int nodeIndex : nodeIndexes) {
+            toCheck.add(nodeIndex);
+        }
+        while (!toCheck.isEmpty()) {
+            Iterator<Integer> it = toCheck.iterator();
+            Integer nodeIndex = it.next();
+            it.remove();
+            if (checkedNodes[nodeIndex]) {
+                continue;
+            }
+            checkedNodes[nodeIndex] = true;
+            SvnFileNode node = nodes[nodeIndex];
+            if ((node.getInformation().getStatus() & statusMask) !=  0) {
+                if (includeExcludeEnabled(nodeIndex, include)) { // do not include already included file, which could reset Add as Binary to Add as Text and vice versa
+                    commitOptions[nodeIndex] = getCommitOptions(nodeIndex, include);
+                }
+                Integer[] childrenIndexes = index.getChildren(nodeIndex);
+                if (childrenIndexes != null) {
+                    toCheck.addAll(Arrays.asList(childrenIndexes));
+                }
+            }
+        }
+    }
+
+    private boolean includeExcludeEnabled (int nodeIndex, boolean include) {
+        return !include || commitOptions[nodeIndex] == CommitOptions.EXCLUDE;
+    }
+
+    private class Index {
+
+        private HashMap<File, Value> fileToIndex;
+
+        public Index() {
+            constructIndex();
+        }
+
+        private void constructIndex () {
+            fileToIndex = new HashMap<File, Value>(nodes.length);
+            for (int i = 0; i < nodes.length; ++i) {
+                Value value = new Value(i);
+                fileToIndex.put(nodes[i].getFile(), value);
+            }
+            for (int i = 0; i < nodes.length; ++i) {
+                File parentFile = nodes[i].getFile().getParentFile();
+                if (parentFile != null) {
+                    Value value = fileToIndex.get(parentFile);
+                    if (value != null) {
+                        value.addChild(i);
+                    }
+                }
+            }
+        }
+
+        private Integer getParent (int nodeIndex) {
+            File parentFile = nodes[nodeIndex].getFile().getParentFile();
+            Value parentValue = parentFile == null ? null : fileToIndex.get(parentFile);
+            return parentValue == null ? null : parentValue.nodeIndex;
+        }
+
+        private Integer[] getChildren (int nodeIndex) {
+            Value value = fileToIndex.get(nodes[nodeIndex].getFile());
+            return value == null || value.childrenIndexes == null ? null : value.childrenIndexes.toArray(new Integer[value.childrenIndexes.size()]);
+        }
+
+        private class Value {
+            private Integer nodeIndex;
+            private Set<Integer> childrenIndexes;
+
+            private Value(int index) {
+                this.nodeIndex = index;
+            }
+
+            private void addChild(int childIndex) {
+                if (childrenIndexes == null) {
+                    childrenIndexes = new HashSet<Integer>();
+                }
+                childrenIndexes.add(childIndex);
+            }
+        }
+    }
 }

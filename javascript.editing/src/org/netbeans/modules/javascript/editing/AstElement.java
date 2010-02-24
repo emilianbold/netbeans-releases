@@ -63,6 +63,9 @@ import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
  * @author Tor Norbye
  */
 public class AstElement extends JsElement {
+
+    private static final Logger LOG = Logger.getLogger(AstElement.class.getName());
+    
     public static final Set<Modifier> NONE = EnumSet.noneOf(Modifier.class);
     public static final Set<Modifier> STATIC = EnumSet.of(Modifier.STATIC);
     public static final Set<Modifier> PRIVATE = EnumSet.of(Modifier.PRIVATE);
@@ -330,7 +333,7 @@ public class AstElement extends JsElement {
             }
             
         } else if (object != null) {
-            Logger.global.log(Level.WARNING, "Foreign element: " + object + " of type " + //NOI18N
+            LOG.log(Level.WARNING, "Foreign element: " + object + " of type " + //NOI18N
                 ((object != null) ? object.getClass().getName() : "null")); //NOI18N
             
         } else {

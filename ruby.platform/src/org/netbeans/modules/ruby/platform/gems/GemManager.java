@@ -56,6 +56,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -130,6 +133,17 @@ public final class GemManager {
 
     private final Lock runnerLocalLock;
     private final Lock runnerRemoteLock;
+
+    private static final ExecutorService RELOAD_EXECUTOR = Executors.newCachedThreadPool();
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                RELOAD_EXECUTOR.shutdownNow();
+            }
+        });
+    }
 
     public GemManager(final RubyPlatform platform) {
         assert platform.hasRubyGemsInstalled() : "called when RubyGems installed";
@@ -545,6 +559,35 @@ public final class GemManager {
         return needsLocalReload() || needsRemoteReload();
     }
 
+    /**
+     * Attempts to asynchronously reload local gems (gives up if
+     * can't acquire the lock for local gems in 10 secs).
+     * 
+     * @param force forces reloading if true.
+     */
+    public void reloadLocalGems(final boolean force) {
+        RELOAD_EXECUTOR.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final int timeout = 10;
+                    if (runnerLocalLock.tryLock(timeout, TimeUnit.SECONDS)) {
+                        if (force) {
+                            resetLocal();
+                        }
+                        reloadLocalIfNeeded();
+                    } else {
+                        LOGGER.info("Could not retrieve lock for reloading " +
+                                "gems in " + timeout + " secs, skipping reload");//NOI18N
+                    }
+                } catch (InterruptedException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                } finally {
+                    runnerLocalLock.unlock();
+                }
+            }
+        });
+    }
     /**
      * This method is called automatically every time when installed or remote
      * gems are looked for. The method reloads only needed gems. Remote, local

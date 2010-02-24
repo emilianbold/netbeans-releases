@@ -40,10 +40,10 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.utils;
 
+import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
-import java.util.Vector;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
@@ -101,7 +101,7 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
         myListEditorPanel.setListData(data);
     }
 
-    public Vector<String> getListData() {
+    public List<String> getListData() {
         return myListEditorPanel.getListData();
     }
 
@@ -287,8 +287,8 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            Vector<String> vector = super.getListData();
-            Object[] arr = super.getListData().toArray();
+            List<String> vector = super.getListData();
+            Object[] arr = vector.toArray();
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] == o) {
                     vector.remove(i);

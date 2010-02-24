@@ -565,7 +565,7 @@ made subject to such option by the copyright holder.
       whenever such action is invoked. This message can then be consumed
       by enhanced UI logger that track what the user is going.
       </api>
-      <api name="org.openide.awt.StatusDisplayer.DISPLAY_TIME" category="friend" group="property" type="export">
+      <api name="org.openide.awt.StatusDisplayer.DISPLAY_TIME" category="friend" group="systemproperty" type="export">
       Status text set in <a href="@TOP@/org/openide/awt/StatusDisplayer.html">StatusDisplayer</a> is 
       by default shown in status line of NetBeans and is hidden after specified timeout.
       If not overriden by this property it is done after 5000ms. 

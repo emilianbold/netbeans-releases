@@ -6,6 +6,7 @@
 package org.netbeans.modules.terminal.ioprovider;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.InputEvent;
 import java.io.IOException;
 import java.io.Reader;
@@ -18,8 +19,10 @@ import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.terminalemulator.Coord;
 import org.netbeans.lib.terminalemulator.Extent;
+import org.netbeans.lib.terminalemulator.LineDiscipline;
 import org.netbeans.lib.terminalemulator.StreamTerm;
 import org.netbeans.lib.terminalemulator.Term;
+import org.netbeans.lib.terminalemulator.TermListener;
 import org.netbeans.modules.terminal.api.Terminal;
 import org.netbeans.modules.terminal.api.TerminalProvider;
 import org.openide.util.Lookup;
@@ -82,6 +85,8 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
                                                 new MyIOColors(),
                                                 new MyIOPosition(),
                                                 new MyIOExecution(),
+						new MyIOResizable(),
+						new MyIOEmulation(),
                                                 new MyIOTab()
                                                 );
 
@@ -279,6 +284,59 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         }
     }
     */
+
+    private class MyIOResizable extends IOResizable {
+
+	// We need a map to help use remove TermListeners from 'term'
+	// based on IOResizable.Listener.
+	private Map<Listener, TermListener> listenerMap =
+		new HashMap<Listener, TermListener>();
+
+	@Override
+	protected void addListener(final Listener listener) {
+	    TermListener termListener = new TermListener() {
+		public void sizeChanged(Dimension cells, Dimension pixels) {
+		    // propagate size change notifications from Term
+		    // to Listener
+		    listener.sizeChanged(cells, pixels);
+		}
+	    };
+	    term.addListener(termListener);
+	    listenerMap.put(listener, termListener);
+	}
+
+	@Override
+	protected void removeListener(Listener listener) {
+	    TermListener termListener = listenerMap.remove(listener);
+	    if (termListener != null)
+		term.removeListener(termListener);
+	}
+    }
+
+    private class MyIOEmulation extends IOEmulation {
+
+	private boolean disciplined = false;
+
+	@Override
+	protected String getEmulation() {
+	    return term.getEmulation();
+	}
+
+	@Override
+	protected boolean isDisciplined() {
+	    return disciplined;
+	}
+
+	@Override
+	protected void setDisciplined() {
+	    if (this.disciplined)
+		return;
+	    this.disciplined = true;
+	    if (disciplined)
+		term.pushStream(new LineDiscipline());
+	}
+    }
+
 
     private class MyIOExecution extends IOExecution {
 

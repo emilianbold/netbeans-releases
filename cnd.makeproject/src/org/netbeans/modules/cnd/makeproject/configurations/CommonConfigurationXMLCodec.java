@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
@@ -74,6 +75,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V65 - NB 6.9
+ *   Test folders: TEST_ROOT_LIST_ELEMENT
+ * V64 - NB 6.9
+ *   Test folders: KIND_ATTR
  * V63 - NB 6.7
  *   REMOVE_INSTRUMENTATION_ELEMENT
  * V62 - NB 6.7
@@ -181,7 +186,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 62;
+    public final static int CURRENT_VERSION = 65;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -202,6 +207,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String PROJECT_MAKEFILE_ELEMENT = "projectmakefile"; // NOI18N
     protected final static String REQUIRED_PROJECTS_ELEMENT = "requiredProjects"; // NOI18N
     protected final static String SOURCE_ROOT_LIST_ELEMENT = "sourceRootList"; // NOI18N
+    protected final static String TEST_ROOT_LIST_ELEMENT = "testRootList"; // NOI18N
     protected final static String SOURCE_FOLDERS_FILTER_ELEMENT = "sourceFolderFilter"; // NOI18N
     protected final static String SOURCE_ENCODING_ELEMENT = "sourceEncoding"; // NOI18N
     // Tools Set (Compiler set and platform)
@@ -302,6 +308,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String ARCHIVERTOOL_SUPRESS_ELEMENT = "archiverSupress"; // NOI18N
     protected final static String VERSION_ATTR = "version"; // NOI18N
     protected final static String TYPE_ATTR = "type"; // NOI18N
+    protected final static String KIND_ATTR = "kind"; // NOI18N
     protected final static String NAME_ATTR = "name"; // NOI18N
     protected final static String ROOT_ATTR = "root"; // NOI18N
     protected final static String SET_ATTR = "set"; // NOI18N
@@ -518,12 +525,23 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     private void writeLogicalFolder(XMLEncoderStream xes, Folder folder) {
-        xes.elementOpen(LOGICAL_FOLDER_ELEMENT,
-                new AttrValuePair[]{
-                    new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
-                    new AttrValuePair(DISPLAY_NAME_ATTR, "" + folder.getDisplayName()), // NOI18N
-                    new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles()), // NOI18N
-                });
+        if (folder.getKind() != null) {
+            xes.elementOpen(LOGICAL_FOLDER_ELEMENT,
+                    new AttrValuePair[]{
+                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
+                        new AttrValuePair(DISPLAY_NAME_ATTR, "" + folder.getDisplayName()), // NOI18N
+                        new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles()), // NOI18N
+                        new AttrValuePair(KIND_ATTR, "" + folder.getKind()), // NOI18N
+                    });
+        }
+        else {
+            xes.elementOpen(LOGICAL_FOLDER_ELEMENT,
+                    new AttrValuePair[]{
+                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
+                        new AttrValuePair(DISPLAY_NAME_ATTR, "" + folder.getDisplayName()), // NOI18N
+                        new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles()), // NOI18N
+                    });
+        }
         // write out subfolders
         Folder[] subfolders = folder.getFoldersAsArray();
         for (int i = 0; i < subfolders.length; i++) {
@@ -542,18 +560,28 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     private void writeDiskFolder(XMLEncoderStream xes, Folder folder) {
+        List<AttrValuePair> attrList = new ArrayList<AttrValuePair>();
+        attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getName())); // NOI18N
         if (folder.getRoot() != null) {
-            xes.elementOpen(DISK_FOLDER_ELEMENT,
-                    new AttrValuePair[]{
-                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
-                        new AttrValuePair(ROOT_ATTR, "" + folder.getRoot()), // NOI18N
-                    });
-        } else {
-            xes.elementOpen(DISK_FOLDER_ELEMENT,
-                    new AttrValuePair[]{
-                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
-                    });
+            attrList.add(new AttrValuePair(ROOT_ATTR, "" + folder.getRoot())); // NOI18N
         }
+        if (folder.getKind() != null) {
+            attrList.add(new AttrValuePair(KIND_ATTR, "" + folder.getKind())); // NOI18N
+        }
+        xes.elementOpen(DISK_FOLDER_ELEMENT, attrList.toArray(new AttrValuePair[attrList.size()]));
+
+//        if (folder.getRoot() != null) {
+//            xes.elementOpen(DISK_FOLDER_ELEMENT,
+//                    new AttrValuePair[]{
+//                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
+//                        new AttrValuePair(ROOT_ATTR, "" + folder.getRoot()), // NOI18N
+//                    });
+//        } else {
+//            xes.elementOpen(DISK_FOLDER_ELEMENT,
+//                    new AttrValuePair[]{
+//                        new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
+//                    });
+//        }
         // write out subfolders
         Folder[] subfolders = folder.getFoldersAsArray();
         for (int i = 0; i < subfolders.length; i++) {
@@ -582,6 +610,16 @@ public abstract class CommonConfigurationXMLCodec
                 xes.element(LIST_ELEMENT, l);
             }
             xes.elementClose(SOURCE_ROOT_LIST_ELEMENT);
+        }
+
+        list = makeProjectDescriptor.getTestRoots();
+        if (list.size() > 0) {
+            // Test Root
+            xes.elementOpen(TEST_ROOT_LIST_ELEMENT);
+            for (String l : list) {
+                xes.element(LIST_ELEMENT, l);
+            }
+            xes.elementClose(TEST_ROOT_LIST_ELEMENT);
         }
     }
 

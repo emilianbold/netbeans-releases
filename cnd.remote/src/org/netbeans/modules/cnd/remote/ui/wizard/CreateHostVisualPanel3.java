@@ -48,9 +48,9 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.remote.sync.SyncUtils;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.openide.util.NbBundle;
@@ -93,7 +93,7 @@ import org.openide.util.NbBundle;
         });
         boolean selected = false;
         for(CompilerSet cs : compilerSetManager.getCompilerSets()) {
-            if (cs.isDefault()) {
+            if (compilerSetManager.isDefaultCompilerSet(cs)) {
                 cbDefaultToolchain.setSelectedItem(cs);
                 selected = true;
                 break;
@@ -103,6 +103,7 @@ import org.openide.util.NbBundle;
             cbDefaultToolchain.setSelectedItem(0);
         }
         cbDefaultToolchain.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 compilerSetManager.setDefault((CompilerSet) cbDefaultToolchain.getSelectedItem());
             }

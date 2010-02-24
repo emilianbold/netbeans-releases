@@ -61,6 +61,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
@@ -184,7 +185,7 @@ public class TestBase extends CslTestBase {
 
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
-                _result[0] = (HtmlParserResult) Utils.getResultIterator(resultIterator, "text/html").getParserResult();
+                _result[0] = (HtmlParserResult) WebUtils.getResultIterator(resultIterator, "text/html").getParserResult();
             }
         });
 

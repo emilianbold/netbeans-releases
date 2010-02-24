@@ -145,24 +145,6 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.projectapi</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.19</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.31</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.actions</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -373,10 +355,13 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.editor</friend>
                 <friend>org.netbeans.modules.diff</friend>
+                <friend>org.netbeans.modules.editor.indent.project</friend>
                 <friend>org.netbeans.modules.groovy.grailsproject</friend>
+                <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.j2ee.clientproject</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.java.editor</friend>
+                <friend>org.netbeans.modules.java.hints</friend>
                 <friend>org.netbeans.modules.java.source</friend>
                 <friend>org.netbeans.modules.javafx.editor</friend>
                 <friend>org.netbeans.modules.maven</friend>
@@ -389,10 +374,12 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
                 <friend>org.netbeans.modules.scala.editing</friend>
                 <friend>org.netbeans.modules.scala.editor</friend>
+                <friend>org.netbeans.modules.versioning.util</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.options.colors</package>
                 <package>org.netbeans.modules.options.colors.spi</package>
                 <package>org.netbeans.modules.options.editor.spi</package>
+                <package>org.netbeans.modules.options.indentation</package>
             </friend-packages>
         </data>
     </configuration>

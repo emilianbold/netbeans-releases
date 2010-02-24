@@ -298,7 +298,7 @@ class ConfigActionTest extends ConfigAction {
                         .addArgument(PhpUnit.COVERAGE_LOG.getAbsolutePath());
             }
             externalProcessBuilder = externalProcessBuilder
-                    .addArgument(PhpUnit.SUITE.getName())
+                    .addArgument(PhpUnit.SUITE_NAME)
                     .addArgument(PhpUnit.SUITE.getAbsolutePath())
                     .addArgument(String.format(PhpUnit.SUITE_RUN, startFile.getAbsolutePath()));
             return externalProcessBuilder;

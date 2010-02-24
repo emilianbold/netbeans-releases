@@ -1,8 +1,7 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-// </editor-fold>
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 import java.io.File;
@@ -52,6 +50,8 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.api.keyring.Keyring;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.CustomizerSupport;
@@ -118,7 +118,7 @@ public class DeploymentManagerProperties {
      * Start of Java DB database on or off
      */
     public static final String DATABASE_START_ATTR = "DatabaseStartEnabled"; //NOI18N
-    
+
     private static final String PROP_SOURCES       = "sources";         // NOI18N
     private static final String PROP_JAVADOCS      = "javadocs";        // NOI18N
     
@@ -215,7 +215,21 @@ public class DeploymentManagerProperties {
         if (instanceProperties==null){
             return null;
         }
-        return instanceProperties.getProperty(InstanceProperties.PASSWORD_ATTR) ;
+        return getPassword(instanceProperties);
+    }
+
+    public static String getPassword(InstanceProperties instanceProperties) {
+        String retVal = instanceProperties.getProperty(InstanceProperties.PASSWORD_ATTR);
+        String key = instanceProperties.getProperty(InstanceProperties.URL_ATTR);
+        char[] retChars = Keyring.read(key);
+        if (null == retChars || retChars.length < 1 || !GlassfishModule.PASSWORD_CONVERTED_FLAG.equals(retVal)) {
+            retChars = retVal.toCharArray();
+            Keyring.save(key, retChars, "a Glassfish/SJSAS passord");
+            instanceProperties.setProperty(InstanceProperties.PASSWORD_ATTR, GlassfishModule.PASSWORD_CONVERTED_FLAG) ;
+        } else {
+            retVal = String.copyValueOf(retChars);
+        }
+        return retVal;
     }
     
     /**
@@ -223,8 +237,8 @@ public class DeploymentManagerProperties {
      * @param password New value of property password.
      */
     public void setPassword(java.lang.String password) {
-        instanceProperties.setProperty(InstanceProperties.PASSWORD_ATTR, password);
-        
+        String key = instanceProperties.getProperty(InstanceProperties.URL_ATTR);
+        Keyring.save(key, password.toCharArray(), "a Glassfish/SJSAS passord");
     }
         
     /**

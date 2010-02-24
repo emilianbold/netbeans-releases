@@ -82,6 +82,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.dlight.remote</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -413,6 +421,7 @@
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>
                 <friend>org.netbeans.modules.cnd.modelutil</friend>
                 <friend>org.netbeans.modules.cnd.navigation</friend>
+                <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.cnd.qnavigator</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>

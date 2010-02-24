@@ -66,13 +66,18 @@ import org.netbeans.api.extexecution.ExternalProcessSupport;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.InputReaderTask;
 import org.netbeans.api.extexecution.input.InputReaders;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
+import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
@@ -82,6 +87,8 @@ import org.openide.windows.InputOutput;
  * @author Petr Hejl
  */
 public final class WLStartServer extends StartServer {
+    
+    private static final String SUN = "Sun";        // NOI18N
 
     /**
      * The socket timeout value for server ping. Unfortunately there is no right
@@ -172,7 +179,7 @@ public final class WLStartServer extends StartServer {
                 NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName));
 
         String uri = dm.getUri();
-        service.submit(new WLStartTask(uri, serverProgress, dm, true));
+        service.submit(new WLDebugStartTask(uri, serverProgress, dm));
 
         addServerInDebug(uri);
         return serverProgress;
@@ -190,7 +197,30 @@ public final class WLStartServer extends StartServer {
                 NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName));
 
         String uri = dm.getUri();
-        service.submit(new WLStartTask(uri, serverProgress, dm, false));
+        service.submit(new WLStartTask(uri, serverProgress, dm));
+
+        removeServerInDebug(uri);
+        return serverProgress;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer#startProfiling(javax.enterprise.deploy.spi.Target, org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings)
+     */
+    @Override
+    public ProgressObject startProfiling( Target target,
+            ProfilerServerSettings settings )
+    {
+        LOGGER.log(Level.FINER, "Starting server in profiling mode"); // NOI18N
+
+        WLServerProgress serverProgress = new WLServerProgress(this);
+
+        String serverName = dm.getInstanceProperties().getProperty(
+                InstanceProperties.DISPLAY_NAME_ATTR);
+        serverProgress.notifyStart(StateType.RUNNING,
+                NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName));
+
+        String uri = dm.getUri();
+        service.submit(new WLProfilingStartTask(uri, serverProgress, dm, settings));
 
         removeServerInDebug(uri);
         return serverProgress;
@@ -216,6 +246,11 @@ public final class WLStartServer extends StartServer {
 
     @Override
     public boolean supportsStartDeploymentManager() {
+        return true;
+    }
+    
+    @Override
+    public boolean supportsStartProfiling( Target target ) {
         return true;
     }
 
@@ -321,6 +356,108 @@ public final class WLStartServer extends StartServer {
         }
         return true;
     }
+    
+    private class WLProfilingStartTask extends WLStartTask {
+
+        WLProfilingStartTask(String uri, WLServerProgress serverProgress,
+                WLDeploymentManager dm, ProfilerServerSettings settings ) 
+        {
+            super( uri , serverProgress, dm );
+            mySettings = settings;
+        }
+        
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.j2ee.weblogic9.optional.WLStartServer.WLStartTask#run()
+         */
+        @Override
+        public void run() {
+            super.run();
+            int state = ProfilerSupport.getState();
+            if ( state == ProfilerSupport.STATE_INACTIVE){
+                getProgress().notifyStart(StateType.FAILED,
+                        NbBundle.getMessage(WLStartServer.class, 
+                                "MSG_START_PROFILED_SERVER_FAILED",
+                                dm.getInstanceProperties().getProperty(
+                                        InstanceProperties.DISPLAY_NAME_ATTR)));
+                Process process = null;
+                synchronized (WLStartServer.this) {
+                    process = serverProcess;
+                }
+                process.destroy();
+            }
+        }
+        
+        @Override
+        protected ExternalProcessBuilder initBuilder(
+                ExternalProcessBuilder builder )
+        {
+            ExternalProcessBuilder result = builder;
+            JavaPlatform javaPlatform = getSettings().getJavaPlatform();
+            String vendor = javaPlatform.getVendor();
+            
+            String javaHome = getJavaHome(javaPlatform);
+            result = result.addEnvironmentVariable("JAVA_HOME", javaHome);  // NOI18N
+            if ( SUN.equals( vendor )){
+                result = result.addEnvironmentVariable("SUN_JAVA_HOME",     // NOI18N
+                        javaHome);
+            }
+            
+            StringBuilder javaOptsBuilder = new StringBuilder();
+            String[] profJvmArgs = getSettings().getJvmArgs();
+            for (int i = 0; i < profJvmArgs.length; i++) {
+                javaOptsBuilder.append(" ").append(profJvmArgs[i]);         // NOI18N
+            }
+            result = result.addEnvironmentVariable("JAVA_OPTIONS",          // NOI18N 
+                    javaOptsBuilder.toString());                        
+            return result;
+        }
+        
+        protected boolean isRunning(){
+            int state = ProfilerSupport.getState();
+            if (state == ProfilerSupport.STATE_BLOCKING || 
+                    state == ProfilerSupport.STATE_RUNNING  ||
+                    state == ProfilerSupport.STATE_PROFILING )
+            {
+                return true;
+            }
+            return super.isRunning();
+        }
+        
+        private String getJavaHome(JavaPlatform platform) {
+            FileObject fo = (FileObject)platform.getInstallFolders().iterator().next();
+            return FileUtil.toFile(fo).getAbsolutePath();
+        }
+        
+        private ProfilerServerSettings getSettings(){
+            return mySettings; 
+        }
+        
+        private ProfilerServerSettings mySettings;
+    }
+    
+    private class WLDebugStartTask extends WLStartTask {
+        WLDebugStartTask(String uri, WLServerProgress serverProgress,
+                WLDeploymentManager dm ) 
+        {
+            super( uri , serverProgress, dm  );
+        }
+        
+        
+        @Override
+        protected ExternalProcessBuilder initBuilder(
+                ExternalProcessBuilder builder )
+        {
+            int debugPort = 4000;
+            debugPort = Integer.parseInt(dm.getInstanceProperties().getProperty(
+                    WLPluginProperties.DEBUGGER_PORT_ATTR));
+            
+            ExternalProcessBuilder result = builder.addEnvironmentVariable("JAVA_OPTIONS",
+                    "-Xdebug -Xnoagent -Djava.compiler=none " +
+                    "-Xrunjdwp:server=y,suspend=n,transport=dt_socket,address="
+                    + debugPort);   //NOI18N
+            return result;
+        }
+    }
 
     private class WLStartTask implements Runnable {
 
@@ -351,14 +488,12 @@ public final class WLStartServer extends StartServer {
 
         private final WLDeploymentManager dm;
 
-        private final boolean debug;
-
         public WLStartTask(String uri, WLServerProgress serverProgress,
-                WLDeploymentManager dm, boolean debug) {
+                WLDeploymentManager dm) 
+        {
             this.uri = uri;
             this.serverProgress = serverProgress;
             this.dm = dm;
-            this.debug = debug;
         }
 
         public void run() {
@@ -372,12 +507,6 @@ public final class WLStartServer extends StartServer {
                 return;
             }
 
-            int debugPort = 4000;
-            if (debug) {
-                debugPort = Integer.parseInt(dm.getInstanceProperties().getProperty(
-                    WLPluginProperties.DEBUGGER_PORT_ATTR));
-            }
-
             try {
                 long start = System.currentTimeMillis();
 
@@ -386,11 +515,7 @@ public final class WLStartServer extends StartServer {
                             : new File(domainHome, STARTUP_SH).getAbsolutePath()); // NOI18N
                 builder = builder.workingDirectory(domainHome);
 
-                if (debug) {
-                    builder = builder.addEnvironmentVariable("JAVA_OPTIONS",
-                            "-Xdebug -Xnoagent -Djava.compiler=none -Xrunjdwp:server=y,suspend=n,transport=dt_socket,address="
-                            + debugPort);
-                }
+                builder = initBuilder(builder);
 
                 Process process = null;
                 synchronized (WLStartServer.this) {
@@ -425,7 +550,6 @@ public final class WLStartServer extends StartServer {
                         }
                         return;
                     }
-
                     try {
                         Thread.sleep(DELAY);
                     } catch (InterruptedException e) {
@@ -441,6 +565,18 @@ public final class WLStartServer extends StartServer {
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, null, e);
             }
+        }
+        
+        protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder){
+            return builder;
+        }
+        
+        protected boolean isRunning(){
+            return WLStartServer.this.isRunning();
+        }
+        
+        protected WLServerProgress getProgress(){
+            return serverProgress;
         }
     }
 

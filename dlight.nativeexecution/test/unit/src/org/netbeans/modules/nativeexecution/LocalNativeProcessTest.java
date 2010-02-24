@@ -69,7 +69,7 @@ import static org.junit.Assert.*;
  */
 public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
 
-    ExecutionEnvironment execEnv;
+    private ExecutionEnvironment execEnv;
 
     public LocalNativeProcessTest(String name) {
         super(name);
@@ -116,6 +116,7 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
 
         final TaskFactory infiniteTaskFactory = new TaskFactory() {
 
+            @Override
             public Runnable newTask() {
                 return new InfiniteTask(execEnv, counters, processQueue);
             }
@@ -127,7 +128,7 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
 
         assertEquals(count, counters.getCounter("Started").get()); // NOI18N
         assertEquals(count, counters.getCounter("Killed").get()); // NOI18N
-        assertEquals(count, counters.getCounter("InterruptedException").get()); // NOI18N
+        assertEquals(count, counters.getCounter("InterruptedException").get() + counters.getCounter("Finished").get()); // NOI18N
     }
 
     @Test
@@ -138,12 +139,14 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
 
         final TaskFactory shortTasksFactory = new TaskFactory() {
 
+            @Override
             public Runnable newTask() {
                 return new ShortTask(execEnv, counters, processQueue);
             }
         };
         final TaskFactory longTasksFactory = new TaskFactory() {
 
+            @Override
             public Runnable newTask() {
                 return new LongTask(execEnv, counters, processQueue);
             }
@@ -172,11 +175,13 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
 
         final TaskFactory killTaskFactory = new TaskFactory() {
 
+            @Override
             public Runnable newTask() {
                 return new Runnable() {
 
                     final Random r = new Random();
 
+                    @Override
                     public void run() {
                         try {
                             Thread.sleep(r.nextInt(5000));
@@ -273,6 +278,7 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
             npb.setExecutable("echo").setArguments(expectedOutput); // NOI18N
         }
 
+        @Override
         public void run() {
             try {
                 NativeProcess p = npb.call();
@@ -310,6 +316,7 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
             npb.setExecutable("sleep").setArguments("3"); // NOI18N
         }
 
+        @Override
         public void run() {
             try {
                 NativeProcess p = npb.call();
@@ -361,6 +368,7 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
             }
         }
 
+        @Override
         public void run() {
             try {
                 NativeProcess p = npb.call();
@@ -368,6 +376,7 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
                 System.out.println("Process started: " + p.getPID()); // NOI18N
                 counters.getCounter("Started").incrementAndGet(); // NOI18N
                 System.out.println("Process done. Result is: " + p.waitFor()); // NOI18N
+                counters.getCounter("Finished").incrementAndGet(); // NOI18N
             } catch (InterruptedException ex) {
                 counters.getCounter("InterruptedException").incrementAndGet(); // NOI18N
             } catch (InterruptedIOException ex) {

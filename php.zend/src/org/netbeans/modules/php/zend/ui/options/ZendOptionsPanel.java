@@ -70,6 +70,8 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.zend.ZendScript;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
@@ -81,7 +83,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class ZendOptionsPanel extends JPanel {
+public final class ZendOptionsPanel extends JPanel {
     private static final long serialVersionUID = -13564875423210L;
     private static final String ZEND_LAST_FOLDER_SUFFIX = ".zend";
 
@@ -112,6 +114,8 @@ public class ZendOptionsPanel extends JPanel {
                 fireChange();
             }
         });
+
+        providerRegistrationButton.setEnabled(ZendScript.validate(getZend()) == null);
     }
 
     public String getZend() {
@@ -131,15 +135,22 @@ public class ZendOptionsPanel extends JPanel {
     }
 
     public void setError(String message) {
+        providerRegistrationButton.setEnabled(false);
         errorLabel.setText(" "); // NOI18N
         errorLabel.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
         errorLabel.setText(message);
     }
 
     public void setWarning(String message) {
+        providerRegistrationButton.setEnabled(false);
         errorLabel.setText(" "); // NOI18N
         errorLabel.setForeground(UIManager.getColor("nb.warningForeground")); // NOI18N
         errorLabel.setText(message);
+    }
+
+    public void clearError() {
+        setError(" "); // NOI18N
+        providerRegistrationButton.setEnabled(true);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -168,6 +179,8 @@ public class ZendOptionsPanel extends JPanel {
         browseButton = new JButton();
         searchButton = new JButton();
         zendScriptUsageLabel = new JLabel();
+        providerRegistrationInfoLabel = new JLabel();
+        providerRegistrationButton = new JButton();
         defaultParametersLabel = new JLabel();
         defaultParametersForProjectTextField = new JTextField();
         noteLabel = new JLabel();
@@ -195,7 +208,16 @@ public class ZendOptionsPanel extends JPanel {
         });
 
         zendScriptUsageLabel.setLabelFor(this);
-        Mnemonics.setLocalizedText(zendScriptUsageLabel, "HINT"); // NOI18N
+
+
+        Mnemonics.setLocalizedText(zendScriptUsageLabel, "HINT");
+        Mnemonics.setLocalizedText(providerRegistrationInfoLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.providerRegistrationInfoLabel.text"));
+        Mnemonics.setLocalizedText(providerRegistrationButton, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.providerRegistrationButton.text"));
+        providerRegistrationButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                providerRegistrationButtonActionPerformed(evt);
+            }
+        });
 
         defaultParametersLabel.setLabelFor(defaultParametersForProjectTextField);
         Mnemonics.setLocalizedText(defaultParametersLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.defaultParametersLabel.text")); // NOI18N
@@ -231,41 +253,48 @@ public class ZendOptionsPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(includePathInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(138, Short.MAX_VALUE))
+                .addContainerGap(95, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(installationInfoLabel)
-                .addContainerGap(229, Short.MAX_VALUE))
+                .addContainerGap(186, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(509, Short.MAX_VALUE))
+                .addContainerGap(466, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(defaultParametersLabel)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(defaultParametersForProjectTextField, GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
+                        .addComponent(providerRegistrationInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(errorLabel)
-                        .addGap(447, 447, 447))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(zendLabel)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(zendScriptUsageLabel)
-                                .addContainerGap())
-                            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(zendTextField, GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                                .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(browseButton)
-                                .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(searchButton)
-                                .addGap(0, 0, 0))))
-                    .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(defaultParametersLabel)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(defaultParametersForProjectTextField, GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
+                            .addContainerGap())
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(errorLabel)
+                            .addGap(447, 447, 447))
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(zendLabel)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(zendScriptUsageLabel)
+                                    .addContainerGap())
+                                .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                                    .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                                        .addComponent(providerRegistrationButton)
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addComponent(zendTextField, GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
+                                            .addPreferredGap(ComponentPlacement.RELATED)
+                                            .addComponent(browseButton)
+                                            .addPreferredGap(ComponentPlacement.RELATED)
+                                            .addComponent(searchButton)))
+                                    .addGap(0, 0, 0))))
+                        .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {browseButton, searchButton});
@@ -279,7 +308,12 @@ public class ZendOptionsPanel extends JPanel {
                     .addComponent(searchButton)
                     .addComponent(browseButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(zendScriptUsageLabel)
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(zendScriptUsageLabel)
+                        .addGap(18, 18, 18)
+                        .addComponent(providerRegistrationInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addComponent(providerRegistrationButton))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(defaultParametersLabel)
@@ -292,7 +326,7 @@ public class ZendOptionsPanel extends JPanel {
                 .addComponent(installationInfoLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
+                .addPreferredGap(ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
                 .addComponent(errorLabel)
                 .addGap(0, 0, 0))
         );
@@ -375,6 +409,21 @@ public class ZendOptionsPanel extends JPanel {
         }
     }//GEN-LAST:event_learnMoreLabelMousePressed
 
+    private void providerRegistrationButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_providerRegistrationButtonActionPerformed
+        // #180347
+        boolean register = true;
+        final String zendScript = getZend();
+        if (!zendScript.equals(ZendOptions.getInstance().getZend())) {
+            NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(ZendOptionsPanel.class, "MSG_RegisterUsingUnsavedZendScript", zendScript),
+                    NotifyDescriptor.YES_NO_OPTION);
+            register = DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION;
+        }
+        if (register) {
+            ZendScript.registerNetBeansProvider(zendScript);
+        }
+    }//GEN-LAST:event_providerRegistrationButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton browseButton;
@@ -385,6 +434,8 @@ public class ZendOptionsPanel extends JPanel {
     private JLabel installationInfoLabel;
     private JLabel learnMoreLabel;
     private JLabel noteLabel;
+    private JButton providerRegistrationButton;
+    private JLabel providerRegistrationInfoLabel;
     private JButton searchButton;
     private JLabel zendLabel;
     private JLabel zendScriptUsageLabel;

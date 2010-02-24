@@ -124,7 +124,7 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         return handles;
     }
 
-    public void setRootElement(ElementNode.Description elementDescription, boolean singleSelection) {
+    public final void setRootElement(ElementNode.Description elementDescription, boolean singleSelection) {
 
         Node n;
         if (elementDescription != null) {
@@ -178,6 +178,7 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
     }
 
     // ExplorerManager.Provider imlementation ----------------------------------
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }

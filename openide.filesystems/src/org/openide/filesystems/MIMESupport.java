@@ -44,6 +44,7 @@ package org.openide.filesystems;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -677,17 +678,27 @@ final class MIMESupport extends Object {
         }
 
        private boolean ensureBufferLength(int newLen) throws IOException {
+           int retries = 0;
            if (!eof && newLen > len) {
                 byte[] tmpBuffer = new byte[newLen];
                 if (len > 0) {
                     System.arraycopy(buffer, 0, tmpBuffer, 0, len);
                 }
-                int readLen = inputStream.read(tmpBuffer, len, newLen - len);
-                if ((readLen > 0)) {
-                    buffer = tmpBuffer;
-                    len += readLen;
-                } else {
-                    eof = true;
+                for (;;) try {
+                    int readLen = inputStream.read(tmpBuffer, len, newLen - len);
+                    if ((readLen > 0)) {
+                        buffer = tmpBuffer;
+                        len += readLen;
+                    } else {
+                        eof = true;
+                    }
+                    break;
+                } catch (InterruptedIOException ex) {
+                    ERR.log(Level.INFO, "Ignoring Interrupted I/O exception #{0}", ++retries); // NOI18N
+                    if (retries > 3) {
+                        throw ex;
+                    }
+                    continue;
                 }
            }
            return len >= newLen;

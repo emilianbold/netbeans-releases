@@ -106,6 +106,36 @@ public enum HTMLTokenId implements TokenId {
     private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
     private static final String STYLE_MIMETYPE = "text/x-css";//NOI18N
 
+    /**
+     * Property key of css value tokens determining the token type in more detail.
+     * The value may either be null for common embedded
+     * css code (<style>...</style> or <div style="..."/>) or "id" or "class" for
+     * css id selectors (<div id="..."/> resp. class selectors (<div class="..."/>).
+     * The values are defined in VALUE_CSS_TOKEN_TYPE_ID and VALUE_CSS_TOKEN_TYPE_CLASS
+     * constants of this class.
+     *
+     * Typical usage is:
+     * <code>
+     *      Token<HTMLTokenId> token = ...;
+     *      String val = token.getProperty(VALUE_CSS_TOKEN_TYPE_PROPERTY);
+     *      if(VALUE_CSS_TOKEN_TYPE_CLASS.equals(val) {
+     *          //the token represents a class selector embedded in html
+     *          //class attribute of an html tag token
+     *      }
+     * </code>
+     */
+    public static final String VALUE_CSS_TOKEN_TYPE_PROPERTY = "valueCssType"; //NOI18N
+    /**
+     * Token's property value of VALUE_CSS_TOKEN_TYPE_PROPERTY property key marking
+     * this token as an id selector.
+     */
+    public static final String VALUE_CSS_TOKEN_TYPE_ID = "id"; //NOI18N
+    /**
+     * Token's property value of VALUE_CSS_TOKEN_TYPE_PROPERTY property key marking
+     * this token as a class selector.
+     */
+    public static final String VALUE_CSS_TOKEN_TYPE_CLASS = "class"; //NOI18N
+
     HTMLTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
     }

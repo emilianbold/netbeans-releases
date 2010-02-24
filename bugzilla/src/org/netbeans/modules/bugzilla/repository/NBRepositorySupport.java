@@ -39,13 +39,10 @@
 
 package org.netbeans.modules.bugzilla.repository;
 
-import java.net.URL;
-import java.util.Collection;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -55,9 +52,11 @@ import org.openide.util.NbBundle;
 public class NBRepositorySupport extends BugzillaRepository {    
 
     private static final String NB_BUGZILLA_HOST = "netbeans.org";           // NOI18N
-    private static final String NB_BUGZILLA_URL = "https://" + NB_BUGZILLA_HOST + "/bugzilla";           // NOI18N
+    public static final String NB_BUGZILLA_URL = "https://" + NB_BUGZILLA_HOST + "/bugzilla";           // NOI18N
+    public static final String URL_NB_ORG_SIGNUP = "https://netbeans.org/people/signup";
 
     private static BugzillaRepository nbRepository;
+    private static boolean isKenai;
 
     /**
      * Goes through all known bugzilla repositories and returns either the first 
@@ -71,31 +70,46 @@ public class NBRepositorySupport extends BugzillaRepository {
      * @return a BugzillaRepository
      */
     public static BugzillaRepository findNbRepository() {
-        BugzillaRepository[] repos = Bugzilla.getInstance().getRepositories();
+        BugzillaRepository[] repos;
+        if(nbRepository != null) {
+            // check if repository wasn't removed since the last time it was used
+            if(!isKenai) {
+                repos = Bugzilla.getInstance().getRepositories();
+                boolean registered = false;
+                for (BugzillaRepository repo : repos) {
+                    if(BugtrackingUtil.isNbRepository(repo)) {
+                        registered = true;
+                        break;
+                    }
+                }
+                if(!registered) {
+                    Bugzilla.getInstance().addRepository(nbRepository);
+                }
+            }
+            return nbRepository;
+        }
+        repos = Bugzilla.getInstance().getRepositories();
         for (BugzillaRepository repo : repos) {
             if(BugtrackingUtil.isNbRepository(repo)) {
                 return repo;
             }
         }
 
-        Collection<Kenai> kenais = KenaiManager.getDefault().getKenais();
-        for (Kenai kenai : kenais) {
-            URL url = kenai.getUrl();
-            if(BugtrackingUtil.isNbRepository(url.toString())) { 
-                // there is a nb kenai registered in the ide
-                // create a new repo but _do not register_ in services
-                nbRepository = createRepositoryIntern(); // XXX for now we keep a repository for each
-                                                         //     nb kenai project. there will be no need
-                                                         //     to create a new instance as soon as we will
-                                                         //     have only one repository instance for all
-                                                         //     kenai projects. see also issue #177578
-            }
+        if(KenaiUtil.isNetbeansKenaiRegistered()) {
+                isKenai = true;
+            // there is a nb kenai registered in the ide
+            // create a new repo but _do not register_ in services
+            nbRepository = createRepositoryIntern(); // XXX for now we keep a repository for each
+                                                     //     nb kenai project. there will be no need
+                                                     //     to create a new instance as soon as we will
+                                                     //     have only one repository instance for all
+                                                     //     kenai projects. see also issue #177578
         }
 
         if(nbRepository == null) {                              // no nb repo yet ...
             nbRepository = createRepositoryIntern();            // ... create ...
             Bugzilla.getInstance().addRepository(nbRepository); // ... and register in services/issue tracking
-        }
+        } 
 
         return nbRepository;
     }

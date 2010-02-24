@@ -19,8 +19,8 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.19</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>2.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -256,6 +256,10 @@
                         <recursive/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.csl.api</code-name-base>
                         <recursive/>
                         <compile-dependency/>
@@ -314,6 +318,11 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                         <recursive/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.progress.ui</code-name-base>

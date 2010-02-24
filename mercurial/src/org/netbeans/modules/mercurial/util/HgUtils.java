@@ -490,7 +490,7 @@ public class HgUtils {
 
         if (FILENAME_HGIGNORE.equals(file.getName())) return false;
         if (checkSharability) {
-            int sharability = SharabilityQuery.getSharability(file);
+            int sharability = SharabilityQuery.getSharability(FileUtil.normalizeFile(file));
             if (sharability == SharabilityQuery.NOT_SHARABLE) {
                 addNotSharable(topFile, path);
                 return true;
@@ -1106,14 +1106,20 @@ itor tabs #66700).
 
     /**
      * Forces refresh of Status for the given directory 
-     *
+     * If a repository root is passed as the parameter, the cache will be refreshed only for already seen or open folders.
      * @param start file or dir to begin refresh from
      * @return void
      */
     public static void forceStatusRefresh(File file) {
         if (isAdministrative(file)) return;
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-        cache.refresh(file);
+        File repositoryRoot = Mercurial.getInstance().getRepositoryRoot(file);
+        if (file.equals(repositoryRoot)) {
+            // do not scan the whole repository, only open folders, projects etc. should be enough
+            cache.refreshAllRoots(Collections.singletonMap(repositoryRoot, Mercurial.getInstance().getSeenRoots(repositoryRoot)));
+        } else {
+            cache.refresh(file);
+        }
     }
 
     /**
@@ -1653,5 +1659,29 @@ itor tabs #66700).
             filesUnderRoot.add(file);
         }
         return alreadyAdded;
+    }
+
+    /**
+     * Fires events for updated files. Thus diff sidebars are refreshed.
+     * @param repo
+     * @param list
+     * @return true if any file triggered the notification
+     */
+    public static boolean notifyUpdatedFiles(File repo, List<String> list){
+        boolean anyFileNotified = false;
+        // When hg -v output, or hg -v unbundle or hg -v pull is called
+        // the output contains line
+        // getting <file>
+        // for each file updated.
+        //
+        for (String line : list) {
+            if (line.startsWith("getting ") || line.startsWith("merging ")) { //NOI18N
+                String name = line.substring(8);
+                File file = new File (repo, name);
+                anyFileNotified = true;
+                Mercurial.getInstance().notifyFileChanged(file);
+            }
+        }
+        return anyFileNotified;
     }
 }

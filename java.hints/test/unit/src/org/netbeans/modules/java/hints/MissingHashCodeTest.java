@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -65,31 +65,24 @@ public class MissingHashCodeTest extends TreeRuleTestBase {
     }
 
     public void testMissingHashCode() throws Exception {
-        String before = "package test; public class Test extends Object {" + " public boolean ";
+        String before = "package test; public class Test ex|tends Object {" + " public boolean ";
         String after = " equals(Object snd) {" + "  return snd != null && getClass().equals(snd.getClass());" + " }" + "}";
 
-        performAnalysisTest("test/Test.java", before + after, before.length(), "0:65-0:71:verifier:Generate missing hashCode()");
+        performAnalysisTest("test/Test.java", before + after, "0:65-0:71:verifier:Generate missing hashCode()");
     }
 
     public void testMissingEquals() throws Exception {
-        String before = "package test; public class Test extends Object {" + " public int ";
+        String before = "package test; public class Test ext|ends Object {" + " public int ";
         String after = " hashCode() {" + "  return 1;" + " }" + "}";
 
-        performAnalysisTest("test/Test.java", before + after, before.length(), "0:61-0:69:verifier:Generate missing equals(Object)");
-    }
-
-    public void testNoHintOnOtherMethods() throws Exception {
-        String before = "package test; public class Test extends Object {" + " public boolean equals(Object snd) {" + "  return snd != null && getClass().equals(snd.getClass());" + " }\n" + " public static void main(String[] ";
-        String after = "   args) {" + " }" + "}";
-
-        performAnalysisTest("test/Test.java", before + after, before.length());
+        performAnalysisTest("test/Test.java", before + after, "0:61-0:69:verifier:Generate missing equals(Object)");
     }
 
     public void testWhenNoFieldsGenerateHashCode() throws Exception {
-        String before = "package test; public class Test extends Object {" + " public boolean equa";
+        String before = "package test; public class Test ext|ends Object {" + " public boolean equa";
         String after = "ls(Object snd) { return snd == this; } }";
 
-        String res = performFixTest("test/Test.java", before + after, before.length(), "0:64-0:70:verifier:Generate missing hashCode()", "Fix", null);
+        String res = performFixTest("test/Test.java", before + after, "0:64-0:70:verifier:Generate missing hashCode()", "Fix", null);
 
         if (!res.matches(".*equals.*hashCode.*")) {
             fail("We want equals and hashCode:\n" + res);
@@ -97,10 +90,10 @@ public class MissingHashCodeTest extends TreeRuleTestBase {
     }
 
     public void testWhenNoFieldsGenerateEquals() throws Exception {
-        String before = "package test; public class Test extends Object {" + " public int hash";
+        String before = "package test; public class Test exten|ds Object {" + " public int hash";
         String after = "Code() { return 1; } }";
 
-        String res = performFixTest("test/Test.java", before + after, before.length(), "0:60-0:68:verifier:Generate missing equals(Object)", "Fix", null);
+        String res = performFixTest("test/Test.java", before + after, "0:60-0:68:verifier:Generate missing equals(Object)", "Fix", null);
 
         if (!res.matches(".*hashCode.*equals.*")) {
             fail("We want equals and hashCode:\n" + res);

@@ -369,67 +369,67 @@ No.
         </question>
 -->
 <answer id="exec-property">
-<api type="import" group="property" name="netbeans.home" category="private">
+<api type="import" group="systemproperty" name="netbeans.home" category="private">
 NetBeans installation directory.
 </api>
-<api type="import" group="property" name="netbeans.user" category="private">
+<api type="import" group="systemproperty" name="netbeans.user" category="private">
 User directory.
 </api>
-<api type="import" group="property" name="netbeans.dirs" category="private">
+<api type="import" group="systemproperty" name="netbeans.dirs" category="private">
 Additional installation component directories.
 </api>
-<api type="export" group="property" name="netbeans.systemclassloader.patches" category="friend">
+<api type="export" group="systemproperty" name="netbeans.systemclassloader.patches" category="friend">
 Classpath appended to the system class loader.
 Used for automated testing infrastructure.
 </api>
-<api type="import" group="property" name="netbeans.classpath" category="friend">
+<api type="import" group="systemproperty" name="netbeans.classpath" category="friend">
 May be used to prepend items to the same class loader as is used
 for <samp>openide.jar</samp> and <samp>core.jar</samp>, similarly
 to JARs found in <samp>lib/patches/</samp>.
 </api>
-<api type="export" group="property" name="netbeans.cache.manifests" category="private">
+<api type="export" group="systemproperty" name="netbeans.cache.manifests" category="private">
 By default true, may be turned off to disable manifest caching.
 </api>
-<api type="export" group="property" name="netbeans.patches.MODULE.CODE.NAME.BASE" category="friend">
+<api type="export" group="systemproperty" name="netbeans.patches.MODULE.CODE.NAME.BASE" category="friend">
 Patch directories or JARs to add to the class loader for a module,
 besides <samp>patches/MODULE-CODE-NAME-BASE/*.jar</samp>.
 </api>
-<api type="export" group="property" name="netbeans.preresolve.classes" category="private">
+<api type="export" group="systemproperty" name="netbeans.preresolve.classes" category="private">
 If true, all module classes are forcibly loaded at startup, to help
 detect possible linkage errors.
 </api>
-<api type="export" group="property" name="org.netbeans.core.modules.NbInstaller.noAutoDeps" category="private">
+<api type="export" group="systemproperty" name="org.netbeans.core.modules.NbInstaller.noAutoDeps" category="private">
 Disables automatic module dependency upgrades.
 </api>
-<api type="export" group="property" name="org.netbeans.core.modules" category="private">
+<api type="export" group="systemproperty" name="org.netbeans.core.modules" category="private">
 If set to <samp>0</samp>, enables logging for the module system.
 </api>
-<api type="export" group="property" name="org.netbeans.core.modules.NbInstaller.NO_COMPAT_AUTO_TRANSITIVE_DEPS" category="private">
+<api type="export" group="systemproperty" name="org.netbeans.core.modules.NbInstaller.NO_COMPAT_AUTO_TRANSITIVE_DEPS" category="private">
 Disabled automatic transitive class loader dependencies for old modules.
 </api>
-<api type="export" group="property" name="netbeans.modules.quiet" category="private">
+<api type="export" group="systemproperty" name="netbeans.modules.quiet" category="private">
 Avoids text messaging (other than <code>ErrorManager</code> logging) to the console
 from the module system.
 </api>
-<api type="export" group="property" name="netbeans.moduleitem.dontverifyclassloader" category="private">
+<api type="export" group="systemproperty" name="netbeans.moduleitem.dontverifyclassloader" category="private">
 Suppresses checks to ensure that module section classes are actually loaded
 from the module itself.
 </api>
-<api type="import" group="property" name="netbeans.full.hack" category="friend" url="http://wiki.netbeans.org/DevFaqNetBeansFullHack">
+<api type="import" group="systemproperty" name="netbeans.full.hack" category="friend" url="http://wiki.netbeans.org/DevFaqNetBeansFullHack">
 Avoids using GUI when user-visible error conditions occur.
 </api>
-<api type="import" group="property" name="netbeans.mainclass" category="friend">
+<api type="import" group="systemproperty" name="netbeans.mainclass" category="friend">
 Name of class from <samp>core.jar</samp> which will handle most of the
 startup sequence; by default, <samp>org.netbeans.core.Main</samp>.
 </api>
 <!-- XXX this is really in "launcher", not module system -->
-<api type="export" group="property" name="netbeans.security.nocheck" category="friend">
+<api type="export" group="systemproperty" name="netbeans.security.nocheck" category="friend">
 Suppress security checks in the VM, even from "untrusted" code.
 </api>
-<api type="export" group="property" name="netbeans.classloader.verbose" category="private">
+<api type="export" group="systemproperty" name="netbeans.classloader.verbose" category="private">
 Prints messages when resources or classes are loaded from JARs.
 </api>
-        <api group="property" name="netbeans.cache.layers" type="export" category="private">
+        <api group="systemproperty" name="netbeans.cache.layers" type="export" category="private">
             <p>
                 Used to control the XML layer cache mechanism. Value may be a
                 fully-qualified class name to load as a manager (implement

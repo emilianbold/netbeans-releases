@@ -45,7 +45,7 @@ import javax.swing.Icon;
 
 public abstract class ConfigurationDescriptor {
     private Configurations confs = new Configurations();
-    int version = -1;
+    private int version = -1;
     private State state = State.READING;
 
     public ConfigurationDescriptor() {
@@ -71,7 +71,7 @@ public abstract class ConfigurationDescriptor {
             this.confs = confs;
         } else {
             //jlahoda:added in order to support listeners on Configurations:
-            this.confs.init(confs.getConfs(), confs.getActiveAsIndex());
+            this.confs.init(confs.toArray(), confs.getActiveAsIndex());
         }
     }
     

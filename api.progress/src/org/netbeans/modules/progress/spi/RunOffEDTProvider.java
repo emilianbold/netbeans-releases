@@ -36,10 +36,12 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.progress.spi;
 
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressRunnable;
 
 /**
  * Interface for ProgressUtils.runOffEventDispatchThread() methods
@@ -47,5 +49,68 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since org.netbeans.api.progress/1 1.18
  */
 public interface RunOffEDTProvider {
+
     void runOffEventDispatchThread(Runnable operation, String operationDescr, AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorAfter, int dialogAfter);
+    /**
+     * Interface all RunOffEDTProviders should implement, which allows for
+     * blocking the main window and showing a progress bar in a dialog while
+     * executing a runnable.  If not present, ProjectUtils will delegate to
+     * runOffEventDispatchThread(), but this provides an inferior user experience
+     * and sometimes useless cancel button.
+     *
+     * @since 1.19
+     */
+    public interface Progress extends RunOffEDTProvider {
+
+        /**
+         * Show a modal progress dialog that blocks the main window while running
+         * a background process.  This call should block until the work is
+         * completed.
+         * <p/>
+         * The resulting progress UI should show a cancel button if the passed
+         * runnable implements org.openide.util.Cancellable.
+         *
+         * @param operation A runnable that needs to be run with the UI blocked
+         * @param handle A progress handle that will be updated to reflect
+         * the progress of the operation
+         * @param showDetails If true, a label should be provided in the progress
+         * dialog to show detailed progress messages
+         */
+        public void showProgressDialogAndRun(Runnable operation, ProgressHandle handle, boolean includeDetailLabel);
+
+        /**
+         * Show a modal progress dialog that blocks the main window while running
+         * a background process.  This call should block until the work is
+         * completed.
+         * <p/>
+         * The resulting progress UI should show a cancel button if the passed
+         * runnable implements org.openide.util.Cancellable.
+         *
+         * @param <T> The type of the return value
+         * @param toRun A ProgressCallable which will be passed a progress handle
+         * on a background thread, can do its work and (optionally) return a value
+         * @param displayName The display name of the work being done
+         * @param includeDetailLabel Show the detail levels.  Set to true if the
+         * caller will use ProgressHandle.progress (String, int) to provide
+         * detailed progress messages
+         * @return The result of the call to ProgressRunnable.call()
+         */
+        public <T> T showProgressDialogAndRun(ProgressRunnable<T> toRun, String displayName, boolean includeDetailLabel);
+
+        /**
+         * Show a modal progress dialog that blocks the main window while running
+         * a background process.  This call should block until the work is
+         * started, and then return a Future which can be monitored for completion
+         * or cancelled.
+         * <p/>
+         * The resulting progress UI should show a cancel button if the passed
+         * runnable implements org.openide.util.Cancellable.
+         *
+         * @param toRun The operation to run
+         * @param handle A progress handle
+         * @param includeDetailLabel Whether or not to include a detail label
+         * @return A future which can be cancelled
+         */
+        public <T> Future<T> showProgressDialogAndRunLater (ProgressRunnable<T> toRun, ProgressHandle handle, boolean includeDetailLabel);
+    }
 }

@@ -46,18 +46,17 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
-import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
+import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
 import org.openide.DialogDisplayer;
@@ -125,7 +124,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
         StringBuilder buf = new StringBuilder();
         for (File item : fileChooser.getSelectedFiles()){
             String itemPath = item.getPath();
-            itemPath = FilePathAdaptor.normalize(itemPath);
+            itemPath = IpeUtils.normalize(itemPath);
             if (buf.length() > 0) {
                 buf.append(';');
             }
@@ -193,8 +192,8 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
             return;
         }
         String newS = notifyDescriptor.getInputText();
-        Vector<String> vector = getListData();
-        Object[] arr = getListData().toArray();
+        List<String> vector = getListData();
+        Object[] arr = vector.toArray();
         for (int i = 0; i < arr.length; i++) {
             if (arr[i] == o) {
                 vector.remove(i);

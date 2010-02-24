@@ -73,13 +73,13 @@ import javax.net.ssl.X509TrustManager;
 import javax.swing.JButton;
 import org.netbeans.modules.proxy.Base64Encoder;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
+import org.netbeans.modules.subversion.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.cli.CommandlineClient;
 import org.netbeans.modules.subversion.config.CertificateFile;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
-import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.ProxySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;
@@ -178,7 +178,7 @@ public class SvnClientExceptionHandler {
         throw getException();
     }
        
-    public boolean handleKenaiAuthorisation(SvnKenaiSupport support, String url) {
+    public boolean handleKenaiAuthorisation(SvnKenaiAccessor support, String url) {
         PasswordAuthentication pa = support.getPasswordAuthentication(url, true);
         if(pa == null) {
             return false;
@@ -199,7 +199,7 @@ public class SvnClientExceptionHandler {
         SVNUrl url = getRemoteHostUrl(); // try to get the repository url from the svnclientdescriptor
 
 
-        SvnKenaiSupport support = SvnKenaiSupport.getInstance();
+        SvnKenaiAccessor support = SvnKenaiAccessor.getInstance();
         if(support.isKenai(url.toString())) {
             return support.showLogin() && handleKenaiAuthorisation(support, url.toString());
         } else {

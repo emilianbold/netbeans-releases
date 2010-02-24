@@ -45,6 +45,8 @@ package  org.netbeans.modules.cnd.editor.parser.ctags;
 import java.awt.BorderLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 
 import org.openide.nodes.Node;
 
@@ -58,6 +60,8 @@ import org.openide.util.actions.CookieAction;
  * loosly based on java/src/org/netbeans/modules/java/ui/NavigationAction.java
  */
 public class NavigateAction extends CookieAction {
+
+    public static final boolean ENABLE_FORTRAN_CTAGS = DebugUtils.getBoolean("cnd.fortran.ctags", false); // NOI18N
 
     /**
      * Cookies required for this action to be activated.
@@ -106,8 +110,14 @@ public class NavigateAction extends CookieAction {
     
     @Override
     public java.awt.Component getToolbarPresenter() {
-        java.awt.Component c = new ToolbarPresenter();
-        return c;
+        if (ENABLE_FORTRAN_CTAGS) {
+            java.awt.Component c = new ToolbarPresenter();
+            return c;
+        } else {
+            final JSeparator separator = new JSeparator(JSeparator.VERTICAL);
+            separator.setVisible(false);
+            return separator;
+        }
     }
     
     private static class ToolbarPresenter extends JPanel implements ExplorerManager.Provider {

@@ -193,6 +193,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         subversion.getStatusCache().addVersioningListener(this);
         subversion.getStatusCache().addPropertyChangeListener(this);
         explorerManager.addPropertyChangeListener(this);
+        subversion.addPropertyChangeListener(syncTable);
         reScheduleRefresh(0);   // the view does not listen for changes when it is not visible
     }
 
@@ -200,6 +201,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         subversion.getStatusCache().removeVersioningListener(this);
         subversion.getStatusCache().removePropertyChangeListener(this);
+        subversion.removePropertyChangeListener(syncTable);
         explorerManager.removePropertyChangeListener(this);
         super.removeNotify();
     }
@@ -336,7 +338,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      */ 
     private void onCommitAction() {
         LifecycleManager.getDefault().saveAll();            
-        CommitAction.commit(parentTopComponent.getContentTitle(), context);
+        CommitAction.commit(parentTopComponent.getContentTitle(), context, false);
     }
     
     /**

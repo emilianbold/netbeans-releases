@@ -41,7 +41,6 @@ package org.openide.filesystems;
 
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Lookup;
 
 /**
  *

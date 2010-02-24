@@ -1,0 +1,28 @@
+generator:
+  class: sfDoctrineGenerator
+  param:
+    model_class:           JobeetAffiliate
+    theme:                 admin
+    non_verbose_templates: true
+    with_show:             false
+    singular:              ~
+    plural:                ~
+    route_prefix:          jobeet_affiliate
+    with_doctrine_route:     1
+
+    config:
+      fields:
+        is_active: { label: Active? }
+      list:
+        title:   Affiliate Management
+        display: [is_active, url, email, token]
+        sort:    [is_active]
+        object_actions:
+          activate:   ~
+          deactivate: ~
+        batch_actions:
+          activate:   ~
+          deactivate: ~
+        actions: {}
+      filter:
+        display: [url, email, is_active]

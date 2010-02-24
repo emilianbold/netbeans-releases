@@ -43,6 +43,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
@@ -131,4 +132,27 @@ public class LexerUtils {
         return null;
 
     }
+
+    public static int findNearestMappableSourcePosition(Snapshot snapshot, int position, boolean forward, int limit) {
+        if(forward) {
+            int boundary = Math.max(snapshot.getText().length(), position + limit);
+            for (int i = position; i < boundary; i++) {
+                int original = snapshot.getOriginalOffset(i);
+                if(original != -1) {
+                    return original;
+                }
+            }
+        } else {
+            //backward
+            int boundary = Math.min(0, position - limit);
+            for (int i = position; i >= boundary; i--) {
+                int original = snapshot.getOriginalOffset(i);
+                if(original != -1) {
+                    return original;
+                }
+            }
+        }
+        return -1;
+    }
+
 }

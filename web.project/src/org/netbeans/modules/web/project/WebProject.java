@@ -70,6 +70,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
+import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
@@ -507,6 +508,7 @@ public final class WebProject implements Project, AntProjectListener {
             QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(), 
                     new String[]{"build.classes.dir", "dist.war"}, new String[]{"build.test.classes.dir"}),
             QuerySupport.createJavadocForBinaryQuery(helper, evaluator(), new String[]{"build.classes.dir", "dist.war"}),
+            QuerySupport.createAnnotationProcessingQuery(helper, eval, ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT),
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
@@ -541,6 +543,7 @@ public final class WebProject implements Project, AntProjectListener {
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
+            new ProjectWebRootProviderImpl()
         });
 
         Lookup ee6 = Lookups.fixed(new Object[]{
@@ -1973,6 +1976,7 @@ public final class WebProject implements Project, AntProjectListener {
             {
                 this.cosEnabled = cosEnabled;
                 this.delegate = delegate;
+                this.delegate.addChangeListener(this);
             }
 
             public boolean isBuilt()
@@ -2122,4 +2126,16 @@ public final class WebProject implements Project, AntProjectListener {
             });
         }
     }
+
+    private final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
+
+        @Override
+        public FileObject getWebRoot(FileObject file) {
+            WebModule webModule = WebModule.getWebModule(file);
+            return webModule != null ? webModule.getDocumentBase() : null;
+        }
+
+    }
+    
+
 }

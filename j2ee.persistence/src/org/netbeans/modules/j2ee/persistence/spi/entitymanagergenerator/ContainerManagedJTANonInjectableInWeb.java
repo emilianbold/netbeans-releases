@@ -79,7 +79,7 @@ public final class ContainerManagedJTANonInjectableInWeb extends EntityManagerGe
             FieldInfo em = getEntityManagerFieldInfo();
 
             ModifiersTree methodModifiers = getTreeMaker().Modifiers(
-                    Collections.<Modifier>singleton(Modifier.PUBLIC),
+                    getGenerationOptions().getModifiers(),
                     Collections.<AnnotationTree>emptyList()
                     );
             

@@ -666,8 +666,15 @@ public class DDDataObject extends  DDMultiViewDataObject
         }
     };
 
-    public void stateChanged (javax.swing.event.ChangeEvent e) {
-        refreshSourceFolders ((Sources)e.getSource());
+    @Override
+    public void stateChanged (final javax.swing.event.ChangeEvent e) {
+        //#179622 break the thread stack chain
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                refreshSourceFolders ((Sources)e.getSource());
+            }
+        });
     }
 
     @Override

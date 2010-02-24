@@ -48,12 +48,14 @@ import org.netbeans.modules.jira.issue.JiraIssueFinder;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
+@org.openide.util.lookup.ServiceProviders({@ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class),
+                                           @ServiceProvider(service=org.netbeans.modules.jira.JiraConnector.class)})
 public class JiraConnector extends BugtrackingConnector {
 
     private JiraIssueFinder issueFinder;

@@ -49,11 +49,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileAttributeEvent;
@@ -312,16 +311,16 @@ public class ConfigurationDescriptorProvider {
                         if (itemConfiguration != null && !itemConfiguration.getExcluded().getValue()) {
                             size++;
                             switch (itemConfiguration.getTool()) {
-                                case Tool.CCompiler:
+                                case CCompiler:
                                     cLang = true;
                                     break;
-                                case Tool.CCCompiler:
+                                case CCCompiler:
                                     ccLang = true;
                                     break;
-                                case Tool.FortranCompiler:
+                                case FortranCompiler:
                                     fLang = true;
                                     break;
-                                case Tool.Assembler:
+                                case Assembler:
                                     aLang = true;
                                     break;
                             }
@@ -389,26 +388,32 @@ public class ConfigurationDescriptorProvider {
             }
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             resetConfiguration();
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             resetConfiguration();
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             resetConfiguration();
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             resetConfiguration();
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             resetConfiguration();
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             // Don't reset configuration on file attribute change.
         }

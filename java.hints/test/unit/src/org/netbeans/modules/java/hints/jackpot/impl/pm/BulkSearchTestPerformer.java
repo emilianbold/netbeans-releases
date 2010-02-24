@@ -328,6 +328,20 @@ public abstract class BulkSearchTestPerformer extends NbTestCase {
                     Collections.<String>emptyList());
     }
 
+    public void testMemberSelectWithVariable() throws Exception {
+        String code = "package test;\n" +
+                      "import java.util.Arrays;\n" +
+                      "public class Test {" +
+                      "     {\n" +
+                      "          foo.bar(0, 3, 4);\n" +
+                      "     }\n" +
+                      "}\n";
+
+        performTest(code,
+                    Collections.singletonMap("$foo.$bar($p1, $p2$)", Arrays.asList("foo.bar(0, 3, 4)")),
+                    Collections.<String>emptyList());
+    }
+
     private long measure(String baseCode, String toInsert, int repetitions, String pattern) throws Exception {
         int pos = baseCode.indexOf('|');
 

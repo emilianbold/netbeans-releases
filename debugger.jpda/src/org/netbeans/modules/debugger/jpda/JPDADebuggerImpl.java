@@ -433,6 +433,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
             // update breakpoints
             fixBreakpoints();
 
+            firePropertyChange(JPDADebugger.PROP_CLASSES_FIXED, null, null);
+
             // 2) pop obsoleted frames
             JPDAThread t = getCurrentThread ();
             if (t != null && t.isSuspended()) {

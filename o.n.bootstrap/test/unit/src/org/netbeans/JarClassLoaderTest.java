@@ -173,6 +173,23 @@ public class JarClassLoaderTest extends NbTestCase {
         assertEquals(jar.getAbsolutePath(), jconn.getJarFile().getName());
     }
 
+    public void testAddURLMethod() throws Exception {
+        File jar = new File(getWorkDir(), "default-package-resource.jar");
+        TestFileUtils.writeZipFile(jar, "META-INF/MANIFEST.MF:Manifest-Version: 1.0\nfoo: bar\n\n", "package/re source++.txt:content");
+        JarClassLoader jcl = new JarClassLoader(Collections.<File>emptyList(), new ProxyClassLoader[0]);
+        jcl.addURL(jar.toURI().toURL());
+        URL url = jcl.getResource("package/re source++.txt");
+        assertTrue(url.toString(), url.toString().endsWith("default-package-resource.jar!/package/re%20source++.txt"));
+        URLConnection conn = url.openConnection();
+        assertEquals(7, conn.getContentLength());
+        assertTrue(conn instanceof JarURLConnection);
+        JarURLConnection jconn = (JarURLConnection) conn;
+        assertEquals("package/re source++.txt", jconn.getEntryName());
+        assertEquals(jar.toURI().toURL(), jconn.getJarFileURL());
+        assertEquals("bar", jconn.getMainAttributes().getValue("foo"));
+        assertEquals(jar.getAbsolutePath(), jconn.getJarFile().getName());
+    }
+
     private void assertURLsContent(Enumeration<URL> urls, String ... contents) throws IOException {
         for (String content : contents) {
             assertTrue("Enough entries", urls.hasMoreElements());

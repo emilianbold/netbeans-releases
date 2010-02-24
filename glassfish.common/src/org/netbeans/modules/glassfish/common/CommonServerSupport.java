@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -59,6 +59,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -71,11 +72,13 @@ import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -197,8 +200,19 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return properties.get(USERNAME_ATTR);
     }
     
+    @Override
     public String getPassword() {
-        return properties.get(PASSWORD_ATTR);
+        String retVal = properties.get(PASSWORD_ATTR);
+        String key = properties.get(URL_ATTR);
+        char[] retChars = Keyring.read(key);
+        if (null == retChars || retChars.length < 1 || !GlassfishModule.PASSWORD_CONVERTED_FLAG.equals(retVal)) {
+            retChars = retVal.toCharArray();
+            Keyring.save(key, retChars, "a Glassfish/SJSAS passord");
+            properties.put(PASSWORD_ATTR, GlassfishModule.PASSWORD_CONVERTED_FLAG) ;
+        } else {
+            retVal = String.copyValueOf(retChars);
+        }
+        return retVal;
     }
     
     public String getAdminPort() {
@@ -233,8 +247,31 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return properties.get(HOSTNAME_ATTR);
     }
     
-    public String getDomainsRoot() {
+    public synchronized String getDomainsRoot() {
         String retVal = properties.get(DOMAINS_FOLDER_ATTR);
+        File candidate = new File(retVal);
+        if (candidate.exists() && !Utils.canWrite(candidate)) {
+            // we need to do some surgury here...
+            String foldername = FileUtil.findFreeFolderName(FileUtil.getConfigRoot(), "GF3");
+            FileObject destdir = null;
+            try {
+                destdir = FileUtil.createFolder(FileUtil.getConfigRoot(),foldername);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (null != destdir) {
+                candidate = new File(candidate, properties.get(DOMAIN_NAME_ATTR));
+                FileObject source = FileUtil.toFileObject(FileUtil.normalizeFile(candidate));
+                try {
+                    Utils.doCopy(source, destdir);
+
+                    retVal = FileUtil.toFile(destdir).getAbsolutePath();
+                    properties.put(DOMAINS_FOLDER_ATTR,retVal);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
 //        if (null == retVal) {
 //            retVal = properties.get(GLASSFISH_FOLDER_ATTR) + File.separator +
 //                    GlassfishInstance.DEFAULT_DOMAINS_FOLDER; // NOI18N
@@ -276,6 +313,8 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     // GlassfishModule interface implementation
     // ------------------------------------------------------------------------
     public Map<String, String> getInstanceProperties() {
+        // force the domains conversion
+        getDomainsRoot();
         return Collections.unmodifiableMap(properties);
     }
     
@@ -624,6 +663,10 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     private final AtomicBoolean refreshRunning = new AtomicBoolean(false);
 
     public void refresh() {
+        refresh(null,null);
+    }
+
+    public void refresh(String expected, String unexpected) {
         // !PW FIXME we can do better here, but for now, make sure we only change
         // server state from stopped or running states -- leave stopping or starting
         // states alone.

@@ -275,4 +275,19 @@ public class RubyUtilsTest extends TestCase {
         assertTrue(result.isEmpty());
 
     }
+
+    public void testBaseName() {
+        assertEquals("Users", RubyUtils.baseName("UsersController"));
+        assertEquals("Users", RubyUtils.baseName("Users"));
+    }
+
+    public void testControllerName() {
+        assertEquals("UsersController", RubyUtils.controllerName("Users"));
+        assertEquals("UsersController", RubyUtils.controllerName("UsersController"));
+    }
+
+    public void testHelperName() {
+        assertEquals("UsersHelper", RubyUtils.helperName("UsersController"));
+        assertEquals("UsersHelper", RubyUtils.helperName("Users"));
+    }
 }

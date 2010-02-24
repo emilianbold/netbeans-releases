@@ -42,6 +42,7 @@ package org.netbeans.modules.kenai.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComboBox;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.openide.util.WeakListeners;
@@ -70,12 +71,16 @@ public class KenaiCombo extends JComboBox {
             listener = new PropertyChangeListener() {
 
                 public void propertyChange(PropertyChangeEvent evt) {
-                    setVisible(manager.getKenais().size()>1);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            setVisible(manager.getKenais().size()>1);
+                        }
+                    });
                 }
             };
             manager.addPropertyChangeListener(WeakListeners.propertyChange(listener, manager));
             setVisible(manager.getKenais().size()>1);
         }
     }
-
 }

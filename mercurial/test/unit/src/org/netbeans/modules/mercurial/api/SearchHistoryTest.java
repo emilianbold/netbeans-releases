@@ -41,12 +41,15 @@ package org.netbeans.modules.mercurial.api;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 import org.netbeans.modules.mercurial.AbstractHgTest;
+import org.netbeans.modules.mercurial.util.HgSearchHistorySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -81,12 +84,12 @@ public class SearchHistoryTest extends AbstractHgTest {
         f = new File("/tmp/testShowFileHistory.file");
         
         // folder
-        showing = Mercurial.showFileHistory(f.getParentFile(), 1);
+        showing = HgSearchHistorySupport.getInstance(f.getParentFile()).searchHistory(1);
         assertFalse(showing);
 
         // unversioned file
         f.createNewFile();
-        showing = Mercurial.showFileHistory(f, 1);
+        showing = HgSearchHistorySupport.getInstance(f).searchHistory(1);
         assertFalse(showing);
 
         // AWT
@@ -94,8 +97,10 @@ public class SearchHistoryTest extends AbstractHgTest {
         EventQueue.invokeAndWait(new Runnable() {
             public void run() {
                 try {
-                    Mercurial.showFileHistory(file, 1);
+                    HgSearchHistorySupport.getInstance(file).searchHistory(1);
                     fail("AWT test failed");
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 } catch (AssertionError err) {
                     
                 }
@@ -138,7 +143,7 @@ public class SearchHistoryTest extends AbstractHgTest {
         }
         write(file, content.toString());
 
-        boolean showing = Mercurial.showFileHistory(file, 100);
+        boolean showing = HgSearchHistorySupport.getInstance(file).searchHistory(100);
         assertTrue(showing);
 
         JDialog d = new JDialog((JFrame)null, "Close dialog");

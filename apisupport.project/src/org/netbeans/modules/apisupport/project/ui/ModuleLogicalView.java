@@ -43,6 +43,8 @@ package org.netbeans.modules.apisupport.project.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import javax.swing.Action;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -72,12 +74,12 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         this.project = project;
     }
     
-    public Node createLogicalView() {
+    public @Override Node createLogicalView() {
         return new RootNode(project);
     }
     
     /** cf. #45952 */
-    public Node findPath(Node root, Object target) {
+    public @Override Node findPath(Node root, Object target) {
         if (root.getLookup().lookup(NbModuleProject.class) != project) {
             // Not intended for this project. Should not normally happen anyway.
             return null;
@@ -89,7 +91,8 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             try {
                 file = DataObject.find((FileObject) target);
             } catch (DataObjectNotFoundException e) {
-                throw new AssertionError(e);
+                // #158131: might have tried unsuccessfully to delete, etc.
+                return null;
             }
         } else if (target instanceof DataObject) {
             file = (DataObject) target;
@@ -127,16 +130,27 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-apisupport-project/Nodes"), 
                   Lookups.fixed(new Object[] {project}));
             this.project = project;
-            setIconBaseWithExtension(NbModuleProject.NB_PROJECT_ICON_PATH);
+            boolean osgi = false;
+            if (project != null) {
+                Manifest man = project.getManifest();
+                if (man != null) {
+                    Attributes attrs = man.getMainAttributes();
+                    if (attrs != null) {
+                        osgi = attrs.getValue("Bundle-SymbolicName") != null; // NOI18N
+                    }
+                }
+            }
+            setIconBaseWithExtension(
+                osgi ? NbModuleProject.NB_PROJECT_OSGI_ICON_PATH :
+                NbModuleProject.NB_PROJECT_ICON_PATH
+            );
             ProjectInformation pi = ProjectUtils.getInformation(project);
             setDisplayName(pi.getDisplayName());
             setShortDescription(NbBundle.getMessage(ModuleLogicalView.class, "HINT_project_root_node", FileUtil.getFileDisplayName(project.getProjectDirectory())));
             pi.addPropertyChangeListener(new PropertyChangeListener() {
-
-                public void propertyChange(final PropertyChangeEvent evt) {
+                public @Override void propertyChange(final PropertyChangeEvent evt) {
                     ImportantFilesNodeFactory.getNodesSyncRP().post(new Runnable() {
-
-                        public void run() {
+                        public @Override void run() {
                             if (ProjectInformation.PROP_DISPLAY_NAME.equals(evt.getPropertyName())) {
                                 RootNode.this.setDisplayName((String) evt.getNewValue());
                             } else if (ProjectInformation.PROP_NAME.equals(evt.getPropertyName())) {

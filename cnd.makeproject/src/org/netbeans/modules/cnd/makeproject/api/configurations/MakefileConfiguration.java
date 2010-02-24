@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
@@ -205,7 +204,7 @@ public class MakefileConfiguration {
         @Override
         public void setValue(String v) {
             String path = IpeUtils.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
-            path = FilePathAdaptor.normalize(path);
+            path = IpeUtils.normalize(path);
             super.setValue(path);
         }
         
@@ -223,7 +222,7 @@ public class MakefileConfiguration {
         @Override
         public void setValue(String v) {
             String path = IpeUtils.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
-            path = FilePathAdaptor.normalize(path);
+            path = IpeUtils.normalize(path);
             super.setValue(path);
         }
         
@@ -305,7 +304,7 @@ public class MakefileConfiguration {
         public void propertyChange(PropertyChangeEvent evt) {
             if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
                 String path = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), getSelectedFile().getPath()); // FIXUP: not always relative path
-                path = FilePathAdaptor.normalize(path);
+                path = IpeUtils.normalize(path);
                 editor.setValue(path);
             }
         }
@@ -395,7 +394,7 @@ public class MakefileConfiguration {
         public void propertyChange(PropertyChangeEvent evt) {
             if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID && getSelectedFile() != null) {
                 String path = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), getSelectedFile().getPath()); // FIXUP: not always relative path
-                path = FilePathAdaptor.normalize(path);
+                path = IpeUtils.normalize(path);
                 editor.setValue(path);
             }
         }

@@ -84,6 +84,7 @@ import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Names;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.CharBuffer;
 import java.util.Arrays;
@@ -117,6 +118,7 @@ import javax.tools.DiagnosticCollector;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
+import javax.tools.SimpleJavaFileObject;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -142,6 +144,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbCollections;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -469,7 +472,7 @@ public class Utilities {
         if (stmt == null || (pos != null && pos.length != 1))
             throw new IllegalArgumentException();
         JavaCompiler compiler = JavaCompiler.instance(context);
-        JavaFileObject prev = compiler.log.useSource(null);
+        JavaFileObject prev = compiler.log.useSource(new DummyJFO());
         try {
             CharBuffer buf = CharBuffer.wrap((stmt+"\u0000").toCharArray(), 0, stmt.length());
             ParserFactory factory = ParserFactory.instance(context);
@@ -491,7 +494,7 @@ public class Utilities {
         if (expr == null || (pos != null && pos.length != 1))
             throw new IllegalArgumentException();
         JavaCompiler compiler = JavaCompiler.instance(context);
-        JavaFileObject prev = compiler.log.useSource(null);
+        JavaFileObject prev = compiler.log.useSource(new DummyJFO());
         try {
             CharBuffer buf = CharBuffer.wrap((expr+"\u0000").toCharArray(), 0, expr.length());
             ParserFactory factory = ParserFactory.instance(context);
@@ -545,6 +548,16 @@ public class Utilities {
     }
 
     public static Scope constructScope(CompilationInfo info, Map<String, TypeMirror> constraints, Iterable<? extends String> auxiliaryImports) {
+        return Lookup.getDefault().lookup(SPI.class).constructScope(info, constraints, auxiliaryImports);
+    }
+
+    public interface SPI {
+        public Scope constructScope(CompilationInfo info, Map<String, TypeMirror> constraints, Iterable<? extends String> auxiliaryImports);
+    }
+
+    @ServiceProvider(service=SPI.class, position=1000)
+    public static final class SPIImpl implements SPI {
+        public Scope constructScope(CompilationInfo info, Map<String, TypeMirror> constraints, Iterable<? extends String> auxiliaryImports) {
         StringBuilder clazz = new StringBuilder();
 
         clazz.append("package $;");
@@ -578,8 +591,11 @@ public class Utilities {
 
         //TODO: remove impl. dep. on java.source
         JavaFileObject jfo = FileObjects.memoryFileObject("$", "$", new File("/tmp/t" + count + ".java").toURI(), System.currentTimeMillis(), clazz.toString());
+        boolean oldSkipAPs = jti.skipAnnotationProcessing;
 
         try {
+            jti.skipAnnotationProcessing = true;
+            
             Iterable<? extends CompilationUnitTree> parsed = jti.parse(jfo);
             CompilationUnitTree cut = parsed.iterator().next();
 
@@ -589,7 +605,10 @@ public class Utilities {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return null;
+        } finally {
+            jti.skipAnnotationProcessing = oldSkipAPs;
         }
+    }
     }
 
     private static final class ScannerImpl extends TreePathScanner<Scope, CompilationInfo> {
@@ -648,8 +667,6 @@ public class Utilities {
     }
 
     public static ClasspathInfo createUniversalCPInfo() {
-        //TODO: cannot be a class constant, would break the standalone workers
-        final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
         JavaPlatform select = JavaPlatform.getDefault();
 
         for (JavaPlatform p : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
@@ -658,7 +675,7 @@ public class Utilities {
             }
         }
 
-        return ClasspathInfo.create(select.getBootstrapLibraries(), EMPTY, EMPTY);
+        return ClasspathInfo.create(select.getBootstrapLibraries(), ClassPath.EMPTY, ClassPath.EMPTY);
     }
 
     @SuppressWarnings("deprecation")
@@ -1018,4 +1035,14 @@ public class Utilities {
 
 
     }
+
+    private static final class DummyJFO extends SimpleJavaFileObject {
+        private DummyJFO() {
+            super(URI.create("dummy.java"), JavaFileObject.Kind.SOURCE);
+        }
+        @Override
+        public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+            return "";
+        }
+    };
 }

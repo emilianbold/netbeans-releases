@@ -49,12 +49,13 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
-import java.util.Locale;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.apisupport.project.suite.BrandingSupport.BrandedFile;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.ErrorManager;
@@ -65,16 +66,16 @@ import org.openide.util.NbBundle;
  *
  * @author Radek Matous
  */
-public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
+public final class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
     
-    private SplashComponentPreview splashImage;
-    private JFormattedTextField fontSize;
-    private JFormattedTextField runningTextBounds;
-    private JFormattedTextField progressBarBounds;
-    private SplashUISupport.ColorComboBox textColor;
-    private SplashUISupport.ColorComboBox barColor;
-    private SplashUISupport.ColorComboBox edgeColor;
-    private SplashUISupport.ColorComboBox cornerColor;
+    private final @NonNull SplashComponentPreview splashImage;
+    private final @NonNull JFormattedTextField fontSize;
+    private final @NonNull JFormattedTextField runningTextBounds;
+    private final @NonNull JFormattedTextField progressBarBounds;
+    private final @NonNull SplashUISupport.ColorComboBox textColor;
+    private final @NonNull SplashUISupport.ColorComboBox barColor;
+    private final @NonNull SplashUISupport.ColorComboBox edgeColor;
+    private final @NonNull SplashUISupport.ColorComboBox cornerColor;
     
     private URL splashSource;
     /**
@@ -109,7 +110,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
                 double ratio = ((double)afterDrag.height)/original.height;
                 int size = (int)((((Number)fontSize.getValue()).intValue()*ratio));
                 size = (size > 0) ? size : 3;
-                fontSize.setValue(new Integer(size));
+                fontSize.setValue(size);
             }
         });
         
@@ -188,41 +189,48 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
     public void store() {
         BasicBrandingModel branding = getBrandingModel();
         
-        branding.getSplashRunningTextFontSize().setValue(SplashUISupport.integerToString(((Number)fontSize.getValue()).intValue()));
-        branding.getSplashRunningTextBounds().setValue(SplashUISupport.boundsToString((Rectangle)runningTextBounds.getValue()));
-        branding.getSplashProgressBarBounds().setValue(SplashUISupport.boundsToString((Rectangle)progressBarBounds.getValue()));
+        SplashUISupport.setValue(branding.getSplashRunningTextFontSize(), SplashUISupport.numberToString((Number) fontSize.getValue()));
+        SplashUISupport.setValue(branding.getSplashRunningTextBounds(), SplashUISupport.boundsToString((Rectangle)runningTextBounds.getValue()));
+        SplashUISupport.setValue(branding.getSplashProgressBarBounds(), SplashUISupport.boundsToString((Rectangle)progressBarBounds.getValue()));
         if (textColor.getColor() != null) {
-            branding.getSplashRunningTextColor().setValue(SplashUISupport.colorToString(textColor.getColor()));
+            SplashUISupport.setValue(branding.getSplashRunningTextColor(), SplashUISupport.colorToString(textColor.getColor()));
         }
         if (barColor.getColor() != null) {
-            branding.getSplashProgressBarColor().setValue(SplashUISupport.colorToString(barColor.getColor()));
+            SplashUISupport.setValue(branding.getSplashProgressBarColor(), SplashUISupport.colorToString(barColor.getColor()));
         }
         //these colors below has a little effect on resulting branded splash
         //then user can't adjust it from UI
         //edgeColor.setColor(SplashUISupport.stringToColor(branding.getSplashProgressBarEdgeColor().getValue()));
         //cornerColor.setColor(SplashUISupport.stringToColor(branding.getSplashProgressBarCornerColor().getValue()));
         
-        branding.getSplashShowProgressBar().setValue(Boolean.toString(progressBarEnabled.isSelected()));
-        branding.getSplash().setBrandingSource(splashSource);
+        SplashUISupport.setValue(branding.getSplashShowProgressBar(), Boolean.toString(progressBarEnabled.isSelected()));
+        BrandedFile splash = branding.getSplash();
+        if (splash != null) {
+            splash.setBrandingSource(splashSource);
+        }
         
-        branding.getSplashWidth().setValue(Integer.toString(splashImage.image.getWidth(null),10));
-        branding.getSplashHeight().setValue(Integer.toString(splashImage.image.getHeight(null),10));
+        Image image = splashImage.image;
+        if (image != null) {
+            SplashUISupport.setValue(branding.getSplashWidth(), Integer.toString(image.getWidth(null),10));
+            SplashUISupport.setValue(branding.getSplashHeight(), Integer.toString(image.getHeight(null),10));
+        }
     }
     
     
     void refresh() {
         BasicBrandingModel branding = getBrandingModel();
         
-        fontSize.setValue(new Integer(SplashUISupport.stringToInteger(branding.getSplashRunningTextFontSize().getValue())));
-        runningTextBounds.setValue(SplashUISupport.stringToBounds(branding.getSplashRunningTextBounds().getValue()));
-        progressBarBounds.setValue(SplashUISupport.stringToBounds(branding.getSplashProgressBarBounds().getValue()));
-        textColor.setColor(SplashUISupport.stringToColor(branding.getSplashRunningTextColor().getValue()));
-        barColor.setColor(SplashUISupport.stringToColor(branding.getSplashProgressBarColor().getValue()));//
-        edgeColor.setColor(SplashUISupport.stringToColor(branding.getSplashProgressBarEdgeColor().getValue()));
-        cornerColor.setColor(SplashUISupport.stringToColor(branding.getSplashProgressBarCornerColor().getValue()));
-        progressBarEnabled.setSelected(getBrandingModel().getSplashShowProgressBar().getValue().trim().toLowerCase(Locale.ENGLISH).equals("true")); // NOI18N
+        fontSize.setValue(SplashUISupport.bundleKeyToInteger(branding.getSplashRunningTextFontSize()));
+        runningTextBounds.setValue(SplashUISupport.bundleKeyToBounds(branding.getSplashRunningTextBounds()));
+        progressBarBounds.setValue(SplashUISupport.bundleKeyToBounds(branding.getSplashProgressBarBounds()));
+        textColor.setColor(SplashUISupport.bundleKeyToColor(branding.getSplashRunningTextColor()));
+        barColor.setColor(SplashUISupport.bundleKeyToColor(branding.getSplashProgressBarColor()));
+        edgeColor.setColor(SplashUISupport.bundleKeyToColor(branding.getSplashProgressBarEdgeColor()));
+        cornerColor.setColor(SplashUISupport.bundleKeyToColor(branding.getSplashProgressBarCornerColor()));
+        progressBarEnabled.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getSplashShowProgressBar()));
+        BrandedFile splash = branding.getSplash();
         
-        splashSource = getBrandingModel().getSplash().getBrandingSource();
+        splashSource = splash != null ? splash.getBrandingSource() : null;
         resetSplashPreview();
         
         splashImage.setMaxSteps(10);
@@ -539,7 +547,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
                     progressBarBounds.setValue(pRectangle);
                     int size = (int)((((Number)fontSize.getValue()).intValue()*yRatio));
                     size = (size <= 6) ? 6 : size;                    
-                    fontSize.setValue(new Integer(size));                    
+                    fontSize.setValue(size);                    
                 } else {
                     resetSplashPreview();
                 }

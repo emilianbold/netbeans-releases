@@ -112,7 +112,6 @@ import org.openide.util.lookup.ProxyLookup;
 final class LibrariesNode extends AbstractNode {
 
     static final String LIBRARIES_NAME = "libraries"; // NOI18N
-    private static final String ARCHIVE_ICON = "org/netbeans/modules/apisupport/project/ui/resources/jar.gif"; //NOI18N
     private static final String DISPLAY_NAME = getMessage("LBL_libraries");
     private final Action[] actions;
 

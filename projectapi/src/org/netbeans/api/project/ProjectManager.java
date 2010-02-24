@@ -64,6 +64,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -713,6 +714,13 @@ public final class ProjectManager {
 
         @Override
         public void fileDeleted(FileEvent fe) {
+            synchronized (dir2Proj) {
+                dir2Proj.remove(fe.getFile());
+            }
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
             synchronized (dir2Proj) {
                 dir2Proj.remove(fe.getFile());
             }

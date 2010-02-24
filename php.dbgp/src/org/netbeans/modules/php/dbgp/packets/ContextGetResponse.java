@@ -92,7 +92,7 @@ public class ContextGetResponse extends DbgpResponse {
         Context ctx = getCommand.getContext();
         ContextNode node = new ContextNode( ctx , getProperties() );
         DebugSession currentSession = SessionManager.getInstance().
-            getCurrentSession( session.getSessionId() );
+            getSession( session.getSessionId() );
         if ( currentSession == session ){
             // perform update local view only if response appears in current session
             session.getBridge().getVariablesModel().updateContext( node );

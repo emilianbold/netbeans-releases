@@ -46,6 +46,7 @@ import java.util.*;
 import org.openide.util.*;
 import org.openide.windows.*;
 import org.openide.awt.UndoRedo;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Diff TopComponent, synchronizing selected node and providing
@@ -70,7 +71,7 @@ public class DiffTopComponent extends TopComponent implements DiffSetupSource {
 
     @Override
     public Lookup getLookup() {
-        return lookup;
+        return new ProxyLookup(super.getLookup(), lookup);
     }
 
     @Override

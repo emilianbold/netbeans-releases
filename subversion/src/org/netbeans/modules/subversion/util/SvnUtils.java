@@ -1361,17 +1361,7 @@ public class SvnUtils {
             if (SvnModuleConfig.getDefault().isExcludedFromCommit(file.getAbsolutePath())) {
                 commitOptions[i] = CommitOptions.EXCLUDE;
             } else {
-                switch (node.getInformation().getStatus()) {
-                    case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
-                        commitOptions[i] = excludeNew ? CommitOptions.EXCLUDE : getDefaultCommitOptions(node.getFile());
-                        break;
-                    case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
-                    case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
-                        commitOptions[i] = CommitOptions.COMMIT_REMOVE;
-                        break;
-                    default:
-                        commitOptions[i] = CommitOptions.COMMIT;
-                }
+                commitOptions[i] = getDefaultCommitOptions(node, excludeNew);
             }
         }
         return commitOptions;
@@ -1434,9 +1424,32 @@ public class SvnUtils {
         }
     }
 
-    private static CommitOptions getDefaultCommitOptions(File file) {
-        if (file.isFile()) {
-            if (getMimeType(file).startsWith("text")) {
+    /**
+     * Similar to {@link #getDefaultCommitOptions(org.netbeans.modules.subversion.SvnFileNode, boolean) } but does not consider exclusions, so
+     * the return value will always be a variation of {@link CommitOptions#COMMIT } (unless excludeNew is set to true)
+     * @param node
+     * @param excludeNew
+     * @return
+     */
+    public static CommitOptions getDefaultCommitOptions (SvnFileNode node, boolean excludeNew) {
+        CommitOptions commitOptions;
+        switch (node.getInformation().getStatus()) {
+            case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
+                commitOptions = excludeNew ? CommitOptions.EXCLUDE : getDefaultCommitOptions(node);
+                break;
+            case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
+            case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
+                commitOptions = CommitOptions.COMMIT_REMOVE;
+                break;
+            default:
+                commitOptions = CommitOptions.COMMIT;
+        }
+        return commitOptions;
+    }
+
+    private static CommitOptions getDefaultCommitOptions(SvnFileNode node) {
+        if (node.isFile()) {
+            if (node.getMimeType().startsWith("text")) { //NOI18N
                 return CommitOptions.ADD_TEXT;
             } else {
                 return CommitOptions.ADD_BINARY;
@@ -1445,4 +1458,4 @@ public class SvnUtils {
             return CommitOptions.ADD_DIRECTORY;
         }
     }
- }
+}

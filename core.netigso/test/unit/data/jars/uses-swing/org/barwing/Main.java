@@ -1,8 +1,8 @@
 package org.barwing;
-import javax.swing.JFrame;
-public class Main extends JFrame implements Runnable {
-    public void run() {
-        new Main().setVisible(true);
+import javax.swing.JPanel;
+public class Main extends JPanel implements Runnable {
+    public @Override void run() {
+        new Main().setOpaque(true);
     }
 }
 

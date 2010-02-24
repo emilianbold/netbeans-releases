@@ -290,8 +290,11 @@ public final class ModuleDeleterImpl  {
         
         if (moduleFiles.contains (configFile)) {
             File file = InstalledFileLocator.getDefault ().locate (configFile, moduleInfo.getCodeNameBase (), false);
-            assert file == null || ! file.exists () ||
-                    getStorageFilesForDelete ().contains (file): "Config file " + configFile + " must be already removed or marked for remove.";
+            if(file!=null && file.exists() && !getStorageFilesForDelete ().contains (file)) {
+                err.log(Level.WARNING, "Config file " + configFile +
+                        " must be already removed or marked for remove but still exist as file " + file +
+                        " and not found in StorageFilesForDelete : " + getStorageFilesForDelete());
+            }
         }
         
         for (String fileName : moduleFiles) {
