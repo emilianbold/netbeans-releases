@@ -61,6 +61,7 @@ import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.io.File;
 import java.util.logging.Level;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -218,7 +219,7 @@ public class SyncFileNode extends AbstractNode {
                             return;
                         }
                         try {
-                            shortPath = SvnUtils.getRelativePath(node.getFile());
+                            shortPath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed() ? SvnUtils.getRepositoryUrl(node.getFile()).toString() : SvnUtils.getRelativePath(node.getFile());
                         } catch (SVNClientException ex) { 
                             SvnClientExceptionHandler.notifyException(ex, false, false);
                         }

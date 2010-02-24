@@ -176,9 +176,9 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(commitTable.getComponent(), gridBagConstraints);
-        List<String> messages = Utils.getStringList(CvsModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
-        if (messages.size() > 0) {
-            taMessage.setText(messages.get(0));
+        String message = CvsModuleConfig.getDefault().getLastCommitMessage();
+        if (!message.isEmpty()) {
+            taMessage.setText(message);
         } else {
             loadTemplate(true);
         }
