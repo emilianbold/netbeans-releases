@@ -176,6 +176,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.reloadAttributesButton.addActionListener(this);
         panel.reporterTextField.addFocusListener(this);
         panel.assigneeTextField.addFocusListener(this);
+        panel.cloneQueryButton.addActionListener(this);
 
         panel.idTextField.addActionListener(this);
         panel.projectList.addKeyListener(this);
@@ -699,6 +700,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onAutoRefresh();
         } else if (e.getSource() == panel.reloadAttributesButton) {
             onReloadAttributes();
+        } else if (e.getSource() == panel.cloneQueryButton) {
+            onCloneQuery();
         } else if (e.getSource() == panel.idTextField) {
             if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
                 onGotoIssue();
@@ -1125,6 +1128,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(modifiable) {
             postPopulate(getFilterDefinition(), true);
         }
+    }
+
+    private void onCloneQuery() {
+        FilterDefinition fd = getFilterDefinition();
+        JiraQuery q = new JiraQuery(null, repository, fd, false, true);
+        BugtrackingUtil.openQuery(q, repository, false);
     }
 
     void progress(String issueDesc) {

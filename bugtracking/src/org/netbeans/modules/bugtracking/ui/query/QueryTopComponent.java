@@ -244,7 +244,13 @@ public final class QueryTopComponent extends TopComponent
         }
 
         if (query != null) {
-            setSaved();
+            if(query.isSaved()) {
+                setSaved();
+            } else {
+                if(!suggestedSelectionOnly) {
+                    rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository);
+                }
+            }
             BugtrackingController c = query.getController();
             panel.setComponent(c.getComponent());
             this.query.addPropertyChangeListener(this);
