@@ -49,11 +49,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
@@ -691,19 +689,19 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         public void removeAction(Configuration o) {
             Configuration c = o;
             if (c.isDefault()) {
-                if (getListData().elementAt(0) == o) {
-                    (getListData().elementAt(1)).setDefault(true);
+                if (getListData().get(0) == o) {
+                    (getListData().get(1)).setDefault(true);
                 } else {
-                    (getListData().elementAt(0)).setDefault(true);
+                    (getListData().get(0)).setDefault(true);
                 }
             }
         }
 
         @Override
         public void defaultAction(Configuration o) {
-            Vector<Configuration> confs = getListData();
-            for (Enumeration<Configuration> e = confs.elements(); e.hasMoreElements();) {
-                e.nextElement().setDefault(false);
+            List<Configuration> confs = getListData();
+            for (Configuration c : confs) {
+                c.setDefault(false);
             }
             o.setDefault(true);
         }

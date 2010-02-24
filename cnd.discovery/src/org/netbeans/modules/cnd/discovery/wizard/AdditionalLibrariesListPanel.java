@@ -46,7 +46,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
@@ -193,8 +192,8 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
             return;
         }
         String newS = notifyDescriptor.getInputText();
-        Vector<String> vector = getListData();
-        Object[] arr = getListData().toArray();
+        List<String> vector = getListData();
+        Object[] arr = vector.toArray();
         for (int i = 0; i < arr.length; i++) {
             if (arr[i] == o) {
                 vector.remove(i);
