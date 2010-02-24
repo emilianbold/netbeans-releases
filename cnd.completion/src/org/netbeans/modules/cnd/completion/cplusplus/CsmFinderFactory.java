@@ -148,7 +148,7 @@ public final class CsmFinderFactory {
             return finder;
         }
 
-        CsmFile cf = CsmUtilities.getCsmFile(fo, true);
+        CsmFile cf = CsmUtilities.getCsmFile(fo, true, false);
 
         List<CsmFinder> finders = new ArrayList<CsmFinder>();
 //        ArrayList fileObjects = new ArrayList();

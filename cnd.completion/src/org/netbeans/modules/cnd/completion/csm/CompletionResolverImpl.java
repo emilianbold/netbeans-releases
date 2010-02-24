@@ -165,7 +165,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         result = EMPTY_RESULT;
         // update if file attached to invalid project
         if ((file != null) && (file.getProject() != null) && !file.getProject().isValid()) {
-            file = CsmUtilities.getCsmFile(CsmUtilities.getFileObject(file), true);
+            file = CsmUtilities.getCsmFile(CsmUtilities.getFileObject(file), true, false);
         }
         context = null;
         // should be called last, because uses setting set above

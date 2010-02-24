@@ -1239,7 +1239,7 @@ public class TraceModel extends TraceModelBase {
             ParserThreadManager.instance().waitEmptyProjectQueue((ProjectBase) prj);
             waitProjectParsed(getProject(), false);
             RepositoryAccessor.getRepository().debugClear();
-            fileImpl = (FileImpl) prj.findFile(absPath);
+            fileImpl = (FileImpl) prj.findFile(absPath, false);
         }
 
         if (dumpModel) {
