@@ -305,7 +305,7 @@ public class AnalyzeModel implements DiscoveryProvider {
                 if (!isExcluded(item)) {
                     Language lang = item.getLanguage();
                     if (lang == Language.C || lang == Language.CPP){
-                        CsmFile langFile = langProject.findFile(item);
+                        CsmFile langFile = langProject.findFile(item, false);
                         SourceFileProperties source = new ModelSource(item, langFile, searchBase, projectSearchBase, pkgConfig, preferLocal);
                         res.add(source);
                     }
