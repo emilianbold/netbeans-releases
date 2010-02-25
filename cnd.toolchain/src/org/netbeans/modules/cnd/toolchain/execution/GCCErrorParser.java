@@ -257,13 +257,17 @@ public final class GCCErrorParser extends ErrorParser {
                         for (Iterator<StackIncludeItem> it = errorInludes.iterator(); it.hasNext();) {
                             StackIncludeItem item = it.next();
                             if (item.fo != null) {
-                                res.add(item.line, new OutputListenerImpl(item.fo, item.lineNumber, important));
+                                res.add(item.line, new OutputListenerImpl(item.fo, item.lineNumber, important, null));
                             } else {
                                 res.add(item.line, null);
                             }
                         }
                         errorInludes.clear();
-                        res.add(line, new OutputListenerImpl(fo, lineNumber.intValue() - 1, important));
+                        String description = null;
+                        if (m.groupCount()<= 4) {
+                            description = m.group(4);
+                        }
+                        res.add(line, new OutputListenerImpl(fo, lineNumber.intValue() - 1, important, description));
                         return res;
                     }
                 }

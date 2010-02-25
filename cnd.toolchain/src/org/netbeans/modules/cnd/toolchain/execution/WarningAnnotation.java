@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.toolchain.execution;
@@ -47,17 +47,18 @@ import org.openide.text.Line;
 import org.openide.util.NbBundle;
 
 /**
- * Implements Annotation
+ *
+ * @author Alexander Simon
  */
-public final class ErrorAnnotation extends Annotation implements PropertyChangeListener {
+public final class WarningAnnotation extends Annotation implements PropertyChangeListener {
 
-    private static ErrorAnnotation instance;
+    private static WarningAnnotation instance;
     private Line currentLine;
     private String description;
 
-    public static ErrorAnnotation getInstance() {
+    public static WarningAnnotation getInstance() {
         if (instance == null) {
-            instance = new ErrorAnnotation();
+            instance = new WarningAnnotation();
         }
         return instance;
     }
@@ -68,7 +69,7 @@ public final class ErrorAnnotation extends Annotation implements PropertyChangeL
      * @return  name of the anotation type */
     @Override
     public String getAnnotationType() {
-        return "org-netbeans-modules-cnd-error"; // NOI18N
+        return "org-netbeans-modules-cnd-warning"; // NOI18N
     }
 
     /** Returns the tooltip text for this annotation.
@@ -78,7 +79,7 @@ public final class ErrorAnnotation extends Annotation implements PropertyChangeL
         if (description != null) {
             return description;
         } else {
-            return NbBundle.getMessage(ErrorAnnotation.class, "HINT_CompilerError"); // NOI18N
+            return NbBundle.getMessage(ErrorAnnotation.class, "HINT_CompilerWarning"); // NOI18N
         }
     }
 

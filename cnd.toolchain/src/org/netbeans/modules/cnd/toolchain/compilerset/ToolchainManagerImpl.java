@@ -751,8 +751,11 @@ public final class ToolchainManagerImpl {
     private void writeScanner(Document doc, Element element, ScannerDescriptor scanner) {
         Element c;
         for (ScannerPattern pattern : scanner.getPatterns()) {
-            c = doc.createElement(pattern.getSeverity());
+            c = doc.createElement("error");
             c.setAttribute("pattern", pattern.getPattern()); // NOI18N
+            if (pattern.getSeverity() != null) {
+                c.setAttribute("severity", pattern.getSeverity()); // NOI18N
+            }
             if (pattern.getLanguage() != null) {
                 c.setAttribute("language", pattern.getLanguage()); // NOI18N
             }
@@ -1519,13 +1522,10 @@ public final class ToolchainManagerImpl {
                 if (path.endsWith(".error")) { // NOI18N
                     ErrorPattern e = new ErrorPattern();
                     s.patterns.add(e);
-                    e.severity = "error"; // NOI18N
-                    e.pattern = getValue(attributes, "pattern"); // NOI18N
-                    e.language = getValue(attributes, "language"); // NOI18N
-                } else if (path.endsWith(".warning")) { // NOI18N
-                    ErrorPattern e = new ErrorPattern();
-                    s.patterns.add(e);
-                    e.severity = "warning"; // NOI18N
+                    e.severity = getValue(attributes, "severity"); // NOI18N
+                    if (e.severity == null) {
+                        e.severity = "error"; // NOI18N
+                    }
                     e.pattern = getValue(attributes, "pattern"); // NOI18N
                     e.language = getValue(attributes, "language"); // NOI18N
                 } else if (path.endsWith(".change_directory")) { // NOI18N
