@@ -228,10 +228,9 @@ public class RssNode extends FilterNode {
         }
         
         public void open() {
-            BrowserTopComponent btc = BrowserTopComponent.getBrowserComponent(entry.getTitle());
+            BrowserTopComponent btc = BrowserTopComponent.getBrowserComponent(entry);
             btc.open();
             btc.requestActive();
-            btc.setPage(entry.getUri());
         }
         
     }

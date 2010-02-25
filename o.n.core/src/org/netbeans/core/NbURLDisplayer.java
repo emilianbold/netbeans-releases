@@ -41,11 +41,18 @@
 
 package org.netbeans.core;
 
+import java.awt.Component;
+import java.awt.Desktop;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.core.ui.SwingBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
+import org.openide.awt.HtmlBrowser.Impl;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -123,8 +130,13 @@ public final class NbURLDisplayer extends URLDisplayer {
             }
             browser = IDESettings.getExternalWWWBrowser();
             if (browser == null) {
-                //external browser is not available, fallback to swingbrowser
-                browser = new SwingBrowser();
+                Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+                if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+                    browser = new DesktopBrowser(desktop);
+                } else {
+                    //external browser is not available, fallback to swingbrowser
+                    browser = new SwingBrowser();
+                }
             }
             externalBrowser = new HtmlBrowserComponent(browser, true, true);
             setListener();
@@ -183,6 +195,49 @@ public final class NbURLDisplayer extends URLDisplayer {
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+    }
+
+    private static final class DesktopBrowser implements Factory {
+        private final Desktop desktop;
+        public DesktopBrowser(Desktop desktop) {
+            this.desktop = desktop;
+        }
+        public @Override Impl createHtmlBrowserImpl() {
+            return new Impl() {
+                private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+                private URL url;
+                public @Override void setURL(URL url) {
+                    this.url = url;
+                    try {
+                        desktop.browse(url.toURI());
+                    } catch (Exception x) {
+                        Logger.getLogger(NbURLDisplayer.class.getName()).log(Level.INFO, "showing: " + url, x);
+                    }
+                }
+                public @Override URL getURL() {
+                    return url;
+                }
+                public @Override void reloadDocument() {
+                    setURL(url);
+                }
+                public @Override void addPropertyChangeListener(PropertyChangeListener l) {
+                    pcs.addPropertyChangeListener(l);
+                }
+                public @Override void removePropertyChangeListener(PropertyChangeListener l) {
+                    pcs.removePropertyChangeListener(l);
+                }
+                public @Override Component getComponent() {return null;}
+                public @Override void stopLoading() {}
+                public @Override String getStatusMessage() {return "";}
+                public @Override String getTitle() {return "";}
+                public @Override boolean isForward() {return false;}
+                public @Override void forward() {}
+                public @Override boolean isBackward() {return false;}
+                public @Override void backward() {}
+                public @Override boolean isHistory() {return false;}
+                public @Override void showHistory() {}
+            };
         }
     }
 

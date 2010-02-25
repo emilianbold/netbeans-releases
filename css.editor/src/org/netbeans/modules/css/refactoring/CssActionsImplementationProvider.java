@@ -64,7 +64,6 @@ import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
@@ -251,10 +250,6 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
             }
         }
         return false;
-    }
-
-    private static boolean representsOpenedFile(EditorCookie ec) {
-	return ec != null && ec.getOpenedPanes() != null;
     }
 
     private static EditorCookie getEditorCookie(Node node) {
