@@ -19,14 +19,15 @@ import org.netbeans.lib.richexecution.Pty;
 import org.netbeans.lib.richexecution.PtyException;
 import org.netbeans.lib.richexecution.PtyExecutor;
 import org.netbeans.lib.terminalemulator.StreamTerm;
+import org.netbeans.modules.terminal.TermTopComponent;
 
 import org.netbeans.modules.terminal.ioprovider.IOEmulation;
-import org.netbeans.modules.terminal.ioprovider.IOExecution;
 import org.netbeans.modules.terminal.ioprovider.IOResizable;
 import org.netbeans.modules.terminal.ioprovider.TerminalInputOutput;
 
 import org.openide.util.Exceptions;
 import org.openide.windows.IOColorLines;
+import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
@@ -37,14 +38,9 @@ import org.openide.windows.OutputWriter;
  */
 public final class TerminalIOProviderSupport {
 
-    public static IOProvider getIOProvider() {
-        IOProvider iop = null;
-        iop = IOProvider.get("Terminal");       // NOI18N
-        if (iop == null) {
-            System.out.printf("IOProviderActionSupport.getTermIOProvider() couldn't find our provider\n");
-            iop = IOProvider.getDefault();
-        }
-        return iop;
+    public static IOContainer getIOContainer() {
+	TermTopComponent ttc = TermTopComponent.findInstance();
+	return ttc.ioContainer();
     }
 
     /**
@@ -66,13 +62,7 @@ public final class TerminalIOProviderSupport {
 	shuttle.run();
     }
 
-    public void executeCommand(IOProvider iop, String cmd) {
-        // 
-        // Create ...
-        // ... A standard NB i/o window, if iop is the default IOP
-        // ... A Term based i/o window, if iop is TerminalIOProvider
-        //
-        InputOutput io = iop.getIO("Cmd: " + cmd, true);
+    public void executeCommand(InputOutput io, String cmd) {
         try {
             IOColorLines.println(io, "GREETINGS\r", Color.GREEN);
         } catch (IOException ex) {
@@ -85,90 +75,59 @@ public final class TerminalIOProviderSupport {
 
         io.select();
 
-        /* LATER
-        if (false) {
-            // Adds a line discipline so newlines etc work correctly
-            TerminalIOProviderSupport.setInternal(io, true);
+	//
+	// Create a pty, handle window size changes
+	//
+	final Pty pty;
+	try {
+	    pty = Pty.create(Pty.Mode.REGULAR);
+	} catch (PtyException ex) {
+	    Exceptions.printStackTrace(ex);
+	    return;
+	}
 
-            if (IOColorLines.isSupported(io))
-                IOColorLines.println(io, "Hello", null, true, Color.red);
+	if (IOResizable.isSupported(io)) {
+	    IOResizable.addListener(io, new IOResizable.Listener() {
+		public void sizeChanged(Dimension cells, Dimension pixels) {
+		    pty.masterTIOCSWINSZ(cells.height, cells.width,
+					 pixels.height, pixels.width);
+		}
+	    });
+	}
 
-            if (IOColorPrint.isSupported(io)) {
-                IOColorPrint.print(io, "Hello in red\n", Color.red);
+	//
+	// Create a program and process
+	//
+	Program program = new Command(cmd);
+	Map<String, String> env = program.environment();
+	if (IOEmulation.isSupported(io)) {
+	    env.put("TERM", IOEmulation.getEmulation(io));
+	} else {
+	    env.put("TERM", "dumb");
+	}
 
-                IOColorPrint.print(io, "Hello ", Color.blue);
-                IOColorPrint.print(io, "in ", Color.yellow);
-                IOColorPrint.print(io, "rainbow\n", Color.green);
+	PtyExecutor executor = new PtyExecutor();
+	executor.start(program, pty);
 
-                IOColorPrint.print(io, "Hello ", Color.blue.darker());
-                IOColorPrint.print(io, "in ", Color.yellow.darker());
-                IOColorPrint.print(io, "dark rainbow\n", Color.green.darker());
-            }
+	//
+	// connect them up
+	//
 
-            // Take out line discipline -- doesn't really work.
-            // TerminalIOProviderSupport.setInternal(io, false);
-        }
-        */
+	// Hmm, what's the difference between the PtyProcess io streams
+	// and the Pty's io streams?
+	// Nothing.
+	OutputStream pin = pty.getOutputStream();
+	InputStream pout = pty.getInputStream();
 
-        if (IOExecution.isSupported(io)) {
-            Program program = new Command(cmd);
-            IOExecution.execute(io, program);
-
-        } else {
-            //
-            // Create a pty, handle window size changes
-            //
-            final Pty pty;
-            try {
-                pty = Pty.create(Pty.Mode.REGULAR);
-            } catch (PtyException ex) {
-                Exceptions.printStackTrace(ex);
-                return;
-            }
-
-	    if (IOResizable.isSupported(io)) {
-		IOResizable.addListener(io, new IOResizable.Listener() {
-		    public void sizeChanged(Dimension cells, Dimension pixels) {
-                        pty.masterTIOCSWINSZ(cells.height, cells.width,
-                                             pixels.height, pixels.width);
-		    }
-		});
-	    }
-
-            //
-            // Create a program and process
-            //
-            Program program = new Command(cmd);
-	    Map<String, String> env = program.environment();
-	    if (IOEmulation.isSupported(io)) {
-                env.put("TERM", IOEmulation.getEmulation(io));
-	    } else {
-                env.put("TERM", "dumb");
-	    }
-
-            PtyExecutor executor = new PtyExecutor();
-            executor.start(program, pty);
-
-            //
-            // connect them up
-            //
-
-            // Hmm, what's the difference between the PtyProcess io streams
-            // and the Pty's io streams?
-            // Nothing.
-            OutputStream pin = pty.getOutputStream();
-            InputStream pout = pty.getInputStream();
-
-            boolean implicit = false;
-            if (implicit) {
-		StreamTerm term = (tio != null)? tio.term(): null;
-		if (term != null)
-		    term.connect(pin, pout, null);
-		else
-		    startShuttle(io, pin, pout);
-            } else {
-		startShuttle(io, pin, pout);
-            }
-        }
+	boolean implicit = false;
+	if (implicit) {
+	    StreamTerm term = (tio != null)? tio.term(): null;
+	    if (term != null)
+		term.connect(pin, pout, null);
+	    else
+	    startShuttle(io, pin, pout);
+	} else {
+	    startShuttle(io, pin, pout);
+	}
     }
 }

@@ -90,6 +90,7 @@
                 </dependency>
             </module-dependencies>
             <public-packages>
+                <package>org.netbeans.modules.terminal</package>
                 <package>org.netbeans.modules.terminal.api</package>
                 <package>org.netbeans.modules.terminal.ioprovider</package>
             </public-packages>
