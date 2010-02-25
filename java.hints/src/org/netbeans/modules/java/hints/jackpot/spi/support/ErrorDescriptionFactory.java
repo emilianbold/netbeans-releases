@@ -165,24 +165,26 @@ public class ErrorDescriptionFactory {
                 auxiliaryFixes.addAll(FixFactory.createSuppressWarnings(ctx.getInfo(), ctx.getPath(), suppressWarningsKeys.toArray(new String[0])));
             }
 
-            if (provided == null || provided.length == 0) {
-                provided = new Fix[] {new DisableConfigure(ctx.getHintMetadata(), false)};
-            }
-        }
+            List<Fix> result = new LinkedList<Fix>();
 
-        List<Fix> result = new LinkedList<Fix>();
-        
-        for (Fix f : provided) {
-            if (f == null) continue;
-            if (FixFactory.isSuppressWarningsFix(f)) {
-                Logger.getLogger(ErrorDescriptionFactory.class.getName()).log(Level.FINE, "Eliminated SuppressWarnings fix");
-                continue;
+            for (Fix f : provided != null ? provided : new Fix[0]) {
+                if (f == null) continue;
+                if (FixFactory.isSuppressWarningsFix(f)) {
+                    Logger.getLogger(ErrorDescriptionFactory.class.getName()).log(Level.FINE, "Eliminated SuppressWarnings fix");
+                    continue;
+                }
+
+                result.add(org.netbeans.spi.editor.hints.ErrorDescriptionFactory.attachSubfixes(f, auxiliaryFixes));
             }
 
-            result.add(org.netbeans.spi.editor.hints.ErrorDescriptionFactory.attachSubfixes(f, auxiliaryFixes));
+            if (result.isEmpty()) {
+                result.add(org.netbeans.spi.editor.hints.ErrorDescriptionFactory.attachSubfixes(new DisableConfigure(ctx.getHintMetadata(), false), auxiliaryFixes));
+            }
+
+            return result;
         }
 
-        return result;
+        return Arrays.asList(provided);
     }
 
     private static final class DisableConfigure implements Fix {
