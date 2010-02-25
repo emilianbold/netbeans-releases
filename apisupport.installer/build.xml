@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." name="apisupport.installer" default="netbeans">
+    <import file="../nbbuild/templates/projectized.xml"/>
+</project>

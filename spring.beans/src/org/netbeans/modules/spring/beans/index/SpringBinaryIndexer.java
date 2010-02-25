@@ -89,7 +89,9 @@ public class SpringBinaryIndexer extends BinaryIndexer {
             return;
         }
         version = findVersion(context.getRoot());
-        processXsds(context);
+        if (version !=null) {
+            processXsds(context);
+        }
     }
 
     private void processXsds(Context context) {

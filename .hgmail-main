@@ -1,2 +1,2 @@
 [usersubs]
-commits@installer.netbeans.org=installer/*,reglib/*,nbi/*
+commits@installer.netbeans.org=installer/*,reglib/*,nbi/*,apisupport.installer/*,libs.nbi.*/*

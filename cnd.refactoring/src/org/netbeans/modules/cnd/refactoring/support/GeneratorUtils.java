@@ -539,6 +539,7 @@ public class GeneratorUtils {
                     result.append(DeclarationGenerator.createSetter(field, computeSetterName(field, isUpperCase), DeclarationGenerator.Kind.INLINE_DEFINITION));
                 }
             }
+            result.append("\n"); // NOI18N
             final Document doc = path.getDocument();
             Runnable update = new Runnable() {
                 public void run() {
