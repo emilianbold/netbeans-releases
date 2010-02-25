@@ -76,6 +76,10 @@ import org.openide.util.NbBundle;
  */
 public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
+    private static final String SELECTOR_RENAME_MSG_KEY = "MSG_Rename_Selector"; //NOI18N
+    private static final String COLOR_RENAME_MSG_KEY = "MSG_Rename_Color"; //NOI18N
+    private static final String UNRELATED_PREFIX_MSG_KEY = "MSG_Unrelated_Prefix"; //NOI18N
+
     private static final Logger LOGGER = Logger.getLogger(CssRenameRefactoringPlugin.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     private RenameRefactoring refactoring;
@@ -117,15 +121,29 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
         if (context instanceof CssElementContext.Editor) {
             //editor elements refactoring
+
+           
+            
             CssElementContext.Editor econtext = (CssElementContext.Editor) context;
             //get selected element in the editor
             SimpleNode element = econtext.getElement();
 
-            if (element.kind() == CssParserTreeConstants.JJT_CLASS
-                    || element.kind() == CssParserTreeConstants.JJTHASH) {
-                refactorClassOrId(lookup, modificationResult, econtext, index);
+            if (element.kind() == CssParserTreeConstants.JJT_CLASS) {
+                int elementPrefixLength = 1;
+                 String elementImage = element.image().substring(elementPrefixLength); //cut off the dot
+                Collection<FileObject> files = index.findClasses(elementImage);
+                refactor(lookup, modificationResult, CssFileModel.ModelType.CLASS, files, elementPrefixLength, econtext, index, SELECTOR_RENAME_MSG_KEY);
+            } else if (element.kind() == CssParserTreeConstants.JJTHASH) {
+                int elementPrefixLength = 1;
+                String elementImage = element.image().substring(elementPrefixLength); //cut off the dot
+                Collection<FileObject> files = index.findIds(elementImage);
+                refactor(lookup, modificationResult, CssFileModel.ModelType.ID, files, elementPrefixLength, econtext, index, SELECTOR_RENAME_MSG_KEY);
+            } else if (element.kind() == CssParserTreeConstants.JJTHEXCOLOR) {
+                String elementImage = element.image();
+                Collection<FileObject> files = index.findColor(elementImage);
+                refactor(lookup, modificationResult, CssFileModel.ModelType.COLOR, files, 0, econtext, index, COLOR_RENAME_MSG_KEY);
             } else if (element.kind() == CssParserTreeConstants.JJTELEMENTNAME) {
-                refactorElement(lookup, modificationResult, econtext, index);
+                refactorElement(modificationResult, econtext, index);
             } else {
                 //other nodes which may appear under the simple selector node
                 //we do not refactor them
@@ -134,7 +152,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
         } else if (context instanceof CssElementContext.File) {
             //refactor a file in explorer
             CssElementContext.File fileContext = (CssElementContext.File) context;
-            refactorFile(lookup, modificationResult, fileContext, index);
+            refactorFile(modificationResult, fileContext, index);
 
         } else if (context instanceof CssElementContext.Folder) {
             //refactor a folder in explorer
@@ -142,8 +160,8 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             LOGGER.fine("refactor folder " + fileContext.getFileObject().getPath()); //NOI18N
         }
 
+        //commit the transaction and add the differences to the result
         refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(modificationResult)));
-
         for (FileObject fo : modificationResult.getModifiedFileObjects()) {
             for (Difference diff : modificationResult.getDifferences(fo)) {
                 refactoringElements.add(refactoring, DiffElement.create(diff, fo, modificationResult));
@@ -154,7 +172,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
         return null;
     }
 
-    private void refactorFile(Lookup lookup, ModificationResult modificationResult, CssElementContext.File context, CssIndex index) {
+    private void refactorFile(ModificationResult modificationResult, CssElementContext.File context, CssIndex index) {
         LOGGER.fine("refactor file " + context.getFileObject().getPath()); //NOI18N
         String newName = refactoring.getNewName();
 
@@ -215,7 +233,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
         }
     }
 
-    private void refactorElement(Lookup lookup, ModificationResult modificationResult, CssElementContext.Editor context, CssIndex index) {
+    private void refactorElement(ModificationResult modificationResult, CssElementContext.Editor context, CssIndex index) {
         //type selector: div
         //we do refactor only elements in the current css file, and even this is questionable if makes much sense
         SimpleNode element = context.getElement();
@@ -238,27 +256,19 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
     }
 
-    private void refactorClassOrId(Lookup lookup, ModificationResult modificationResult, CssElementContext.Editor context, CssIndex index) {
-        //class or id refactoring
-        SimpleNode element = context.getElement();
-        String elementImage = element.image();
-        elementImage = elementImage.substring(1); //cut off the dot or hash
-        Collection<FileObject> files = element.kind() == CssParserTreeConstants.JJT_CLASS
-                ? index.findClasses(elementImage)
-                : index.findIds(elementImage);
-
+    private void refactor(Lookup lookup, ModificationResult modificationResult, CssFileModel.ModelType type, Collection<FileObject> files, int elementPrefixLenght, CssElementContext.Editor context, CssIndex index, String renameMsgKey) {
+        String elementImage = context.getElementName().substring(elementPrefixLenght);
         List<FileObject> involvedFiles = new LinkedList<FileObject>(files);
         DependenciesGraph deps = index.getDependencies(context.getFileObject());
         Collection<FileObject> relatedFiles = deps.getAllRelatedFiles();
 
-        //refactor all occurances support
+         //refactor all occurances support
         CssRefactoringExtraInfo extraInfo =
                 lookup.lookup(CssRefactoringExtraInfo.class);
 
+        //if the "refactor all occurances" checkbox hasn't been
+        //selected the occurances must be searched only in the related files
         if (extraInfo == null || !extraInfo.isRefactorAll()) {
-            //if the "refactor all occurances" checkbox hasn't been
-            //selected the occurances must be searched only in the related files
-
             //filter out those files which have no relation with the current file.
             //note: the list of involved files also contains the currently edited file.
             involvedFiles.retainAll(relatedFiles);
@@ -267,14 +277,14 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
         }
 
         if (LOG) {
-            LOGGER.fine("Refactoring element " + element.image() + " in file " + context.getFileObject().getPath()); //NOI18N
-            LOGGER.fine("Involved files declaring the element " + element.image() + ":"); //NOI18N
+            LOGGER.fine("Refactoring element " + elementImage + " in file " + context.getFileObject().getPath()); //NOI18N
+            LOGGER.fine("Involved files declaring the element " + elementImage + ":"); //NOI18N
             for (FileObject fo : involvedFiles) {
                 LOGGER.fine(fo.getPath() + "\n"); //NOI18N
             }
         }
 
-        String newName = refactoring.getNewName().substring(1); //cut off the dot or hash
+        String newName = refactoring.getNewName().substring(elementPrefixLenght); //cut off the dot or hash
         //make css simple models for all involved files
         //where we already have the result
         for (FileObject file : involvedFiles) {
@@ -291,8 +301,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                 }
 
                 CssFileModel model = new CssFileModel(source);
-                Collection<Entry> entries = element.kind() == CssParserTreeConstants.JJT_CLASS
-                        ? model.getClasses() : model.getIds();
+                Collection<Entry> entries = model.get(type);
 
                 boolean related = relatedFiles.contains(file);
 
@@ -305,8 +314,9 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                                 entry.getName(),
                                 newName,
                                 related
-                                ? NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Selector")
-                                : NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Unrelated_Selector"))); //NOI18N
+                                ? NbBundle.getMessage(CssRenameRefactoringPlugin.class, renameMsgKey)
+                                : NbBundle.getMessage(CssRenameRefactoringPlugin.class, UNRELATED_PREFIX_MSG_KEY) + " " +
+                                NbBundle.getMessage(CssRenameRefactoringPlugin.class, renameMsgKey))); //NOI18N
                     }
                 }
                 modificationResult.addDifferences(file, diffs);
@@ -316,4 +326,5 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             }
         }
     }
+
 }
