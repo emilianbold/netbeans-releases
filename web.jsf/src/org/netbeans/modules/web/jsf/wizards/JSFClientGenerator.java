@@ -72,7 +72,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -84,7 +83,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
@@ -737,13 +736,25 @@ public class JSFClientGenerator {
         });
     }
 
-    private static String reformat(String content, BaseDocument doc) throws BadLocationException {
+    private static String reformat(String content, final BaseDocument doc) throws BadLocationException {
             doc.remove(0, doc.getLength());
             doc.insertString(0, content, null);
-            Formatter formatter = doc.getFormatter();
-            formatter.reformatLock();
-            formatter.reformat(doc, 0, doc.getLength());
-            formatter.reformatUnlock();
+            final Reformat reformat = Reformat.get(doc);
+            reformat.lock();
+            try {
+                doc.runAtomic(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            reformat.reformat(0, doc.getLength());
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            } finally {
+                reformat.unlock();
+            }
             return doc.getText(0, doc.getLength());
     }
 

@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.toolchain.compilerset;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -49,21 +48,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.WeakHashMap;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import static org.netbeans.modules.cnd.api.toolchain.ToolchainManager.*;
-import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
-import org.netbeans.modules.nativeexecution.api.util.Path;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -83,7 +73,7 @@ import org.xml.sax.helpers.DefaultHandler;
 @SuppressWarnings({"PackageVisibleInnerClass","PackageVisibleField"})
 public final class ToolchainManagerImpl {
 
-    private static final boolean TRACE = Boolean.getBoolean("cnd.toolchain.personality.trace"); // NOI18N
+    public static final boolean TRACE = Boolean.getBoolean("cnd.toolchain.personality.trace"); // NOI18N
     private static final boolean CREATE_SHADOW = Boolean.getBoolean("cnd.toolchain.personality.create_shadow"); // NOI18N
     public static final String CONFIG_FOLDER = "CND/ToolChain"; // NOI18N
     private static final ToolchainManagerImpl manager = new ToolchainManagerImpl();
@@ -171,7 +161,7 @@ public final class ToolchainManagerImpl {
         return res;
     }
 
-    public boolean isPlatforSupported(int platform, ToolchainDescriptor d) {
+    public static boolean isPlatforSupported(int platform, ToolchainDescriptor d) {
         switch (platform) {
             case PlatformTypes.PLATFORM_SOLARIS_SPARC:
                 for (String p : d.getPlatforms()) {
@@ -224,197 +214,6 @@ public final class ToolchainManagerImpl {
                 break;
         }
         return false;
-    }
-
-    public boolean isMyFolder(String path, ToolchainDescriptor d, int platform, boolean known) {
-        boolean res = isMyFolderImpl(path, d, platform, known);
-        if (TRACE && res) {
-            System.err.println("Path [" + path + "] belongs to tool chain " + d.getName()); // NOI18N
-        }
-        return res;
-    }
-
-    /**
-     *
-     * @param path
-     * @param d
-     * @param platform
-     * @param known if path known the methdod does not check path pattern
-     * @return
-     */
-    private boolean isMyFolderImpl(String path, ToolchainDescriptor d, int platform, boolean known) {
-        CompilerDescriptor c = d.getC();
-        if (c == null || c.getNames().length == 0) {
-            return false;
-        }
-        Pattern pattern = null;
-        if (!known) {
-            if (c.getPathPattern() != null) {
-                if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-                    pattern = Pattern.compile(c.getPathPattern(), Pattern.CASE_INSENSITIVE);
-                } else {
-                    pattern = Pattern.compile(c.getPathPattern());
-                }
-            }
-            if (pattern != null) {
-                if (!pattern.matcher(path).find()) {
-                    String f = c.getExistFolder();
-                    if (f == null) {
-                        return false;
-                    }
-                    File folder = new File(path + "/" + f); // NOI18N
-                    if (!folder.exists() || !folder.isDirectory()) {
-                        return false;
-                    }
-                }
-            }
-        }
-        File file = new File(path + "/" + c.getNames()[0]); // NOI18N
-        if (!file.exists()) {
-            file = new File(path + "/" + c.getNames()[0] + ".exe"); // NOI18N
-            if (!file.exists()) {
-                file = new File(path + "/" + c.getNames()[0] + ".exe.lnk"); // NOI18N
-                if (!file.exists()) {
-                    return false;
-                }
-            }
-        }
-        String flag = c.getVersionFlags();
-        if (flag == null) {
-            return true;
-        }
-        if (c.getVersionPattern() == null) {
-            return true;
-        }
-        pattern = Pattern.compile(c.getVersionPattern());
-        String command = LinkSupport.resolveWindowsLink(file.getAbsolutePath());
-        String s = getCommandOutput(path, command, flag);
-        boolean res = pattern.matcher(s).find();
-        if (TRACE && !res) {
-            System.err.println("No match for pattern [" + c.getVersionPattern() + "]:"); // NOI18N
-            System.err.println("Run " + path + "/" + c.getNames()[0] + " " + flag + "\n" + s); // NOI18N
-        }
-        return res;
-    }
-
-    public String getBaseFolder(ToolchainDescriptor d, int platform) {
-        if (platform != PlatformTypes.PLATFORM_WINDOWS) {
-            return null;
-        }
-        List<BaseFolder> list = d.getBaseFolders();
-        if (list == null || list.isEmpty()) {
-            return null;
-        }
-        for (BaseFolder folder : list) {
-            String pattern = folder.getFolderPattern();
-            String key = folder.getFolderKey();
-            if (key == null || pattern == null) {
-                continue;
-            }
-            String base = readRegistry(key, pattern);
-            if (base == null) {
-                continue;
-            }
-            if (folder.getFolderSuffix() != null) {
-                base += "/" + folder.getFolderSuffix(); // NOI18N
-            }
-            return base;
-        }
-        return null;
-    }
-
-    public String getCommandFolder(ToolchainDescriptor d, int platform) {
-        if (platform != PlatformTypes.PLATFORM_WINDOWS) {
-            return null;
-        }
-        List<BaseFolder> list = d.getCommandFolders();
-        if (list == null || list.isEmpty()) {
-            return null;
-        }
-        String base = null;
-        for (BaseFolder folder : list) {
-            String pattern = folder.getFolderPattern();
-            String key = folder.getFolderKey();
-            if (key == null || pattern == null) {
-                continue;
-            }
-            base = readRegistry(key, pattern);
-            if (base != null && folder.getFolderSuffix() != null) {
-                base += "\\" + folder.getFolderSuffix(); // NOI18N
-            }
-            if (base != null) {
-                return base;
-            }
-        }
-        for (BaseFolder folder : list) {
-            // search for unregistered msys
-            String pattern = folder.getFolderPathPattern();
-            if (pattern != null && pattern.length() > 0) {
-                Pattern p = Pattern.compile(pattern);
-                for (String dir : Path.getPath()) {
-                    if (p.matcher(dir).find()) {
-                        return dir;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private String readRegistry(String key, String pattern) {
-        if (TRACE) {
-            System.err.println("Read registry " + key); // NOI18N
-        }
-        ExitStatus status = ProcessUtils.execute(ExecutionEnvironmentFactory.getLocal(), "C:/Windows/System32/reg.exe", "query", key, "/s"); // NOI18N
-        String base = null;
-        if (status.isOK()){
-            Pattern p = Pattern.compile(pattern);
-            StringTokenizer st = new StringTokenizer(status.output, "\n"); // NOI18N
-            while(st.hasMoreTokens()) {
-                String line = st.nextToken().trim();
-                if (TRACE) {
-                    System.err.println("\t" + line); // NOI18N
-                }
-                Matcher m = p.matcher(line);
-                if (m.find() && m.groupCount() == 1) {
-                    base = m.group(1).trim();
-                    if (TRACE) {
-                        System.err.println("\tFound " + base); // NOI18N
-                    }
-                }
-            }
-        }
-        if (base == null && key.startsWith("hklm\\")) { // NOI18N
-            // Cygwin on my Vista system has this information in HKEY_CURRENT_USER
-            base = readRegistry("hkcu\\" + key.substring(5), pattern); // NOI18N
-        }
-        return base;
-    }
-
-    private static final WeakHashMap<String, String> commandCache = new WeakHashMap<String, String>();
-    private static String getCommandOutput(String path, String command, String flags) {
-        String res = commandCache.get(command+" "+flags); // NOI18N
-        if (res != null) {
-            //System.err.println("Get command output from cache #"+command); // NOI18N
-            return res;
-        }
-        ArrayList<String> args = new ArrayList<String>();
-        StringTokenizer st = new StringTokenizer(flags," "); // NOI18N
-        while(st.hasMoreTokens()) {
-            args.add(st.nextToken());
-        }
-        if (path == null) {
-            path = ""; // NOI18N
-        }
-        ExitStatus status = ProcessUtils.executeInDir(path, ExecutionEnvironmentFactory.getLocal(), command, args.toArray(new String[args.size()]));
-        StringBuilder buf = new StringBuilder();
-        if (status.isOK()){
-            buf.append(status.output);
-            buf.append('\n');
-            buf.append(status.error);
-        }
-        commandCache.put(command+" "+flags, buf.toString()); // NOI18N
-        return buf.toString();
     }
 
     private boolean read(FileObject file, FileObject[] files, CompilerVendor v, Set<FileObject> antiloop, Map<String, String> cache) {
