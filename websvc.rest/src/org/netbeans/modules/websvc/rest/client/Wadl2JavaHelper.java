@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
@@ -64,6 +63,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.rest.client.ClientJavaSourceHelper.HttpMimeType;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
@@ -77,15 +77,14 @@ import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Request;
 import org.netbeans.modules.websvc.saas.model.wadl.Response;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.xml.sax.SAXException;
 
 /**
@@ -658,6 +657,15 @@ class Wadl2JavaHelper {
     }
 
     static boolean isNbProject(Project project) {
+        AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
+        for (int i=1;i<10;i++) {
+            // be prepared for namespace upgrade
+            if (aux.getConfigurationFragment("data", //NOI18N
+                    "http://www.netbeans.org/ns/nb-module-project/"+String.valueOf(i), //NOI18N
+                    true) != null) { //NOI18N
+                return true;
+            }
+        }
         return false;
     }
 
