@@ -329,4 +329,16 @@ public final class NativeProcessBuilder implements Callable<Process> {
         info.setPtyMode(usePty);
         return this;
     }
+
+    /**
+     * Process builder try to expand, escape, quote command line according to subset of shell man.
+     * By default builder do this. This method allows to forbid  preprocessing of command line.
+     *
+     * @param expandMacros - if false, process builder do not preprocess command line
+     * @return this
+     */
+    public NativeProcessBuilder setMacroExpansion(boolean expandMacros) {
+        info.setExpandMacros(expandMacros);
+        return this;
+    }
 }
