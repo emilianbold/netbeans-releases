@@ -53,13 +53,14 @@ public final class Gems {
      */
     private static final String[] RAILS_GEMS = new String[]{"actionmailer", "actionpack", "activerecord", // NOI18N
         "activeresource", "activesupport", "rails", // NOI18N
+        "activemodel", // NOI18N    activemodel is Rails 3.x only
         "actionwebservice"}; // NOI18N    actionwebservice is Rails 1.x only
 
     /**
-     * Test framework gems.
+     * Known test framework gems.
      */
     private static final String[] TESTING_GEMS = new String[]{"rspec", "rspec-rails", "test-unit",
-        "thoughtbot-shoulda", "ZenTest", "cucumber"}; // NOI18N
+        "thoughtbot-shoulda", "ZenTest", "cucumber", "mocha"}; // NOI18N
 
     private static final String RAKE_GEM = "rake"; //NOI18N
 
