@@ -50,6 +50,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -89,7 +90,7 @@ public class CssIndex {
      * @return collection of files defining exactly the given element
      */
     public Collection<FileObject> findIds(String id) {
-        return find(CssIndexer.IDS_KEY, id);
+        return find(RefactoringElementType.ID, id);
     }
 
     /**
@@ -98,7 +99,7 @@ public class CssIndex {
      * @return collection of files defining exactly the given element
      */
     public Collection<FileObject> findClasses(String clazz) {
-        return find(CssIndexer.CLASSES_KEY, clazz);
+        return find(RefactoringElementType.CLASS, clazz);
     }
 
     /**
@@ -107,7 +108,7 @@ public class CssIndex {
      * @return collection of files defining exactly the given element
      */
     public Collection<FileObject> findHtmlElement(String htmlElement) {
-        return find(CssIndexer.HTML_ELEMENTS_KEY, htmlElement);
+        return find(RefactoringElementType.ELEMENT, htmlElement);
     }
 
     /**
@@ -116,7 +117,7 @@ public class CssIndex {
      * @return collection of files defining exactly the given element
      */
     public Collection<FileObject> findColor(String colorCode) {
-        return find(CssIndexer.COLORS_KEY, colorCode);
+        return find(RefactoringElementType.COLOR, colorCode);
     }
 
     /**
@@ -125,7 +126,7 @@ public class CssIndex {
      * @return map of fileobject to collection of classes defined in the file starting with prefix
      */
     public Map<FileObject, Collection<String>> findClassesByPrefix(String prefix) {
-        return findByPrefix(CssIndexer.CLASSES_KEY, prefix);
+        return findByPrefix(RefactoringElementType.CLASS, prefix);
     }
 
     /**
@@ -134,7 +135,7 @@ public class CssIndex {
      * @return map of fileobject to collection of ids defined in the file starting with prefix
      */
     public Map<FileObject, Collection<String>> findIdsByPrefix(String prefix) {
-        return findByPrefix(CssIndexer.IDS_KEY, prefix);
+        return findByPrefix(RefactoringElementType.ID, prefix);
     }
 
     /**
@@ -143,10 +144,11 @@ public class CssIndex {
      * @return map of fileobject to collection of colors defined in the file starting with prefix
      */
     public Map<FileObject, Collection<String>> findColorsByPrefix(String prefix) {
-        return findByPrefix(CssIndexer.COLORS_KEY, prefix);
+        return findByPrefix(RefactoringElementType.COLOR, prefix);
     }
     
-    public Map<FileObject, Collection<String>> findByPrefix(String keyName, String prefix) {
+    public Map<FileObject, Collection<String>> findByPrefix(RefactoringElementType type, String prefix) {
+        String keyName = type.getIndexKey();
         Map<FileObject, Collection<String>> map = new HashMap<FileObject, Collection<String>>();
         try {
             Collection<? extends IndexResult> results;
@@ -176,7 +178,8 @@ public class CssIndex {
         return map;
     }
 
-    public Map<FileObject, Collection<String>> findAll(String keyName) {
+    public Map<FileObject, Collection<String>> findAll(RefactoringElementType type) {
+        String keyName = type.getIndexKey();
         Map<FileObject, Collection<String>> map = new HashMap<FileObject, Collection<String>>();
         try {
             Collection<? extends IndexResult> results =
@@ -207,7 +210,8 @@ public class CssIndex {
      * @return returns a collection of files which contains the keyName key and the
      * value matches the value regular expression
      */
-    public Collection<FileObject> find(String keyName, String value) {
+    public Collection<FileObject> find(RefactoringElementType type, String value) {
+        String keyName = type.getIndexKey();
         try {
             String searchExpression = ".*(" + value + ")[,;].*"; //NOI18N
             Collection<FileObject> matchedFiles = new LinkedList<FileObject>();

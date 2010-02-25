@@ -57,6 +57,7 @@ import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -132,16 +133,16 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
                 int elementPrefixLength = 1;
                  String elementImage = element.image().substring(elementPrefixLength); //cut off the dot
                 Collection<FileObject> files = index.findClasses(elementImage);
-                refactor(lookup, modificationResult, CssFileModel.ModelType.CLASS, files, elementPrefixLength, econtext, index, SELECTOR_RENAME_MSG_KEY);
+                refactor(lookup, modificationResult, RefactoringElementType.CLASS, files, elementPrefixLength, econtext, index, SELECTOR_RENAME_MSG_KEY);
             } else if (element.kind() == CssParserTreeConstants.JJTHASH) {
                 int elementPrefixLength = 1;
                 String elementImage = element.image().substring(elementPrefixLength); //cut off the dot
                 Collection<FileObject> files = index.findIds(elementImage);
-                refactor(lookup, modificationResult, CssFileModel.ModelType.ID, files, elementPrefixLength, econtext, index, SELECTOR_RENAME_MSG_KEY);
+                refactor(lookup, modificationResult, RefactoringElementType.ID, files, elementPrefixLength, econtext, index, SELECTOR_RENAME_MSG_KEY);
             } else if (element.kind() == CssParserTreeConstants.JJTHEXCOLOR) {
                 String elementImage = element.image();
                 Collection<FileObject> files = index.findColor(elementImage);
-                refactor(lookup, modificationResult, CssFileModel.ModelType.COLOR, files, 0, econtext, index, COLOR_RENAME_MSG_KEY);
+                refactor(lookup, modificationResult, RefactoringElementType.COLOR, files, 0, econtext, index, COLOR_RENAME_MSG_KEY);
             } else if (element.kind() == CssParserTreeConstants.JJTELEMENTNAME) {
                 refactorElement(modificationResult, econtext, index);
             } else {
@@ -256,7 +257,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
     }
 
-    private void refactor(Lookup lookup, ModificationResult modificationResult, CssFileModel.ModelType type, Collection<FileObject> files, int elementPrefixLenght, CssElementContext.Editor context, CssIndex index, String renameMsgKey) {
+    private void refactor(Lookup lookup, ModificationResult modificationResult, RefactoringElementType type, Collection<FileObject> files, int elementPrefixLenght, CssElementContext.Editor context, CssIndex index, String renameMsgKey) {
         String elementImage = context.getElementName().substring(elementPrefixLenght);
         List<FileObject> involvedFiles = new LinkedList<FileObject>(files);
         DependenciesGraph deps = index.getDependencies(context.getFileObject());
