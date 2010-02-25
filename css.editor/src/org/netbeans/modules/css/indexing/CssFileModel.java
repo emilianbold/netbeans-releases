@@ -246,7 +246,7 @@ public class CssFileModel {
                 }
 
             } else if(node.kind() == CssParserTreeConstants.JJTHEXCOLOR) {
-                String image = node.image();
+                String image = node.image().trim();
                 OffsetRange range = new OffsetRange(node.startOffset(), node.endOffset());
                 Entry e = createEntry(image, range);
                 if(e != null) {
