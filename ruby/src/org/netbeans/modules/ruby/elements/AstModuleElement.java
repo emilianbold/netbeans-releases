@@ -12,6 +12,7 @@ public class AstModuleElement extends AstElement implements ModuleElement {
 
     private String fqn;
     private String extendWith;
+    private Set<String> includes;
 
     public AstModuleElement(ParserResult info, Node node) {
         super(info, node);
@@ -57,14 +58,20 @@ public class AstModuleElement extends AstElement implements ModuleElement {
         this.fqn = fqn;
     }
 
+    public void setIncludes(Set<String> includes) {
+        this.includes = includes;
+    }
+
+    @Override
     public Set<String> getIncludes() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return includes;
     }
 
     /** 
      * Class or module whose instance methods should all be copied into
      * anyone including this module 
      */
+    @Override
     public String getExtendWith() {
         return extendWith;
     }
