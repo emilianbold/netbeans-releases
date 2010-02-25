@@ -47,7 +47,10 @@ import java.io.IOException;
  * @author thp
  */
 public class Man2HTML {
+    private enum MODE {NORMAL, BOLD, UNDERLINE};
+
     private BufferedReader br;
+    private MODE mode = MODE.NORMAL;
 
     public Man2HTML(BufferedReader br) {
         this.br = br;
@@ -60,6 +63,7 @@ public class Man2HTML {
         buf.append("<PRE>\n"); // NOI18N
 
         char cacheCh = 0;
+        char prevCh = 0;
 
         try {
             String line = null;
@@ -70,17 +74,47 @@ public class Man2HTML {
                         cacheCh = ch;
                     }
                     else if (ch == '\b') {
+                        if (mode == MODE.NORMAL) {
+                            if (cacheCh != '_') {
+                                mode = MODE.BOLD;
+                                buf.append("<B>");
+                            }
+                            else {
+                                mode = MODE.UNDERLINE;
+                                buf.append("<I>");
+                            }
+                        }
                         cacheCh = 0;
                     }
                     else {
                         buf.append(cacheCh);
+
+                        if (mode != MODE.NORMAL && prevCh != '\b') {
+                            if (mode == MODE.BOLD) {
+                                buf.append("</B>");
+                            }
+                            else if (mode == MODE.UNDERLINE) {
+                                buf.append("</I>");
+                            }
+                            mode = MODE.NORMAL;
+                        }
+
                         cacheCh = ch;
                     }
+                    prevCh = ch;
                 }
                 if (cacheCh != 0) {
                     buf.append(cacheCh);
                 }
+                if (mode == MODE.BOLD) {
+                    buf.append("</B>");
+                }
+                else if (mode == MODE.UNDERLINE) {
+                    buf.append("</I>");
+                }
+                mode = MODE.NORMAL;
                 cacheCh = 0;
+                prevCh = 0;
                 buf.append("\n"); // NOI18N
             }
         }
