@@ -47,7 +47,7 @@ import java.io.IOException;
  * @author thp
  */
 public class Man2HTML {
-    private enum MODE {NORMAL, BOLD, UNDERLINE};
+    private enum MODE {NORMAL, BOLD, ITALIC;};
 
     private BufferedReader br;
     private MODE mode = MODE.NORMAL;
@@ -61,7 +61,7 @@ public class Man2HTML {
             if (mode == MODE.BOLD) {
                 buf.append("</B>"); // NOI18N
             }
-            else if (mode == MODE.UNDERLINE) {
+            else if (mode == MODE.ITALIC) {
                 buf.append("</I>"); // NOI18N
             }
             mode = MODE.NORMAL;
@@ -75,7 +75,7 @@ public class Man2HTML {
 
     private void startItalic(StringBuffer buf) {
         buf.append("<I>"); // NOI18N
-        mode = MODE.UNDERLINE;
+        mode = MODE.ITALIC;
     }
 
 
@@ -85,6 +85,7 @@ public class Man2HTML {
         buf.append("<BODY>\n"); // NOI18N
         buf.append("<PRE>\n"); // NOI18N
 
+        char prevCh = 0;
         char curCh = 0;
         char nextCh = 0;
 
@@ -92,6 +93,7 @@ public class Man2HTML {
             String line = null;
             while ((line = br.readLine()) != null) {
                 for (int i = 0; i < line.length(); i++) {
+                    prevCh = curCh;
                     curCh = nextCh;
                     nextCh = line.charAt(i);
 
@@ -107,16 +109,19 @@ public class Man2HTML {
                     }
                     else {
                         if (curCh != 0 && curCh != '\b') {
+                            if (prevCh != 0 && prevCh != '\b') {
+                                startNormal(buf);
+                            }
+                            // Just add the char to line. Excape if necessary.
                             if (curCh == '<') {
-                                buf.append("&lt;");
+                                buf.append("&lt;"); // NOI18N
                             }
                             else if (curCh == '>') {
-                                buf.append("&gt;");
+                                buf.append("&gt;"); // NOI18N
                             }
                             else {
                                 buf.append(curCh);
                             }
-                            startNormal(buf);
                         }
                     }
                 }
@@ -126,6 +131,7 @@ public class Man2HTML {
                     buf.append(nextCh);
                 }
                 startNormal(buf);
+                prevCh = 0;
                 curCh = 0;
                 nextCh = 0;
                 buf.append("\n"); // NOI18N
