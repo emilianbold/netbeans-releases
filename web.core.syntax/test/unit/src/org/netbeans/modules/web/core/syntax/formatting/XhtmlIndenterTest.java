@@ -37,12 +37,13 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.html.editor.indent;
+package org.netbeans.modules.web.core.syntax.formatting;
 
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -55,6 +56,7 @@ import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.html.editor.api.HtmlKit;
+import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.html.editor.xhtml.XhtmlElLanguage;
 import org.netbeans.modules.html.editor.xhtml.XhtmlElTokenId;
 import org.netbeans.modules.web.core.syntax.indent.ExpressionLanguageIndentTaskFactory;
@@ -74,6 +76,8 @@ public class XhtmlIndenterTest extends CslTestBase {
         AbstractIndenter.inUnitTestRun = true;
         ExpressionLanguageIndentTaskFactory elReformatFactory = new ExpressionLanguageIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-el"), ELTokenId.language(), elReformatFactory); //NOI18N
+        HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HtmlKit("text/html"), HTMLTokenId.language());
     }
 
     protected DefaultLanguageConfig getPreferredLanguage() {
