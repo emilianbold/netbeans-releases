@@ -53,6 +53,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.Version;
 
@@ -176,6 +177,19 @@ public class OSGiMainLookup extends ProxyLookup {
         }
         public @Override boolean owns(Class<?> clazz) {
             return FrameworkUtil.getBundle(clazz) == b;
+        }
+        private ClassLoader loader;
+        public @Override synchronized ClassLoader getClassLoader() throws IllegalArgumentException {
+            if (loader == null) {
+                loader = new OSGiClassLoader(b);
+            }
+            return loader;
+        }
+        public @Override String getImplementationVersion() {
+            return b.getVersion().getQualifier();
+        }
+        public @Override String getDisplayName() {
+            return (String) getLocalizedAttribute(Constants.BUNDLE_NAME);
         }
     }
 
