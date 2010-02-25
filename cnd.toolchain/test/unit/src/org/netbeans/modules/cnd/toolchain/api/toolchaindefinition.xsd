@@ -325,6 +325,7 @@
     <xs:element name="error">
         <xs:complexType>
             <xs:attribute name="pattern" type="xs:string" use="optional" />
+            <xs:attribute name="severity" type="xs:string" use="optional" />
             <xs:attribute name="language" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
@@ -597,7 +598,6 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="tns:error" minOccurs="0" maxOccurs="unbounded" />
-                <xs:element ref="tns:warning" minOccurs="0" maxOccurs="unbounded" />
                 <xs:element ref="tns:enter_directory" minOccurs="0" maxOccurs="1" />
                 <xs:element ref="tns:leave_directory" minOccurs="0" maxOccurs="1" />
                 <xs:element ref="tns:change_directory" minOccurs="0" maxOccurs="1" />
@@ -709,13 +709,6 @@
         <xs:complexType>
             <xs:attribute name="flags" type="xs:string" use="optional" />
             <xs:attribute name="pattern" type="xs:string" use="optional" />
-        </xs:complexType>
-    </xs:element>
-
-    <xs:element name="warning">
-        <xs:complexType>
-            <xs:attribute name="pattern" type="xs:string" use="optional" />
-            <xs:attribute name="language" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 

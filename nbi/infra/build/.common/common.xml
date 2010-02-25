@@ -348,6 +348,7 @@
                   dir="${cvs.dir}/${nbproject.path}" 
                   failonerror="false"
                   failifexecutionfails="false">
+                <env key="JAVA_HOME" value="${java.home}"/>
                 <arg value="${nb.target.clean}"/>
                 
                 <arg value="${nb.jdk.home}"/>
@@ -709,6 +710,7 @@
               failonerror="true"
               failifexecutionfails="true"
               errorproperty="error.property">
+            <env key="JAVA_HOME" value="${java.home}"/>
             <arg value="clean"/>
             <arg value="compile"/>
             
