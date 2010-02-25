@@ -59,8 +59,9 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
                 </file>
                 <file name="OptionalFactory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create50"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyOptionalFactory.create"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create50"/>
+                    <attr name="noInitializationFinish" boolvalue="true"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.tomcat5.Bundle#LBL_TomcatFactory"/>
                 </file>
@@ -94,8 +95,9 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
                 </file>
                 <file name="OptionalFactory55.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create55"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyOptionalFactory.create"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create55"/>
+                    <attr name="noInitializationFinish" boolvalue="true"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.tomcat5.Bundle#LBL_TomcatFactory55"/>
                 </file>
@@ -129,8 +131,9 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
                 </file>
                 <file name="OptionalFactory60.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create60"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyOptionalFactory.create"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create60"/>
+                    <attr name="noInitializationFinish" boolvalue="true"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.tomcat5.Bundle#LBL_TomcatFactory60"/>
                 </file>
