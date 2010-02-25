@@ -69,6 +69,10 @@ import org.openide.filesystems.FileObject;
  */
 public class CssFileModel {
 
+    public enum ModelType {
+        ID, CLASS, ELEMENT, COLOR, IMPORT;
+    }
+
     private static final Logger LOGGER = Logger.getLogger(CssIndex.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     //private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*[\\u0022]?([^\\u0022]*)[\\u0022]?\\s*\\)"); //NOI18N
@@ -105,6 +109,23 @@ public class CssFileModel {
 
     public FileObject getFileObject() {
         return getSnapshot().getSource().getFileObject();
+    }
+
+    public Collection<Entry> get(ModelType type) {
+        switch(type) {
+            case CLASS:
+                return getClasses();
+            case ID:
+                return getIds();
+            case COLOR:
+                return getColors();
+            case ELEMENT:
+                return htmlElements;
+            case IMPORT:
+                return imports;
+        }
+
+        return null;
     }
 
     public Collection<Entry> getClasses() {
