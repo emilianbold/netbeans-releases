@@ -114,6 +114,7 @@ made subject to such option by the copyright holder.
                 <propertyref prefix="felix-sys-prop."/>
                 <mapper type="glob" from="felix-sys-prop.*" to="*"/>
             </syspropertyset>
+            <jvmarg value="-ea"/>
         </java>
     </target>
 
