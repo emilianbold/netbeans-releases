@@ -112,6 +112,15 @@ public class CssIndex {
 
     /**
      *
+     * @param id
+     * @return collection of files defining exactly the given element
+     */
+    public Collection<FileObject> findColor(String colorCode) {
+        return find(CssIndexer.COLORS_KEY, colorCode);
+    }
+
+    /**
+     *
      * @param prefix
      * @return map of fileobject to collection of classes defined in the file starting with prefix
      */
@@ -126,6 +135,15 @@ public class CssIndex {
      */
     public Map<FileObject, Collection<String>> findIdsByPrefix(String prefix) {
         return findByPrefix(CssIndexer.IDS_KEY, prefix);
+    }
+
+    /**
+     *
+     * @param prefix
+     * @return map of fileobject to collection of colors defined in the file starting with prefix
+     */
+    public Map<FileObject, Collection<String>> findColorsByPrefix(String prefix) {
+        return findByPrefix(CssIndexer.COLORS_KEY, prefix);
     }
     
     public Map<FileObject, Collection<String>> findByPrefix(String keyName, String prefix) {

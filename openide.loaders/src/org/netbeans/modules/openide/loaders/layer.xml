@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="xml">
+        <folder name="entities">
+            <folder name="NetBeans">
+                <file name="Entity_Mapping_Registration_1_0" url="nbres:/org/openide/xml/EntityCatalog.dtd" >
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//Entity Mapping Registration 1.0//EN"/>
+                </file>
+            </folder>
+            <folder name="NetBeans_IDE">
+                <file name="DTD_xmlinfo" url="xmlinfo.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans IDE//DTD xmlinfo//EN"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="lookups">
+            <folder name="NetBeans">
+                <file name="Entity_Mapping_Registration_1_0.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.loaders.XMLDataObject$Processor"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.openide.loaders.EntityCatalogImpl$RegistrationProcessor"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

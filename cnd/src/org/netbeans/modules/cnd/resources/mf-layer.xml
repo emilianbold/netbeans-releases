@@ -57,6 +57,7 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-cnd-error.xml" url="error-annotation.xml"/>
+            <file name="org-netbeans-modules-cnd-warning.xml" url="warning-annotation.xml"/>
         </folder>
 
         <folder name="text">

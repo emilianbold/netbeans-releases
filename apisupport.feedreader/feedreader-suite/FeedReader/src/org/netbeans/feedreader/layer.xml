@@ -58,7 +58,11 @@
             <file name="org-netbeans-core-windows-actions-GlobalPropertiesAction.shadow_hidden"/>
         </folder>
     </folder>
-    <folder name="RssFeeds"/>
+    <folder name="RssFeeds">
+        <file name="sample.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.feedreader.Feed.getSample"/>
+        </file>
+    </folder>
     <folder name="Toolbars">
         <file name="Memory_hidden"/>
         <file name="UndoRedo_hidden"/>
