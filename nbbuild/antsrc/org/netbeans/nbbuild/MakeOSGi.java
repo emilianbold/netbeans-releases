@@ -339,7 +339,7 @@ public class MakeOSGi extends Task {
             }
             String targetVersion = threeDotsWithMajor(version, depMajLo == null ? "" : "x/" + depMajLo);
             b.append(";bundle-version=\"[").append(targetVersion).append(",");
-            b.append(100 * (Integer.parseInt(targetVersion.replaceFirst("[.].+", "")) / 100 + 1));
+            b.append(100 * ((depMajHi != null ? Integer.parseInt(depMajHi) : depMajLo != null ? Integer.parseInt(depMajLo) : 0) + 1));
             b.append(")\"");
         }
     }
