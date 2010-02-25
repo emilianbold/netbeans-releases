@@ -27,6 +27,15 @@ public final class NativeExecutionTestAction implements ActionListener {
 
     private static TargetSelector cfgPanel = new TargetSelector();
 
+    private static IOProvider getIOProvider() {
+        IOProvider iop = IOProvider.get("Terminal");       // NOI18N
+        if (iop == null) {
+            System.out.printf("IOProviderActionSupport.getTermIOProvider() couldn't find our provider\n");
+            iop = IOProvider.getDefault();
+        }
+        return iop;
+    }
+
     public void actionPerformed(ActionEvent e) {
         DialogDescriptor dd = new DialogDescriptor(cfgPanel, "Configure dialog", // NOI18N
                 true, DialogDescriptor.OK_CANCEL_OPTION,
@@ -68,7 +77,7 @@ public final class NativeExecutionTestAction implements ActionListener {
         // We cannot use ExecutionService in case of TerminalIO (?) ;(
 
         if (useTerminalIO) {
-            IOProvider iop = TerminalIOProviderSupport.getIOProvider();
+            IOProvider iop = getIOProvider();
             InputOutput io = iop.getIO(cmd, true);
             io.select();
 
