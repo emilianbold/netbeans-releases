@@ -46,7 +46,10 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -249,6 +252,18 @@ public final class HintsControllerImpl {
     
     public static synchronized void removeChangeListener(ChangeListener l) {
         listeners.remove(l);
+    }
+
+    private static final Map<Fix, Iterable<? extends Fix>> fix2Subfixes = new WeakHashMap<Fix, Iterable<? extends Fix>>();
+
+    public static void attachSubfixes(Fix fix, Iterable<? extends Fix> subfixes) {
+        fix2Subfixes.put(fix, subfixes);
+    }
+
+    public static Iterable<? extends Fix> getSubfixes(Fix fix) {
+        Iterable<? extends Fix> ret = fix2Subfixes.get(fix);
+
+        return ret != null ? ret : Collections.<Fix>emptyList();
     }
     
     public static class CompoundLazyFixList implements LazyFixList, PropertyChangeListener {

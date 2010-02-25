@@ -42,9 +42,18 @@ public final class IOFeaturesAction implements ActionListener {
         private IOPosition.Position label1;
         private IOPosition.Position label2;
 
+	private static IOProvider getIOProvider() {
+	    IOProvider iop = IOProvider.get("Terminal");       // NOI18N
+	    if (iop == null) {
+		System.out.printf("IOProviderActionSupport.getTermIOProvider() couldn't find our provider\n");
+		iop = IOProvider.getDefault();
+	    }
+	    return iop;
+	}
+
         public Tab() {
             // Get a Term-based IOPRovider
-            IOProvider iop = TerminalIOProviderSupport.getIOProvider();
+            IOProvider iop = getIOProvider();
 
             io = iop.getIO("TermIOProvider hyperlinks", true);
 

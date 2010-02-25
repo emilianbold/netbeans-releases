@@ -48,6 +48,7 @@ import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_INTERPR
 import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_PORT;
 import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_SESSION_ID;
 import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_STOP_AT_FIRST_LINE;
+import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_WATCHES_AND_EVAL;
 import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_GLOBAL_INCLUDE_PATH;
 
 /**
@@ -63,6 +64,7 @@ public final class PhpOptions {
     public static final String PROP_PHP_DEBUGGER_PORT = "propPhpDebuggerPort"; // NOI18N
     public static final String PROP_PHP_DEBUGGER_SESSION_ID = "propPhpDebuggerSessionId"; // NOI18N
     public static final String PROP_PHP_DEBUGGER_STOP_AT_FIRST_LINE = "propPhpDebuggerStopAtFirstLine"; // NOI18N
+    public static final String PROP_PHP_DEBUGGER_WATCHES_AND_EVAL = "propPhpDebuggerWatchesAndEval"; // NOI18N
     public static final String PROP_PHP_GLOBAL_INCLUDE_PATH = "propPhpGlobalIncludePath"; // NOI18N
 
     private static final PhpOptions INSTANCE = new PhpOptions();
@@ -83,6 +85,8 @@ public final class PhpOptions {
                     propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_SESSION_ID, null, newValue);
                 } else if (PHP_DEBUGGER_STOP_AT_FIRST_LINE.equals(key)) {
                     propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_STOP_AT_FIRST_LINE, null, Boolean.valueOf(newValue));
+                } else if (PHP_DEBUGGER_WATCHES_AND_EVAL.equals(key)) {
+                    propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_WATCHES_AND_EVAL, null, Boolean.valueOf(newValue));
                 } else if (PHP_GLOBAL_INCLUDE_PATH.equals(key)) {
                     propertyChangeSupport.firePropertyChange(PROP_PHP_GLOBAL_INCLUDE_PATH, null, newValue);
                 }
@@ -131,6 +135,16 @@ public final class PhpOptions {
      */
     public boolean isDebuggerStoppedAtTheFirstLine() {
         return getPhpOptions().isDebuggerStoppedAtTheFirstLine();
+    }
+
+    /**
+     * Check whether debugger allows to use watches and balloon evaluation. The default value is
+     * <code>{@value org.netbeans.modules.php.project.ui.options.PhpOptions#DEFAULT_DEBUGGER_WATCHES_AND_EVAL}</code>.
+     * @return <code>true</code> if the debugger allows to use watches and balloon evaluation, <code>false</code> otherwise.
+     * @since 2.25
+     */
+    public boolean isDebuggerWatchesAndEval() {
+        return getPhpOptions().isDebuggerWatchesAndEval();
     }
 
     /**

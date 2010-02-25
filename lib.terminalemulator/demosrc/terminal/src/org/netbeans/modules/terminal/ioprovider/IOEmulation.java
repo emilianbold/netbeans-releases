@@ -106,7 +106,6 @@ public abstract class IOEmulation {
     /**
      * Return whether this IO implements it's own line discipline.
      * @param io IO to operate on.
-     * @return
      */
     public static void setDisciplined(InputOutput io) {
 	IOEmulation ior = find(io);
@@ -125,7 +124,6 @@ public abstract class IOEmulation {
 
     /**
      * Return the terminal type supported by this IO.
-     * @param io IO to operate on.
      * @return terminal type.
      */
     abstract protected String getEmulation();

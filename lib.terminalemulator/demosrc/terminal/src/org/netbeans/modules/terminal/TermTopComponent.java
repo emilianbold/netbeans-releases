@@ -41,13 +41,17 @@
 
 package org.netbeans.modules.terminal;
 
-import org.netbeans.modules.terminal.api.*;
 import java.io.Serializable;
 import java.util.logging.Logger;
+
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+import org.openide.windows.IOContainer;
 
+import org.netbeans.modules.terminal.api.TerminalContainer;
+import org.netbeans.modules.terminal.api.TerminalProvider;
+import org.netbeans.modules.terminal.api.TerminalWindow;
 
 /**
  * Top component which displays something.
@@ -164,12 +168,12 @@ public final class TermTopComponent extends TopComponent implements TerminalWind
     //
     private TerminalContainer tc;
 
-    public TerminalContainer terminalContainer() {
-        return tc;
+    public IOContainer ioContainer() {
+        return tc.ioContainer();
     }
 
     private void initComponents2(String name) {
-        tc = TerminalProvider.getDefault().createTerminalContainer(this, name);
+        tc = TerminalContainer.create(this, name);
         add(tc);
     }
 }

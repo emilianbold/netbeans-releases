@@ -271,6 +271,8 @@ public class FormUtils
                 "model", PROP_PREFERRED,
                 "border", PROP_PREFERRED,
                 "selectionMode", PROP_PREFERRED },
+        { "javax.swing.JList", CLASS_AND_SWING_SUBCLASSES,
+                  "listData", PROP_HIDDEN },
         { "javax.swing.JComboBox", CLASS_AND_SUBCLASSES,
                 "model", PROP_PREFERRED },
         { "javax.swing.JComboBox", CLASS_EXACTLY,
