@@ -69,51 +69,135 @@ public class ScannerTestCase extends NbTestCase {
 
     public void testGNUpatterns() throws Exception {
         ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
-        String[] GCC_ERROR_SCANNER = new String[]{"^([a-zA-Z]:[^:$]*|[^:$]*):([0-9]+)[\\.:]([^:$]*):([^$]*)", // NOI18N
-						  "^([^:$]*):([0-9]+): ([a-zA-Z]*):*.*", // NOI18N
-						  "^([^\\($]*)\\(([0-9]+)\\): ([^:$]*): ([^$]*)"}; // NOI18N
-	String GCC_DIRECTORY_ENTER = "[gd]?make(?:\\.exe)?(?:\\[([0-9]+)\\])?: Entering[\\w+\\s+]+`([^']*)'"; // NOI18N
-	String GCC_DIRECTORY_LEAVE = "[gd]?make(?:\\.exe)?(?:\\[([0-9]+)\\])?: Leaving[\\w+\\s+]+`([^']*)'"; // NOI18N
-	String GCC_DIRECTORY_CD    = "cd\\s+([\\S]+)[\\s;]";// NOI18N
-        String GCC_DIRECTORY_MAKE_ALL = "Making all in (.*)";// NOI18N
-	String GCC_STACK_HEADER = "^In file included from ([A-Z]:[^:$]*|[^:$]*):([^:^,]*)"; // NOI18N
-	String GCC_STACK_NEXT =   "^                 from ([A-Z]:[^:$]*|[^:$]*):([^:^,]*)"; // NOI18N
 	ScannerDescriptor scanner = toolchain.getScanner();
-	assertEquals(scanner.getPatterns().get(0).getPattern(),GCC_ERROR_SCANNER[0]);
-	assertEquals(scanner.getPatterns().get(1).getPattern(),GCC_ERROR_SCANNER[1]);
-	assertEquals(scanner.getPatterns().get(2).getPattern(),GCC_ERROR_SCANNER[2]);
-	assertEquals(scanner.getEnterDirectoryPattern(),GCC_DIRECTORY_ENTER);
-	assertEquals(scanner.getLeaveDirectoryPattern(),GCC_DIRECTORY_LEAVE);
-	assertEquals(scanner.getChangeDirectoryPattern(),GCC_DIRECTORY_CD);
-	assertEquals(scanner.getMakeAllInDirectoryPattern(),GCC_DIRECTORY_MAKE_ALL);
-	assertEquals(scanner.getStackHeaderPattern(),GCC_STACK_HEADER);
-	assertEquals(scanner.getStackNextPattern(),GCC_STACK_NEXT);
+      	String s = "lifedialog.cpp:458: warning: comparison between signed and unsigned integer expressions";
+        boolean find = false;
+        for(ScannerPattern p : scanner.getPatterns()) {
+            Pattern pattern = Pattern.compile(p.getPattern());
+            Matcher m = pattern.matcher(s);
+	    if (m.matches()){
+                find = true;
+                assertTrue(m.group(1).equals("lifedialog.cpp"));
+                assertTrue(m.group(2).equals("458"));
+                assertTrue(m.group(3).indexOf("error")<0);
+                break;
+            }
+        }
+        assertTrue(find);
+    }
+
+    public void testGNUpatterns_01() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+	ScannerDescriptor scanner = toolchain.getScanner();
+      	String s = "../src/CLucene/config/gunichartables.cpp:132:3: warning: #warning \"===== Using internal character function =====\"";
+        boolean find = false;
+        for(ScannerPattern p : scanner.getPatterns()) {
+            Pattern pattern = Pattern.compile(p.getPattern());
+            Matcher m = pattern.matcher(s);
+	    if (m.matches()){
+                find = true;
+                assertTrue(m.group(1).equals("../src/CLucene/config/gunichartables.cpp"));
+                assertTrue(m.group(2).equals("132"));
+                assertTrue(m.group(3).indexOf("error")<0);
+                break;
+            }
+        }
+        assertTrue(find);
+    }
+    public void testGNUpatterns_02() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+	ScannerDescriptor scanner = toolchain.getScanner();
+      	String s = "main.cc:41: warning: ISO C++ forbids declaration of `main' with no type";
+        boolean find = false;
+        for(ScannerPattern p : scanner.getPatterns()) {
+            Pattern pattern = Pattern.compile(p.getPattern());
+            Matcher m = pattern.matcher(s);
+	    if (m.matches()){
+                find = true;
+                assertTrue(m.group(1).equals("main.cc"));
+                assertTrue(m.group(2).equals("41"));
+                assertTrue(m.group(3).indexOf("error")<0);
+                break;
+            }
+        }
+        assertTrue(find);
+    }
+    public void testGNUpatterns_03() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+	ScannerDescriptor scanner = toolchain.getScanner();
+      	String s = "main.cc:53: error: 'gtk_main' was not declared in this scope";
+        boolean find = false;
+        for(ScannerPattern p : scanner.getPatterns()) {
+            Pattern pattern = Pattern.compile(p.getPattern());
+            Matcher m = pattern.matcher(s);
+	    if (m.matches()){
+                find = true;
+                assertTrue(m.group(1).equals("main.cc"));
+                assertTrue(m.group(2).equals("53"));
+                assertTrue(m.group(3).indexOf("error")>=0);
+                break;
+            }
+        }
+        assertTrue(find);
     }
 
     public void testSUNpatterns() throws Exception {
         ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
-        String[] SUN_ERROR_SCANNER = new String[]{"^\"(.*)\", line ([0-9]+):", // NOI18N
-						  "^\"(.*)\", line ([0-9]+): Error:", // NOI18N
-						  "^\"(.*)\", Line = ([0-9]+),", // NOI18N
-						  "^\"(.*)\", line ([0-9]+): warning:", // NOI18N
-						  "^\"(.*)\", line ([0-9]+): Warning:", // NOI18N
-						  "^\"(.*)\", Line = ([0-9]+), Column = ([0-9]+): WARNING:"}; // NOI18N
-	String SUN_DIRECTORY_ENTER = "^\\(([^)]*)\\)[^:]*:"; // NOI18N
-        String[] SUN_FILTER_OUT = new String[]{"^::\\(.*\\)", // NOI18N
-					       "^:\\(.*\\).*", // NOI18N
-					       "^\\(.*\\).*:",}; // NOI18N
 	ScannerDescriptor scanner = toolchain.getScanner();
-	assertEquals(scanner.getPatterns().get(0).getPattern(),SUN_ERROR_SCANNER[0]);
-	assertEquals(scanner.getPatterns().get(1).getPattern(),SUN_ERROR_SCANNER[1]);
-	assertEquals(scanner.getPatterns().get(2).getPattern(),SUN_ERROR_SCANNER[2]);
-	assertEquals(scanner.getPatterns().get(3).getPattern(),SUN_ERROR_SCANNER[3]);
-	assertEquals(scanner.getPatterns().get(4).getPattern(),SUN_ERROR_SCANNER[4]);
-	assertEquals(scanner.getPatterns().get(5).getPattern(),SUN_ERROR_SCANNER[5]);
-	assertEquals(scanner.getEnterDirectoryPattern(),SUN_DIRECTORY_ENTER);
-	assertEquals(scanner.getFilterOutPatterns().get(0),SUN_FILTER_OUT[0]);
-	assertEquals(scanner.getFilterOutPatterns().get(1),SUN_FILTER_OUT[1]);
-	assertEquals(scanner.getFilterOutPatterns().get(2),SUN_FILTER_OUT[2]);
+      	String s = "\"life.cpp\", line 550: Warning: prior hides Life::prior.";
+        boolean find = false;
+        for(ScannerPattern p : scanner.getPatterns()) {
+            Pattern pattern = Pattern.compile(p.getPattern());
+            Matcher m = pattern.matcher(s);
+	    if (m.matches()){
+                find = true;
+                assertTrue(m.group(1).equals("life.cpp"));
+                assertTrue(m.group(2).equals("550"));
+                assertEquals("warning", p.getSeverity());
+                break;
+            }
+        }
+        assertTrue(find);
     }
+
+    public void testSUNpatterns_01() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+	ScannerDescriptor scanner = toolchain.getScanner();
+      	String s = "\"../src/CLucene/util/bufferedstream.h\", line 96:     Where: Instantiated from jstreams::BufferedInputStream<char>::read(const char*&, int, int).";
+        boolean find = false;
+        for(ScannerPattern p : scanner.getPatterns()) {
+            Pattern pattern = Pattern.compile(p.getPattern());
+            Matcher m = pattern.matcher(s);
+	    if (m.matches()){
+                find = true;
+                assertTrue(m.group(1).equals("../src/CLucene/util/bufferedstream.h"));
+                assertTrue(m.group(2).equals("96"));
+                assertEquals("warning", p.getSeverity());
+                break;
+            }
+        }
+        assertTrue(find);
+    }
+
+    public void testSUNpatterns_02() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+	ScannerDescriptor scanner = toolchain.getScanner();
+      	String s = "\"./CLucene/util/inputstreambuffer.h\", line 45: Error: Non-virtual function jstreams::InputStreamBuffer<char>::read(const char*&, int) declared pure.";
+        boolean find = false;
+        for(ScannerPattern p : scanner.getPatterns()) {
+            Pattern pattern = Pattern.compile(p.getPattern());
+            Matcher m = pattern.matcher(s);
+	    if (m.matches()){
+                find = true;
+                assertTrue(m.group(1).equals("./CLucene/util/inputstreambuffer.h"));
+                assertTrue(m.group(2).equals("45"));
+                assertEquals("error", p.getSeverity());
+                break;
+            }
+        }
+        assertTrue(find);
+    }
+
 
     public void testMSVCpatterns() throws Exception {
 	String s = "../../../hbver.c(308) : error C2039: 'wProductType' : is not a member of";

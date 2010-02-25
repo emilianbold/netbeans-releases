@@ -47,8 +47,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -87,7 +85,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -302,9 +299,10 @@ public class ProjectActionSupport {
         }
 
         private InputOutput getTermIO() {
+            final String TERM_PROVIDER = "Terminal"; // NOI18N
             InputOutput io;
             // hide issues in Terminal IO Provider for now
-            final AtomicReference<InputOutput> refIO = new AtomicReference<InputOutput>();
+            final AtomicReference<InputOutput> refIO = new AtomicReference<InputOutput>(null);
             try {
                 // init new term
                 // FIXUP: due to non lazy creation - we have to do it in EDT and wait
@@ -312,9 +310,11 @@ public class ProjectActionSupport {
 
                     @Override
                     public void run() {
-                        IOProvider iOProvider = TerminalIOProviderSupport.getIOProvider();
-                        InputOutput io = iOProvider.getIO(iOProvider.getName() + " - " + tabNameSeq, true); // NOI18N
-                        refIO.set(io);
+                        IOProvider termProvider = IOProvider.get(TERM_PROVIDER);
+                        if (termProvider != null) {
+                            InputOutput io = termProvider.getIO(TERM_PROVIDER + " - " + tabNameSeq, true); // NOI18N
+                            refIO.set(io);
+                        }
                     }
                 });
             } catch (InterruptedException ex) {
@@ -384,6 +384,9 @@ public class ProjectActionSupport {
             int consoleType = pae.getProfile().getConsoleType().getValue();
             if (consoleType == RunProfile.CONSOLE_TYPE_INTERNAL && !TerminalIOProviderSupport.isTerminalIO(io)) {
                 io = getTermIO();
+                if (io == null) {
+                    io = ioTab;
+                }
             }
             if (pae.getType() == PredefinedType.CUSTOM_ACTION && customHandler != null) {
                 initHandler(customHandler, pae, paes);
