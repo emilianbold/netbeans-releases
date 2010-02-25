@@ -51,11 +51,11 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public final class TextFilter extends Filter {
+final class SummaryTextFilter extends Filter {
     private boolean highlighting;
     private Pattern pattern;
 
-    public TextFilter() {
+    public SummaryTextFilter() {
         pattern = Pattern.compile("$^"); // NOI18N
     }
 
@@ -73,7 +73,7 @@ public final class TextFilter extends Filter {
         try {
             pattern = Pattern.compile(text, flags);
         } catch (PatternSyntaxException psex) {
-            String message = NbBundle.getMessage(TextFilter.class, "FindInQueryBar.invalidExpression"); // NOI18N
+            String message = NbBundle.getMessage(SummaryTextFilter.class, "FindInQueryBar.invalidExpression"); // NOI18N
             StatusDisplayer.getDefault().setStatusText(message, StatusDisplayer.IMPORTANCE_FIND_OR_REPLACE);
         }
     }

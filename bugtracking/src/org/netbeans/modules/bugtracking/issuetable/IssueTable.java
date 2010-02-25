@@ -123,7 +123,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     private final StoreColumnsHandler storeColumnsWidthHandler;
     private final JButton colsButton;
     private boolean savedQueryInitialized;
-    private TextFilter textFilter;
+    private SummaryTextFilter textFilter;
 
     /**
      * Returns the issue table filters
@@ -277,13 +277,13 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
 
     public void setFilterBySummary(String text, boolean regular, boolean wholeWords, boolean matchCase) {
         if(textFilter == null) {
-            textFilter = new TextFilter();
+            textFilter = new SummaryTextFilter();
         }
         textFilter.setText(text, regular, wholeWords, matchCase);
         setFilterIntern(textFilter);
     }
 
-    TextFilter getSummaryFilter() {
+    SummaryTextFilter getSummaryFilter() {
         return textFilter;
     }
 

@@ -322,7 +322,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
 
     private static Pattern getHightlightPattern(IssueTable issueTable, IssueProperty p) {
         if(p instanceof IssueNode.SummaryProperty) {            
-            TextFilter f = issueTable.getSummaryFilter();
+            SummaryTextFilter f = issueTable.getSummaryFilter();
             if(f != null && f.isHighLightingOn()) {
                 return f.getPattern();
             }
