@@ -138,7 +138,16 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
                     File f = PropertyUtils.resolveFile(this.projectFolder, piece);
                     URL entry = FileUtil.urlForArchiveOrDir(f);
                     if (entry != null) {
-                        result.add(ClassPathSupport.createResource(entry));
+                        try {
+                            result.add(ClassPathSupport.createResource(entry));
+                        } catch (IllegalArgumentException iae) {
+                            //Logging for issue #181155
+                            final String log = String.format("File: %s, Property value: %s, exists: %b",
+                                    f.getAbsolutePath(),
+                                    piece,
+                                    f.exists());
+                            throw new IllegalArgumentException(log, iae);
+                        }
                     } else {
                         Logger.getLogger(ProjectClassPathImplementation.class.getName()).warning(f + " does not look like a valid archive file");
                     }

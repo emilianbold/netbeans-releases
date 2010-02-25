@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007-2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.classfile;
@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -268,7 +269,14 @@ public class CodeGenerator {
             List<ExpressionTree> params = new LinkedList<ExpressionTree>();
 
             for (Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : am.getElementValues().entrySet()) {
-                ExpressionTree vt = make.Assignment(make.Identifier(entry.getKey().getSimpleName()), createTreeForAnnotationValue(make, entry.getValue()));
+                ExpressionTree val = createTreeForAnnotationValue(make, entry.getValue());
+
+                if (val == null) {
+                    LOG.log(Level.WARNING, "Cannot create annotation for: {0}", entry.getValue());
+                    continue;
+                }
+
+                ExpressionTree vt = make.Assignment(make.Identifier(entry.getKey().getSimpleName()), val);
 
                 params.add(vt);
             }
@@ -383,7 +391,7 @@ public class CodeGenerator {
             return make.TypeParameter(e.getSimpleName(), bounds);
         }
 
-        private static ExpressionTree createTreeForAnnotationValue(final TreeMaker make, AnnotationValue def) {
+        private ExpressionTree createTreeForAnnotationValue(final TreeMaker make, AnnotationValue def) {
             if (def == null) {
                 return null;
             }
@@ -453,7 +461,7 @@ public class CodeGenerator {
 
                 @Override
                 public ExpressionTree visitAnnotation(AnnotationMirror a, Void p) {
-                    return null;//XXX: annotations!
+                    return computeAnnotationTree(a);
                 }
 
                 @Override
@@ -461,7 +469,14 @@ public class CodeGenerator {
                     List<ExpressionTree> values = new LinkedList<ExpressionTree>();
 
                     for (AnnotationValue v : vals) {
-                        values.add(createTreeForAnnotationValue(make, v));
+                        ExpressionTree val = createTreeForAnnotationValue(make, v);
+
+                        if (val == null) {
+                            LOG.log(Level.WARNING, "Cannot create annotation for: {0}", v);
+                            continue;
+                        }
+                        
+                        values.add(val);
                     }
 
                     return make.NewArray(null, Collections.<ExpressionTree>emptyList(), values);
