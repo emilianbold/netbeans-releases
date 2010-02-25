@@ -1255,8 +1255,8 @@ public class CssCompletion implements CodeCompletionHandler {
         }
 
         @Override
-        public ImageIcon getIcon() {
-            return null;
+        public ElementKind getKind() {
+            return ElementKind.RULE;
         }
 
         @Override
