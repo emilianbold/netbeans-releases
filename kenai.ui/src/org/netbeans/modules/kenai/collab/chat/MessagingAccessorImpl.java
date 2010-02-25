@@ -66,7 +66,7 @@ public class MessagingAccessorImpl extends MessagingAccessor {
     public MessagingHandle getMessaging(ProjectHandle project) {
         Kenai k = project.getKenaiProject().getKenai();
         KenaiConnection kc = KenaiConnection.getDefault(k);
-        synchronized (kc) {
+        //synchronized (kc) {
             try {
                 final KenaiProject prj = project.getKenaiProject();
                 if (prj.isMyProject() && k.getStatus()==Status.ONLINE) {
@@ -95,7 +95,7 @@ public class MessagingAccessorImpl extends MessagingAccessor {
                 }
 
             return ChatNotifications.getDefault().getMessagingHandle(project.getKenaiProject());
-        }
+        //}
     }
 
 
@@ -106,7 +106,7 @@ public class MessagingAccessorImpl extends MessagingAccessor {
             public void actionPerformed(ActionEvent arg0) {
                 final ChatTopComponent chatTC = ChatTopComponent.findInstance();
                 chatTC.open();
-                chatTC.setActiveGroup(project.getId() + "@" + project.getKenaiProject().getKenai().getUrl().getHost());
+                chatTC.setActiveGroup(project.getId() + "@muc." + project.getKenaiProject().getKenai().getUrl().getHost());
                 chatTC.requestActive(false);
             }
         };
