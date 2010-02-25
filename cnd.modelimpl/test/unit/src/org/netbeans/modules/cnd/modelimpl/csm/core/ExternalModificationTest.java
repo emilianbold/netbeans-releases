@@ -118,7 +118,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         final CsmProject project = traceModel.getProject();
 
         project.waitParse();
-        CsmFile csmFile = project.findFile(sourceFile.getAbsolutePath());
+        CsmFile csmFile = project.findFile(sourceFile.getAbsolutePath(), false);
         assertNotNull(csmFile);
         assertEquals(1, csmFile.getIncludes().size());
         assertNull(csmFile.getIncludes().iterator().next().getIncludeFile());
@@ -146,7 +146,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         final CsmProject project = traceModel.getProject();
 
         project.waitParse();
-        CsmFile csmFile = project.findFile(headerFile1.getAbsolutePath());
+        CsmFile csmFile = project.findFile(headerFile1.getAbsolutePath(), false);
         assertNotNull(csmFile);
         assertEquals(1, csmFile.getIncludes().size());
         assertNull(csmFile.getIncludes().iterator().next().getIncludeFile());

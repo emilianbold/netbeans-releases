@@ -39,8 +39,6 @@
 
 package org.netbeans.modules.html.editor.indent;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -59,6 +57,7 @@ import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.xhtml.XhtmlElLanguage;
 import org.netbeans.modules.html.editor.xhtml.XhtmlElTokenId;
+import org.netbeans.modules.web.core.syntax.indent.ExpressionLanguageIndentTaskFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -73,7 +72,8 @@ public class XhtmlIndenterTest extends CslTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         AbstractIndenter.inUnitTestRun = true;
-        MockMimeLookup.setInstances(MimePath.parse("text/x-el"), ELTokenId.language()); //NOI18N
+        ExpressionLanguageIndentTaskFactory elReformatFactory = new ExpressionLanguageIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse("text/x-el"), ELTokenId.language(), elReformatFactory); //NOI18N
     }
 
     protected DefaultLanguageConfig getPreferredLanguage() {

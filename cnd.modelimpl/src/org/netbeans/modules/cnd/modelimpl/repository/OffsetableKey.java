@@ -154,7 +154,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         return (hashCode >> 8) + 37 * (hashCode & 0xff);
     }
 
-    private final int _hashCode() {
+    private int _hashCode() {
         int retValue;
 
         retValue = 19 * super.hashCode() + name.hashCode();
@@ -163,6 +163,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         return retValue;
     }
 
+    @Override
     public int compareTo(Object o) {
         if (this == o) {
             return 0;
@@ -207,10 +208,12 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
         }
     }
 
+    @Override
     public int getSecondaryDepth() {
         return 2;
     }
 
+    @Override
     public int getSecondaryAt(int level) {
         switch (level) {
             case 0:

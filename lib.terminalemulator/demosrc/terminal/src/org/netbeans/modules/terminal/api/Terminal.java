@@ -365,7 +365,7 @@ public class Terminal extends JComponent {
         Action[] oldActions = actions;
         this.actions = actions;
         if (terminalContainer != null)
-            terminalContainer.setActions(this, actions);
+	    terminalContainer.setToolbarActions(this, actions);
         else if (ioContainer != null)
 	    ioContainer.setToolbarActions(this, actions);
         pcs.firePropertyChange(PROP_ACTIONS, oldActions, actions);

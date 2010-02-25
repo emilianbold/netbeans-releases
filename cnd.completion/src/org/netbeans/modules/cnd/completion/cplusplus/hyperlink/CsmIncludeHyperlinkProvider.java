@@ -132,7 +132,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     }
 
     private CsmInclude findInclude(Document doc, int offset) {
-        CsmFile csmFile = CsmUtilities.getCsmFile(doc, true);
+        CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
         if (csmFile != null) {
             return ReferencesSupport.findInclude(csmFile, offset);
         }
@@ -189,7 +189,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     };
 
     protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset, HyperlinkType type) {
-        CsmFile csmFile = CsmUtilities.getCsmFile(doc, true);
+        CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
         CsmInclude target = null;
         if (csmFile != null) {
             target = ReferencesSupport.findInclude(csmFile, offset);

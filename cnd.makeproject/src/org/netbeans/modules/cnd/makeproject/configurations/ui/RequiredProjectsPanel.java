@@ -108,7 +108,7 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
         myListEditorPanel.setListData(data);
     }
 
-    public Vector<LibraryItem> getListData() {
+    public List<LibraryItem> getListData() {
         return myListEditorPanel.getListData();
     }
 

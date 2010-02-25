@@ -113,6 +113,31 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="optionalFactoryProxy">
+	    <api name="support"/>
+	    <summary>
+                Added class proxying the OptionalDeploymentManagerFactory and adding
+                the optional noInitializationFinish attribute.
+	    </summary>
+	    <version major="1" minor="66"/>
+	    <date day="25" month="2" year="2010"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                Added class ProxyOptionalFactory which delegates all calls
+                to configured delegate. Via noInitializationFinish it
+                is possible to supress finishInitialization() method when
+                it is not required by the plugin.
+                </p>
+                <p>
+                Designed to be used from XML Layer.
+                </p>
+	    </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.support" name="ProxyOptionalFactory"/>
+            <issue number="180893"/>
+	 </change>
+
         <change id="deploymentFactoryProxy">
 	    <api name="support"/>
 	    <summary>
@@ -135,7 +160,7 @@ is the proper place.
                 Designed to be used from XML Layer.
                 </p>
 	    </description>
-            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi.support" name="ProxyDeploymentFactory"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.support" name="ProxyDeploymentFactory"/>
             <issue number="148177"/>
 	 </change>
 

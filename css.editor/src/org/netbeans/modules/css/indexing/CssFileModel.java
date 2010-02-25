@@ -73,7 +73,7 @@ public class CssFileModel {
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     //private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*[\\u0022]?([^\\u0022]*)[\\u0022]?\\s*\\)"); //NOI18N
     private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)");
-    private Collection<Entry> classes, ids, htmlElements, imports;
+    private Collection<Entry> classes, ids, htmlElements, imports, colors;
     private CssParserResult parserResult;
 
     public CssFileModel(Source source) throws ParseException {
@@ -123,12 +123,16 @@ public class CssFileModel {
         return imports == null ? Collections.<Entry>emptyList() : imports;
     }
 
+    public Collection<Entry> getColors() {
+        return colors == null ? Collections.<Entry>emptyList() : colors;
+    }
+
     /**
      *
      * @return true if the model is empty - nothing interesting found in the page.
      */
     public boolean isEmpty() {
-        return null == classes && null == ids && null == htmlElements && null == imports;
+        return null == classes && null == ids && null == htmlElements && null == imports && null == colors;
     }
 
     //single threaded - called from constructor only, no need for synch
@@ -158,6 +162,13 @@ public class CssFileModel {
             imports = new ArrayList<Entry>();
         }
         return imports;
+    }
+
+    private Collection<Entry> getColorsCollectionInstance() {
+        if (colors == null) {
+            colors = new ArrayList<Entry>();
+        }
+        return colors;
     }
 
     private void init() {
@@ -234,6 +245,13 @@ public class CssFileModel {
                     collection.add(e);
                 }
 
+            } else if(node.kind() == CssParserTreeConstants.JJTHEXCOLOR) {
+                String image = node.image().trim();
+                OffsetRange range = new OffsetRange(node.startOffset(), node.endOffset());
+                Entry e = createEntry(image, range);
+                if(e != null) {
+                    getColorsCollectionInstance().add(e);
+                }
             }
         }
 

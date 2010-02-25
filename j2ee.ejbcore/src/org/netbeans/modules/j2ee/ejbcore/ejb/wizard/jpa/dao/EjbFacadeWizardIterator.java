@@ -196,7 +196,7 @@ import org.openide.util.NbBundle;
 
         for (String entity : entities) {
             handle.progress(NbBundle.getMessage(EjbFacadeWizardIterator.class, "MSG_GenSessionBean", entity), step++);
-            createdFiles.addAll(generate(targetFolder, entity, pkg, panel.isRemote(), panel.isLocal(), false));
+            createdFiles.addAll(generate(project, targetFolder, entity, pkg, panel.isRemote(), panel.isLocal(), false));
         }
 
         PersistenceUtils.logUsage(EjbFacadeWizardIterator.class, "USG_PERSISTENCE_SESSIONBEAN", new Integer[]{entities.size()});
@@ -215,8 +215,8 @@ import org.openide.util.NbBundle;
      *
      * @return a set containing the generated files.
      */
-    private Set<FileObject> generate(final FileObject targetFolder, final String entityClass, String pkg, final boolean hasRemote, final boolean hasLocal, boolean overrideExisting) throws IOException {
-        return generate(targetFolder, entityClass, pkg, hasRemote, hasLocal, ContainerManagedJTAInjectableInEJB.class, overrideExisting);
+    private Set<FileObject> generate(final Project project,final FileObject targetFolder, final String entityClass, String pkg, final boolean hasRemote, final boolean hasLocal, boolean overrideExisting) throws IOException {
+        return generate(project, targetFolder, entityClass, pkg, hasRemote, hasLocal, ContainerManagedJTAInjectableInEJB.class, overrideExisting);
     }
 
 
@@ -233,7 +233,7 @@ import org.openide.util.NbBundle;
      *
      * @return a set containing the generated files.
      */
-    Set<FileObject> generate(final FileObject targetFolder, final String entityFQN,
+    Set<FileObject> generate(final Project project, final FileObject targetFolder, final String entityFQN,
             final String pkg, final boolean hasRemote, final boolean hasLocal,
             final Class<? extends EntityManagerGenerationStrategy> strategyClass,
             boolean overrideExisting) throws IOException {
@@ -251,6 +251,7 @@ import org.openide.util.NbBundle;
 
             JavaSource source = JavaSource.forFileObject(afFO);
             source.runModificationTask(new Task<WorkingCopy>(){
+                @Override
                 public void run(WorkingCopy workingCopy) throws Exception {
                     workingCopy.toPhase(Phase.RESOLVED);
                     ClassTree classTree = SourceUtils.getPublicTopLevelTree(workingCopy);
@@ -599,7 +600,7 @@ import org.openide.util.NbBundle;
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
         wizard.putProperty("NewFileWizard_Title", NbBundle.getMessage(EjbFacadeWizardIterator.class, "Templates/Persistence/ejbFacade"));
-        Project project = Templates.getProject(wizard);
+        project = Templates.getProject(wizard);
 
         // http://www.netbeans.org/issues/show_bug.cgi?id=126642
         //if (Templates.getTargetFolder(wizard) == null) {
@@ -736,7 +737,7 @@ import org.openide.util.NbBundle;
             progressMsg = NbBundle.getMessage(EjbFacadeWizardIterator.class, "MSG_Progress_SessionBean_Now_Generating", entitySimpleName + FACADE_SUFFIX + ".java");//NOI18N
             progressContributor.progress(progressMsg, progressIndex++);
             progressPanel.setText(progressMsg);
-            sbFileObjects[i]=iterator.generate(jpaControllerPackageFileObject, entities.get(i), jpaControllerPackage, local, remote, overrideExisting).iterator().next();
+            sbFileObjects[i]=iterator.generate(project, jpaControllerPackageFileObject, entities.get(i), jpaControllerPackage, local, remote, overrideExisting).iterator().next();
         }
 
         PersistenceUtils.logUsage(EjbFacadeWizardIterator.class, "USG_PERSISTENCE_SESSIONBEAN", new Integer[]{entities.size()});

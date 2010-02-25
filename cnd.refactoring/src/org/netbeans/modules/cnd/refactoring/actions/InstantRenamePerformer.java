@@ -161,7 +161,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             final int caret = target.getCaretPosition();   
             Document doc = target.getDocument();
             DataObject dobj = NbEditorUtilities.getDataObject(doc);
-            CsmFile file = CsmUtilities.getCsmFile(dobj, false);
+            CsmFile file = CsmUtilities.getCsmFile(dobj, false, false);
             if (file == null) {
                 Utilities.setStatusBoldText(target, getString("no-instant-rename")); // NOI18N
                 return;
