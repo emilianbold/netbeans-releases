@@ -53,6 +53,7 @@ import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -110,24 +111,24 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
                 Collection<FileObject> files;
                 ElementKind kind;
                 String elementImage = element.image();
-                CssFileModel.ModelType type;
+                RefactoringElementType type;
                 switch(element.kind()) {
                     case CssParserTreeConstants.JJT_CLASS:
                         elementImage = elementImage.substring(1); //cut off the dot
                         files = index.findClasses(elementImage);
                         kind = ElementKind.CLASS;
-                        type = CssFileModel.ModelType.CLASS;
+                        type = RefactoringElementType.CLASS;
                         break;
                     case CssParserTreeConstants.JJTHASH:
                         elementImage = elementImage.substring(1); //cut off the hash
                         files = index.findIds(elementImage);
                         kind = ElementKind.ATTRIBUTE;
-                        type = CssFileModel.ModelType.ID;
+                        type = RefactoringElementType.ID;
                         break;
                     case CssParserTreeConstants.JJTHEXCOLOR:
                         files = index.findColor(elementImage);
                         kind = ElementKind.FIELD;
-                        type = CssFileModel.ModelType.COLOR;
+                        type = RefactoringElementType.COLOR;
                         break;
                     default:
                         //cannot happen

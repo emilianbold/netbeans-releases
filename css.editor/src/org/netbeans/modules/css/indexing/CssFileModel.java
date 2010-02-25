@@ -45,7 +45,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.css.gsf.CssLanguage;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CssParserConstants;
@@ -54,6 +56,7 @@ import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.css.parser.Token;
+import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -68,10 +71,6 @@ import org.openide.filesystems.FileObject;
  * @author marekfukala
  */
 public class CssFileModel {
-
-    public enum ModelType {
-        ID, CLASS, ELEMENT, COLOR, IMPORT;
-    }
 
     private static final Logger LOGGER = Logger.getLogger(CssIndex.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
@@ -111,7 +110,7 @@ public class CssFileModel {
         return getSnapshot().getSource().getFileObject();
     }
 
-    public Collection<Entry> get(ModelType type) {
+    public Collection<Entry> get(RefactoringElementType type) {
         switch(type) {
             case CLASS:
                 return getClasses();
@@ -261,7 +260,11 @@ public class CssFileModel {
 
                 String image = node.image().substring(start_offset_diff);
                 OffsetRange range = new OffsetRange(node.startOffset() + start_offset_diff, node.endOffset());
-                Entry e = createEntry(image, range);
+
+                //check if the real start offset can be translated to the original offset
+                boolean isVirtual = getSnapshot().getOriginalOffset(node.startOffset()) == -1;
+
+                Entry e = createEntry(image, range, isVirtual);
                 if(e != null) {
                     collection.add(e);
                 }
@@ -269,7 +272,7 @@ public class CssFileModel {
             } else if(node.kind() == CssParserTreeConstants.JJTHEXCOLOR) {
                 String image = node.image().trim();
                 OffsetRange range = new OffsetRange(node.startOffset(), node.endOffset());
-                Entry e = createEntry(image, range);
+                Entry e = createEntry(image, range, false);
                 if(e != null) {
                     getColorsCollectionInstance().add(e);
                 }
@@ -284,7 +287,8 @@ public class CssFileModel {
                 boolean quoted = WebUtils.isValueQuoted(image);
                 return createEntry(WebUtils.unquotedValue(image),
                         new OffsetRange(token.offset + (quoted ? 1 : 0),
-                        token.offset + image.length() - (quoted ? 1 : 0)));
+                        token.offset + image.length() - (quoted ? 1 : 0)),
+                        false);
             }
 
             //@import url("another.css");
@@ -298,7 +302,8 @@ public class CssFileModel {
                     int from = token.offset + m.start(groupIndex) + (quoted ? 1 : 0);
                     int to = token.offset + m.end(groupIndex) - (quoted ? 1 : 0);
                     return createEntry(WebUtils.unquotedValue(content),
-                            new OffsetRange(from, to));
+                            new OffsetRange(from, to),
+                            false);
                 }
             }
 
@@ -306,10 +311,11 @@ public class CssFileModel {
         }
     }
 
-    public Entry createEntry(String name, OffsetRange range) {
+    public Entry createEntry(String name, OffsetRange range, boolean isVirtual) {
         int documentFrom = getSnapshot().getOriginalOffset(range.getStart());
         int documentTo = getSnapshot().getOriginalOffset(range.getEnd());
 
+        int entryLine = -1;
         OffsetRange documentRange = null;
         if (documentFrom == -1 || documentTo == -1) {
             if(LOG) {
@@ -321,8 +327,15 @@ public class CssFileModel {
             }
         } else {
             documentRange = new OffsetRange(documentFrom, documentTo);
+            try {
+                //try to compute entry's line (for startoffset)
+                entryLine = GsfUtilities.getRowStart(getSnapshot().getText(), documentFrom);
+            } catch (BadLocationException ex) {
+                //no-op
+            }
         }
-        return new Entry(name, range, documentRange);
+
+        return new Entry(name, range, documentRange, isVirtual, entryLine);
     }
 
     public class Entry {
@@ -330,19 +343,40 @@ public class CssFileModel {
         private String name;
         private OffsetRange astRange;
         private OffsetRange documentRange;
+        private boolean isVirtual;
+        private int documentStartOffsetLine;
 
-        private Entry(String name, OffsetRange astRange, OffsetRange documentRange) {
+
+        private Entry(String name, OffsetRange astRange, OffsetRange documentRange, boolean isVirtual, int documentStartOffsetLine) {
             this.name = name;
             this.astRange = astRange;
             this.documentRange = documentRange;
+            this.isVirtual = isVirtual;
+            this.documentStartOffsetLine = documentStartOffsetLine;
         }
 
         public CssFileModel getModel() {
             return CssFileModel.this;
         }
 
+        /**
+         * quite similar to isValidInSourceDocument() but here we do not use the
+         * adjusted start offset to check if can be translated to the source
+         * but rather use the real node start offset.
+         * In case of virtually generated class or selector the isVirtual
+         * is always true since the dot or has doesn't exist in the css source code
+         *
+         */
+        public boolean isVirtual() {
+            return isVirtual;
+        }
+
         public boolean isValidInSourceDocument() {
             return documentRange != null;
+        }
+
+        public int getLine() {
+            return documentStartOffsetLine;
         }
 
         public String getName() {
