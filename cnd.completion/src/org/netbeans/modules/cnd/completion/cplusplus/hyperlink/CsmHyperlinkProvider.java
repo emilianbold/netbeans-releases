@@ -129,7 +129,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         TokenItem<CppTokenId> jumpToken = getJumpToken();
         CsmOffsetable primary = (CsmOffsetable) findTargetObject(doc, jumpToken, offset, false);
         CsmOffsetable item = toJumpObject(primary, CsmUtilities.getCsmFile(doc, true, false), offset);
-        if (CsmKindUtilities.isMethod(item)) {
+        if ((type == HyperlinkType.ALT_HYPERLINK) && CsmKindUtilities.isMethod(item)) {
             // popup should only be shown on *usages*, not on declaraions (definitions);
             // for latter annotatations should be used instead
             if (!isInDeclaration((CsmFunction) primary, CsmUtilities.getCsmFile(doc, true, false), offset)) {
@@ -300,8 +300,13 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset, HyperlinkType type) {
         CsmObject item = findTargetObject(doc, token, offset, false);
         CharSequence msg = item == null ? null : CsmDisplayUtilities.getTooltipText(item);
-        if (msg != null && CsmKindUtilities.isMacro(item)) {
-            msg = getAlternativeHyperlinkTip(doc, "AltHyperlinkHint", msg); // NOI18N
+        if (msg != null) {
+            if (CsmKindUtilities.isMacro(item)) {
+                msg = getAlternativeHyperlinkTip(doc, "AltHyperlinkHint", msg); // NOI18N
+            } else if (CsmKindUtilities.isMethod(item) &&
+                    !isInDeclaration((CsmFunction) item, CsmUtilities.getCsmFile(doc, true, false), offset)) {
+                msg = getAlternativeHyperlinkTip(doc, "AltMethodHyperlinkHint", msg); // NOI18N
+            }
         }
         return msg == null ? null : msg.toString();
     }

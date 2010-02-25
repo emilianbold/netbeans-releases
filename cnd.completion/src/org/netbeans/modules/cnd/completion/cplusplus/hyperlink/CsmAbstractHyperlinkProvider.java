@@ -107,7 +107,8 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
 
             @Override
             public void run() {
-                if (type == HyperlinkType.ALT_HYPERLINK) {
+                int[] span = CsmMacroExpansion.getMacroExpansionSpan(doc, offset, false);
+                if (type == HyperlinkType.ALT_HYPERLINK && (span != null && span[0] != span[1])) {
                     // in this mode we open MacroView
                     CsmMacroExpansion.showMacroExpansionView(doc, offset);
                 } else {
