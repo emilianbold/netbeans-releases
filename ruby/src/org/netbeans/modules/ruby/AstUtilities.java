@@ -2239,6 +2239,27 @@ public class AstUtilities {
         findLastNodes(body, exits);
     }
 
+    /**
+     * Gets the values of the given {@code args}, as fully qualified 
+     * names in case of {@link Colon2Node}s.
+     * @param args
+     * @return
+     */
+    static List<String> getValuesAsFqn(ListNode args) {
+        if (args.size() == 0) {
+            return Collections.emptyList();
+        }
+        List<String> result = new ArrayList<String>(args.size());
+        for (Node n : args.childNodes()) {
+            if (n instanceof Colon2Node) {
+                result.add(getFqn((Colon2Node) n));
+            } else if (n instanceof INameNode) {
+                result.add(getName(n));
+            }
+        }
+        return result;
+    }
+
     private static void findLastNodes(final Node node, Collection<? super Node> result) {
         if (node == null) {
             return;
