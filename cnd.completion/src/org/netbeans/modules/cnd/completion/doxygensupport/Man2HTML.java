@@ -45,6 +45,7 @@ import java.io.IOException;
 /**
  *
  * @author thp
+ * Simple man output to HTML formatter. 
  */
 public class Man2HTML {
     private enum MODE {NORMAL, BOLD, ITALIC;};
@@ -52,6 +53,10 @@ public class Man2HTML {
     private BufferedReader br;
     private MODE mode = MODE.NORMAL;
 
+    /**
+     * Simple man output to HTML formatter. Takes the output of the man command as input.
+     * @param br Charater input stream
+     */
     public Man2HTML(BufferedReader br) {
         this.br = br;
     }
@@ -79,6 +84,10 @@ public class Man2HTML {
     }
 
 
+    /**
+     * Run the formatter.
+     * @return the formattet html document as a String
+     */
     public String getHTML() {
         StringBuffer buf = new StringBuffer();
         buf.append("<HTML>\n"); // NOI18N
@@ -112,7 +121,7 @@ public class Man2HTML {
                             if (prevCh != 0 && prevCh != '\b') {
                                 startNormal(buf);
                             }
-                            // Just add the char to line. Excape if necessary.
+                            // Just append the char to line. Excape if necessary.
                             if (curCh == '<') {
                                 buf.append("&lt;"); // NOI18N
                             }
