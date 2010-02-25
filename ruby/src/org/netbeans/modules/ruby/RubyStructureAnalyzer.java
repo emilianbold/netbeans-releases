@@ -827,16 +827,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
                 }
             } else if ((includes != null) && name.equals("include")) {
                 Node argsNode = ((FCallNode)node).getArgsNode();
-
                 if (argsNode instanceof ListNode) {
-                    ListNode args = (ListNode)argsNode;
-                    for (Node n : args.childNodes()) {
-                        if (n instanceof Colon2Node) {
-                            includes.add(AstUtilities.getFqn((Colon2Node) n));
-                        } else if (n instanceof INameNode) {
-                            includes.add(AstUtilities.getName(n));
-                        }
-                    }
+                    includes.addAll(AstUtilities.getValuesAsFqn((ListNode)argsNode));
                 }
             } else if (("private".equals(name) || "protected".equals(name)) &&
                     parent instanceof AstClassElement) { // NOI18N
