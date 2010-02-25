@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
+import junit.framework.Test;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -77,9 +78,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
-import org.netbeans.junit.RandomlyFails;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
 import org.openide.util.Mutex.ExceptionAction;
 
 // XXX mkrauskopf: don't use libs/xerces for testing purposes of apisupport
@@ -98,7 +96,7 @@ public class SingleModulePropertiesTest extends TestBase {
     public SingleModulePropertiesTest(String name) {
         super(name);
     }
-    
+
     protected void setUp() throws Exception {
         noDataDir = true;
         clearWorkDir();
@@ -120,11 +118,26 @@ public class SingleModulePropertiesTest extends TestBase {
     }
     
     public void testThatPropertiesAreRefreshed() throws Exception {
-        NbModuleProject p = generateStandaloneModule("module1");
+        doTestThatPropertiesAreRefreshed(false);
+    }
+
+    private SingleModuleProperties doTestThatPropertiesAreRefreshed(boolean osgi) throws Exception {
+        NbModuleProject p = generateStandaloneModule(getWorkDir(), "module1", osgi);
         SingleModuleProperties props = loadProperties(p);
         assertEquals("spec. version", "1.0", props.getSpecificationVersion());
         assertEquals("display name", "Testing Module", props.getBundleInfo().getDisplayName());
-        assertEquals("number of dependencies", 0, props.getDependenciesListModel().getSize());
+        int deps;
+        if (osgi) {
+            assertEquals("OSGi modules have one dependency", 1, props.getDependenciesListModel().getSize());
+            Object dep = props.getDependenciesListModel().getElementAt(0);
+            ModuleDependency me = (ModuleDependency)dep;
+            assertEquals("Depends on OSGi libs", "org.netbeans.libs.osgi", me.getModuleEntry().getCodeNameBase());
+            assertTrue("Compile dep", me.hasCompileDependency());
+            deps = 1;
+        } else {
+            assertEquals("number of dependencies", 0, props.getDependenciesListModel().getSize());
+            deps = 0;
+        }
         
         // silently change manifest
         InputStream is = new FileInputStream(props.getManifestFile());
@@ -134,7 +147,7 @@ public class SingleModulePropertiesTest extends TestBase {
         } finally {
             is.close();
         }
-        em.setAttribute(ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION, "1.1", null);
+        em.setAttribute(osgi ? ManifestManager.BUNDLE_VERSION : ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION, "1.1", null);
         OutputStream os = new FileOutputStream(props.getManifestFile());
         try {
             em.write(os);
@@ -167,7 +180,22 @@ public class SingleModulePropertiesTest extends TestBase {
         // check that manifest and bundle has been reloaded
         assertEquals("spec. version", "1.1", props.getSpecificationVersion());
         assertEquals("display name should be changed", "Miscellaneous", props.getBundleInfo().getDisplayName());
-        assertEquals("number of dependencies", 1, props.getDependenciesListModel().getSize());
+        assertEquals("One dependency added", deps + 1, props.getDependenciesListModel().getSize());
+        return props;
+    }
+
+    public void testThatPropertiesAreRefreshedInOSGiMode() throws Exception {
+        SingleModuleProperties props = doTestThatPropertiesAreRefreshed(true);
+        Manifest mf = new Manifest(new FileInputStream(props.getManifestFile()));
+
+        for (Object s : mf.getMainAttributes().keySet()) {
+            if (s.toString().equals("OpenIDE-Module-Layer")) {
+                continue;
+            }
+            if (s.toString().startsWith("OpenIDE")) {
+                fail("Unexpected OpenIDE attribute in manifest: " + s);
+            }
+        }
     }
     
     public void testThatPropertiesListen() throws Exception {
@@ -213,7 +241,7 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("number of selected public packages", 1, pptm.getSelectedPackages().size());
     }
 
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    // cannot be run in binary dist, requires sources; test against fake platform
     public void testGetPublicPackagesForNBOrg() throws Exception {
         // libs.xerces properties
         NbModuleProject libP = (NbModuleProject) ProjectManager.getDefault().findProject(nbRoot().getFileObject("libs.xerces"));
@@ -376,7 +404,7 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("There are two available friends for component2.", 2, props.getAvailableFriends().length);
     }
 
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    // XXX cannot be run in binary dist, requires sources; test against fake platform
     public void testGetAvailableFriendsForNBOrg() throws Exception {
         // netbeans.org
         Project javaProject = ProjectManager.getDefault().findProject(nbRoot().getFileObject("java.project"));

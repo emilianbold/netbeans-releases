@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
     </target>
     <target name="jnlp-init-generate-master" depends="-check-for-master.jnlp" unless="master.jnlp.exists">
         <echo file="master.jnlp"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Discriptor 1.5//EN" "http://java.sun.com/dtd/JNLP-1.5.dtd">
+<!DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Descriptor 6.0//EN" "http://java.sun.com/dtd/JNLP-6.0.dtd">
 <jnlp spec="1.0+" codebase="${jnlp.codebase}">
   <information>
       <title>$${app.title}</title>
@@ -81,7 +81,7 @@ made subject to such option by the copyright holder.
 </jnlp>  
 ]]></echo>
         <echo file="branding.jnlp"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Discriptor 1.5//EN" "http://java.sun.com/dtd/JNLP-1.5.dtd">
+<!DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Descriptor 6.0//EN" "http://java.sun.com/dtd/JNLP-6.0.dtd">
 <jnlp spec="1.0+" codebase="${jnlp.codebase}">
   <information>
       <title>$${app.title}</title>
@@ -168,7 +168,7 @@ made subject to such option by the copyright holder.
             dir="${jnlp.dest.dir}/netbeans/"
             codebase="${jnlp.platform.codebase.own}"
             verify="true"
-            verifyexcludes="lib/nbexec.cmd,lib/nbexec,lib/nbexec.exe,lib/nbexec.dll,core/ide.ks,LICENSE.txt,DISTRIBUTION.txt,THIRDPARTYLICENSEREADME.txt,docs/swing-layout-1.0-doc.zip,docs/swing-layout-1.0.1-doc.zip,docs/html40.zip,core/org-netbeans-modules-utilities-cli.jar,docs/org/netbeans/modules/usersguide/ide.css,docs/swing-layout-1.0.2-doc.zip,docs/swing-layout-1.0.2-src.zip,docs/swing-layout-1.0.3-doc.zip,docs/swing-layout-1.0.3-src.zip,docs/swing-layout-1.0.4-doc.zip,docs/swing-layout-1.0.4-src.zip"
+            verifyexcludes="lib/nbexec.cmd,lib/nbexec,lib/nbexec.exe,lib/nbexec.dll,core/ide.ks,LICENSE.txt,DISTRIBUTION.txt,THIRDPARTYLICENSEREADME.txt,docs/swing-layout-1.0-doc.zip,docs/swing-layout-1.0.1-doc.zip,docs/html40.zip,core/org-netbeans-modules-utilities-cli.jar,docs/org/netbeans/modules/usersguide/ide.css,docs/swing-layout-1.0.2-doc.zip,docs/swing-layout-1.0.2-src.zip,docs/swing-layout-1.0.3-doc.zip,docs/swing-layout-1.0.3-src.zip,docs/swing-layout-1.0.4-doc.zip,docs/swing-layout-1.0.4-src.zip,modules/ext/felix-main-2.0.2.jar,modules/ext/toplink/README,modules/ext/toplink/3RD-PARTY-LICENSE.txt,modules/ext/toplink/LICENSE.txt"
             permissions="${jnlp.permissions}"
             signjars="${jnlp.sign.jars}"
             processjarversions="${jnlp.generate.versions}"
@@ -306,7 +306,7 @@ made subject to such option by the copyright holder.
         </pathconvert>
         
         <echo file="${jnlp.master.dir}/resources.xml"><![CDATA[
-    <j2se version="1.5+"/>
+    <java version="1.6+"/>
     <jar href="startup.jar"/>
     <property name="netbeans.user" value="$${user.home}/.nbapp-${app.name}"/>
 ]]></echo>

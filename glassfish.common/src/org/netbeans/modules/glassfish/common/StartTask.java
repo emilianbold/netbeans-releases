@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -52,11 +52,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -65,8 +61,6 @@ import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.glassfish.spi.Recognizer;
-import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
-import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.glassfish.spi.Utils;
@@ -119,6 +113,7 @@ public class StartTask extends BasicTask<OperationState> {
         List<OperationStateListener> listeners = new ArrayList<OperationStateListener>();
         listeners.addAll(Arrays.asList(stateListener));
         listeners.add(new OperationStateListener() {
+            @Override
             public void operationStateChanged(OperationState newState, String message) {
                 if (OperationState.COMPLETED.equals(newState)) {
                     // attempt to sync the comet support
@@ -144,6 +139,7 @@ public class StartTask extends BasicTask<OperationState> {
     /**
      * 
      */
+    @Override
     public OperationState call() {
         // Save the current time so that we can deduct that the startup
         // Failed due to timeout
@@ -241,6 +237,7 @@ public class StartTask extends BasicTask<OperationState> {
                 // try to sync the states after the profiler attaches
                 RequestProcessor.getDefault().post(new Runnable () {
 
+                    @Override
                     public void run() {
                         while (!CommonServerSupport.isRunning(support.getHostName(), support.getAdminPortNumber())) {
                             try {
@@ -251,6 +248,7 @@ public class StartTask extends BasicTask<OperationState> {
                         }
                         SwingUtilities.invokeLater(new Runnable() {
 
+                            @Override
                             public void run() {
                                     support.refresh();
                                                     
@@ -469,7 +467,7 @@ public class StartTask extends BasicTask<OperationState> {
                     if ("true".equals(ip.get(GlassfishModule.USE_SHARED_MEM_ATTR))) { // NOI18N
                         debugPortString = Integer.toString(
                                 Math.abs((ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR) +
-                                ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) +
+                                support.getDomainsRoot() + // ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) +
                                 ip.get(GlassfishModule.DOMAIN_NAME_ATTR)).hashCode() + 1));
                     } else {
                         int debugPort = 9009;
@@ -564,7 +562,7 @@ public class StartTask extends BasicTask<OperationState> {
     }
     
     private File getDomainFolder() {
-        return new File(ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) + 
+        return new File(support.getDomainsRoot()+ // ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) +
                 File.separatorChar + getDomainName());
     }
     

@@ -286,10 +286,18 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 waitFinished(0);
             }
 
-            public synchronized void waitFinished(int time) throws Throwable {
-                if (!finished) {
+            public synchronized void waitFinished(final int timeout) throws Throwable {
+                long time = timeout;
+                long startTime = System.currentTimeMillis();
+                while (!finished){
                     try {
                         wait(time);
+                        if (timeout > 0) {
+                            time = timeout - (System.currentTimeMillis() - startTime);
+                            if (time < 1) {
+                                break;
+                            }
+                        }
                     } catch (InterruptedException ex) {
                         if (t == null) {
                             t = ex;
@@ -301,7 +309,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 }
 
                 if (!finished) {
-                    throw Log.wrapWithMessages(new AssertionFailedError ("The test " + getName() + " did not finish in " + time + "ms\n" +
+                    throw Log.wrapWithMessages(new AssertionFailedError ("The test " + getName() + " did not finish in " + timeout + "ms\n" +
                         threadDump())
                     );
                 }

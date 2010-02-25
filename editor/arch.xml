@@ -497,11 +497,11 @@ No.
 <answer id="exec-property">
     <br/>
     <br/>
-    <api type="import" group="property" name="netbeans.debug.editor.warmup" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.warmup" category="private">
         System property to debug execution of the editor's warmup task (e.g. time intervals that each warmup section takes etc.).
     </api>
     <br/>
-    <api type="import" group="property" name="netbeans.debug.exceptions" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.exceptions" category="private">
         Obsolete now, we will remove those when time allows.
     </api>
 

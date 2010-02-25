@@ -251,6 +251,7 @@ public class FormLAF {
         // such new classes are casted to the ones obtained from the map.
         // Hence, we remove such mappings to avoid problems.
         UIManager.getDefaults().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (delDefaults.isDelegating() || delDefaults.isPreviewing()) {
                     Object newValue = evt.getNewValue();
@@ -270,6 +271,7 @@ public class FormLAF {
     {
         try {
             return Mutex.EVENT.readAccess(new Mutex.ExceptionAction<Object>() {
+                @Override
                 public Object run() throws Exception {
                     // FIXME(-ttran) needs to hold a lock on UIDefaults to
                     // prevent other threads from creating Swing components
@@ -303,6 +305,7 @@ public class FormLAF {
 
     public static void executeWithLookAndFeel(final FormModel formModel, final Runnable run) {
         Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
+            @Override
             public Object run() {
                 // FIXME(-ttran) needs to hold a lock on UIDefaults to
                 // prevent other threads from creating Swing components

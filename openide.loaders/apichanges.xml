@@ -106,6 +106,22 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="AcceleratorBinding">
+          <api name="awt"/>
+          <summary>Added <code>AcceleratorBinding</code></summary>
+          <version major="7" minor="13"/>
+          <date day="20" month="2" year="2010"/>
+          <author login="jglick"/>
+          <compatibility addition="yes"/>
+          <description>
+              <p>
+                  Added a new class to help with action accelerators.
+                  Should not be used by typical modules.
+              </p>
+          </description>
+          <class package="org.openide.awt" name="AcceleratorBinding"/>
+          <issue number="180543"/>
+      </change>
      <change id="XMLDataObject.subclass">
         <api name="loaders"/>
         <summary>New constructor of XMLDataObject</summary>

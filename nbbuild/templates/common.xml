@@ -278,7 +278,7 @@ made subject to such option by the copyright holder.
 
     <target name="release" depends="files-init" if="has.release.dir">
         <mkdir dir="${cluster}"/>
-        <copy todir="${cluster}">
+        <copy todir="${cluster}" overwrite="true">
             <fileset dir="${release.dir}">
                 <patternset includes="${release.files}"/>
             </fileset>
@@ -407,6 +407,8 @@ made subject to such option by the copyright holder.
         <mkdir dir="build"/>
         <property name="nbm.target.cluster" value=""/> <!-- fallback -->
         <property name="license.file.override" value="${license.file}"/>
+        <property name="use.pack200" value="true"/>
+        <property name="pack200.excludes" value=""/>
         <makenbm file="build/${nbm}"
                  productdir="${cluster}"
                  module="${module.jar}"
@@ -414,6 +416,8 @@ made subject to such option by the copyright holder.
                  distribution="${nbm.distribution}"
                  needsrestart="${nbm.needs.restart}"
                  global="${nbm.is.global}"
+                 usepack200="${use.pack200}"
+                 pack200excludes="${pack200.excludes}"
                  targetcluster="${nbm.target.cluster}"
                  releasedate="${nbm.release.date}"
                  moduleauthor="${nbm.module.author}">

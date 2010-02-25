@@ -48,6 +48,7 @@ made subject to such option by the copyright holder.
                 <folder name="ApiSupport">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.feedreader.Bundle"/>
                     <file name="FeedReaderProject.zip" url="FeedReaderProject.zip">
+                        <attr name="position" intvalue="1000"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/feedreader/rss16.gif"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.feedreader.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.feedreader.FeedReaderWizardIterator.createIterator"/>

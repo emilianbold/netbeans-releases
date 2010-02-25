@@ -107,6 +107,36 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="FormattingCustomizerPanel.moved">
+      <api name="spi"/>
+      <summary>Moving FormattingCustomizerPanel to editor.indent.project module</summary>
+      <version major="1" minor="20"/>
+      <date day="17" month="2" year="2010"/>
+      <author login="vstejskal"/>
+      <compatibility source="incompatible" binary="compatible" deletion="yes" addition="no" modification="no"/>
+      <description>
+        <p>
+            Moving <code>FormattingCustomizerPanel</code> class to <code>editor.indent.project</code> module.
+        </p>
+      </description>
+      <class package="org.netbeans.modules.options.indentation" name="FormattingCustomizerPanel"/>
+      <issue number="178311"/>
+  </change>
+
+  <change id="tree.model.filter">
+      <api name="spi"/>
+      <summary>Adding OptionsFilter to allow filtering inside the options dialog</summary>
+      <version major="1" minor="19"/>
+      <date day="17" month="2" year="2010"/>
+      <author login="jlahoda"/>
+      <compatibility source="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+        <p>
+            Adding <code>OptionsFilter</code> to allow filtering/search inside the options dialog.
+        </p>
+      </description>
+      <class package="org.netbeans.modules.options.editor.spi" name="OptionsFilter" />
+  </change>
   <change id="project.formatting.category.provider">
       <api name="spi"/>
       <summary>Adding 'allowedMimeTypes' filter to the project formatting settings customizer</summary>

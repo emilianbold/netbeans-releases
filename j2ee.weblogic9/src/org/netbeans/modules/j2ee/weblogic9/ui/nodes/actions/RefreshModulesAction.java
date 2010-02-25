@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions;
 
-import org.netbeans.modules.j2ee.weblogic9.ui.nodes.WLItemNode;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -52,9 +51,7 @@ import org.openide.util.actions.NodeAction;
  */
 public class RefreshModulesAction extends NodeAction {
 
-    public RefreshModulesAction() {
-    }
-
+    @Override
     protected boolean enable(org.openide.nodes.Node[] nodes) {
         RefreshModulesCookie cookie;
         for (int i = 0; i < nodes.length; i++) {
@@ -67,10 +64,12 @@ public class RefreshModulesAction extends NodeAction {
         return true;
     }
 
+    @Override
     public String getName() {
-        return NbBundle.getMessage(WLItemNode.class, "LBL_RefreshModulesAction"); // NOI18N
+        return NbBundle.getMessage(RefreshModulesAction.class, "LBL_RefreshModulesAction"); // NOI18N
     }
 
+    @Override
     protected void performAction(org.openide.nodes.Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
             RefreshModulesCookie cookie = nodes[i].getCookie(RefreshModulesCookie.class);
@@ -80,10 +79,12 @@ public class RefreshModulesAction extends NodeAction {
         }
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

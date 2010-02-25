@@ -80,6 +80,14 @@ public interface DataStorage {
      */
     void addData(String tableName, List<DataRow> data);
 
+/**
+     * Adds rows <code>data</code> to the table with name <code>tableName</code> of this  storage.
+     * This method should guaranty that when it is returned the data 
+     * @param tableName table name to add data into
+     * @param data data to add
+     */
+    void syncAddData(String tableName, List<DataRow> data);
+
     /**
      * Please be sure this method will return not null for the object
      * which will be registered in Services (using default public constructor

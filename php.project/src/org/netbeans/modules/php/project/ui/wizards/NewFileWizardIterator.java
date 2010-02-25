@@ -40,11 +40,14 @@ package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -53,6 +56,7 @@ import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.SourceRoots;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -67,6 +71,7 @@ import org.openide.loaders.DataObject;
  * @author Tomas Mysik
  */
 public final class NewFileWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
+    private static final Logger LOGGER = Logger.getLogger(NewFileWizardIterator.class.getName());
 
     private static final long serialVersionUID = 2262026971167469147L;
     private WizardDescriptor wizard;
@@ -212,7 +217,44 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
 
     private WizardDescriptor.Panel<WizardDescriptor>[] getPanels() {
         Project p = Templates.getProject(wizard);
-        final SourceGroup[] groups = PhpProjectUtils.getSourceGroups(p);
+        SourceGroup[] groups = PhpProjectUtils.getSourceGroups(p);
+        // #180054
+        if (groups != null && groups.length == 0) {
+            PhpProject project = (PhpProject) p;
+            FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(project);
+            FileObject tests = ProjectPropertiesSupport.getTestDirectory(project, false);
+            FileObject selenium = ProjectPropertiesSupport.getSeleniumDirectory(project, false);
+            SourceRoots sourceRoots = project.getSourceRoots();
+            SourceRoots testRoots = project.getTestRoots();
+            SourceRoots seleniumRoots = project.getSeleniumRoots();
+
+            StringBuilder sb = new StringBuilder(200);
+            // dirs
+            sb.append("project directory equals sources: "); // NOI18N
+            sb.append(project.getProjectDirectory().equals(sources));
+            sb.append("; sources (not null, valid): "); // NOI18N
+            sb.append(sources != null);
+            sb.append(", "); // NOI18N
+            sb.append(sources != null && sources.isValid());
+            sb.append("; tests (not null, valid): "); // NOI18N
+            sb.append(tests != null);
+            sb.append(", "); // NOI18N
+            sb.append(tests != null && tests.isValid());
+            sb.append("; selenium (not null, valid): "); // NOI18N
+            sb.append(selenium != null);
+            sb.append(", "); // NOI18N
+            sb.append(selenium != null && selenium.isValid());
+            // sources
+            sb.append("; sourceRoots: "); // NOI18N
+            sb.append(Arrays.asList(sourceRoots.getRoots()));
+            sb.append("; testRoots: "); // NOI18N
+            sb.append(Arrays.asList(testRoots.getRoots()));
+            sb.append("; seleniumRoots: "); // NOI18N
+            sb.append(Arrays.asList(seleniumRoots.getRoots()));
+            LOGGER.log(Level.WARNING, sb.toString(),
+                    new IllegalStateException("No source roots found (attach your IDE log to https://netbeans.org/bugzilla/show_bug.cgi?id=180054)"));
+            groups = null;
+        }
         WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = Templates.createSimpleTargetChooser(p, groups);
 
         @SuppressWarnings("unchecked") // Generic Array Creation

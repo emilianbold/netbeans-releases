@@ -41,15 +41,14 @@
 package org.netbeans.modules.cnd.makeproject.runprofiles;
 
 import java.util.ResourceBundle;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
@@ -60,35 +59,39 @@ public class RunProfileNodeProvider implements CustomizerNodeProvider {
      */
     private CustomizerNode customizerNode = null;
 
-    public CustomizerNode factoryCreate() {
+    @Override
+    public CustomizerNode factoryCreate(Lookup lookup) {
         if (customizerNode == null) {
-            customizerNode = createProfileNode();
+            customizerNode = createProfileNode(lookup);
         }
         return customizerNode;
     }
 
-    public CustomizerNode createProfileNode() {
+    public CustomizerNode createProfileNode(Lookup lookup) {
         return new RunProfileCustomizerNode(
                 "Run", // NOI18N
                 getString("RUNNING"),
-                null);
+                null, lookup);
     }
 
-    static class RunProfileCustomizerNode extends CustomizerNode {
+    private static class RunProfileCustomizerNode extends CustomizerNode {
 
-        public RunProfileCustomizerNode(String name, String displayName, CustomizerNode[] children) {
-            super(name, displayName, children);
+        public RunProfileCustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
+            super(name, displayName, children, lookup);
         }
 
         @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
+        public Sheet getSheet(Configuration configuration) {
             RunProfile runProfile = (RunProfile) configuration.getAuxObject(RunProfile.PROFILE_ID);
-            boolean isRemote = false;
-            if (configuration instanceof MakeConfiguration) {
-                isRemote = !((MakeConfiguration) configuration).getDevelopmentHost().isLocalhost();
-            }
-            return runProfile != null ? runProfile.getSheet(isRemote) : null;
-        //return configurationDescriptor.getSheet(project, configuration);
+            // TODO: will not disable selection of the console type as
+            // internal terminal was introduced....
+            // later a support for an extermnal terminal may be added.
+            
+            boolean disableConsoleTypeSelection = false;
+//            if (configuration instanceof MakeConfiguration) {
+//                disableConsoleTypeSelection = !((MakeConfiguration) configuration).getDevelopmentHost().isLocalhost();
+//            }
+            return runProfile != null ? runProfile.getSheet(disableConsoleTypeSelection) : null;
         }
 
         @Override

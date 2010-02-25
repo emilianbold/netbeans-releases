@@ -172,6 +172,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.removeButton.addActionListener(this);
         panel.refreshConfigurationButton.addActionListener(this);
         panel.findIssuesButton.addActionListener(this);
+        panel.cloneQueryButton.addActionListener(this);
         panel.changedFromTextField.addFocusListener(this);
 
         panel.idTextField.addActionListener(this);
@@ -246,7 +247,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void setupRenderer(IssueTable issueTable) {
-        BugzillaQueryCellRenderer renderer = new BugzillaQueryCellRenderer(new QueryTableCellRenderer(query));
+        BugzillaQueryCellRenderer renderer = new BugzillaQueryCellRenderer(new QueryTableCellRenderer(query, issueTable));
         issueTable.setRenderer(renderer);
     }
 
@@ -508,6 +509,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onRefreshConfiguration();
         } else if (e.getSource() == panel.findIssuesButton) {
             onFindIssues();
+        } else if (e.getSource() == panel.cloneQueryButton) {
+            onCloneQuery();
         } else if (e.getSource() == panel.idTextField) {
             if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
                 onGotoIssue();
@@ -798,6 +801,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         Query.openNew(repository);
     }
 
+    private void onCloneQuery() {
+        String p = getUrlParameters();
+        BugzillaQuery q = new BugzillaQuery(null, getRepository(), p, false, false, true);
+        BugtrackingUtil.openQuery(q, getRepository(), false);
+    }
+
     private void onAutoRefresh() {
         final boolean autoRefresh = panel.refreshCheckBox.isSelected();
         BugzillaConfig.getInstance().setQueryAutoRefresh(query.getDisplayName(), autoRefresh);
@@ -1068,6 +1077,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
 
         public void notifyData(final Issue issue) {
+            if(!query.contains(issue)) {
+                // XXX this is quite ugly - the query notifies an archoived issue
+                // but it doesn't "contain" it!
+                return;
+            }
             setIssueCount(++counter);
             if(counter == 1) {
                 panel.showNoContentPanel(false);

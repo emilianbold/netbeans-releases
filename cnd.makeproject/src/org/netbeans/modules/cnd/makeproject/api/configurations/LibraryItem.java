@@ -45,11 +45,10 @@ import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.platform.Platform;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -140,7 +139,6 @@ public class LibraryItem {
 	public Project getProject(String baseDir) {
 	    if (project == null) {
 		String location = IpeUtils.toAbsolutePath(baseDir, getMakeArtifact().getProjectLocation());
-		location = FilePathAdaptor.mapToLocal(location); // PC path
 		try {
 		    FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile());
                     project = ProjectManager.getDefault().findProject(fo);
@@ -260,9 +258,9 @@ public class LibraryItem {
             StringBuilder options = new StringBuilder();
             for (int i = 0; i < libs.length; i++) {
                 if (libs[i].charAt(0) != '-') {
-                    options.append("-l" + libs[i] + " "); // NOI18N
+                    options.append("-l").append(libs[i]).append(" "); // NOI18N
                 } else {
-                    options.append(libs[i] + " "); // NOI18N
+                    options.append(libs[i]).append(" "); // NOI18N
                 }
             }
             return options.toString();

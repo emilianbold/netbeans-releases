@@ -377,6 +377,13 @@ public final class ProjectPropertiesSupport {
     }
 
     /**
+     * @return {@code true} if bootstrap file should be used for creating new unit tests, {@code false} otherwise; the default value is {@code false}
+     */
+    public static boolean usePhpUnitBootstrapForCreateTests(PhpProject project) {
+        return getBoolean(project, PhpProjectProperties.PHP_UNIT_BOOTSTRAP_FOR_CREATE_TESTS, false);
+    }
+
+    /**
      * @return file (which can be invalid!) or <code>null</code>
      */
     public static File getPhpUnitConfiguration(PhpProject project) {

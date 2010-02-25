@@ -51,13 +51,11 @@ import java.util.List;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Model;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.embedder.writer.WriterUtils;
 import hidden.org.codehaus.plexus.util.DirectoryScanner;
 import hidden.org.codehaus.plexus.util.IOUtil;
 import hidden.org.codehaus.plexus.util.xml.Xpp3DomBuilder;
@@ -70,8 +68,6 @@ import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.POMModelFactory;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
@@ -203,18 +199,11 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                                  boolean useInCompiler) throws IOException {
         String artifactId = codeNameBase.replaceAll("\\.", "-"); //NOI18N
         NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
-        Set set = watch.getMavenProject().getDependencyArtifacts();
-        if (set != null) {
-            Iterator it = set.iterator();
-            while (it.hasNext()) {
-                Artifact art = (Artifact)it.next();
-                if (art.getGroupId().startsWith("org.netbeans") && art.getArtifactId().equals(artifactId)) { //NOI18N
-                    //TODO
-                    //not sure we ought to check for spec or release version.
-                    // just ignore for now, not any easy way to upgrade anyway I guess.
-                    return false;
-                }
-            }
+        if (hasDependency(codeNameBase)) {
+            //TODO
+            //not sure we ought to check for spec or release version.
+            // just ignore for now, not any easy way to upgrade anyway I guess.
+            return false;
         }
         Dependency dep = null;
         File platformFile = lookForModuleInPlatform(artifactId);
@@ -271,6 +260,29 @@ public class MavenNbModuleImpl implements NbModuleProvider {
      */
     public File getModuleJarLocation() {
         return null;
+    }
+
+    public @Override boolean hasDependency(String codeNameBase) throws IOException {
+        String artifactId = codeNameBase.replaceAll("\\.", "-"); //NOI18N
+        NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
+        Set<?> set = watch.getMavenProject().getDependencyArtifacts();
+        if (set != null) {
+            Iterator<?> it = set.iterator();
+            while (it.hasNext()) {
+                Artifact art = (Artifact) it.next();
+                if (art.getGroupId().startsWith("org.netbeans") && art.getArtifactId().equals(artifactId)) { // NOI18N
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean prepareContext() throws IllegalStateException {
+        //todo if PROP_NETBEANS_INSTALL isn't set yet then ask user to browse for
+        //app suite module to provide correct 'layer in context' class path
+        return true;
     }
     
     private class DependencyAdder implements Runnable {

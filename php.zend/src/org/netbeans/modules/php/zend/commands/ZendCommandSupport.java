@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.zend.commands;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -62,6 +63,8 @@ import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.zend.ZendScript;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
@@ -79,10 +82,17 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
     private static final File COMMANDS_PROVIDER;
 
     static {
-        COMMANDS_PROVIDER = InstalledFileLocator.getDefault().locate(COMMANDS_PROVIDER_REL_PATH, "org.netbeans.modules.php.zend", false); // NOI18N
-        if (COMMANDS_PROVIDER == null || !COMMANDS_PROVIDER.isFile()) {
-            throw new IllegalStateException("Could not locate file " + COMMANDS_PROVIDER_REL_PATH);
+        File commandsProvider = null;
+        try {
+            commandsProvider = FileUtil.normalizeFile(
+                    InstalledFileLocator.getDefault().locate(COMMANDS_PROVIDER_REL_PATH, "org.netbeans.modules.php.zend", false).getCanonicalFile()); // NOI18N
+            if (commandsProvider == null || !commandsProvider.isFile()) {
+                throw new IllegalStateException("Could not locate file " + COMMANDS_PROVIDER_REL_PATH);
+            }
+        } catch (IOException ex) {
+            throw new IllegalStateException("Could not locate file " + COMMANDS_PROVIDER_REL_PATH, ex);
         }
+        COMMANDS_PROVIDER = commandsProvider;
     }
 
     public ZendCommandSupport(PhpModule phpModule) {
@@ -133,10 +143,14 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
         for (String param : zendScript.getParameters()) {
             externalProcessBuilder = externalProcessBuilder.addArgument(param);
         }
-        externalProcessBuilder = externalProcessBuilder.addEnvironmentVariable(
-                ZendScript.ENV_INCLUDE_PATH_PREPEND, COMMANDS_PROVIDER.getParentFile().getAbsolutePath());
+        externalProcessBuilder = registerIncludePathPrepend(externalProcessBuilder);
 
         return externalProcessBuilder;
+    }
+
+    public static ExternalProcessBuilder registerIncludePathPrepend(ExternalProcessBuilder processBuilder) {
+        return processBuilder.addEnvironmentVariable(
+                ZendScript.ENV_INCLUDE_PATH_PREPEND, COMMANDS_PROVIDER.getParentFile().getAbsolutePath());
     }
 
     @Override
@@ -145,8 +159,9 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
         if (processBuilder == null) {
             return null;
         }
+
         final CommandsLineProcessor lineProcessor = new CommandsLineProcessor();
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL)
+        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL)
                 .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
@@ -154,11 +169,25 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
         });
 
         List<FrameworkCommand> freshCommands = Collections.emptyList();
-        ExecutionService service = ExecutionService.newService(processBuilder, descriptor, "help"); // NOI18N
+        ExecutionService service = ExecutionService.newService(processBuilder, executionDescriptor, "help"); // NOI18N
         Future<Integer> task = service.run();
         try {
             if (task.get().intValue() == 0) {
                 freshCommands = lineProcessor.getCommands();
+                if (freshCommands.isEmpty()) {
+                    NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
+                            NbBundle.getMessage(ZendCommandSupport.class, "MSG_NoCommands"),
+                            NotifyDescriptor.YES_NO_OPTION);
+                    if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION) {
+                        ZendScript.registerNetBeansProvider();
+                    }
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        String error = lineProcessor.getError();
+                        if (StringUtils.hasText(error)) {
+                            LOGGER.fine(error);
+                        }
+                    }
+                }
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
@@ -169,6 +198,8 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
     }
 
     class CommandsLineProcessor implements LineProcessor {
+        private final StringBuffer error = new StringBuffer();
+        private final String newLine = System.getProperty("line.separator"); // NOI18N
 
         // @GuardedBy(commands)
         private final List<FrameworkCommand> commands = new LinkedList<FrameworkCommand>();
@@ -180,6 +211,8 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
             // # 179255
             if (!line.contains(SEPARATOR)) {
                 // error occured
+                error.append(line);
+                error.append(newLine);
                 return;
             }
             String trimmed = line.trim();
@@ -201,6 +234,10 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
                 copy = new ArrayList<FrameworkCommand>(commands);
             }
             return copy;
+        }
+
+        public String getError() {
+            return error.toString();
         }
 
         public void close() {

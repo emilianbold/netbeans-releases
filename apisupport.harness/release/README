@@ -613,6 +613,9 @@ buildnumber - generated timestamp for use in
 OpenIDE-Module-Implementation-Version (or OpenIDE-Module-Build-Version if
 OpenIDE-Module-Implementation-Version was explicitly defined in the manifest).
 
+catalog.base.url [since 6.9] - distribution base for the suite modules NBMs
+location for which the catalog is generated. Default is ".". 
+
 cluster - cluster directory your module is to be built into. For netbeans.org
 modules, this is a subdirectory of nbbuild/netbeans/; the subdirectory name is
 defined automatically from nbbuild/cluster.properties, with a fallback to
@@ -795,6 +798,12 @@ platform.properties (in a standalone module, or in the suite for a suite compone
 module, or in nbbuild/user.build.properties for a netbeans.org module). You may
 also define just ${nbjdk.home} directly, without using ${nbjdk.active}, if you do
 not need to use the Java Platform Manager to set up the JDK definition.
+
+use.pack200 [since 6.9] - whether to Pack200 compress NBMs; default true.
+
+pack200.excludes [since 6.9] - comma- or space- separated list of patterns of 
+files relative to cluster directory for which pack200 compression should not be used 
+while creating NBMs.
 
 project.license [since 6.0] - license to use for newly created files in the project
 (applies also to suites); default is 'cddl' for modules inside netbeans.org.
@@ -1116,6 +1125,9 @@ etc.
 
 app.version - version of the application, used in building the MacOS application
 bundle for example. (Since 6.0 beta2)
+
+app.conf - location of an alternative configuration file. If not specified,
+default one from harness/etc/app.conf is taken (Since 6.9)
 
 branding.dir (default "${suite.dir}/branding") - directory containing branding
 overrides.

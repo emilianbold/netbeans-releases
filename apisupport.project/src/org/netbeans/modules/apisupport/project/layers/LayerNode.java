@@ -146,7 +146,10 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                     try {
                         FileObject layer = handle.getLayerFile();
                         p = FileOwnerQuery.getOwner(layer);
-                        assert p != null : layer;
+                        if (p == null) { // #175861: inside JAR etc.
+                            setKeys(Collections.<LayerChildren.KeyType>emptySet());
+                            return;
+                        }
                         try {
                             cp = createClasspath(p);
                         } catch (IOException e) {
@@ -224,6 +227,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
         class BadgingMergedFileSystem extends LayerFileSystem {
             public BadgingMergedFileSystem() {
                 super(new FileSystem[] {base}, cp);
+                setPropagateMasks(true);
                 status.addFileStatusListener(new FileStatusListener() {
                     public void annotationChanged(FileStatusEvent ev) {
                         fireFileStatusChanged(ev);
@@ -269,6 +273,13 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                             Util.err.notify(ErrorManager.INFORMATIONAL, e);
                             htmlLabel = nonHtmlLabel;
                         }
+                        boolean deleted = false;
+                        for( FileObject fo : files ) {
+                            if( fo.getNameExt().endsWith(LayerUtils.HIDDEN) ) {
+                                deleted = true;
+                                break;
+                            }
+                        }
                         if (highlighted != null) {
                             // Boldface resources which do come from this project.
                             boolean local = false;
@@ -283,6 +294,9 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                             if (local) {
                                 htmlLabel = "<b>" + htmlLabel + "</b>"; // NOI18N
                             }
+                        }
+                        if( deleted ) {
+                            htmlLabel = "<s>" + htmlLabel + "</s>"; //NOI18N
                         }
                         return htmlLabel;
                     }

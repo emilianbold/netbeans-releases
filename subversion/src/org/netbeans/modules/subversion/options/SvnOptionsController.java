@@ -46,7 +46,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import javax.swing.filechooser.FileFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.subversion.Annotator;
@@ -70,7 +73,8 @@ public final class SvnOptionsController extends OptionsPanelController implement
     
     private final SvnOptionsPanel panel;
     private final Repository repository;
-    private final AnnotationSettings annotationSettings;            
+    private final AnnotationSettings annotationSettings;
+    private static final HashSet<String> allowedExecutables = new HashSet<String>(Arrays.asList(new String[] {"svn", "svn.exe", "libsvnjavahl-1.dll", "libsvnjavahl-1.so"} )); //NOI18N
         
     public SvnOptionsController() {        
         
@@ -98,6 +102,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         annotationSettings.update();
         repository.refreshUrlHistory();
         panel.excludeNewFiles.setSelected(SvnModuleConfig.getDefault().getExludeNewFiles());
+        panel.prefixRepositoryPath.setSelected(SvnModuleConfig.getDefault().isRepositoryPathPrefixed());
         
     }
     
@@ -110,6 +115,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         SvnModuleConfig.getDefault().setAnnotationFormat(panel.annotationTextField.getText());
         SvnModuleConfig.getDefault().setAutoOpenOutputo(panel.cbOpenOutputWindow.isSelected());
         SvnModuleConfig.getDefault().setExcludeNewFiles(panel.excludeNewFiles.isSelected());
+        SvnModuleConfig.getDefault().setRepositoryPathPrefixed(panel.prefixRepositoryPath.isSelected());
 
         // {folder} variable setting
         annotationSettings.applyChanges();
@@ -170,10 +176,23 @@ public final class SvnOptionsController extends OptionsPanelController implement
         JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(SvnOptionsController.class, "ACSD_BrowseFolder"), oldFile);   // NOI18N
         fileChooser.setDialogTitle(NbBundle.getMessage(SvnOptionsController.class, "Browse_title"));                                            // NOI18N
         fileChooser.setMultiSelectionEnabled(false);
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        fileChooser.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory() || allowedExecutables.contains(f.getName());
+            }
+            @Override
+            public String getDescription() {
+                return NbBundle.getMessage(SvnOptionsController.class, "FileChooser.SvnExecutables.desc"); //NOI18N
+            }
+        });
         fileChooser.showDialog(panel, NbBundle.getMessage(SvnOptionsController.class, "OK_Button"));                                            // NOI18N
         File f = fileChooser.getSelectedFile();
         if (f != null) {
+            if (f.isFile()) {
+                f = f.getParentFile();
+            }
             panel.executablePathTextField.setText(f.getAbsolutePath());
         }
     }

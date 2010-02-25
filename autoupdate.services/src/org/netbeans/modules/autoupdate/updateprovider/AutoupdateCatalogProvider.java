@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -57,7 +58,7 @@ import org.netbeans.spi.autoupdate.UpdateProvider;
  */
 public class AutoupdateCatalogProvider implements UpdateProvider {
     private URL updateCenter;
-    private String codeName;
+    private final String codeName;
     private String displayName;
     private AutoupdateCatalogCache cache = AutoupdateCatalogCache.getDefault ();
     private Logger log = Logger.getLogger ("org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalog");
@@ -73,6 +74,7 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
      * Creates a new instance of AutoupdateCatalog
      */
     public AutoupdateCatalogProvider (String name, String displayName, URL updateCenter, CATEGORY category) {
+        Parameters.notNull("name", name);
         this.codeName = name;
         this.displayName = displayName;
         this.updateCenter = updateCenter;
@@ -80,7 +82,6 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
     }
     
     public String getName () {
-        assert codeName != null : "UpdatesProvider must have a name.";
         return codeName;
     }
     

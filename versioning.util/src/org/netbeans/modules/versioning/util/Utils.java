@@ -856,6 +856,16 @@ public final class Utils {
      * @param caller caller object for logger name determination
      * @param e exception that defines the error
      */
+    public static void logInfo(Class caller, Throwable e) {
+        Logger.getLogger(caller.getName()).log(Level.INFO, e.getMessage(), e);
+    }
+
+    /**
+     * Convenience method for awkward Logger invocation.
+     *
+     * @param caller caller object for logger name determination
+     * @param e exception that defines the error
+     */
     public static void logWarn(Class caller, Throwable e) {
         Logger.getLogger(caller.getName()).log(Level.WARNING, e.getMessage(), e);
     }
@@ -1112,23 +1122,23 @@ public final class Utils {
     // -----
     // Usages logging based on repository URL (for Kenai)
 
-    private static VCSKenaiSupport kenaiSupport;
+    private static VCSKenaiAccessor kenaiAccessor;
     private static final LinkedList<File> loggedRoots = new LinkedList<File>();
     private static final List<File> foldersToCheck = new LinkedList<File>();
     private static Runnable loggingTask = null;
 
     public static void logVCSKenaiUsage(String vcs, String repositoryUrl) {
-        VCSKenaiSupport kenaiSup = getKenaiSupport();
+        VCSKenaiAccessor kenaiSup = getKenaiAccessor();
         if (kenaiSup != null) {
             kenaiSup.logVcsUsage(vcs, repositoryUrl);
         }
     }
 
-    private static VCSKenaiSupport getKenaiSupport() {
-        if (kenaiSupport == null) {
-            kenaiSupport = Lookup.getDefault().lookup(VCSKenaiSupport.class);
+    private static VCSKenaiAccessor getKenaiAccessor() {
+        if (kenaiAccessor == null) {
+            kenaiAccessor = Lookup.getDefault().lookup(VCSKenaiAccessor.class);
         }
-        return kenaiSupport;
+        return kenaiAccessor;
     }
 
     /*

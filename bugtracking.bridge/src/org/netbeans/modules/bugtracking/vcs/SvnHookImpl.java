@@ -58,9 +58,9 @@ import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
-import org.netbeans.modules.subversion.hooks.spi.SvnHook;
-import org.netbeans.modules.subversion.hooks.spi.SvnHookContext;
-import org.netbeans.modules.subversion.hooks.spi.SvnHookContext.LogEntry;
+import org.netbeans.modules.versioning.hooks.SvnHook;
+import org.netbeans.modules.versioning.hooks.SvnHookContext;
+import org.netbeans.modules.versioning.hooks.SvnHookContext.LogEntry;
 import org.openide.util.NbBundle;
 
 /**
@@ -184,12 +184,13 @@ public class SvnHookImpl extends SvnHook {
                         message},
                     new StringBuffer(),
                     null).toString();
-
-            LOG.log(Level.FINER, " svn commit hook message '" + msg + "'");     // NOI18N
-            issue.addComment(msg, isResolveSelected());
         }
-
-        issue.open();
+        if(isLinkSelected() || isResolveSelected()) {
+            LOG.log(Level.FINER, " svn commit hook message '" + msg + "', resolved " + isResolveSelected());     // NOI18N
+            issue.addComment(msg, isResolveSelected());
+            issue.open();
+        }
+        
         LOG.log(Level.FINE, "svn commit hook end for " + file);                 // NOI18N
         VCSHooksConfig.logHookUsage("SVN", getSelectedRepository());            // NOI18N
     }

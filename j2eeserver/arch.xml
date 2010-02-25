@@ -70,10 +70,22 @@ J2EE Server Module provides support for development of J2EE modules and framewor
 
 <answer id="arch-overall">
 
+<p>
+    There are two separate api/spi sets in j2eeserver. The devmodules
+    api/spi is for j2ee development modules (web, j2ee app, etc). The
+    plugins api/spi is for server plugins.
+</p>
+
+<api name="J2EEServer-devmodules" type="export" category="friend" group="java">
+    The spi classes are to be subclassed by dev modules and to be provided
+    as cookies on the development nodes. The api classes are to be used to
+    add actions/properties/additional cookies to those nodes.
+</api>
+
 <api name="J2EEServerAPI" type="export" category="friend" group="java">
   J2EE Server module serves as an integration point between two kinds of netbeans modules:
   <ul>
-    <li><b>server plugins</b> (or simply plugins) that integrate various J2EE servers in IDE, and</li>
+    <li><b>server plugins</b> (or simply plugins) that integrate various J2EE servers in IDE</li>
     <li><b>devmodules</b> - netbeans modules that provide support for development
     of J2EE modules (web module, EJB module, J2EE Application, etc.) and need to deploy 
     and debug them on J2EE servers.</li>

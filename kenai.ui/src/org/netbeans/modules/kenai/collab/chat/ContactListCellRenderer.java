@@ -50,6 +50,8 @@ import java.awt.Dimension;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.kenai.api.KenaiManager;
+import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 import org.openide.awt.HtmlRenderer;
 import org.openide.util.ImageUtilities;
 
@@ -65,6 +67,7 @@ public class ContactListCellRenderer extends javax.swing.JPanel implements ListC
         setOpaque(true);
         buddyLabel.setOpaque(true);
         messageLabel.setOpaque(true);
+        kenaiName.setOpaque(true);
     }
 
     /** This method is called from within the constructor to
@@ -75,18 +78,36 @@ public class ContactListCellRenderer extends javax.swing.JPanel implements ListC
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         buddyLabel = HtmlRenderer.createLabel();
         messageLabel = new javax.swing.JLabel();
+        kenaiName = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 3, 1, 5));
-        setLayout(new java.awt.BorderLayout());
-        add(buddyLabel, java.awt.BorderLayout.CENTER);
+        setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        add(buddyLabel, gridBagConstraints);
 
-        messageLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        add(messageLabel, java.awt.BorderLayout.EAST);
+        messageLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        add(messageLabel, gridBagConstraints);
+
+        kenaiName.setForeground(java.awt.Color.gray);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        add(kenaiName, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
+    @Override
     public Component getListCellRendererComponent(
             JList list,
             Object value,
@@ -95,14 +116,21 @@ public class ContactListCellRenderer extends javax.swing.JPanel implements ListC
             boolean cellHasFocus) {
         buddyLabel.setText(value.toString());
         ContactListItem item = (ContactListItem) value;
-        buddyLabel.setBorder(new EmptyBorder(0,item.getIcon()==null?19:0,0,0));
+        buddyLabel.setBorder(new EmptyBorder(0,item.getIcon()==null?22:3,0,0));
         buddyLabel.setIcon(item.getIcon());
         if (item.hasMessages()) {
             messageLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true)); // NOI18N
-            messageLabel.setBorder(new EmptyBorder(0,3,0,0));
+            messageLabel.setBorder(new EmptyBorder(0,3,0,3));
         } else {
             messageLabel.setIcon(null);
+            messageLabel.setBorder(new EmptyBorder(0,3,16,19));
         }
+        if (KenaiManager.getDefault().getKenais().size()>1) {
+            kenaiName.setText(item.getKenaiName());
+        } else {
+            kenaiName.setText("");
+        }
+
         if (isSelected) {
             this.setBackground(list.getSelectionBackground());
             this.setForeground(list.getSelectionForeground());
@@ -110,19 +138,25 @@ public class ContactListCellRenderer extends javax.swing.JPanel implements ListC
             buddyLabel.setForeground(list.getSelectionForeground());
             messageLabel.setBackground(list.getSelectionBackground());
             messageLabel.setForeground(list.getSelectionForeground());
+            kenaiName.setBackground(list.getSelectionBackground());
+            kenaiName.setForeground(list.getSelectionForeground());
         } else {
-            this.setBackground(list.getBackground());
+            Color bg = ColorManager.getDefault().getDefaultBackground();
+            this.setBackground(bg);
             this.setForeground(list.getForeground());
-            buddyLabel.setBackground(list.getBackground());
+            buddyLabel.setBackground(bg);
             buddyLabel.setForeground(list.getForeground());
-            messageLabel.setBackground(list.getBackground());
+            messageLabel.setBackground(bg);
             messageLabel.setForeground(list.getForeground());
+            kenaiName.setBackground(bg);
+            kenaiName.setForeground(Color.gray);
         }
         this.setPreferredSize(new Dimension(10, getPreferredSize().height));
         return this;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel buddyLabel;
+    private javax.swing.JLabel kenaiName;
     private javax.swing.JLabel messageLabel;
     // End of variables declaration//GEN-END:variables
 }

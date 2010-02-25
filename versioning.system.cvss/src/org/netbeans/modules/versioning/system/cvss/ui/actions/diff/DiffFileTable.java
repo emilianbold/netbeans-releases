@@ -65,20 +65,42 @@ import java.util.*;
 import java.lang.reflect.InvocationTargetException;
 import java.io.File;
 import org.netbeans.modules.versioning.diff.DiffUtils;
+import org.netbeans.modules.versioning.system.cvss.Annotator;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.FileInformation;
+import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.DeleteLocalAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.ExcludeFromCommitAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.ignore.IgnoreAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.log.AnnotationsAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.tag.BranchAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.tag.TagAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateAction;
+import org.netbeans.modules.versioning.system.cvss.ui.syncview.OpenInEditorAction;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.util.CollectionUtils;
 import org.netbeans.modules.versioning.util.SortedTable;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.openide.awt.Mnemonics;
+import org.openide.awt.MouseUtils;
 import org.openide.cookies.EditorCookie;
+import org.openide.util.WeakListeners;
+import org.openide.util.actions.SystemAction;
 
 /**
  * 
  * @author Maros Sandor
  */
-class DiffFileTable implements MouseListener, ListSelectionListener, AncestorListener, PropertyChangeListener {
+class DiffFileTable implements MouseListener, ListSelectionListener, AncestorListener {
     
     private NodeTableModel tableModel;
     private JTable table;
     private JScrollPane     component;
-    private Node [] nodes = new Node[0];
+    private DiffNode [] nodes = new DiffNode[0];
     /**
      * editor cookies belonging to the files being diffed.
      * The array may contain {@code null}s if {@code EditorCookie}s
@@ -132,6 +154,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         }
     };
     private final MultiDiffPanel master;
+    private PropertyChangeListener changeListener;
 
     public DiffFileTable(MultiDiffPanel master) {
         this.master = master;
@@ -241,31 +264,23 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
     }
 
     void setTableModel(Setup[] setups, EditorCookie[] editorCookies) {
-        if (this.editorCookies != null) {
-            for (EditorCookie editorCookie : this.editorCookies) {
-                if (editorCookie instanceof EditorCookie.Observable) {
-                    ((EditorCookie.Observable) editorCookie).removePropertyChangeListener(this);
-                }
-            }
-        }
-
         this.editorCookies = editorCookies;
         tableModel.setNodes(nodes = setupsToNodes(setups));
-
+        changeListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent e) {
+                Object source = e.getSource();
+                String propertyName = e.getPropertyName();
+                if (EditorCookie.Observable.PROP_MODIFIED.equals(propertyName)
+                        && (source instanceof EditorCookie.Observable)) {
+                    statusModifiedChanged((EditorCookie.Observable) source);
+                }
+            }
+        };
         for (EditorCookie editorCookie : this.editorCookies) {
             if (editorCookie instanceof EditorCookie.Observable) {
-                ((EditorCookie.Observable) editorCookie).addPropertyChangeListener(this);
+                ((EditorCookie.Observable) editorCookie).addPropertyChangeListener(WeakListeners.propertyChange(changeListener, editorCookie));
             }
-        }
-    }
-
-    public void propertyChange(PropertyChangeEvent e) {
-        Object source = e.getSource();
-        String propertyName = e.getPropertyName();
-
-        if (EditorCookie.Observable.PROP_MODIFIED.equals(propertyName)
-                && (source instanceof EditorCookie.Observable)) {
-            statusModifiedChanged((EditorCookie.Observable) source);
         }
     }
 
@@ -280,7 +295,6 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         int index = CollectionUtils.findInArray(editorCookies, editorCookie);
 
         if (index == -1) {
-            assert false;
             return;
         }
 
@@ -288,8 +302,8 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
               new TableSorter.SortingSafeTableModelEvent(tableModel, index, 0));
     }
 
-    private static Node[] setupsToNodes(Setup[] setups) {
-        Node[] nodes = new Node[setups.length];
+    private static DiffNode[] setupsToNodes(Setup[] setups) {
+        DiffNode[] nodes = new DiffNode[setups.length];
         for (int i = 0; i < setups.length; i++) {
             nodes[i] = setups[i].getNode();
         }
@@ -348,21 +362,91 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 // invoke later so the selection on the table will be set first
-//                JPopupMenu menu = getPopup();
-//                menu.show(table, e.getX(), e.getY());
+                JPopupMenu menu = getPopup();
+                menu.show(table, e.getX(), e.getY());
             }
         });
     }
 
     private void showPopup(Point p) {
-//        JPopupMenu menu = getPopup();
-//        menu.show(table, p.x, p.y);
+        JPopupMenu menu = getPopup();
+        menu.show(table, p.x, p.y);
     }
 
     private JPopupMenu getPopup() {
+        File [] files = Utils.getCurrentContext(null).getFiles();
         JPopupMenu menu = new JPopupMenu();
         JMenuItem item;
+
+        item = menu.add(new OpenInEditorAction());
+        Mnemonics.setLocalizedText(item, item.getText());
+        menu.addSeparator();
+        item = menu.add(new SystemActionBridge(SystemAction.get(UpdateAction.class), actionString("CTL_PopupMenuItem_Update"))); // NOI18N
+        Mnemonics.setLocalizedText(item, item.getText());
+        item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), actionString("CTL_PopupMenuItem_Commit"))); // NOI18N
+        Mnemonics.setLocalizedText(item, item.getText());
+        menu.addSeparator();
+        item = menu.add(new SystemActionBridge(SystemAction.get(TagAction.class), actionString("CTL_PopupMenuItem_Tag"))); // NOI18N
+        Mnemonics.setLocalizedText(item, item.getText());
+        item = menu.add(new SystemActionBridge(SystemAction.get(BranchAction.class), actionString("CTL_PopupMenuItem_Branch"))); // NOI18N
+        Mnemonics.setLocalizedText(item, item.getText());
+        menu.addSeparator();
+        item = menu.add(new SystemActionBridge(SystemAction.get(AnnotationsAction.class),
+                                               ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible(null) ?
+                                               actionString("CTL_PopupMenuItem_HideAnnotations") : // NOI18N
+                                               actionString("CTL_PopupMenuItem_ShowAnnotations"))); // NOI18N
+        Mnemonics.setLocalizedText(item, item.getText());
+        item = menu.add(new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), actionString("CTL_PopupMenuItem_SearchHistory"))); // NOI18N
+        Mnemonics.setLocalizedText(item, item.getText());
+        menu.addSeparator();
+        item = org.netbeans.modules.versioning.util.Utils.toMenuItem(new ExcludeFromCommitAction(files));
+        menu.add(item);
+
+        Action revertAction;
+        boolean allLocallyNew = true;
+        boolean allLocallyDeleted = true;
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+        for (int i = 0; i < files.length; i++) {
+            File file = files[i];
+            FileInformation info = cache.getStatus(file);
+            if ((info.getStatus() & DeleteLocalAction.LOCALLY_DELETABLE_MASK) == 0 ) {
+                allLocallyNew = false;
+            }
+            if (info.getStatus() != FileInformation.STATUS_VERSIONED_DELETEDLOCALLY && info.getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
+                allLocallyDeleted = false;
+            }
+        }
+        if (allLocallyNew) {
+            SystemAction systemAction = SystemAction.get(DeleteLocalAction.class);
+            revertAction = new SystemActionBridge(systemAction, actionString("CTL_PopupMenuItem_Delete")); // NOI18N
+        } else if (allLocallyDeleted) {
+            revertAction = new SystemActionBridge(SystemAction.get(GetCleanAction.class), actionString("CTL_PopupMenuItem_RevertDelete")); // NOI18N
+        } else {
+            revertAction = new SystemActionBridge(SystemAction.get(GetCleanAction.class), actionString("CTL_PopupMenuItem_GetClean")); // NOI18N
+        }
+        item = menu.add(revertAction);
+        Mnemonics.setLocalizedText(item, item.getText());
+
+        item = menu.add(new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), actionString("CTL_PopupMenuItem_ResolveConflicts"))); // NOI18N
+        Mnemonics.setLocalizedText(item, item.getText());
+
+        Action ignoreAction = new SystemActionBridge(SystemAction.get(IgnoreAction.class),
+           ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(files) == IgnoreAction.UNIGNORING ?
+           actionString("CTL_PopupMenuItem_Unignore") : // NOI18N
+           actionString("CTL_PopupMenuItem_Ignore")); // NOI18N
+        item = menu.add(ignoreAction);
+        Mnemonics.setLocalizedText(item, item.getText());
+
         return menu;
+    }
+
+    /**
+     * Workaround.
+     * I18N Test Wizard searches for keys in syncview package Bundle.properties
+     */
+    private String actionString(String key) {
+        ResourceBundle actionsLoc = NbBundle.getBundle(Annotator.class);
+        return actionsLoc.getString(key);
     }
 
     public void mouseEntered(MouseEvent e) {
@@ -384,7 +468,6 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
     }
 
     public void mouseClicked(MouseEvent e) {
-/*
         if (SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
             int row = table.rowAtPoint(e.getPoint());
             if (row == -1) return;
@@ -395,7 +478,6 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
                 action.actionPerformed(new ActionEvent(this, 0, "")); // NOI18N
             }
         }
-*/
     }
 
     public void valueChanged(ListSelectionEvent e) {
@@ -419,6 +501,9 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
                        = DiffUtils.getHtmlDisplayName(nodes[modelRow],
                                                       isModified(modelRow),
                                                       isSelected);
+                if (CvsModuleConfig.getDefault().isExcludedFromCommit(nodes[modelRow].getSetup().getBaseFile())) {
+                    htmlDisplayName = "<s>" + (htmlDisplayName == null ? nodes[modelRow].getName() : htmlDisplayName) + "</s>"; //NOI18N
+                }
                 if (htmlDisplayName != null) {
                     value = "<html>" + htmlDisplayName;                 //NOI18N
                 }

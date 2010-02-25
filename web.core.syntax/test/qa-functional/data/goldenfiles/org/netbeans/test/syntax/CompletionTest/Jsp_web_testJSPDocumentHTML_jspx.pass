@@ -1,4 +1,4 @@
-[<h|, html, <html>, 347]
+[<h|, html, <html, 346]
 <h1 >
 <h2 >
 <h3 >
@@ -8,17 +8,17 @@
 <head >
 <hr >
 <html >
-End cursor position = 354
-[<html |, dir, <html dir="", 425]
+End cursor position = 352
+[<html |, dir, <html dir="", 424]
 dir
 lang
 version
-End cursor position = 437
-[<html dir="|, rtl, <html dir="rtl, 506]
+End cursor position = 436
+[<html dir="|, rtl, <html dir="rtl, 505]
 ltr
 rtl
-End cursor position = 521
-[&|, &quot;, &quot;, 574]
+End cursor position = 520
+[&|, &quot;, &quot;, 573]
 Æ &AElig;
 Á &Aacute;
 Â &Acirc;
@@ -271,8 +271,8 @@ End cursor position = 521
 ζ &zeta;
 ‍ &zwj;
 ‌ &zwnj;
-End cursor position = 581
-[<html></|, /html, <html></html>, 669]
+End cursor position = 580
+[<html></|, /html, <html></html>, 668]
 < /jsp:body >
 </html >
-End cursor position = 683
+End cursor position = 682

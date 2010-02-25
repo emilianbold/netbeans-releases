@@ -48,6 +48,7 @@ import org.openide.nodes.Node;
 import org.openide.util.datatransfer.PasteType;
 
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
@@ -772,6 +773,9 @@ final class OutlineViewDropSupport implements DropTargetListener, Runnable {
         }
 
         this.active = active;
+        if (GraphicsEnvironment.isHeadless()) {
+            return;
+        }
         getDropTarget().setActive(active);
         //we want to support drop into scroll pane's free area and treat it as 'root node drop'
         if( null == outerDropTarget ) {

@@ -48,6 +48,7 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
 import org.openide.util.Utilities;
 
 /**
@@ -69,6 +70,9 @@ public final class NativeProcessInfo {
     private boolean x11forwarding;
     private boolean suspend;
     private Collection<ChangeListener> listeners = null;
+    private Pty pty = null;
+    private boolean runInPty;
+    private boolean expandMacros = true;
 
     public NativeProcessInfo(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
@@ -163,6 +167,14 @@ public final class NativeProcessInfo {
         }
     }
 
+    public List<String> getArguments() {
+        return arguments;
+    }
+
+    public String getExecutable() {
+        return executable;
+    }
+
     public List<String> getCommand() {
         if (executable == null && commandLine == null) {
             return null;
@@ -174,7 +186,11 @@ public final class NativeProcessInfo {
 
         if (commandLine != null) {
             try {
-                cmd = macroExpander.expandPredefinedMacros(commandLine);
+                if (isExpandMacros()) {
+                    cmd = macroExpander.expandPredefinedMacros(commandLine);
+                } else {
+                    cmd = executable;
+                }
             } catch (Exception ex) {
                 cmd = executable;
             }
@@ -182,7 +198,11 @@ public final class NativeProcessInfo {
             result.add(cmd);
         } else {
             try {
-                cmd = macroExpander.expandPredefinedMacros(executable);
+                if (isExpandMacros()) {
+                    cmd = macroExpander.expandPredefinedMacros(executable);
+                } else {
+                    cmd = executable;
+                }
             } catch (Exception ex) {
                 cmd = executable;
             }
@@ -190,12 +210,16 @@ public final class NativeProcessInfo {
             result.add(cmd);
 
             for (String arg : arguments) {
-                arg = Utilities.escapeParameters(new String[]{arg});
-                if ((arg.startsWith("'") && arg.endsWith("'")) || // NOI18N
-                        (arg.startsWith("\"") && arg.endsWith("\""))) { // NOI18N
-                    arg = arg.substring(1, arg.length() - 1);
+                if (isExpandMacros()) {
+                    arg = Utilities.escapeParameters(new String[]{arg});
+                    if ((arg.startsWith("'") && arg.endsWith("'")) || // NOI18N
+                            (arg.startsWith("\"") && arg.endsWith("\""))) { // NOI18N
+                        arg = arg.substring(1, arg.length() - 1);
+                    }
+                    result.add('"' + arg + '"'); // NOI18N
+                } else {
+                    result.add(arg);
                 }
-                result.add('"' + arg + '"'); // NOI18N
             }
         }
 
@@ -227,7 +251,6 @@ public final class NativeProcessInfo {
          * The magic below is all about making run/debug act identically in case
          * of ExternalTerminal
          */
-
         if (commandLine != null) {
             return commandLine;
         }
@@ -311,5 +334,39 @@ public final class NativeProcessInfo {
 
     public MacroMap getEnvironment() {
         return environment;
+    }
+
+    public void setPty(Pty pty) {
+        this.pty = pty;
+        runInPty = (pty != null);
+    }
+
+    public Pty getPty() {
+        return pty;
+    }
+
+    public void setPtyMode(boolean ptyMode) {
+        this.runInPty = ptyMode;
+        if (!ptyMode) {
+            pty = null;
+        }
+    }
+
+    public boolean isPtyMode() {
+        return runInPty || getPty() != null;
+    }
+
+    /**
+     * @return the expandMacros
+     */
+    public boolean isExpandMacros() {
+        return expandMacros;
+    }
+
+    /**
+     * @param expandMacros the expandMacros to set
+     */
+    public void setExpandMacros(boolean expandMacros) {
+        this.expandMacros = expandMacros;
     }
 }

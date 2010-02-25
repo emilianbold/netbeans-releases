@@ -77,11 +77,11 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     private static final String BUILD_DIR = "build.dir"; // NOI18N
     private static final String BUILD_GENERATED_DIR = "build.generated.sources.dir"; // NOI18N
 
-    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private List<PathResourceImplementation> resources;
-    private SourceRoots sourceRoots;
-    private AntProjectHelper projectHelper;
-    private PropertyEvaluator evaluator;
+    private final SourceRoots sourceRoots;
+    private final AntProjectHelper projectHelper;
+    private final PropertyEvaluator evaluator;
     private File buildGeneratedDir = null;
     private final FileChangeListener buildGeneratedDirListener = new FileChangeAdapter() {
         public @Override void fileFolderCreated(FileEvent fe) {
@@ -122,87 +122,84 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             if (this.resources != null) {
                 return this.resources;
             }
-        }        
-        URL[] roots = this.sourceRoots.getRootURLs();                                
+        }
+        final URL[] roots = this.sourceRoots.getRootURLs();
+        final List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>(roots.length);
+        for (final URL root : roots) {
+            class PRI implements FilteringPathResourceImplementation, PropertyChangeListener {
+
+                PropertyChangeSupport pcs = new PropertyChangeSupport(PRI.this);
+                PathMatcher matcher;
+
+                PRI() {
+                    evaluator.addPropertyChangeListener(WeakListeners.propertyChange(PRI.this, evaluator));
+                }
+
+                public URL[] getRoots() {
+                    return new URL[]{root};
+                }
+
+                public boolean includes(URL root, String resource) {
+                    if (matcher == null) {
+                        matcher = new PathMatcher(
+                                evaluator.getProperty(ProjectProperties.INCLUDES),
+                                evaluator.getProperty(ProjectProperties.EXCLUDES),
+                                new File(URI.create(root.toExternalForm())));
+                    }
+                    return matcher.matches(resource, true);
+                }
+
+                public ClassPathImplementation getContent() {
+                    return null;
+                }
+
+                public void addPropertyChangeListener(PropertyChangeListener listener) {
+                    pcs.addPropertyChangeListener(listener);
+                }
+
+                public void removePropertyChangeListener(PropertyChangeListener listener) {
+                    pcs.removePropertyChangeListener(listener);
+                }
+
+                public void propertyChange(PropertyChangeEvent ev) {
+                    String prop = ev.getPropertyName();
+                    if (prop == null || prop.equals(ProjectProperties.INCLUDES) || prop.equals(ProjectProperties.EXCLUDES)) {
+                        matcher = null;
+                        PropertyChangeEvent ev2 = new PropertyChangeEvent(PRI.this, FilteringPathResourceImplementation.PROP_INCLUDES, null, null);
+                        ev2.setPropagationId(ev);
+                        pcs.firePropertyChange(ev2);
+                    }
+                }
+            }
+            result.add(new PRI());
+        }
+        // add build/generated-sources subfolders to source roots
+        try {
+            final File buildGeneratedDir = getBuildGeneratedDir();
+            if (buildGeneratedDir != null) {
+                final String apSourcesDirS = evaluator.getProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT);
+                final File apSourcesDir = apSourcesDirS != null ? projectHelper.resolveFile(apSourcesDirS) : null;
+                if (buildGeneratedDir.isDirectory()) { // #105645
+                    for (File root : buildGeneratedDir.listFiles()) {
+                        if (!root.isDirectory()) {
+                            continue;
+                        }
+                        if (root.equals(apSourcesDir)) {
+                            continue;
+                        }
+                        result.add(ClassPathSupport.createResource(root.toURI().toURL()));
+                    }
+                }
+            }
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         synchronized (this) {
             if (this.resources == null) {
-                List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>(roots.length);
-                for (final URL root : roots) {
-                    class PRI implements FilteringPathResourceImplementation, PropertyChangeListener {
-
-                        PropertyChangeSupport pcs = new PropertyChangeSupport(PRI.this);
-                        PathMatcher matcher;
-
-                        PRI() {
-                            evaluator.addPropertyChangeListener(WeakListeners.propertyChange(PRI.this, evaluator));
-                        }
-
-                        public URL[] getRoots() {
-                            return new URL[]{root};
-                        }
-
-                        public boolean includes(URL root, String resource) {
-                            if (matcher == null) {
-                                matcher = new PathMatcher(
-                                        evaluator.getProperty(ProjectProperties.INCLUDES),
-                                        evaluator.getProperty(ProjectProperties.EXCLUDES),
-                                        new File(URI.create(root.toExternalForm())));
-                            }
-                            return matcher.matches(resource, true);
-                        }
-
-                        public ClassPathImplementation getContent() {
-                            return null;
-                        }
-
-                        public void addPropertyChangeListener(PropertyChangeListener listener) {
-                            pcs.addPropertyChangeListener(listener);
-                        }
-
-                        public void removePropertyChangeListener(PropertyChangeListener listener) {
-                            pcs.removePropertyChangeListener(listener);
-                        }
-
-                        public void propertyChange(PropertyChangeEvent ev) {
-                            String prop = ev.getPropertyName();
-                            if (prop == null || prop.equals(ProjectProperties.INCLUDES) || prop.equals(ProjectProperties.EXCLUDES)) {
-                                matcher = null;
-                                PropertyChangeEvent ev2 = new PropertyChangeEvent(PRI.this, FilteringPathResourceImplementation.PROP_INCLUDES, null, null);
-                                ev2.setPropagationId(ev);
-                                pcs.firePropertyChange(ev2);
-                            }
-                        }
-                    }
-                    result.add(new PRI());
-                }
-                // add build/generated-sources subfolders to source roots
-                try {
-                    String buildGeneratedDirS = evaluator.getProperty(BUILD_GENERATED_DIR);
-                    if (buildGeneratedDirS != null) {
-                        File _buildGeneratedDir = projectHelper.resolveFile(buildGeneratedDirS);
-                        if (!_buildGeneratedDir.equals(buildGeneratedDir)) {
-                            if (buildGeneratedDir != null) {
-                                FileUtil.removeFileChangeListener(buildGeneratedDirListener, buildGeneratedDir);
-                            }
-                            buildGeneratedDir = _buildGeneratedDir;
-                            FileUtil.addFileChangeListener(buildGeneratedDirListener, buildGeneratedDir);
-                        }
-                        if (buildGeneratedDir.isDirectory()) { // #105645
-                            for (File root : buildGeneratedDir.listFiles()) {
-                                if (!root.isDirectory()) {
-                                    continue;
-                                }
-                                result.add(ClassPathSupport.createResource(root.toURI().toURL()));
-                            }
-                        }
-                    }
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
                 this.resources = Collections.unmodifiableList(result);
             }
-            return this.resources;
         }
+        return this.resources;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -222,4 +219,22 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             invalidate();
         }
     }
+
+    private File getBuildGeneratedDir() {
+        final String buildGeneratedDirS = evaluator.getProperty(BUILD_GENERATED_DIR);
+        final File _buildGeneratedDir = buildGeneratedDirS == null ? null : projectHelper.resolveFile(buildGeneratedDirS);
+        synchronized (this) {
+            if (_buildGeneratedDir == null || !_buildGeneratedDir.equals(buildGeneratedDir)) {
+                if (buildGeneratedDir != null) {
+                    FileUtil.removeFileChangeListener(buildGeneratedDirListener, buildGeneratedDir);
+                }
+                buildGeneratedDir = _buildGeneratedDir;
+                if (buildGeneratedDir != null) {
+                    FileUtil.addFileChangeListener(buildGeneratedDirListener, buildGeneratedDir);
+                }
+            }
+            return buildGeneratedDir;
+        }
+    }
+
 }

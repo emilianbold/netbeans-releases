@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.subversion.ui.status;
 
+import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.ui.blame.BlameAction;
 import org.netbeans.modules.subversion.ui.commit.*;
@@ -79,10 +80,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.Component;
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.Point;
+import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.io.File;
 import java.util.logging.Level;
+import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
 import org.netbeans.modules.versioning.util.SortedTable;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 
@@ -93,7 +97,7 @@ import org.netbeans.modules.versioning.util.SystemActionBridge;
  * 
  * @author Maros Sandor
  */
-class SyncTable implements MouseListener, ListSelectionListener, AncestorListener {
+class SyncTable implements MouseListener, ListSelectionListener, AncestorListener, PropertyChangeListener {
 
     private NodeTableModel  tableModel;
     private JTable          table;
@@ -226,6 +230,13 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         return component;
     }
     
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (Subversion.PROP_ANNOTATIONS_CHANGED.equals(evt.getPropertyName())) {
+            refreshNodes();
+        }
+    }
+
     /**
      * Sets visible columns in the Versioning table.
      * 
@@ -257,12 +268,35 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     }
 
     void setTableModel(SyncFileNode [] nodes) {
+        assert EventQueue.isDispatchThread();
         this.nodes = nodes;
         tableModel.setNodes(nodes);
+        Subversion.getInstance().getRequestProcessor().post(new Runnable () {
+            @Override
+            public void run() {
+                refreshNodes();
+            }
+        });
     }
 
     void focus() {
         table.requestFocus();
+    }
+
+    private void refreshNodes () {
+        SyncFileNode[] toRefreshNodes = nodes;
+        for (SyncFileNode node : toRefreshNodes) {
+            node.refresh();
+        }
+        if (toRefreshNodes.length > 0) {
+            EventQueue.invokeLater(new Runnable () {
+                @Override
+                public void run() {
+                    table.revalidate();
+                    table.repaint();
+                }
+            });
+        }
     }
 
     private static class ColumnDescriptor extends ReadOnly {
@@ -358,9 +392,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         String label;
         ExcludeFromCommitAction exclude = (ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class);
         if (exclude.getActionStatus(null) == exclude.INCLUDING) {
-            label = org.openide.util.NbBundle.getMessage(SyncTable.class, "CTL_PopupMenuItem_IncludeInCommit"); // NOI18N
+            label = org.openide.util.NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_IncludeInCommit"); // NOI18N
         } else {
-            label = org.openide.util.NbBundle.getMessage(SyncTable.class, "CTL_PopupMenuItem_ExcludeFromCommit"); // NOI18N
+            label = org.openide.util.NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_ExcludeFromCommit"); // NOI18N
         }
         item = menu.add(new SystemActionBridge(exclude, label));
         Mnemonics.setLocalizedText(item, item.getText());
@@ -400,6 +434,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
            actionString("CTL_PopupMenuItem_Unignore") : // NOI18N
            actionString("CTL_PopupMenuItem_Ignore")); // NOI18N
         item = menu.add(ignoreAction);
+        Mnemonics.setLocalizedText(item, item.getText());
+        Action infoAction = new SystemActionBridge(SystemAction.get(VersioningInfoAction.class), actionString("CTL_PopupMenuItem_VersioningInfo")); // NOI18N
+        item = menu.add(infoAction);
         Mnemonics.setLocalizedText(item, item.getText());
 
         return menu;

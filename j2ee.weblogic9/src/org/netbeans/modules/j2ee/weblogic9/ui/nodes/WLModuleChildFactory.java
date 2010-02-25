@@ -85,20 +85,19 @@ public class WLModuleChildFactory
         try {
             TargetModuleID[] modules = dm.getAvailableModules(moduleType, dm.getTargets());
             TargetModuleID[] stopped = dm.getNonRunningModules(moduleType, dm.getTargets());
-            Set<String> stoopedByName = new HashSet<String>();
+            Set<String> stoppedByName = new HashSet<String>();
             if (stopped != null) {
-                for (TargetModuleID module : modules) {
-                    stoopedByName.add(module.getModuleID());
+                for (TargetModuleID module : stopped) {
+                    stoppedByName.add(module.getModuleID());
                 }
             }
 
             if (modules != null) {
                 for (TargetModuleID module : modules) {
-                    toPopulate.add(new WLModuleNode(module.getModuleID(), lookup, moduleType,
-                            stoopedByName.contains(module.getModuleID())));
+                    toPopulate.add(new WLModuleNode(module, lookup, moduleType,
+                            stoppedByName.contains(module.getModuleID())));
                 }
             }
-
         } catch (IllegalStateException ex) {
             LOGGER.log(Level.INFO, null, ex);
         } catch (TargetException ex) {

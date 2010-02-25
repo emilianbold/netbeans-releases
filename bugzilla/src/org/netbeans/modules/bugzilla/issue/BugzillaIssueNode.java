@@ -71,12 +71,21 @@ public class BugzillaIssueNode extends IssueNode {
                 ? new IssueTypeProperty()
                 : new SeverityProperty(),
             new PriorityProperty(),
-            new StatusProperty(),
-            new AssignedProperty(),
+            new BugzillaFieldProperty(BugzillaIssue.LABEL_NAME_STATUS, IssueField.STATUS, "CTL_Issue_Status_Title", "CTL_Issue_Status_Desc"), // NOI18N
+            new BugzillaFieldProperty(BugzillaIssue.LABEL_NAME_ASSIGNED_TO, IssueField.ASSIGNED_TO, "CTL_Issue_Assigned_Title", "CTL_Issue_Status_Desc"), // NOI18N
             new ResolutionProperty(),
-            new SummaryProperty(),
-            new RecentChangesProperty(), // XXX move to issue node
-            new SeenProperty() // XXX move to issue node
+            new SummaryProperty(), 
+            new ModificationProperty(),
+            new BugzillaFieldProperty(BugzillaIssue.LABEL_NAME_PRODUCT, IssueField.PRODUCT, "CTL_Issue_Product_Title", "CTL_Issue_Product_Desc"), // NOI18N
+            new BugzillaFieldProperty(BugzillaIssue.LABEL_NAME_COMPONENT, IssueField.COMPONENT, "CTL_Issue_Component_Title", "CTL_Issue_Component_Desc"), // NOI18N
+            new BugzillaFieldProperty(BugzillaIssue.LABEL_NAME_VERSION, IssueField.VERSION, "CTL_Issue_Version_Title", "CTL_Issue_Version_Desc"), // NOI18N
+            new BugzillaFieldProperty(BugzillaIssue.LABEL_NAME_OS, IssueField.OS, "CTL_Issue_OS_Title", "CTL_Issue_OS_Desc"), // NOI18N
+            new BugzillaFieldProperty(BugzillaIssue.LABEL_NAME_PLATFORM, IssueField.PLATFORM, "CTL_Issue_Platform_Title", "CTL_Issue_Platform_Desc"), // NOI18N
+            new BugzillaFieldProperty(BugzillaIssue.LABEL_NAME_MILESTONE, IssueField.MILESTONE, "CTL_Issue_Milestone_Title", "CTL_Issue_Milestone_Desc"), // NOI18N
+            new BugzillaFieldProperty(BugzillaIssue.LABEL_NAME_REPORTER, IssueField.REPORTER_NAME, "CTL_Issue_Reporter_Title", "CTL_Issue_Reporter_Desc"), // NOI18N
+            new BugzillaFieldProperty(BugzillaIssue.LABEL_NAME_QA_CONTACT, IssueField.QA_CONTACT_NAME, "CTL_Issue_QA_Contact_Title", "CTL_Issue_QA_Contact_Desc"), // NOI18N
+            new BugzillaFieldProperty(BugzillaIssue.LABEL_NAME_KEYWORDS, IssueField.KEYWORDS, "CTL_Issue_Keywords_Title", "CTL_Issue_Keywords_Desc"), // NOI18N
+            new BugzillaFieldProperty(BugzillaIssue.LABEL_NAME_WHITEBOARD, IssueField.WHITEBOARD, "CTL_Issue_Whiteboard_Title", "CTL_Issue_Whiteboard_Desc"), // NOI18N
         };
     };
 
@@ -216,26 +225,6 @@ public class BugzillaIssueNode extends IssueNode {
         }
     }
 
-    private class StatusProperty extends IssueProperty<String> {
-        public StatusProperty() {
-            super(BugzillaIssue.LABEL_NAME_STATUS,
-                  String.class,
-                  NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Status_Title"), // NOI18N
-                  NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Status_Desc")); // NOI18N
-        }
-        @Override
-        public String getValue() {
-            return getBugzillaIssue().getFieldValue(IssueField.STATUS);
-        }
-        @Override
-        public int compareTo(IssueProperty p) {
-            if(p == null) return 1;
-            String s1 = getBugzillaIssue().getFieldValue(IssueField.STATUS);
-            String s2 = ((BugzillaIssue)p.getIssue()).getFieldValue(IssueField.STATUS);
-            return s1.compareTo(s2);
-        }
-    }
-
     private class ResolutionProperty extends IssueProperty<String> {
         public ResolutionProperty() {
             super(BugzillaIssue.LABEL_NAME_RESOLUTION,
@@ -257,42 +246,45 @@ public class BugzillaIssueNode extends IssueNode {
         }
     }
 
-    private class SummaryProperty extends IssueProperty<String> {
-        public SummaryProperty() {
-            super(BugzillaIssue.LABEL_NAME_SUMMARY,
+    private class ModificationProperty extends IssueProperty<String> {
+        public ModificationProperty() {
+            super(BugzillaIssue.LABEL_NAME_MODIFICATION,
                   String.class,
-                  NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Summary_Title"), // NOI18N
-                  NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Summary_Desc")); // NOI18N
+                  NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Modification_Title"), // NOI18N
+                  NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Modification_Desc")); // NOI18N
         }
         @Override
         public String getValue() {
-            return getBugzillaIssue().getSummary();
+            return getBugzillaIssue().getFieldValue(IssueField.MODIFICATION);
         }
         @Override
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
-            String s1 = getIssue().getSummary();
-            String s2 = p.getIssue().getSummary();
+            // XXX sort as date
+            String s1 = getBugzillaIssue().getFieldValue(IssueField.MODIFICATION);
+            String s2 = ((BugzillaIssue)p.getIssue()).getFieldValue(IssueField.MODIFICATION);
             return s1.compareTo(s2);
         }
     }
 
-    private class AssignedProperty extends IssueProperty<String> {
-        public AssignedProperty() {
-            super(BugzillaIssue.LABEL_NAME_ASSIGNED_TO,
+    private class BugzillaFieldProperty extends IssueProperty<String> {
+        private final IssueField field;
+        public BugzillaFieldProperty(String fieldLabel, IssueField f, String titleProp, String descProp) {
+            super(fieldLabel,
                   String.class,
-                  NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Assigned_Title"), // NOI18N
-                  NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Assigned_Desc")); // NOI18N
+                  NbBundle.getMessage(BugzillaIssue.class, titleProp), // NOI18N
+                  NbBundle.getMessage(BugzillaIssue.class, descProp)); // NOI18N
+            this.field = f;
         }
         @Override
         public String getValue() {
-            return getBugzillaIssue().getFieldValue(IssueField.ASSIGNED_TO);
+            return getBugzillaIssue().getFieldValue(field);
         }
         @Override
         public int compareTo(IssueProperty p) {
             if(p == null) return 1;
-            String s1 = getBugzillaIssue().getFieldValue(IssueField.ASSIGNED_TO);
-            String s2 = ((BugzillaIssue)p.getIssue()).getFieldValue(IssueField.ASSIGNED_TO);
+            String s1 = getBugzillaIssue().getFieldValue(field);
+            String s2 = ((BugzillaIssue)p.getIssue()).getFieldValue(field);
             return s1.compareTo(s2);
         }
     }

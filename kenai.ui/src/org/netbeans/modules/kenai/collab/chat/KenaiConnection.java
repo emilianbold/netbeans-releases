@@ -490,7 +490,7 @@ public class KenaiConnection implements PropertyChangeListener {
                         privateMessageQueue.clear();
                         privateChats.clear();
                     }
-                    ChatNotifications.getDefault().clearAll();
+                    ChatNotifications.getDefault().clearAll(kenai);
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }

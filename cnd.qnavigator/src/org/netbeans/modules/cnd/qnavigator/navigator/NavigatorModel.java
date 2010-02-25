@@ -135,7 +135,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
     
     private CsmFile getCsmFile() {
-        CsmFile csmFile = CsmUtilities.getCsmFile(cdo, false);
+        CsmFile csmFile = CsmUtilities.getCsmFile(cdo, false, false);
         if (csmFile != null && !csmFile.isValid()) {
             csmFile = null;
         }

@@ -131,12 +131,15 @@ public class CommitAction extends AbstractSystemAction {
         dialog.addWindowListener(new DialogBoundsPreserver(CvsModuleConfig.getDefault().getPreferences(), "svn.commit.dialog"));  // NOI18N
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitAction.class, "ACSD_CommitDialog"));  // NOI18N
         dialog.setVisible(true);
+        final String message = settings.getCommitMessage().trim();
+        if (!message.isEmpty()) {
+            CvsModuleConfig.getDefault().setLastCommitMessage(message);
+        }
         if (descriptor.getValue() != commit) return;
 
         saveExclusions(settings);
 
-        cmd.setMessage(settings.getCommitMessage());
-        String message = cmd.getMessage();
+        cmd.setMessage(message);
         org.netbeans.modules.versioning.util.Utils.insert(
                 CvsModuleConfig.getDefault().getPreferences(),
                 RECENT_COMMIT_MESSAGES,
@@ -198,10 +201,10 @@ public class CommitAction extends AbstractSystemAction {
         }
         
         if (stickyTags.size() > 1) {
-            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STICKY, CommitSettings.COLUMN_NAME_STATUS, 
+            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_COMMIT, CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STICKY, CommitSettings.COLUMN_NAME_STATUS,
                                                 CommitSettings.COLUMN_NAME_ACTION, CommitSettings.COLUMN_NAME_PATH });
         } else {
-            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STATUS, 
+            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_COMMIT, CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STATUS,
                                                 CommitSettings.COLUMN_NAME_ACTION, CommitSettings.COLUMN_NAME_PATH });
         }
         

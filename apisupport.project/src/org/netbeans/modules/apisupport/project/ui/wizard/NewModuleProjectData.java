@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.WizardDescriptor;
 
 /**
@@ -163,7 +164,7 @@ final class NewModuleProjectData {
     }
     
     String getPlatformID() {
-        return platformID;
+        return platformID != null ? platformID : /* #174159 */NbPlatform.PLATFORM_ID_DEFAULT;
     }
     
     void setPlatformID(String platformID) {

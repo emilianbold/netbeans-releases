@@ -7,12 +7,14 @@ package org.netbeans.terminal.example.dedicatedtc;
 
 import java.io.Serializable;
 import java.util.logging.Logger;
-import org.netbeans.modules.terminal.api.TerminalWindow;
-import org.netbeans.modules.terminal.api.TerminalContainer;
-import org.netbeans.modules.terminal.api.TerminalProvider;
+
 import org.openide.util.NbBundle;
+import org.openide.windows.IOContainer;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+
+import org.netbeans.modules.terminal.api.TerminalWindow;
+import org.netbeans.modules.terminal.api.TerminalContainer;
 
 /**
  * Top component which displays something.
@@ -118,12 +120,12 @@ final class CommandTopComponent extends TopComponent implements TerminalWindow{
     //
     private TerminalContainer tc;
 
-    public TerminalContainer terminalContainer() {
-        return tc;
+    public IOContainer ioContainer() {
+        return tc.ioContainer();
     }
 
     private void initComponents2(String name) {
-        tc = TerminalProvider.createTerminalContainer(this, name);
+        tc = TerminalContainer.create(this, name);
         add(tc);
     }
 }

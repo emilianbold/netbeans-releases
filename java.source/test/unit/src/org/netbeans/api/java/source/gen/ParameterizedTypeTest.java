@@ -66,6 +66,7 @@ public class ParameterizedTypeTest extends GeneratorTestMDRCompat {
         suite.addTestSuite(ParameterizedTypeTest.class);
 //        suite.addTest(new ParameterizedTypeTest("test115176HowTo"));
 //        suite.addTest(new ParameterizedTypeTest("test115176TestCase"));
+//        suite.addTest(new ParameterizedTypeTest("testChangeToDiamond"));
         return suite;
     }
 
@@ -174,6 +175,43 @@ public class ParameterizedTypeTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(classTree, copy);
             }
             
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testChangeToDiamond() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "import java.util.LinkedList;\n" +
+            "public class Test {" +
+            "    private Object o = new LinkedList<String>();\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "import java.util.LinkedList;\n" +
+            "public class Test {" +
+            "    private Object o = new LinkedList<>();\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree var = (VariableTree) classTree.getMembers().get(1);
+                ParameterizedTypeTree ptt = (ParameterizedTypeTree) ((NewClassTree) var.getInitializer()).getIdentifier();
+
+                workingCopy.rewrite(ptt, make.ParameterizedType(ptt.getType(), Collections.<Tree>emptyList()));
+            }
+
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

@@ -100,4 +100,9 @@ public class GroupListItem implements ContactListItem {
     public boolean hasMessages() {
         return ChatNotifications.getDefault().getMessagingHandle(group.getKenaiProject()).getMessageCount()>0;
     }
+
+    @Override
+    public String getKenaiName() {
+        return group.getKenaiProject().getKenai().getName();
+    }
 }

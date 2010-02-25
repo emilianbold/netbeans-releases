@@ -134,6 +134,12 @@ public interface NbModuleProvider {
      * @throws IOException
      */ 
     SpecificationVersion getDependencyVersion(String codenamebase) throws IOException;
+
+    /**
+     * Checks whether the project currently has a (direct) dependency on the given module.
+     * @since 1.37
+     */
+    boolean hasDependency(String codeNameBase) throws IOException;
     
     /**
      * get the NetBeans platform for the module
@@ -149,4 +155,15 @@ public interface NbModuleProvider {
      * @return location of built module JAR
      */
     File getModuleJarLocation();
+
+    /**
+     * May get invoked before accessing some other methods from this interface to
+     * initialize module's context. The method must be invoked from EDT so it's safe
+     * to e.g. show modal dialogs and ask for user's input.
+     * @return True if module's context is ready, false if there was any problem
+     * setting up module's context.
+     * @throws IllegalStateException If not invoked from EDT
+     * @since 1.38
+     */
+    boolean prepareContext() throws IllegalStateException;
 }

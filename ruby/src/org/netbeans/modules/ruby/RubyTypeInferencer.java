@@ -105,7 +105,7 @@ public final class RubyTypeInferencer {
         }
 
         if (type == null) {
-            type = RubyType.createUnknown();
+            type = RubyType.unknown();
         }
 
         // Special cases
@@ -159,7 +159,7 @@ public final class RubyTypeInferencer {
     RubyType inferTypesOfRHS(final Node node) {
         List<Node> children = node.childNodes();
         if (children.size() != 1) {
-            return RubyType.createUnknown();
+            return RubyType.unknown();
         }
         return inferType(children.get(0));
     }
@@ -234,7 +234,7 @@ public final class RubyTypeInferencer {
     private RubyType inferSuperNode(Node node) {
         RubyType selfType = inferSelf(node);
         if (selfType == null || !selfType.isKnown()) {
-            return RubyType.createUnknown();
+            return RubyType.unknown();
         }
         MethodDefNode methodDefNode = AstUtilities.findMethod(new AstPath(knowledge.getRoot(), node));
         if (methodDefNode != null && TypeInferenceSettings.getDefault().getMethodTypeInference()) {
@@ -250,7 +250,7 @@ public final class RubyTypeInferencer {
                 return resultType;
             }
         }
-        return RubyType.createUnknown();
+        return RubyType.unknown();
     }
 
     private RubyType inferSelf(Node node) {
@@ -362,7 +362,7 @@ public final class RubyTypeInferencer {
             case NTHREFNODE:
                 return  new RubyType(RubyType.STRING, RubyType.NIL_CLASS);
         }
-        return RubyType.createUnknown();
+        return RubyType.unknown();
     }
 
     @Override

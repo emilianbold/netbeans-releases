@@ -48,7 +48,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerEvents;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerSetManagerEvents;
 
 public final class Configurations {
 
@@ -145,7 +145,7 @@ public final class Configurations {
     /*
      * Get all configurations
      */
-    public Configuration[] getConfs() {
+    public Configuration[] toArray() {
         configurationsLock.readLock().lock();
         try {
             return configurations.toArray(new Configuration[size()]);
@@ -154,16 +154,7 @@ public final class Configurations {
         }
     }
 
-    public List<Configuration> getConfigurtions() {
-        configurationsLock.readLock().lock();
-        try {
-            return new ArrayList<Configuration>(configurations);
-        } finally {
-            configurationsLock.readLock().unlock();
-        }
-    }
-
-    public Collection<Configuration> getConfsAsCollection() {
+    public Collection<Configuration> getConfigurations() {
         Collection<Configuration> collection = new LinkedHashSet<Configuration>();
         configurationsLock.readLock().lock();
         try {

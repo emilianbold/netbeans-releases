@@ -83,6 +83,11 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
             </file>
+            <file name="DerivedKeyPasswordValidator.java" url="templates/DerivedKeyPasswordValidator.template">
+                <attr name="position" intvalue="0"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
+            </file>
             <file name="client-keystore.jks" url="client-keystore.jks">
                 <attr name="position" intvalue="0"/>
             </file>

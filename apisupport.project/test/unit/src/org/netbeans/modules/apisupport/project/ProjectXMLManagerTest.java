@@ -286,7 +286,7 @@ public class ProjectXMLManagerTest extends TestBase {
         try {
             testingPXM.getDirectDependencies();
             fail("IllegalStateException was expected");
-        } catch (IllegalStateException ise) {
+        } catch (IOException x) {
             // OK, expected exception was thrown
         }
     }
@@ -304,7 +304,7 @@ public class ProjectXMLManagerTest extends TestBase {
                             false, true, null, null);
                     Element project = doc.getDocumentElement();
                     Element config = Util.findElement(project, "configuration", null); // NOI18N
-                    data = Util.findElement(config, "data", NbModuleProjectType.NAMESPACE_SHARED);
+                    data = Util.findElement(config, "data", NbModuleProject.NAMESPACE_SHARED);
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 } catch (SAXException e) {

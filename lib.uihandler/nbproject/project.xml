@@ -24,7 +24,6 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.uihandler</friend>
-                <friend>org.netbeans.modules.quiz</friend>
                 <friend>org.netbeans.modules.bugzilla.exceptionreporter</friend>
                 <package>org.netbeans.lib.uihandler</package>
             </friend-packages>

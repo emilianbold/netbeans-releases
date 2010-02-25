@@ -149,7 +149,9 @@ public final class RubyLogicalViewProvider extends RubyBaseLogicalViewProvider {
         // Private methods -------------------------------------------------------------
         
         private Action[] getAdditionalActions() {
-            
+
+            bundlerSupport.initialize();
+
             ResourceBundle bundle = NbBundle.getBundle(RubyLogicalViewProvider.class);
             
             List<Action> actions = new ArrayList<Action>();
@@ -184,6 +186,9 @@ public final class RubyLogicalViewProvider extends RubyBaseLogicalViewProvider {
             if (rspecSupport.isRSpecInstalled() 
                     && TestActionConfiguration.enable(RubyBaseActionProvider.COMMAND_RSPEC, getProject())) {
                 actions.add(ProjectSensitiveActions.projectCommandAction(RubyActionProvider.COMMAND_RSPEC, bundle.getString("LBL_RSpec"), null)); // NOI18N
+            }
+            if (bundlerSupport.installed()) {
+                actions.add(bundlerSupport.createAction());
             }
             actions.add(RubyCoverageProvider.createCoverageAction(getProject()));
             actions.add(null);

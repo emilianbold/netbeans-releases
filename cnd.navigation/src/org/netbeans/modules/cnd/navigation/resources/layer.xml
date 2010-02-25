@@ -24,8 +24,18 @@
         </folder>
     </folder>
     <folder name="Editors">
+        <folder name="AnnotationTypes">
+            <file name="org-netbeans-modules-cnd-is_overridden.xml" url="is-overridden-annotation.xml"/>
+            <file name="org-netbeans-modules-cnd-overrides.xml" url="overrides-annotation.xml"/>
+            <file name="org-netbeans-modules-cnd-override-is-overridden-combined.xml" url="combined-override-is-overridden.xml"/>
+        </folder>
         <folder name="text">
             <folder name="x-h">
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-cnd-navigation-overrides-OverrideAnnotationAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                </folder>
                 <folder name="Toolbars">
                     <folder name="Default">
                         <file name="cpp-switch-header-source">
@@ -72,6 +82,11 @@
                 </folder>
             </folder>
             <folder name="x-c++">
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-cnd-navigation-overrides-OverrideAnnotationAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                </folder>
                 <folder name="Toolbars">
                     <folder name="Default">
                         <file name="cpp-switch-header-source">

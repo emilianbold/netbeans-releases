@@ -53,6 +53,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
@@ -106,7 +107,8 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         assertNotNull(dataFile);
         
         TestUtilities.copyStringToFile(dataFile, code);
-        
+
+        SourceUtilsTestUtil.setSourceLevel(data, sourceLevel);
         SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache, extraClassPath());
         
         DataObject od = DataObject.find(data);
@@ -126,10 +128,15 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         
         assertNotNull(info);
     }
-    
+
+    private String sourceLevel = "1.5";
     private FileObject sourceRoot;
     private CompilationInfo info;
     private Document doc;
+
+    protected void setSourceLevel(String sourceLevel) {
+        this.sourceLevel = sourceLevel;
+    }
     
     protected abstract List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path);
     
@@ -256,6 +263,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
 
         for (int i = 0; i < before.length(); i++) {
             LOG.info("testing position " + i + " at " + before.charAt(i));
+            SourceUtils.waitScanFinished();
             clearWorkDir();
             performAnalysisTest("test/Test.java", before, i);
 }
@@ -269,6 +277,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
 
         for (int i = 0; i < before.length(); i++) {
             LOG.info("testing position " + i + " at " + before.charAt(i));
+            SourceUtils.waitScanFinished();
             clearWorkDir();
             performAnalysisTest("test/Test.java", before, i);
         }
@@ -282,6 +291,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
 
         for (int i = 0; i < before.length(); i++) {
             LOG.info("testing position " + i + " at " + before.charAt(i));
+            SourceUtils.waitScanFinished();
             clearWorkDir();
             performAnalysisTest("test/Test.java", before, i);
         }
@@ -296,6 +306,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
 
         for (int i = 0; i < before.length(); i++) {
             LOG.info("testing position " + i + " at " + before.charAt(i));
+            SourceUtils.waitScanFinished();
             clearWorkDir();
             performAnalysisTest("test/Test.java", before, i);
         }

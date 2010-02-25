@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="tag-directive" foreColor="ff0000E6" default="default">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor name="endtag" foreColor="blue" default="default">
+    <fontcolor name="endtag" foreColor="ff0000E6" default="default">
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="jsp-whitespace" foreColor="black" default="default">

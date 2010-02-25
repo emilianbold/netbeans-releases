@@ -90,6 +90,7 @@ class CheckRenderer extends JPanel implements TreeCellRenderer {
     /** The component returned by HtmlRenderer.Renderer.getTreeCellRendererComponent() */
 
 
+    @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value,
     boolean isSelected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 
@@ -155,14 +156,14 @@ class CheckRenderer extends JPanel implements TreeCellRenderer {
         SELECTED, NOT_SELECTED, OTHER;
     };
 
-    private static class TristateCheckBox extends JCheckBox {
+    private static final class TristateCheckBox extends JCheckBox {
 
-        private final TristateDecorator model;
+        private final TristateDecorator cbModel;
 
         public TristateCheckBox() {
             super(null, null);
-            model = new TristateDecorator(getModel());
-            setModel(model);
+            cbModel = new TristateDecorator(this, getModel());
+            setModel(cbModel);
             setState(State.OTHER);
         }
 
@@ -173,10 +174,10 @@ class CheckRenderer extends JPanel implements TreeCellRenderer {
          * Set the new state to either SELECTED, NOT_SELECTED or
          * OTHER.
          */
-        public void setState(State state) { model.setState(state); }
+        public void setState(State state) { cbModel.setState(state); }
         /** Return the current state, which is determined by the
          * selection status of the model. */
-        public State getState() { return model.getState(); }
+        public State getState() { return cbModel.getState(); }
         @Override
         public void setSelected(boolean b) {
             if (b) {
@@ -191,10 +192,12 @@ class CheckRenderer extends JPanel implements TreeCellRenderer {
          * Decorator, because we are extending functionality and
          * "decorating" the original model with a more powerful model.
          */
-        private class TristateDecorator implements ButtonModel {
+        private static final class TristateDecorator implements ButtonModel {
             private final ButtonModel other;
-            private TristateDecorator(ButtonModel other) {
+            private final JCheckBox btn;
+            private TristateDecorator(JCheckBox btn, ButtonModel other) {
                 this.other = other;
+                this.btn = btn;
             }
             private void setState(State state) {
                 if (state == State.NOT_SELECTED) {
@@ -233,53 +236,75 @@ class CheckRenderer extends JPanel implements TreeCellRenderer {
                 }
             }
             /** Filter: No one may change the armed status except us. */
+            @Override
             public void setArmed(boolean b) {
             }
             /** We disable focusing on the component when it is not
              * enabled. */
+            @Override
             public void setEnabled(boolean b) {
-                setFocusable(b);
+                btn.setFocusable(b);
                 other.setEnabled(b);
             }
             /** All these methods simply delegate to the "other" model
              * that is being decorated. */
+            @Override
             public boolean isArmed() { return other.isArmed(); }
+            @Override
             public boolean isSelected() { return other.isSelected(); }
+            @Override
             public boolean isEnabled() { return other.isEnabled(); }
+            @Override
             public boolean isPressed() { return other.isPressed(); }
+            @Override
             public boolean isRollover() { return other.isRollover(); }
+            @Override
             public void setSelected(boolean b) { other.setSelected(b); }
+            @Override
             public void setPressed(boolean b) { other.setPressed(b); }
+            @Override
             public void setRollover(boolean b) { other.setRollover(b); }
+            @Override
             public void setMnemonic(int key) { other.setMnemonic(key); }
+            @Override
             public int getMnemonic() { return other.getMnemonic(); }
+            @Override
             public void setActionCommand(String s) {
                 other.setActionCommand(s);
             }
+            @Override
             public String getActionCommand() {
                 return other.getActionCommand();
             }
+            @Override
             public void setGroup(ButtonGroup group) {
                 other.setGroup(group);
             }
+            @Override
             public void addActionListener(ActionListener l) {
                 other.addActionListener(l);
             }
+            @Override
             public void removeActionListener(ActionListener l) {
                 other.removeActionListener(l);
             }
+            @Override
             public void addItemListener(ItemListener l) {
                 other.addItemListener(l);
             }
+            @Override
             public void removeItemListener(ItemListener l) {
                 other.removeItemListener(l);
             }
+            @Override
             public void addChangeListener(ChangeListener l) {
                 other.addChangeListener(l);
             }
+            @Override
             public void removeChangeListener(ChangeListener l) {
                 other.removeChangeListener(l);
             }
+            @Override
             public Object[] getSelectedObjects() {
                 return other.getSelectedObjects();
             }

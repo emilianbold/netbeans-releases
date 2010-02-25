@@ -37,6 +37,7 @@ StrictMath
 String
 StringBuffer
 StringBuilder
-StringIndexOutOfBoundsException
+StringIndexOutOfBoundsExceptio
+SuppressWarnings
 System
-End cursor position = 546
+End cursor position = 542

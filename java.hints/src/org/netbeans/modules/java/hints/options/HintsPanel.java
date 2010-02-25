@@ -54,15 +54,13 @@ import java.util.TreeSet;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
 import javax.swing.JTree;
-import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 
 import org.openide.filesystems.FileObject;
@@ -70,6 +68,8 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.options.HintsPanelLogic.HintCategory;
+import org.netbeans.modules.options.editor.spi.OptionsFilter;
+import org.netbeans.modules.options.editor.spi.OptionsFilter.Acceptor;
 
 
 final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
@@ -77,10 +77,11 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     private DefaultTreeCellRenderer dr = new DefaultTreeCellRenderer();
     private JCheckBox renderer = new JCheckBox();
     private HintsPanelLogic logic;
+    private final DefaultTreeModel errorTreeModel;
       
     DefaultMutableTreeNode extraNode = new DefaultMutableTreeNode(NbBundle.getMessage(HintsPanel.class, "CTL_DepScanning")); //NOI18N
 
-    HintsPanel() {        
+    HintsPanel(@NullAllowed OptionsFilter filter) {
         initComponents();
         
         descriptionTextArea.setContentType("text/html"); // NOI18N
@@ -97,7 +98,13 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         
         update();
 
-        errorTree.setModel(constructTM(RulesManager.getInstance().allHints.keySet()));
+        errorTreeModel = constructTM(RulesManager.getInstance().allHints.keySet());
+
+        if (filter != null) {
+            filter.installFilteringModel(errorTree, errorTreeModel, new AcceptorImpl());
+        } else {
+            errorTree.setModel(errorTreeModel);
+        }
     }
     
     /** This method is called from within the constructor to
@@ -239,8 +246,8 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         jSplitPane1.setRightComponent(detailsPanel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -257,7 +264,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
             logic.disconnect();
         }
         logic = new HintsPanelLogic();
-        logic.connect(errorTree, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea);
+        logic.connect(errorTree, errorTreeModel, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea);
     }
     
     void cancel() {
@@ -342,6 +349,8 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     private javax.swing.JPanel treePanel;
     // End of variables declaration//GEN-END:variables
 
+    private final Map<HintMetadata, TreePath> hint2Path =  new HashMap<HintMetadata, TreePath>();
+
     private DefaultTreeModel constructTM(Collection<? extends HintMetadata> metadata) {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
         Map<HintCategory, Collection<HintMetadata>> cat2Hints = new TreeMap<HintCategory, Collection<HintMetadata>>(new Comparator<HintCategory>() {
@@ -377,7 +386,10 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
             DefaultMutableTreeNode catNode = new DefaultMutableTreeNode(e.getKey());
 
             for (HintMetadata hm : e.getValue()) {
-                catNode.add(new DefaultMutableTreeNode(hm));
+                DefaultMutableTreeNode hmNode = new DefaultMutableTreeNode(hm);
+
+                catNode.add(hmNode);
+                hint2Path.put(hm, new TreePath(new Object[] {root, catNode, hmNode}));
             }
 
             root.add(catNode);
@@ -386,6 +398,10 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         root.add(extraNode);
         
         return new DefaultTreeModel(root);
+    }
+
+    void select(HintMetadata hm) {
+        errorTree.setSelectionPath(hint2Path.get(hm));
     }
 
     private static int compare(String s1, String s2) {
@@ -402,6 +418,35 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         }
 
         return sb.toString();
+    }
+
+    private static final class AcceptorImpl implements Acceptor {
+
+        public boolean accept(Object originalTreeNode, String filterText) {
+            if (filterText.isEmpty()) return true;
+            
+            DefaultMutableTreeNode n = (DefaultMutableTreeNode) originalTreeNode;
+            HintMetadata hm = (HintMetadata) n.getUserObject();
+
+            filterText = filterText.toLowerCase();
+
+            if (hm.displayName.toLowerCase().contains(filterText)) {
+                return true;
+            }
+
+            if (hm.description.toLowerCase().contains(filterText)) {
+                return true;
+            }
+
+            for (String sw : hm.suppressWarnings) {
+                if (sw.toLowerCase().contains(filterText)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
     }
     
 }

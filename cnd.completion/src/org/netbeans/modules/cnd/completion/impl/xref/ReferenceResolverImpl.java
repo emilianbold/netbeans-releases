@@ -124,7 +124,7 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
 
     private CsmReference findReferenceInDoc(Document doc, int offset) {
         if (doc instanceof BaseDocument) {
-            CsmFile file = CsmUtilities.getCsmFile(doc, false);
+            CsmFile file = CsmUtilities.getCsmFile(doc, false, false);
             if (file != null) {
                 return ReferencesSupport.createReferenceImpl(file, (BaseDocument) doc, offset);
             }

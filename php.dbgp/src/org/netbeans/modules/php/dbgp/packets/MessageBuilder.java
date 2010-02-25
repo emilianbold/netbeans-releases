@@ -80,7 +80,7 @@ class MessageBuilder {
                 command.equals( StepOutCommand.STEP_OUT ) ||
                 command.equals( StepOverCommand.STEP_OVER )||
                 command.equals( StepIntoCommand.STEP_INTO ) ||
-                command.equals( StopCommand.STOP ) ) 
+                command.equals( StopCommand.COMMAND ) )
         {
             return new StatusResponse( node );
         }

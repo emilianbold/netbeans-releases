@@ -55,6 +55,8 @@ import org.tigris.subversion.svnclientadapter.SVNBaseDir;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.DateFormat;
 import java.util.*;
@@ -67,13 +69,18 @@ import javax.swing.event.TableModelListener;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.client.PanelProgressSupport;
-import org.netbeans.modules.subversion.hooks.spi.SvnHook;
-import org.netbeans.modules.subversion.hooks.spi.SvnHookContext;
+import org.netbeans.modules.versioning.hooks.SvnHook;
+import org.netbeans.modules.versioning.hooks.SvnHookContext;
+import org.netbeans.modules.subversion.ui.diff.DiffNode;
+import org.netbeans.modules.subversion.ui.status.SyncFileNode;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
+import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.cookies.SaveCookie;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -93,13 +100,14 @@ public class CommitAction extends ContextAction {
 
     static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage";
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Commit";    // NOI18N
     }
 
     @Override
     protected boolean enable(Node[] nodes) {
-        if(isDeepRefresh()) {
+        if(!isSvnNodes(nodes) && !isDeepRefreshDisabledGlobally()) {
             // allway true as we have will accept and check for external changes
             // and we don't about them yet
             return true;
@@ -110,7 +118,7 @@ public class CommitAction extends ContextAction {
     }
 
     /** Run commit action. Shows UI */
-    public static void commit(String contentTitle, final Context ctx) {
+    public static void commit(String contentTitle, Context ctx, boolean deepScanEnabled) {
         if(!Subversion.getInstance().checkClientAvailable()) {
             return;
         }
@@ -118,12 +126,28 @@ public class CommitAction extends ContextAction {
             Subversion.LOG.info("Svn context contains no files");       //NOI18N
             return;
         }
-        commitChanges(contentTitle, ctx);
+        commitChanges(contentTitle, ctx, deepScanEnabled && !isDeepRefreshDisabledGlobally());
     }
 
-    private static boolean isDeepRefresh() {
-        String noDeepRefresh = System.getProperty("netbeans.subversion.commit.deepStatusRefresh");  // NOI18N
-        return noDeepRefresh != null && !noDeepRefresh.trim().equals("");
+    /**
+     * Returns true if the given nodes are from the versioning view or the diff view.
+     * In such case the deep scan is not required because the files and their statuses should already be known
+     * @param nodes
+     * @return
+     */
+    private static boolean isSvnNodes (Node[] nodes) {
+        boolean fromSubversionView = true;
+        for (Node node : nodes) {
+            if (!(node instanceof SyncFileNode || node instanceof DiffNode)) {
+                fromSubversionView = false;
+                break;
+            }
+        }
+        return fromSubversionView;
+    }
+
+    private static boolean isDeepRefreshDisabledGlobally () {
+        return "false".equals(System.getProperty("netbeans.subversion.commit.deepStatusRefresh")); // NOI18N
     }
 
     /**
@@ -133,8 +157,9 @@ public class CommitAction extends ContextAction {
      *
      * @param contentTitle
      * @param ctx
+     * @param deepScanEnabled
      */
-    public static void commitChanges(String contentTitle, final Context ctx) {
+    private static void commitChanges(String contentTitle, final Context ctx, boolean deepScanEnabled) {
         final CommitPanel panel = new CommitPanel();
         Collection<SvnHook> hooks = VCSHooks.getInstance().getHooks(SvnHook.class);
         File file = ctx.getRootFiles()[0];
@@ -142,6 +167,7 @@ public class CommitAction extends ContextAction {
 
         final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });
         panel.setCommitTable(data);
+        data.setCommitPanel(panel);
         final JButton commitButton = new JButton();
 
         // start backround prepare
@@ -151,12 +177,17 @@ public class CommitAction extends ContextAction {
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
         }
-        SvnProgressSupport prepareSupport = getProgressSupport(ctx, data, panel.progressPanel);
+        SvnProgressSupport prepareSupport = getProgressSupport(ctx, data, panel.progressPanel, deepScanEnabled);
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         prepareSupport.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "BK1009")); // NOI18N
 
         // show commit dialog
-        if (showCommitDialog(panel, data, commitButton, contentTitle, ctx) == commitButton) {
+        boolean startCommit = showCommitDialog(panel, data, commitButton, contentTitle, ctx) == commitButton;
+        String message = panel.getCommitMessage().trim();
+        if (!message.isEmpty()) {
+            SvnModuleConfig.getDefault().setLastCommitMessage(message);
+        }
+        if (startCommit) {
             // if OK setup sequence of add, remove and commit calls
             startCommitTask(panel, data, ctx, hooks);
         } else {
@@ -169,8 +200,8 @@ public class CommitAction extends ContextAction {
         Set<File> ret = new HashSet<File>();
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         for (File file : fileList) {
-            File parent = null;
-            while((parent = file.getParentFile()) != null) {
+            File parent = file;
+            while((parent = parent.getParentFile()) != null) {
                 if (checked.contains(parent)) {
                     break;
                 }
@@ -213,7 +244,7 @@ public class CommitAction extends ContextAction {
             File file = it.next();
             SvnFileNode node = new SvnFileNode(file);
             // initialize node properties
-            node.getRelativePath();
+            node.getLocation();
             node.getCopy();
             nodesList.add(node);
         }
@@ -243,7 +274,7 @@ public class CommitAction extends ContextAction {
 
         commitButton.setEnabled(false);
 
-        DialogDescriptor dd = new DialogDescriptor(panel,
+        final DialogDescriptor dd = new DialogDescriptor(panel,
               org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_CommitDialog_Title", contentTitle), // NOI18N
               true,
               new Object[] {commitButton, cancelButton},
@@ -251,12 +282,35 @@ public class CommitAction extends ContextAction {
               DialogDescriptor.DEFAULT_ALIGN,
               new HelpCtx(CommitAction.class),
               null);
+        ActionListener al;
+        dd.setButtonListener(al = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dd.setClosingOptions(new Object[] {commitButton, cancelButton});
+                SaveCookie[] saveCookies = panel.getSaveCookies();
+                if (cancelButton == e.getSource()) {
+                    if (saveCookies.length > 0 && !SaveBeforeClosingDiffConfirmation.allSaved(saveCookies)) {
+                        dd.setClosingOptions(new Object[0]);
+                    }
+                    dd.setValue(cancelButton);
+                } else if (commitButton == e.getSource()) {
+                    if (saveCookies.length > 0 && !SaveBeforeCommitConfirmation.allSaved(saveCookies)) {
+                        dd.setClosingOptions(new Object[0]);
+                    } else if (!panel.canCommit()) {
+                        dd.setClosingOptions(new Object[0]);
+                    }
+                    dd.setValue(commitButton);
+                }
+            }
+        });
         panel.addVersioningListener(new VersioningListener() {
+            @Override
             public void versioningEvent(VersioningEvent event) {
                 refreshCommitDialog(panel, data, commitButton);
             }
         });
         data.getTableModel().addTableModelListener(new TableModelListener() {
+            @Override
             public void tableChanged(TableModelEvent e) {
                 refreshCommitDialog(panel, data, commitButton);
             }
@@ -269,7 +323,9 @@ public class CommitAction extends ContextAction {
         dialog.addWindowListener(new DialogBoundsPreserver(SvnModuleConfig.getDefault().getPreferences(), "svn.commit.dialog")); // NOI18N
         dialog.pack();
         dialog.setVisible(true);
-
+        if (dd.getValue() == DialogDescriptor.CLOSED_OPTION) {
+            al.actionPerformed(new ActionEvent(cancelButton, ActionEvent.ACTION_PERFORMED, null));
+        }
         return dd.getValue();
     }
 
@@ -286,6 +342,7 @@ public class CommitAction extends ContextAction {
         }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
+            @Override
             public void perform() {
                 performCommit(message, commitFiles, ctx, this, hooks);
             }
@@ -293,9 +350,10 @@ public class CommitAction extends ContextAction {
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
     }
 
-    private static SvnProgressSupport getProgressSupport(final Context ctx, final CommitTable data, JPanel progressPanel) {
+    private static SvnProgressSupport getProgressSupport (final Context ctx, final CommitTable data, JPanel progressPanel, final boolean deepScanEnabled) {
         SvnProgressSupport support = new PanelProgressSupport(progressPanel) {
             
+            @Override
             public void perform() {
                 // get files without exclusions
                 File[] contextFiles = ctx.getFiles();
@@ -307,16 +365,14 @@ public class CommitAction extends ContextAction {
                 // add also the roots to the to be commited list.
                 List<File> rootFiles = ctx.getRoots();
                 Set<File> filesSet = new HashSet<File>();
-                for (File file : contextFiles) {
-                    filesSet.add(file);
-                }
+                filesSet.addAll(Arrays.asList(contextFiles));
                 for (File file : rootFiles) {
                     filesSet.add(file);
                 }
                 contextFiles = filesSet.toArray(new File[filesSet.size()]);
 
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                if (isDeepRefresh()) {
+                if (deepScanEnabled) {
                     // make a deep refresh to get the not yet notified external changes
                     for (File f : contextFiles) {
                         if (isCanceled()) {
@@ -358,12 +414,13 @@ public class CommitAction extends ContextAction {
                     }
                 }
 
-                if (fileList.size() == 0) {
+                if (fileList.isEmpty()) {
                     return;
                 }
                 fileList.addAll(getUnversionedParents(fileList, false));
                 final SvnFileNode[] nodes = getFileNodes(fileList, this);
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         data.setNodes(nodes);
                     }
@@ -417,10 +474,10 @@ public class CommitAction extends ContextAction {
         }
 
         if (stickyTags.size() > 1) {
-            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_BRANCH, CommitTableModel.COLUMN_NAME_STATUS,
-                                                CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
+            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_COMMIT, CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_BRANCH,
+                                                CommitTableModel.COLUMN_NAME_STATUS, CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
         } else {
-            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_STATUS,
+            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_COMMIT, CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_STATUS,
                                                 CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
         }
 
@@ -428,7 +485,7 @@ public class CommitAction extends ContextAction {
         DialogDescriptor dd = (DialogDescriptor) panel.getClientProperty("DialogDescriptor"); // NOI18N
         String errorLabel;
         if (stickyTags.size() <= 1) {
-            String stickyTag = stickyTags.size() == 0 ? null : (String) stickyTags.iterator().next();
+            String stickyTag = stickyTags.isEmpty() ? null : (String) stickyTags.iterator().next();
             if (stickyTag == null) {
                 dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle }));
                 errorLabel = ""; // NOI18N
@@ -449,12 +506,13 @@ public class CommitAction extends ContextAction {
         commit.setEnabled(enabled && containsCommitable(table));
     }
 
+    @Override
     protected void performContextAction(Node[] nodes) {
         if(!Subversion.getInstance().checkClientAvailable()) {
             return;
         }
         final Context ctx = getContext(nodes);
-        commit(getContextDisplayName(nodes), ctx);
+        commit(getContextDisplayName(nodes), ctx, !isSvnNodes(nodes));
     }
 
     private static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, Collection<SvnHook> hooks) {
@@ -682,12 +740,17 @@ public class CommitAction extends ContextAction {
     }
 
     private static void afterCommit(Collection<SvnHook> hooks, List<File> files, String message, List<ISVNLogMessage> logs) {
-        if(hooks.size() == 0) {
+        if(hooks.isEmpty()) {
             return;
         }
         List<SvnHookContext.LogEntry> entries = new ArrayList<SvnHookContext.LogEntry>(logs.size());
         for (int i = 0; i < logs.size(); i++) {
-            entries.add(new SvnHookContext.LogEntry(logs.get(i)));
+            entries.add(
+                new SvnHookContext.LogEntry(
+                        logs.get(i).getMessage(),
+                        logs.get(i).getAuthor(),
+                        logs.get(i).getRevision().getNumber(),
+                        logs.get(i).getDate()));
         }
         SvnHookContext context = new SvnHookContext(files.toArray(new File[files.size()]), message, entries);
         for (SvnHook hook : hooks) {
@@ -712,7 +775,7 @@ public class CommitAction extends ContextAction {
             Subversion.LOG.log(Level.INFO, null, ex);
         }
         if (Subversion.LOG.isLoggable(Level.FINER)) {
-            Subversion.LOG.log(Level.FINER, CommitAction.class.getName() + ": getting last commit message for svn hooks");
+            Subversion.LOG.log(Level.FINER, "{0}: getting last commit message for svn hooks", CommitAction.class.getName());
         }
         ISVNLogMessage[] ls = client.getLogMessages(SvnUtils.getRepositoryRootUrl(file), rev, rev);
         if (ls.length > 0) {

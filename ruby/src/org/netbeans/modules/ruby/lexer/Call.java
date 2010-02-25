@@ -72,9 +72,9 @@ public class Call {
      */
     private static final Pattern CALL_TO_NEW_IN_CHAIN = Pattern.compile(".+(\\.new(\\z|\\(.*\\)\\.?\\w*|\\.\\w?.*))"); //NOI18N
 
-    public static final Call LOCAL = new Call(RubyType.createUnknown(), null, false, false);
-    public static final Call NONE = new Call(RubyType.createUnknown(), null, false, false);
-    public static final Call UNKNOWN = new Call(RubyType.createUnknown(), null, false, false);
+    public static final Call LOCAL = new Call(RubyType.unknown(), null, false, false);
+    public static final Call NONE = new Call(RubyType.unknown(), null, false, false);
+    public static final Call UNKNOWN = new Call(RubyType.unknown(), null, false, false);
 
     private final RubyType type;
     private final String lhs;
@@ -426,7 +426,7 @@ public class Call {
                             type = RubyType.create(lhs);
                         }
 
-                        RubyType rubyType = type == null ? RubyType.createUnknown() : type;
+                        RubyType rubyType = type == null ? RubyType.unknown() : type;
                         Call call = new Call(rubyType, lhs, isStatic, methodExpected, constantExpected);
                         call.setLHSConstant(isLHSConstant);
 
@@ -435,7 +435,7 @@ public class Call {
                         // try __FILE__ or __LINE__
                         RubyType typeS = RubyPredefinedVariable.getType(lhs);
 
-                        RubyType type = typeS == null ? RubyType.createUnknown() : typeS;
+                        RubyType type = typeS == null ? RubyType.unknown() : typeS;
                         return new Call(type, lhs, false, methodExpected, constantExpected);
                     }
                 } catch (BadLocationException ble) {

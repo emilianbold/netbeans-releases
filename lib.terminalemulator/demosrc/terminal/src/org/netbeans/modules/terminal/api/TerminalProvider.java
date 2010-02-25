@@ -60,7 +60,7 @@ public final class TerminalProvider {
     private TerminalProvider() {
     }
 
-    private TerminalWindow getInstance(String preferredID) {
+    private IOContainer getInstance(String preferredID) {
         // The following is a mutated form of boilerplate
         // TopComponent.getInstance().
         TopComponent win = WindowManager.getDefault().findTopComponent(preferredID);
@@ -81,7 +81,7 @@ public final class TerminalProvider {
         }
 
         TerminalWindow itc = (TerminalWindow) win;
-        return itc;
+        return itc.ioContainer();
     }
 
     /**
@@ -96,7 +96,7 @@ public final class TerminalProvider {
      */
     public Terminal createTerminal(String name) {
         TermTopComponent tc = TermTopComponent.findInstance();
-        return new Terminal(tc.terminalContainer(), name);
+        return new Terminal(tc.ioContainer(), name);
     }
 
     /**
@@ -104,22 +104,7 @@ public final class TerminalProvider {
      * by 'preferredID'.
      */
     public synchronized Terminal createTerminal(String name, String preferredID) {
-        TerminalWindow itc = getInstance(preferredID);
-        return new Terminal(itc.terminalContainer(), name);
-    }
-
-    /**
-     * Utility for creating custom {@link Terminal}-based TopComponents.
-     * See the class comment for {@link TerminalContainer} for a description of
-     * how to do this.
-     * @param tc TopComponent the Terminals will go into.
-     * @param name The name of the TopComponent.
-     *        Usually @{link TopComponent.getName()}
-     * @return a TerminalContainer.
-     */
-
-    public static TerminalContainer createTerminalContainer(TopComponent tc, String name) {
-        return new TerminalContainer(tc, name);
+        IOContainer ioContainer = getInstance(preferredID);
+        return new Terminal(ioContainer, name);
     }
 }
-    

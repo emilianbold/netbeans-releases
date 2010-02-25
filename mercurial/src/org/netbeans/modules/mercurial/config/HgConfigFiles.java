@@ -95,6 +95,10 @@ public class HgConfigFiles {
     private boolean bIsProjectConfig;
     private InvalidIniFormatException initException;
     /**
+     * fileName of the configuration file
+     */
+    private String configFileName;
+    /**
      * Creates a new instance
      */
     private HgConfigFiles() {
@@ -102,9 +106,10 @@ public class HgConfigFiles {
         // get the system hgrc file
         Config.getGlobal().setEscape(false); // escaping characters disabled
         if(Utilities.isWindows()) {
-            hgrc = loadSystemAndGlobalFile(WINDOWS_HG_RC_FILE);
-        }else{
-            hgrc = loadSystemAndGlobalFile(HG_RC_FILE);
+            // on windows both Mercurial.ini and .hgrc are allowed
+            hgrc = loadSystemAndGlobalFile(new String[] {WINDOWS_HG_RC_FILE, "." + HG_RC_FILE}); //NOI18N
+        } else {
+            hgrc = loadSystemAndGlobalFile(new String[] {HG_RC_FILE});
         }
     }
     
@@ -168,9 +173,9 @@ public class HgConfigFiles {
             inisection.put(name, value);
         }
         if (!bIsProjectConfig && Utilities.isWindows()) {
-            storeIni(hgrc, WINDOWS_HG_RC_FILE);
+            storeIni(hgrc, configFileName);
         } else {
-            storeIni(hgrc, HG_RC_FILE);
+            storeIni(hgrc, configFileName);
         }
     }
 
@@ -211,9 +216,9 @@ public class HgConfigFiles {
         if (inisection != null) {
              inisection.clear();
             if (!bIsProjectConfig && Utilities.isWindows()) {
-                storeIni(hgrc, WINDOWS_HG_RC_FILE);
+                storeIni(hgrc, configFileName);
             } else {
-                storeIni(hgrc, HG_RC_FILE);
+                storeIni(hgrc, configFileName);
             }
          }
     }
@@ -223,9 +228,9 @@ public class HgConfigFiles {
         if (inisection != null) {
              inisection.remove(name);
             if (!bIsProjectConfig && Utilities.isWindows()) {
-                storeIni(hgrc, WINDOWS_HG_RC_FILE);
+                storeIni(hgrc, configFileName);
             } else {
-                storeIni(hgrc, HG_RC_FILE);
+                storeIni(hgrc, configFileName);
             }
          }
     }
@@ -269,9 +274,10 @@ public class HgConfigFiles {
     private void doReload () {
         if (dir == null) {
             if(!bIsProjectConfig && Utilities.isWindows()) {
-                hgrc = loadSystemAndGlobalFile(WINDOWS_HG_RC_FILE);
-            }else{    
-                hgrc = loadSystemAndGlobalFile(HG_RC_FILE);                                          
+                // on windows both Mercurial.ini and .hgrc are allowed
+                hgrc = loadSystemAndGlobalFile(new String[] {WINDOWS_HG_RC_FILE, "." + HG_RC_FILE}); //NOI18N
+            } else {
+                hgrc = loadSystemAndGlobalFile(new String[] {HG_RC_FILE});
             }
         } else {
             hgrc = loadRepoHgrcFile(dir);                                      
@@ -354,7 +360,8 @@ public class HgConfigFiles {
      * Loads Repository configuration file  <repo>/.hg/hgrc on all platforms
      * */
     private Ini loadRepoHgrcFile(File dir) {
-        String filePath = dir.getAbsolutePath() + File.separator + HG_REPO_DIR + File.separator + HG_RC_FILE; // NOI18N 
+        String filePath = dir.getAbsolutePath() + File.separator + HG_REPO_DIR + File.separator + HG_RC_FILE; // NOI18N
+        configFileName = HG_RC_FILE;
         File file = FileUtil.normalizeFile(new File(filePath));
         Ini system = null;
         system = createIni(file);
@@ -376,20 +383,28 @@ public class HgConfigFiles {
      * @param fileName the file name
      * @return an Ini instance holding the configuration file. 
      */       
-    private Ini loadSystemAndGlobalFile(String fileName) {
+    private Ini loadSystemAndGlobalFile(String[] fileNames) {
         // config files from userdir
-        String filePath = getUserConfigPath() + fileName;
-        File file = FileUtil.normalizeFile(new File(filePath));
         Ini system = null;
-        system = createIni(file);
+        for (String userConfigFileName : fileNames) {
+            String filePath = getUserConfigPath() + userConfigFileName;
+            File file = FileUtil.normalizeFile(new File(filePath));
+            system = createIni(file);
+            if (system != null) {
+                configFileName = userConfigFileName;
+                break;
+            }
+            Mercurial.LOG.log(Level.INFO, "Could not load the file {0}.", filePath); //NOI18N
+        }
         
         if(system == null) {
+            configFileName = fileNames[0];
             system = createIni();
-            Mercurial.LOG.log(Level.INFO, "Could not load the file " + filePath + ". Falling back on hg defaults."); // NOI18N
+            Mercurial.LOG.log(Level.INFO, "Could not load the user config file. Falling back on hg defaults."); //NOI18N
         }
         
         Ini global = null;
-        File gFile = FileUtil.normalizeFile(new File(getGlobalConfigPath() + File.separator + fileName));
+        File gFile = FileUtil.normalizeFile(new File(getGlobalConfigPath() + File.separator + fileNames[0]));
         global = createIni(gFile);   // NOI18N
 
         if(global != null) {

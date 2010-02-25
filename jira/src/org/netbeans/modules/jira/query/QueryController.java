@@ -176,6 +176,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         panel.reloadAttributesButton.addActionListener(this);
         panel.reporterTextField.addFocusListener(this);
         panel.assigneeTextField.addFocusListener(this);
+        panel.cloneQueryButton.addActionListener(this);
 
         panel.idTextField.addActionListener(this);
         panel.projectList.addKeyListener(this);
@@ -217,7 +218,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void setupRenderer(IssueTable issueTable) {
-        renderer = new JiraQueryCellRenderer(query, issueTable, new QueryTableCellRenderer(query));
+        renderer = new JiraQueryCellRenderer(query, issueTable, new QueryTableCellRenderer(query, issueTable));
         issueTable.setRenderer(renderer);
     }
 
@@ -699,6 +700,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
             onAutoRefresh();
         } else if (e.getSource() == panel.reloadAttributesButton) {
             onReloadAttributes();
+        } else if (e.getSource() == panel.cloneQueryButton) {
+            onCloneQuery();
         } else if (e.getSource() == panel.idTextField) {
             if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
                 onGotoIssue();
@@ -1127,6 +1130,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    private void onCloneQuery() {
+        FilterDefinition fd = getFilterDefinition();
+        JiraQuery q = new JiraQuery(null, repository, fd, false, true);
+        BugtrackingUtil.openQuery(q, repository, false);
+    }
+
     void progress(String issueDesc) {
         if(refreshTask != null) {
             refreshTask.progress(issueDesc);
@@ -1220,6 +1229,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
 
         public void notifyData(final Issue issue) {
+            if(!query.contains(issue)) {
+                // XXX this is quite ugly - the query notifies an archoived issue
+                // but it doesn't "contain" it!
+                return;
+            }
             setIssueCount(++counter);
             if(counter == 1) {
                 panel.showNoContentPanel(false);

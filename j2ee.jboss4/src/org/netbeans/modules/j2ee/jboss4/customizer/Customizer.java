@@ -41,7 +41,8 @@
 package org.netbeans.modules.j2ee.jboss4.customizer;
 
 
-import javax.swing.*;
+
+import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.util.NbBundle;

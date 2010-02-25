@@ -189,7 +189,7 @@ public class ScriptWatchEvaluating extends AbstractModelNode
     }
     
     private DebugSession getSession() {
-        return SessionManager.getInstance().getCurrentSession(
+        return SessionManager.getInstance().getSession(
                 getSessionId() );
     }
     

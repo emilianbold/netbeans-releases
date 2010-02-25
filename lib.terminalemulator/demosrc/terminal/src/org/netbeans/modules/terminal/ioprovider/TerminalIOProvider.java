@@ -6,6 +6,7 @@
 package org.netbeans.modules.terminal.ioprovider;
 
 import javax.swing.Action;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -35,6 +36,7 @@ import org.openide.windows.OutputWriter;
  * @author ivan
  */
 
+@ServiceProvider(service = IOProvider.class, position=100)
 
 public final class TerminalIOProvider extends IOProvider {
     @Override
@@ -54,6 +56,11 @@ public final class TerminalIOProvider extends IOProvider {
             ioContainer = IOContainer.getDefault();
         return new TerminalInputOutput(name, ioContainer);
 
+    }
+
+    @Override
+    public InputOutput getIO(String name, Action[] actions, IOContainer ioContainer) {
+        return new TerminalInputOutput(name, ioContainer);
     }
 
     /**

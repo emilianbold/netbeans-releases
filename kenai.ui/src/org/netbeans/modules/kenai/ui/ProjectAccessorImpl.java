@@ -123,7 +123,12 @@ public class ProjectAccessorImpl extends ProjectAccessor {
 
     @Override
     public Action getOpenNonMemberProjectAction() {
-        return new OpenKenaiProjectAction();
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new OpenKenaiProjectAction(DashboardImpl.getInstance().getKenai()).actionPerformed(null);
+            }
+        };
     }
 
     @Override
@@ -254,8 +259,9 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     @Override
     public Action getNewKenaiProjectAction() {
         return new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                new NewKenaiProjectAction().actionPerformed(null);
+                new NewKenaiProjectAction(DashboardImpl.getInstance().getKenai()).actionPerformed(null);
             }
         };
     }

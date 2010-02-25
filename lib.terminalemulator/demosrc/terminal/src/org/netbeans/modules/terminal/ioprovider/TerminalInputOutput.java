@@ -6,20 +6,22 @@
 package org.netbeans.modules.terminal.ioprovider;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.InputEvent;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Icon;
-import org.netbeans.lib.richexecution.program.Program;
 import org.netbeans.lib.terminalemulator.ActiveRegion;
 import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.terminalemulator.Coord;
 import org.netbeans.lib.terminalemulator.Extent;
+import org.netbeans.lib.terminalemulator.LineDiscipline;
 import org.netbeans.lib.terminalemulator.StreamTerm;
 import org.netbeans.lib.terminalemulator.Term;
+import org.netbeans.lib.terminalemulator.TermListener;
 import org.netbeans.modules.terminal.api.Terminal;
 import org.netbeans.modules.terminal.api.TerminalProvider;
 import org.openide.util.Lookup;
@@ -81,7 +83,8 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     private final Lookup lookup = Lookups.fixed(new MyIOColorLines(),
                                                 new MyIOColors(),
                                                 new MyIOPosition(),
-                                                new MyIOExecution(),
+						new MyIOResizable(),
+						new MyIOEmulation(),
                                                 new MyIOTab()
                                                 );
 
@@ -280,54 +283,68 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     }
     */
 
+    private class MyIOResizable extends IOResizable {
+
+	// We need a map to help use remove TermListeners from 'term'
+	// based on IOResizable.Listener.
+	private Map<Listener, TermListener> listenerMap =
+		new HashMap<Listener, TermListener>();
+
+	@Override
+	protected void addListener(final Listener listener) {
+	    TermListener termListener = new TermListener() {
+		public void sizeChanged(Dimension cells, Dimension pixels) {
+		    // propagate size change notifications from Term
+		    // to Listener
+		    listener.sizeChanged(cells, pixels);
+		}
+	    };
+	    term.addListener(termListener);
+	    listenerMap.put(listener, termListener);
+	}
+
+	@Override
+	protected void removeListener(Listener listener) {
+	    TermListener termListener = listenerMap.remove(listener);
+	    if (termListener != null)
+		term.removeListener(termListener);
+	}
+    }
+
+    private class MyIOEmulation extends IOEmulation {
+
+	private boolean disciplined = false;
+
+	@Override
+	protected String getEmulation() {
+	    return term.getEmulation();
+	}
+
+	@Override
+	protected boolean isDisciplined() {
+	    return disciplined;
+	}
+
+	@Override
+	protected void setDisciplined() {
+	    if (this.disciplined)
+		return;
+	    this.disciplined = true;
+	    if (disciplined)
+		term.pushStream(new LineDiscipline());
+	}
+    }
+
+
+    /* OLD
     private class MyIOExecution extends IOExecution {
 
         @Override
         protected void execute(Program program) {
 	    terminal.startProgram(program, true);
-	    /* OLD
-            //
-            // Create a pty, handle window size changes
-            //
-            final Pty pty;
-            try {
-                pty = Pty.create(Pty.Mode.REGULAR);
-            } catch (PtyException ex) {
-                Exceptions.printStackTrace(ex);
-                return;
-            }
-
-            term().addListener(new TermListener() {
-                public void sizeChanged(Dimension cells, Dimension pixels) {
-                    pty.masterTIOCSWINSZ(cells.height, cells.width,
-                                         pixels.height, pixels.width);
-                }
-            });
-
-            //
-            // Create a process
-            //
-            if (term() != null) {
-                Map<String, String> env = program.environment();
-                env.put("TERM", term().getEmulation());
-            }
-            PtyExecutor executor = new PtyExecutor();
-            executor.start(program, pty);
-
-            //
-            // connect them up
-            //
-
-            // Hmm, what's the difference between the PtyProcess io streams
-            // and the Pty's io streams?
-            // Nothing.
-            OutputStream pin = pty.getOutputStream();
-            InputStream pout = pty.getInputStream();
-
-	    term.connect(pin, pout, null);
-	     */
         }
     }
+     */
 
 
 

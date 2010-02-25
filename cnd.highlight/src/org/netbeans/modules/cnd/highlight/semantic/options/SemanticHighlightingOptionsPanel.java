@@ -172,6 +172,16 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
             }
         });
 
+        NamedEntity overridesEntity = new NamedEntity() {
+            public String getName() {
+                return "overrides-annotations"; //NOI18N
+            }
+            public boolean isEnabledByDefault() {
+                return true;
+            }
+        };
+        addEntity(overridesEntity);
+
         GroupLayout layout = new GroupLayout(jPanel1);
         jPanel1.setLayout(layout);
 
