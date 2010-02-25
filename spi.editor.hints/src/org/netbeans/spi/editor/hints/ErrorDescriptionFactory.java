@@ -144,4 +144,19 @@ public class ErrorDescriptionFactory {
     public static LazyFixList lazyListForDelegates(List<LazyFixList> delegates) {
         return new HintsControllerImpl.CompoundLazyFixList(delegates);
     }
+
+    /**Attach given sub-fixes to the given fix. The sub-fixes may be shown as a
+     * sub-menu for the given fix. Only one level of sub-fixes is currently supported
+     * (attaching sub-fixes to any of the sub-fix will not have any effect). The sub-fixes
+     * are held in memory as long as the given fix exists.
+     *
+     * @param to fix to which should be the sub-fixes attached
+     * @param subfixes the sub-fixes to attach
+     * @return the given fix
+     * @since 1.13
+     */
+    public static Fix attachSubfixes(Fix to, Iterable<? extends Fix> subfixes) {
+        HintsControllerImpl.attachSubfixes(to, subfixes);
+        return to;
+    }
 }

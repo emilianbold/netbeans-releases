@@ -398,7 +398,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         List<Setup> setups = new ArrayList<Setup>();
         for (File file : filesToDiff) {
-            Setup setup = new Setup(file, Long.toString(fromRevision - 1), Long.toString(toRevision));
+            Setup setup = new Setup(file, Long.toString(fromRevision - 1), Long.toString(toRevision), false);
             setups.add(setup);
         }
         return setups;

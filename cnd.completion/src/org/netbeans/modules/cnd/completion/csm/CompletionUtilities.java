@@ -77,7 +77,7 @@ public class CompletionUtilities {
     private CompletionUtilities() {}
 
     public static List<CsmDeclaration> findFunctionLocalVariables(Document doc, int offset, FileReferencesContext fileReferncesContext) {
-        CsmFile file = CsmUtilities.getCsmFile(doc, true);
+        CsmFile file = CsmUtilities.getCsmFile(doc, true, false);
         if (file == null || !file.isValid()) {
             return Collections.<CsmDeclaration>emptyList();
         }
@@ -95,7 +95,7 @@ public class CompletionUtilities {
     }
 
     public static List<CsmDeclaration> findFileVariables(Document doc, int offset) {
-        CsmFile file = CsmUtilities.getCsmFile(doc, true);
+        CsmFile file = CsmUtilities.getCsmFile(doc, true, false);
         if (file == null || !file.isValid()) {
             return Collections.<CsmDeclaration>emptyList();
         }
@@ -105,7 +105,7 @@ public class CompletionUtilities {
 
     // TODO: think if we need it?
     public static CsmClass findClassOnPosition(Document doc, int offset) {
-        CsmFile file = CsmUtilities.getCsmFile(doc, true);
+        CsmFile file = CsmUtilities.getCsmFile(doc, true, false);
         if (file == null || !file.isValid()) {
             return null;
         }
@@ -120,7 +120,7 @@ public class CompletionUtilities {
 
     public static CsmOffsetableDeclaration findFunDefinitionOrClassOnPosition(Document doc, int offset, FileReferencesContext fileReferncesContext) {
         CsmOffsetableDeclaration out = null;
-        CsmFile file = CsmUtilities.getCsmFile(doc, true);
+        CsmFile file = CsmUtilities.getCsmFile(doc, true, false);
         if (file != null) {
             CsmContext context = CsmOffsetResolver.findContext(file, offset, fileReferncesContext);
             out = CsmContextUtilities.getFunctionDefinition(context);
@@ -144,7 +144,7 @@ public class CompletionUtilities {
             if (idFunBlk == null) {
                 idFunBlk = new int[]{dotPos, dotPos};
             }
-            CsmFile currentFile = CsmUtilities.getCsmFile(doc, false);
+            CsmFile currentFile = CsmUtilities.getCsmFile(doc, false, false);
             boolean searchFuncsOnly = (idFunBlk.length == 3);
             for (int ind = idFunBlk.length - 1; ind >= 1; ind--) {
                 CsmCompletionResult result = query.query(target, baseDoc, idFunBlk[ind], true, false, false);

@@ -142,14 +142,13 @@ org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor
 org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer
 org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver
 org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory
-org.netbeans.modules.j2ee.genericserver.ide.GSOptionalDeploymentManagerFactory
-org.netbeans.modules.j2ee.jboss4.ide.JBOptionalDeploymentManagerFactory
+org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyOptionalFactory
 org.netbeans.modules.j2ee.sun.api.ServerLocationManager
 org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory
 org.netbeans.modules.j2ee.sun.ide.j2ee.RunTimeDDCatalog
-org.netbeans.modules.j2ee.weblogic9.optional.WLOptionalFactory
-org.netbeans.modules.tomcat5.TomcatManager$TomcatVersion
-org.netbeans.modules.tomcat5.ide.OptionalFactory
+org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory
+org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory
+org.netbeans.modules.glassfish.spi.ServerUtilities
 
 #IZ 177644
 org.netbeans.modules.schema2beans.AttrProp

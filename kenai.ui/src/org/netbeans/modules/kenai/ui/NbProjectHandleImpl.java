@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai.ui;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
@@ -125,7 +126,8 @@ public class NbProjectHandleImpl extends NbProjectHandle{
                 Logger.getLogger(NbProjectHandleImpl.class.getName()).severe("Cannot find project for " + fo.getPath()); // NOI18N
             return project;
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(NbProjectHandleImpl.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+            remove();
         } catch (IllegalArgumentException ex) {
             Exceptions.printStackTrace(ex);
         }

@@ -66,13 +66,14 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
-import org.netbeans.modules.java.source.query.CommentSet.RelativePosition;
 import org.openide.util.Exceptions;
 
 /**
@@ -713,6 +714,129 @@ public final class TreeUtilities {
             default:
                 throw new IllegalArgumentException("Unsupported kind: " + leaf.getKind());
         }
+    }
+
+    /**Decode escapes defined in: http://wikis.sun.com/display/mlvm/ProjectCoinProposal, 3.1-3.9.
+     * Must be a full token text, including possible #".
+     *
+     * @param text to decode
+     * @return decoded escapes from the identifier
+     * @see http://wikis.sun.com/display/mlvm/ProjectCoinProposal
+     * @since 0.56
+     */
+    public @NonNull CharSequence decodeIdentifier(@NonNull CharSequence text) {
+        return decodeIdentifierInternal(text);
+    }
+
+    /**Encode identifier using escapes defined in: http://wikis.sun.com/display/mlvm/ProjectCoinProposal, 3.1-3.9.
+     *
+     * @param text to encode
+     * @return encoded identifier, including #" if necessary
+     * @see http://wikis.sun.com/display/mlvm/ProjectCoinProposal
+     * @since 0.56
+     */
+    public @NonNull CharSequence encodeIdentifier(@NonNull CharSequence ident) {
+        return encodeIdentifierInternal(ident);
+    }
+
+    static @NonNull CharSequence decodeIdentifierInternal(@NonNull CharSequence text) {
+        if (text.charAt(0) != '#') {
+            return text;
+        }
+
+        int count = text.charAt(text.length() - 1) == '"' ? text.length() - 1 : text.length();
+        StringBuilder sb = new StringBuilder(text.length());
+
+        for (int c = 2; c < count; c++) {
+            if (text.charAt(c) == '\\' && ++c < count) {
+                if (EXOTIC_ESCAPE.contains(text.charAt(c))) {
+                    sb.append('\\');
+                    sb.append(text.charAt(c));
+                } else {
+                    //XXX: handle \012
+                    Character remaped = ESCAPE_UNENCODE.get(text.charAt(c));
+
+                    if (remaped != null) {
+                        sb.append(remaped);
+                    } else {
+                        //TODO: illegal?
+                        sb.append(text.charAt(c));
+                    }
+                }
+            } else {
+                sb.append(text.charAt(c));
+            }
+        }
+
+        return sb.toString();
+    }
+
+    static @NonNull CharSequence encodeIdentifierInternal(@NonNull CharSequence ident) {
+        if (ident.length() == 0) {
+            //???
+            return ident;
+        }
+
+        StringBuilder sb = new StringBuilder(ident.length());
+        boolean needsExotic = Character.isJavaIdentifierStart(ident.charAt(0));
+
+        //XXX: code points?
+        for (int i = 0; i < ident.length(); i++) {
+            char c = ident.charAt(i);
+
+            if (Character.isJavaIdentifierPart(c)) {
+                sb.append(c);
+                continue;
+            }
+
+            needsExotic = true;
+
+            Character target = ESCAPE_ENCODE.get(c);
+
+            if (target != null) {
+                sb.append('\\');
+                sb.append(target);
+            } else {
+                sb.append(c);
+            }
+        }
+
+        if (needsExotic) {
+            sb.append("\"");
+            sb.insert(0, "#\"");
+
+            return sb.toString();
+        } else {
+            return ident;
+        }
+    }
+
+    static Set<Character> EXOTIC_ESCAPE = new HashSet<Character>(
+            Arrays.<Character>asList('!', '#', '$', '%', '&', '(', ')', '*', '+', ',', '-',
+                                     ':', '=', '?', '@', '^', '_', '`', '{', '|', '}')
+    );
+
+    private static final Map<Character, Character> ESCAPE_UNENCODE;
+    private static final Map<Character, Character> ESCAPE_ENCODE;
+
+    static {
+        Map<Character, Character> unencode = new HashMap<Character, Character>();
+
+        unencode.put('n', '\n');
+        unencode.put('t', '\t');
+        unencode.put('b', '\b');
+        unencode.put('r', '\r');
+
+        ESCAPE_UNENCODE = Collections.unmodifiableMap(unencode);
+
+        Map<Character, Character> encode = new HashMap<Character, Character>();
+
+        encode.put('\n', 'n');
+        encode.put('\t', 't');
+        encode.put('\b', 'b');
+        encode.put('\r', 'r');
+
+        ESCAPE_ENCODE = Collections.unmodifiableMap(encode);
     }
 
     private void copyInnerClassIndexes(Tree from, Tree to) {
