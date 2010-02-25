@@ -110,18 +110,21 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         }
         
         managedBeanPanel = new ManagedBeanPanel(project, wizard);
-        
-        WizardDescriptor.Panel javaPanel;
-        if (sourceGroups.length == 0)
-            javaPanel = Templates.createSimpleTargetChooser(project, sourceGroups, managedBeanPanel);
-        else
-            javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, managedBeanPanel);
 
-        javaPanel.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                managedBeanPanel.updateManagedBeanName((WizardDescriptor.Panel) e.getSource());
-            }
-        });
+        WizardDescriptor.Panel javaPanel;
+        if (sourceGroups.length == 0) {
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(ManagedBeanIterator.class, "MSG_No_Sources_found"));
+            javaPanel = managedBeanPanel;
+        } else {
+            javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, managedBeanPanel);
+            
+            javaPanel.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    managedBeanPanel.updateManagedBeanName((WizardDescriptor.Panel) e.getSource());
+                }
+            });
+        }
+
 
         panels = new WizardDescriptor.Panel[] { javaPanel };
         
