@@ -109,8 +109,7 @@ class AntDeploymentProviderImpl implements AntDeploymentProvider {
         String domainDir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
         String domain = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
         String user = commonSupport.getInstanceProperties().get(GlassfishModule.USERNAME_ATTR);
-        String pw = commonSupport.getPassword();
-        String name = "gfv3" + (url+domainDir+domain+user+pw).hashCode() + "";  // NOI18N
+        String name = "gfv3" + (url+domainDir+domain+user).hashCode() + "";  // NOI18N
         return new File(System.getProperty("netbeans.user"), name + ".properties"); // NOI18N
     }
 
