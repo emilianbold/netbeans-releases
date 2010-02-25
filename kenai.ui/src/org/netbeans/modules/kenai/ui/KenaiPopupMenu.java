@@ -161,7 +161,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
 
         public JMenuItem getPopupPresenter() {
             JMenu kenaiPopup = new JMenu(); //NOI18N
-            Node[] nodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+            final Node[] nodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
             kenaiPopup.setVisible(false);
             if (proj == null || !isKenaiProject(proj) || nodes.length > 1) { // hide for non-Kenai projects
                 if (repoForProjCache.get(proj) == null && nodes.length == 1) { // start caching request, show dummy item...
@@ -177,7 +177,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                                 dummy.setVisible(false);
                             } else {
                                 repoForProjCache.put(proj, s);
-                                final JMenu tmp = constructKenaiMenu();
+                                final JMenu tmp = constructKenaiMenu(nodes);
                                 final Component[] c = tmp.getMenuComponents();
                                 SwingUtilities.invokeLater(new Runnable() {
 
@@ -198,12 +198,12 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                     return dummy;
                 }
             } else { // show for Kenai projects
-                kenaiPopup = constructKenaiMenu();
+                kenaiPopup = constructKenaiMenu(nodes);
             }
             return kenaiPopup;
         }
 
-        private JMenu constructKenaiMenu() {
+        private JMenu constructKenaiMenu(Node[] nodes) {
             // show for Kenai projects
             final JMenu kenaiPopup = new JMenu(NbBundle.getMessage(KenaiPopupMenu.class, "KENAI_POPUP")); //NOI18N
             kenaiPopup.setVisible(true);
@@ -219,7 +219,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                 /* Show actions related to versioning - commit/update */
                 VersioningSystem owner = VersioningSupport.getOwner(FileUtil.toFile(proj.getProjectDirectory()));
                 JMenu versioning = new JMenu(NbBundle.getMessage(KenaiPopupMenu.class, "MSG_VERSIONING")); //NOI18N
-                JComponent[] items = createVersioningSystemItems(owner, WindowManager.getDefault().getRegistry().getActivatedNodes());
+                JComponent[] items = createVersioningSystemItems(owner, nodes);
                 for (int i = 0; i < items.length; i++) {
                     JComponent item = items[i];
                     if (item != null) {
