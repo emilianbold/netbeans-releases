@@ -48,6 +48,7 @@ made subject to such option by the copyright holder.
     <base_folders>
         <base_folder regestry="hklm\software\cygwin\setup"  pattern="rootdir.*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]cygwin.*[\\/]bin[\\/]?$"/>
         <base_folder regestry="hklm\software\cygnus solutions\cygwin\mounts v2\/"  pattern="native.*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]cygwin[\\/]bin[\\/]?$"/>
+        <base_folder regestry="hklm\software\Wow6432Node\cygwin\setup"  pattern="rootdir.*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]cygwin.*[\\/]bin[\\/]?$"/>
         <base_folder regestry="hklm\software\Wow6432Node\cygnus solutions\cygwin\mounts v2\/"  pattern="native.*REG_SZ(.*)" suffix="bin" path_patern=".*[\\/]cygwin[\\/]bin[\\/]?$"/>
     </base_folders>
     <c>
