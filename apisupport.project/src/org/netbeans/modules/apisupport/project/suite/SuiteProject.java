@@ -121,6 +121,7 @@ public final class SuiteProject implements Project {
             this, 
             new Info(),
             helper.createAuxiliaryConfiguration(),
+            helper.createAuxiliaryProperties(),
             helper.createCacheDirectoryProvider(),
             new SavedHook(),
             UILookupMergerSupport.createProjectOpenHookMerger(new OpenedHook()),
