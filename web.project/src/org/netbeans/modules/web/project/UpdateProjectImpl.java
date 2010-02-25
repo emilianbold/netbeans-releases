@@ -357,12 +357,22 @@ public class UpdateProjectImpl implements UpdateImplementation {
     public synchronized EditableProperties getUpdatedProjectProperties () {
         if (cachedProperties == null) {
             cachedProperties = this.helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            //The javadoc.additionalparam was not in NB 4.0
-            if (cachedProperties.get (WebProjectProperties.JAVADOC_ADDITIONALPARAM)==null) {
-                cachedProperties.put (WebProjectProperties.JAVADOC_ADDITIONALPARAM,"");    //NOI18N
-            }
+            ensureValueExists(cachedProperties, WebProjectProperties.JAVADOC_ADDITIONALPARAM, ""); //NOI18N //The javadoc.additionalparam was not in NB 4.0
+            ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); //NOI18N
+            ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "false"); //NOI18N
+            ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); //NOI18N
+            ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); //NOI18N
+            ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); //NOI18N
+            ensureValueExists(cachedProperties, ProjectProperties.JAVAC_PROCESSORPATH,"${" + ProjectProperties.JAVAC_CLASSPATH + "}"); //NOI18N
+            ensureValueExists(cachedProperties, "javac.test.processorpath","${" + ProjectProperties.JAVAC_TEST_CLASSPATH + "}"); //NOI18N
         }
         return this.cachedProperties;
+    }
+
+    private static void ensureValueExists(EditableProperties prop, String property, String defaultValue) {
+        if (prop.get(property)==null) { //NOI18N
+            prop.put (property, defaultValue); //NOI18N
+        }
     }
 
     /**
