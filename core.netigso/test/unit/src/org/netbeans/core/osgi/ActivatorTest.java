@@ -54,31 +54,29 @@ public class ActivatorTest extends NbTestCase {
     }
 
     public void testModuleInstall() throws Exception {
-        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom;",
+        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
                 "public class Install extends org.openide.modules.ModuleInstall {",
                 "public @Override void restored() {System.setProperty(\"my.bundle.ran\", \"true\");}",
                 "}").manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: custom.Install",
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules",
-                "OpenIDE-Module-Specification-Version: 1.0").run();
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().run();
         assertTrue(Boolean.getBoolean("my.bundle.ran"));
     }
 
     public void testModuleInstallBackwards() throws Exception {
-        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom;",
+        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
                 "public class Install extends org.openide.modules.ModuleInstall {",
                 "public @Override void restored() {System.setProperty(\"my.bundle.ran.again\", \"true\");}",
                 "}").manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: custom.Install",
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules",
-                "OpenIDE-Module-Specification-Version: 1.0").backwards().run();
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().backwards().run();
         assertTrue(Boolean.getBoolean("my.bundle.ran.again"));
     }
 
     public void testLayers() throws Exception {
-        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom;",
+        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
                 "public class Install extends org.openide.modules.ModuleInstall {",
                 "public @Override void restored() {System.setProperty(\"my.file\", ",
                 "org.openide.filesystems.FileUtil.getConfigFile(\"whatever\").getPath());}",
@@ -88,13 +86,12 @@ public class ActivatorTest extends NbTestCase {
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: custom.Install",
                 "OpenIDE-Module-Layer: custom/layer.xml",
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.filesystems",
-                "OpenIDE-Module-Specification-Version: 1.0").run();
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.filesystems").done().run();
         assertEquals("whatever", System.getProperty("my.file"));
     }
 
     public void testURLStreamHandler() throws Exception {
-        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom;",
+        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
                 "public class Install extends org.openide.modules.ModuleInstall {",
                 "public @Override void restored() {try {",
                 "System.setProperty(\"my.url.length\", ",
@@ -104,8 +101,7 @@ public class ActivatorTest extends NbTestCase {
                 "}").sourceFile("custom/stuff", "some text").manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: custom.Install",
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules",
-                "OpenIDE-Module-Specification-Version: 1.0").
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().
                 backwards(). // XXX will not pass otherwise
                 run();
         assertEquals("10", System.getProperty("my.url.length"));
@@ -114,13 +110,12 @@ public class ActivatorTest extends NbTestCase {
     @RandomlyFails // sometimes in NB-Core-Build:
     // FNFE: Invalid settings.providerPath=xml/lookups/NetBeans/DTD_XML_beans_1_0.instance under SFS/xml/memory/ for class custom.Install$Bean
     public void testSettings() throws Exception {
-        new OSGiProcess(getWorkDir()).manifest(
+        new OSGiProcess(getWorkDir()).newModule().manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: custom.Install",
                 "OpenIDE-Module-Module-Dependencies: org.netbeans.modules.settings/1, org.openide.loaders, " +
-                "org.openide.filesystems, org.openide.modules, org.openide.util",
-                "OpenIDE-Module-Specification-Version: 1.0").
-                module("org.netbeans.modules.settings").sourceFile("custom/Install.java", "package custom;",
+                "org.openide.filesystems, org.openide.modules, org.openide.util").
+                sourceFile("custom/Install.java", "package custom;",
                 "public class Install extends org.openide.modules.ModuleInstall {",
                 "public @Override void restored() {",
                 "Bean b = new Bean(); b.setP(\"hello\");",
@@ -135,7 +130,8 @@ public class ActivatorTest extends NbTestCase {
                 "public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {}",
                 "public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {}",
                 "}",
-                "}").
+                "}").done().
+                module("org.netbeans.modules.settings").
                 run();
         String settings = System.getProperty("my.settings");
         assertNotNull(settings);
@@ -143,7 +139,7 @@ public class ActivatorTest extends NbTestCase {
     }
 
     public void testJREPackageImport() throws Exception {
-        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom;",
+        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
                 "public class Install extends org.openide.modules.ModuleInstall {",
                 "public @Override void restored() {",
                 "new javax.swing.JOptionPane().setUI(new javax.swing.plaf.basic.BasicOptionPaneUI());",
@@ -152,21 +148,19 @@ public class ActivatorTest extends NbTestCase {
                 "}").manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: custom.Install",
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules",
-                "OpenIDE-Module-Specification-Version: 1.0").run();
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().run();
         assertTrue(Boolean.getBoolean("my.bundle.worked"));
     }
 
     public void testModuleInfo() throws Exception {
-        new OSGiProcess(getWorkDir()).sourceFile("custom/Install.java", "package custom;",
+        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
                 "public class Install extends org.openide.modules.ModuleInstall {",
                 "public @Override void restored() {System.setProperty(\"number.of.modules\",",
                 "String.valueOf(org.openide.util.Lookup.getDefault().lookupAll(org.openide.modules.ModuleInfo.class).size()));}",
                 "}").manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: custom.Install",
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.util.lookup",
-                "OpenIDE-Module-Specification-Version: 1.0").run();
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.util.lookup").done().run();
         String numberOfModules = System.getProperty("number.of.modules");
         assertNotNull(numberOfModules);
         assertTrue(numberOfModules, Integer.parseInt(numberOfModules) > 2);
