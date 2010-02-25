@@ -138,6 +138,7 @@ public class Utils {
     public static TokenSequence<HTMLTokenId> getJoinedHtmlSequence(Document doc, int offset) {
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence ts = th.tokenSequence();
+        //XXX this seems to be wrong, the return code should be checked
         ts.move(offset);
 
         while(ts.moveNext() || ts.movePrevious()) {
@@ -152,6 +153,7 @@ public class Utils {
             }
 
             //position the embedded ts so we can search deeper
+            //XXX this seems to be wrong, the return code should be checked
             ts.move(offset);
         }
 

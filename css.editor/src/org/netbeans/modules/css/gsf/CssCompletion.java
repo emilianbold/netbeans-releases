@@ -89,17 +89,16 @@ import org.netbeans.modules.css.editor.PropertyModel;
 import org.netbeans.modules.css.editor.model.HtmlTags;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.indexing.CssIndex;
-import org.netbeans.modules.css.indexing.CssIndexer;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
+import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -610,7 +609,7 @@ public class CssCompletion implements CodeCompletionHandler {
         }
         CssProjectSupport support = CssProjectSupport.findFor(current);
         CssIndex index = support.getIndex();
-        Map<FileObject, Collection<String>> result = index.findAll(CssIndexer.COLORS_KEY);
+        Map<FileObject, Collection<String>> result = index.findAll(RefactoringElementType.COLOR);
 
         //resort the files collection so the current file it first
         //we need that to ensure the color from current file has precedence
@@ -1256,8 +1255,8 @@ public class CssCompletion implements CodeCompletionHandler {
         }
 
         @Override
-        public ImageIcon getIcon() {
-            return null;
+        public ElementKind getKind() {
+            return ElementKind.RULE;
         }
 
         @Override
@@ -1275,9 +1274,6 @@ public class CssCompletion implements CodeCompletionHandler {
      */
     private class CssCompletionItem implements CompletionProposal {
 
-        private static final String CSS_PROPERTY = "org/netbeans/modules/css/resources/methodPublic.png"; //NOI18N
-        private static final String CSS_VALUE = "org/netbeans/modules/css/resources/fieldPublic.png"; //NOI18N
-        private ImageIcon propertyIcon, valueIcon;
         private int anchorOffset;
         private String value;
         protected CompletionItemKind kind;
@@ -1317,24 +1313,20 @@ public class CssCompletion implements CodeCompletionHandler {
         }
 
         @Override
-        public ElementKind getKind() {
-            return ElementKind.OTHER;
+        public ImageIcon getIcon() {
+            return null;
         }
 
         @Override
-        public ImageIcon getIcon() {
-            if (kind == CompletionItemKind.PROPERTY) {
-                if (propertyIcon == null) {
-                    propertyIcon = ImageUtilities.loadImageIcon(CSS_PROPERTY, false);
-                }
-                return propertyIcon;
-            } else if (kind == CompletionItemKind.VALUE) {
-                if (valueIcon == null) {
-                    valueIcon = ImageUtilities.loadImageIcon(CSS_VALUE, false);
-                }
-                return valueIcon;
+        public ElementKind getKind() {
+            switch (kind) {
+                case PROPERTY:
+                    return ElementKind.METHOD;
+                case VALUE:
+                    return ElementKind.FIELD;
+                default:
+                    return ElementKind.OTHER;
             }
-            return null;
         }
 
         @Override
