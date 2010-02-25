@@ -70,6 +70,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.ResourceCollection;
 import org.apache.tools.ant.types.resources.FileResource;
 import org.w3c.dom.Document;
@@ -126,8 +127,18 @@ public class MakeOSGi extends Task {
         try {
             Manifest netbeans = jar.getManifest();
             Attributes netbeansAttr = netbeans.getMainAttributes();
-            if (netbeansAttr.getValue("Bundle-SymbolicName") != null) {
-                // XXX copy it as is!
+            String originalBundleName = netbeansAttr.getValue("Bundle-SymbolicName");
+            if (originalBundleName != null) { // #180201
+                String originalBundleVersion = netbeansAttr.getValue("Bundle-Version");
+                Copy copy = new Copy();
+                copy.setProject(getProject());
+                copy.setOwningTarget(getOwningTarget());
+                copy.setFile(module);
+                File bundleFile = new File(destdir, originalBundleName + (originalBundleVersion != null ? "-" + originalBundleVersion : "") + ".jar");
+                copy.setTofile(bundleFile);
+                copy.execute();
+                log("Copying " + module + " unmodified into " + bundleFile);
+                return;
             }
             Manifest osgi = new Manifest();
             Attributes osgiAttr = osgi.getMainAttributes();
