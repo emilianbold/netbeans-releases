@@ -616,9 +616,9 @@ public class CssCompletion implements CodeCompletionHandler {
         //we need that to ensure the color from current file has precedence
         //over the others
         List<FileObject> resortedKeys = new ArrayList<FileObject>(result.keySet());
-        resortedKeys.remove(current);
-        resortedKeys.add(0, current);
-
+        if(resortedKeys.remove(current)) {
+            resortedKeys.add(0, current);
+        }
         Collection<CompletionProposal> proposals = new HashSet<CompletionProposal>();
         for(FileObject file : resortedKeys) {
             Collection<String> colors = result.get(file);
