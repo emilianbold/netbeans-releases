@@ -64,6 +64,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -183,6 +184,12 @@ public class ClientJavaSourceHelper {
                         saasResource,
                         pf,
                         security);
+                
+                try {
+                    Wadl2JavaHelper.generateJaxb(targetFo, saasResource.getSaas());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
     }

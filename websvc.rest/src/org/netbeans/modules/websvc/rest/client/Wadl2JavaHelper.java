@@ -49,28 +49,54 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.xml.bind.JAXBElement;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
+import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.rest.client.ClientJavaSourceHelper.HttpMimeType;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
+import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Request;
 import org.netbeans.modules.websvc.saas.model.wadl.Response;
+import org.netbeans.modules.websvc.saas.util.SaasUtil;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.xml.sax.SAXException;
 
 /**
  *
  * @author mkuchtiak
  */
 class Wadl2JavaHelper {
+
+    private static final String PROP_XML_SCHEMA="xml_schema"; //NOI18N
+    private static final String PROP_PACKAGE_NAME="package_name"; //NOI18N
+    private static final String PROP_SOURCE_ROOT="source_root"; //NOI18N
 
     static ClassTree addHttpMethods(WorkingCopy copy, ClassTree innerClass, WadlSaasResource saasResource) {
         List<WadlSaasMethod> saasMethods = saasResource.getMethods();
@@ -570,4 +596,84 @@ class Wadl2JavaHelper {
             return value;
         }
     }
+
+    static void generateJaxb(FileObject targetFo, WadlSaas wadlSaas) throws java.io.IOException {
+        Project project = FileOwnerQuery.getOwner(targetFo);
+        if (project != null) {
+            FileObject buildXml = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+            if (buildXml != null) {
+                List<FileObject> schemaFiles = wadlSaas.getLocalSchemaFiles();
+                if (schemaFiles.size() > 0) {
+                    FileObject srcRoot = findSourceRootForFile(project, targetFo);
+                    if (srcRoot != null) {
+                        XmlStaxUtils staxUtils = new XmlStaxUtils();
+                        String saasDir =  getSourceRootPath(project, srcRoot);
+                        String packagePrefix = wadlSaas.getPackageName();
+                        String targetName = "saas.xjc."+packagePrefix; //NOI18N
+                        try {
+                            boolean isXjcTarget = staxUtils.isTarget(buildXml, targetName); //NOI18N
+                            if (!isXjcTarget) {
+                                NotifyDescriptor dd = new NotifyDescriptor.Confirmation(
+                                    NbBundle.getMessage(Wadl2JavaHelper.class, "MSG_CreateJaxbArtifacts", new Object[]{targetName, saasDir}),
+                                    NotifyDescriptor.YES_NO_OPTION);
+                                DialogDisplayer.getDefault().notify(dd);
+                                if (NotifyDescriptor.OK_OPTION.equals(dd.getValue())) {
+                                    // create META-INF if missing
+                                    FileObject metaInf = srcRoot.getFileObject("META-INF"); //NOI18N
+                                    if (metaInf == null) {
+                                        metaInf = srcRoot.createFolder("META-INF"); //NOI18N
+                                    }
+                                    //try {
+                                    String[] xmlSchemas = new String[schemaFiles.size()];
+                                    String[] packageNames = new String[schemaFiles.size()];
+                                    boolean isInitTarget = staxUtils.isTarget(buildXml, "saas-init-xjc"); //NOI18N
+                                    int i=0;
+                                    for (FileObject schemaFile : schemaFiles) {
+                                        if (metaInf != null && metaInf.isFolder() && metaInf.getFileObject(schemaFile.getNameExt()) == null) {
+                                            // copy schema to META-INF
+                                            FileUtil.copyFile(schemaFile, metaInf, schemaFile.getName());
+                                            xmlSchemas[i] = saasDir+"/META-INF/"+schemaFile.getNameExt(); //NOI18N
+                                        } else {
+                                            xmlSchemas[i] = schemaFile.getPath();
+                                        }
+                                        packageNames[i++] = packagePrefix+"."+SaasUtil.toValidJavaName(schemaFile.getName()).toLowerCase();
+                                    }
+                                    XmlDomUtils.addJaxbXjcTargets(buildXml, targetName, saasDir, xmlSchemas, packageNames, isInitTarget, isNbProject(project));
+                                    for (FileObject schemaFile : schemaFiles) {
+                                        ExecutorTask executorTask = ActionUtils.runTarget(buildXml, new String[] {targetName}, null);
+                                    }
+                                }
+                            }
+                        } catch (XMLStreamException ex) {
+                            Logger.getLogger(Wadl2JavaHelper.class.getName()).log(Level.WARNING, "Can not parse wadl file", ex);
+                        } catch (ParserConfigurationException ex) {
+                            Logger.getLogger(Wadl2JavaHelper.class.getName()).log(Level.WARNING, "Can not configure parser for wadl file", ex);
+                        } catch (SAXException ex) {
+                            Logger.getLogger(Wadl2JavaHelper.class.getName()).log(Level.WARNING, "Can not parse wadl file", ex);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    static boolean isNbProject(Project project) {
+        return false;
+    }
+
+    private static FileObject findSourceRootForFile(Project project, FileObject fo) {
+        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
+        for (SourceGroup sourceGroup : sourceGroups) {
+            FileObject srcRoot = sourceGroup.getRootFolder();
+            if (FileUtil.isParentOf(srcRoot, fo)) {
+                return srcRoot;
+            }
+        }
+        return null;
+    }
+
+    private static String getSourceRootPath(Project project, FileObject srcRoot) {
+        return FileUtil.getRelativePath(project.getProjectDirectory(), srcRoot);
+    }
+
 }
