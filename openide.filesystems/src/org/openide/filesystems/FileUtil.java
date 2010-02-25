@@ -1947,6 +1947,9 @@ public final class FileUtil extends Object {
         FileObject fo = URLMapper.findFileObject(url);
 
         if ((fo != null) && !fo.isVirtual()) {
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.FINEST, "isArchiveFile_FILE_RESOLVED", fo); //NOI18N, used by FileUtilTest.testIsArchiveFileRace
+            }
             return isArchiveFile(fo);
         } else {
             return isArchiveFile(url.getPath());
