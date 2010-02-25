@@ -47,7 +47,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.text.MessageFormat;
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -137,7 +137,13 @@ public class ErrorDescriptionFactory {
         }
     }
 
-    private static List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided) {
+    //XXX: should not be public:
+    public static List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided) {
+        if (   ctx.getHintMetadata().kind == HintMetadata.Kind.SUGGESTION
+            || ctx.getHintMetadata().kind == HintMetadata.Kind.SUGGESTION_NON_GUI) {
+            //suggestions do not currently have customizers, and cannot be suppressed.
+            return Arrays.asList(provided);
+        }
         List<Fix> auxiliaryFixes = new LinkedList<Fix>();
 
         if (ctx.getHintMetadata() != null) {
