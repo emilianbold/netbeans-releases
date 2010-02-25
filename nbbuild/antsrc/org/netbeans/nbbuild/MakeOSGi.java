@@ -393,7 +393,7 @@ public class MakeOSGi extends Task {
         ClassLoader jre = ClassLoader.getSystemClassLoader().getParent();
         for (byte[] data : classfiles.values()) {
             for (String clazz : VerifyClassLinkage.dependencies(data)) {
-                if (clazz.startsWith("com.sun.")) {
+                if (clazz.startsWith("com.sun.") || clazz.startsWith("sun.")) {
                     // JRE-specific dependencies will not be exported by Felix at least.
                     continue;
                 }
