@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainManagerImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -83,7 +84,7 @@ public final class CompilerSetFactory {
             if (d.isAbstract()) {
                 continue;
             }
-            if (ToolchainManagerImpl.getImpl().isMyFolder(directory, d, platform, false)){
+            if (ToolUtils.isMyFolder(directory, d, platform, false)){
                 CompilerFlavor f = CompilerFlavorImpl.toFlavor(d.getName(), platform);
                 if (f != null) {
                     list.add(f);
