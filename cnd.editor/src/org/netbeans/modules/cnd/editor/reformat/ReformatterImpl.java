@@ -1548,8 +1548,13 @@ public class ReformatterImpl {
                 }
                 return;
             }
+            if (p != null && p.id() == DEFAULT) {
+                // TODO use flase?
+                spaceBefore(previous, false);
+                braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
+                return;
+            }
             if (p != null && p.id() == IDENTIFIER && qtExtension.isQtObject()) {
-                CharSequence text = p.text();
                 if (qtExtension.isSlots(p) || qtExtension.isSignals(p)) {
                     spaceBefore(previous, false);
                     if (!ts.isLastLineToken()) {
@@ -1559,20 +1564,7 @@ public class ReformatterImpl {
                     return;
                 }
             }
-            if (p != null && p.id() == DEFAULT) {
-                // TODO use flase?
-                spaceBefore(previous, false);
-                braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
-                return;
-            }
-            Token<CppTokenId> p2 = ts.lookPreviousImportant(2);
-            if (p2 != null && p2.id() == CASE) {
-                // TODO use flase?
-                spaceBefore(previous, false);
-                braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
-                return;
-            }
-            p2 = ts.lookPreviousLineImportant(CppTokenId.CASE);
+            Token<CppTokenId> p2 = ts.lookPreviousLineImportant(CppTokenId.CASE);
             if (p2 != null && p2.id() == CASE) {
                 // TODO use flase?
                 spaceBefore(previous, false);
