@@ -203,8 +203,8 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         jLabel1.setLabelFor(jTableFrameworks);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(PanelSupportedFrameworksVisual.class, "LBL_NWP2_Select_Frameworks")); // NOI18N
 
-        jScrollPane1.setMaximumSize(new java.awt.Dimension(32767, 70));
         jScrollPane1.setMinimumSize(new java.awt.Dimension(22, 70));
+        jScrollPane1.setOpaque(false);
         jScrollPane1.setPreferredSize(new java.awt.Dimension(453, 70));
 
         jTableFrameworks.setModel(new javax.swing.table.DefaultTableModel(
@@ -218,6 +218,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        jTableFrameworks.setOpaque(false);
         jScrollPane1.setViewportView(jTableFrameworks);
 
         jLabelConfig.setLabelFor(jPanelConfig);
@@ -230,8 +231,8 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
-            .add(jPanelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
             .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+            .add(jPanelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
             .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -239,13 +240,13 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
             .add(layout.createSequentialGroup()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 96, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(18, 18, 18)
                 .add(jLabelConfig, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE))
+                .add(jPanelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE))
         );
 
         jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSupportedFrameworksVisual.class, "ACS_LBL_NWP2_FrameworksTable_A11YDesc")); // NOI18N
@@ -459,7 +460,11 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column ) {
             if (value instanceof WebFrameworkProvider) {
                 WebFrameworkProvider item = (WebFrameworkProvider) value;
-                return super.getTableCellRendererComponent(table, item.getName(), isSelected, false, row, column);
+                Component comp = super.getTableCellRendererComponent(table, item.getName(), isSelected, false, row, column);
+                if (comp instanceof JComponent) {
+                    ((JComponent)comp).setOpaque(isSelected);
+                }
+                return comp;
             } else {
                 if (value instanceof Boolean && booleanRenderer != null)
                     return booleanRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
