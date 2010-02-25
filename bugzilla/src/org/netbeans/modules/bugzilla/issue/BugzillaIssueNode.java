@@ -74,7 +74,7 @@ public class BugzillaIssueNode extends IssueNode {
             new BugzillaFieldProperty(BugzillaIssue.LABEL_NAME_STATUS, IssueField.STATUS, "CTL_Issue_Status_Title", "CTL_Issue_Status_Desc"), // NOI18N
             new BugzillaFieldProperty(BugzillaIssue.LABEL_NAME_ASSIGNED_TO, IssueField.ASSIGNED_TO, "CTL_Issue_Assigned_Title", "CTL_Issue_Status_Desc"), // NOI18N
             new ResolutionProperty(),
-            new BugzillaFieldProperty(BugzillaIssue.LABEL_NAME_SUMMARY, IssueField.SUMMARY, "CTL_Issue_Summary_Title", "CTL_Issue_Summary_Desc"), // NOI18N
+            new SummaryProperty(), 
             new ModificationProperty(),
             new BugzillaFieldProperty(BugzillaIssue.LABEL_NAME_PRODUCT, IssueField.PRODUCT, "CTL_Issue_Product_Title", "CTL_Issue_Product_Desc"), // NOI18N
             new BugzillaFieldProperty(BugzillaIssue.LABEL_NAME_COMPONENT, IssueField.COMPONENT, "CTL_Issue_Component_Title", "CTL_Issue_Component_Desc"), // NOI18N
