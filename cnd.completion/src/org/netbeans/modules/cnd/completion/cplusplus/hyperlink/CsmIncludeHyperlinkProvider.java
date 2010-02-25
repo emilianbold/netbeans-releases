@@ -84,6 +84,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     public CsmIncludeHyperlinkProvider() {
     }
 
+    @Override
     protected boolean isValidToken(TokenItem<CppTokenId> token, HyperlinkType type) {
         return isSupportedToken(token, type);
     }
@@ -105,6 +106,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         return false;
     }
 
+    @Override
     protected void performAction(final Document originalDoc, final JTextComponent target, final int offset, final HyperlinkType type) {
         goToInclude(originalDoc, target, offset, type);
     }
@@ -147,47 +149,57 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             this.include = include;
         }
 
+        @Override
         public CsmFile getContainingFile() {
             return include.getIncludeFile();
         }
 
+        @Override
         public int getStartOffset() {
             // start of the file
             return DUMMY_POSITION.getOffset();
         }
 
+        @Override
         public int getEndOffset() {
             // DUMMY of the file
             return DUMMY_POSITION.getOffset();
         }
 
+        @Override
         public CsmOffsetable.Position getStartPosition() {
             return DUMMY_POSITION;
         }
 
+        @Override
         public CsmOffsetable.Position getEndPosition() {
             return DUMMY_POSITION;
         }
 
+        @Override
         public CharSequence getText() {
             return include.getIncludeName();
         }
     }
     private static final CsmOffsetable.Position DUMMY_POSITION = new CsmOffsetable.Position() {
 
+        @Override
         public int getOffset() {
             return -1;
         }
 
+        @Override
         public int getLine() {
             return -1;
         }
 
+        @Override
         public int getColumn() {
             return -1;
         }
     };
 
+    @Override
     protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset, HyperlinkType type) {
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
         CsmInclude target = null;
@@ -279,9 +291,11 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             uid = UIDs.get(file);
         }
 
+        @Override
         public void outputLineSelected(OutputEvent ev) {
         }
 
+        @Override
         public void outputLineAction(OutputEvent ev) {
             CsmObject obj = uid.getObject();
             if (obj != null) {
@@ -289,6 +303,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             }
         }
 
+        @Override
         public void outputLineCleared(OutputEvent ev) {
         }
     }

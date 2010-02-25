@@ -83,12 +83,14 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         caret.setMagicCaretPosition(null);
     }
 
+    @Override
     public Set<HyperlinkType> getSupportedHyperlinkTypes() {
         return EnumSet.of(HyperlinkType.GO_TO_DECLARATION, HyperlinkType.ALT_HYPERLINK);
     }
 
     protected abstract void performAction(final Document originalDoc, final JTextComponent target, final int offset, final HyperlinkType type);
 
+    @Override
     public void performClickAction(Document originalDoc, final int offset, final HyperlinkType type) {
         if (originalDoc == null) {
             return;
@@ -103,6 +105,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
 
         Runnable run = new Runnable() {
 
+            @Override
             public void run() {
                 if (type == HyperlinkType.ALT_HYPERLINK) {
                     // in this mode we open MacroView
@@ -118,6 +121,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         hyperLinkTask = CsmModelAccessor.getModel().enqueue(run, "Following hyperlink");// NOI18N
     }
 
+    @Override
     public boolean isHyperlinkPoint(Document doc, int offset, HyperlinkType type) {
         TokenItem<CppTokenId> token = getToken(doc, offset);
         return isValidToken(token, type);
@@ -125,6 +129,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
 
     protected abstract boolean isValidToken(TokenItem<CppTokenId> token, HyperlinkType type);
 
+    @Override
     public int[] getHyperlinkSpan(Document doc, int offset, HyperlinkType type) {
         TokenItem<CppTokenId> token = getToken(doc, offset);
         if (type == HyperlinkType.ALT_HYPERLINK) {
@@ -203,6 +208,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         }
     }
 
+    @Override
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
         if (doc == null || offset < 0 || offset > doc.getLength()) {
             return null;
@@ -232,6 +238,7 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
         final StringBuilder docText = new StringBuilder();
         doc.render(new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     docText.append(doc.getText(start, end - start));
