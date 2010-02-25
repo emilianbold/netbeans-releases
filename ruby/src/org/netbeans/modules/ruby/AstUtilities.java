@@ -140,8 +140,9 @@ public class AstUtilities {
     /** ActiveSupport extensions */
     private static final String[] CATTR_ACCESSORS = {"cattr_reader", "cattr_accessor", "cattr_writer"};
 
-    private static final String[] NAMED_SCOPE = {"named_scope"};
-
+    /** The names of AR scope methods - named_scope in rails 2.x, rails 3.x deprecates it
+     in favor of 'scope' */
+    private static final String[] NAMED_SCOPE = {"named_scope", "scope"};
     /**
      * Tries to cast the given <code>result</code> to <code>RubyParseResult</code> 
      * and returns it. Returns <code>null</code> if it wasn't an instance of <code>RubyParseResult</code>.
