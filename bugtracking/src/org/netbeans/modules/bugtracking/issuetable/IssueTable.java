@@ -91,6 +91,7 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.QueryNotifyListener;
+import org.netbeans.modules.bugtracking.ui.query.IssueTableSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.view.TreeTableView;
@@ -122,6 +123,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     private final StoreColumnsHandler storeColumnsWidthHandler;
     private final JButton colsButton;
     private boolean savedQueryInitialized;
+    private SummaryTextFilter textFilter;
 
     /**
      * Returns the issue table filters
@@ -196,7 +198,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
 
         table.addMouseListener(this);
         table.addKeyListener(this);
-        table.setDefaultRenderer(Node.Property.class, new QueryTableCellRenderer(query));
+        table.setDefaultRenderer(Node.Property.class, new QueryTableCellRenderer(query, this));
         queryTableHeaderRenderer = new QueryTableHeaderRenderer(table.getTableHeader().getDefaultRenderer(), this, query);
         table.getTableHeader().setDefaultRenderer(queryTableHeaderRenderer);
         table.addAncestorListener(this);
@@ -224,6 +226,8 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         storeColumnsTask = BugtrackingManager.getInstance()
                                                 .getRequestProcessor()
                                                 .create(storeColumnsWidthHandler);
+
+        IssueTableSupport.getInstance().put(query, this);
     }
 
     int getSeenColumnIdx() {
@@ -244,20 +248,50 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
 
     public void setFilter(Filter filter) {
         this.filter = filter;
+        setFilterIntern(filter);
+    }
+
+    public void setFilterIntern(Filter filter) {
         List<IssueNode> issueNodes = new ArrayList<IssueNode>(issues.size());
         for (Issue issue : issues) {
-            if(filter == null || filter.accept(issue)) {
-                issueNodes.add(((NodeProvider)issue).getNode());
+            if (filter == null || filter.accept(issue)) {
+                issueNodes.add(((NodeProvider) issue).getNode());
             }
         }
         setTableModel(issueNodes.toArray(new IssueNode[issueNodes.size()]));
+    }
+
+    public void resetFilterBySummary() {
+        setFilterIntern(filter);
+//        textFilter = null;
+    }
+
+    public void switchFilterBySummaryHighlight(boolean on) {
+        assert textFilter != null;
+        if(textFilter == null) {
+            return;
+        }
+        textFilter.setHighlighting(on);
+        table.repaint();
+    }
+
+    public void setFilterBySummary(String text, boolean regular, boolean wholeWords, boolean matchCase) {
+        if(textFilter == null) {
+            textFilter = new SummaryTextFilter();
+        }
+        textFilter.setText(text, regular, wholeWords, matchCase);
+        setFilterIntern(textFilter);
+    }
+
+    SummaryTextFilter getSummaryFilter() {
+        return textFilter;
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Query.EVENT_QUERY_SAVED)) {
             initColumns();
         }
-    }
+    }    
 
     private class CellAction implements ActionListener {
         private final Rectangle bounds;

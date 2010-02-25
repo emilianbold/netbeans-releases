@@ -233,6 +233,14 @@ public final class ProcessUtils {
         return execute(NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(executable).setArguments(args).setWorkingDirectory(workingDir));
     }
 
+    public static ExitStatus executeWithoutMacroExpansion(final String workingDir, final ExecutionEnvironment execEnv, final String executable, final String... args) {
+        if (workingDir != null) {
+            return execute(NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(executable).setArguments(args).setMacroExpansion(false));
+        } else {
+            return execute(NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(executable).setArguments(args).setWorkingDirectory(workingDir).setMacroExpansion(false));
+        }
+    }
+
     /**
      * This method can be used to start a process without additional handling
      * of exceptions/streams reading, etc.
