@@ -56,65 +56,78 @@ public class Man2HTML {
         this.br = br;
     }
 
+    private void startNormal(StringBuffer buf) {
+        if (mode != MODE.NORMAL) {
+            if (mode == MODE.BOLD) {
+                buf.append("</B>"); // NOI18N
+            }
+            else if (mode == MODE.UNDERLINE) {
+                buf.append("</I>"); // NOI18N
+            }
+            mode = MODE.NORMAL;
+        }
+    }
+
+    private void startBold(StringBuffer buf) {
+        buf.append("<B>"); // NOI18N
+        mode = MODE.BOLD;
+    }
+
+    private void startItalic(StringBuffer buf) {
+        buf.append("<I>"); // NOI18N
+        mode = MODE.UNDERLINE;
+    }
+
+
     public String getHTML() {
         StringBuffer buf = new StringBuffer();
         buf.append("<HTML>\n"); // NOI18N
         buf.append("<BODY>\n"); // NOI18N
         buf.append("<PRE>\n"); // NOI18N
 
-        char cacheCh = 0;
-        char prevCh = 0;
+        char curCh = 0;
+        char nextCh = 0;
 
         try {
             String line = null;
             while ((line = br.readLine()) != null) {
                 for (int i = 0; i < line.length(); i++) {
-                    char ch = line.charAt(i);
-                    if (cacheCh == 0) {
-                        cacheCh = ch;
-                    }
-                    else if (ch == '\b') {
+                    curCh = nextCh;
+                    nextCh = line.charAt(i);
+
+                    if (nextCh == '\b') {
                         if (mode == MODE.NORMAL) {
-                            if (cacheCh != '_') {
-                                mode = MODE.BOLD;
-                                buf.append("<B>");
+                            if (curCh == '_') {
+                                startItalic(buf);
                             }
                             else {
-                                mode = MODE.UNDERLINE;
-                                buf.append("<I>");
+                                startBold(buf);
                             }
                         }
-                        cacheCh = 0;
                     }
                     else {
-                        buf.append(cacheCh);
-
-                        if (mode != MODE.NORMAL && prevCh != '\b') {
-                            if (mode == MODE.BOLD) {
-                                buf.append("</B>");
+                        if (curCh != 0 && curCh != '\b') {
+                            if (curCh == '<') {
+                                buf.append("&lt;");
                             }
-                            else if (mode == MODE.UNDERLINE) {
-                                buf.append("</I>");
+                            else if (curCh == '>') {
+                                buf.append("&gt;");
                             }
-                            mode = MODE.NORMAL;
+                            else {
+                                buf.append(curCh);
+                            }
+                            startNormal(buf);
                         }
-
-                        cacheCh = ch;
                     }
-                    prevCh = ch;
                 }
-                if (cacheCh != 0) {
-                    buf.append(cacheCh);
+
+
+                if (nextCh != 0) {
+                    buf.append(nextCh);
                 }
-                if (mode == MODE.BOLD) {
-                    buf.append("</B>");
-                }
-                else if (mode == MODE.UNDERLINE) {
-                    buf.append("</I>");
-                }
-                mode = MODE.NORMAL;
-                cacheCh = 0;
-                prevCh = 0;
+                startNormal(buf);
+                curCh = 0;
+                nextCh = 0;
                 buf.append("\n"); // NOI18N
             }
         }
