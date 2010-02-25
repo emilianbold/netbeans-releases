@@ -52,7 +52,7 @@ public class MakeOSGiTest extends NbTestCase {
         assertTranslateDependency("org.netbeans.modules.lexer;bundle-version=\"[201.4.0,300)\"", "org.netbeans.modules.lexer/2 > 1.4");
         assertTranslateDependency("what.ever;bundle-version=\"[0.0.0,100)\"", "what.ever");
         assertTranslateDependency("org.netbeans.modules.java.sourceui", "org.netbeans.modules.java.sourceui = 15");
-        // XXX interpret depMajHi, e.g. /0-1 > 1.7 => [1.7.0,200)
+        assertTranslateDependency("editor.indent.project;bundle-version=\"[1.0.0,200)\"", "editor.indent.project/0-1 > 1.0");
         // XXX 3 or more items in sequence
     }
     private void assertTranslateDependency(String expected, String dependency) throws Exception {
