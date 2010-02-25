@@ -45,6 +45,7 @@ package org.netbeans.modules.editor.hints.borrowed;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -62,6 +63,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.*;
 import org.netbeans.modules.editor.hints.FixData;
+import org.netbeans.modules.editor.hints.HintsUI;
 import org.netbeans.spi.editor.hints.Fix;
 
 /**
@@ -82,6 +84,8 @@ public class ScrollCompletionPane extends JScrollPane {
     private static final String COMPLETION_PGDN = "completion-pgdn"; //NOI18N
     private static final String COMPLETION_BEGIN = "completion-begin"; //NOI18N
     private static final String COMPLETION_END = "completion-end"; //NOI18N
+    private static final String COMPLETION_RIGHT = "completion-right"; //NOI18N
+    private static final String COMPLETION_LEFT = "completion-left"; //NOI18N
 
     private static final int ACTION_COMPLETION_UP = 1;
     private static final int ACTION_COMPLETION_DOWN = 2;
@@ -89,6 +93,8 @@ public class ScrollCompletionPane extends JScrollPane {
     private static final int ACTION_COMPLETION_PGDN = 4;
     private static final int ACTION_COMPLETION_BEGIN = 5;
     private static final int ACTION_COMPLETION_END = 6;
+    private static final int ACTION_COMPLETION_RIGHT = 7;
+    private static final int ACTION_COMPLETION_LEFT = 8;
 
     private JTextComponent component;
 
@@ -277,6 +283,18 @@ public class ScrollCompletionPane extends JScrollPane {
         KeyStroke.getKeyStroke(KeyEvent.VK_END, 0),
         BaseKit.endLineAction
         );
+
+        // Register right key
+        registerKeybinding(ACTION_COMPLETION_RIGHT, COMPLETION_RIGHT,
+        KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0),
+        BaseKit.forwardAction
+        );
+
+        // Register left key
+        registerKeybinding(ACTION_COMPLETION_LEFT, COMPLETION_LEFT,
+        KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0),
+        BaseKit.backwardAction
+        );
     }
 
     private class CompletionPaneAction extends AbstractAction {
@@ -305,6 +323,12 @@ public class ScrollCompletionPane extends JScrollPane {
                     break;
                 case ACTION_COMPLETION_END:
                         view.end();
+                    break;
+                case ACTION_COMPLETION_RIGHT:
+                    view.right();
+                    break;
+                case ACTION_COMPLETION_LEFT:
+                    HintsUI.getDefault().undoOnePopup();
                     break;
             }
         }
