@@ -149,8 +149,10 @@ public class MakeOSGi extends Task {
             }
             Manifest osgi = new Manifest();
             Attributes osgiAttr = osgi.getMainAttributes();
-            Set<String> importedPackages = findImports(jar);
-            translate(netbeansAttr, osgiAttr, importedPackages);
+            Set<String> importedPackages = new TreeSet<String>();
+            Set<String> availablePackages = new TreeSet<String>();
+            scanClasses(jar, importedPackages, availablePackages);
+            translate(netbeansAttr, osgiAttr, importedPackages, availablePackages);
             String cnb = osgiAttr.getValue("Bundle-SymbolicName");
             String bundleVersion = osgiAttr.getValue("Bundle-Version");
             File bundleFile = new File(destdir, cnb + (bundleVersion != null ? "-" + bundleVersion : "") + ".jar");
@@ -229,10 +231,13 @@ public class MakeOSGi extends Task {
         }
     }
 
-    static void translate(Attributes netbeans, Attributes osgi, Set<String> importedPackages) {
+    static void translate(Attributes netbeans, Attributes osgi, Set<String> importedPackages, Set<String> availablePackages) throws Exception {
         osgi.putValue("Manifest-Version", "1.0"); // workaround for JDK bug
         osgi.putValue("Bundle-ManifestVersion", "2");
         String codename = netbeans.getValue("OpenIDE-Module");
+        if (codename == null) {
+            throw new IllegalArgumentException("Does not appear to be a NetBeans module");
+        }
         String cnb = codename.replaceFirst("/\\d+$", "");
         if (cnb.equals("org.netbeans.core.netigso")) {
             // special handling...
@@ -245,19 +250,48 @@ public class MakeOSGi extends Task {
             bundleVersion = threeDotsWithMajor(spec, codename);
             String buildVersion = netbeans.getValue("OpenIDE-Module-Build-Version");
             if (buildVersion == null) {
-                buildVersion = netbeans.getValue("OpenIDE-Module-Implementation-Version");
+                String implVersion = netbeans.getValue("OpenIDE-Module-Implementation-Version");
+                // XXX if integral, export all packages
+                buildVersion = implVersion;
             }
             if (buildVersion != null) {
                 bundleVersion += "." + buildVersion.replaceAll("[^a-zA-Z0-9_-]", "_");
             }
             osgi.putValue("Bundle-Version", bundleVersion);
         }
+        List<String> exportedPackages = new ArrayList<String>();
         String pp = netbeans.getValue("OpenIDE-Module-Public-Packages");
         if (pp != null && !pp.equals("-")) {
-            // XXX handle .** (subpackages)
-            // XXX if have an integer OpenIDE-Module-Specification-Version, export all packages
-            osgi.putValue("Export-Package", pp.replaceAll("\\.\\*", ""));
+            for (String p : pp.split("[, ]+")) {
+                if (p.isEmpty()) {
+                    continue;
+                }
+                if (p.endsWith(".*")) {
+                    exportedPackages.add(p.substring(0, p.length() - ".*".length()));
+                } else {
+                    assert p.endsWith(".**") : p;
+                    for (String actual : availablePackages) {
+                        if (actual.equals(p.substring(0, p.length() - ".**".length())) ||
+                                actual.startsWith(p.substring(0, p.length() - "**".length()))) {
+                            exportedPackages.add(actual);
+                        }
+                    }
+                }
+            }
             // OpenIDE-Module-Friends is ignored since OSGi has no apparent equivalent
+            // (could use mandatory export constraints but friends would then
+            // need to use Import-Package to access, rather than Require-Bundle,
+            // which would require knowing which packages are being imported by that dep)
+        }
+        if (!exportedPackages.isEmpty()) {
+            StringBuilder b = new StringBuilder();
+            for (String p : exportedPackages) {
+                if (b.length() > 0) {
+                    b.append(", ");
+                }
+                b.append(p);
+            }
+            osgi.putValue("Export-Package", b.toString());
         }
         for (String attrToCopy : new String[] {"OpenIDE-Module-Layer", "OpenIDE-Module-Install"}) {
             String val = netbeans.getValue(attrToCopy);
@@ -416,24 +450,28 @@ public class MakeOSGi extends Task {
         return result;
     }
 
-    private Set<String> findImports(JarFile module) throws Exception {
+    private void scanClasses(JarFile module, Set<String> importedPackages, Set<String> availablePackages) throws Exception {
         Map<String, byte[]> classfiles = new TreeMap<String, byte[]>();
         VerifyClassLinkage.read(module, classfiles, new HashSet<File>(Collections.singleton(new File(module.getName()))), this, null);
-        final Set<String> imports = new TreeSet<String>();
         ClassLoader jre = ClassLoader.getSystemClassLoader().getParent();
-        for (byte[] data : classfiles.values()) {
-            for (String clazz : VerifyClassLinkage.dependencies(data)) {
+        for (Map.Entry<String,byte[]> entry : classfiles.entrySet()) {
+            String available = entry.getKey();
+            int idx = available.lastIndexOf('.');
+            if (idx != -1) {
+                availablePackages.add(available.substring(0, idx));
+            }
+            for (String clazz : VerifyClassLinkage.dependencies(entry.getValue())) {
                 if (clazz.startsWith("com.sun.") || clazz.startsWith("sun.")) {
                     // JRE-specific dependencies will not be exported by Felix at least.
                     // XXX consider making these use DynamicImport-Package in case the container can offer them.
                     continue;
                 }
+                // XXX skip anything contained in the JAR itself if OpenIDE-Module-Hide-Classpath-Packages is defined
                 if (!clazz.startsWith("java.") && (clazz.startsWith("org.osgi.") || jre.getResource(clazz.replace('.', '/') + ".class") != null)) {
-                    imports.add(clazz.replaceFirst("[.][^.]+$", ""));
+                    importedPackages.add(clazz.replaceFirst("[.][^.]+$", ""));
                 }
             }
         }
-        return imports;
     }
 
 }
