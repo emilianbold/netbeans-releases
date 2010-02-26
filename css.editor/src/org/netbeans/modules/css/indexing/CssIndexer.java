@@ -45,7 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.css.gsf.CssLanguage;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.indexing.CssFileModel.Entry;
+import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -67,10 +67,10 @@ public class CssIndexer extends EmbeddingIndexer {
     private static final Logger LOGGER = Logger.getLogger(CssIndexer.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
-    static final String IMPORTS_KEY = "imports"; //NOI18N
-    static final String IDS_KEY = "ids"; //NOI18N
-    static final String CLASSES_KEY = "classes"; //NOI18N
-    static final String HTML_ELEMENTS_KEY = "htmlElements"; //NOI18N
+    public static final String IMPORTS_KEY = "imports"; //NOI18N
+    public static final String IDS_KEY = "ids"; //NOI18N
+    public static final String CLASSES_KEY = "classes"; //NOI18N
+    public static final String HTML_ELEMENTS_KEY = "htmlElements"; //NOI18N
     public static final String COLORS_KEY = "colors"; //NOI18N
 
 //    static {

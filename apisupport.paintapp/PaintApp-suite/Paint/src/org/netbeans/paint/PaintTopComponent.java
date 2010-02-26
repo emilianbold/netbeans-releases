@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2007, Sun Microsystems, Inc. All rights reserved.
+ * Copyright (c) 2010, Sun Microsystems, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * 
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
@@ -14,7 +14,7 @@
  * * Neither the name of Sun Microsystems, Inc. nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -27,178 +27,199 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package org.netbeans.paint;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.swing.colorchooser.ColorChooser;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 
-public class PaintTopComponent extends TopComponent implements ActionListener, ChangeListener {
-    
-    private static int tcCount = 0; //A counter to limit number of simultaneously existing images
-    private static int ct = 0; //A counter we use to provide names for new images
-
-    static int getPaintTCCount() {
-        return tcCount;
-    }
-    
+public final class PaintTopComponent extends TopComponent implements ActionListener, ChangeListener {
+    private static int ct = 0; //A counter you use to provide names for new images
     private final PaintCanvas canvas = new PaintCanvas(); //The component the user draws on
-    private JComponent preview; //A component in the toolbar that shows the paintbrush size
-    
-    /** Creates a new instance of PaintTopComponent */
+    private final JComponent preview = canvas.getBrushSizeView(); //A component in the toolbar that shows the paintbrush size
+    private final JToolBar toolbar = new JToolBar(); //The toolbar
+    private final ColorChooser color = new ColorChooser(); //Our color chooser component from the ColorChooser library
+    private final JButton clear = new JButton(
+            NbBundle.getMessage(PaintTopComponent.class, "LBL_Clear")); //A button to clear the canvas
+    private final JLabel label = new JLabel(
+            NbBundle.getMessage(PaintTopComponent.class, "LBL_Foreground")); //A label for the color chooser
+    private final JLabel brushSizeLabel = new JLabel(
+                NbBundle.getMessage(PaintTopComponent.class, "LBL_BrushSize")); //A label for the brush size slider
+
+    private final JSlider brushSizeSlider = new JSlider(1, 24); //A slider to set the brush size
+    private InstanceContent content = new InstanceContent(); //The bag of stuff we add/remove the Saver from, and store the last-used file in
+    private Saver saver = new Saver();
+
     public PaintTopComponent() {
         initComponents();
         String displayName = NbBundle.getMessage(
                 PaintTopComponent.class,
-                "UnsavedImageNameFormat",
-                new Object[] { new Integer(ct++) }
-        );
-        tcCount++;
-        setName(displayName);
+                "UnsavedImageNameFormat", ct++);
         setDisplayName(displayName);
+        //If we don't set the name, Window > Documents will throw an exception
+        setName(displayName);
+        //Connect our lookup to the rest of the system, so that
+        //SaveAction will pay attention to whether or not the Saver is available
+        associateLookup(new AbstractLookup(content));
+        enableSaveAction(false);
     }
-    
+
+    private void initComponents() {
+        setLayout(new BorderLayout());
+        //Configure our components, attach listeners
+        color.addActionListener(this);
+        clear.addActionListener(this);
+        brushSizeSlider.setValue(canvas.getBrushDiameter());
+        brushSizeSlider.addChangeListener(this);
+        color.setColor(canvas.getColor());
+        color.setMaximumSize(new Dimension(16,16));
+        //Install the toolbar and the painting component:
+        add(toolbar, BorderLayout.NORTH);
+        add(new JScrollPane(canvas), BorderLayout.CENTER);
+        //Configure the toolbar
+        toolbar.setLayout(new FlowLayout(FlowLayout.LEFT, 7, 7));
+        toolbar.setFloatable(false);
+        //Now populate our toolbar:
+        toolbar.add(label);
+        toolbar.add(color);
+        toolbar.add(brushSizeLabel);
+        toolbar.add(brushSizeSlider);
+        toolbar.add(preview);
+        toolbar.add(clear);
+    }
+
+    private void enableSaveAction(boolean canSave) {
+        if (canSave) {
+            //If the canvas is modified,
+            //we add SaveCookie impl to Lookup:
+            content.add(saver);
+        } else {
+            //Otherwise, we remove the SaveCookie impl from the lookup:
+            content.remove(saver);
+            canvas.addMouseListener(new MouseAdapter() {
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    //Once we can save, we are done listening.
+                    //If enableSaveAction(false) is called, we will
+                    //start listening again.
+                    canvas.removeMouseListener(this);
+                    enableSaveAction(true);
+                }
+            });
+        }
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        canvas.setBrushDiameter(brushSizeSlider.getValue());
+    }
+
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() instanceof JButton) {
             canvas.clear();
+            enableSaveAction(false);
         } else if (e.getSource() instanceof ColorChooser) {
             ColorChooser cc = (ColorChooser) e.getSource();
-            canvas.setPaint(cc.getColor());
+            canvas.setColor(cc.getColor());
         }
-        preview.paintImmediately(0, 0, preview.getWidth(), preview.getHeight());
     }
-    
-    public void stateChanged(ChangeEvent e) {
-        JSlider js = (JSlider) e.getSource();
-        canvas.setDiam(js.getValue());
-        preview.paintImmediately(0, 0, preview.getWidth(), preview.getHeight());
+
+    private class Saver implements SaveCookie {
+
+        @Override
+        public void save() throws IOException {
+            DataObject theFile = getLookup().lookup(DataObject.class);
+            if (theFile != null) {
+                File saveTo = FileUtil.toFile(theFile.getPrimaryFile());
+                save(saveTo);
+            } else {
+                saveAs();
+            }
+        }
+
+        public void saveAs() throws IOException {
+            String title = NbBundle.getMessage(Saver.class, "TTL_SAVE_DIALOG");
+            File f = new FileChooserBuilder(Saver.class).setTitle(title).showSaveDialog();
+            if (f != null) {
+                if (!f.getAbsolutePath().endsWith(".png")) {
+                    f = new File(f.getAbsolutePath() + ".png");
+                }
+                try {
+                    if (!f.exists()) {
+                        if (!f.createNewFile()) {
+                            String failMsg = NbBundle.getMessage(
+                                    PaintTopComponent.class,
+                                    "MSG_SaveFailed", f.getName());
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(failMsg));
+                            return;
+                        }
+                    } else {
+                        String overwriteMessage = NbBundle.getMessage(Saver.class, "MSG_Overwrite", f.getName());
+                        Object userChose = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(overwriteMessage));
+                        if (NotifyDescriptor.CANCEL_OPTION.equals(userChose)) {
+                            return;
+                        }
+                    }
+                    //Need getAbsoluteFile(), or X.png and x.png are different on windows
+                    save(f.getAbsoluteFile());
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            }
+        }
+
+        private void save(File f) throws IOException {
+            ImageIO.write(canvas.getImage(), "png", f);
+            String savedMessage = NbBundle.getMessage(Saver.class, "MSG_Saved", f.getName());
+            StatusDisplayer.getDefault().setStatusText(savedMessage);
+            FileObject fob = FileUtil.toFileObject(FileUtil.normalizeFile(f));
+            assert fob != null;
+            //Store the file, so we don't show the Save dialog again
+            content.add(DataObject.find(fob));
+            setDisplayName(fob.getName());
+            enableSaveAction(false);
+        }
     }
-    
+
+    //TopComponent boilerplate code
     @Override
     public int getPersistenceType() {
         return PERSISTENCE_NEVER;
     }
-    
-    private void initComponents() {
-        setLayout(new BorderLayout());
-        JToolBar bar = new JToolBar();
-        
-        ColorChooser fg = new ColorChooser();
-        preview = canvas.createBrushSizeView();
-        
-        //Now build our toolbar:
-        
-        //Make sure components don't get squished:
-        Dimension min = new Dimension(32, 32);
-        preview.setMaximumSize(min);
-        fg.setPreferredSize(new Dimension(16, 16));
-        fg.setMinimumSize(min);
-        fg.setMaximumSize(min);
-        
-        JButton clear = new JButton(
-                NbBundle.getMessage(PaintTopComponent.class, "LBL_Clear"));
-        
-        JLabel fore = new JLabel(
-                NbBundle.getMessage(PaintTopComponent.class, "LBL_Foreground"));
-        
-        fg.addActionListener(this);
-        clear.addActionListener(this);
-        
-        JSlider js = new JSlider();
-        js.setMinimum(1);
-        js.setMaximum(24);
-        js.setValue(canvas.getDiam());
-        js.addChangeListener(this);
-        
-        fg.setColor(canvas.getColor());
-        
-        bar.add(clear);
-        bar.add(fore);
-        bar.add(fg);
-        JLabel bsize = new JLabel(
-                NbBundle.getMessage(PaintTopComponent.class, "LBL_BrushSize"));
-        
-        bar.add(bsize);
-        bar.add(js);
-        bar.add(preview);
-        
-        JLabel spacer = new JLabel("   "); //Just a spacer so the brush preview
-        //isn't stretched to the end of the
-        //toolbar
-        
-        spacer.setPreferredSize(new Dimension(400, 24));
-        bar.add(spacer);
-        
-        //And install the toolbar and the painting component:
-        add(bar, BorderLayout.NORTH);
-        add(canvas, BorderLayout.CENTER);
-    }
-    
-    public void saveAs() throws IOException {
-        JFileChooser ch = new JFileChooser();
-        if (ch.showSaveDialog(this) == JFileChooser.APPROVE_OPTION &&
-                ch.getSelectedFile() != null) {
-            
-            File f = ch.getSelectedFile();
-            if (!f.getPath().endsWith(".png")) {
-                f = new File(f.getPath() + ".png");
-            }
-            if (!f.exists()) {
-                if (!f.createNewFile()) {
-                    String failMsg = NbBundle.getMessage(
-                            PaintTopComponent.class,
-                            "MSG_SaveFailed", new Object[] { f.getPath() }
-                    );
-                    JOptionPane.showMessageDialog(this, failMsg);
-                    return;
-                }
-            } else {
-                String overwriteMsg = NbBundle.getMessage(
-                        PaintTopComponent.class,
-                        "MSG_Overwrite", new Object[] { f.getPath() }
-                );
-                if (JOptionPane.showConfirmDialog(this, overwriteMsg)
-                != JOptionPane.OK_OPTION) {
-                    
-                    return;
-                }
-            }
-            doSave(f);
-        }
-    }
-    
-    private void doSave(File f) throws IOException {
-        BufferedImage img = canvas.getImage();
-        ImageIO.write(img, "png", f);
-        String statusMsg = NbBundle.getMessage(PaintTopComponent.class,
-                "MSG_Saved", new Object[] { f.getPath() });
-        StatusDisplayer.getDefault().setStatusText(statusMsg);
-        setDisplayName(f.getName());
-    }
 
     @Override
-    protected void componentClosed() {
-        super.componentClosed();
-        tcCount--;
+    public String preferredID() {
+        return "Image";
     }
-    
 }

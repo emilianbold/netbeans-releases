@@ -193,7 +193,7 @@ public class ManDocumentation {
 
     private static File getCacheDir() {
         String nbuser = System.getProperty("netbeans.user"); //XXX // NOI18N
-        File cache = new File(nbuser, "var/cache/cnd/doxygen"); // NOI18N
+        File cache = new File(nbuser, "var/cache/cnd/manpages"); // NOI18N
 
         cache.mkdirs();
 
@@ -207,7 +207,7 @@ public class ManDocumentation {
     }
 
     private static String createDocumentationForName(String name, int chapter) throws IOException {
-        if (getManPath() == null || getMan2HtmlPath() == null) {
+        if (getManPath() == null) {
             return null;
         }
         
@@ -216,80 +216,18 @@ public class ManDocumentation {
         InputStream is = p0.getInputStream();
         InputStreamReader ist = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(ist);
-        StringBuffer stringBuffer = new StringBuffer();
-        String buf = null;
-        while ((buf = br.readLine()) != null) {
-            stringBuffer.append(buf + "\n"); // NOI18N
-        }
-        String text = stringBuffer.toString();
+        String text = new Man2HTML(br).getHTML();
         br.close();
         ist.close();
         is.close();
         bos.close();
 
-        if (text == null) {
-            return null;
-        }
-
-        text = soElim(text, 0);
-
-        InputStream in = new ByteArrayInputStream(text.getBytes());
-
-        try {
-            Process p = Runtime.getRuntime().exec(new String[]{
-                        getMan2HtmlPath(), // NOI18N
-                        "-compress", // NOI18N
-                        "-", // NOI18N
-                    });
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            StreamCopier inC = new StreamCopier("in", in, p.getOutputStream()); // NOI18N
-            StreamCopier outC = new StreamCopier("out", p.getInputStream(), out); // NOI18N
-            StreamCopier errC = new StreamCopier("err", p.getErrorStream(), out); // NOI18N
-
-            inC.start();
-            outC.start();
-            errC.start();
-
-            p.waitFor();
-
-            inC.join();
-            outC.join();
-            errC.join();
-
-            String result = out.toString();
-
-            for (Iterator e = TRANSLATE.entrySet().iterator(); e.hasNext();) {
-                Map.Entry entry = (Map.Entry) e.next();
-                String key = (String) entry.getKey();
-                String value = (String) entry.getValue();
-
-                result = result.replace(key, value); //1.5 API!!!!
-            }
-
-            int htmlStart = result.indexOf("<HTML>"); // NOI18N
-
-            if (htmlStart != (-1)) {
-                result = result.substring(htmlStart);
-            }
-
-            return result;
-        } catch (InterruptedException e) {
-            Exceptions.printStackTrace(e);
-        } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-
-        return null;
+        return text;
     }
 
-    private static String manPageRelativePath(String name, int chapter) {
-        return "man" + chapter + "/" + name + "." + chapter; // NOI18N
-    }
+//    private static String manPageRelativePath(String name, int chapter) {
+//        return "man" + chapter + "/" + name + "." + chapter; // NOI18N
+//    }
 
     private static File resolvePath(String path) {
         File f = new File("/usr/share/man/", path); // NOI18N

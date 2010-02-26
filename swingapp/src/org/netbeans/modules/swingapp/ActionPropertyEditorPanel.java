@@ -163,12 +163,14 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component comp = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
-                ProxyAction.Scope scope = (ProxyAction.Scope)value;
-                String className = scopeClasses.get(scope);
-                if(className != null) {
-                    ((JLabel)comp).setText(scope.toString() + ": " + className);
-                } else {
-                    ((JLabel)comp).setText(scope.toString());
+                if (value!=null) {
+                    ProxyAction.Scope scope = (ProxyAction.Scope)value;
+                    String className = scopeClasses.get(scope);
+                    if(className != null) {
+                        ((JLabel)comp).setText(scope.toString() + ": " + className);
+                    } else {
+                        ((JLabel)comp).setText(scope.toString());
+                    }
                 }
                 return comp;
             }

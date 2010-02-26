@@ -942,6 +942,70 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/blankLines/issue181003_04.php", options);
     }
 
+    public void testAlignmentKeywords01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.placeWhileOnNewLine, true);
+	options.put(FmtOptions.placeElseOnNewLine, true);
+	options.put(FmtOptions.placeCatchOnNewLine, true);
+	options.put(FmtOptions.placeNewLineAfterModifiers, true);
+        reformatFileContents("testfiles/formatting/alignment/alignmentKeywords01.php", options);
+    }
+
+    public void testAlignmentKeywords02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.placeWhileOnNewLine, true);
+	options.put(FmtOptions.placeElseOnNewLine, true);
+	options.put(FmtOptions.placeCatchOnNewLine, true);
+	options.put(FmtOptions.placeNewLineAfterModifiers, true);
+
+	options.put(FmtOptions.spaceBeforeElse, false);
+	options.put(FmtOptions.spaceBeforeCatch, false);
+	options.put(FmtOptions.spaceBeforeWhile, false);
+        reformatFileContents("testfiles/formatting/alignment/alignmentKeywords02.php", options);
+    }
+
+    public void testAlignmentKeywords03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.placeWhileOnNewLine, true);
+	options.put(FmtOptions.placeElseOnNewLine, true);
+	options.put(FmtOptions.placeCatchOnNewLine, true);
+	options.put(FmtOptions.placeNewLineAfterModifiers, true);
+
+	options.put(FmtOptions.spaceBeforeElse, false);
+	options.put(FmtOptions.spaceBeforeCatch, false);
+	options.put(FmtOptions.spaceBeforeWhile, false);
+
+	options.put(FmtOptions.classDeclBracePlacement, FmtOptions.OBRACE_NEWLINE);
+	options.put(FmtOptions.methodDeclBracePlacement, FmtOptions.OBRACE_NEWLINE);
+	options.put(FmtOptions.ifBracePlacement, FmtOptions.OBRACE_NEWLINE);
+	options.put(FmtOptions.whileBracePlacement, FmtOptions.OBRACE_NEWLINE);
+	options.put(FmtOptions.catchBracePlacement, FmtOptions.OBRACE_NEWLINE);
+	options.put(FmtOptions.otherBracePlacement, FmtOptions.OBRACE_NEWLINE);
+
+        reformatFileContents("testfiles/formatting/alignment/alignmentKeywords03.php", options);
+    }
+
+    public void testAlignmentKeywords04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	options.put(FmtOptions.placeWhileOnNewLine, false);
+	options.put(FmtOptions.placeElseOnNewLine, false);
+	options.put(FmtOptions.placeCatchOnNewLine, false);
+	options.put(FmtOptions.placeNewLineAfterModifiers, false);
+
+	options.put(FmtOptions.spaceBeforeElse, false);
+	options.put(FmtOptions.spaceBeforeCatch, false);
+	options.put(FmtOptions.spaceBeforeWhile, false);
+
+	options.put(FmtOptions.classDeclBracePlacement, FmtOptions.OBRACE_NEWLINE);
+	options.put(FmtOptions.methodDeclBracePlacement, FmtOptions.OBRACE_NEWLINE);
+	options.put(FmtOptions.ifBracePlacement, FmtOptions.OBRACE_NEWLINE);
+	options.put(FmtOptions.whileBracePlacement, FmtOptions.OBRACE_NEWLINE);
+	options.put(FmtOptions.catchBracePlacement, FmtOptions.OBRACE_NEWLINE);
+	options.put(FmtOptions.otherBracePlacement, FmtOptions.OBRACE_NEWLINE);
+
+        reformatFileContents("testfiles/formatting/alignment/alignmentKeywords04.php", options);
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }

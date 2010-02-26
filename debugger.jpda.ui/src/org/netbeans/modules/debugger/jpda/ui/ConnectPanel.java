@@ -93,6 +93,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Cancellable;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -105,7 +106,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Jancura
  */
-public class ConnectPanel extends JPanel implements ActionListener {
+public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Provider {
 
     private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.debugger"); // NOI18N
 
@@ -551,6 +552,11 @@ public class ConnectPanel extends JPanel implements ActionListener {
             controller.setErrorMessage(null);
             controller.setValid(true);
         }
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("debug.jpda.attach");
     }
 
     private class ValidityDocumentListener implements DocumentListener {

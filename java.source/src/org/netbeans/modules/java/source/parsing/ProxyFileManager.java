@@ -62,7 +62,6 @@ import org.netbeans.modules.java.source.util.Iterators;
  */
 public class ProxyFileManager implements JavaFileManager {
 
-    private static final String ORIGIN_FILE = "apt-origin";    //NOI18N
 
     private static final Location ALL = new Location () {
         public String getName() { return "ALL";}   //NOI18N
@@ -269,7 +268,7 @@ public class ProxyFileManager implements JavaFileManager {
 
     public boolean handleOption (String current, Iterator<String> remains) {
         final Iterable<String> defensiveCopy = copy(remains);
-        if (ORIGIN_FILE.equals(current)) {
+        if (AptSourceFileManager.ORIGIN_FILE.equals(current)) {
             final Iterator<String> it = defensiveCopy.iterator();
             apt = it.hasNext() && it.next().length() != 0;
         }

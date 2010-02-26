@@ -65,6 +65,7 @@ public class AstClassElement extends AstElement implements ClassElement {
         this.includes = includes;
     }
 
+    @Override
     public Set<String> getIncludes() {
         return includes;
     }

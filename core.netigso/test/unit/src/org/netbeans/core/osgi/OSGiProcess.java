@@ -71,23 +71,45 @@ class OSGiProcess {
     }
 
     private final File workDir;
-    private final Map<String,String> sources = new HashMap<String,String>();
-    private String manifest;
     private int backwards = 1;
-    private Set<String> modules = new HashSet<String>();
+    private final Set<String> modules = new HashSet<String>();
+    private final List<NewModule> newModules = new ArrayList<NewModule>();
+    private int newModuleCount = 0;
 
     public OSGiProcess(File workDir) {
         this.workDir = workDir;
     }
 
-    public OSGiProcess sourceFile(String path, String... contents) {
-        sources.put(path, join(contents));
-        return this;
+    public class NewModule {
+
+        private final int counter;
+        private final Map<String, String> sources = new HashMap<String, String>();
+        private String manifest;
+
+        private NewModule() {
+            counter = ++newModuleCount;
+        }
+
+        public NewModule sourceFile(String path, String... contents) {
+            sources.put(path, join(contents));
+            return this;
+        }
+
+        public NewModule manifest(String... contents) {
+            manifest = "Manifest-Version: 1.0\n" + join(contents) + "\n";
+            return this;
+        }
+
+        public OSGiProcess done() {
+            return OSGiProcess.this;
+        }
+
     }
 
-    public OSGiProcess manifest(String... contents) {
-        manifest = "Manifest-Version: 1.0\n" + join(contents) + "\n";
-        return this;
+    public NewModule newModule() {
+        NewModule m = new NewModule();
+        newModules.add(m);
+        return m;
     }
 
     /** If true, start bundles in reverse lexicographic order, just to shake things up. */
@@ -143,13 +165,6 @@ class OSGiProcess {
         }
         makeosgi.add(fs);
         File extra = new File(workDir, "extra");
-        File srcdir = new File(workDir, "custom");
-        for (Map.Entry<String,String> entry : sources.entrySet()) {
-            TestFileUtils.writeFile(new File(srcdir, entry.getKey()), entry.getValue());
-        }
-        if (manifest != null) {
-            TestFileUtils.writeFile(new File(workDir, "custom.mf"), manifest);
-        }
         List<File> cp = new ArrayList<File>();
         for (String entry : System.getProperty("java.class.path").split(File.pathSeparator)) {
             if (!entry.isEmpty()) {
@@ -159,8 +174,19 @@ class OSGiProcess {
         for (String module : modules) {
             cp.add(new File(platformDir, "modules/" + module.replace('.', '-') + ".jar"));
         }
-        SetupHid.createTestJAR(workDir, extra, "custom", null, cp.toArray(new File[cp.size()]));
-        makeosgi.add(new FileResource(extra, "custom.jar"));
+        for (NewModule newModule : newModules) {
+            File srcdir = new File(workDir, "custom" + newModule.counter);
+            for (Map.Entry<String,String> entry : newModule.sources.entrySet()) {
+                TestFileUtils.writeFile(new File(srcdir, entry.getKey()), entry.getValue());
+            }
+            if (newModule.manifest != null) {
+                TestFileUtils.writeFile(new File(workDir, "custom" + newModule.counter + ".mf"), newModule.manifest);
+            }
+            SetupHid.createTestJAR(workDir, extra, "custom" + newModule.counter, null, cp.toArray(new File[cp.size()]));
+            File jar = new File(extra, "custom" + newModule.counter + ".jar");
+            cp.add(jar); // for use in subsequent modules
+            makeosgi.add(new FileResource(jar));
+        }
         File bundles = new File(workDir, "bundles");
         bundles.mkdir();
         makeosgi.setDestdir(bundles);

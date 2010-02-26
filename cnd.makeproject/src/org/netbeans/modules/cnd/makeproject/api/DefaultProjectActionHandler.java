@@ -294,10 +294,12 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 .inputOutput(io)
                 .outLineBased(true)
                 .showProgress(true)
-                .noReset(true)
                 .postExecution(processChangeListener)
                 .errConvertorFactory(processChangeListener)
                 .outConvertorFactory(processChangeListener);
+        if (actionType == PredefinedType.BUILD) {
+            descr.noReset(true);
+        }
 
         NativeExecutionService es = NativeExecutionService.newService(npb, descr, pae.getActionName()); // NOI18N
         executorTask = es.run();
@@ -542,12 +544,14 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         }
 
         private void closeIO() {
-            tab.getErr().close();
-            tab.getOut().close();
-            try {
-                tab.getIn().close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
+            if (false) {
+                tab.getErr().close();
+                tab.getOut().close();
+                try {
+                    tab.getIn().close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
 

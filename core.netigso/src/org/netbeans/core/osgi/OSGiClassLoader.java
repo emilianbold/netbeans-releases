@@ -42,6 +42,7 @@ package org.netbeans.core.osgi;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -51,22 +52,46 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 /**
- * Delegates to all loaded bundles.
+ * Delegates to all loaded bundles, or one bundle only.
  */
 class OSGiClassLoader extends ClassLoader {
 
     private final BundleContext context;
+    private final Bundle bundle;
 
     public OSGiClassLoader(BundleContext context) {
         super(ClassLoader.getSystemClassLoader().getParent());
         this.context = context;
+        bundle = null;
+    }
+
+    public OSGiClassLoader(Bundle bundle) {
+        super(ClassLoader.getSystemClassLoader().getParent());
+        context = null;
+        this.bundle = bundle;
+    }
+
+    private Iterable<Bundle> bundles() {
+        if (context != null) {
+            Bundle[] bundles;
+            try {
+                bundles = context.getBundles();
+            } catch (IllegalStateException x) {
+                // Thrown sometimes by Felix during shutdown. Not clear how to avoid this.
+                return Collections.emptySet();
+            }
+            return NbCollections.iterable(Enumerations.filter(Enumerations.array(bundles), new Enumerations.Processor<Bundle,Bundle>() {
+                public @Override Bundle process(Bundle b, Collection<Bundle> _) {
+                    return b.getState() == Bundle.INSTALLED ? null : b;
+                }
+            }));
+        } else {
+            return Collections.singleton(bundle);
+        }
     }
 
     protected @Override Class<?> findClass(String name) throws ClassNotFoundException {
-        for (Bundle b : context.getBundles()) {
-            if (b.getState() == Bundle.INSTALLED) {
-                continue;
-            }
+        for (Bundle b : bundles()) {
             try {
                 return b.loadClass(name);
             } catch (ClassNotFoundException x) {
@@ -77,10 +102,7 @@ class OSGiClassLoader extends ClassLoader {
     }
 
     protected @Override URL findResource(String name) {
-        for (Bundle b : context.getBundles()) {
-            if (b.getState() == Bundle.INSTALLED) {
-                continue;
-            }
+        for (Bundle b : bundles()) {
             URL resource = b.getResource(name);
             if (resource != null) {
                 return resource;
@@ -91,11 +113,8 @@ class OSGiClassLoader extends ClassLoader {
 
     protected @Override Enumeration<URL> findResources(String name) throws IOException {
         List<Enumeration<URL>> resourcess = new ArrayList<Enumeration<URL>>();
-        for (Bundle b : context.getBundles()) {
-            if (b.getState() == Bundle.INSTALLED) {
-                continue;
-            }
-            Enumeration resourcesRaw = b.getResources(name);
+        for (Bundle b : bundles()) {
+            Enumeration<?> resourcesRaw = b.getResources(name);
             if (resourcesRaw == null) {
                 // Oddly, this is permitted.
                 continue;

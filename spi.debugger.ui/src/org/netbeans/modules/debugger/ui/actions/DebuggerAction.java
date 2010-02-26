@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.ui.actions;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.lang.ref.WeakReference;
+import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -69,19 +70,25 @@ import org.openide.util.NbBundle;
 public class DebuggerAction extends AbstractAction {
     
     private Object action;
+    private boolean nameInBundle;
 
     private DebuggerAction (Object action) {
+        this(action, true);
+    }
+    
+    private DebuggerAction (Object action, boolean nameInBundle) {
         this.action = action;
+        this.nameInBundle = nameInBundle;
         new Listener (this);
         setEnabled (isEnabled (getAction ()));
     }
-    
+
     public Object getAction () {
         return action;
     }
     
     public Object getValue(String key) {
-        if (key == Action.NAME) {
+        if (key == Action.NAME && nameInBundle) {
             return NbBundle.getMessage (DebuggerAction.class, (String) super.getValue(key));
         }
         return super.getValue(key);
@@ -271,7 +278,44 @@ public class DebuggerAction extends AbstractAction {
         action.putValue (Action.NAME, "CTL_Toggle_breakpoint");
         return action;
     }
-    
+
+    /**
+     * Use this method to register an additional debugger action.
+     * Register in a module layer manually as follows:
+     *   <pre style="background-color: rgb(255, 255, 153);">
+     *   &lt;folder name="Actions"&gt;
+     *       &lt;folder name="Debug"&gt;
+     *           &lt;file name="ActionName.instance"&gt;
+     *               &lt;attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/&gt;
+     *               &lt;attr name="instanceOf" stringvalue="javax.swing.Action"/&gt;
+     *               &lt;attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createAction"/&gt;
+     *               &lt;attr name="action" stringvalue="actionName"/&gt;
+     *               &lt;attr name="name" bundlevalue="org.netbeans.modules.debugger.general.Bundle#CTL_MyAction_Title"/&gt;
+     *               &lt;attr name="iconBase" stringvalue="org/netbeans/modules/debugger/general/MyAction.png"/&gt;
+     *           &lt;/file&gt;
+     *       &lt;/folder&gt;
+     *   &lt;/folder&gt;</pre>
+     * @param params "action", "name" and optional "iconBase".
+     * @return The action object
+     */
+    public static DebuggerAction createAction(Map<String,?> params) {
+        Object action = params.get("action");
+        if (action == null) {
+            throw new IllegalStateException("\"action\" parameter is missing.");
+        }
+        String name = (String) params.get("name");
+        if (name == null) {
+            throw new IllegalStateException("\"name\" parameter is missing.");
+        }
+        String iconBase = (String) params.get("iconBase");
+        DebuggerAction a = new DebuggerAction(action, false);
+        a.putValue(Action.NAME, name);
+        if (iconBase != null) {
+            a.putValue("iconBase", iconBase);
+        }
+        return a;
+    }
+
     // Debug File Actions:
     
     public static Action createDebugFileAction() {

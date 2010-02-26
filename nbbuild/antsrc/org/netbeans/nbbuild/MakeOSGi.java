@@ -70,6 +70,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.ResourceCollection;
 import org.apache.tools.ant.types.resources.FileResource;
 import org.w3c.dom.Document;
@@ -125,31 +126,43 @@ public class MakeOSGi extends Task {
         JarFile jar = new JarFile(module);
         try {
             Manifest netbeans = jar.getManifest();
-            Manifest osgi = new Manifest();
-            if (netbeans.getMainAttributes().getValue("Bundle-SymbolicName") != null) {
-                // XXX copy it as is!
+            Attributes netbeansAttr = netbeans.getMainAttributes();
+            String originalBundleName = netbeansAttr.getValue("Bundle-SymbolicName");
+            if (originalBundleName != null) { // #180201
+                String originalBundleVersion = netbeansAttr.getValue("Bundle-Version");
+                Copy copy = new Copy();
+                copy.setProject(getProject());
+                copy.setOwningTarget(getOwningTarget());
+                copy.setFile(module);
+                File bundleFile = new File(destdir, originalBundleName + (originalBundleVersion != null ? "-" + originalBundleVersion : "") + ".jar");
+                copy.setTofile(bundleFile);
+                copy.execute();
+                log("Copying " + module + " unmodified into " + bundleFile);
+                return;
             }
-            osgi.getMainAttributes().putValue("Manifest-Version", "1.0"); // workaround for JDK bug
-            osgi.getMainAttributes().putValue("Bundle-ManifestVersion", "2");
-            String codename = netbeans.getMainAttributes().getValue("OpenIDE-Module");
+            Manifest osgi = new Manifest();
+            Attributes osgiAttr = osgi.getMainAttributes();
+            osgiAttr.putValue("Manifest-Version", "1.0"); // workaround for JDK bug
+            osgiAttr.putValue("Bundle-ManifestVersion", "2");
+            String codename = netbeansAttr.getValue("OpenIDE-Module");
             String cnb = codename.replaceFirst("/\\d+$", "");
             if (cnb.equals("org.netbeans.core.netigso")) {
                 // special handling...
-                osgi.getMainAttributes().putValue("Bundle-Activator", "org.netbeans.core.osgi.Activator");
+                osgiAttr.putValue("Bundle-Activator", "org.netbeans.core.osgi.Activator");
             }
-            osgi.getMainAttributes().putValue("Bundle-SymbolicName", cnb);
-            String spec = netbeans.getMainAttributes().getValue("OpenIDE-Module-Specification-Version");
+            osgiAttr.putValue("Bundle-SymbolicName", cnb);
+            String spec = netbeansAttr.getValue("OpenIDE-Module-Specification-Version");
             String bundleVersion = null;
             if (spec != null) {
                 bundleVersion = threeDotsWithMajor(spec, codename);
-                String buildVersion = netbeans.getMainAttributes().getValue("OpenIDE-Module-Build-Version");
+                String buildVersion = netbeansAttr.getValue("OpenIDE-Module-Build-Version");
                 if (buildVersion == null) {
-                    buildVersion = netbeans.getMainAttributes().getValue("OpenIDE-Module-Implementation-Version");
+                    buildVersion = netbeansAttr.getValue("OpenIDE-Module-Implementation-Version");
                 }
                 if (buildVersion != null) {
                     bundleVersion += "." + buildVersion.replaceAll("[^a-zA-Z0-9_-]", "_");
                 }
-                osgi.getMainAttributes().putValue("Bundle-Version", bundleVersion);
+                osgiAttr.putValue("Bundle-Version", bundleVersion);
             }
             File bundleFile = new File(destdir, cnb + (bundleVersion != null ? "-" + bundleVersion : "") + ".jar");
             if (bundleFile.lastModified() > module.lastModified()) {
@@ -157,17 +170,17 @@ public class MakeOSGi extends Task {
                 return;
             }
             log("Processing " + module + " into " + bundleFile);
-            String pp = netbeans.getMainAttributes().getValue("OpenIDE-Module-Public-Packages");
+            String pp = netbeansAttr.getValue("OpenIDE-Module-Public-Packages");
             if (pp != null && !pp.equals("-")) {
                 // XXX handle .** (subpackages)
                 // XXX if have an integer OpenIDE-Module-Specification-Version, export all packages
-                osgi.getMainAttributes().putValue("Export-Package", pp.replaceAll("\\.\\*", ""));
+                osgiAttr.putValue("Export-Package", pp.replaceAll("\\.\\*", ""));
                 // OpenIDE-Module-Friends is ignored since OSGi has no apparent equivalent
             }
             for (String attrToCopy : new String[] {"OpenIDE-Module-Layer", "OpenIDE-Module-Install"}) {
-                String val = netbeans.getMainAttributes().getValue(attrToCopy);
+                String val = netbeansAttr.getValue(attrToCopy);
                 if (val != null) {
-                    osgi.getMainAttributes().putValue(attrToCopy, val);
+                    osgiAttr.putValue(attrToCopy, val);
                 }
             }
             StringBuilder requireBundles = new StringBuilder();
@@ -175,7 +188,7 @@ public class MakeOSGi extends Task {
             // do not need to import any API, just need it to be started:
             requireBundles.append("org.netbeans.core.netigso");
              */
-            String dependencies = netbeans.getMainAttributes().getValue("OpenIDE-Module-Module-Dependencies");
+            String dependencies = netbeansAttr.getValue("OpenIDE-Module-Module-Dependencies");
             if (dependencies != null) {
                 for (String dependency : dependencies.split(" *, *")) {
                     if (requireBundles.length() > 0) {
@@ -185,7 +198,7 @@ public class MakeOSGi extends Task {
                 }
             }
             if (requireBundles.length() > 0) {
-                osgi.getMainAttributes().putValue("Require-Bundle", requireBundles.toString());
+                osgiAttr.putValue("Require-Bundle", requireBundles.toString());
             }
             if (!importedPackages.isEmpty() && !cnb.equals("org.netbeans.libs.osgi")) {
                 StringBuilder b = new StringBuilder();
@@ -196,16 +209,19 @@ public class MakeOSGi extends Task {
                     b.append(pkg);
                 }
                 // DynamicImport-Package can lead to deadlocks in Felix: ModuleImpl.findClassOrResourceByDelegation -> Felix.acquireGlobalLock
-                osgi.getMainAttributes().putValue("Import-Package", b.toString());
+                osgiAttr.putValue("Import-Package", b.toString());
             }
             // XXX OpenIDE-Module-Java-Dependencies => Bundle-RequiredExecutionEnvironment: JavaSE-1.6
             // XXX OpenIDE-Module-Package-Dependencies => Import-Package
-            // OpenIDE-Module-{Provides,Requires,Needs} are ignored since OSGi has no apparent equivalent
-            // (achievable by exposing generic provide/require mechanisms of Felix and/or Equinox,
-            // but this would not be part of the OSGi R4.1 spec, but could be raised as an issue for R5 since it was discussed for R4)
+            for (String tokenAttr : new String[] {"OpenIDE-Module-Provides", "OpenIDE-Module-Requires", "OpenIDE-Module-Needs"}) {
+                String v = netbeansAttr.getValue(tokenAttr);
+                if (v != null) {
+                    osgiAttr.putValue(tokenAttr, v);
+                }
+            }
             // autoload, eager status are ignored since OSGi has no apparent equivalent
             Properties localizedStrings = new Properties();
-            String locbundle = netbeans.getMainAttributes().getValue("OpenIDE-Module-Localizing-Bundle");
+            String locbundle = netbeansAttr.getValue("OpenIDE-Module-Localizing-Bundle");
             if (locbundle != null) {
                 InputStream is = jar.getInputStream(jar.getEntry(locbundle));
                 try {
@@ -213,17 +229,17 @@ public class MakeOSGi extends Task {
                 } finally {
                     is.close();
                 }
-                osgi.getMainAttributes().putValue("Bundle-Localization", locbundle.replaceFirst("[.]properties$", ""));
+                osgiAttr.putValue("Bundle-Localization", locbundle.replaceFirst("[.]properties$", ""));
             }
-            handleDisplayAttribute(localizedStrings, netbeans.getMainAttributes(), osgi.getMainAttributes(),
+            handleDisplayAttribute(localizedStrings, netbeansAttr, osgiAttr,
                     "OpenIDE-Module-Name", "Bundle-Name");
-            handleDisplayAttribute(localizedStrings, netbeans.getMainAttributes(), osgi.getMainAttributes(),
+            handleDisplayAttribute(localizedStrings, netbeansAttr, osgiAttr,
                     "OpenIDE-Module-Display-Category", "Bundle-Category");
-            handleDisplayAttribute(localizedStrings, netbeans.getMainAttributes(), osgi.getMainAttributes(),
+            handleDisplayAttribute(localizedStrings, netbeansAttr, osgiAttr,
                     "OpenIDE-Module-Short-Description", "Bundle-Description");
             Map<String,File> bundledFiles = findBundledFiles(module, cnb);
             // XXX any use for OpenIDE-Module-Long-Description?
-            String classPath = netbeans.getMainAttributes().getValue("Class-Path");
+            String classPath = netbeansAttr.getValue("Class-Path");
             if (classPath != null) {
                 StringBuilder bundleCP = new StringBuilder();
                 for (String entry : classPath.split("[, ]+")) {
@@ -234,7 +250,7 @@ public class MakeOSGi extends Task {
                         log("Class-Path entry " + entry + " from " + module + " does not correspond to any apparent cluster file", Project.MSG_WARN);
                     }
                 }
-                osgi.getMainAttributes().putValue("Bundle-Classpath", bundleCP + ".");
+                osgiAttr.putValue("Bundle-Classpath", bundleCP + ".");
             }
             // XXX modules/lib/*.dll/so => Bundle-NativeCode (but syntax is rather complex)
             OutputStream bundle = new FileOutputStream(bundleFile);
@@ -339,7 +355,7 @@ public class MakeOSGi extends Task {
             }
             String targetVersion = threeDotsWithMajor(version, depMajLo == null ? "" : "x/" + depMajLo);
             b.append(";bundle-version=\"[").append(targetVersion).append(",");
-            b.append(100 * (Integer.parseInt(targetVersion.replaceFirst("[.].+", "")) / 100 + 1));
+            b.append(100 * ((depMajHi != null ? Integer.parseInt(depMajHi) : depMajLo != null ? Integer.parseInt(depMajLo) : 0) + 1));
             b.append(")\"");
         }
     }
@@ -393,7 +409,7 @@ public class MakeOSGi extends Task {
         ClassLoader jre = ClassLoader.getSystemClassLoader().getParent();
         for (byte[] data : classfiles.values()) {
             for (String clazz : VerifyClassLinkage.dependencies(data)) {
-                if (clazz.startsWith("com.sun.")) {
+                if (clazz.startsWith("com.sun.") || clazz.startsWith("sun.")) {
                     // JRE-specific dependencies will not be exported by Felix at least.
                     continue;
                 }

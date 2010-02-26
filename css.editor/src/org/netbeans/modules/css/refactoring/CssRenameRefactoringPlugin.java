@@ -51,12 +51,13 @@ import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.indexing.CssFileModel;
-import org.netbeans.modules.css.indexing.CssFileModel.Entry;
+import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.css.indexing.CssIndex;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -75,6 +76,10 @@ import org.openide.util.NbBundle;
  * @author marekfukala
  */
 public class CssRenameRefactoringPlugin implements RefactoringPlugin {
+
+    private static final String SELECTOR_RENAME_MSG_KEY = "MSG_Rename_Selector"; //NOI18N
+    private static final String COLOR_RENAME_MSG_KEY = "MSG_Rename_Color"; //NOI18N
+    private static final String UNRELATED_PREFIX_MSG_KEY = "MSG_Unrelated_Prefix"; //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(CssRenameRefactoringPlugin.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
@@ -113,195 +118,42 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             return null;
         }
         CssIndex index = sup.getIndex();
+        ModificationResult modificationResult = new ModificationResult();
 
         if (context instanceof CssElementContext.Editor) {
-            //find all occurances of selected element in (and only in) THIS file.
+            //editor elements refactoring
+
+           
+            
             CssElementContext.Editor econtext = (CssElementContext.Editor) context;
             //get selected element in the editor
             SimpleNode element = econtext.getElement();
-            String elementImage = element.image();
 
-            ModificationResult modificationResult = new ModificationResult();
-            if (element.kind() == CssParserTreeConstants.JJT_CLASS
-                    || element.kind() == CssParserTreeConstants.JJTHASH) {
-                //class or id refactoring
-                elementImage = elementImage.substring(1); //cut off the dot or hash
-                Collection<FileObject> files = element.kind() == CssParserTreeConstants.JJT_CLASS
-                        ? index.findClasses(elementImage)
-                        : index.findIds(elementImage);
-
-                List<FileObject> involvedFiles = new LinkedList<FileObject>(files);
-                DependenciesGraph deps = index.getDependencies(context.getFileObject());
-                Collection<FileObject> relatedFiles = deps.getAllRelatedFiles();
-
-                //refactor all occurances support
-                CssRefactoringExtraInfo extraInfo =
-                        lookup.lookup(CssRefactoringExtraInfo.class);
-
-                if (extraInfo == null || !extraInfo.isRefactorAll()) {
-                    //if the "refactor all occurances" checkbox hasn't been
-                    //selected the occurances must be searched only in the related files
-
-                    //filter out those files which have no relation with the current file.
-                    //note: the list of involved files also contains the currently edited file.
-                    involvedFiles.retainAll(relatedFiles);
-                    //now we have a list of files which contain the given class or id and are
-                    //related to the base file
-                }
-
-                if (LOG) {
-                    LOGGER.fine("Refactoring element " + element.image() + " in file " + context.getFileObject().getPath()); //NOI18N
-                    LOGGER.fine("Involved files declaring the element " + element.image() + ":"); //NOI18N
-                    for (FileObject fo : involvedFiles) {
-                        LOGGER.fine(fo.getPath() + "\n"); //NOI18N
-                    }
-                }
-
-                String newName = refactoring.getNewName().substring(1); //cut off the dot or hash
-                //make css simple models for all involved files 
-                //where we already have the result
-                for (FileObject file : involvedFiles) {
-                    try {
-                        Source source;
-                        CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(file);
-                        //prefer using editor
-                        //XXX this approach doesn't match the dependencies graph
-                        //which is made strictly upon the index data
-                        if (editor != null && editor.isModified()) {
-                            source = Source.create(editor.getDocument());
-                        } else {
-                            source = Source.create(file);
-                        }
-
-                        CssFileModel model = new CssFileModel(source);
-                        Collection<Entry> entries = element.kind() == CssParserTreeConstants.JJT_CLASS
-                                ? model.getClasses() : model.getIds();
-
-                        boolean related = relatedFiles.contains(file);
-
-                        List<Difference> diffs = new ArrayList<Difference>();
-                        for (Entry entry : entries) {
-                            if (entry.isValidInSourceDocument() && elementImage.equals(entry.getName())) {
-                                diffs.add(new Difference(Difference.Kind.CHANGE,
-                                        editor.createPositionRef(entry.getDocumentRange().getStart(), Bias.Forward),
-                                        editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),
-                                        entry.getName(),
-                                        newName,
-                                        related
-                                        ? NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Selector")
-                                        : NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Unrelated_Selector"))); //NOI18N
-                            }
-                        }
-                        modificationResult.addDifferences(file, diffs);
-
-                    } catch (ParseException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-
+            if (element.kind() == CssParserTreeConstants.JJT_CLASS) {
+                int elementPrefixLength = 1;
+                 String elementImage = element.image().substring(elementPrefixLength); //cut off the dot
+                Collection<FileObject> files = index.findClasses(elementImage);
+                refactor(lookup, modificationResult, RefactoringElementType.CLASS, files, elementPrefixLength, econtext, index, SELECTOR_RENAME_MSG_KEY);
+            } else if (element.kind() == CssParserTreeConstants.JJTHASH) {
+                int elementPrefixLength = 1;
+                String elementImage = element.image().substring(elementPrefixLength); //cut off the dot
+                Collection<FileObject> files = index.findIds(elementImage);
+                refactor(lookup, modificationResult, RefactoringElementType.ID, files, elementPrefixLength, econtext, index, SELECTOR_RENAME_MSG_KEY);
+            } else if (element.kind() == CssParserTreeConstants.JJTHEXCOLOR) {
+                String elementImage = element.image();
+                Collection<FileObject> files = index.findColor(elementImage);
+                refactor(lookup, modificationResult, RefactoringElementType.COLOR, files, 0, econtext, index, COLOR_RENAME_MSG_KEY);
             } else if (element.kind() == CssParserTreeConstants.JJTELEMENTNAME) {
-                //type selector: div
-                //we do refactor only elements in the current css file, and even this is questionable if makes much sense
-                CssFileModel model = new CssFileModel(econtext.getParserResult());
-                List<Difference> diffs = new ArrayList<Difference>();
-                CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(context.getFileObject());
-                for (Entry entry : model.getHtmlElements()) {
-                    if (entry.isValidInSourceDocument() && elementImage.equals(entry.getName())) {
-                        diffs.add(new Difference(Difference.Kind.CHANGE,
-                                editor.createPositionRef(entry.getDocumentRange().getStart(), Bias.Forward),
-                                editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),
-                                entry.getName(),
-                                refactoring.getNewName(),
-                                NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Selector"))); //NOI18N
-                    }
-                }
-                modificationResult.addDifferences(context.getFileObject(), diffs);
-
+                refactorElement(modificationResult, econtext, index);
             } else {
                 //other nodes which may appear under the simple selector node
                 //we do not refactor them
             }
 
-            refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(modificationResult)));
-
-            for (FileObject fo : modificationResult.getModifiedFileObjects()) {
-                for (Difference diff : modificationResult.getDifferences(fo)) {
-                    refactoringElements.add(refactoring, DiffElement.create(diff, fo, modificationResult));
-
-                }
-            }
         } else if (context instanceof CssElementContext.File) {
             //refactor a file in explorer
             CssElementContext.File fileContext = (CssElementContext.File) context;
-            LOGGER.fine("refactor file " + fileContext.getFileObject().getPath()); //NOI18N
-            String newName = refactoring.getNewName();
-
-            //a. get all importing files
-            //b. rename the references
-            //c. rename the file itself - done via default rename plugin
-            DependenciesGraph deps = index.getDependencies(context.getFileObject());
-            Collection<Node> refering = deps.getSourceNode().getReferingNodes();
-            ModificationResult modificationResult = new ModificationResult();
-            for (Node ref : refering) {
-                FileObject file = ref.getFile();
-                try {
-                    Source source;
-                    CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(file);
-                    //prefer using editor
-                    //XXX this approach doesn't match the dependencies graph
-                    //which is made strictly upon the index data
-                    if (editor != null && editor.isModified()) {
-                        source = Source.create(editor.getDocument());
-                    } else {
-                        source = Source.create(file);
-                    }
-
-                    CssFileModel model = new CssFileModel(source);
-
-                    List<Difference> diffs = new ArrayList<Difference>();
-                    for (Entry entry : model.getImports()) {
-                        String imp = entry.getName(); //unquoted
-                        FileObject resolvedFileObject = WebUtils.resolve(file, imp);
-                        if (resolvedFileObject != null && resolvedFileObject.equals(fileContext.getFileObject())) {
-                            //the import refers to me - lets refactor it
-                            if (entry.isValidInSourceDocument()) {
-                                //new relative path creation
-                                String newImport;
-                                String extension = context.getFileObject().getExt(); //use the same extension as source file (may not be .css)
-                                int slashIndex = imp.lastIndexOf('/'); //NOI18N
-                                if (slashIndex != -1) {
-                                    newImport = imp.substring(0, slashIndex) + "/" + newName + "." + extension; //NOI18N
-                                } else {
-                                    newImport = newName + "." + extension; //NOI18N
-                                }
-
-                                diffs.add(new Difference(Difference.Kind.CHANGE,
-                                        editor.createPositionRef(entry.getDocumentRange().getStart(), Bias.Forward),
-                                        editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),
-                                        entry.getName(),
-                                        newImport,
-                                        NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Modify_Css_File_Import"))); //NOI18N
-                            }
-                        }
-                    }
-
-                    modificationResult.addDifferences(file, diffs);
-
-                } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-
-            }
-
-            refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(modificationResult)));
-
-            for (FileObject fo : modificationResult.getModifiedFileObjects()) {
-                for (Difference diff : modificationResult.getDifferences(fo)) {
-                    refactoringElements.add(refactoring, DiffElement.create(diff, fo, modificationResult));
-
-                }
-            }
-
+            refactorFile(modificationResult, fileContext, index);
 
         } else if (context instanceof CssElementContext.Folder) {
             //refactor a folder in explorer
@@ -309,6 +161,171 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             LOGGER.fine("refactor folder " + fileContext.getFileObject().getPath()); //NOI18N
         }
 
+        //commit the transaction and add the differences to the result
+        refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(modificationResult)));
+        for (FileObject fo : modificationResult.getModifiedFileObjects()) {
+            for (Difference diff : modificationResult.getDifferences(fo)) {
+                refactoringElements.add(refactoring, DiffElement.create(diff, fo, modificationResult));
+
+            }
+        }
+
         return null;
     }
+
+    private void refactorFile(ModificationResult modificationResult, CssElementContext.File context, CssIndex index) {
+        LOGGER.fine("refactor file " + context.getFileObject().getPath()); //NOI18N
+        String newName = refactoring.getNewName();
+
+        //a. get all importing files
+        //b. rename the references
+        //c. rename the file itself - done via default rename plugin
+        DependenciesGraph deps = index.getDependencies(context.getFileObject());
+        Collection<Node> refering = deps.getSourceNode().getReferingNodes();
+        for (Node ref : refering) {
+            FileObject file = ref.getFile();
+            try {
+                Source source;
+                CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(file);
+                //prefer using editor
+                //XXX this approach doesn't match the dependencies graph
+                //which is made strictly upon the index data
+                if (editor != null && editor.isModified()) {
+                    source = Source.create(editor.getDocument());
+                } else {
+                    source = Source.create(file);
+                }
+
+                CssFileModel model = new CssFileModel(source);
+
+                List<Difference> diffs = new ArrayList<Difference>();
+                for (Entry entry : model.getImports()) {
+                    String imp = entry.getName(); //unquoted
+                    FileObject resolvedFileObject = WebUtils.resolve(file, imp);
+                    if (resolvedFileObject != null && resolvedFileObject.equals(context.getFileObject())) {
+                        //the import refers to me - lets refactor it
+                        if (entry.isValidInSourceDocument()) {
+                            //new relative path creation
+                            String newImport;
+                            String extension = context.getFileObject().getExt(); //use the same extension as source file (may not be .css)
+                            int slashIndex = imp.lastIndexOf('/'); //NOI18N
+                            if (slashIndex != -1) {
+                                newImport = imp.substring(0, slashIndex) + "/" + newName + "." + extension; //NOI18N
+                            } else {
+                                newImport = newName + "." + extension; //NOI18N
+                            }
+
+                            diffs.add(new Difference(Difference.Kind.CHANGE,
+                                    editor.createPositionRef(entry.getDocumentRange().getStart(), Bias.Forward),
+                                    editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),
+                                    entry.getName(),
+                                    newImport,
+                                    NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Modify_Css_File_Import"))); //NOI18N
+                        }
+                    }
+                }
+
+                modificationResult.addDifferences(file, diffs);
+
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+        }
+    }
+
+    private void refactorElement(ModificationResult modificationResult, CssElementContext.Editor context, CssIndex index) {
+        //type selector: div
+        //we do refactor only elements in the current css file, and even this is questionable if makes much sense
+        SimpleNode element = context.getElement();
+        String elementImage = element.image();
+
+        CssFileModel model = new CssFileModel(context.getParserResult());
+        List<Difference> diffs = new ArrayList<Difference>();
+        CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(context.getFileObject());
+        for (Entry entry : model.getHtmlElements()) {
+            if (entry.isValidInSourceDocument() && elementImage.equals(entry.getName())) {
+                diffs.add(new Difference(Difference.Kind.CHANGE,
+                        editor.createPositionRef(entry.getDocumentRange().getStart(), Bias.Forward),
+                        editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),
+                        entry.getName(),
+                        refactoring.getNewName(),
+                        NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Selector"))); //NOI18N
+            }
+        }
+        modificationResult.addDifferences(context.getFileObject(), diffs);
+
+    }
+
+    private void refactor(Lookup lookup, ModificationResult modificationResult, RefactoringElementType type, Collection<FileObject> files, int elementPrefixLenght, CssElementContext.Editor context, CssIndex index, String renameMsgKey) {
+        String elementImage = context.getElementName().substring(elementPrefixLenght);
+        List<FileObject> involvedFiles = new LinkedList<FileObject>(files);
+        DependenciesGraph deps = index.getDependencies(context.getFileObject());
+        Collection<FileObject> relatedFiles = deps.getAllRelatedFiles();
+
+         //refactor all occurances support
+        CssRefactoringExtraInfo extraInfo =
+                lookup.lookup(CssRefactoringExtraInfo.class);
+
+        //if the "refactor all occurances" checkbox hasn't been
+        //selected the occurances must be searched only in the related files
+        if (extraInfo == null || !extraInfo.isRefactorAll()) {
+            //filter out those files which have no relation with the current file.
+            //note: the list of involved files also contains the currently edited file.
+            involvedFiles.retainAll(relatedFiles);
+            //now we have a list of files which contain the given class or id and are
+            //related to the base file
+        }
+
+        if (LOG) {
+            LOGGER.fine("Refactoring element " + elementImage + " in file " + context.getFileObject().getPath()); //NOI18N
+            LOGGER.fine("Involved files declaring the element " + elementImage + ":"); //NOI18N
+            for (FileObject fo : involvedFiles) {
+                LOGGER.fine(fo.getPath() + "\n"); //NOI18N
+            }
+        }
+
+        String newName = refactoring.getNewName().substring(elementPrefixLenght); //cut off the dot or hash
+        //make css simple models for all involved files
+        //where we already have the result
+        for (FileObject file : involvedFiles) {
+            try {
+                Source source;
+                CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(file);
+                //prefer using editor
+                //XXX this approach doesn't match the dependencies graph
+                //which is made strictly upon the index data
+                if (editor != null && editor.isModified()) {
+                    source = Source.create(editor.getDocument());
+                } else {
+                    source = Source.create(file);
+                }
+
+                CssFileModel model = new CssFileModel(source);
+                Collection<Entry> entries = model.get(type);
+
+                boolean related = relatedFiles.contains(file);
+
+                List<Difference> diffs = new ArrayList<Difference>();
+                for (Entry entry : entries) {
+                    if (entry.isValidInSourceDocument() && elementImage.equals(entry.getName())) {
+                        diffs.add(new Difference(Difference.Kind.CHANGE,
+                                editor.createPositionRef(entry.getDocumentRange().getStart(), Bias.Forward),
+                                editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),
+                                entry.getName(),
+                                newName,
+                                related
+                                ? NbBundle.getMessage(CssRenameRefactoringPlugin.class, renameMsgKey)
+                                : NbBundle.getMessage(CssRenameRefactoringPlugin.class, UNRELATED_PREFIX_MSG_KEY) + " " +
+                                NbBundle.getMessage(CssRenameRefactoringPlugin.class, renameMsgKey))); //NOI18N
+                    }
+                }
+                modificationResult.addDifferences(file, diffs);
+
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
 }

@@ -1875,15 +1875,12 @@ public final class FileUtil extends Object {
         Parameters.notNull("fileObject", fo);  //NOI18N
 
         if (!fo.isValid()) {
-            return false;
+            return isArchiveFile(fo.getPath());
         }
         // XXX Special handling of virtual file objects: try to determine it using its name, but don't cache the
         // result; when the file is checked out the more correct method can be used
         if (fo.isVirtual()) {
-            String path = fo.getPath();
-            int index = path.lastIndexOf('.');
-
-            return (index != -1) && (index > path.lastIndexOf('/') + 1);
+            return isArchiveFile(fo.getPath());
         }
 
         if (fo.isFolder()) {
@@ -1921,9 +1918,7 @@ public final class FileUtil extends Object {
             }
 
             if (b == null) {
-                String path = fo.getPath();
-                int index = path.lastIndexOf('.');
-                b = ((index != -1) && (index > path.lastIndexOf('/') + 1)) ? Boolean.TRUE : Boolean.FALSE;
+                b = isArchiveFile(fo.getPath());
             }
 
             archiveFileCache.put(fo, b);
@@ -1952,12 +1947,12 @@ public final class FileUtil extends Object {
         FileObject fo = URLMapper.findFileObject(url);
 
         if ((fo != null) && !fo.isVirtual()) {
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.FINEST, "isArchiveFile_FILE_RESOLVED", fo); //NOI18N, used by FileUtilTest.testIsArchiveFileRace
+            }
             return isArchiveFile(fo);
         } else {
-            String urlPath = url.getPath();
-            int index = urlPath.lastIndexOf('.');
-
-            return (index != -1) && (index > urlPath.lastIndexOf('/') + 1);
+            return isArchiveFile(url.getPath());
         }
     }
 
@@ -2304,5 +2299,15 @@ public final class FileUtil extends Object {
                 diskFileSystem = fs;
             }
         }
-    }    
+    }
+
+    /**
+     * Tests if a non existent path represents a file.
+     * @param path to be tested, separated by '/'.
+     * @return true if the file has '.' after last '/'.
+     */
+    private static boolean isArchiveFile (final String path) {
+        int index = path.lastIndexOf('.');  //NOI18N
+        return (index != -1) && (index > path.lastIndexOf('/') + 1);    //NOI18N
+    }
 }

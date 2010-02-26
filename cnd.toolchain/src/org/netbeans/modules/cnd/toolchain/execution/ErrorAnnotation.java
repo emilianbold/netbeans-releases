@@ -53,6 +53,7 @@ public final class ErrorAnnotation extends Annotation implements PropertyChangeL
 
     private static ErrorAnnotation instance;
     private Line currentLine;
+    private String description;
 
     public static ErrorAnnotation getInstance() {
         if (instance == null) {
@@ -74,14 +75,19 @@ public final class ErrorAnnotation extends Annotation implements PropertyChangeL
      * @return  tooltip for this annotation */
     @Override
     public String getShortDescription() {
-        return NbBundle.getMessage(ErrorAnnotation.class, "HINT_CompilerError"); // NOI18N
+        if (description != null) {
+            return description;
+        } else {
+            return NbBundle.getMessage(ErrorAnnotation.class, "HINT_CompilerError"); // NOI18N
+        }
     }
 
-    public void attach(Line line) {
+    public void attach(Line line, String description) {
         if (currentLine != null) {
             detach(currentLine);
         }
         currentLine = line;
+        this.description = description;
         super.attach(line);
         line.addPropertyChangeListener(this);
     }

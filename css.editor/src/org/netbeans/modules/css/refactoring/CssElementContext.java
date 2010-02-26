@@ -172,7 +172,9 @@ public abstract class CssElementContext {
 
 	@Override
 	public boolean isRefactoringAllowed() {
-	    return null != getSimpleSelectorElement();
+            //class, id or element selector
+            //hex color
+	    return null != getSimpleSelectorElement() || getElement().kind() == CssParserTreeConstants.JJTHEXCOLOR;
 	}
     }
 }

@@ -59,13 +59,39 @@ made subject to such option by the copyright holder.
     
     <!-- Main target -->
     
-    <target name="jnlp" depends="-init-filename,-test-jnlp-enabled" if="is.jnlp.enabled">
+    <target name="jnlp" depends="-init-filename,-test-jnlp-enabled,-jar-applet" if="is.jnlp.enabled">
         <makeurl property="jnlp.local.codebase.url" file="${basedir}/dist" validate="false"/>
         <delete file="dist/lib/javaws.jar" failonerror="false"/>
         <antcall target="generate-jnlp"/>
         <antcall target="generate-html-preview"/>
     </target>
-    
+
+    <!-- Applet archiving -->
+
+    <target name="-test-is-applet" depends="-test-jnlp-enabled" if="is.jnlp.enabled">
+        <condition property="is.applet">
+            <equals arg1="${jnlp.descriptor}" arg2="applet" trim="true"/>
+        </condition>
+        <condition property="is.applet+mkdist.available">
+            <and>
+                <isset property="libs.CopyLibs.classpath"/>
+                <istrue value="${is.applet}"/>
+            </and>
+        </condition>
+    </target>
+
+    <target name="-jar-applet" depends="-test-is-applet" if="is.applet+mkdist.available">
+        <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
+        <pathconvert property="run.classpath.without.build.classes.dir">
+            <path path="${run.classpath}"/>
+            <map from="${build.classes.dir.resolved}" to=""/>
+        </pathconvert>
+        <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${libs.CopyLibs.classpath}" name="copylibs"/>
+        <copylibs compress="${jar.compress}" index="${jar.index}" jarfile="${dist.jar}" manifest="${manifest.file}" runtimeclasspath="${run.classpath.without.build.classes.dir}">
+            <fileset dir="${build.classes.dir}"/>
+        </copylibs>
+    </target>
+
     <!-- Init jnlp filename -->
     
     <target name="-init-filename" depends="-check-filename-prop,-set-jnlp-filename-custom,-set-jnlp-filename-default"/>

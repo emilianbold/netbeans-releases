@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.jrubyparser.ast.CallNode;
-import org.jrubyparser.ast.Colon2Node;
 import org.jrubyparser.ast.FCallNode;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.ast.ListNode;
@@ -248,19 +247,8 @@ final class RailsIndexer {
             } else if (name.equals(INCLUDE) || name.equals(EXTEND)) {
                 final String key = name.equals(INCLUDE) ? INCLUDE : EXTEND;
                 Node argsNode = ((FCallNode) node).getArgsNode();
-
                 if (argsNode instanceof ListNode) {
-                    ListNode args = (ListNode) argsNode;
-
-                    if (args.size() > 0) {
-                        Node n = args.get(0);
-
-                        if (n instanceof Colon2Node) {
-                            result.get(key).add(AstUtilities.getFqn((Colon2Node) n));
-                        } else if (n instanceof INameNode) {
-                            result.get(key).add(((INameNode) n).getName());
-                        }
-                    }
+                    result.get(key).addAll(AstUtilities.getValuesAsFqn((ListNode) argsNode));
                 }
             }
         } else if (node instanceof CallNode) {

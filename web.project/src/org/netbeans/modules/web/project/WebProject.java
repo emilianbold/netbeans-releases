@@ -167,6 +167,8 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
+import org.netbeans.spi.project.support.ant.PropertyProvider;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -350,14 +352,14 @@ public final class WebProject implements Project, AntProjectListener {
     
     WebProject(final AntProjectHelper helper) throws IOException {
         this.helper = helper;
-        eval = createEvaluator();
         aux = helper.createAuxiliaryConfiguration();
-        refHelper = new ReferenceHelper(helper, aux, eval);
-        buildExtender = AntBuildExtenderFactory.createAntExtender(new WebExtenderImplementation(), refHelper);
-        genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
         updateProject = new UpdateProjectImpl(this, this.helper, aux);
         this.updateHelper = new UpdateHelper(updateProject, helper);
         updateProject.setUpdateHelper(updateHelper);
+        eval = createEvaluator();
+        refHelper = new ReferenceHelper(helper, aux, eval);
+        buildExtender = AntBuildExtenderFactory.createAntExtender(new WebExtenderImplementation(), refHelper);
+        genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
         webModule = new ProjectWebModule (this, updateHelper, cpProvider);
         apiWebModule = WebModuleFactory.createWebModule(new WebModuleImpl2(webModule));
@@ -462,9 +464,34 @@ public final class WebProject implements Project, AntProjectListener {
     }
     
     private PropertyEvaluator createEvaluator() {
-        // XXX might need to use a custom evaluator to handle active platform substitutions... TBD
-        // It is currently safe to not use the UpdateHelper for PropertyEvaluator; UH.getProperties() delegates to APH
-        return helper.getStandardPropertyEvaluator();
+        // XXX might need to add a custom evaluator to handle active platform substitutions... TBD
+        PropertyEvaluator baseEval2 = PropertyUtils.sequentialPropertyEvaluator(
+                helper.getStockPropertyPreprovider(),
+                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
+        return PropertyUtils.sequentialPropertyEvaluator(
+                helper.getStockPropertyPreprovider(),
+                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
+                helper.getProjectLibrariesPropertyProvider(),
+                PropertyUtils.userPropertiesProvider(baseEval2,
+                    "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
+                helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH),
+                UPDATE_PROPERTIES);
+    }
+
+    private static final PropertyProvider UPDATE_PROPERTIES;
+
+    static {
+        Map<String, String> defs = new HashMap<String, String>();
+
+        defs.put(ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); //NOI18N
+        defs.put(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "false"); //NOI18N
+        defs.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); //NOI18N
+        defs.put(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); //NOI18N
+        defs.put(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); //NOI18N
+        defs.put(ProjectProperties.JAVAC_PROCESSORPATH,"${" + ProjectProperties.JAVAC_CLASSPATH + "}"); //NOI18N
+        defs.put("javac.test.processorpath", "${" + ProjectProperties.JAVAC_TEST_CLASSPATH + "}"); // NOI18N
+
+        UPDATE_PROPERTIES = PropertyUtils.fixedPropertyProvider(defs);
     }
     
     public PropertyEvaluator evaluator() {

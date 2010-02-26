@@ -38,14 +38,21 @@
  */
 package org.netbeans.modules.css.indexing;
 
+import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.css.refactoring.api.Entry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.css.gsf.CssLanguage;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CssParserConstants;
@@ -54,6 +61,7 @@ import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.css.parser.Token;
+import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -62,6 +70,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -105,6 +114,23 @@ public class CssFileModel {
 
     public FileObject getFileObject() {
         return getSnapshot().getSource().getFileObject();
+    }
+
+    public Collection<Entry> get(RefactoringElementType type) {
+        switch(type) {
+            case CLASS:
+                return getClasses();
+            case ID:
+                return getIds();
+            case COLOR:
+                return getColors();
+            case ELEMENT:
+                return htmlElements;
+            case IMPORT:
+                return imports;
+        }
+
+        return null;
     }
 
     public Collection<Entry> getClasses() {
@@ -240,15 +266,19 @@ public class CssFileModel {
 
                 String image = node.image().substring(start_offset_diff);
                 OffsetRange range = new OffsetRange(node.startOffset() + start_offset_diff, node.endOffset());
-                Entry e = createEntry(image, range);
+
+                //check if the real start offset can be translated to the original offset
+                boolean isVirtual = getSnapshot().getOriginalOffset(node.startOffset()) == -1;
+
+                Entry e = createEntry(image, range, isVirtual);
                 if(e != null) {
                     collection.add(e);
                 }
 
             } else if(node.kind() == CssParserTreeConstants.JJTHEXCOLOR) {
-                String image = node.image();
+                String image = node.image().trim();
                 OffsetRange range = new OffsetRange(node.startOffset(), node.endOffset());
-                Entry e = createEntry(image, range);
+                Entry e = createEntry(image, range, false);
                 if(e != null) {
                     getColorsCollectionInstance().add(e);
                 }
@@ -263,7 +293,8 @@ public class CssFileModel {
                 boolean quoted = WebUtils.isValueQuoted(image);
                 return createEntry(WebUtils.unquotedValue(image),
                         new OffsetRange(token.offset + (quoted ? 1 : 0),
-                        token.offset + image.length() - (quoted ? 1 : 0)));
+                        token.offset + image.length() - (quoted ? 1 : 0)),
+                        false);
             }
 
             //@import url("another.css");
@@ -277,7 +308,8 @@ public class CssFileModel {
                     int from = token.offset + m.start(groupIndex) + (quoted ? 1 : 0);
                     int to = token.offset + m.end(groupIndex) - (quoted ? 1 : 0);
                     return createEntry(WebUtils.unquotedValue(content),
-                            new OffsetRange(from, to));
+                            new OffsetRange(from, to),
+                            false);
                 }
             }
 
@@ -285,11 +317,14 @@ public class CssFileModel {
         }
     }
 
-    public Entry createEntry(String name, OffsetRange range) {
+    public Entry createEntry(String name, OffsetRange range, boolean isVirtual) {
         int documentFrom = getSnapshot().getOriginalOffset(range.getStart());
         int documentTo = getSnapshot().getOriginalOffset(range.getEnd());
 
         OffsetRange documentRange = null;
+        String elementLineText = null;
+        String elementText = null;
+        int lineOffset = -1;
         if (documentFrom == -1 || documentTo == -1) {
             if(LOG) {
                 LOGGER.finer("Ast offset range " + range.toString() +
@@ -300,45 +335,39 @@ public class CssFileModel {
             }
         } else {
             documentRange = new OffsetRange(documentFrom, documentTo);
-        }
-        return new Entry(name, range, documentRange);
-    }
+            try {
+                //extract element text
+                elementText = getSnapshot().getText().subSequence(range.getStart(), range.getEnd()).toString();
 
-    public class Entry {
+                //extract element line text
+                int astLineStart = GsfUtilities.getRowStart(getSnapshot().getText(), range.getStart());
+                int astLineEnd = GsfUtilities.getRowEnd(getSnapshot().getText(), range.getStart());
+                elementLineText = getSnapshot().getText().subSequence(astLineStart, astLineEnd).toString();
 
-        private String name;
-        private OffsetRange astRange;
-        private OffsetRange documentRange;
+                //try to compute line number of document start offset, this "needs" to run on document.
+                final Document doc = getSnapshot().getSource().getDocument(true);
+                final AtomicInteger ret = new AtomicInteger();
+                final int offset = documentFrom;
+                doc.render(new Runnable() {
 
-        private Entry(String name, OffsetRange astRange, OffsetRange documentRange) {
-            this.name = name;
-            this.astRange = astRange;
-            this.documentRange = documentRange;
-        }
+                    @Override
+                    public void run() {
+                        try {
+                            ret.set(Utilities.getLineOffset((BaseDocument) doc, offset));
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
 
-        public CssFileModel getModel() {
-            return CssFileModel.this;
-        }
+                });
+                lineOffset = ret.get();
+                
 
-        public boolean isValidInSourceDocument() {
-            return documentRange != null;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public OffsetRange getDocumentRange() {
-            return documentRange;
-        }
-
-        public OffsetRange getRange() {
-            return astRange;
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
-        @Override
-        public String toString() {
-            return "Entry["+ (!isValidInSourceDocument() ? "INVALID! " : "") + getName() + "; " + getRange().getStart() + " - " + getRange().getEnd() + "]";//NOI18N
-        }
+        return new Entry(name, range, documentRange, lineOffset, elementText, elementLineText, isVirtual);
     }
 }

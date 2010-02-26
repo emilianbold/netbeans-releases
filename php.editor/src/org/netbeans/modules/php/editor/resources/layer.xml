@@ -189,6 +189,11 @@
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtTabsIndents.getController"/>
                             <attr name="position" intvalue="100"/>
                         </file>
+			<file name="Alignment.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtAlignment.getController"/>
+                            <attr name="position" intvalue="200"/>
+                        </file>
                         <file name="Braces.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtBraces.getController"/>
