@@ -93,6 +93,7 @@ public class Man2HTML {
         buf.append("<HTML>\n"); // NOI18N
         buf.append("<BODY>\n"); // NOI18N
         buf.append("<PRE>\n"); // NOI18N
+        buf.append("<small>\n"); // NOI18N
 
         char prevCh = 0;
         char curCh = 0;
@@ -101,10 +102,10 @@ public class Man2HTML {
         try {
             String line = null;
             while ((line = br.readLine()) != null) {
-                if (line.length() == 0) {
-                    // Skip empty lines (like -compress)
-                    continue;
-                }
+//                if (line.length() == 0) {
+//                    // Skip empty lines (like -compress)
+//                    continue;
+//                }
                 for (int i = 0; i < line.length(); i++) {
                     prevCh = curCh;
                     curCh = nextCh;
@@ -165,6 +166,7 @@ public class Man2HTML {
         catch (IOException ioe) {
         }
 
+        buf.append("</small>\n"); // NOI18N
         buf.append("</PRE>\n"); // NOI18N
         buf.append("</BODY>\n"); // NOI18N
         buf.append("</HTML>\n"); // NOI18N
