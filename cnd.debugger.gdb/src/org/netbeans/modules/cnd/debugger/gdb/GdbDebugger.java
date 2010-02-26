@@ -84,7 +84,7 @@ import org.netbeans.modules.cnd.debugger.common.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
-import org.netbeans.modules.cnd.debugger.common.utils.PathUtils;
+import org.netbeans.modules.nativeexecution.api.util.PathUtils;
 import org.netbeans.modules.cnd.debugger.gdb.attach.AttachTarget;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
