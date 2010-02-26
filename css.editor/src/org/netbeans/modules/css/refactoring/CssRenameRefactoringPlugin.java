@@ -51,7 +51,7 @@ import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.indexing.CssFileModel;
-import org.netbeans.modules.css.indexing.CssFileModel.Entry;
+import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.css.indexing.CssIndex;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.DependenciesGraph.Node;

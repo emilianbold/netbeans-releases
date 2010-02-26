@@ -436,6 +436,21 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         item = menu.add(revertAction);
         Mnemonics.setLocalizedText(item, item.getText());
 
+        item = menu.add(new AbstractAction(actionString("CTL_PopupMenuItem_ExportDiff")) { //NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SystemAction.get(ExportDiffAction.class).performContextAction(TopComponent.getRegistry().getActivatedNodes(), true);
+            }
+        });
+        Mnemonics.setLocalizedText(item, item.getText());
+        Node[] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
+        if (activatedNodes.length > 0 && activatedNodes[0] instanceof DiffNode) {
+            // we currently don't know how to export changes on folders or properties
+            Setup setup = ((DiffNode) activatedNodes[0]).getSetup();
+            FileInformation info = setup.getInfo();
+            item.setEnabled(setup.getPropertyName() == null && info != null && !info.isDirectory());
+        }
+
         Action ignoreAction = new SystemActionBridge(SystemAction.get(IgnoreAction.class),
            ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(files) == IgnoreAction.UNIGNORING ?
            actionString("CTL_PopupMenuItem_Unignore") : // NOI18N
