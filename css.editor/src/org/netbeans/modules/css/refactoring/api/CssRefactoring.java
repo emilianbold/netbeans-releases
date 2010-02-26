@@ -48,6 +48,7 @@ import org.netbeans.modules.css.indexing.CssFileModel;
 import org.netbeans.modules.css.indexing.CssIndex;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
@@ -60,14 +61,16 @@ public class CssRefactoring {
     private CssRefactoring() {
     }
 
-    public static Map<FileObject, Collection<Entry>> findAllOccurances(String elementName, RefactoringElementType type, FileObject baseFile, boolean nonVirtualOnly) {
+    public static Map<FileObject, Collection<EntryHandle>> findAllOccurances(String elementName, RefactoringElementType type, FileObject baseFile, boolean nonVirtualOnly) {
         CssProjectSupport sup = CssProjectSupport.findFor(baseFile);
         if (sup == null) {
             return null;
         }
         CssIndex index = sup.getIndex();
+        DependenciesGraph deps = index.getDependencies(baseFile);
+        Collection<FileObject> relatedFiles = deps.getAllReferedFiles();
         Collection<FileObject> queryResult = index.find(type, elementName);
-        Map<FileObject, Collection<Entry>> result = new HashMap<FileObject, Collection<Entry>>();
+        Map<FileObject, Collection<EntryHandle>> result = new HashMap<FileObject, Collection<EntryHandle>>();
 
         for (FileObject file : queryResult) {
             try {
@@ -85,9 +88,9 @@ public class CssRefactoring {
                 CssFileModel model = new CssFileModel(source);
                 Collection<Entry> modelEntries = model.get(type);
 
-                Collection<Entry> entries = result.get(file);
+                Collection<EntryHandle> entries = result.get(file);
                 if (entries == null) {
-                    entries = new ArrayList<Entry>();
+                    entries = new ArrayList<EntryHandle>();
                     result.put(file, entries);
                 }
 
@@ -95,7 +98,7 @@ public class CssRefactoring {
                     if (elementName.equals(entry.getName())) {
                         if (entry.isValidInSourceDocument()) {
                             if (nonVirtualOnly && !entry.isVirtual()) {
-                                entries.add(entry);
+                                entries.add(EntryHandle.createEntryHandle(entry, relatedFiles.contains(file)));
                             }
                         }
                     }
