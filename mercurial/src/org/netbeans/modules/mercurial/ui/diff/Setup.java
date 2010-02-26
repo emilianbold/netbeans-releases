@@ -212,7 +212,7 @@ public final class Setup extends AbstractDiffSetup {
         this.firstRevision = firstRevision;
         this.secondRevision = secondRevision;
         firstSource = new DiffStreamSource(baseFile, firstRevision, firstRevision);
-        // XXX make the diff non-editable until UndoAction works correctly
+        // XXX delete when UndoAction works correctly
         secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision) {
             @Override
             public boolean isEditable() {
