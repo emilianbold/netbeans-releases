@@ -180,7 +180,7 @@ public class ItemCD extends ComponentDescriptor {
                 .addParameters (ItemCode.createItemLayoutParameter ())
                 .addParameters (ItemCode.createDefaultCommandParameter ())
                 .addSetters(MidpSetter.createSetter("addCommand", MidpVersionable.MIDP_2).setArrayParameter(ItemCode.PARAM_COMMAND).addParameters(ItemCode.PARAM_COMMAND)) // NOI18N
-                .addSetters(MidpSetter.createSetter("setItemCommandListener", MidpVersionable.MIDP_2).addParameters(ItemCode.PARAM_ITEM_COMMAND_LISTENER)) // NOI18N
+                .addSetters(MidpSetterItemCommandListener.createSetter("setItemCommandListener", MidpVersionable.MIDP_2).addParameters(ItemCode.PARAM_ITEM_COMMAND_LISTENER)) // NOI18N
                 .addSetters(MidpSetter.createSetter("setDefaultCommand", MidpVersionable.MIDP_2).addParameters(ItemCode.PARAM_DEFAULT_COMMAND)) // NOI18N
                 .addSetters(MidpSetter.createSetter("setLabel", MidpVersionable.MIDP).addParameters(PROP_LABEL)) // NOI18N
                 .addSetters(MidpSetter.createSetter("setLayout", MidpVersionable.MIDP_2).addParameters(ItemCode.PARAM_LAYOUT)) // NOI18N
