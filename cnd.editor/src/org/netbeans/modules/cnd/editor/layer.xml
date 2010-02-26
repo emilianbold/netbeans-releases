@@ -75,7 +75,6 @@
                 </folder>
             </folder>
             <folder name="x-h">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <file name="FakeHighlightsFactory.shadow">
                     <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-editor-folding-FakeHighlightsFactory.instance"/>
                 </file>
@@ -177,7 +176,6 @@
                 </file>
             </folder>
             <folder name="x-c++">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <file name="FakeHighlightsFactory.shadow">
                     <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-editor-folding-FakeHighlightsFactory.instance"/>
                 </file>
@@ -280,7 +278,6 @@
             </folder>
 
             <folder name="x-c">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <file name="FakeHighlightsFactory.shadow">
                     <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-editor-folding-FakeHighlightsFactory.instance"/>
                 </file>
