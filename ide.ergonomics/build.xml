@@ -41,6 +41,7 @@
     </target>
 
     <target name="-init-clusters">
+        <property name="common.ergonomics" location="src-ant/org/netbeans/modules/ide/ergonomics/ant/common-ergonomics.xml"/>
         <resolvelist
             name="ergonomic.clusters.includes"
             list="${nb.clusters.list}"
@@ -84,10 +85,11 @@
         unless="skip.static.analysis"
     >
         <mkdir dir="${build.release.dir}/config/Modules"/>
-        <subant genericantfile="build.xml" target="-disable-one-cluster">
+        <subant genericantfile="${common.ergonomics}" target="-disable-one-cluster">
             <property name="xmldir" value="${build.release.dir}/config/Modules"/>
             <property name="ergonomicsdir" location="${basedir}"/>
             <property name="src-ant.cp" value="${src-ant.cp}"/>
+            <property name="anttasks.jar" value="${anttasks.jar}"/>
             <dirset refid="ergonomic.clusters"/>
         </subant>
         <pathconvert property="extra.module.files" pathsep=",">
@@ -113,66 +115,12 @@
         depends="-init-clusters,-init-static-analysis,-compile-ant"
         unless="skip.static.analysis"
     >
-        <subant genericantfile="build.xml" target="-proxy-one-cluster">
+        <subant genericantfile="${common.ergonomics}" target="-proxy-one-cluster">
             <property name="ergonomicsdir" location="${basedir}"/>
             <property name="src-ant.cp" value="${src-ant.cp}"/>
             <property name="cluster.entries" location="${netbeans.dest.dir}"/>
+            <property name="anttasks.jar" value="${anttasks.jar}"/>
             <dirset refid="ergonomic.clusters"/>
         </subant>
-    </target>
-
-    <!--
-    - single cluster operations
-    -->
-    <target name="-proxy-one-cluster">
-        <property name="cluster" location="."/>
-        <pathconvert property="cluster.name">
-            <path location="${cluster}"/>
-            <mapper type="regexp" from=".*[/\\]([a-z]*)[0-9\.]*" to="\1"/>
-        </pathconvert>
-        <property name="proxytmp" value="${ergonomicsdir}/build/proxies/${cluster.name}"/>
-        <property name="proxydir" value="${ergonomicsdir}/build/classes/org/netbeans/modules/ide/ergonomics/${cluster.name}"/>
-        <property name="cluster.properties" value="${ergonomicsdir}/${cluster.name}.properties"/>
-        <available
-            file="${cluster.properties}" value="${cluster.properties}" property="proxyprop"
-        />
-        <property name="proxyprop" location="${ergonomicsdir}/empty.properties"/>
-        <property name="cluster.entries" location="${cluster}"/>
-        <mkdir dir="${proxydir}"/>
-        <extractlayer
-            clusterName="${cluster.name}"
-            bundle="${proxydir}/Bundle.properties"
-            destdir="${proxydir}"
-        >
-           <modules dir="${cluster}">
-                <include name="modules/*.jar"/>
-            </modules>
-           <entries dir="${cluster.entries}">
-                <include name="**/modules/*.jar"/>
-                <exclude name="ergonomics*/**/*"/>
-            </entries>
-            <bundlefilter>
-                <concatfilter prepend="${proxyprop}"/>
-            </bundlefilter>
-         </extractlayer>
-    </target>
-
-
-    <target name="-disable-one-cluster">
-        <property name="cluster.to.process" location="."/>
-        <mkdir dir="${xmldir}"/>
-        <createmodulexml xmldir="${xmldir}">
-            <disabled dir="${cluster.to.process}">
-                <and>
-                    <filename name="modules/*.jar"/>
-                    <custom
-                        classname="org.netbeans.nbbuild.ModuleStateSelector"
-                        classpath="${anttasks.jar}"
-                    >
-                        <param name="acceptEnabled" value="true"/>
-                    </custom>
-                </and>
-            </disabled>
-        </createmodulexml>
     </target>
 </project>
