@@ -66,19 +66,24 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import org.netbeans.lib.terminalemulator.ActiveRegion;
-import org.netbeans.lib.terminalemulator.ActiveTerm;
-import org.netbeans.lib.terminalemulator.StreamTerm;
-import org.netbeans.lib.richexecution.program.Program;
-import org.netbeans.lib.termsupport.DefaultFindState;
-import org.netbeans.lib.termsupport.FindState;
-import org.netbeans.lib.richexecution.PtyProcess;
-import org.netbeans.lib.terminalemulator.ActiveTermListener;
-import org.netbeans.lib.termsupport.TermExecutor;
-import org.netbeans.lib.termsupport.TermOptions;
-import org.netbeans.modules.terminal.TermAdvancedOption;
+
 import org.openide.util.NbPreferences;
 import org.openide.windows.IOContainer;
+
+import org.netbeans.lib.terminalemulator.ActiveRegion;
+import org.netbeans.lib.terminalemulator.ActiveTerm;
+import org.netbeans.lib.terminalemulator.ActiveTermListener;
+import org.netbeans.lib.terminalemulator.StreamTerm;
+
+import org.netbeans.lib.richexecution.program.Program;
+import org.netbeans.lib.richexecution.PtyProcess;
+
+import org.netbeans.lib.termsupport.DefaultFindState;
+import org.netbeans.lib.termsupport.FindState;
+import org.netbeans.lib.termsupport.TermExecutor;
+import org.netbeans.lib.termsupport.TermOptions;
+
+import org.netbeans.modules.terminal.ui.TermAdvancedOption;
 
 /**
  * A {@link org.netbeans.lib.terminalemulator.Term}-based terminal component for

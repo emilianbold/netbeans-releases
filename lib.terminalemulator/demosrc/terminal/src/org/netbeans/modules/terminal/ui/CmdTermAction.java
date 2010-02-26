@@ -38,25 +38,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.terminal;
+package org.netbeans.modules.terminal.ui;
 
+import org.netbeans.modules.terminal.api.Terminal;
+import org.netbeans.modules.terminal.api.TerminalProvider;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import javax.swing.JOptionPane;
 import org.openide.util.NbBundle;
+import org.netbeans.lib.richexecution.program.Command;
+import org.netbeans.lib.richexecution.program.Program;
 
 /**
- * Action which shows Term component.
+ * Action which runs a command under a shell under a Term component.
  */
-public class TermWindowAction extends AbstractAction {
+public class CmdTermAction extends AbstractAction {
 
-    public TermWindowAction() {
-        super(NbBundle.getMessage(TermWindowAction.class, "CTL_TermWindowAction"));
+    public CmdTermAction() {
+        super(NbBundle.getMessage(CmdTermAction.class, "CTL_CmdTermAction"));
 //        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(TermTopComponent.ICON_PATH, true)));
     }
 
     public void actionPerformed(ActionEvent evt) {
-        TermTopComponent ttc = TermTopComponent.findInstance();
-        ttc.open();
-        ttc.requestActive();
+        // Ask user what command they want to run
+        String cmd = JOptionPane.showInputDialog("Command");
+        if (cmd == null || cmd.trim().equals(""))
+            return;
+
+        TerminalProvider terminalProvider = TerminalProvider.getDefault();
+        Terminal terminal = terminalProvider.createTerminal("command: " + cmd);
+        Program program = new Command(cmd);
+        boolean restartable = true;
+        terminal.startProgram(program, restartable);
     }
 }

@@ -41,11 +41,12 @@
 
 package org.netbeans.modules.terminal.api;
 
-import org.netbeans.modules.terminal.TermTopComponent;
 import java.util.logging.Logger;
 import org.openide.windows.IOContainer;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+
+import org.netbeans.modules.terminal.ui.TermTopComponent;
 
 public final class TerminalProvider {
 

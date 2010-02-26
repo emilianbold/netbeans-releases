@@ -19,16 +19,16 @@ import org.netbeans.lib.richexecution.Pty;
 import org.netbeans.lib.richexecution.PtyException;
 import org.netbeans.lib.richexecution.PtyExecutor;
 import org.netbeans.lib.terminalemulator.StreamTerm;
-import org.netbeans.modules.terminal.TermTopComponent;
 
 import org.netbeans.modules.terminal.ioprovider.IOEmulation;
 import org.netbeans.modules.terminal.ioprovider.IOResizable;
 import org.netbeans.modules.terminal.ioprovider.TerminalInputOutput;
 
+import org.netbeans.modules.terminal.ui.TermTopComponent;
+
 import org.openide.util.Exceptions;
 import org.openide.windows.IOColorLines;
 import org.openide.windows.IOContainer;
-import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
