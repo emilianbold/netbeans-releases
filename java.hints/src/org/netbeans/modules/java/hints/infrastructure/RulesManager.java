@@ -67,12 +67,15 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescriptionFactory;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.jackpot.spi.HintProvider;
+import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.Rule;
 import org.netbeans.modules.java.hints.spi.TreeRule;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -83,6 +86,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
+
+import static org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription;
 
 /** Manages rules read from the system filesystem.
  *
@@ -395,7 +400,26 @@ public class RulesManager implements FileChangeListener {
         }
 
         public Collection<? extends ErrorDescription> createErrors(HintContext ctx) {
-            return tr.run(ctx.getInfo(), ctx.getPath());
+            Collection<? extends ErrorDescription> result = tr.run(ctx.getInfo(), ctx.getPath());
+
+            if (result == null) return result;
+
+            Collection<ErrorDescription> wrapped = new LinkedList<ErrorDescription>();
+
+            for (ErrorDescription ed : result) {
+                List<Fix> fixesForED = ErrorDescriptionFactory.resolveDefaultFixes(ctx, ed.getFixes().getFixes().toArray(new Fix[0]));
+
+                ErrorDescription nue = createErrorDescription(ed.getSeverity(),
+                                                              ed.getDescription(),
+                                                              fixesForED,
+                                                              ed.getFile(),
+                                                              ed.getRange().getBegin().getOffset(),
+                                                              ed.getRange().getEnd().getOffset());
+
+                wrapped.add(nue);
+            }
+
+            return wrapped;
         }
     }
     

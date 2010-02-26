@@ -52,12 +52,14 @@ public final class OutputListenerImpl implements OutputListener {
     private final FileObject file;
     private final int line;
     private final boolean isError;
+    private final String description;
 
-    public OutputListenerImpl(FileObject file, int line, boolean isError) {
+    public OutputListenerImpl(FileObject file, int line, boolean isError, String description) {
         super();
         this.file = file;
         this.line = line;
 	this.isError = isError;
+        this.description = description;
     }
 
     @Override
@@ -72,7 +74,11 @@ public final class OutputListenerImpl implements OutputListener {
 
     @Override
     public void outputLineCleared(OutputEvent ev) {
-        ErrorAnnotation.getInstance().detach(null);
+        if (isError) {
+            ErrorAnnotation.getInstance().detach(null);
+        } else {
+            WarningAnnotation.getInstance().detach(null);
+        }
     }
 
     public boolean isError(){
@@ -95,7 +101,11 @@ public final class OutputListenerImpl implements OutputListener {
                         } else {
                             l.show(Line.ShowOpenType.NONE, Line.ShowVisibilityType.NONE);
                         }
-                        ErrorAnnotation.getInstance().attach(l);
+                        if (isError) {
+                            ErrorAnnotation.getInstance().attach(l, description);
+                        } else {
+                            WarningAnnotation.getInstance().attach(l, description);
+                        }
                     }
                 } catch (IndexOutOfBoundsException ex) {
                 }

@@ -58,12 +58,12 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
@@ -99,11 +99,8 @@ public class StringBuilderAppend {
         List<List<TreePath>> sorted = Utilities.splitStringConcatenationToElements(info, new TreePath(ctx.getPath(), param));
 
         if (sorted.size() > 1) {
-            int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), param);
-            int end = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), param);
-            List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(info.getSnapshot().getSource(), TreePathHandle.create(ctx.getPath(), info)));
             String error = NbBundle.getMessage(StringBuilderAppend.class, "ERR_StringBuilderAppend", clazzName);
-            return ErrorDescriptionFactory.createErrorDescription(ctx.getSeverity().toEditorSeverity(), error, fixes, info.getFileObject(), start, end);
+            return ErrorDescriptionFactory.forTree(ctx, param, error, new FixImpl(info.getSnapshot().getSource(), TreePathHandle.create(ctx.getPath(), info)));
         }
 
         return null;

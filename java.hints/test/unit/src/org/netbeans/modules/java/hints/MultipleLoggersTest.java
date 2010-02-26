@@ -58,8 +58,8 @@ public class MultipleLoggersTest extends TestBase {
                             "    private static final java.util.logging.Logger LOG1 = null;\n" +
                             "    private static final java.util.logging.Logger LOG2 = null;\n" +
                             "}",
-                            "2:50-2:54:warning:Multiple loggers LOG1, LOG2 declared for test.Test class",
-                            "3:50-3:54:warning:Multiple loggers LOG1, LOG2 declared for test.Test class"
+                            "2:50-2:54:verifier:Multiple loggers LOG1, LOG2 declared for test.Test class",
+                            "3:50-3:54:verifier:Multiple loggers LOG1, LOG2 declared for test.Test class"
                             );
     }
 

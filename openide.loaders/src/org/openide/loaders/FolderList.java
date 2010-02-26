@@ -133,6 +133,11 @@ implements FileChangeListener, DataObject.Container {
     transient private boolean folderCreated = false;
     
     transient private FileChangeListener weakFCL = FileUtil.weakFileChangeListener(this, null);
+
+    static {
+        // Ensure it is loaded so that WeakListenerImpl does not have to load it later:
+        FolderListListener.class.hashCode();
+    }
     
     /* -------------------------------------------------------------------- */
     /* -- Constructor (private) ------------------------------------------- */
