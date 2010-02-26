@@ -154,7 +154,7 @@ public class ExportDiffAction extends ContextAction {
             return;
         ExportDiff exportDiffSupport = new ExportDiff(root, repoRev, roots) {
             public void writeDiffFile (final File toFile) {
-                final String revStr = getSelectionRevision();
+                final String revStr = repoRev.getLog().getRevision();
                 saveFolderToPrefs(toFile);
                 RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                 HgProgressSupport support = new HgProgressSupport() {
