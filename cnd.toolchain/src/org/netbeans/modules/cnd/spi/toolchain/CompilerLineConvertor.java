@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.spi.toolchain;
 
 import java.util.concurrent.CancellationException;
-import org.netbeans.modules.cnd.toolchain.execution.ErrorAnnotation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +52,6 @@ import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerDescriptor
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.ErrorParser;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
-import org.netbeans.modules.cnd.toolchain.execution.WarningAnnotation;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
@@ -77,8 +75,6 @@ public final class CompilerLineConvertor implements LineConvertor {
 		parsers.add(parser);
 	    }
 	}
-        ErrorAnnotation.getInstance().detach(null);
-        WarningAnnotation.getInstance().detach(null);
     }
 
     @Override

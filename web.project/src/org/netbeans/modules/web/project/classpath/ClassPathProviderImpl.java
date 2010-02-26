@@ -113,9 +113,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 helper, evaluator, sourceRoots, testSourceRoots, 
                 ProjectProperties.BUILD_CLASSES_DIR, WebProjectProperties.DIST_WAR, ProjectProperties.BUILD_TEST_CLASSES_DIR,
                 new String[] {"javac.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },
+                new String[] {ProjectProperties.JAVAC_PROCESSORPATH},
                 new String[] {"javac.test.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },
                 new String[] {"debug.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },
-                new String[] {"run.test.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH });
+                new String[] {"run.test.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },
+                new String[] {ProjectProperties.ENDORSED_CLASSPATH});
     }
 
     private FileObject getDir(final String propname) {
@@ -237,6 +239,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return null;
     }
     
+    @Override
     public ClassPath findClassPath(FileObject file, String type) {
         ClassPath cp = javaClassPathProvider.findClassPath(file, type);
         if (cp != null) {

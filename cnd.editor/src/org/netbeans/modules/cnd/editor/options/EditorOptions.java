@@ -190,6 +190,9 @@ public class EditorOptions {
     public static final String newLineWhile = "newLineWhile"; //NOI18N
     public static final boolean newLineWhileDefault = false;
 
+    public static final String spaceKeepExtra = "spaceKeepExtra"; //NOI18N
+    public static final boolean spaceKeepExtraDefault = false;
+
     //SpacesBeforeKeywords
     public static final String spaceBeforeWhile = "spaceBeforeWhile"; //NOI18N
     public static final boolean spaceBeforeWhileDefault = true;
@@ -345,7 +348,7 @@ public class EditorOptions {
         defaults.put(indentNamespace, indentNamespaceDefault);
         defaults.put(indentCasesFromSwitch, indentCasesFromSwitchDefault);
         defaults.put(absoluteLabelIndent, absoluteLabelIndentDefault);
-
+        defaults.put(spaceKeepExtra, spaceKeepExtraDefault);
         //BracesPlacement
         defaults.put(newLineBeforeBraceNamespace,newLineBeforeBraceNamespaceDefault);
         defaults.put(newLineBeforeBraceClass,newLineBeforeBraceClassDefault);
