@@ -305,7 +305,7 @@ public class WebProjectUtilities {
         
         // #119052
         if (sourceLevel == null) {
-            sourceLevel = "1.5"; // NOI18N
+            sourceLevel = "1.6"; // NOI18N
         }
         PlatformUiSupport.storePlatform(ep, updateHelper, WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, javaPlatformName, new SpecificationVersion(sourceLevel));
         
@@ -626,8 +626,10 @@ public class WebProjectUtilities {
         
         UpdateHelper updateHelper = ((WebProject) p).getUpdateHelper();
         // #89131: these levels are not actually distinct from 1.5.
-        if (sourceLevel != null && (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")))
-            sourceLevel = "1.5";
+        // #181215: JDK 6 should be the default source/binary format for Java EE 6 projects
+        if (sourceLevel != null && sourceLevel.equals("1.7")) {
+            sourceLevel = "1.6";
+        }
         PlatformUiSupport.storePlatform(ep, updateHelper, WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, javaPlatformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);
         
         // Utils.updateProperties() prevents problems caused by modification of properties in AntProjectHelper

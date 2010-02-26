@@ -373,8 +373,11 @@ final public class WebProjectProperties {
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         SpecificationVersion minimalSourceLevel = null;
-        if (J2eeModule.JAVA_EE_5.equals(evaluator.getProperty(J2EE_PLATFORM))) {
-            minimalSourceLevel = new SpecificationVersion(J2eeModule.JAVA_EE_5);
+        Profile profile = Profile.fromPropertiesString(evaluator.getProperty(J2EE_PLATFORM));
+        if (Profile.JAVA_EE_6_FULL.equals(profile)) {
+            minimalSourceLevel = new SpecificationVersion("1.6");
+        } else if (Profile.JAVA_EE_5.equals(profile)) {
+            minimalSourceLevel = new SpecificationVersion("1.5");
         }
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();
