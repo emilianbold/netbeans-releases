@@ -54,6 +54,7 @@ public class BugtrackingConfig {
     private static BugtrackingConfig instance = null;
     private static final String ARCHIVED_TTL_KEY  = "bugtracking.archived_time_to_live";      // NOI18N
     private static final String COLUMN_WIDTH_PREFIX  = "bugtracking.issuetable.columnwidth";  // NOI18N
+    private static final String COLUMN_SORTING_PREFIX = "bugtracking.issuetable.columnsorting";  // NOI18N
     private static long DEFAULT_ARCHIVED_TTL  = 7; // days
 
     private BugtrackingConfig() { }
@@ -110,4 +111,11 @@ public class BugtrackingConfig {
         }
     }
 
+    public void storeColumnSorting(String columnsKey, String sorting) {
+        getPreferences().put(COLUMN_SORTING_PREFIX + "." + columnsKey, sorting); // NOI18N
+    }
+
+    public String getColumnSorting(String key) {
+        return getPreferences().get(COLUMN_SORTING_PREFIX + "." + key, ""); // NOI18N
+    }
 }
