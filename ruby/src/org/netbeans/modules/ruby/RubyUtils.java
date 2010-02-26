@@ -820,13 +820,12 @@ public class RubyUtils {
             return false;
         }
         String[] version = m.group(2).split("\\.");
-        if (Integer.parseInt(version[0]) < 2) {
-            return false;
+        int major = Integer.parseInt(version[0]);
+        int minor = Integer.parseInt(version[1]);
+        if (major == 2) {
+            return minor >= 3;
         }
-        if (Integer.parseInt(version[1]) < 3) {
-            return false;
-        }
-        return true;
+        return major > 2 ? true : false;
     }
 
     // copied from org.netbeans.modules.parsing.impl.indexing.Util#getFileObject

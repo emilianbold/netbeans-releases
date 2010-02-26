@@ -106,7 +106,13 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
                 }
             }
         }
-        ManagedBean.Scope[] scopes = ManagedBean.Scope.values();
+        Object[] scopes;
+        if (JSFUtils.isCDIEnabled(wm)) {
+            scopes = ManagedBeanIterator.NamedScope.values();
+        } else {
+            scopes = ManagedBean.Scope.values();
+        }
+        
         for (int i = 0; i < scopes.length; i++){
             scopeModel.addElement(scopes[i]);
         }
@@ -116,7 +122,7 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         
 //        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FormBeanNewPanelVisual.class, "ACS_BeanFormProperties"));  // NOI18N
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

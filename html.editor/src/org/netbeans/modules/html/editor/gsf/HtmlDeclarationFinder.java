@@ -36,27 +36,29 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.html.editor.gsf;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ext.html.parser.AstNode;
-import org.netbeans.editor.ext.html.parser.AstNode.Attribute;
 import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.refactoring.api.CssRefactoring;
+import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.completion.AttrValuesCompletion;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * just CSL to HtmlExtension bridge
@@ -78,13 +80,13 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
         DeclarationLocation loc = findCoreHtmlDeclaration(info, caretOffset);
-        if(loc != null) {
+        if (loc != null) {
             return loc;
         }
 
-        for(HtmlExtension ext : HtmlExtension.getRegisteredExtensions(info.getSnapshot().getSource().getMimeType())) {
+        for (HtmlExtension ext : HtmlExtension.getRegisteredExtensions(info.getSnapshot().getSource().getMimeType())) {
             loc = ext.findDeclaration(info, caretOffset);
-            if(loc != null) {
+            if (loc != null) {
                 return loc;
             }
         }
@@ -108,15 +110,15 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
     @Override
     public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
         OffsetRange range = getCoreHtmlReferenceSpan(doc, caretOffset);
-        if(range != null) {
+        if (range != null) {
             return range;
         }
 
         //html extensions
         String mimeType = NbEditorUtilities.getMimeType(doc);
-        for(HtmlExtension ext : HtmlExtension.getRegisteredExtensions(mimeType)) {
+        for (HtmlExtension ext : HtmlExtension.getRegisteredExtensions(mimeType)) {
             range = ext.getReferenceSpan(doc, caretOffset);
-            if(range != null) {
+            if (range != null) {
                 return range;
             }
         }
@@ -124,83 +126,223 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
     }
 
     private OffsetRange getCoreHtmlReferenceSpan(Document doc, int caretOffset) {
-        TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc, caretOffset);
-        if(ts == null) {
+        final TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc, caretOffset);
+        if (ts == null) {
             return null;
         }
 
         //tag attribute value hyperlinking
-        if(ts.token().id() == HTMLTokenId.VALUE) {
-            //find attribute name
+        if (ts.token().id() == HTMLTokenId.VALUE) {
+            return new AttributeValueAction<OffsetRange>(ts) {
+
+                @Override
+                public OffsetRange resolve() {
+                    if (tagName != null && attrName != null) {
+                        AttrValuesCompletion support = AttrValuesCompletion.getSupport(tagName, attrName);
+                        if (AttrValuesCompletion.FILE_NAME_SUPPORT == support) {
+                            //some file to hyperlink to
+                            return valueRange;
+                        }
+                    }
+                    return null;
+                }
+            }.run();
+
+        } else if (ts.token().id() == HTMLTokenId.VALUE_CSS) {
+            //css class or id hyperlinking 
             int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
             OffsetRange range = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
-            String attrName = null;
-            String tagName = null;
-            while(ts.movePrevious()) {
-                HTMLTokenId id = ts.token().id();
-                if(id == HTMLTokenId.ARGUMENT && attrName == null) {
-                    attrName = ts.token().text().toString();
-                } else if(id == HTMLTokenId.TAG_OPEN) {
-                    tagName = ts.token().text().toString();
-                    break;
-                } else if(id == HTMLTokenId.TAG_OPEN_SYMBOL || id == HTMLTokenId.TAG_CLOSE_SYMBOL || id == HTMLTokenId.TEXT) {
-                    break;
-                }
-            }
-
-            if(tagName != null && attrName != null) {
-                AttrValuesCompletion support = AttrValuesCompletion.getSupport(tagName, attrName);
-                if(AttrValuesCompletion.FILE_NAME_SUPPORT == support) {
-                    //some file to hyperlink to
-                    return range;
-                }
-
-
-            }
+            return range;
         }
-
 
         return null;
     }
 
-    private DeclarationLocation findCoreHtmlDeclaration(ParserResult info, int caretOffset) {
-        HtmlParserResult result = (HtmlParserResult)info;
-        Snapshot snapshot = result.getSnapshot();
-        final int astCaretOffset = snapshot.getEmbeddedOffset(caretOffset);
-        if(astCaretOffset == -1) {
-            return null; //cannot translate offset!
+    private DeclarationLocation findCoreHtmlDeclaration(final ParserResult info, final int caretOffset) {
+        final FileObject file = info.getSnapshot().getSource().getFileObject();
+        final TokenSequence<HTMLTokenId> ts = info.getSnapshot().getTokenHierarchy().tokenSequence(HTMLTokenId.language());
+        if (ts == null) {
+            return null;
         }
-        AstNode node = result.findLeaf(astCaretOffset);
-        if(node == null) {
-            return null; //no node!
+        ts.move(caretOffset);
+        if (!ts.moveNext() && !ts.movePrevious()) {
+            return null;
         }
-        if(node.type() == AstNode.NodeType.OPEN_TAG) {
-            Collection<Attribute> attribs = node.getAttributes(new AstNode.AttributeFilter() {
+
+        //tag attribute value hyperlinking
+        if (ts.token().id() == HTMLTokenId.VALUE) {
+            return new AttributeValueAction<DeclarationLocation>(ts) {
 
                 @Override
-                //find the attribute at the caret position
-                public boolean accepts(Attribute attribute) {
-                    return attribute.valueOffset() <= astCaretOffset &&
-                            (attribute.valueOffset() + attribute.value().length()) >= astCaretOffset;
+                public DeclarationLocation resolve() {
+                    if (tagName != null && attrName != null) {
+                        AttrValuesCompletion support = AttrValuesCompletion.getSupport(tagName, attrName);
+                        if (AttrValuesCompletion.FILE_NAME_SUPPORT == support) {
+                            //some file to hyperlink to
+                            FileObject resolved = WebUtils.resolve(info.getSnapshot().getSource().getFileObject(), unquotedValue);
+                            if (resolved != null) {
+                                return new DeclarationLocation(resolved, 0);
+                            }
+                        }
+                    }
+                    return null;
+                }
+            }.run();
+
+        } else if (ts.token().id() == HTMLTokenId.VALUE_CSS) {
+            //css class or id hyperlinking
+
+            //I need to somehow determine the type of the selector - whether it's
+            //a class or an id. There are two (bad) ways to do this:
+            //1. either get the original html token containing the meta info
+            //2. or parse the file and get css parser result for given offset
+            //
+            //both may cause some offset inconsistencies because of the lack of locking
+            //
+            //#1 seems to be at least faster
+            final Document doc = info.getSnapshot().getSource().getDocument(true);
+            final AtomicReference<DeclarationLocation> ret = new AtomicReference<DeclarationLocation>();
+            doc.render(new Runnable() {
+
+                @Override
+                public void run() {
+                    TokenSequence ts = Utils.getJoinedHtmlSequence(doc, caretOffset);
+                    if (ts != null && ts.token() != null) {
+                        //seems to be valid and properly positioned
+                        Token<HTMLTokenId> valueToken = ts.token();
+                        if (valueToken.id() == HTMLTokenId.VALUE_CSS) {
+                            //the value_css token contains a metainfo about the type of its css embedding
+                            String cssTokenType = (String) valueToken.getProperty(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY);
+                            String unquotedValue = WebUtils.unquotedValue(valueToken.text().toString());
+                            if (cssTokenType != null) {
+                                RefactoringElementType type;
+                                if (HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(cssTokenType)) {
+                                    //class selector
+                                    type = RefactoringElementType.CLASS;
+                                } else if (HTMLTokenId.VALUE_CSS_TOKEN_TYPE_ID.equals(cssTokenType)) { // instances comparison is ok here!
+                                    //id selector
+                                    type = RefactoringElementType.ID;
+                                } else {
+                                    type = null;
+                                    assert false; //something very bad is going on!
+                                }
+
+                                Map<FileObject, Collection<int[]>> occurances = CssRefactoring.findAllOccurances(unquotedValue, type, file, true); //non virtual element only - this means only css declarations, not usages in html code
+                                if(occurances == null) {
+                                    return ;
+                                }
+
+                                DeclarationLocation dl = null;
+                                for (FileObject f : occurances.keySet()) {
+                                    Collection<int[]> elementsRanges = occurances.get(f);
+                                    for (int[] range : elementsRanges) {
+                                        int startOffset = range[0];
+                                        int startOffsetLine = range[1];
+                                        //ugly DeclarationLocation alternatives handling workaround - one of the
+                                        //locations simply must be "main" !?!?!
+                                        if (dl == null) {
+                                            dl = new DeclarationLocation(f, startOffset);
+                                        } else {
+                                            DeclarationLocation dloc = new DeclarationLocation(f, startOffset);
+                                            HtmlDeclarationFinder.AlternativeLocation aloc = new HtmlDeclarationFinder.AlternativeLocationImpl(dloc, unquotedValue, startOffsetLine);
+                                            dl.addAlternative(aloc);
+                                        }
+                                    }
+                                }
+                                ret.set(dl);
+                            }
+
+                        } else {
+                            //some bad guy modified the code meanwhile so the offsets aren't matching
+                        }
+
+                    }
+
                 }
             });
 
-            assert attribs.size() <= 1; //one or zero matches
-            if(attribs.size() == 1) {
-                Attribute attr = attribs.iterator().next();
-                String value = attr.unquotedValue();
-                FileObject resolved = WebUtils.resolve(info.getSnapshot().getSource().getFileObject(), value);
-                if(resolved != null) {
-                    return new DeclarationLocation(resolved, 0);
-                }
-            }
+            return ret.get();
 
-            
         }
-        
+
+
         return null;
     }
 
+    private abstract class AttributeValueAction<T> {
 
+        private TokenSequence<HTMLTokenId> ts;
+        protected String tagName, attrName, unquotedValue;
+        protected OffsetRange valueRange;
 
+        public AttributeValueAction(TokenSequence<HTMLTokenId> ts) {
+            this.ts = ts;
+        }
+
+        public abstract T resolve();
+
+        public T run() {
+            parseSquence();
+            return resolve();
+        }
+
+        private void parseSquence() {
+            //find attribute name
+            int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
+            unquotedValue = WebUtils.unquotedValue(ts.token().text().toString());
+            valueRange = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
+            while (ts.movePrevious()) {
+                HTMLTokenId id = ts.token().id();
+                if (id == HTMLTokenId.ARGUMENT && attrName == null) {
+                    attrName = ts.token().text().toString();
+                } else if (id == HTMLTokenId.TAG_OPEN) {
+                    tagName = ts.token().text().toString();
+                    break;
+                } else if (id == HTMLTokenId.TAG_OPEN_SYMBOL || id == HTMLTokenId.TAG_CLOSE_SYMBOL || id == HTMLTokenId.TEXT) {
+                    break;
+                }
+            }
+        }
+    }
+
+    private static class AlternativeLocationImpl implements AlternativeLocation {
+
+        private DeclarationLocation location;
+        private String elementName;
+        private int entryLine;
+
+        public AlternativeLocationImpl(DeclarationLocation location, String elementName, int entryLine) {
+            this.location = location;
+            this.elementName = elementName;
+            this.entryLine = entryLine;
+        }
+
+        @Override
+        public ElementHandle getElement() {
+            return new HtmlElementHandle(null, location.getFileObject());
+        }
+
+        @Override
+        public String getDisplayHtml(HtmlFormatter formatter) {
+//            return "<b>" + elementName + "</b> at line " + entryLine + " in " + location.getFileObject().getNameExt();
+            return "<b>" + elementName + "</b> at " + location.getOffset() + " in " + location.getFileObject().getNameExt();
+        }
+
+        @Override
+        public DeclarationLocation getLocation() {
+            return location;
+        }
+
+        @Override
+        public int compareTo(AlternativeLocation o) {
+            //compare according to the file paths
+            return getComparableString(this).compareTo(getComparableString(o));
+        }
+
+        private static String getComparableString(AlternativeLocation loc) {
+            return new StringBuilder()
+                    .append(loc.getLocation().getOffset()) //offset
+                    .append(loc.getLocation().getFileObject().getPath()).toString(); //filename
+        }
+    }
 }

@@ -190,7 +190,62 @@ public class FileUtilTest extends NbTestCase {
             assertEquals("FileUtil.getArchiveFile failed.", new URL(urls[i][1]), FileUtil.getArchiveFile(new URL(urls[i][0])));
         }
     }
-    
+
+    public void testIsArchiveFileRace() throws Exception {
+        final LocalFileSystem lfs = new LocalFileSystem();
+        clearWorkDir();
+        final File wd = getWorkDir();
+        lfs.setRootDirectory(wd);
+        MockLookup.setInstances(new URLMapper() {
+            String rootURL = lfs.getRoot().getURL().toString();
+            @Override
+            public FileObject[] getFileObjects(URL url) {
+                String u = url.toString();
+                FileObject f = null;
+                if (u.startsWith(rootURL)) {
+                    f = lfs.findResource(u.substring(rootURL.length()));
+                }
+                return f != null ? new FileObject[] {f} : null;
+            }
+            @Override
+            public URL getURL(FileObject fo, int type) {
+                return null;
+            }
+        });
+        URLMapper.reset();
+        final File testFile = new File (wd,"test.jar"); //NOI18N
+        FileUtil.createData(testFile);
+
+        final Logger log = Logger.getLogger(FileUtil.class.getName());
+        log.setLevel(Level.FINEST);
+        final Handler handler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                if ("isArchiveFile_FILE_RESOLVED".equals(record.getMessage())) {  //NOI18N
+                    try {
+                        final FileObject fo = (FileObject) record.getParameters()[0];
+                        fo.delete();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+            @Override
+            public void flush() {
+            }
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+        log.addHandler(handler);
+        try {
+            final boolean result = FileUtil.isArchiveFile(testFile.toURI().toURL());
+            assertTrue("The test.jar should be archive.",result);   //NOI18N
+        } finally {
+            log.removeHandler(handler);
+        }
+    }
+
     /** Tests normalizeFile() method. */
     public void testNormalizeFile() throws IOException {
         // pairs of path before and after normalization

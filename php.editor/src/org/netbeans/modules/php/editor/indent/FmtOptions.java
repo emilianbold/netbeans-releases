@@ -179,6 +179,22 @@ public class FmtOptions {
     public static final String spaceAfterTypeCast = "spaceAfterTypeCast"; //NOI18N
     public static final String spaceCheckAfterKeywords = "spaceCheckAfterKeywords"; //NOI18N
 
+    public static final String placeElseOnNewLine = "placeElseOnNewLine"; //NOI18N
+    public static final String placeWhileOnNewLine = "placeWhileOnNewLine"; //NOI18N
+    public static final String placeCatchOnNewLine = "placeCatchOnNewLine"; //NOI18N
+    public static final String placeNewLineAfterModifiers = "placeNewLineAfterModifiers"; //NOI18N
+    public static final String alignMultilineMethodParams = "alignMultilineMethodParams"; //NOI18N
+    public static final String alignMultilineCallArgs = "alignMultilineCallArgs"; //NOI18N
+    public static final String alignMultilineAnnotationArgs = "alignMultilineAnnotationArgs"; //NOI18N
+    public static final String alignMultilineImplements = "alignMultilineImplements"; //NOI18N
+    public static final String alignMultilineThrows = "alignMultilineThrows"; //NOI18N
+    public static final String alignMultilineParenthesized = "alignMultilineParenthesized"; //NOI18N
+    public static final String alignMultilineBinaryOp = "alignMultilineBinaryOp"; //NOI18N
+    public static final String alignMultilineTernaryOp = "alignMultilineTernaryOp"; //NOI18N
+    public static final String alignMultilineAssignment = "alignMultilineAssignment"; //NOI18N
+    public static final String alignMultilineFor = "alignMultilineFor"; //NOI18N
+    public static final String alignMultilineArrayInit = "alignMultilineArrayInit"; //NOI18N
+
     public static CodeStyleProducer codeStyleProducer;
 
     private FmtOptions() {}
@@ -298,7 +314,23 @@ public class FmtOptions {
 //            { spaceBeforeColon, TRUE},
 //            { spaceAfterColon, TRUE},
             { spaceAfterTypeCast, TRUE},
-	    { spaceCheckAfterKeywords, TRUE}
+	    { spaceCheckAfterKeywords, TRUE},
+
+	    { alignMultilineMethodParams, FALSE}, //NOI18N
+            { alignMultilineCallArgs, FALSE}, //NOI18N
+            { alignMultilineAnnotationArgs, FALSE}, //NOI18N
+            { alignMultilineImplements, FALSE}, //NOI18N
+            { alignMultilineThrows, FALSE}, //NOI18N
+            { alignMultilineParenthesized, FALSE}, //NOI18N
+            { alignMultilineBinaryOp, FALSE}, //NOI18N
+            { alignMultilineTernaryOp, FALSE}, //NOI18N
+            { alignMultilineAssignment, FALSE}, //NOI18N
+            { alignMultilineFor, FALSE}, //NOI18N
+            { alignMultilineArrayInit, FALSE}, //NOI18N
+            { placeElseOnNewLine, FALSE}, //NOI18N
+            { placeWhileOnNewLine, FALSE}, //NOI18N
+            { placeCatchOnNewLine, FALSE}, //NOI18N
+            { placeNewLineAfterModifiers, FALSE} //NOI18N
 
         };
         
