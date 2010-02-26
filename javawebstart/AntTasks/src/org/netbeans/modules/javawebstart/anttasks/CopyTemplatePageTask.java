@@ -42,7 +42,7 @@ public class CopyTemplatePageTask extends Task {
             put (JNLP_FILE, new BaseNamePropertyValue("jnlp.file", "launch.jnlp")); //NOI18N
             put (JNLP_APPLET_WIDTH, new PropertyValue("jnlp.applet.width","300"));//NOI18N
             put (JNLP_APPLET_HEIGHT, new PropertyValue("jnlp.applet.height","300"));//NOI18N
-            put (JNLP_RESOURCES_MAIN_JAR, new DistJarExecValue("dist.jar", "lib" ," ", ""));   //NOI18N
+            put (JNLP_RESOURCES_MAIN_JAR, new DistJarExecValue("dist.jar", "lib" ,", ", ""));   //NOI18N
             put (JNLP_APPLET_CLASS, new PropertyValue("jnlp.applet.class", ""));//NOI18N
             put (JNLP_VM_VERSION, new PropertyValue("javac.target", "1.6"));    //NOI18N
             put (JNLP_VM_VERSION, new PropertyValue("javac.target", "1.6"));    //NOI18N
