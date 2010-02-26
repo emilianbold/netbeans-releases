@@ -128,11 +128,9 @@ public class HttpParams {
 
             if (ParamStyle.QUERY == param.getStyle()) {
                 hasQueryParams = true;
-                if (param.isRequired()) {
-                    if (param.getFixed() == null && param.getDefault() == null) {
-                        hasRequiredQueryParams = true;
-                        requiredQueryParams.add(param.getName());
-                    }
+                if (param.isRequired() && param.getFixed() == null && param.getDefault() == null) {
+                    hasRequiredQueryParams = true;
+                    requiredQueryParams.add(param.getName());
                 } else if (param.getFixed() != null) {
                     hasRequiredQueryParams = true;
                     fixedQueryParams.put(param.getName(), param.getFixed());
@@ -148,8 +146,8 @@ public class HttpParams {
     }
 
     boolean hasMultipleParamsInList() {
-        return hasQueryParams &&
-                requiredQueryParams.size() + fixedQueryParams.size() + (hasRequiredQueryParams ? 0 : optionalQueryParams.size()) > 1;
+        if (!hasQueryParams) return false;
+        return (requiredQueryParams.size() + fixedQueryParams.size() > 1) || (!hasRequiredQueryParams && optionalQueryParams.size() > 0);
     }
 
     boolean hasFormParams() {
