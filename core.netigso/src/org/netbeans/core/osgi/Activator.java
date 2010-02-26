@@ -194,6 +194,10 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
 
     private void load(Bundle bundle) {
         OSGiMainLookup.bundleAdded(bundle);
+        if (bundle.getSymbolicName().equals("org.netbeans.modules.autoupdate.ui")) { // NOI18N
+            // Won't work anyway, so don't even try.
+            return;
+        }
         OSGiRepository.DEFAULT.addLayers(layersFor(bundle));
         if (bundle.getSymbolicName().equals("org.netbeans.bootstrap")) { // NOI18N
             System.setProperty("netbeans.buildnumber", bundle.getVersion().getQualifier()); // NOI18N
