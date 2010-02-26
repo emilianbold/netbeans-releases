@@ -40,6 +40,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.docbook</friend>
                 <friend>org.netbeans.modules.javacard.apdufile</friend>
                 <friend>org.netbeans.modules.javacard.console</friend>
                 <friend>org.netbeans.modules.javacard.oberthur</friend>
