@@ -67,6 +67,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedConstant;
 import org.netbeans.modules.ruby.elements.IndexedElement;
@@ -121,6 +122,9 @@ public final class RubyIndex {
      * places.
      */
     static final String ACTIVE_RECORD_BASE = "ActiveRecord::Base"; //NOI18N
+
+    /** AR Relation. Provides dynamic query methods. */
+    static final String ACTIVE_RECORD_RELATION = "ActiveRecord::Relation"; //NOI18N
     
     private RubyIndex(QuerySupport querySupport) {
         this.querySupport = querySupport;
@@ -1188,6 +1192,11 @@ public final class RubyIndex {
             return foundIt;
         }
 
+        // need to add query methods so that they can be chained
+        if (ACTIVE_RECORD_RELATION.equals(classFqn)) {
+            addQueryMethods(prefix, kind, classFqn, methods);
+        }
+
         if (extendsClass == null) {
             if (haveRedirected) {
                 addMethodsFromClass(prefix, kind, OBJECT, methods, seenSignatures, scannedClasses,
@@ -1202,6 +1211,12 @@ public final class RubyIndex {
             if (ACTIVE_RECORD_BASE.equals(extendsClass)) { // NOI18N
                 // Add in database fields as well
                 addDatabaseProperties(prefix, kind, classFqn, methods);
+                // add in query methods if this appears to be in a rails 3 project (if AR::Relation is
+                // indexed we make the assumption that this is a rails 3 project)
+                if (scannedClasses.contains(ACTIVE_RECORD_RELATION)
+                        || !getClasses(ACTIVE_RECORD_RELATION, Kind.EXACT, false, false, true).isEmpty()) {
+                    addQueryMethods(prefix, kind, classFqn, methods);
+                }
             }
 
             // We're not sure we have a fully qualified path, so try some different candidates
@@ -1233,7 +1248,10 @@ public final class RubyIndex {
     private void addDatabaseProperties(String prefix, QuerySupport.Kind kind, String classFqn,
         Set<IndexedMethod> methods) {
         DatabasePropertiesIndexer.indexDatabaseProperties(this, prefix, kind, classFqn, methods);
+    }
 
+    private void addQueryMethods(String prefix, QuerySupport.Kind kind, String classFqn, Set<IndexedMethod> methods) {
+        ActiveRecordQueryIndexer.indexQueryMehods(this, prefix, kind, classFqn, methods);
     }
 
     public Set<String> getDatabaseTables(String prefix, QuerySupport.Kind kind) {
