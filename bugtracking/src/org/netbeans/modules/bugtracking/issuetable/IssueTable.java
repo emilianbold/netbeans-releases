@@ -84,6 +84,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.TableColumnModelListener;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.bugtracking.BugtrackingConfig;
@@ -125,6 +126,8 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     private boolean savedQueryInitialized;
     private SummaryTextFilter textFilter;
 
+    private static final String CONFIG_DELIMITER = "<=>";                       // NOI18N
+
     /**
      * Implement in an issue to provide access to its IssueNode
      */
@@ -162,7 +165,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         query.addPropertyChangeListener(this);
 
         tableModel = new NodeTableModel();
-        sorter = new TableSorter(tableModel);
+        sorter = new TableSorter(tableModel, this);
         
         initFilters();
 
@@ -327,11 +330,21 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         }
         setModelProperties(query);
         if(descriptors.length > 0) {
-            sorter.setSortingStatus(0, TableSorter.ASCENDING); // default sorting by first column
+            Map<Integer, Integer> sorting = getColumnSorting();
             if(descriptors.length > 1) {
-                for (int i = 1; i < descriptors.length; i++) {
-                    sorter.setColumnComparator(i, null);
-                    sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
+                for (int i = 0; i < descriptors.length; i++) {
+                    int visibleIdx = tableModel.getVisibleIndex(i);
+                    Integer order = sorting.get(visibleIdx);
+                    if(order != null) {
+                        sorter.setSortingStatus(visibleIdx, order); 
+                    } else {
+                        if(i == 0) {
+                            sorter.setSortingStatus(0, TableSorter.ASCENDING); // default sorting by first column
+                        } else {
+                            sorter.setColumnComparator(i, null);
+                            sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
+                        }                        
+                    }
                 }
             }
         }
@@ -339,6 +352,43 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         if(query.isSaved()) {
             savedQueryInitialized = true;
         }
+    }
+
+    /**
+     * Callback from sorter. It also throws an event when the order is changed, unfortunatelly
+     * that also applyies for chages caused by refreshing a query and there is no way to 
+     * distinguish between those events. 
+     */
+    void sortOrderChanged() {
+        // sorting changed
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < sorter.getColumnCount(); i++) {
+            if(i > 0) {
+                sb.append(CONFIG_DELIMITER);
+            }
+            sb.append(i).append(CONFIG_DELIMITER).append(sorter.getSortingStatus(i));
+        }
+        BugtrackingConfig.getInstance().storeColumnSorting(getColumnsKey(), sb.toString());
+    }
+
+    private Map<Integer, Integer> getColumnSorting() {
+        String sortingString = BugtrackingConfig.getInstance().getColumnSorting(getColumnsKey());
+        if(sortingString == null || sortingString.equals("")) {
+            return Collections.EMPTY_MAP;
+        }
+        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+        String[] sortingArray = sortingString.split(CONFIG_DELIMITER);
+        for (int i = 0; i < sortingArray.length; i+=2) {
+            try {
+                map.put(Integer.parseInt(sortingArray[i]),
+                        Integer.parseInt(sortingArray[i + 1]));
+            } catch (NumberFormatException e) {
+                BugtrackingManager.LOG.log(Level.FINE, null, e);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                BugtrackingManager.LOG.log(Level.FINE, null, e);
+            }
+        }
+        return map;
     }
 
     private void initFilters() {
@@ -584,7 +634,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
 
     private Map<String, Integer> getPersistedColumnValues() {
         String columns = BugtrackingConfig.getInstance().getColumns(getColumnsKey());
-        String[] visibleColumns = columns.split("<=>");                         // NOI18N
+        String[] visibleColumns = columns.split(CONFIG_DELIMITER);                         // NOI18N
         if(visibleColumns.length <= 1) {
             return Collections.EMPTY_MAP;
         }
@@ -738,10 +788,10 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < count; i++) {
                 sb.append(tableModel.getColumnId(i));
-                sb.append("<=>");                                               // NOI18N
+                sb.append(CONFIG_DELIMITER);                                               // NOI18N
                 sb.append(cm.getColumn(i).getWidth());
                 if(i < count - 1) {
-                    sb.append("<=>");                                           // NOI18N
+                    sb.append(CONFIG_DELIMITER);                                           // NOI18N
                 }
             }
             BugtrackingConfig.getInstance().storeColumns(getColumnsKey(), sb.toString());
