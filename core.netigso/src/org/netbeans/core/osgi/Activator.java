@@ -171,6 +171,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             }
         }
         for (String tok : splitTokens((String) headers.get("OpenIDE-Module-Requires"))) {
+            // XXX at least ModuleFormat1/2 should probably be filtered out by MakeOSGi
             if (!tok.matches("org[.]openide[.]modules[.](ModuleFormat\\d+|os[.].+)")) {
                 deps.add(tok);
             }
