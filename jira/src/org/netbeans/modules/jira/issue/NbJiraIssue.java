@@ -1087,7 +1087,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      * @param f
      * @return
      */
-    String getFieldValue(IssueField f) {
+    public String getFieldValue(IssueField f) {
         return getFieldValue(taskData, f);
     }
 

@@ -43,9 +43,15 @@ import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.issue.NbJiraIssue;
+import org.netbeans.modules.jira.issue.NbJiraIssue.IssueField;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.query.QueryController;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor.Confirmation;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -83,6 +89,30 @@ public class KenaiQueryController extends QueryController
             true,
             autoRefresh
         );
+    }
+
+    @Override
+    protected void openIssue(NbJiraIssue issue) {
+        if(issue != null) {
+            if(!checkIssueProduct(issue)) {
+                return;
+            }
+        }
+        super.openIssue(issue);
+    }
+
+    private boolean checkIssueProduct(NbJiraIssue issue) {
+        String issueProject = issue.getFieldValue(IssueField.PROJECT);
+        if(!issueProject.equals(projectName)) {
+            Confirmation dd = new DialogDescriptor.Confirmation(
+                                NbBundle.getMessage(
+                                    KenaiQueryController.class,
+                                    "MSG_WrongProjectWarning",
+                                    new Object[] {issue.getID(), issueProject}),
+                                Confirmation.YES_NO_OPTION);
+            return DialogDisplayer.getDefault().notify(dd) ==  Confirmation.YES_OPTION;
+        }
+        return true;
     }
 
 }
