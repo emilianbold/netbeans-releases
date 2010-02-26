@@ -38,9 +38,14 @@
  */
 package org.netbeans.modules.css.indexing;
 
+import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.css.refactoring.api.Entry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -65,6 +70,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -315,8 +321,10 @@ public class CssFileModel {
         int documentFrom = getSnapshot().getOriginalOffset(range.getStart());
         int documentTo = getSnapshot().getOriginalOffset(range.getEnd());
 
-        int entryLine = -1;
         OffsetRange documentRange = null;
+        String elementLineText = null;
+        String elementText = null;
+        int lineOffset = -1;
         if (documentFrom == -1 || documentTo == -1) {
             if(LOG) {
                 LOGGER.finer("Ast offset range " + range.toString() +
@@ -328,72 +336,38 @@ public class CssFileModel {
         } else {
             documentRange = new OffsetRange(documentFrom, documentTo);
             try {
-                //try to compute entry's line (for startoffset)
-                entryLine = GsfUtilities.getRowStart(getSnapshot().getText(), documentFrom);
+                //extract element text
+                elementText = getSnapshot().getText().subSequence(range.getStart(), range.getEnd()).toString();
+
+                //extract element line text
+                int astLineStart = GsfUtilities.getRowStart(getSnapshot().getText(), range.getStart());
+                int astLineEnd = GsfUtilities.getRowEnd(getSnapshot().getText(), range.getStart());
+                elementLineText = getSnapshot().getText().subSequence(astLineStart, astLineEnd).toString();
+
+                //try to compute line number of document start offset, this "needs" to run on document.
+                final Document doc = getSnapshot().getSource().getDocument(true);
+                final AtomicInteger ret = new AtomicInteger();
+                final int offset = documentFrom;
+                doc.render(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        try {
+                            ret.set(Utilities.getLineOffset((BaseDocument) doc, offset));
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+
+                });
+                lineOffset = ret.get();
+                
+
             } catch (BadLocationException ex) {
-                //no-op
+                Exceptions.printStackTrace(ex);
             }
         }
 
-        return new Entry(name, range, documentRange, isVirtual, entryLine);
-    }
-
-    public class Entry {
-
-        private String name;
-        private OffsetRange astRange;
-        private OffsetRange documentRange;
-        private boolean isVirtual;
-        private int documentStartOffsetLine;
-
-
-        private Entry(String name, OffsetRange astRange, OffsetRange documentRange, boolean isVirtual, int documentStartOffsetLine) {
-            this.name = name;
-            this.astRange = astRange;
-            this.documentRange = documentRange;
-            this.isVirtual = isVirtual;
-            this.documentStartOffsetLine = documentStartOffsetLine;
-        }
-
-        public CssFileModel getModel() {
-            return CssFileModel.this;
-        }
-
-        /**
-         * quite similar to isValidInSourceDocument() but here we do not use the
-         * adjusted start offset to check if can be translated to the source
-         * but rather use the real node start offset.
-         * In case of virtually generated class or selector the isVirtual
-         * is always true since the dot or has doesn't exist in the css source code
-         *
-         */
-        public boolean isVirtual() {
-            return isVirtual;
-        }
-
-        public boolean isValidInSourceDocument() {
-            return documentRange != null;
-        }
-
-        public int getLine() {
-            return documentStartOffsetLine;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public OffsetRange getDocumentRange() {
-            return documentRange;
-        }
-
-        public OffsetRange getRange() {
-            return astRange;
-        }
-
-        @Override
-        public String toString() {
-            return "Entry["+ (!isValidInSourceDocument() ? "INVALID! " : "") + getName() + "; " + getRange().getStart() + " - " + getRange().getEnd() + "]";//NOI18N
-        }
+        return new Entry(name, range, documentRange, lineOffset, elementText, elementLineText, isVirtual);
     }
 }
