@@ -261,20 +261,28 @@ public class WatchesNodeModel implements ExtendedNodeModel, DnDNodeModel {
             return new PasteType() {
 
                 public Transferable paste() {
+                    String watchExpression;
                     try {
                         java.io.Reader r = textFlavor.getReaderForText(t);
                         java.nio.CharBuffer cb = java.nio.CharBuffer.allocate(1000);
                         r.read(cb);
                         cb.flip();
-                        Watch w = getWatch(node);
-                        if (w != null) {
-                            w.setExpression(cb.toString());
-                            //fireModelChange(new ModelEvent.NodeChanged(WatchesNodeModel.this, node));
+                        watchExpression = cb.toString();
+                    } catch (Exception ex) {
+                        return t;
+                    }
+                    Watch w = getWatch(node);
+                    if (w != null) {
+                        w.setExpression(watchExpression);
+                        //fireModelChange(new ModelEvent.NodeChanged(WatchesNodeModel.this, node));
+                    } else {
+                        // Root => add a new watch
+                        if (index < 0) {
+                            DebuggerManager.getDebuggerManager().createWatch(watchExpression);
                         } else {
-                            // Root => add a new watch
-                            DebuggerManager.getDebuggerManager().createWatch(index, cb.toString());
+                            DebuggerManager.getDebuggerManager().createWatch(index, watchExpression);
                         }
-                    } catch (Exception ex) {}
+                    }
                     return t;
                 }
             };

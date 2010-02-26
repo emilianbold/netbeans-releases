@@ -573,8 +573,9 @@ public class AppClientProjectGenerator {
         SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
         String sourceLevel = v.toString();
         // #89131: these levels are not actually distinct from 1.5.
-        if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")) {
-            sourceLevel = "1.5";
+        // #181215: JDK 6 should be the default source/binary format for Java EE 6 projects
+        if (sourceLevel.equals("1.7")) {
+            sourceLevel = "1.6";
         }
         ep.setProperty(AppClientProjectProperties.JAVAC_SOURCE, sourceLevel); // NOI18N
         ep.setProperty(AppClientProjectProperties.JAVAC_TARGET, sourceLevel); // NOI18N
@@ -821,9 +822,10 @@ public class AppClientProjectGenerator {
                                 }
 
                                 // #89131: these levels are not actually distinct from 1.5.
+                                // #181215: JDK 6 should be the default source/binary format for Java EE 6 projects
                                 String srcLevel = sourceLevel;
-                                if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")) {
-                                    srcLevel = "1.5";
+                                if (sourceLevel.equals("1.7")) {
+                                    srcLevel = "1.6";
                                 }
                                 PlatformUiSupport.storePlatform(ep, updateHelper, AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, finalPlatformName, srcLevel != null ? new SpecificationVersion(srcLevel) : null);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);

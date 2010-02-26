@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2007, Sun Microsystems, Inc. All rights reserved.
+ * Copyright (c) 2010, Sun Microsystems, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * * Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
- * 
+ *
  * * Redistributions in binary form must reproduce the above copyright notice,
  *   this list of conditions and the following disclaimer in the documentation
  *   and/or other materials provided with the distribution.
@@ -14,7 +14,7 @@
  * * Neither the name of Sun Microsystems, Inc. nor the names of its contributors
  *   may be used to endorse or promote products derived from this software without
  *   specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -27,168 +27,134 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package org.netbeans.paint;
-
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Paint;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import javax.swing.JComponent;
 
 /**
- * @author Timothy Boudreau
+ *
+ * @author Tim Boudreau
  */
-public class PaintCanvas extends JComponent implements MouseListener, MouseMotionListener {
-    
-    private int diam = 10;
-    private Paint paint = Color.BLUE;
-    private BufferedImage backingImage;
-    private Point last;
-    
+public class PaintCanvas extends JComponent {
+    private int brushDiameter = 10;
+    private final MouseL mouseListener = new MouseL();
+    private BufferedImage backingImage = null;
+    private final BrushSizeView brushView = new BrushSizeView();
+    private Color color = Color.BLUE;
+
     public PaintCanvas() {
-        addMouseListener(this);
-        addMouseMotionListener(this);
+        addMouseListener(mouseListener);
+        addMouseMotionListener(mouseListener);
         setBackground(Color.WHITE);
-        putClientProperty(/*PrintManager.PRINT_PRINTABLE*/"print.printable", true);
+        setFocusable(true);
     }
-    
+
     public void setBrush(int diam) {
-        this.diam = diam;
+        this.brushDiameter = diam;
     }
-    
-    public void setDiam(int val) {
-        this.diam = val;
+
+    public void setBrushDiameter(int val) {
+        this.brushDiameter = val;
+        brushView.repaint();
     }
-    
-    public int getDiam() {
-        return diam;
+
+    public int getBrushDiameter() {
+        return brushDiameter;
     }
-    
-    public void setPaint(Paint c) {
-        this.paint = c;
+
+    public void setColor(Color c) {
+        this.color = c;
+        brushView.repaint();
     }
-    
-    public Paint getPaint() {
-        return paint;
-    }
-    
+
     public Color getColor() {
-        if (paint instanceof Color) {
-            return (Color) paint;
-        } else {
-            return Color.BLACK;
-        }
+        return color;
     }
-    
+
     public void clear() {
         backingImage = null;
         repaint();
     }
-    
-    public BufferedImage getImage() {
-        int width = Math.min(getWidth(), 1600);
-        int height = Math.min(getHeight(),1200);
-        if (backingImage == null || backingImage.getWidth() != width || backingImage.getHeight() != height) {
-            BufferedImage old = backingImage;
-            backingImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);
-            Graphics g = backingImage.getGraphics();
-            g.setColor(Color.WHITE);
-            g.fillRect(0, 0, width, height);
-            if (old != null) {
-                ((Graphics2D) backingImage.getGraphics()).drawRenderedImage(old,
-                        AffineTransform.getTranslateInstance(0, 0));
-            }
-        }
-        return backingImage;
-    }
-    
+
     @Override
     public void paint(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
-        g2d.drawRenderedImage(getImage(), AffineTransform.getTranslateInstance(0,0));
+        g2d.drawRenderedImage(getImage(), AffineTransform.getTranslateInstance(0, 0));
     }
-    
-    public void mouseClicked(MouseEvent e) {
-        Point p = e.getPoint();
-        Graphics2D g = getImage().createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setPaint(getPaint());
-        g.setStroke(new BasicStroke(diam, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        if (last == null) {
-            last = p;
+
+    JComponent getBrushSizeView() {
+        return brushView;
+    }
+
+    public BufferedImage getImage() {
+        int width = Math.min(getWidth(), 1600);
+        int height = Math.min(getHeight(), 1200);
+        if (backingImage == null || backingImage.getWidth() != width || backingImage.getHeight() != height) {
+            int newWidth = backingImage == null ? width : Math.max(width, backingImage.getWidth());
+            int newHeight = backingImage == null ? height : Math.max(height, backingImage.getHeight());
+            if (newHeight > height && newWidth > width && backingImage != null) {
+                return backingImage;
+            }
+            BufferedImage old = backingImage;
+            backingImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB_PRE);
+            Graphics2D g = backingImage.createGraphics();
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, width, height);
+            if (old != null) {
+                g.drawRenderedImage(old,
+                        AffineTransform.getTranslateInstance(0, 0));
+            }
+            g.dispose();
+            setPreferredSize(new Dimension (newWidth, newHeight));
         }
-        g.drawLine(last.x, last.y, p.x, p.y);
-        repaint(Math.min(last.x, p.x) - diam / 2 - 1,
-                Math.min(last.y, p.y) - diam / 2 - 1,
-                Math.abs(last.x - p.x) + diam + 2,
-                Math.abs(last.y - p.y) + diam + 2);
-        last = p;
+        return backingImage;
     }
-    
-    public void mousePressed(MouseEvent e) {
-    }
-    
-    public void mouseReleased(MouseEvent e) {
-    }
-    
-    public void mouseEntered(MouseEvent e) {
-    }
-    
-    public void mouseExited(MouseEvent e) {
-    }
-    
-    public void mouseDragged(MouseEvent e) {
-        mouseClicked(e);
-    }
-    
-    public void mouseMoved(MouseEvent e) {
-        last = null;
-    }
-    
-    JComponent createBrushSizeView() {
-        return new BrushSizeView();
-    }
-    
-    
+
     private class BrushSizeView extends JComponent {
-        
-        @Override
-        public boolean isOpaque() {
-            return true;
-        }
-        
         @Override
         public void paint(Graphics g) {
-            ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setColor(getBackground());
-            g.fillRect(0,0,getWidth(),getHeight());
+            ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
             Point p = new Point(getWidth() / 2, getHeight() / 2);
-            int half = getDiam() / 2;
-            int diam = getDiam();
+            int half = getBrushDiameter() / 2;
+            int diam = getBrushDiameter();
             g.setColor(getColor());
             g.fillOval(p.x - half, p.y - half, diam, diam);
         }
-        
+
         @Override
         public Dimension getPreferredSize() {
-            return new Dimension(32, 32);
+            return new Dimension (24, 24);
         }
-        
-        @Override
-        public Dimension getMinimumSize() {
-            return getPreferredSize();
-        }
-        
     }
-    
+
+    private final class MouseL extends MouseAdapter implements MouseMotionListener {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            Point p = e.getPoint();
+            int half = brushDiameter / 2;
+            Graphics2D g = getImage().createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                               RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setPaint(getColor());
+            g.fillOval(p.x - half, p.y - half, brushDiameter, brushDiameter);
+            g.dispose();
+            repaint(p.x - half, p.y - half, brushDiameter, brushDiameter);
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            mouseClicked(e);
+        }
+    }
 }
