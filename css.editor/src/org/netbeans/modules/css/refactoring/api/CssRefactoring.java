@@ -45,7 +45,6 @@ import java.util.Map;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.indexing.CssFileModel;
-import org.netbeans.modules.css.indexing.CssFileModel.Entry;
 import org.netbeans.modules.css.indexing.CssIndex;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -61,14 +60,14 @@ public class CssRefactoring {
     private CssRefactoring() {
     }
 
-    public static Map<FileObject, Collection<int[]>> findAllOccurances(String elementName, RefactoringElementType type, FileObject baseFile, boolean nonVirtualOnly) {
+    public static Map<FileObject, Collection<Entry>> findAllOccurances(String elementName, RefactoringElementType type, FileObject baseFile, boolean nonVirtualOnly) {
         CssProjectSupport sup = CssProjectSupport.findFor(baseFile);
         if (sup == null) {
             return null;
         }
         CssIndex index = sup.getIndex();
         Collection<FileObject> queryResult = index.find(type, elementName);
-        Map<FileObject, Collection<int[]>> result = new HashMap<FileObject, Collection<int[]>>();
+        Map<FileObject, Collection<Entry>> result = new HashMap<FileObject, Collection<Entry>>();
 
         for (FileObject file : queryResult) {
             try {
@@ -84,20 +83,19 @@ public class CssRefactoring {
                 }
 
                 CssFileModel model = new CssFileModel(source);
-                Collection<Entry> entries = model.get(type);
+                Collection<Entry> modelEntries = model.get(type);
 
-                Collection<int[]> ranges = result.get(file);
-                if (ranges == null) {
-                    ranges = new ArrayList<int[]>();
-                    result.put(file, ranges);
+                Collection<Entry> entries = result.get(file);
+                if (entries == null) {
+                    entries = new ArrayList<Entry>();
+                    result.put(file, entries);
                 }
 
-                for (Entry entry : entries) {
+                for (Entry entry : modelEntries) {
                     if (elementName.equals(entry.getName())) {
                         if (entry.isValidInSourceDocument()) {
                             if (nonVirtualOnly && !entry.isVirtual()) {
-                                int[] pair = new int[]{entry.getDocumentRange().getStart(), entry.getLine()};
-                                ranges.add(pair);
+                                entries.add(entry);
                             }
                         }
                     }
