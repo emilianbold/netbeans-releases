@@ -778,7 +778,7 @@ public class Utilities {
         if (Utilities.isSelectionShowing(caret)) {
             ret = new int[] { c.getSelectionStart(), c.getSelectionEnd() }; 
         } else if (doc instanceof BaseDocument){
-            ret = getIdentifierBlock((BaseDocument)doc, caret.getDot());
+            ret = getIdentifierBlock((BaseDocument)doc, offset);
         } else {
             ret = getIdentifierBlock(c, offset);
         }
@@ -825,7 +825,7 @@ public class Utilities {
 	    if (ret != null) return ret;
         } 
 	if (doc instanceof BaseDocument){
-	    ret = getIdentifier((BaseDocument) doc, caret.getDot());
+	    ret = getIdentifier((BaseDocument) doc, offset);
         } else {
 	    ret = getWord(c, offset);
 	}
