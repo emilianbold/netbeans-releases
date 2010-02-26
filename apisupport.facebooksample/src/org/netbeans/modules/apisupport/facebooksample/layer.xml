@@ -44,17 +44,19 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Templates">
         <folder name="Project">
-            <folder name="APISupport">
-                <file name="FcbModuleProject.zip" url="FcbModuleProject.zip">
-                    <attr name="position" intvalue="4000"/>
+            <folder name="Samples">
+                <folder name="ApiSupport">
+                    <file name="FcbModuleProject.zip" url="FcbModuleProject.zip">
+                        <attr name="position" intvalue="4000"/>
                     <!--
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/facebooksample/fcbapp.png"/>
                     -->
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.facebooksample.Bundle"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.facebooksample.FcbModuleWizardIterator.createIterator"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/facebooksample/FcbModuleDescription.html"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.facebooksample.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.facebooksample.FcbModuleWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/facebooksample/FcbModuleDescription.html"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>
