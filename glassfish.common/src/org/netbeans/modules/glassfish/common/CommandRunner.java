@@ -512,7 +512,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         boolean useAdminPort = !"false".equals(System.getProperty("glassfish.useadminport")); // NOI18N
         int port = Integer.parseInt(ip.get(useAdminPort ? GlassfishModule.ADMINPORT_ATTR : GlassfishModule.HTTPPORT_ATTR));
         URI uri = new URI(Utils.getHttpListenerProtocol(host,port), null, host, port, "/__asadmin/" + cmd, query, null); // NOI18N
-        return uri.toASCIIString();
+        return uri.toASCIIString().replace("+", "%2b"); // these characters don't get handled by GF correctly... best I can tell.
     }
     
 
