@@ -37,14 +37,13 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.common.utils;
+package org.netbeans.modules.nativeexecution.api.util;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.util.Exceptions;
@@ -92,9 +91,5 @@ public class PathUtils {
             }
         }
         return null;
-    }
-
-    public static String getExePathLocal(long pid) {
-        return getExePath(pid, ExecutionEnvironmentFactory.getLocal());
     }
 }
