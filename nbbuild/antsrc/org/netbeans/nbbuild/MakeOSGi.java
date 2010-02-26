@@ -142,84 +142,15 @@ public class MakeOSGi extends Task {
             }
             Manifest osgi = new Manifest();
             Attributes osgiAttr = osgi.getMainAttributes();
-            osgiAttr.putValue("Manifest-Version", "1.0"); // workaround for JDK bug
-            osgiAttr.putValue("Bundle-ManifestVersion", "2");
-            String codename = netbeansAttr.getValue("OpenIDE-Module");
-            String cnb = codename.replaceFirst("/\\d+$", "");
-            if (cnb.equals("org.netbeans.core.netigso")) {
-                // special handling...
-                osgiAttr.putValue("Bundle-Activator", "org.netbeans.core.osgi.Activator");
-            }
-            osgiAttr.putValue("Bundle-SymbolicName", cnb);
-            String spec = netbeansAttr.getValue("OpenIDE-Module-Specification-Version");
-            String bundleVersion = null;
-            if (spec != null) {
-                bundleVersion = threeDotsWithMajor(spec, codename);
-                String buildVersion = netbeansAttr.getValue("OpenIDE-Module-Build-Version");
-                if (buildVersion == null) {
-                    buildVersion = netbeansAttr.getValue("OpenIDE-Module-Implementation-Version");
-                }
-                if (buildVersion != null) {
-                    bundleVersion += "." + buildVersion.replaceAll("[^a-zA-Z0-9_-]", "_");
-                }
-                osgiAttr.putValue("Bundle-Version", bundleVersion);
-            }
+            translate(netbeansAttr, osgiAttr, importedPackages);
+            String cnb = osgiAttr.getValue("Bundle-SymbolicName");
+            String bundleVersion = osgiAttr.getValue("Bundle-Version");
             File bundleFile = new File(destdir, cnb + (bundleVersion != null ? "-" + bundleVersion : "") + ".jar");
             if (bundleFile.lastModified() > module.lastModified()) {
                 log("Skipping " + module + " since " + bundleFile + " is newer", Project.MSG_VERBOSE);
                 return;
             }
             log("Processing " + module + " into " + bundleFile);
-            String pp = netbeansAttr.getValue("OpenIDE-Module-Public-Packages");
-            if (pp != null && !pp.equals("-")) {
-                // XXX handle .** (subpackages)
-                // XXX if have an integer OpenIDE-Module-Specification-Version, export all packages
-                osgiAttr.putValue("Export-Package", pp.replaceAll("\\.\\*", ""));
-                // OpenIDE-Module-Friends is ignored since OSGi has no apparent equivalent
-            }
-            for (String attrToCopy : new String[] {"OpenIDE-Module-Layer", "OpenIDE-Module-Install"}) {
-                String val = netbeansAttr.getValue(attrToCopy);
-                if (val != null) {
-                    osgiAttr.putValue(attrToCopy, val);
-                }
-            }
-            StringBuilder requireBundles = new StringBuilder();
-            /* XXX does not work, perhaps because of cyclic dependencies:
-            // do not need to import any API, just need it to be started:
-            requireBundles.append("org.netbeans.core.netigso");
-             */
-            String dependencies = netbeansAttr.getValue("OpenIDE-Module-Module-Dependencies");
-            if (dependencies != null) {
-                for (String dependency : dependencies.split(" *, *")) {
-                    if (requireBundles.length() > 0) {
-                        requireBundles.append(", ");
-                    }
-                    translateDependency(requireBundles, dependency);
-                }
-            }
-            if (requireBundles.length() > 0) {
-                osgiAttr.putValue("Require-Bundle", requireBundles.toString());
-            }
-            if (!importedPackages.isEmpty() && !cnb.equals("org.netbeans.libs.osgi")) {
-                StringBuilder b = new StringBuilder();
-                for (String pkg : importedPackages) {
-                    if (b.length() > 0) {
-                        b.append(", ");
-                    }
-                    b.append(pkg);
-                }
-                // DynamicImport-Package can lead to deadlocks in Felix: ModuleImpl.findClassOrResourceByDelegation -> Felix.acquireGlobalLock
-                osgiAttr.putValue("Import-Package", b.toString());
-            }
-            // XXX OpenIDE-Module-Java-Dependencies => Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-            // XXX OpenIDE-Module-Package-Dependencies => Import-Package
-            for (String tokenAttr : new String[] {"OpenIDE-Module-Provides", "OpenIDE-Module-Requires", "OpenIDE-Module-Needs"}) {
-                String v = netbeansAttr.getValue(tokenAttr);
-                if (v != null) {
-                    osgiAttr.putValue(tokenAttr, v);
-                }
-            }
-            // autoload, eager status are ignored since OSGi has no apparent equivalent
             Properties localizedStrings = new Properties();
             String locbundle = netbeansAttr.getValue("OpenIDE-Module-Localizing-Bundle");
             if (locbundle != null) {
@@ -290,6 +221,81 @@ public class MakeOSGi extends Task {
         }
     }
 
+    static void translate(Attributes netbeans, Attributes osgi, Set<String> importedPackages) {
+        osgi.putValue("Manifest-Version", "1.0"); // workaround for JDK bug
+        osgi.putValue("Bundle-ManifestVersion", "2");
+        String codename = netbeans.getValue("OpenIDE-Module");
+        String cnb = codename.replaceFirst("/\\d+$", "");
+        if (cnb.equals("org.netbeans.core.netigso")) {
+            // special handling...
+            osgi.putValue("Bundle-Activator", "org.netbeans.core.osgi.Activator");
+        }
+        osgi.putValue("Bundle-SymbolicName", cnb);
+        String spec = netbeans.getValue("OpenIDE-Module-Specification-Version");
+        String bundleVersion = null;
+        if (spec != null) {
+            bundleVersion = threeDotsWithMajor(spec, codename);
+            String buildVersion = netbeans.getValue("OpenIDE-Module-Build-Version");
+            if (buildVersion == null) {
+                buildVersion = netbeans.getValue("OpenIDE-Module-Implementation-Version");
+            }
+            if (buildVersion != null) {
+                bundleVersion += "." + buildVersion.replaceAll("[^a-zA-Z0-9_-]", "_");
+            }
+            osgi.putValue("Bundle-Version", bundleVersion);
+        }
+        String pp = netbeans.getValue("OpenIDE-Module-Public-Packages");
+        if (pp != null && !pp.equals("-")) {
+            // XXX handle .** (subpackages)
+            // XXX if have an integer OpenIDE-Module-Specification-Version, export all packages
+            osgi.putValue("Export-Package", pp.replaceAll("\\.\\*", ""));
+            // OpenIDE-Module-Friends is ignored since OSGi has no apparent equivalent
+        }
+        for (String attrToCopy : new String[] {"OpenIDE-Module-Layer", "OpenIDE-Module-Install"}) {
+            String val = netbeans.getValue(attrToCopy);
+            if (val != null) {
+                osgi.putValue(attrToCopy, val);
+            }
+        }
+        StringBuilder requireBundles = new StringBuilder();
+        /* XXX does not work, perhaps because of cyclic dependencies:
+        // do not need to import any API, just need it to be started:
+        requireBundles.append("org.netbeans.core.netigso");
+         */
+        String dependencies = netbeans.getValue("OpenIDE-Module-Module-Dependencies");
+        if (dependencies != null) {
+            for (String dependency : dependencies.split(" *, *")) {
+                if (requireBundles.length() > 0) {
+                    requireBundles.append(", ");
+                }
+                translateDependency(requireBundles, dependency);
+            }
+        }
+        if (requireBundles.length() > 0) {
+            osgi.putValue("Require-Bundle", requireBundles.toString());
+        }
+        if (!importedPackages.isEmpty() && !cnb.equals("org.netbeans.libs.osgi")) {
+            StringBuilder b = new StringBuilder();
+            for (String pkg : importedPackages) {
+                if (b.length() > 0) {
+                    b.append(", ");
+                }
+                b.append(pkg);
+            }
+            // DynamicImport-Package can lead to deadlocks in Felix: ModuleImpl.findClassOrResourceByDelegation -> Felix.acquireGlobalLock
+            osgi.putValue("Import-Package", b.toString());
+        }
+        // XXX OpenIDE-Module-Java-Dependencies => Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+        // XXX OpenIDE-Module-Package-Dependencies => Import-Package
+        for (String tokenAttr : new String[] {"OpenIDE-Module-Provides", "OpenIDE-Module-Requires", "OpenIDE-Module-Needs"}) {
+            String v = netbeans.getValue(tokenAttr);
+            if (v != null) {
+                osgi.putValue(tokenAttr, v);
+            }
+        }
+        // autoload, eager status are ignored since OSGi has no apparent equivalent
+    }
+
     private static void writeEntry(ZipOutputStream zos, String path, InputStream data, Set<String> parents) throws IOException {
         int size = Math.max(data.available(), 100);
         ByteArrayOutputStream baos = new ByteArrayOutputStream(size);
@@ -338,10 +344,10 @@ public class MakeOSGi extends Task {
         return (Integer.parseInt(segments[0]) + major * 100) + "."  + segments[1] + "." + segments[2];
     }
 
-    static void translateDependency(StringBuilder b, String dependency) throws IOException {
+    static void translateDependency(StringBuilder b, String dependency) throws IllegalArgumentException {
         Matcher m = Pattern.compile("([^/ >=]+)(?:/(\\d+)(?:-(\\d+))?)? *(?:(=|>) *(.+))?").matcher(dependency);
         if (!m.matches()) {
-            throw new IOException("bad dep: " + dependency);
+            throw new IllegalArgumentException("bad dep: " + dependency);
         }
         String depCnb = m.group(1);
         String depMajLo = m.group(2);
@@ -411,6 +417,7 @@ public class MakeOSGi extends Task {
             for (String clazz : VerifyClassLinkage.dependencies(data)) {
                 if (clazz.startsWith("com.sun.") || clazz.startsWith("sun.")) {
                     // JRE-specific dependencies will not be exported by Felix at least.
+                    // XXX consider making these use DynamicImport-Package in case the container can offer them.
                     continue;
                 }
                 if (!clazz.startsWith("java.") && (clazz.startsWith("org.osgi.") || jre.getResource(clazz.replace('.', '/') + ".class") != null)) {
