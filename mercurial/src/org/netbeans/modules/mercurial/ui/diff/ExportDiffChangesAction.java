@@ -62,6 +62,7 @@ import java.io.*;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
@@ -82,6 +83,8 @@ import org.openide.nodes.Node;
  */
 public class ExportDiffChangesAction extends ContextAction {
 
+    private static final Logger LOG = Logger.getLogger(ExportDiffChangesAction.class.getName());
+
     @Override
     protected boolean enable(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
@@ -101,6 +104,10 @@ public class ExportDiffChangesAction extends ContextAction {
 
     @Override
     protected void performContextAction(Node[] nodes) {
+        performContextAction(nodes, false);
+    }
+
+    void performContextAction (Node[] nodes, final boolean singleDiffSetup) {
         boolean noop;
         final VCSContext context = HgUtils.getCurrentContext(nodes);
         TopComponent activated = TopComponent.getRegistry().getActivated();
@@ -128,7 +135,7 @@ public class ExportDiffChangesAction extends ContextAction {
                 HgProgressSupport ps = new HgProgressSupport() {
                     protected void perform() {
                         OutputLogger logger = getLogger();
-                        async(this, context, toFile, logger);
+                        async(this, context, toFile, logger, singleDiffSetup);
                     }
                 };
                 ps.start(rp, root, org.openide.util.NbBundle.getMessage(ExportDiffChangesAction.class, "LBL_ExportChanges_Progress")).waitFinished();
@@ -139,7 +146,7 @@ public class ExportDiffChangesAction extends ContextAction {
     }
     
     @SuppressWarnings("unchecked")
-    private void async(HgProgressSupport progress, VCSContext context, File destination, OutputLogger logger) {
+    private void async(HgProgressSupport progress, VCSContext context, File destination, OutputLogger logger, boolean singleDiffSetup) {
         boolean success = false;
         OutputStream out = null;
         int exportedFiles = 0;
@@ -152,7 +159,17 @@ public class ExportDiffChangesAction extends ContextAction {
 
             TopComponent activated = TopComponent.getRegistry().getActivated();
             if (activated instanceof DiffSetupSource) {
-                setups = new ArrayList<Setup>(((DiffSetupSource) activated).getSetups());
+                if (!singleDiffSetup) {
+                    setups = new ArrayList<Setup>(((DiffSetupSource) activated).getSetups());
+                } else {
+                    DiffNode node = context.getElements().lookup(DiffNode.class);
+                    if (node != null) {
+                        setups = new ArrayList<Setup>(Collections.singletonList(node.getSetup()));
+                    } else {
+                        LOG.log(Level.INFO, "No DiffNode in the context: {0}", new Object[]{context.getElements().lookup(Object.class)}); //NOI18N
+                        return;
+                    }
+                }
                 List<File> setupFiles = new ArrayList<File>(setups.size());
                 for (Iterator i = setups.iterator(); i.hasNext();) {
                     Setup setup = (Setup) i.next();
