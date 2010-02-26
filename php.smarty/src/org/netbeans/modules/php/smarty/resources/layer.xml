@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+
+    <!-- CSL plugins -->
+    <folder name="CslPlugins">
+        <folder name="text">
+            <folder name="x-tpl">
+                <attr name="useCustomEditorKit" boolvalue="false"/>
+                <file name="language.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.smarty.editor.gsf.TplLanguage"/>
+                </file>
+                <file name="structure.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.smarty.editor.gsf.TplStructureScanner"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+    <!-- Editor registrations -->
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-tpl">
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.smarty.editor.lexer.TplTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+    <!-- Loaders registrations -->
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-tpl">
+                <!-- GSF -->
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/smarty/resources/tpl-icon.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/php/smarty/resources/tpl-icon.png"/>
+                 <!-- eof GSF -->
+            </folder>
+        </folder>
+    </folder>
+
+    <!-- Services registrations -->
+    <folder name="Services">
+        <!-- Recognize text/x-tpl -->
+        <folder name="MIMEResolver">
+            <file name="tpl-mime-resolver.xml" url="tpl-mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.smarty.editor.resources.Bundle"/>
+                <attr name="position" intvalue="269"/>
+            </file>
+        </folder>
+    </folder>
+
+</filesystem>
