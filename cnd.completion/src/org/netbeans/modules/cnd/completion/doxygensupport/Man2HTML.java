@@ -128,6 +128,18 @@ public class Man2HTML {
                             else if (curCh == '>') {
                                 buf.append("&gt;"); // NOI18N
                             }
+                            else if (curCh == '\"') {
+                                buf.append("&rdquo;"); // NOI18N
+                            }
+                            else if (curCh == '\'') {
+                                buf.append("&rsquo;"); // NOI18N
+                            }
+                            else if (curCh == '`') {
+                                buf.append("&lsquo;"); // NOI18N
+                            }
+                            else if (curCh == '&') {
+                                buf.append("&amp;"); // NOI18N
+                            }
                             else {
                                 buf.append(curCh);
                             }

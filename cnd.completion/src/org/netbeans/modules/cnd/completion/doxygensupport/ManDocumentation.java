@@ -225,9 +225,9 @@ public class ManDocumentation {
         return text;
     }
 
-    private static String manPageRelativePath(String name, int chapter) {
-        return "man" + chapter + "/" + name + "." + chapter; // NOI18N
-    }
+//    private static String manPageRelativePath(String name, int chapter) {
+//        return "man" + chapter + "/" + name + "." + chapter; // NOI18N
+//    }
 
     private static File resolvePath(String path) {
         File f = new File("/usr/share/man/", path); // NOI18N
