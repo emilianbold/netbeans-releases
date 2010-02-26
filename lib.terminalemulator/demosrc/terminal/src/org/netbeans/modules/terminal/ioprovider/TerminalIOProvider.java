@@ -15,23 +15,12 @@ import org.openide.windows.OutputWriter;
 /**
  * An implementation of {@link IOProvider} based on
  * {@link org.netbeans.lib.terminalemulator.Term}.
+ * Lookup id is "Terminal".
  * <p>
- * This class is public to act as a signature for distinguishing us
- * from other IOProvider implementations:
  * <pre>
-        IOProvider iop = null;
- *
-        Lookup lookup = Lookup.getDefault();
- *
-        Collection<? extends IOProvider> ioProviders = lookup.lookupAll(IOProvider.class);
- *
-        for (IOProvider iopCandidate : ioProviders) {
-            if (iopCandidate instanceof TerminalIOProvider)
-                iop = iopCandidate;
-        }
+	IOProvider iop = IOProvider.get("Terminal");
         if (iop == null)
             iop = IOProvider.getDefault();
-        return iop;
  * </pre>
  * @author ivan
  */

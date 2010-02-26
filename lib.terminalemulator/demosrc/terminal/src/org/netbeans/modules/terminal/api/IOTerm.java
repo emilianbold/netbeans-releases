@@ -37,80 +37,27 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.terminal.ioprovider;
+package org.netbeans.modules.terminal.api;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
+import org.netbeans.lib.terminalemulator.Term;
+
 /**
- * Capability of an InputOutput which allows ...
- * <ul>
- * <li>
- * Querying and setting of
- * emulation type using termcap/terminfo terminal types.
- * <br>
- * The default implementation of InputOutput has a terminal type of
- * "dumb".
- * <li>
- * Controlling whether the IO depends on an external agent, typically a pty,
- * to implement a "line discipline" or emulates it itself.
- * <br>
- * Line discipline is the functionality which handles things like
- *   <ul>
- *   <li>Line buffering.
- *   <li>CR/LF conversions.
- *   <li>Backspace.
- *   <li>Tabs.
- *   </ul>
- * The default implementation of InputOutput has disciplined set to true.
- * </ul>
+ * Capability of an InputOutput which provides direct access to a Term.
  * @author ivan
  */
-public abstract class IOEmulation {
+public abstract class IOTerm {
 
-    private static IOEmulation find(InputOutput io) {
+    private static IOTerm find(InputOutput io) {
         if (io instanceof Lookup.Provider) {
             Lookup.Provider p = (Lookup.Provider) io;
-            return p.getLookup().lookup(IOEmulation.class);
+            return p.getLookup().lookup(IOTerm.class);
         }
         return null;
-    }
-
-    /**
-     * Return the terminal type supported by this IO.
-     * @param io IO to operate on.
-     * @return terminal type.
-     */
-    public static String getEmulation(InputOutput io) {
-	IOEmulation ior = find(io);
-	if (ior != null)
-	    return ior.getEmulation();
-	else
-	    return "dumb";		// NOI18N
-
-    }
-
-    /**
-     * Return whether this IO implements it's own line discipline.
-     * @param io IO to operate on.
-     * @return
-     */
-    public static boolean isDisciplined(InputOutput io) {
-	IOEmulation ior = find(io);
-	if (ior != null)
-	    return ior.isDisciplined();
-	else
-	    return true;
-    }
-
-    /**
-     * Return whether this IO implements it's own line discipline.
-     * @param io IO to operate on.
-     */
-    public static void setDisciplined(InputOutput io) {
-	IOEmulation ior = find(io);
-	if (ior != null)
-	    ior.setDisciplined();
     }
 
     /**
@@ -123,19 +70,54 @@ public abstract class IOEmulation {
     }
 
     /**
-     * Return the terminal type supported by this IO.
-     * @return terminal type.
+     * Return the underlying Term associatd with this IO.
+     * @param io IO to operate on.
+     * @return underlying Term associatd with io. null if no such Term.
      */
-    abstract protected String getEmulation();
+    public static Term term(InputOutput io) {
+	IOTerm iot = find(io);
+	if (iot != null)
+	    return iot.term();
+	else
+	    return null;
+    }
 
     /**
-     * Return whether this IO implements it's own line discipline.
-     * @return
+     * Connect an I/O stream pair or triple to this Term.
+     *
+     * @param pin Input (and paste operations) to the sub-process.
+     *             this stream.
+     * @param pout Main output from the sub-process. Stuff received via this
+     *             stream will be rendered on the screen.
+     * @param perr Error output from process. May be null if the error stream
+     *		   is already absorbed into 'pout' as the case might be with
+     *             ptys.
      */
-    abstract protected boolean isDisciplined();
+    public static void connect(InputOutput io, OutputStream pin, InputStream pout, InputStream perr) {
+	IOTerm iot = find(io);
+	if (iot != null)
+	    iot.connect(pin, pout, perr);
+	else
+	    return;
+    }
+
 
     /**
-     * Declare that this IO should implement it's own line discipline.
+     * Return the underlying Term associatd with this IO.
+     * @return underlying Term associatd with io.
      */
-    abstract protected void setDisciplined();
+    abstract protected Term term();
+
+    /**
+     * Connect an I/O stream pair or triple to this Term.
+     *
+     * @param pin Input (and paste operations) to the sub-process.
+     *             this stream.
+     * @param pout Main output from the sub-process. Stuff received via this
+     *             stream will be rendered on the screen.
+     * @param perr Error output from process. May be null if the error stream
+     *		   is already absorbed into 'pout' as the case might be with
+     *             ptys.
+     */
+    abstract protected void connect(OutputStream pin, InputStream pout, InputStream perr);
 }

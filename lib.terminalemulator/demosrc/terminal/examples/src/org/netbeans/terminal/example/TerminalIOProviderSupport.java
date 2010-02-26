@@ -18,11 +18,10 @@ import org.netbeans.lib.richexecution.program.Program;
 import org.netbeans.lib.richexecution.Pty;
 import org.netbeans.lib.richexecution.PtyException;
 import org.netbeans.lib.richexecution.PtyExecutor;
-import org.netbeans.lib.terminalemulator.StreamTerm;
 
-import org.netbeans.modules.terminal.ioprovider.IOEmulation;
-import org.netbeans.modules.terminal.ioprovider.IOResizable;
-import org.netbeans.modules.terminal.ioprovider.TerminalInputOutput;
+import org.netbeans.modules.terminal.api.IOEmulation;
+import org.netbeans.modules.terminal.api.IOResizable;
+import org.netbeans.modules.terminal.api.IOTerm;
 
 import org.netbeans.modules.terminal.ui.TermTopComponent;
 
@@ -69,9 +68,11 @@ public final class TerminalIOProviderSupport {
             Exceptions.printStackTrace(ex);
         }
 
+	/* OLD
         TerminalInputOutput tio = null;
         if (io instanceof TerminalInputOutput)
             tio = (TerminalInputOutput) io;
+	 */
 
         io.select();
 
@@ -121,11 +122,11 @@ public final class TerminalIOProviderSupport {
 
 	boolean implicit = false;
 	if (implicit) {
-	    StreamTerm term = (tio != null)? tio.term(): null;
-	    if (term != null)
-		term.connect(pin, pout, null);
-	    else
-	    startShuttle(io, pin, pout);
+	    if (IOTerm.isSupported(io)) {
+		IOTerm.connect(io, pin, pout, null);
+	    } else {
+		startShuttle(io, pin, pout);
+	    }
 	} else {
 	    startShuttle(io, pin, pout);
 	}

@@ -37,53 +37,80 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.terminal.ioprovider;
+package org.netbeans.modules.terminal.api;
 
-import java.awt.Dimension;
 import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
 /**
- * Capability of an InputOutput which provides notification of
- * size changes.
+ * Capability of an InputOutput which allows ...
+ * <ul>
+ * <li>
+ * Querying and setting of
+ * emulation type using termcap/terminfo terminal types.
+ * <br>
+ * The default implementation of InputOutput has a terminal type of
+ * "dumb".
+ * <li>
+ * Controlling whether the IO depends on an external agent, typically a pty,
+ * to implement a "line discipline" or emulates it itself.
+ * <br>
+ * Line discipline is the functionality which handles things like
+ *   <ul>
+ *   <li>Line buffering.
+ *   <li>CR/LF conversions.
+ *   <li>Backspace.
+ *   <li>Tabs.
+ *   </ul>
+ * The default implementation of InputOutput has disciplined set to true.
+ * </ul>
  * @author ivan
  */
-public abstract class IOResizable {
+public abstract class IOEmulation {
 
-    public interface Listener {
-	public void sizeChanged(Dimension cells, Dimension pixels);
-    }
-
-    private static IOResizable find(InputOutput io) {
+    private static IOEmulation find(InputOutput io) {
         if (io instanceof Lookup.Provider) {
             Lookup.Provider p = (Lookup.Provider) io;
-            return p.getLookup().lookup(IOResizable.class);
+            return p.getLookup().lookup(IOEmulation.class);
         }
         return null;
     }
 
     /**
-     * Add a size change listener to the provided IO.
+     * Return the terminal type supported by this IO.
      * @param io IO to operate on.
-     * @param listener ... to notify of size changes.
+     * @return terminal type.
      */
-    public static void addListener(InputOutput io, Listener listener) {
-	IOResizable ior = find(io);
-	if (ior != null) {
-	    ior.addListener(listener);
-	}
+    public static String getEmulation(InputOutput io) {
+	IOEmulation ior = find(io);
+	if (ior != null)
+	    return ior.getEmulation();
+	else
+	    return "dumb";		// NOI18N
+
     }
 
     /**
-     * Remove the given size change listener from the provided IO.
+     * Return whether this IO implements it's own line discipline.
      * @param io IO to operate on.
-     * @param listener ... to remove.
+     * @return
      */
-    public static void removeListener(InputOutput io, Listener listener) {
-	IOResizable ior = find(io);
-	if (ior != null) {
-	    ior.removeListener(listener);
-	}
+    public static boolean isDisciplined(InputOutput io) {
+	IOEmulation ior = find(io);
+	if (ior != null)
+	    return ior.isDisciplined();
+	else
+	    return true;
+    }
+
+    /**
+     * Return whether this IO implements it's own line discipline.
+     * @param io IO to operate on.
+     */
+    public static void setDisciplined(InputOutput io) {
+	IOEmulation ior = find(io);
+	if (ior != null)
+	    ior.setDisciplined();
     }
 
     /**
@@ -96,14 +123,19 @@ public abstract class IOResizable {
     }
 
     /**
-     * Add a size change listener to this.
-     * @param listener ... to notify of size changes.
+     * Return the terminal type supported by this IO.
+     * @return terminal type.
      */
-    abstract protected void addListener(Listener listener);
+    abstract protected String getEmulation();
 
     /**
-     * Remove the given size change listener from this.
-     * @param listener ... to remove.
+     * Return whether this IO implements it's own line discipline.
+     * @return
      */
-    abstract protected void removeListener(Listener listener);
+    abstract protected boolean isDisciplined();
+
+    /**
+     * Declare that this IO should implement it's own line discipline.
+     */
+    abstract protected void setDisciplined();
 }
