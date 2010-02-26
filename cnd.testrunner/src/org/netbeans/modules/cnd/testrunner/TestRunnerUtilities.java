@@ -63,7 +63,7 @@ final class TestRunnerUtilities {
      * false otherwise.
      */
     static boolean useTestRunner(Project project, String property, /*RakeTask task,*/ DefaultTaskEvaluator taskEvaluator) {
-throw new RuntimeException("useTestRunner -- not sure what to do here");
+throw new RuntimeException("useTestRunner -- not sure what to do here"); // NOI18N
 //        PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
 //        if (evaluator == null || evaluator.getProperty(property) == null) {
 //            return taskEvaluator.isDefault(task);

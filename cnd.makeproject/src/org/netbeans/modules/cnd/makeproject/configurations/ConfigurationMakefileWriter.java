@@ -433,8 +433,8 @@ public class ConfigurationMakefileWriter {
                 Item[] items = folder.getAllItemsAsArray();
                 for (int k = 0; k < items.length; k++) {
                     String file = IpeUtils.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[k].getPath()));
-                    String target = file.replaceFirst("\\..*", "");
-                    bw.write("${TESTDIR}/" + target + " \\\n");
+                    String target = file.replaceFirst("\\..*", ""); // NOI18N
+                    bw.write("${TESTDIR}/" + target + " \\\n"); // NOI18N
                 }
             }
         }
@@ -628,7 +628,7 @@ public class ConfigurationMakefileWriter {
 
                 for (int k = 0; k < items.length; k++) {
                     String file = IpeUtils.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[k].getPath()));
-                    String target = file.replaceFirst("\\..*", "");
+                    String target = file.replaceFirst("\\..*", ""); // NOI18N
 
                     String output = CppUtils.normalizeDriveLetter(compilerSet, getOutput(conf));
                     LinkerConfiguration linkerConfiguration = conf.getLinkerConfiguration();
@@ -891,8 +891,8 @@ public class ConfigurationMakefileWriter {
                     } else {
                         assert false;
                     }
-                    target = target.replace("${OBJECTDIR}", "${TESTDIR}");
-                    command = command.replace("${OBJECTDIR}", "${TESTDIR}");
+                    target = target.replace("${OBJECTDIR}", "${TESTDIR}"); // NOI18N
+                    command = command.replace("${OBJECTDIR}", "${TESTDIR}"); // NOI18N
                     folders = IpeUtils.getDirName(target);
                     bw.write("\n"); // NOI18N
                     // See IZ #151465 for explanation why Makefile is listed as dependency.
@@ -995,19 +995,19 @@ public class ConfigurationMakefileWriter {
             bw.write("# Build Test Targets\n"); // NOI18N
             bw.write(".test-conf:\n"); // NOI18N
 
-            bw.write("\t@if [ \"${TEST}\" = \"\" ]; \\\n");
-            bw.write("\tthen  \\\n");
+            bw.write("\t@if [ \"${TEST}\" = \"\" ]; \\\n"); // NOI18N
+            bw.write("\tthen  \\\n"); // NOI18N
             for (Folder folder : testRootFolder.getAllTests()) {
                 Item[] items = folder.getAllItemsAsArray();
                 for (int k = 0; k < items.length; k++) {
                     String file = IpeUtils.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[k].getPath()));
-                    String target = file.replaceFirst("\\..*", "");
-                    bw.write("\t    ${TESTDIR}/" + target + "; \\\n");
+                    String target = file.replaceFirst("\\..*", ""); // NOI18N
+                    bw.write("\t    ${TESTDIR}/" + target + "; \\\n"); // NOI18N
                 }
             }
-            bw.write("\telse  \\\n");
-            bw.write("\t    ${TESTDIR}/${TEST}; \\\n");
-            bw.write("\tfi\n\n");
+            bw.write("\telse  \\\n"); // NOI18N
+            bw.write("\t    ${TESTDIR}/${TEST}; \\\n"); // NOI18N
+            bw.write("\tfi\n\n"); // NOI18N
         }
     }
 

@@ -118,7 +118,7 @@ public final class PythonTestMethodNode extends TestMethodNode {
         // Skip unittest.py stuff
         int j = 1;
         for (; j < stacktrace.length; j++) {
-            if (!stacktrace[j].contains("unittest.py")) {
+            if (!stacktrace[j].contains("unittest.py")) { // NOI18N
                 break;
             }
         }
