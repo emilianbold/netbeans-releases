@@ -39,6 +39,10 @@
 
 package org.netbeans.core.osgi;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Hashtable;
+import java.util.TreeSet;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 
@@ -132,6 +136,7 @@ public class ActivatorTest extends NbTestCase {
                 "}",
                 "}").done().
                 module("org.netbeans.modules.settings").
+                module("org.netbeans.modules.editor.mimelookup.impl"). // indirect dep of editor.mimelookup, from openide.loaders
                 run();
         String settings = System.getProperty("my.settings");
         assertNotNull(settings);
@@ -164,6 +169,69 @@ public class ActivatorTest extends NbTestCase {
         String numberOfModules = System.getProperty("number.of.modules");
         assertNotNull(numberOfModules);
         assertTrue(numberOfModules, Integer.parseInt(numberOfModules) > 2);
+    }
+
+    public void testProvidesRequiresNeedsParsing() throws Exception {
+        Hashtable<String,String> headers = new Hashtable<String,String>();
+        assertEquals(Collections.emptySet(), Activator.provides(headers));
+        assertEquals(Collections.emptySet(), Activator.requires(headers));
+        assertEquals(Collections.emptySet(), Activator.needs(headers));
+        headers.put("Bundle-SymbolicName", "org.netbeans.modules.projectui");
+        headers.put("OpenIDE-Module-Provides", "org.netbeans.modules.project.uiapi.ActionsFactory,   " +
+                "org.netbeans.modules.project.uiapi.OpenProjectsTrampoline,  org.netbeans.modules.project.uiapi.ProjectChooserFactory");
+        assertEquals(new TreeSet<String>(Arrays.asList(
+                "org.netbeans.modules.projectui",
+                "org.netbeans.modules.project.uiapi.ActionsFactory",
+                "org.netbeans.modules.project.uiapi.OpenProjectsTrampoline",
+                "org.netbeans.modules.project.uiapi.ProjectChooserFactory"
+                )), Activator.provides(headers));
+        assertEquals(Collections.emptySet(), Activator.requires(headers));
+        assertEquals(Collections.emptySet(), Activator.needs(headers));
+        headers.clear();
+        headers.put("Require-Bundle", "org.netbeans.api.progress;bundle-version=\"[101.0.0,200)\", " +
+                "org.netbeans.spi.quicksearch;bundle-version=\"[1.0.0,100)\"");
+        headers.put("OpenIDE-Module-Requires", "org.openide.modules.InstalledFileLocator, org.openide.modules.ModuleFormat2, org.openide.modules.os.Windows");
+        assertEquals(Collections.emptySet(), Activator.provides(headers));
+        assertEquals(new TreeSet<String>(Arrays.asList(
+                "org.netbeans.api.progress",
+                "org.netbeans.spi.quicksearch",
+                "org.openide.modules.InstalledFileLocator"
+                )), Activator.requires(headers));
+        assertEquals(Collections.emptySet(), Activator.needs(headers));
+        headers.clear();
+        headers.put("OpenIDE-Module-Needs", "org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceUtilImpl");
+        assertEquals(Collections.emptySet(), Activator.provides(headers));
+        assertEquals(Collections.emptySet(), Activator.requires(headers));
+        assertEquals(Collections.singleton("org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceUtilImpl"), Activator.needs(headers));
+        headers.clear();
+    }
+
+    public void testRequireToken() throws Exception {
+        new OSGiProcess(getWorkDir()).
+                newModule().manifest(
+                "OpenIDE-Module: zz.api",
+                "OpenIDE-Module-Public-Packages: api",
+                "OpenIDE-Module-Needs: api.Interface").
+                sourceFile("api/Interface.java", "package api;",
+                "public interface Interface {}").done().
+                newModule().manifest(
+                "OpenIDE-Module: zz.impl",
+                "OpenIDE-Module-Module-Dependencies: zz.api",
+                "OpenIDE-Module-Provides: api.Interface").
+                sourceFile("impl/Provider.java", "package impl;",
+                "@org.openide.util.lookup.ServiceProvider(service=api.Interface.class)",
+                "public class Provider implements api.Interface {}").done().
+                newModule().manifest(
+                "OpenIDE-Module: zz.client",
+                "OpenIDE-Module-Install: client.Install",
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.util.lookup, zz.api").
+                sourceFile("client/Install.java", "package client;",
+                "public class Install extends org.openide.modules.ModuleInstall {",
+                "public @Override void restored() {System.setProperty(\"provider.name\",",
+                "org.openide.util.Lookup.getDefault().lookup(api.Interface.class).getClass().getName());}",
+                "}").done().
+                run();
+        assertEquals("impl.Provider", System.getProperty("provider.name"));
     }
 
 }

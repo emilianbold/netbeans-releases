@@ -213,9 +213,12 @@ public class MakeOSGi extends Task {
             }
             // XXX OpenIDE-Module-Java-Dependencies => Bundle-RequiredExecutionEnvironment: JavaSE-1.6
             // XXX OpenIDE-Module-Package-Dependencies => Import-Package
-            // OpenIDE-Module-{Provides,Requires,Needs} are ignored since OSGi has no apparent equivalent
-            // (achievable by exposing generic provide/require mechanisms of Felix and/or Equinox,
-            // but this would not be part of the OSGi R4.1 spec, but could be raised as an issue for R5 since it was discussed for R4)
+            for (String tokenAttr : new String[] {"OpenIDE-Module-Provides", "OpenIDE-Module-Requires", "OpenIDE-Module-Needs"}) {
+                String v = netbeansAttr.getValue(tokenAttr);
+                if (v != null) {
+                    osgiAttr.putValue(tokenAttr, v);
+                }
+            }
             // autoload, eager status are ignored since OSGi has no apparent equivalent
             Properties localizedStrings = new Properties();
             String locbundle = netbeansAttr.getValue("OpenIDE-Module-Localizing-Bundle");
