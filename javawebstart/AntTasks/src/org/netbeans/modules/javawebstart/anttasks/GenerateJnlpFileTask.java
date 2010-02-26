@@ -454,8 +454,8 @@ public class GenerateJnlpFileTask extends Task {
         if (main) {
             jarElem.setAttribute("main", "true"); // NOI18N
         }
-        if (eager) {
-            jarElem.setAttribute("eager", "true"); // NOI18N
+        if (!eager) {
+            jarElem.setAttribute("download", "lazy"); // NOI18N
         }
         return jarElem;
     }
