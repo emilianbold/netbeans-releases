@@ -42,10 +42,6 @@
 package org.netbeans.modules.php.editor.indent.ui;
 
 import java.io.IOException;
-import java.util.prefs.Preferences;
-import org.netbeans.modules.php.editor.indent.CodeStyle.WrapStyle;
-import static org.netbeans.modules.php.editor.indent.FmtOptions.*;
-import static org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 
@@ -92,7 +88,7 @@ public class FmtStyle extends javax.swing.JPanel {
         jLabel1.setLabelFor(jComboBox1);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(FmtStyle.class, "LBL_styleStyle")); // NOI18N
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "NetBeans" }));
 
         org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(FmtStyle.class, "LBL_styleExport")); // NOI18N
 
