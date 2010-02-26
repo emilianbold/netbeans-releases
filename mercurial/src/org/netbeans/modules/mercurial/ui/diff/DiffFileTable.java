@@ -407,6 +407,14 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         }
         Mnemonics.setLocalizedText(item, item.getText());
 
+        item = menu.add(new AbstractAction(actionString("CTL_PopupMenuItem_ExportDiffChanges")) { //NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SystemAction.get(ExportDiffChangesAction.class).performContextAction(null, true);
+            }
+        });
+        Mnemonics.setLocalizedText(item, item.getText());
+
         String label;
         ExcludeFromCommitAction exclude = (ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class);
         if (exclude.getActionStatus(null) == ExcludeFromCommitAction.INCLUDING) {

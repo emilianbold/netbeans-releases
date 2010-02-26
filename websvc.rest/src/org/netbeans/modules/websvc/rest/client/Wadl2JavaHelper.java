@@ -131,7 +131,7 @@ class Wadl2JavaHelper {
 
             String body =
             "{"+ //NOI18N
-                mvType+"<String,String> qParams = new com.sun.jersey.core.util.MultivaluedMapImpl();"+ //NOI18N
+                mvType+"<String,String> qParams = new com.sun.jersey.api.representation.Form();"+ //NOI18N
                 "for (int i=0;i< paramNames.length;i++) {" + //NOI18N
                 "    if (paramValues[i] != null) {"+ //NOI18N
                 "        qParams.add(paramNames[i], paramValues[i]);"+ //NOI18N
@@ -167,7 +167,7 @@ class Wadl2JavaHelper {
 
             String body =
             "{"+ //NOI18N
-                mvType+"<String,String> qParams = new com.sun.jersey.core.util.MultivaluedMapImpl();"+ //NOI18N
+                mvType+"<String,String> qParams = new com.sun.jersey.api.representation.Form();"+ //NOI18N
                "for (String qParam : optionalParams) {" + //NOI18N
                 "    String[] qPar = qParam.split(\"=\");"+ //NOI18N
                 "    if (qPar.length > 1) qParams.add(qPar[0], qPar[1])"+ //NOI18N
@@ -442,28 +442,18 @@ class Wadl2JavaHelper {
                     }
                 }
             } else if (httpParams.hasOptionalQueryParams()) {
-//                if (!httpParams.hasDefaultQueryParams()) {
-                    // optional params should be listed also when there are no required params
-                    for (String optionalParam : httpParams.getOptionalQueryParams()) {
-                        String javaIdentifier = makeJavaIdentifier(optionalParam);
-                        VariableTree paramTree = maker.Variable(paramModifier, javaIdentifier, maker.Identifier("String"), null); //NOI18N
-                        paramList.add(paramTree);
-                        commentBuffer.append("@param "+javaIdentifier+" query parameter\n"); //NOI18N
-                    }
-                    if (httpParams.hasMultipleParamsInList()) {
-                        Pair<String> paramPair = getParamList(httpParams.getOptionalQueryParams(), httpParams.getFixedQueryParams());
-                        queryParamPart.append("String[] queryParamNames = new String[] {"+paramPair.getKey()+"}"); //NOI18N
-                        queryParamPart.append("String[] queryParamValues = new String[] {"+paramPair.getValue()+"}"); //NOI18N
-                        queryP.append(".queryParams(getQueryOrFormParams(queryParamNames, queryParamValues))"); //NOI18N
-                    } else {
-                        List<String> optionalParams = httpParams.getOptionalQueryParams();
-                        if (optionalParams.size() > 0) {
-                            String paramName = optionalParams.get(0);
-                            String paramValue = makeJavaIdentifier(optionalParams.get(0));
-                            queryP.append(".queryParam(\""+paramName+"\","+paramValue+")"); //NOI18N"
-                        }
-                    }
-//                }
+                // optional params should be listed also when there are no required params
+                for (String optionalParam : httpParams.getOptionalQueryParams()) {
+                    String javaIdentifier = makeJavaIdentifier(optionalParam);
+                    VariableTree paramTree = maker.Variable(paramModifier, javaIdentifier, maker.Identifier("String"), null); //NOI18N
+                    paramList.add(paramTree);
+                    commentBuffer.append("@param "+javaIdentifier+" query parameter\n"); //NOI18N
+                }
+                // there are no fixed params in this case
+                Pair<String> paramPair = getParamList(httpParams.getOptionalQueryParams(), Collections.<String, String>emptyMap());
+                queryParamPart.append("String[] queryParamNames = new String[] {"+paramPair.getKey()+"}"); //NOI18N
+                queryParamPart.append("String[] queryParamValues = new String[] {"+paramPair.getValue()+"}"); //NOI18N
+                queryP.append(".queryParams(getQueryOrFormParams(queryParamNames, queryParamValues))"); //NOI18N
             }
 
             // add optional params (only when there are also some required params)
