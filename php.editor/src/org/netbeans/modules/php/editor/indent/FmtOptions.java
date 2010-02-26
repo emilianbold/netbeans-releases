@@ -75,6 +75,7 @@ import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.editor.indent.CodeStyle.WrapStyle;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -195,6 +196,23 @@ public class FmtOptions {
     public static final String alignMultilineFor = "alignMultilineFor"; //NOI18N
     public static final String alignMultilineArrayInit = "alignMultilineArrayInit"; //NOI18N
 
+    public static final String wrapExtendsImplementsKeyword = "wrapExtendsImplementsKeyword"; //NOI18N
+    public static final String wrapExtendsImplementsList = "wrapExtendsImplementsList"; //NOI18N
+    public static final String wrapMethodParams = "wrapMethodParams"; //NOI18N
+    public static final String wrapThrowsKeyword = "wrapThrowsKeyword"; //NOI18N
+    public static final String wrapThrowsList = "wrapThrowsList"; //NOI18N
+    public static final String wrapMethodCallArgs = "wrapMethodCallArgs"; //NOI18N
+    public static final String wrapChainedMethodCalls = "wrapChainedMethodCalls"; //NOI18N
+    public static final String wrapArrayInit = "wrapArrayInit"; //NOI18N
+    public static final String wrapFor = "wrapFor"; //NOI18N
+    public static final String wrapForStatement = "wrapForStatement"; //NOI18N
+    public static final String wrapIfStatement = "wrapIfStatement"; //NOI18N
+    public static final String wrapWhileStatement = "wrapWhileStatement"; //NOI18N
+    public static final String wrapDoWhileStatement = "wrapDoWhileStatement"; //NOI18N
+    public static final String wrapBinaryOps = "wrapBinaryOps"; //NOI18N
+    public static final String wrapTernaryOps = "wrapTernaryOps"; //NOI18N
+    public static final String wrapAssignOps = "wrapAssignOps"; //NOI18N
+    
     public static CodeStyleProducer codeStyleProducer;
 
     private FmtOptions() {}
@@ -222,6 +240,10 @@ public class FmtOptions {
     public static final String OBRACE_PRESERVE = CodeStyle.BracePlacement.PRESERVE_EXISTING.name();
     public static final String OBRACE_NEWLINE_INDENTED = CodeStyle.BracePlacement.NEW_LINE_INDENTED.name();
     
+    public static final String WRAP_ALWAYS = CodeStyle.WrapStyle.WRAP_ALWAYS.name();
+    public static final String WRAP_IF_LONG = CodeStyle.WrapStyle.WRAP_IF_LONG.name();
+    public static final String WRAP_NEVER = CodeStyle.WrapStyle.WRAP_NEVER.name();
+
     private static Map<String,String> defaults;
     
     static {
@@ -330,7 +352,24 @@ public class FmtOptions {
             { placeElseOnNewLine, FALSE}, //NOI18N
             { placeWhileOnNewLine, FALSE}, //NOI18N
             { placeCatchOnNewLine, FALSE}, //NOI18N
-            { placeNewLineAfterModifiers, FALSE} //NOI18N
+            { placeNewLineAfterModifiers, FALSE}, //NOI18N
+
+	    { wrapExtendsImplementsKeyword, WRAP_NEVER}, //NOI18N
+            { wrapExtendsImplementsList, WRAP_NEVER}, //NOI18N
+            { wrapMethodParams, WRAP_NEVER}, //NOI18N
+            { wrapThrowsKeyword, WRAP_NEVER}, //NOI18N
+            { wrapThrowsList, WRAP_NEVER}, //NOI18N
+            { wrapMethodCallArgs, WRAP_NEVER}, //NOI18N
+            { wrapChainedMethodCalls, WRAP_NEVER}, //NOI18N
+            { wrapArrayInit, WRAP_NEVER}, //NOI18N
+            { wrapFor, WRAP_NEVER}, //NOI18N
+            { wrapForStatement, WRAP_ALWAYS}, //NOI18N
+            { wrapIfStatement, WRAP_ALWAYS}, //NOI18N
+            { wrapWhileStatement, WRAP_ALWAYS}, //NOI18N
+            { wrapDoWhileStatement, WRAP_ALWAYS}, //NOI18N
+            { wrapBinaryOps, WRAP_NEVER}, //NOI18N
+            { wrapTernaryOps, WRAP_NEVER}, //NOI18N
+            { wrapAssignOps, WRAP_NEVER} //NOI18N
 
         };
         
@@ -361,6 +400,12 @@ public class FmtOptions {
 		new ComboItem( OBRACE_NEWLINE_INDENTED, "LBL_bp_NEWLINE_INDENTED" ), // NOI18N
                 new ComboItem( OBRACE_SAMELINE, "LBL_bp_SAMELINE" ), // NOI18N
                 new ComboItem( OBRACE_PRESERVE, "LBL_bp_PRESERVE" ), // NOI18N
+            };
+
+	private static final ComboItem  wrap[] = new ComboItem[] {
+                new ComboItem( WrapStyle.WRAP_ALWAYS.name(), "LBL_wrp_WRAP_ALWAYS" ), // NOI18N
+                new ComboItem( WrapStyle.WRAP_IF_LONG.name(), "LBL_wrp_WRAP_IF_LONG" ), // NOI18N
+                new ComboItem( WrapStyle.WRAP_NEVER.name(), "LBL_wrp_WRAP_NEVER" ) // NOI18N
             };
 
         private final String previewText;
@@ -694,6 +739,12 @@ public class FmtOptions {
                 }
             }
 
+	    // is it wrap
+            for (ComboItem comboItem : wrap) {
+                if ( value.equals( comboItem.value) ) {
+                    return new DefaultComboBoxModel( wrap );
+                }
+            }
 
             return null;
         }
