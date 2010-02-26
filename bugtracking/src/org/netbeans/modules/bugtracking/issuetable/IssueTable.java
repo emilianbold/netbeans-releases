@@ -126,19 +126,14 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     private SummaryTextFilter textFilter;
 
     /**
-     * Returns the issue table filters
-     * @return
+     * Implement in an issue to provide access to its IssueNode
      */
-    public Filter[] getDefinedFilters() {
-        return filters;
-    }
-
-    private void initFilters() {
-        filters = new Filter[]{Filter.getAllFilter(query), Filter.getNotSeenFilter(query), Filter.getObsoleteDateFilter(query), Filter.getAllButObsoleteDateFilter(query)};
-        filter = filters[0]; // preset the first filter as default
+    public static interface NodeProvider {
+        IssueNode getNode();
     }
 
     private static final Comparator<IssueProperty> NodeComparator = new Comparator<IssueProperty>() {
+        @Override
         public int compare(IssueProperty p1, IssueProperty p2) {
             Integer sk1 = (Integer) p1.getValue("sortkey"); // NOI18N
             if (sk1 != null) {
@@ -181,7 +176,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         if (borderColor == null) borderColor = UIManager.getColor("controlShadow"); // NOI18N
         component.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
 
-        ImageIcon ic = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/columns_16.png", true));
+        ImageIcon ic = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/columns_16.png", true)); // NOI18N
         colsButton = new javax.swing.JButton(ic);
         colsButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TreeTableView.class, "ACN_ColumnsSelector")); //NOI18N
         colsButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TreeTableView.class, "ACD_ColumnsSelector")); //NOI18N
@@ -207,14 +202,19 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
 
         initColumns();
         table.getTableHeader().addMouseListener(new MouseListener() {
+            @Override
             public void mouseClicked(MouseEvent e) {}
+            @Override
             public void mousePressed(MouseEvent e) {
                 table.getColumnModel().addColumnModelListener(tcml);
             }
+            @Override
             public void mouseReleased(MouseEvent e) {
                 table.getColumnModel().removeColumnModelListener(tcml);
             }
+            @Override
             public void mouseEntered(MouseEvent e) {}
+            @Override
             public void mouseExited(MouseEvent e) {}
         });
 
@@ -230,42 +230,27 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         IssueTableSupport.getInstance().put(query, this);
     }
 
-    int getSeenColumnIdx() {
-        return tableModel.getIndexForPropertyName(IssueNode.LABEL_NAME_SEEN);
+    /**
+     * Returns the issue table filters
+     * @return
+     */
+    public Filter[] getDefinedFilters() {
+        return filters;
     }
 
-    int getRecentChangesColumnIdx() {
-        return tableModel.getIndexForPropertyName(IssueNode.LABEL_RECENT_CHANGES);
-    }
-
-    public void setRenderer(TableCellRenderer renderer) {
-        table.setDefaultRenderer(Node.Property.class, renderer);
-    }
-
-    public TableCellRenderer getRenderer() {
-        return table.getDefaultRenderer(Node.Property.class);
-    }
-
-    public void setFilter(Filter filter) {
-        this.filter = filter;
-        setFilterIntern(filter);
-    }
-
-    public void setFilterIntern(Filter filter) {
-        List<IssueNode> issueNodes = new ArrayList<IssueNode>(issues.size());
-        for (Issue issue : issues) {
-            if (filter == null || filter.accept(issue)) {
-                issueNodes.add(((NodeProvider) issue).getNode());
-            }
-        }
-        setTableModel(issueNodes.toArray(new IssueNode[issueNodes.size()]));
-    }
-
+    /**
+     * Reset the filter criteria set in
+     * {@link #setFilterBySummary(java.lang.String, boolean, boolean, boolean) }
+     */
     public void resetFilterBySummary() {
         setFilterIntern(filter);
-//        textFilter = null;
     }
 
+    /**
+     * Switch highlighting in rows matching the filter criteria set in
+     * {@link #setFilterBySummary(java.lang.String, boolean, boolean, boolean) }
+     * @param on
+     */
     public void switchFilterBySummaryHighlight(boolean on) {
         assert textFilter != null;
         if(textFilter == null) {
@@ -275,23 +260,113 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         table.repaint();
     }
 
-    public void setFilterBySummary(String text, boolean regular, boolean wholeWords, boolean matchCase) {
+    /**
+     * Given values are used to filter the current issue hitlist
+     *
+     * @param searchText
+     * @param regular
+     * @param wholeWords
+     * @param matchCase
+     */
+    public void setFilterBySummary(String searchText, boolean regular, boolean wholeWords, boolean matchCase) {
         if(textFilter == null) {
             textFilter = new SummaryTextFilter();
         }
-        textFilter.setText(text, regular, wholeWords, matchCase);
+        textFilter.setText(searchText, regular, wholeWords, matchCase);
         setFilterIntern(textFilter);
+    }
+
+    /**
+     * Sets the renderer in the underlying JTable
+     * @param renderer
+     */
+    public void setRenderer(TableCellRenderer renderer) {
+        table.setDefaultRenderer(Node.Property.class, renderer);
+    }
+
+    /**
+     * Gets the renderer from the underlying JTable
+     * @return
+     */
+    public TableCellRenderer getRenderer() {
+        return table.getDefaultRenderer(Node.Property.class);
+    }
+
+    /**
+     * Sets a filter on the current issue hitlist
+     * @param filter
+     */
+    public void setFilter(Filter filter) {
+        this.filter = filter;
+        setFilterIntern(filter);
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals(Query.EVENT_QUERY_SAVED)) {
+            initColumns();
+        }
+    }
+
+    /**
+     * Returns a UI component holding this tables visual representation
+     * @return
+     */
+    public JComponent getComponent() {
+        return component;
+    }
+
+    /**
+     * Sets visible columns in the Versioning table.
+     *
+     * @param columns array of column names, they must be one of SyncFileNode.COLUMN_NAME_XXXXX constants.
+     */
+    public final void initColumns() {
+        if(savedQueryInitialized) {
+            return;
+        }
+        setModelProperties(query);
+        if(descriptors.length > 0) {
+            sorter.setSortingStatus(0, TableSorter.ASCENDING); // default sorting by first column
+            if(descriptors.length > 1) {
+                for (int i = 1; i < descriptors.length; i++) {
+                    sorter.setColumnComparator(i, null);
+                    sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
+                }
+            }
+        }
+        setDefaultColumnSizes();
+        if(query.isSaved()) {
+            savedQueryInitialized = true;
+        }
+    }
+
+    private void initFilters() {
+        filters = new Filter[]{Filter.getAllFilter(query), Filter.getNotSeenFilter(query), Filter.getObsoleteDateFilter(query), Filter.getAllButObsoleteDateFilter(query)};
+        filter = filters[0]; // preset the first filter as default
+    }
+    
+    int getSeenColumnIdx() {
+        return tableModel.getIndexForPropertyName(IssueNode.LABEL_NAME_SEEN);
+    }
+
+    int getRecentChangesColumnIdx() {
+        return tableModel.getIndexForPropertyName(IssueNode.LABEL_RECENT_CHANGES);
+    }
+
+    private void setFilterIntern(Filter filter) {
+        List<IssueNode> issueNodes = new ArrayList<IssueNode>(issues.size());
+        for (Issue issue : issues) {
+            if (filter == null || filter.accept(issue)) {
+                issueNodes.add(((NodeProvider) issue).getNode());
+            }
+        }
+        setTableModel(issueNodes.toArray(new IssueNode[issueNodes.size()]));
     }
 
     SummaryTextFilter getSummaryFilter() {
         return textFilter;
     }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Query.EVENT_QUERY_SAVED)) {
-            initColumns();
-        }
-    }    
 
     private class CellAction implements ActionListener {
         private final Rectangle bounds;
@@ -320,7 +395,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         }
         @Override
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("[");             // NOI18N
             sb.append("bounds=");       // NOI18N
             sb.append(bounds);
@@ -331,6 +406,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
             listener.actionPerformed(e);
         }
     }
+
     private class Cell {
         private final int row;
         private final int column;
@@ -361,7 +437,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         }
         @Override
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("[");         // NOI18N
             sb.append("row=");      // NOI18N
             sb.append(row);
@@ -372,6 +448,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         }
     }
     private final Map<Cell, Set<CellAction>> cellActions = new HashMap<Cell, Set<CellAction>>();
+
     public void addCellAction(int row, int column, Rectangle bounds, ActionListener l) {
         synchronized(cellActions) {
             Cell cell = new Cell(row, column);
@@ -393,6 +470,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
 
     void setDefaultColumnSizes() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 int[] widths = BugtrackingConfig.getInstance().getColumnWidths(getColumnsKey());
                 Map<String, Integer> persistedColumnsMap = getPersistedColumnValues();
@@ -470,45 +548,16 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         return visible.toArray(new ColumnDescriptor[visible.size()]);
     }
 
+    @Override
     public void ancestorAdded(AncestorEvent event) {
         setDefaultColumnSizes();
     }
 
-    public void ancestorMoved(AncestorEvent event) {
-    }
+    @Override
+    public void ancestorMoved(AncestorEvent event) { }
 
-    public void ancestorRemoved(AncestorEvent event) {
-
-    }
-
-    public JComponent getComponent() {
-        return component;
-    }
-
-    /**
-     * Sets visible columns in the Versioning table.
-     *
-     * @param columns array of column names, they must be one of SyncFileNode.COLUMN_NAME_XXXXX constants.
-     */
-    public final void initColumns() {
-        if(savedQueryInitialized) {
-            return;
-        }
-        setModelProperties(query);
-        if(descriptors.length > 0) {
-            sorter.setSortingStatus(0, TableSorter.ASCENDING); // default sorting by first column
-            if(descriptors.length > 1) {
-                for (int i = 1; i < descriptors.length; i++) {
-                    sorter.setColumnComparator(i, null);
-                    sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
-                }
-            }
-        }
-        setDefaultColumnSizes();
-        if(query.isSaved()) {
-            savedQueryInitialized = true;
-        }
-    }
+    @Override
+    public void ancestorRemoved(AncestorEvent event) { }
 
     private void setModelProperties(Query query) {
         List<ColumnDescriptor> properties = new ArrayList<ColumnDescriptor>(descriptors.length + (query.isSaved() ? 2 : 0));
@@ -559,12 +608,16 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         table.requestFocus();
     }
 
-
+    @Override
     public void mouseEntered(MouseEvent e) {}
+    @Override
     public void mouseExited(MouseEvent e) {}
+    @Override
     public void mousePressed(MouseEvent e) {}
+    @Override
     public void mouseReleased(MouseEvent e) {}
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         int row = table.rowAtPoint(e.getPoint());
         int column = table.columnAtPoint(e.getPoint());
@@ -583,6 +636,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
                     IssueNode in = (IssueNode) tableModel.getNodes()[row];
                     final Issue issue = in.getLookup().lookup(Issue.class);
                     BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                        @Override
                         public void run() {
                             IssueCacheUtils.switchSeen(issue);
                         }
@@ -604,6 +658,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         }
     }
 
+    @Override
     public void keyTyped(KeyEvent e) {
         if (e.getKeyChar() == '\n') {                                     // NOI18N
             int row = table.getSelectedRow();
@@ -617,6 +672,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         }
     }
 
+    @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyChar() == '\n') {                                     // NOI18N
             int row = table.getSelectedRow();
@@ -627,30 +683,30 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         }
     }
 
-    public void keyReleased(KeyEvent e) {
-    }
-
-    public static interface NodeProvider {
-        IssueNode getNode();
-    }
+    @Override
+    public void keyReleased(KeyEvent e) { }
 
     private class NotifyListener implements QueryNotifyListener {
+        @Override
         public void notifyData(final Issue issue) {
             assert issue instanceof NodeProvider;
             issues.add(issue);
             if(filter == null || filter.accept(issue)) {
                 final IssueNode node = ((NodeProvider)issue).getNode();
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         tableModel.insertNode(node);
                     }
                 });
             }
         }
+        @Override
         public void started() {
             issues.clear();
             IssueTable.this.setTableModel(new IssueNode[0]);
         }
+        @Override
         public void finished() { }
     }
 
@@ -675,10 +731,11 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     }
 
     private class StoreColumnsHandler implements Runnable {
+        @Override
         public void run() {            
             TableColumnModel cm = table.getColumnModel();
             int count = cm.getColumnCount();
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < count; i++) {
                 sb.append(tableModel.getColumnId(i));
                 sb.append("<=>");                                               // NOI18N
@@ -692,8 +749,11 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     }
 
     private TableColumnModelListener tcml = new TableColumnModelListener() {
+        @Override
         public void columnAdded(TableColumnModelEvent e) {}
+        @Override
         public void columnRemoved(TableColumnModelEvent e) {}
+        @Override
         public void columnMoved(TableColumnModelEvent e) {
             int from = e.getFromIndex();
             int to = e.getToIndex();
@@ -704,7 +764,9 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
             table.getTableHeader().getColumnModel().getColumn(to).setModelIndex(to);
             tableModel.moveColumn(from, to);
         }
+        @Override
         public void columnSelectionChanged(ListSelectionEvent e) {}
+        @Override
         public void columnMarginChanged(ChangeEvent e) {
             storeColumnsTask.schedule(1000);
         }
