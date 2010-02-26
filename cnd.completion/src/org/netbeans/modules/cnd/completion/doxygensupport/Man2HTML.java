@@ -101,6 +101,10 @@ public class Man2HTML {
         try {
             String line = null;
             while ((line = br.readLine()) != null) {
+                if (line.length() == 0) {
+                    // Skip empty lines (like -compress)
+                    continue;
+                }
                 for (int i = 0; i < line.length(); i++) {
                     prevCh = curCh;
                     curCh = nextCh;
@@ -121,7 +125,7 @@ public class Man2HTML {
                             if (prevCh != 0 && prevCh != '\b') {
                                 startNormal(buf);
                             }
-                            // Just append the char to line. Excape if necessary.
+                            // Just append the char to line. Escape if necessary.
                             if (curCh == '<') {
                                 buf.append("&lt;"); // NOI18N
                             }
