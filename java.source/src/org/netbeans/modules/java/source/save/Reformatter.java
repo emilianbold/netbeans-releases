@@ -2224,6 +2224,7 @@ public class Reformatter implements ReformatTask {
         public Boolean visitParenthesized(ParenthesizedTree node, Void p) {
             accept(LPAREN);
             boolean spaceWithinParens;
+            int old = indent;
             switch(getCurrentPath().getParentPath().getLeaf().getKind()) {
                 case IF:
                     spaceWithinParens = cs.spaceWithinIfParens();
@@ -2243,10 +2244,13 @@ public class Reformatter implements ReformatTask {
                     break;
                 default:
                     spaceWithinParens = cs.spaceWithinParens();
+                    if (cs.alignMultilineParenthesized())
+                        indent = col;
             }
             spaces(spaceWithinParens ? 1 : 0);
             scan(node.getExpression(), p);
             spaces(spaceWithinParens ? 1 : 0);
+            indent = old;
             accept(RPAREN);
             return true;
         }

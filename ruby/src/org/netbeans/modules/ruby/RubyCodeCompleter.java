@@ -2186,8 +2186,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         
         List<String> comments = getComments(info, element);
         if (comments == null) {
-            if (element.getName().startsWith("find_by_") ||
-                element.getName().startsWith("find_all_by_")) {
+            if (FindersHelper.isFinderMethod(element.getName(), false)) {
                 return new RDocFormatter().getSignature(element) + NbBundle.getMessage(RubyCodeCompleter.class, "DynamicMethod");
             }
             String html = new RDocFormatter().getSignature(element) + "\n<hr>\n<i>" + NbBundle.getMessage(RubyCodeCompleter.class, "NoCommentFound") +"</i>";

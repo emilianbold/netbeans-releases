@@ -92,9 +92,9 @@ public class ExportDiffPanel extends ChangesetPickerPanel {
 
     @Override
     protected String getRevisionLabel(RepositoryRevision repoRev) {
-        StringBuilder revStr = new StringBuilder(super.getRevisionLabel(repoRev));
+        String revStr = super.getRevisionLabel(repoRev);
         if (fileToDiff != null) {
-            revStr.append(fileToDiff.getName()).append(" - ").append(revStr); //NOI18N
+            revStr = new StringBuilder(fileToDiff.getName()).append(" - ").append(revStr).toString(); //NOI18N
         }
         return revStr.toString();
     }
