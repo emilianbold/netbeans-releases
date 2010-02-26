@@ -68,7 +68,7 @@ public class AptSourceFileManager extends SourceFileManager {
         void finished(@NonNull URL source);
     }
 
-    private static final String ORIGIN_FILE = "apt-origin";    //NOI18N
+    public static final String ORIGIN_FILE = "apt-origin";    //NOI18N
 
     private final ClassPath userRoots;
     private final Marker marker;
