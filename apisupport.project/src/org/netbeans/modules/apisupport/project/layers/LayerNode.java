@@ -151,15 +151,17 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                         setKeys(Collections.<LayerChildren.KeyType>emptySet());
                         return;
                     }
+                    boolean showContextNode = true;
                     NbModuleProvider moduleProvider = p.getLookup().lookup(NbModuleProvider.class);
                     if( null != moduleProvider && !moduleProvider.prepareContext() ) {
-                        setKeys(Collections.<LayerChildren.KeyType>emptySet());
-                        return;
+                        //don't show 'layer in context' if the context classpath didn't initialize properly
+                        showContextNode = false;
                     }
+                    final boolean b = showContextNode;
                     RequestProcessor.getDefault().post(new Runnable() {
                         @Override
                         public void run() {
-                            initialize();
+                            initialize(b);
                         }
                     });
                 }
@@ -200,7 +202,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
             }
         }
 
-        private void initialize() {
+        private void initialize(boolean showContextNode) {
             try {
                 FileObject layer = handle.getLayerFile();
                 p = FileOwnerQuery.getOwner(layer);
@@ -217,23 +219,27 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                 ClassPathProvider cpp = p.getLookup().lookup(ClassPathProvider.class);
                 ClassPath srcPath = cpp.findClassPath(p.getProjectDirectory(), ClassPath.SOURCE);
                 layerfs = handle.layer(false, srcPath);
-                setKeys(Arrays.asList(KeyType.RAW, KeyType.WAIT));
-                Project project = FileOwnerQuery.getOwner(handle.getLayerFile());
-                boolean context = false;
-                if (project != null) {
-                    LayerHandle h = LayerHandle.forProject(project);
-                    h.setAutosave(true); // #135376
-                    if (h != null && layer.equals(h.getLayerFile())) {
-                        FileSystem _sfs = LayerUtils.getEffectiveSystemFilesystem(project);
-                        if (cp != null) { // has not been removeNotify()d yet
-                            sfs = _sfs;
-                            setKeys(Arrays.asList(KeyType.RAW, KeyType.CONTEXTUALIZED));
-                            context = true;
+                if( !showContextNode ) {
+                    setKeys(Collections.singleton(KeyType.RAW));
+                } else {
+                    setKeys(Arrays.asList(KeyType.RAW, KeyType.WAIT));
+                    Project project = FileOwnerQuery.getOwner(handle.getLayerFile());
+                    boolean context = false;
+                    if (project != null) {
+                        LayerHandle h = LayerHandle.forProject(project);
+                        h.setAutosave(true); // #135376
+                        if (h != null && layer.equals(h.getLayerFile())) {
+                            FileSystem _sfs = LayerUtils.getEffectiveSystemFilesystem(project);
+                            if (cp != null) { // has not been removeNotify()d yet
+                                sfs = _sfs;
+                                setKeys(Arrays.asList(KeyType.RAW, KeyType.CONTEXTUALIZED));
+                                context = true;
+                            }
                         }
                     }
-                }
-                if (!context) {
-                    setKeys(Collections.singleton(KeyType.RAW));
+                    if (!context) {
+                        setKeys(Collections.singleton(KeyType.RAW));
+                    }
                 }
             } catch (IOException e) {
                 Util.err.notify(ErrorManager.INFORMATIONAL, e);

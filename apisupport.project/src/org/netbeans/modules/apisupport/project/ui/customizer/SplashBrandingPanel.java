@@ -51,22 +51,19 @@ import java.net.URL;
 import java.text.ParseException;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.apisupport.project.suite.BrandingSupport.BrandedFile;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
- * Represents <em>Splash branding parameters</em> panel in Suite customizer.
+ * Represents <em>Splash branding parameters</em> panel in branding editor.
  *
- * @author Radek Matous
+ * @author Radek Matous, S. Aubrecht
  */
-public final class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
+public final class SplashBrandingPanel extends AbstractBrandingPanel {
     
     private final @NonNull SplashComponentPreview splashImage;
     private final @NonNull JFormattedTextField fontSize;
@@ -78,17 +75,9 @@ public final class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
     private final @NonNull SplashUISupport.ColorComboBox cornerColor;
     
     private URL splashSource;
-    /**
-     * Creates new form SuiteCustomizerLibraries
-     */
-    public SuiteCustomizerSplashBranding(final SuiteProperties suiteProps, ProjectCustomizer.Category cat) {
-        super(suiteProps, SuiteCustomizerSplashBranding.class, cat);
-        BasicBrandingModel branding = getBrandingModel();
-        branding.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                enableDisableComponents();
-            }
-        });
+
+    public SplashBrandingPanel(BasicBrandingModel model) {
+        super(NbBundle.getMessage(BasicBrandingPanel.class, "LBL_SplashTab"), model); //NOI18N
         
         splashImage =new SplashComponentPreview();
         fontSize = SplashUISupport.getIntegerField();
@@ -99,29 +88,36 @@ public final class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         edgeColor = SplashUISupport.getColorComboBox();
         cornerColor = SplashUISupport.getColorComboBox();
         splashImage.setDropHandletForProgress(new DragManager.DropHandler(){
+            @Override
             public void dragAccepted(Rectangle original, Rectangle afterDrag) {
                 progressBarBounds.setValue(afterDrag);
+                setModified();
             }            
         });
         
         splashImage.setDropHandletForText(new DragManager.DropHandler(){
+            @Override
             public void dragAccepted(Rectangle original, Rectangle afterDrag) {
                 runningTextBounds.setValue(afterDrag);
                 double ratio = ((double)afterDrag.height)/original.height;
                 int size = (int)((((Number)fontSize.getValue()).intValue()*ratio));
                 size = (size > 0) ? size : 3;
                 fontSize.setValue(size);
+                setModified();
             }
         });
         
         initComponents();
         refresh();
+        enableDisableComponents();
         
         PropertyChangeListener pL = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName() != SplashUISupport.ColorComboBox.PROP_COLOR) {
                     return;
                 }
+                setModified();
                 resetSplashPreview();
             }
         };
@@ -132,53 +128,59 @@ public final class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         
         fontSize.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 if (e != null || fontSize.isFocusOwner()) {
                     try {
                         fontSize.commitEdit();
                         ((Number) fontSize.getValue()).intValue();
-                        category.setErrorMessage(null);
-                        category.setValid(true);
+                        setErrorMessage(null);
+                        setValid(true);
                         resetSplashPreview();
                     } catch (ParseException ex) {
                         //user's invalide input
-                        category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerSplashBranding.class, "ERR_InvalidFontSize"));
-                        category.setValid(false);
+                        setErrorMessage(NbBundle.getMessage(SplashBrandingPanel.class, "ERR_InvalidFontSize")); //NOI18N
+                        setValid(false);
                     }
+                    setModified();
                 }
             }
         });
         
         runningTextBounds.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 if (e != null || runningTextBounds.isFocusOwner()) {
                     try {
                         runningTextBounds.commitEdit();
-                        category.setErrorMessage(null);
-                        category.setValid(true);
+                        setErrorMessage(null);
+                        setValid(true);
                         resetSplashPreview();
                     } catch (ParseException ex) {
                         //user's invalide input
-                        category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerSplashBranding.class, "ERR_InvalidTextBounds"));
-                        category.setValid(false);
+                        setErrorMessage(NbBundle.getMessage(SplashBrandingPanel.class, "ERR_InvalidTextBounds")); //NOI18N
+                        setValid(false);
                     }
+                    setModified();
                 }
             }
         });
         
         progressBarBounds.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 if (e != null || progressBarBounds.isFocusOwner()) {
                     try {
                         progressBarBounds.commitEdit();
-                        category.setErrorMessage(null);
-                        category.setValid(true);
+                        setErrorMessage(null);
+                        setValid(true);
                         resetSplashPreview();
                     } catch (ParseException ex) {
                         //user's invalide input
-                        category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerSplashBranding.class, "ERR_InvalidProgressBarBounds"));
-                        category.setValid(false);
+                        setErrorMessage(NbBundle.getMessage(SplashBrandingPanel.class, "ERR_InvalidProgressBarBounds")); //NOI18N
+                        setValid(false);
                     }
+                    setModified();
                 }
             }
         });
@@ -186,8 +188,9 @@ public final class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
     }
     
     
+    @Override
     public void store() {
-        BasicBrandingModel branding = getBrandingModel();
+        BasicBrandingModel branding = getBranding();
         
         SplashUISupport.setValue(branding.getSplashRunningTextFontSize(), SplashUISupport.numberToString((Number) fontSize.getValue()));
         SplashUISupport.setValue(branding.getSplashRunningTextBounds(), SplashUISupport.boundsToString((Rectangle)runningTextBounds.getValue()));
@@ -218,7 +221,7 @@ public final class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
     
     
     void refresh() {
-        BasicBrandingModel branding = getBrandingModel();
+        BasicBrandingModel branding = getBranding();
         
         fontSize.setValue(SplashUISupport.bundleKeyToInteger(branding.getSplashRunningTextFontSize()));
         runningTextBounds.setValue(SplashUISupport.bundleKeyToBounds(branding.getSplashRunningTextBounds()));
@@ -236,14 +239,14 @@ public final class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         splashImage.setMaxSteps(10);
         //splashImage.increment(10);
         splashImage.resetSteps();
-        splashImage.setText(NbBundle.getMessage(getClass(),"TEXT_SplashSample"));
+        splashImage.setText(NbBundle.getMessage(getClass(),"TEXT_SplashSample")); //NOI18N
         
         enableDisableComponents();
         
     }
     
     private void enableDisableComponents() {
-        final BasicBrandingModel branding = getBrandingModel();
+        final BasicBrandingModel branding = getBranding();
         jLabel1.setEnabled(branding.isBrandingEnabled());
         jLabel2.setEnabled(branding.isBrandingEnabled());
         fontSize.setEnabled(branding.isBrandingEnabled());
@@ -279,7 +282,7 @@ public final class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         splashImage.setProgressBarBounds(pRectangle);
         splashImage.setProgressBarEnabled(progressBarEnabled.isSelected());
         splashImage.resetSteps();
-        splashImage.setText(NbBundle.getMessage(getClass(),"TEXT_SplashSample"));
+        splashImage.setText(NbBundle.getMessage(getClass(),"TEXT_SplashSample")); //NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -310,6 +313,7 @@ public final class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         splashPreview = splashImage;
         browse = new javax.swing.JButton();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         setLayout(new java.awt.GridBagLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -551,7 +555,7 @@ public final class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
                 } else {
                     resetSplashPreview();
                 }
-                
+                setModified();
             } catch (MalformedURLException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
@@ -580,8 +584,4 @@ public final class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
     private javax.swing.JLabel textColorLabel;
     private javax.swing.JLabel textFontSizeLabel;
     // End of variables declaration//GEN-END:variables
-    
-    private BasicBrandingModel getBrandingModel() {
-        return getProperties().getBrandingModel();
-    }
 }
