@@ -47,6 +47,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -80,7 +81,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
         
         performFixTest("test/Test.java", before + after, before.length(), 
             "3:4-3:5:verifier:AS1valueOf",
-            "FixStaticAccess",
+            "MSG_StaticAccessText",
             golden
         );
     }
@@ -104,7 +105,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
         
         performFixTest("test/Test.java", before + after, before.length(), 
             "3:4-3:5:verifier:AS1valueOf",
-            "FixStaticAccess",
+            "MSG_StaticAccessText",
             golden
         );
     }
@@ -233,6 +234,11 @@ public class StaticAccessTest extends TreeRuleTestBase {
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
         return new StaticAccess().run(info, path);
+    }
+
+    @Override
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return f.getText();
     }
     
     private String sourceLevel = "1.5";
