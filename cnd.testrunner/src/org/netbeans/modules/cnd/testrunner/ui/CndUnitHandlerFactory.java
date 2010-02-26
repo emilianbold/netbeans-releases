@@ -89,11 +89,11 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
     }
 
     private static String errorMsg(long failureCount) {
-        return NbBundle.getMessage(CndUnitHandlerFactory.class, "MSG_Error", failureCount);
+        return NbBundle.getMessage(CndUnitHandlerFactory.class, "MSG_Error", failureCount); // NOI18N
     }
 
     private static String failureMsg(long failureCount) {
-        return NbBundle.getMessage(CndUnitHandlerFactory.class, "MSG_Failure", failureCount);
+        return NbBundle.getMessage(CndUnitHandlerFactory.class, "MSG_Failure", failureCount); // NOI18N
     }
 
     static String[] getStackTrace(String message, String stackTrace) {
@@ -160,7 +160,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
             testcase.setTrouble(new Trouble(false));
-            String message = matcher.group(4).replace("%BR%", "\n");
+            String message = matcher.group(4).replace("%BR%", "\n"); // NOI18N
             String location = matcher.group(5);
             testcase.getTrouble().setStackTrace(getStackTrace(message, location));
             testcase.getTrouble().setComparisonFailure(getComparisonFailure(message));
@@ -168,7 +168,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
             session.addTestCase(testcase);
 
             String failureMsg = failureMsg(session.incrementFailuresCount());
-            String testCase = testcase.getName() + "(" + testcase.getClassName() + "):";
+            String testCase = testcase.getName() + "(" + testcase.getClassName() + "):"; // NOI18N
             output = new ArrayList<String>();
             output.add("");
             output.add(failureMsg);
@@ -206,11 +206,11 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
             testcase.setTrouble(new Trouble(true));
-            testcase.getTrouble().setStackTrace(getStackTrace(matcher.group(4).replace("%BR%", "\n"), matcher.group(5)));
+            testcase.getTrouble().setStackTrace(getStackTrace(matcher.group(4).replace("%BR%", "\n"), matcher.group(5))); // NOI18N
             session.addTestCase(testcase);
 
             String errorMsg = errorMsg(session.incrementFailuresCount());
-            String testCase = testcase.getName() + "(" + testcase.getClassName() + "):";
+            String testCase = testcase.getName() + "(" + testcase.getClassName() + "):"; // NOI18N
             output = new ArrayList<String>();
             output.add("");
             output.add(errorMsg);

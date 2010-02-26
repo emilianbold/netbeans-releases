@@ -79,7 +79,7 @@ public final class CndUnitRunner implements TestRunner/*, RakeTaskCustomizer*/ {
     }
 
     public void runSingleTest(FileObject testFile, String testMethod, boolean debug) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public void runSingleTest(FileObject testFile, String className, String testMethod, boolean debug) {

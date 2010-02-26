@@ -144,7 +144,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
         if (actionType != ProjectActionEvent.PredefinedType.RUN
                 && actionType != ProjectActionEvent.PredefinedType.BUILD
-                && actionType != ProjectActionEvent.PredefinedType.CLEAN) {
+                && actionType != ProjectActionEvent.PredefinedType.CLEAN
+                && actionType != ProjectActionEvent.PredefinedType.TEST) {
             assert false;
         }
 

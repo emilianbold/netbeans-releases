@@ -121,9 +121,9 @@ public final class TestRunnerInputProcessorFactory implements ExecutionDescripto
             List<String> output = new ArrayList<String>(2);
             output.add(""); //NOI18N
             output.add(NbBundle.getMessage(TestRunnerInputProcessorFactory.class,
-                    "MSG_TestSessionFinished", new Double(data.session.getSessionResult().getElapsedTime() / 1000d)));
+                    "MSG_TestSessionFinished", new Double(data.session.getSessionResult().getElapsedTime() / 1000d))); // NOI18N
             output.add(NbBundle.getMessage(TestRunnerInputProcessorFactory.class,
-                    "MSG_TestSessionFinishedSummary",
+                    "MSG_TestSessionFinishedSummary", // NOI18N
                     data.session.getSessionResult().getTotal(),
                     data.session.getSessionResult().getFailed(),
                     data.session.getSessionResult().getErrors()));
