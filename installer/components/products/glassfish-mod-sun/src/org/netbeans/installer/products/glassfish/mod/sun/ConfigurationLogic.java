@@ -463,12 +463,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         } else {
                             //check if this IDE is not integrated with any other GF instance - we need integrate with such IDE instance
                             try {
-                                String path = NetBeansUtils.getJvmOption(location, JVM_OPTION_NAME);
-                                if (path == null || !FileUtils.exists(new File(path)) || FileUtils.isEmpty(new File(path))) {
+                                if(!isGlassFishRegistred(location)) {
                                     LogManager.log("... will be integrated since there it is not yet integrated with any instance or such an instance does not exist");
                                     productsToIntegrate.add(ide);
                                 } else {
-                                    LogManager.log("... will not be integrated since it is already integrated with another instance at " + path);
+                                    LogManager.log("... will not be integrated since it is already integrated with another instance");
                                 }
                             } catch (IOException e)  {
                                 LogManager.log(e);
@@ -481,11 +480,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             for (Product productToIntegrate : productsToIntegrate) {
                 final File location = productToIntegrate.getInstallationLocation();
                 LogManager.log("... integrate " + getProduct().getDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
-                NetBeansUtils.setJvmOption(
-                        location,
-                        JVM_OPTION_NAME,
-                        directory.getAbsolutePath(),
-                        true);
+                registerGlassFish(location, directory);
 
                 // if the IDE was installed in the same session as the
                 // appserver, we should add its "product id" to the IDE
@@ -506,6 +501,33 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         progress.setPercentage(Progress.COMPLETE);
     }
 
+    private boolean isGlassFishRegistred(File nbLocation) throws IOException {
+        String path = NetBeansUtils.getJvmOption(nbLocation, JVM_OPTION_NAME);
+        return !(path == null || !FileUtils.exists(new File(path)) || FileUtils.isEmpty(new File(path)));
+    }
+
+    private void registerGlassFish(File nbLocation, File gfLocation) throws IOException {
+        NetBeansUtils.setJvmOption(
+                nbLocation,
+                JVM_OPTION_NAME,
+                gfLocation.getAbsolutePath(),
+                true);
+    }
+    private void removeGlassFishIntegration(File nbLocation, File gfLocation) throws IOException {
+        LogManager.log("... ide location is " + nbLocation);
+        final String value = NetBeansUtils.getJvmOption(
+                nbLocation,
+                JVM_OPTION_NAME);
+        LogManager.log("... ide integrated with: " + value);
+        if ((value != null)
+                && (value.equals(gfLocation.getAbsolutePath()))) {
+            LogManager.log("... removing integration");
+            NetBeansUtils.removeJvmOption(
+                    nbLocation,
+                    JVM_OPTION_NAME);
+        }
+    }
+
     public void uninstall(final Progress progress)
             throws UninstallationException {
         File directory = getProduct().getInstallationLocation();
@@ -522,18 +544,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     final File nbLocation = ide.getInstallationLocation();
 
                     if (nbLocation != null) {
-                        LogManager.log("... ide location is " + nbLocation);
-                        final String value = NetBeansUtils.getJvmOption(
-                                nbLocation,
-                                JVM_OPTION_NAME);
-                        LogManager.log("... ide integrated with: " + value);
-                        if ((value != null) &&
-                                (value.equals(directory.getAbsolutePath()))) {
-			    LogManager.log("... removing integration");
-                            NetBeansUtils.removeJvmOption(
-                                    nbLocation,
-                                    JVM_OPTION_NAME);
-                        }
+                        removeGlassFishIntegration(nbLocation, directory);
                     }
                 }
             }

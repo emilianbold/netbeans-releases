@@ -82,6 +82,7 @@ public abstract class AttachType {
      * {@link javax.swing.JComponent#isValid()}.
      * Override {@link #getController()} method instead.
      * </pre>
+     * The customizer can provide help by implementing {@link org.openide.util.HelpCtx.Provider}
      *
      * @return visual customizer for this Attach Type
      */

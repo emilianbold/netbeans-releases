@@ -73,7 +73,14 @@ class OSGiClassLoader extends ClassLoader {
 
     private Iterable<Bundle> bundles() {
         if (context != null) {
-            return NbCollections.iterable(Enumerations.filter(Enumerations.array(context.getBundles()), new Enumerations.Processor<Bundle,Bundle>() {
+            Bundle[] bundles;
+            try {
+                bundles = context.getBundles();
+            } catch (IllegalStateException x) {
+                // Thrown sometimes by Felix during shutdown. Not clear how to avoid this.
+                return Collections.emptySet();
+            }
+            return NbCollections.iterable(Enumerations.filter(Enumerations.array(bundles), new Enumerations.Processor<Bundle,Bundle>() {
                 public @Override Bundle process(Bundle b, Collection<Bundle> _) {
                     return b.getState() == Bundle.INSTALLED ? null : b;
                 }

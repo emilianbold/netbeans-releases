@@ -71,10 +71,11 @@ import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.awt.Mnemonics;
 
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 
-public class ConnectorPanel extends JPanel implements ActionListener {
+public class ConnectorPanel extends JPanel implements ActionListener, HelpCtx.Provider {
 
     public static final String PROP_TYPE = "type";
     
@@ -92,6 +93,8 @@ public class ConnectorPanel extends JPanel implements ActionListener {
     private Controller            controller;
     /** Current attach type, which is stored into settings for the next invocation. */
     private AttachType            currentAttachType;
+    /** Help for the dialog */
+    private HelpCtx               help = HelpCtx.DEFAULT_HELP;
 
 
     public ConnectorPanel ()  {
@@ -177,6 +180,7 @@ public class ConnectorPanel extends JPanel implements ActionListener {
         c.gridwidth = 0;
         AttachType attachType = (AttachType) attachTypes.get (index);
         JComponent customizer = attachType.getCustomizer ();
+        help = HelpCtx.findHelp (customizer);
         controller = attachType.getController();
         if (controller == null && (customizer instanceof Controller)) {
             Exceptions.printStackTrace(new IllegalStateException("FIXME: JComponent "+customizer+" must not implement Controller interface!"));
@@ -295,6 +299,11 @@ public class ConnectorPanel extends JPanel implements ActionListener {
             DebugMainProjectAction.attachHistoryChanged();
         } // if
         return ok;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return help;
     }
 }
 
