@@ -56,7 +56,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.refactoring.api.CssRefactoring;
-import org.netbeans.modules.css.refactoring.api.Entry;
+import org.netbeans.modules.css.refactoring.api.EntryHandle;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.html.editor.api.Utils;
@@ -66,6 +66,7 @@ import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * just CSL to HtmlExtension bridge
@@ -239,24 +240,24 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                                     assert false; //something very bad is going on!
                                 }
 
-                                Map<FileObject, Collection<Entry>> occurances = CssRefactoring.findAllOccurances(unquotedValue, type, file, true); //non virtual element only - this means only css declarations, not usages in html code
+                                Map<FileObject, Collection<EntryHandle>> occurances = CssRefactoring.findAllOccurances(unquotedValue, type, file, true); //non virtual element only - this means only css declarations, not usages in html code
                                 if(occurances == null) {
                                     return ;
                                 }
 
                                 DeclarationLocation dl = null;
                                 for (FileObject f : occurances.keySet()) {
-                                    Collection<Entry> entries = occurances.get(f);
-                                    for (Entry entry : entries) {
+                                    Collection<EntryHandle> entries = occurances.get(f);
+                                    for (EntryHandle entryHandle : entries) {
                                         //grrr, the main declarationlocation must be also added to the alternatives
                                         //if there are more than one
-                                        DeclarationLocation dloc = new DeclarationLocation(f, entry.getDocumentRange().getStart());
+                                        DeclarationLocation dloc = new DeclarationLocation(f, entryHandle.entry().getDocumentRange().getStart());
                                         if (dl == null) {
                                             //ugly DeclarationLocation alternatives handling workaround - one of the
                                             //locations simply must be "main"!!!
                                             dl = dloc;
                                         }
-                                        HtmlDeclarationFinder.AlternativeLocation aloc = new HtmlDeclarationFinder.AlternativeLocationImpl(dloc, entry);
+                                        HtmlDeclarationFinder.AlternativeLocation aloc = new HtmlDeclarationFinder.AlternativeLocationImpl(dloc, entryHandle);
                                         dl.addAlternative(aloc);
                                     }
                                 }
@@ -325,11 +326,11 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
     private static class AlternativeLocationImpl implements AlternativeLocation {
 
         private DeclarationLocation location;
-        private Entry entry;
+        private EntryHandle entryHandle;
 
-        public AlternativeLocationImpl(DeclarationLocation location, Entry entry) {
+        public AlternativeLocationImpl(DeclarationLocation location, EntryHandle entry) {
             this.location = location;
-            this.entry = entry;
+            this.entryHandle = entry;
         }
 
         @Override
@@ -342,9 +343,9 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             StringBuilder b = new StringBuilder();
             //colorize the 'current line text' a bit
             //find out if there's the opening curly bracket
-            assert entry.getLineText() != null;
-            int curlyBracketIndex = entry.getLineText().indexOf('{'); //NOI18N
-            String croppedLineText = curlyBracketIndex == -1 ? entry.getLineText() : entry.getLineText().substring(0, curlyBracketIndex);
+            assert entryHandle.entry().getLineText() != null;
+            int curlyBracketIndex = entryHandle.entry().getLineText().indexOf('{'); //NOI18N
+            String croppedLineText = curlyBracketIndex == -1 ? entryHandle.entry().getLineText() : entryHandle.entry().getLineText().substring(0, curlyBracketIndex);
 
             b.append("<b><font color=007c00>");//NOI18N
             b.append(croppedLineText);
@@ -357,8 +358,12 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
 
             b.append(path);
             b.append(":"); //NOI18N
-            b.append(entry.getLineOffset() + 1); //line offsets are counted from zero, but in editor lines starts with one.
-            
+            b.append(entryHandle.entry().getLineOffset() + 1); //line offsets are counted from zero, but in editor lines starts with one.
+            if(!entryHandle.isRelatedEntry()) {
+                b.append(" <font color=ff0000>(");
+                b.append(NbBundle.getMessage(HtmlDeclarationFinder.class, "MSG_Unrelated"));
+                b.append(")</font>");
+            }
             return b.toString();
         }
 
