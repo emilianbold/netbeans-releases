@@ -47,7 +47,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.text.MessageFormat;
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -137,7 +137,13 @@ public class ErrorDescriptionFactory {
         }
     }
 
-    private static List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided) {
+    //XXX: should not be public:
+    public static List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided) {
+        if (   ctx.getHintMetadata().kind == HintMetadata.Kind.SUGGESTION
+            || ctx.getHintMetadata().kind == HintMetadata.Kind.SUGGESTION_NON_GUI) {
+            //suggestions do not currently have customizers, and cannot be suppressed.
+            return Arrays.asList(provided);
+        }
         List<Fix> auxiliaryFixes = new LinkedList<Fix>();
 
         if (ctx.getHintMetadata() != null) {
@@ -159,24 +165,26 @@ public class ErrorDescriptionFactory {
                 auxiliaryFixes.addAll(FixFactory.createSuppressWarnings(ctx.getInfo(), ctx.getPath(), suppressWarningsKeys.toArray(new String[0])));
             }
 
-            if (provided == null || provided.length == 0) {
-                provided = new Fix[] {new DisableConfigure(ctx.getHintMetadata(), false)};
-            }
-        }
+            List<Fix> result = new LinkedList<Fix>();
 
-        List<Fix> result = new LinkedList<Fix>();
-        
-        for (Fix f : provided) {
-            if (f == null) continue;
-            if (FixFactory.isSuppressWarningsFix(f)) {
-                Logger.getLogger(ErrorDescriptionFactory.class.getName()).log(Level.FINE, "Eliminated SuppressWarnings fix");
-                continue;
+            for (Fix f : provided != null ? provided : new Fix[0]) {
+                if (f == null) continue;
+                if (FixFactory.isSuppressWarningsFix(f)) {
+                    Logger.getLogger(ErrorDescriptionFactory.class.getName()).log(Level.FINE, "Eliminated SuppressWarnings fix");
+                    continue;
+                }
+
+                result.add(org.netbeans.spi.editor.hints.ErrorDescriptionFactory.attachSubfixes(f, auxiliaryFixes));
             }
 
-            result.add(org.netbeans.spi.editor.hints.ErrorDescriptionFactory.attachSubfixes(f, auxiliaryFixes));
+            if (result.isEmpty()) {
+                result.add(org.netbeans.spi.editor.hints.ErrorDescriptionFactory.attachSubfixes(new DisableConfigure(ctx.getHintMetadata(), false), auxiliaryFixes));
+            }
+
+            return result;
         }
 
-        return result;
+        return Arrays.asList(provided);
     }
 
     private static final class DisableConfigure implements Fix {
