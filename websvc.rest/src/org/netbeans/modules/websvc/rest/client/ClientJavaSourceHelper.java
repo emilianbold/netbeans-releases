@@ -64,6 +64,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -96,6 +97,10 @@ import org.openide.util.NbBundle;
 public class ClientJavaSourceHelper {
 
     public static void generateJerseyClient(Node resourceNode, FileObject targetFo, String className) {
+        generateJerseyClient(resourceNode, targetFo, className, new Security(false, Security.Authentication.NONE));
+    }
+
+    public static void generateJerseyClient(Node resourceNode, FileObject targetFo, String className, Security security) {
 
         // add REST and Jersey dependencies
         ClassPath cp = ClassPath.getClassPath(targetFo, ClassPath.COMPILE);
@@ -158,7 +163,8 @@ public class ClientJavaSourceHelper {
                         baseURL,
                         restServiceDesc,
                         null,
-                        pf);
+                        pf,
+                        security);
             }
         } else {
             WadlSaasResource saasResource = resourceNode.getLookup().lookup(WadlSaasResource.class);
@@ -176,7 +182,14 @@ public class ClientJavaSourceHelper {
                         resourceUri,
                         null,
                         saasResource,
-                        pf);
+                        pf,
+                        security);
+                
+                try {
+                    Wadl2JavaHelper.generateJaxb(targetFo, saasResource.getSaas());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
     }
@@ -187,7 +200,8 @@ public class ClientJavaSourceHelper {
             final String resourceUri,
             final RestServiceDescription restServiceDesc,
             final WadlSaasResource saasResource,
-            final PathFormat pf) {
+            final PathFormat pf,
+            final Security security) {
         try {
             ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
 
@@ -198,9 +212,9 @@ public class ClientJavaSourceHelper {
                     ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
                     ClassTree modifiedTree = null;
                     if (className == null) {
-                        modifiedTree = modifyJerseyClientClass(copy, tree, resourceUri, restServiceDesc, saasResource, pf);
+                        modifiedTree = modifyJerseyClientClass(copy, tree, resourceUri, restServiceDesc, saasResource, pf, security);
                     } else {
-                        modifiedTree = addJerseyClientClass(copy, tree, className, resourceUri, restServiceDesc, saasResource, pf);
+                        modifiedTree = addJerseyClientClass(copy, tree, className, resourceUri, restServiceDesc, saasResource, pf, security);
                     }
 
                     copy.rewrite(tree, modifiedTree);
@@ -219,9 +233,10 @@ public class ClientJavaSourceHelper {
             String resourceURI,
             RestServiceDescription restServiceDesc,
             WadlSaasResource saasResource,
-            PathFormat pf) {
+            PathFormat pf,
+            Security security) {
 
-        return generateClassArtifacts(copy, classTree, resourceURI, restServiceDesc, saasResource, pf);
+        return generateClassArtifacts(copy, classTree, resourceURI, restServiceDesc, saasResource, pf, security);
     }
 
     private static ClassTree addJerseyClientClass (
@@ -231,7 +246,8 @@ public class ClientJavaSourceHelper {
             String resourceURI,
             RestServiceDescription restServiceDesc,
             WadlSaasResource saasResource,
-            PathFormat pf) {
+            PathFormat pf,
+            Security security) {
 
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree modifs = maker.Modifiers(Collections.<Modifier>singleton(Modifier.STATIC));
@@ -244,18 +260,19 @@ public class ClientJavaSourceHelper {
                 Collections.<Tree>emptyList());
 
         ClassTree modifiedInnerClass =
-                generateClassArtifacts(copy, innerClass, resourceURI, restServiceDesc, saasResource, pf);
+                generateClassArtifacts(copy, innerClass, resourceURI, restServiceDesc, saasResource, pf, security);
 
         return maker.addClassMember(classTree, modifiedInnerClass);
     }
 
-    private static ClassTree generateClassArtifacts(
+    private static ClassTree generateClassArtifacts (
             WorkingCopy copy,
             ClassTree classTree,
             String resourceURI,
             RestServiceDescription restServiceDesc,
             WadlSaasResource saasResource,
-            PathFormat pf) {
+            PathFormat pf,
+            Security security) {
 
         TreeMaker maker = copy.getTreeMaker();
         // add 3 fields
@@ -275,7 +292,12 @@ public class ClientJavaSourceHelper {
         modifiersSet.add(Modifier.FINAL);
         fieldModif =  maker.Modifiers(modifiersSet);
         typeTree = maker.Identifier("String"); //NOI18N
-        fieldTree = maker.Variable(fieldModif, "BASE_URI", typeTree, maker.Literal(resourceURI)); //NOI18N
+
+        String baseUri = resourceURI;
+        if (security.isSSL() && resourceURI.startsWith("http:")) { //NOI18N
+            baseUri = "https:"+resourceURI.substring(5); //NOI18N
+        }
+        fieldTree = maker.Variable(fieldModif, "BASE_URI", typeTree, maker.Literal(baseUri)); //NOI18N
         modifiedClass = maker.addClassMember(modifiedClass, fieldTree);
 
         // add constructor
@@ -302,9 +324,17 @@ public class ClientJavaSourceHelper {
             resURI = getPathExpression(pf); //NOI18N
         }
 
+        String SSLExpr = security.isSSL() ?
+            "// SSL configuration\n" + //NOI18N
+            "config.getProperties().put(com.sun.jersey.client.urlconnection.HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, " + //NOI18N
+            "                           new com.sun.jersey.client.urlconnection.HTTPSProperties(getHostnameVerifier(), getSSLContext()));": //NOI18N
+            ""; //NOI18N
+
         String body =
                 "{"+ //NOI18N
-                "   client = new "+(clientEl == null ? "com.sun.jersey.api.client.":"")+"Client();"+ //NOI18N
+                "   com.sun.jersey.api.client.config.ClientConfig config = new com.sun.jersey.api.client.config.DefaultClientConfig();"+ //NOI18N
+                SSLExpr+
+                "   client = "+(clientEl == null ? "com.sun.jersey.api.client.":"")+"Client.create(config);"+ //NOI18N
                 subresourceExpr +
                 "   webResource = client.resource(BASE_URI).path("+resURI+");"+ //NOI18N
                 "}"; //NOI18N
@@ -364,6 +394,92 @@ public class ClientJavaSourceHelper {
                 null); //NOI18N
 
         modifiedClass = maker.addClassMember(modifiedClass, methodTree);
+
+        // add security stuff
+        if (Security.Authentication.BASIC == security.getAuthentization()) {
+            List<VariableTree> authParams = new ArrayList<VariableTree>();
+            Tree argTypeTree = maker.Identifier("String"); //NOI18N
+            ModifiersTree fieldModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+            VariableTree argFieldTree = maker.Variable(fieldModifier, "username", argTypeTree, null); //NOI18N
+            authParams.add(argFieldTree);
+            argFieldTree = maker.Variable(fieldModifier, "password", argTypeTree, null); //NOI18N
+            authParams.add(argFieldTree);
+
+            body =
+                "{"+ //NOI18N
+                "   client.addFilter(new com.sun.jersey.api.client.filter.HTTPBasicAuthFilter(username, password));"+ //NOI18N
+                "}"; //NOI18N
+            methodTree = maker.Method (
+                    methodModifier,
+                    "setUsernamePassword", //NOI18N
+                    JavaSourceHelper.createTypeTree(copy, "void"), //NOI18N
+                    Collections.<TypeParameterTree>emptyList(),
+                    authParams,
+                    Collections.<ExpressionTree>emptyList(),
+                    body,
+                    null); //NOI18N
+            modifiedClass = maker.addClassMember(modifiedClass, methodTree);
+        }
+        if (security.isSSL()) {
+
+            ModifiersTree privateModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
+            // adding getHostnameVerifier() method
+            body =
+            "{" + //NOI18N
+            "   return new HostnameVerifier() {" + //NOI18N
+            "       @Override" + //NOI18N
+            "       public boolean verify(String hostname, javax.net.ssl.SSLSession sslSession) {" + //NOI18N
+            "           return true;"+ //NOI18N
+            "       }"+ //NOI18N
+            "   }"+ //NOI18N
+            "}"; //NOI18N
+            methodTree = maker.Method (
+                    privateModifier,
+                    "getHostnameVerifier", //NOI18N
+                    JavaSourceHelper.createTypeTree(copy, "javax.net.ssl.HostnameVerifier"), //NOI18N
+                    Collections.<TypeParameterTree>emptyList(),
+                    Collections.<VariableTree>emptyList(),
+                    Collections.<ExpressionTree>emptyList(),
+                    body,
+                    null);
+            modifiedClass = maker.addClassMember(modifiedClass, methodTree);
+
+            // adding getSSLContext() method
+            body =
+            "{"+ //NOI18N
+            "   javax.net.ssl.TrustManager x509 = new javax.net.ssl.X509TrustManager() {"+ //NOI18N
+            "       @Override"+ //NOI18N
+            "       public void checkClientTrusted(java.security.cert.X509Certificate[] arg0, String arg1) throws java.security.cert.CertificateException {"+ //NOI18N
+            "           return;"+ //NOI18N
+            "       }"+ //NOI18N
+            "       @Override"+ //NOI18N
+            "       public void checkServerTrusted(java.security.cert.X509Certificate[] arg0, String arg1) throws java.security.cert.CertificateException {"+ //NOI18N
+            "           return;"+ //NOI18N
+            "       }"+ //NOI18N
+            "       @Override"+ //NOI18N
+            "       public java.security.cert.X509Certificate[] getAcceptedIssuers() {"+ //NOI18N
+            "           return null;"+ //NOI18N
+            "       }"+ //NOI18N
+            "   };"+ //NOI18N
+            "   SSLContext ctx = null;"+ //NOI18N
+            "   try {"+ //NOI18N
+            "       ctx = SSLContext.getInstance(\"SSL\");"+ //NOI18N
+            "       ctx.init(null, new javax.net.ssl.TrustManager[] {x509}, null);"+ //NOI18N
+            "   } catch (java.security.GeneralSecurityException ex) {}"+ //NOI18N
+            "   return ctx;"+ //NOI18N
+            "}";
+            methodTree = maker.Method (
+                    privateModifier,
+                    "getSSLContext", //NOI18N
+                    JavaSourceHelper.createTypeTree(copy, "javax.net.ssl.SSLContext"), //NOI18N
+                    Collections.<TypeParameterTree>emptyList(),
+                    Collections.<VariableTree>emptyList(),
+                    Collections.<ExpressionTree>emptyList(),
+                    body,
+                    null);
+            modifiedClass = maker.addClassMember(modifiedClass, methodTree);
+        }
+
         return modifiedClass;
     }
 

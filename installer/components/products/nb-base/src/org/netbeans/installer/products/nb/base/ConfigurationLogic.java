@@ -398,11 +398,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             if (productToIntegrate != null) {
                 final File location = productToIntegrate.getInstallationLocation();
                 LogManager.log("... integrate " + getSystemDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
-                NetBeansUtils.setJvmOption(
-                        installLocation,
-                        GLASSFISH_MOD_JVM_OPTION_NAME,
-                        location.getAbsolutePath(),
-                        true);
+                registerGlassFish(installLocation, location);
             }
         } catch (IOException e) {
             throw new InstallationException(
@@ -445,16 +441,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             if (productToIntegrate != null) {
                 final File location = productToIntegrate.getInstallationLocation();
                 LogManager.log("... integrate " + getSystemDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
-                NetBeansUtils.setJvmOption(
-                        installLocation,
-                        TOMCAT_JVM_OPTION_NAME_HOME,
-                        location.getAbsolutePath(),
-                        true);
-                NetBeansUtils.setJvmOption(
-                        installLocation,
-                        TOMCAT_JVM_OPTION_NAME_TOKEN,
-                        "" + System.currentTimeMillis(),
-                        true);
+                registerTomcat(installLocation, location);
             }
         } catch (IOException e) {
             throw new InstallationException(
@@ -495,6 +482,26 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
+    }
+
+    private void registerGlassFish(File nbLocation, File gfLocation) throws IOException {
+        NetBeansUtils.setJvmOption(
+                nbLocation,
+                GLASSFISH_MOD_JVM_OPTION_NAME,
+                gfLocation.getAbsolutePath(),
+                true);
+    }
+    private void registerTomcat(File nbLocation, File tomcatLocation) throws IOException {
+        NetBeansUtils.setJvmOption(
+                nbLocation,
+                TOMCAT_JVM_OPTION_NAME_HOME,
+                tomcatLocation.getAbsolutePath(),
+                true);
+        NetBeansUtils.setJvmOption(
+                nbLocation,
+                TOMCAT_JVM_OPTION_NAME_TOKEN,
+                "" + System.currentTimeMillis(),
+                true);
     }
 
     public void uninstall(final Progress progress) throws UninstallationException {

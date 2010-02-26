@@ -58,22 +58,25 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="Popup">
-                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
-                        <attr name="position" intvalue="1840"/>
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1600"/>
                     </file>
                     <file name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
                         <attr name="position" intvalue="1760"/>
                     </file>
-
-                    <file name="SeparatorAfterFormat.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1600"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.instance"/>
+                        <attr name="position" intvalue="1790"/>
                     </file>
                     <file name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
                         <attr name="position" intvalue="1800"/>
+                    </file>
+                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+                        <attr name="position" intvalue="1840"/>
                     </file>
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
