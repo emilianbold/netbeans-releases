@@ -464,7 +464,7 @@ ${cursor}]]></code></codetemplate>
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="pe" contexts="BLOCK,CASE">
+    <codetemplate abbreviation="pue" contexts="BLOCK,CASE">
         <code>
 <![CDATA[public enum ${Type} {
    ${cursor}

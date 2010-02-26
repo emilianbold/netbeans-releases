@@ -359,7 +359,8 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
                   new String[] {FmtOptions.placeCatchOnNewLine, Boolean.FALSE.toString()},
                   new String[] {FmtOptions.placeElseOnNewLine, Boolean.FALSE.toString()},
                   new String[] {FmtOptions.placeWhileOnNewLine, Boolean.FALSE.toString()},
-                  new String[] {FmtOptions.placeFinallyOnNewLine, Boolean.FALSE.toString()} );
+                  new String[] {FmtOptions.placeFinallyOnNewLine, Boolean.FALSE.toString()},
+                  new String[] { FmtOptions.blankLinesBeforeClass, "0" });
             panel.scs = this;
         }
 

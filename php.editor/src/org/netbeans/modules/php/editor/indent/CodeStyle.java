@@ -474,7 +474,89 @@ public final class CodeStyle {
     public boolean placeNewLineAfterModifiers() {
         return preferences.getBoolean(placeNewLineAfterModifiers, getDefaultAsBoolean(placeNewLineAfterModifiers));
     }
-    
+
+    // Wrapping ----------------------------------------------------------------
+
+    public WrapStyle wrapExtendsImplementsKeyword() {
+        String wrap = preferences.get(wrapExtendsImplementsKeyword, getDefaultAsString(wrapExtendsImplementsKeyword));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapExtendsImplementsList() {
+        String wrap = preferences.get(wrapExtendsImplementsList, getDefaultAsString(wrapExtendsImplementsList));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapMethodParams() {
+        String wrap = preferences.get(wrapMethodParams, getDefaultAsString(wrapMethodParams));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapThrowsKeyword() {
+        String wrap = preferences.get(wrapThrowsKeyword, getDefaultAsString(wrapThrowsKeyword));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapThrowsList() {
+        String wrap = preferences.get(wrapThrowsList, getDefaultAsString(wrapThrowsList));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapMethodCallArgs() {
+        String wrap = preferences.get(wrapMethodCallArgs, getDefaultAsString(wrapMethodCallArgs));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapChainedMethodCalls() {
+        String wrap = preferences.get(wrapChainedMethodCalls, getDefaultAsString(wrapChainedMethodCalls));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapArrayInit() {
+        String wrap = preferences.get(wrapArrayInit, getDefaultAsString(wrapArrayInit));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapFor() {
+        String wrap = preferences.get(wrapFor, getDefaultAsString(wrapFor));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapForStatement() {
+        String wrap = preferences.get(wrapForStatement, getDefaultAsString(wrapForStatement));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapIfStatement() {
+        String wrap = preferences.get(wrapIfStatement, getDefaultAsString(wrapIfStatement));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapWhileStatement() {
+        String wrap = preferences.get(wrapWhileStatement, getDefaultAsString(wrapWhileStatement));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapDoWhileStatement() {
+        String wrap = preferences.get(wrapDoWhileStatement, getDefaultAsString(wrapDoWhileStatement));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapBinaryOps() {
+        String wrap = preferences.get(wrapBinaryOps, getDefaultAsString(wrapBinaryOps));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapTernaryOps() {
+        String wrap = preferences.get(wrapTernaryOps, getDefaultAsString(wrapTernaryOps));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapAssignOps() {
+        String wrap = preferences.get(wrapAssignOps, getDefaultAsString(wrapAssignOps));
+        return WrapStyle.valueOf(wrap);
+    }
+
     private static class Producer implements FmtOptions.CodeStyleProducer {
 
         public CodeStyle create(Preferences preferences) {
