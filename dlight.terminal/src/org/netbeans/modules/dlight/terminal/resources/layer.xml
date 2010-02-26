@@ -3,11 +3,11 @@
 <filesystem>
     <folder name="Windows2">
         <folder name="Components">
-            <file name="TermTopComponent.settings" url="TermTopComponentSettings.xml"/>
+            <file name="TermCopyTopComponent.settings" url="TermTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
             <folder name="output">
-                <file name="TermTopComponent.wstcref" url="TermTopComponentWstcref.xml">
+                <file name="TermCopyTopComponent.wstcref" url="TermTopComponentWstcref.xml">
                     <attr name="position" intvalue="2275"/>
                 </file>
             </folder>
