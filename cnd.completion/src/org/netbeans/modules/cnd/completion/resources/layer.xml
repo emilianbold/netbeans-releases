@@ -172,9 +172,9 @@ made subject to such option by the copyright holder.
                         </file>
 		    </folder>
                 </folder>
-            </folder>            
-        </folder>
-    </folder>
+            </folder>
+                </folder>
+                </folder>
 
     <folder name="OptionsDialog">
         <folder name="Editor">
