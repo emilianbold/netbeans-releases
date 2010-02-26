@@ -245,13 +245,12 @@ public class MakeOSGi extends Task {
         }
         osgi.putValue("Bundle-SymbolicName", cnb);
         String spec = netbeans.getValue("OpenIDE-Module-Specification-Version");
+        String implVersion = netbeans.getValue("OpenIDE-Module-Implementation-Version");
         String bundleVersion = null;
         if (spec != null) {
             bundleVersion = threeDotsWithMajor(spec, codename);
             String buildVersion = netbeans.getValue("OpenIDE-Module-Build-Version");
             if (buildVersion == null) {
-                String implVersion = netbeans.getValue("OpenIDE-Module-Implementation-Version");
-                // XXX if integral, export all packages
                 buildVersion = implVersion;
             }
             if (buildVersion != null) {
@@ -261,6 +260,11 @@ public class MakeOSGi extends Task {
         }
         List<String> exportedPackages = new ArrayList<String>();
         String pp = netbeans.getValue("OpenIDE-Module-Public-Packages");
+        if (implVersion != null && implVersion.matches("\\d+")) {
+            // Since we have no idea who might be using these packages, have to make everything public.
+            exportedPackages.addAll(availablePackages);
+            pp = null;
+        }
         if (pp != null && !pp.equals("-")) {
             for (String p : pp.split("[, ]+")) {
                 if (p.isEmpty()) {
