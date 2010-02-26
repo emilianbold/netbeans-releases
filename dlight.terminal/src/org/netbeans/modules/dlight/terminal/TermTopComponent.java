@@ -57,7 +57,7 @@ public final class TermTopComponent extends TopComponent implements TerminalWind
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
 
-    private static final String PREFERRED_ID = "TermTopComponent"; // NOI18N
+    private static final String PREFERRED_ID = "TermCopyTopComponent"; // NOI18N
 
     TermTopComponent() {
         initComponents();
