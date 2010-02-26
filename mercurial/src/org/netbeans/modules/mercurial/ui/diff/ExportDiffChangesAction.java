@@ -124,9 +124,13 @@ public class ExportDiffChangesAction extends ContextAction {
             return;
         }
 
-        final File root = HgUtils.getRootFile(context);
-        Set<File> roots = context.getRootFiles();
-        File contextFile = roots != null && roots.size() > 0 ? roots.iterator().next() : null;
+        File[] roots = HgUtils.getActionRoots(context);
+        if (roots == null || roots.length == 0) {
+            LOG.log(Level.INFO, "Null roots for {0}", context.getRootFiles()); //NOI18N
+            return;
+        }
+        File contextFile = roots[0];
+        final File root = Mercurial.getInstance().getRepositoryRoot(contextFile);
         ExportDiffSupport exportDiffSupport = new ExportDiffSupport(new File[] {contextFile}, HgModuleConfig.getDefault().getPreferences()) {
             @Override
             public void writeDiffFile(final File toFile) {
@@ -135,7 +139,7 @@ public class ExportDiffChangesAction extends ContextAction {
                 HgProgressSupport ps = new HgProgressSupport() {
                     protected void perform() {
                         OutputLogger logger = getLogger();
-                        async(this, context, toFile, logger, singleDiffSetup);
+                        async(this, root, context, toFile, logger, singleDiffSetup);
                     }
                 };
                 ps.start(rp, root, org.openide.util.NbBundle.getMessage(ExportDiffChangesAction.class, "LBL_ExportChanges_Progress")).waitFinished();
@@ -145,17 +149,13 @@ public class ExportDiffChangesAction extends ContextAction {
 
     }
     
-    @SuppressWarnings("unchecked")
-    private void async(HgProgressSupport progress, VCSContext context, File destination, OutputLogger logger, boolean singleDiffSetup) {
+    private void async(HgProgressSupport progress, File root, VCSContext context, File destination, OutputLogger logger, boolean singleDiffSetup) {
         boolean success = false;
         OutputStream out = null;
         int exportedFiles = 0;
         try {
-
-            // prepare setups and common parent - root
-
-            File root;
             List<Setup> setups;
+            Mercurial hg = Mercurial.getInstance();
 
             TopComponent activated = TopComponent.getRegistry().getActivated();
             if (activated instanceof DiffSetupSource) {
@@ -170,23 +170,26 @@ public class ExportDiffChangesAction extends ContextAction {
                         return;
                     }
                 }
-                List<File> setupFiles = new ArrayList<File>(setups.size());
                 for (Iterator i = setups.iterator(); i.hasNext();) {
                     Setup setup = (Setup) i.next();
-                    setupFiles.add(setup.getBaseFile()); 
+                    File file = setup.getBaseFile();
+                    // remove files from other repositories
+                    if (!root.equals(hg.getRepositoryRoot(file))) {
+                        i.remove();
+                    }
                 }
-                root = getCommonParent(setupFiles.toArray(new File[setupFiles.size()]));
             } else {
                 // XXX containsFileOfStatus would be better (do not test exclusions from commit)
                 File [] files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE, false);
-                root = getCommonParent(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
                 setups = new ArrayList<Setup>(files.length);
                 for (int i = 0; i < files.length; i++) {
                     File file = files[i];
-                    Mercurial.LOG.log(Level.FINE, "preparing setup {0}", file); //NOI18N
-                    Setup setup = new Setup(file, null, Setup.DIFFTYPE_LOCAL);
-                    Mercurial.LOG.log(Level.FINE, "setup prepared {0}", setup.getBaseFile()); //NOI18N
-                    setups.add(setup);
+                    if (root.equals(hg.getRepositoryRoot(file)))  {
+                        Mercurial.LOG.log(Level.FINE, "preparing setup {0}", file); //NOI18N
+                        Setup setup = new Setup(file, null, Setup.DIFFTYPE_LOCAL);
+                        Mercurial.LOG.log(Level.FINE, "setup prepared {0}", setup.getBaseFile()); //NOI18N
+                        setups.add(setup);
+                    }
                 }
             }
             if (root == null) {
