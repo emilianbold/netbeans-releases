@@ -102,7 +102,6 @@ import org.netbeans.modules.maven.model.pom.Scm;
 import org.netbeans.modules.maven.model.pom.Site;
 import org.netbeans.modules.maven.model.pom.StringList;
 import org.netbeans.modules.xml.xam.Model;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -243,6 +242,15 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         checkChildObject(names.DEPENDENCYMANAGEMENT, DependencyManagement.class, NbBundle.getMessage(POMModelVisitor.class, "DEPENDENCY_MANAGEMENT"), t != null ? t.getDependencyManagement() : null);
         checkChildObject(names.DISTRIBUTIONMANAGEMENT, DistributionManagement.class, NbBundle.getMessage(POMModelVisitor.class, "DISTRIBUTION_MANAGEMENT"), t != null ? t.getDistributionManagement() : null);
         checkChildObject(names.PROPERTIES, Properties.class, NbBundle.getMessage(POMModelVisitor.class, "PROPERTIES"), t != null ? t.getProperties() : null);
+
+        //only show modules in current project, no point in showing overrides
+        List<String> modules;
+        if (count == 0 && t != null && t.getModules() != null) {
+            modules = t.getModules();
+        } else {
+            modules = null;
+        }
+        checkStringListObject(names.MODULES, names.MODULE, NbBundle.getMessage(POMModelVisitor.class, "MODULES"), NbBundle.getMessage(POMModelVisitor.class, "MODULE"), modules);
 
         count++;
     }
@@ -483,7 +491,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                     }
                 });
         checkDependencies(t);
-        checkStringListObject(names.GOALS, names.GOAL, org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "GOALS"), t != null ? t.getGoals() : null);
+        checkStringListObject(names.GOALS, names.GOAL, NbBundle.getMessage(POMModelVisitor.class, "GOALS"), NbBundle.getMessage(POMModelVisitor.class, "GOAL"), t != null ? t.getGoals() : null);
         checkChildString(names.INHERITED, NbBundle.getMessage(POMModelVisitor.class, "INHERITED"), t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
         checkChildObject(names.CONFIGURATION, Configuration.class, NbBundle.getMessage(POMModelVisitor.class, "CONFIGURATION"), t != null ? t.getConfiguration() : null);
 
@@ -542,8 +550,8 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         checkChildString(names.TARGETPATH, NbBundle.getMessage(POMModelVisitor.class, "TARGET_PATH"), t != null ? t.getTargetPath() : null);
         //TODO filtering
         checkChildString(names.DIRECTORY, NbBundle.getMessage(POMModelVisitor.class, "DIRECTORY"), t != null ? t.getDirectory() : null);
-        checkStringListObject(names.INCLUDES, names.INCLUDE, org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "INCLUDES"), t != null ? t.getIncludes() : null);
-        checkStringListObject(names.EXCLUDES, names.EXCLUDE, org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "EXCLUDES"), t != null ? t.getExcludes() : null);
+        checkStringListObject(names.INCLUDES, names.INCLUDE, NbBundle.getMessage(POMModelVisitor.class, "INCLUDES"), NbBundle.getMessage(POMModelVisitor.class, "INCLUDE"), t != null ? t.getIncludes() : null);
+        checkStringListObject(names.EXCLUDES, names.EXCLUDE, NbBundle.getMessage(POMModelVisitor.class, "EXCLUDES"), NbBundle.getMessage(POMModelVisitor.class, "EXCLUDE"), t != null ? t.getExcludes() : null);
 
         count++;
     }
@@ -623,7 +631,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         checkChildString(names.ID, NbBundle.getMessage(POMModelVisitor.class, "ID"), t != null ? t.getId() : null);
         checkChildObject(names.CONFIGURATION, Configuration.class, NbBundle.getMessage(POMModelVisitor.class, "CONFIGURATION"), t != null ? t.getConfiguration() : null);
         checkChildString(names.INHERITED, NbBundle.getMessage(POMModelVisitor.class, "INHERITED"), t != null ? (t.isInherited() != null ? t.isInherited().toString() : null) : null);
-        checkStringListObject(names.REPORTS, names.REPORT, org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "REPORTS"), t != null ? t.getReports() : null);
+        checkStringListObject(names.REPORTS, names.REPORT, NbBundle.getMessage(POMModelVisitor.class, "REPORTS"), NbBundle.getMessage(POMModelVisitor.class, "REPORT"), t != null ? t.getReports() : null);
 
         count++;
     }
@@ -883,10 +891,10 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         fillValues(count, nd, values);
     }
 
-    private void checkStringListObject(POMQName qname, POMQName childName, String displayName, List<String> values) {
+    private void checkStringListObject(POMQName qname, POMQName childName, String displayName, String childDisplayName, List<String> values) {
         POMCutHolder nd = childs.get(qname.getName());
         if (nd == null) {
-            nd =  new ListStringCH(parent, qname, childName, displayName, configuration);
+            nd =  new ListStringCH(parent, qname, childName, displayName, childDisplayName, configuration);
             childs.put(qname.getName(), nd);
         }
         fillValues(count, nd, values);
@@ -1109,18 +1117,20 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         private String display;
         private POMQName childName;
         private POMModelPanel.Configuration configuration;
+        private final String childDisplayName;
 
-        private ListStringCH(POMCutHolder parent, POMQName qname, POMQName childName, String displayName, POMModelPanel.Configuration configuration) {
+        private ListStringCH(POMCutHolder parent, POMQName qname, POMQName childName, String displayName, String childDisplayName, POMModelPanel.Configuration configuration) {
             super(parent);
             this.qname = qname;
             this.display = displayName;
             this.childName = childName;
+            this.childDisplayName = childDisplayName;
             this.configuration = configuration;
         }
 
         @Override
         Node createNode() {
-            return new ListNode(Lookups.fixed(this, qname), new PomStringListChildren(this, childName), display);
+            return new ListNode(Lookups.fixed(this, qname), new PomStringListChildren(this, childName, childDisplayName), display);
         }
     }
 
@@ -1541,10 +1551,13 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         private Object[] one = new Object[] {new Object()};
         private POMCutHolder holder;
         private POMQName childName;
-        public PomStringListChildren(POMCutHolder holder, POMQName childName) {
+        private final String displayName;
+
+        public PomStringListChildren(POMCutHolder holder, POMQName childName, String displayName) {
             setKeys(one);
             this.holder = holder;
             this.childName = childName;
+            this.displayName = displayName;
         }
 
         public void reshow() {
@@ -1586,6 +1599,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                     cutHolder.addCut(c);
                 }
                 growToSize(holder.getCutsSize(), cutHolder);
+                toRet.add(new SingleFieldNode(Lookups.fixed(cutHolder, childName), displayName));
             }
 
             return toRet.toArray(new Node[0]);
