@@ -140,6 +140,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         return toRet.toArray(new POMCutHolder[0]);
     }
 
+    @Override
     public void visit(Project target) {
         Project t = target;
         if (t != null && (!t.isInDocumentModel() || !t.getModel().getState().equals(Model.State.VALID))) {
@@ -246,9 +247,11 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(Parent target) {
     }
 
+    @Override
     public void visit(Organization target) {
         Organization t = target;
         POMQNames names = parent.getPOMQNames();
@@ -258,6 +261,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(DistributionManagement target) {
         DistributionManagement t = target;
         POMQNames names = parent.getPOMQNames();
@@ -269,6 +273,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(Site target) {
         Site t = target;
         POMQNames names = parent.getPOMQNames();
@@ -279,6 +284,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(DeploymentRepository target) {
         DeploymentRepository t = target;
         POMQNames names = parent.getPOMQNames();
@@ -290,6 +296,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(Prerequisites target) {
         Prerequisites t = target;
         POMQNames names = parent.getPOMQNames();
@@ -298,6 +305,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(Contributor target) {
         Contributor t = target;
         POMQNames names = parent.getPOMQNames();
@@ -311,6 +319,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(Scm target) {
         Scm t = target;
         POMQNames names = parent.getPOMQNames();
@@ -322,6 +331,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(IssueManagement target) {
         IssueManagement t = target;
         POMQNames names = parent.getPOMQNames();
@@ -331,6 +341,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(CiManagement target) {
         CiManagement t = target;
         POMQNames names = parent.getPOMQNames();
@@ -340,10 +351,12 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(Notifier target) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void visit(Repository target) {
         Repository t = target;
         POMQNames names = parent.getPOMQNames();
@@ -357,6 +370,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(RepositoryPolicy target) {
         RepositoryPolicy t = target;
         POMQNames names = parent.getPOMQNames();
@@ -367,6 +381,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(Profile target) {
         Profile t = target;
         POMQNames names = parent.getPOMQNames();
@@ -404,6 +419,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(BuildBase target) {
         BuildBase t = target;
         POMQNames names = parent.getPOMQNames();
@@ -447,6 +463,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(Plugin target) {
         Plugin t = target;
         POMQNames names = parent.getPOMQNames();
@@ -473,6 +490,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(Dependency target) {
         Dependency t = target;
         POMQNames names = parent.getPOMQNames();
@@ -495,6 +513,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(Exclusion target) {
         Exclusion t = target;
         POMQNames names = parent.getPOMQNames();
@@ -504,6 +523,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(PluginExecution target) {
         PluginExecution t = target;
         POMQNames names = parent.getPOMQNames();
@@ -515,6 +535,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(Resource target) {
         Resource t = target;
         POMQNames names = parent.getPOMQNames();
@@ -527,6 +548,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(PluginManagement target) {
         PluginManagement t = target;
         POMQNames names = parent.getPOMQNames();
@@ -549,6 +571,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(Reporting target) {
         Reporting t = target;
         POMQNames names = parent.getPOMQNames();
@@ -569,6 +592,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(ReportPlugin target) {
         ReportPlugin t = target;
         POMQNames names = parent.getPOMQNames();
@@ -592,6 +616,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(ReportSet target) {
         ReportSet t = target;
         POMQNames names = parent.getPOMQNames();
@@ -603,6 +628,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(Activation target) {
         Activation t = target;
         POMQNames names = parent.getPOMQNames();
@@ -614,18 +640,23 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(ActivationProperty target) {
     }
 
+    @Override
     public void visit(ActivationOS target) {
     }
 
+    @Override
     public void visit(ActivationFile target) {
     }
 
+    @Override
     public void visit(ActivationCustom target) {
     }
 
+    @Override
     public void visit(DependencyManagement target) {
         DependencyManagement t = target;
         checkDependencies(t);
@@ -633,6 +664,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(Build target) {
         Build t = target;
         POMQNames names = parent.getPOMQNames();
@@ -693,6 +725,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(Extension target) {
         Extension t = target;
         POMQNames names = parent.getPOMQNames();
@@ -701,6 +734,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         checkChildString(names.VERSION, NbBundle.getMessage(POMModelVisitor.class, "VERSION"), t != null ? t.getVersion() : null);
     }
 
+    @Override
     public void visit(License target) {
         License t = target;
         POMQNames names = parent.getPOMQNames();
@@ -709,6 +743,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(MailingList target) {
         MailingList t = target;
         POMQNames names = parent.getPOMQNames();
@@ -720,6 +755,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(Developer target) {
         Developer t = target;
         POMQNames names = parent.getPOMQNames();
@@ -734,6 +770,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         count++;
     }
 
+    @Override
     public void visit(POMExtensibilityElement target) {
         POMExtensibilityElement t = target;
         if (t != null) {
@@ -747,9 +784,11 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         }
     }
 
+    @Override
     public void visit(ModelList target) {
     }
 
+    @Override
     public void visit(Configuration target) {
         Configuration t = target;
         if (t != null) {
@@ -786,6 +825,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
     }
 
+    @Override
     public void visit(Properties target) {
         Properties t = target;
         if (t != null) {
@@ -809,6 +849,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
     }
 
+    @Override
     public void visit(StringList target) {
     }
 
@@ -888,6 +929,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
     private abstract class IdentityKeyGenerator<T extends POMComponent> implements  KeyGenerator<T> {
+        @Override
         public Object generate(T c) {
             return c;
         }
@@ -1571,12 +1613,14 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             this.node = node;
             this.layer = layer;
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (layer != -1) {
                 POMModelPanel.selectByNode(node, null, layer);
             }
         }
 
+        @Override
         public JMenuItem getPopupPresenter() {
             JMenu menu = new JMenu();
             menu.setText(org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "ACT_Show"));
