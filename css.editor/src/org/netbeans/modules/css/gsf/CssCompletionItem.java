@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
 import org.netbeans.modules.css.editor.Property;
+import org.netbeans.modules.css.editor.PropertyModel.Element;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.util.NbBundle;
 
@@ -65,20 +66,85 @@ import org.openide.util.NbBundle;
  */
 public class CssCompletionItem implements CompletionProposal {
 
-    static enum Kind {
-
+    public static enum Kind {
         PROPERTY, VALUE;
     }
+
     private int anchorOffset;
     private String value;
     private Kind kind;
     private CssElement element;
     protected boolean addSemicolon;
 
+    public static  CssCompletionItem createValueCompletionItem(CssValueElement element,
+            Element value,
+            CssCompletionItem.Kind kind, 
+            int anchorOffset,
+            boolean addSemicolon,
+            boolean addSpaceBeforeItem) {
+
+        return new ValueCompletionItem(element, value.toString(), value.getResolvedOrigin(), kind, anchorOffset, addSemicolon, addSpaceBeforeItem);
+    }
+
+    public static CssCompletionItem createColorValueCompletionItem(CssValueElement element,
+            Element value,
+            CssCompletionItem.Kind kind,
+            int anchorOffset,
+            boolean addSemicolon,
+            boolean addSpaceBeforeItem) {
+
+        return new ColorCompletionItem(element, value.toString(), value.getResolvedOrigin(), kind, anchorOffset, addSemicolon, addSpaceBeforeItem);
+
+    }
+
+    public static CssCompletionItem createPropertyNameCompletionItem(CssElement element,
+            String value,
+            CssCompletionItem.Kind kind,
+            int anchorOffset,
+            boolean addSemicolon) {
+
+        return new PropertyCompletionItem(element, value, kind, anchorOffset, addSemicolon);
+    }
+
+    public static CssCompletionItem createCompletionItem(CssElement element,
+            String value,
+            CssCompletionItem.Kind kind,
+            int anchorOffset,
+            boolean addSemicolon) {
+
+        return new CssCompletionItem(element, value, kind, anchorOffset, addSemicolon);
+    }
+
+    public static CssCompletionItem createHashColorCompletionItem(CssElement element,
+                String value,
+                String origin,
+                Kind kind,
+                int anchorOffset,
+                boolean addSemicolon,
+                boolean addSpaceBeforeItem,
+                boolean usedInCurrentFile) {
+        
+        return new HashColorCompletionItem(element, value, origin, kind, anchorOffset, addSemicolon, addSpaceBeforeItem, usedInCurrentFile);
+    }
+
+    public static CompletionProposal createColorChooserCompletionItem(int anchor, String origin, boolean addSemicolon) {
+        return new ColorChooserItem(anchor, origin, addSemicolon);
+    }
+
+    public static CssCompletionItem createSelectorCompletionItem(CssElement element,
+                String value,
+                Kind kind,
+                int anchorOffset,
+                boolean related) {
+        return new SelectorCompletionItem(element, value, kind, anchorOffset, related);
+
+    }
+
+
     private CssCompletionItem() {
     }
 
-    CssCompletionItem(CssElement element, String value, Kind kind, int anchorOffset, boolean addSemicolon) {
+    private CssCompletionItem(CssElement element, String value, Kind kind, int anchorOffset, boolean addSemicolon) {
         this.anchorOffset = anchorOffset;
         this.value = value;
         this.kind = kind;
@@ -206,7 +272,7 @@ public class CssCompletionItem implements CompletionProposal {
         private String origin; //property name to which this value belongs
         private boolean addSpaceBeforeItem;
 
-        ValueCompletionItem(CssElement element,
+        private ValueCompletionItem(CssElement element,
                 String value,
                 String origin,
                 Kind kind,
@@ -252,7 +318,7 @@ public class CssCompletionItem implements CompletionProposal {
     //XXX fix the CssCompletionItem class so the Value and Property normally subclass it!!!!!!!!!
     static class ColorCompletionItem extends ValueCompletionItem {
 
-        ColorCompletionItem(CssElement element,
+        private ColorCompletionItem(CssElement element,
                 String value,
                 String origin,
                 Kind kind,
@@ -274,7 +340,7 @@ public class CssCompletionItem implements CompletionProposal {
 
         private boolean usedInCurrentFile;
 
-        HashColorCompletionItem(CssElement element,
+        private HashColorCompletionItem(CssElement element,
                 String value,
                 String origin,
                 Kind kind,
@@ -334,7 +400,7 @@ public class CssCompletionItem implements CompletionProposal {
         private boolean addSemicolon;
         private String origin;
 
-        ColorChooserItem(int anchor, String origin, boolean addSemicolon) {
+        private ColorChooserItem(int anchor, String origin, boolean addSemicolon) {
             this.anchorOffset = anchor;
             this.addSemicolon = addSemicolon;
             this.origin = origin;
@@ -408,7 +474,7 @@ public class CssCompletionItem implements CompletionProposal {
 
     static class PropertyCompletionItem extends CssCompletionItem {
 
-        PropertyCompletionItem(CssElement element,
+        private PropertyCompletionItem(CssElement element,
                 String value,
                 Kind kind,
                 int anchorOffset,
@@ -429,14 +495,7 @@ public class CssCompletionItem implements CompletionProposal {
         private static String GRAY_COLOR_CODE = Integer.toHexString(Color.GRAY.getRGB()).substring(2);
         private boolean related;
 
-        SelectorCompletionItem(CssElement element,
-                String value,
-                Kind kind,
-                int anchorOffset) {
-            this(element, value, kind, anchorOffset, true);
-        }
-
-       SelectorCompletionItem(CssElement element,
+       private SelectorCompletionItem(CssElement element,
                 String value,
                 Kind kind,
                 int anchorOffset,

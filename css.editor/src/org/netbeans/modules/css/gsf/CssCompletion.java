@@ -211,7 +211,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 //lets create the completion items
                 List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(refclasses.size());
                 for(String clazz : allclasses) {
-                   proposals.add(new CssCompletionItem.SelectorCompletionItem(new CssElement(clazz),
+                   proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(clazz),
                         clazz,
                         CssCompletionItem.Kind.VALUE,
                         offset,
@@ -257,7 +257,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 //lets create the completion items
                 List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(allids.size());
                 for (String id : allids) {
-                    proposals.add(new CssCompletionItem.SelectorCompletionItem(new CssElement(id),
+                    proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(id),
                             id,
                             CssCompletionItem.Kind.VALUE,
                             offset,
@@ -521,10 +521,11 @@ public class CssCompletion implements CodeCompletionHandler {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(20);
         for (String tagName : HtmlTags.getTags()) {
             if (tagName.startsWith(prefix.toLowerCase(Locale.ENGLISH))) {
-                proposals.add(new CssCompletionItem.SelectorCompletionItem(new CssElement(tagName),
+                proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(tagName),
                         tagName,
                         CssCompletionItem.Kind.VALUE,
-                        offset));
+                        offset,
+                        true));
             }
         }
         return proposals;
@@ -535,7 +536,7 @@ public class CssCompletion implements CodeCompletionHandler {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         for (String value : props) {
             CssElement handle = new CssElement(value);
-            CompletionProposal proposal = createCompletionItem(handle, value, kind, anchor, false);
+            CompletionProposal proposal = CssCompletionItem.createCompletionItem(handle, value, kind, anchor, false);
             proposals.add(proposal);
         }
         return new DefaultCompletionResult(proposals, false);
@@ -563,17 +564,17 @@ public class CssCompletion implements CodeCompletionHandler {
             if("color".equals(origin)) { //NOI18N
                 if(!colorChooserAdded) {
                     //add color chooser item
-                    proposals.add(new CssCompletionItem.ColorChooserItem(anchor, origin, addSemicolon));
+                    proposals.add(CssCompletionItem.createColorChooserCompletionItem(anchor, origin, addSemicolon));
                     //add used colors items
                     proposals.addAll(getUsedColorsItems(context, prefix, handle, origin, kind, anchor, addSemicolon, addSpaceBeforeItem));
                     colorChooserAdded = true;
                 }
                 if(!extendedItemsOnly) {
-                    proposals.add(createColorValueCompletionItem(handle, e, kind, anchor, addSemicolon, addSpaceBeforeItem));
+                    proposals.add(CssCompletionItem.createColorValueCompletionItem(handle, e, kind, anchor, addSemicolon, addSpaceBeforeItem));
                 }
             } else {
                 if(!extendedItemsOnly) {
-                    proposals.add(createValueCompletionItem(handle, e, kind, anchor, addSemicolon, addSpaceBeforeItem));
+                    proposals.add(CssCompletionItem.createValueCompletionItem(handle, e, kind, anchor, addSemicolon, addSpaceBeforeItem));
                 }
             }
         }
@@ -604,7 +605,7 @@ public class CssCompletion implements CodeCompletionHandler {
             boolean usedInCurrentFile = file.equals(current);
             for(String color : colors) {
                 if(color.startsWith(prefix)) {
-                    proposals.add(new CssCompletionItem.HashColorCompletionItem(element, color, origin,
+                    proposals.add(CssCompletionItem.createHashColorCompletionItem(element, color, origin,
                             kind, anchor, addSemicolon, addSpaceBeforeItem, usedInCurrentFile));
                 }
             }
@@ -640,7 +641,7 @@ public class CssCompletion implements CodeCompletionHandler {
             //filter out non-public properties
             if (!p.name().startsWith("-")) { //NOI18N
                 CssElement handle = new CssPropertyElement(p);
-                CompletionProposal proposal = createPropertyNameCompletionItem(handle, p.name(), kind, anchor, false);
+                CompletionProposal proposal = CssCompletionItem.createPropertyNameCompletionItem(handle, p.name(), kind, anchor, false);
                 proposals.add(proposal);
             }
         }
@@ -862,43 +863,5 @@ public class CssCompletion implements CodeCompletionHandler {
 
 
 
-    private CssCompletionItem createValueCompletionItem(CssValueElement element,
-            Element value,
-            CssCompletionItem.Kind kind,
-            int anchorOffset,
-            boolean addSemicolon,
-            boolean addSpaceBeforeItem) {
-
-        return new CssCompletionItem.ValueCompletionItem(element, value.toString(), value.getResolvedOrigin(), kind, anchorOffset, addSemicolon, addSpaceBeforeItem);
-    }
-
-    private CssCompletionItem createColorValueCompletionItem(CssValueElement element,
-            Element value,
-            CssCompletionItem.Kind kind,
-            int anchorOffset,
-            boolean addSemicolon,
-            boolean addSpaceBeforeItem) {
-
-        return new CssCompletionItem.ColorCompletionItem(element, value.toString(), value.getResolvedOrigin(), kind, anchorOffset, addSemicolon, addSpaceBeforeItem);
-
-    }
-
-    private CssCompletionItem createPropertyNameCompletionItem(CssElement element,
-            String value,
-            CssCompletionItem.Kind kind,
-            int anchorOffset,
-            boolean addSemicolon) {
-
-        return new CssCompletionItem.PropertyCompletionItem(element, value, kind, anchorOffset, addSemicolon);
-    }
-
-    private CssCompletionItem createCompletionItem(CssElement element,
-            String value,
-            CssCompletionItem.Kind kind,
-            int anchorOffset,
-            boolean addSemicolon) {
-
-        return new CssCompletionItem(element, value, kind, anchorOffset, addSemicolon);
-    }
-  
+   
 }
