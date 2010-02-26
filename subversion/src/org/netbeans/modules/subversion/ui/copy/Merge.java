@@ -331,7 +331,8 @@ public class Merge extends CopyDialog implements ItemListener {
                     (JTextComponent) panel.mergeStartUrlComboBox.getEditor().getEditorComponent(),
                     panel.mergeStartBrowseButton,
                     panel.mergeStartRevisionTextField,
-                    panel.mergeStartSearchButton
+                    panel.mergeStartSearchButton,
+                    panel.mergeStartBrowseRevisionButton
                 );
 
             RepositoryPaths mergeEndRepositoryPaths =
@@ -340,7 +341,8 @@ public class Merge extends CopyDialog implements ItemListener {
                     (JTextComponent) panel.mergeEndUrlComboBox.getEditor().getEditorComponent(),
                     panel.mergeEndBrowseButton,
                     panel.mergeEndRevisionTextField,
-                    panel.mergeEndSearchButton
+                    panel.mergeEndSearchButton,
+                    panel.mergeEndBrowseRevisionButton
                 );
 
             init(mergeStartRepositoryPaths,
@@ -404,7 +406,8 @@ public class Merge extends CopyDialog implements ItemListener {
                     (JTextComponent) panel.mergeStartUrlComboBox.getEditor().getEditorComponent(),
                     null,
                     panel.mergeStartRevisionTextField,
-                    panel.mergeStartSearchButton
+                    panel.mergeStartSearchButton,
+                    panel.mergeStartBrowseRevisionButton
                 );
 
             mergeEndRepositoryPaths =
@@ -413,7 +416,8 @@ public class Merge extends CopyDialog implements ItemListener {
                     (JTextComponent) panel.mergeStartUrlComboBox.getEditor().getEditorComponent(),
                     panel.mergeStartBrowseButton,
                     panel.mergeEndRevisionTextField,
-                    panel.mergeEndSearchButton
+                    panel.mergeEndSearchButton,
+                    panel.mergeEndBrowseRevisionButton
                 );
 
             init(mergeStartRepositoryPaths,
@@ -481,7 +485,8 @@ public class Merge extends CopyDialog implements ItemListener {
                     (JTextComponent) panel.mergeEndUrlComboBox.getEditor().getEditorComponent(),
                     panel.mergeEndBrowseButton,
                     panel.mergeEndRevisionTextField,
-                    panel.mergeEndSearchButton
+                    panel.mergeEndSearchButton,
+                    panel.mergeEndBrowseRevisionButton
                 );      
             
             init(null, null, mergeEndRepositoryPaths, panel.mergeEndRepositoryFolderLabel, root);

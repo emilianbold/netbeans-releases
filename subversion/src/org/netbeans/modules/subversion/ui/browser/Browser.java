@@ -88,6 +88,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
     public final static String BROWSER_HELP_ID_CHECKOUT         = "org.netbeans.modules.subversion.ui.browser.checkout";
     public final static String BROWSER_HELP_ID_URL_PATTERN      = "org.netbeans.modules.subversion.ui.browser.urlpattern";
     public final static String BROWSER_HELP_ID_MERGE            = "org.netbeans.modules.subversion.ui.browser.merge";
+    public final static String BROWSER_HELP_ID_MERGE_TAG        = "org.netbeans.modules.subversion.ui.browser.mergetag";
     public final static String BROWSER_HELP_ID_SWITCH_TO        = "org.netbeans.modules.subversion.ui.browser.switchto";
     public final static String BROWSER_HELP_ID_COPY             = "org.netbeans.modules.subversion.ui.browser.copy";
     public final static String BROWSER_HELP_ID_IMPORT           = "org.netbeans.modules.subversion.ui.browser.import";

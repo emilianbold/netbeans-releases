@@ -111,7 +111,8 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
                         workdirPanel.repositoryPathTextField, 
                         workdirPanel.browseRepositoryButton, 
                         workdirPanel.revisionTextField, 
-                        workdirPanel.searchRevisionButton
+                        workdirPanel.searchRevisionButton,
+                        workdirPanel.browseRevisionButton
                 );        
             String browserPurposeMessage = org.openide.util.NbBundle.getMessage(CheckoutStep.class, "LBL_BrowserMessage");
             int browserMode = Browser.BROWSER_SHOW_FILES | Browser.BROWSER_FOLDERS_SELECTION_ONLY;

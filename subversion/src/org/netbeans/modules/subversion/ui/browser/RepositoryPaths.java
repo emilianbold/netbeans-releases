@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -83,6 +84,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     
     private JButton browseButton;
     private JButton searchRevisionButton;
+    private JButton browseRevisionButton;
 
     // browser
     private int browserMode;
@@ -97,12 +99,26 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     
     private PropertyChangeSupport propertyChangeSupport;
     
+    public RepositoryPaths(RepositoryFile repositoryFile,
+                           JTextComponent repositoryPathTextField,
+                           JButton browseButton,
+                           JTextField revisionTextField,
+                           JButton searchRevisionButton) {
+        this(repositoryFile,
+            repositoryPathTextField,
+            browseButton,
+            revisionTextField,
+            searchRevisionButton,
+            null);
+    }
+
     public RepositoryPaths(RepositoryFile repositoryFile, 
                            JTextComponent repositoryPathTextField,  
                            JButton browseButton, 
                            JTextField revisionTextField, 
-                           JButton searchRevisionButton) 
-    {                
+                           JButton searchRevisionButton,
+                           JButton browseRevisionButton) {
+
         assert repositoryFile != null;
         assert (repositoryPathTextField !=null && browseButton != null) ||
                (revisionTextField != null && searchRevisionButton != null);
@@ -122,9 +138,13 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             this.revisionTextField = revisionTextField;
             revisionTextField.getDocument().addDocumentListener(this);
             this.searchRevisionButton = searchRevisionButton;
+            this.browseRevisionButton = browseRevisionButton;
             if(searchRevisionButton != null) {
                 searchRevisionButton.addActionListener(this);   
             }            
+            if(browseRevisionButton != null) {
+                browseRevisionButton.addActionListener(this);
+            }
         }                
     }
 
@@ -220,6 +240,24 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         }             
     }          
     
+    private void browseRepositoryForRevision() {
+        final SVNUrl repositoryUrl = getRepositoryUrl();
+
+        String title = NbBundle.getMessage(RepositoryPaths.class, "CTL_BrowseTag"); // NOI18N
+        RepositoryFile repoFile = new RepositoryFile(repositoryUrl, SVNRevision.HEAD);
+        int mode = Browser.BROWSER_SINGLE_SELECTION_ONLY | Browser.BROWSER_SHOW_FILES | Browser.BROWSER_FOLDERS_SELECTION_ONLY;
+        Browser browser = new Browser(title, mode, repoFile, null, null, Browser.BROWSER_HELP_ID_MERGE_TAG);
+        final RepositoryFile[] repositoryFiles = browser.getRepositoryFiles();
+        if(repositoryFiles == null || repositoryFiles.length == 0) {
+            return;
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                revisionTextField.setText(repositoryFiles[0].getRevision().toString());
+            }
+        });
+    }
+
     private void searchRepository() {
         SVNRevision revision = getRevision();     
         
@@ -286,6 +324,8 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             browseRepository();
         } else if (e.getSource() == searchRevisionButton) {
             searchRepository();
+        } else if (e.getSource() == browseRevisionButton) {
+            browseRepositoryForRevision();
         }
     }
 
