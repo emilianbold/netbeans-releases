@@ -545,11 +545,11 @@ public class JavacParser extends Parser {
                 }
                 long start = System.currentTimeMillis();
                 JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(currentInfo.getClasspathInfo());
-                fileManager.handleOption("apt-origin", Collections.singletonList(currentInfo.jfo.toUri().toURL().toString()).iterator()); //NOI18N
+                fileManager.handleOption(AptSourceFileManager.ORIGIN_FILE, Collections.singletonList(currentInfo.jfo.toUri().toURL().toString()).iterator()); //NOI18N
                 try {
                     currentInfo.getJavacTask().enter();
                 } finally {
-                    fileManager.handleOption("apt-origin", Collections.singletonList("").iterator()); //NOI18N
+                    fileManager.handleOption(AptSourceFileManager.ORIGIN_FILE, Collections.singletonList("").iterator()); //NOI18N
                 }
                 currentPhase = Phase.ELEMENTS_RESOLVED;
                 long end = System.currentTimeMillis();

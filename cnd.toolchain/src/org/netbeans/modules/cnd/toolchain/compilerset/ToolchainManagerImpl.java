@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.logging.Logger;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
@@ -750,7 +749,7 @@ public final class ToolchainManagerImpl {
     private void writeScanner(Document doc, Element element, ScannerDescriptor scanner) {
         Element c;
         for (ScannerPattern pattern : scanner.getPatterns()) {
-            c = doc.createElement("error");
+            c = doc.createElement("error"); // NOI18N
             c.setAttribute("pattern", pattern.getPattern()); // NOI18N
             if (pattern.getSeverity() != null) {
                 c.setAttribute("severity", pattern.getSeverity()); // NOI18N

@@ -107,6 +107,8 @@ import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -159,7 +161,10 @@ public final class MakeActionProvider implements ActionProvider {
         COMMAND_COPY,
         COMMAND_MOVE,
         COMMAND_RENAME,
-        COMMAND_CUSTOM_ACTION,     };
+        COMMAND_CUSTOM_ACTION,
+        
+        COMMAND_TEST,
+    };
 
     // Project
     private MakeProject project;
@@ -184,6 +189,8 @@ public final class MakeActionProvider implements ActionProvider {
     private static final String COMPILE_SINGLE_STEP = "compile-single"; // NOI18N
     private static final String CUSTOM_ACTION_STEP = "custom-action"; // NOI18N
     private static final String VALIDATE_TOOLCHAIN = "validate-toolchain"; // NOI18N
+    private static final String BUILD_TESTS_STEP = "build-tests"; // NOI18N
+    private static final String TEST_STEP = "test"; // NOI18N
 
     public MakeActionProvider(MakeProject project) {
         this.project = project;
@@ -435,6 +442,8 @@ public final class MakeActionProvider implements ActionProvider {
             return onValidateToolchainStep(pd, conf, cancelled, validated);
         } else if (targetName.equals(BUILD_STEP)) {
             return onBuildStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.BUILD);
+        } else if (targetName.equals(BUILD_TESTS_STEP)) {
+            return onBuildStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.TEST);
         } else if (targetName.equals(BUILD_PACKAGE_STEP)) {
             return onBuildPackageStep(actionEvents, conf, ProjectActionEvent.PredefinedType.BUILD);
         } else if (targetName.equals(CLEAN_STEP)) {
@@ -443,6 +452,8 @@ public final class MakeActionProvider implements ActionProvider {
             return onCompileSingleStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.BUILD);
         } else if (targetName.equals(RUN_STEP)) {
             return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PredefinedType.RUN);
+        } else if (targetName.equals(TEST_STEP)) {
+            return onRunStep(actionEvents, pd, conf, cancelled, validated, ProjectActionEvent.PredefinedType.TEST);
         } else if (targetName.equals(RUN_SINGLE_STEP) || targetName.equals(DEBUG_SINGLE_STEP)) {
             return onRunSingleStep(conf, actionEvents, context, ProjectActionEvent.PredefinedType.RUN);
         } else if (targetName.equals(DEBUG_STEP)) {
@@ -471,7 +482,34 @@ public final class MakeActionProvider implements ActionProvider {
     private boolean onRunStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, AtomicBoolean cancelled, AtomicBoolean validated, Type actionEvent) {
         PlatformInfo pi = conf.getPlatformInfo();
         validated.set(true);
-        if (conf.isMakefileConfiguration()) {
+
+        if (actionEvent == ProjectActionEvent.PredefinedType.TEST) {
+            Folder root = projectDescriptor.getLogicalFolders();
+            Folder testRootFolder = null;
+            for (Folder folder : root.getFolders()) {
+                if (folder.isTestRootFolder()) {
+                    testRootFolder = folder;
+                    break;
+                }
+            }
+            if (testRootFolder != null) {
+                for (Folder folder : testRootFolder.getAllTests()) {
+                    Item[] items = folder.getAllItemsAsArray();
+                    for (int k = 0; k < items.length; k++) {
+                        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                        String file = IpeUtils.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[k].getPath()));
+                        String target = file.replaceFirst("\\..*", ""); // NOI18N
+                        target = MakeConfiguration.BUILD_FOLDER + '/' + "${CND_CONF}" + '/' + "${CND_PLATFORM}" + "/" + "tests" + "/" + target; // NOI18N
+
+                        String path = conf.getMakefileConfiguration().getMakeConfiguration().getBaseDir() + "/" + conf.getMakefileConfiguration().getMakeConfiguration().expandMacros(target); // NOI18N
+                        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
+                        actionEvents.add(projectActionEvent);
+                        RunDialogPanel.addElementToExecutablePicklist(path);
+
+                    }
+                }
+            }
+        } else if (conf.isMakefileConfiguration()) {
             String path;
             if (actionEvent == ProjectActionEvent.PredefinedType.RUN) {
                 path = conf.getMakefileConfiguration().getOutput().getValue();
@@ -647,7 +685,12 @@ public final class MakeActionProvider implements ActionProvider {
             return true;
         }
         MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-        String buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf), "");
+        String buildCommand;
+        if(actionEvent == ProjectActionEvent.PredefinedType.TEST) {
+            buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " build-tests", ""); // NOI18N
+        } else {
+            buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf), ""); // NOI18N
+        }
         String args = "";
         int index = buildCommand.indexOf(' ');
         if (index > 0) {
@@ -917,6 +960,8 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (command.equals(COMMAND_RUN_SINGLE)) {
             Node node = context.lookup(Node.class);
             return (node != null) && (node.getCookie(ShellExecSupport.class) != null);
+        } else if (command.equals(COMMAND_TEST)) {
+            return true;
         } else {
             return false;
         }
