@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -80,6 +81,13 @@ import org.xml.sax.InputSource;
 
 /**
  * Converts a set of NetBeans modules into OSGi bundles.
+ * Note that a design constraint is that all modules are processed independently
+ * (this is necessary in case you wish to perform incremental translation)
+ * so no features are possible which would require knowledge of the contents of
+ * another module. For example, an entry in {@code OpenIDE-Module-Module-Dependencies}
+ * cannot be translated to an entry in {@code Import-Package} because that would
+ * require knowing which packages from the imported module are being used in the
+ * importing module, which the NetBeans metadata does not express.
  */
 public class MakeOSGi extends Task {
     
@@ -122,7 +130,6 @@ public class MakeOSGi extends Task {
     }
 
     private void process(File module) throws Exception {
-        Set<String> importedPackages = findImports(module);
         JarFile jar = new JarFile(module);
         try {
             Manifest netbeans = jar.getManifest();
@@ -142,6 +149,7 @@ public class MakeOSGi extends Task {
             }
             Manifest osgi = new Manifest();
             Attributes osgiAttr = osgi.getMainAttributes();
+            Set<String> importedPackages = findImports(jar);
             translate(netbeansAttr, osgiAttr, importedPackages);
             String cnb = osgiAttr.getValue("Bundle-SymbolicName");
             String bundleVersion = osgiAttr.getValue("Bundle-Version");
@@ -408,9 +416,9 @@ public class MakeOSGi extends Task {
         return result;
     }
 
-    private Set<String> findImports(File module) throws Exception {
+    private Set<String> findImports(JarFile module) throws Exception {
         Map<String, byte[]> classfiles = new TreeMap<String, byte[]>();
-        VerifyClassLinkage.read(module, classfiles, new HashSet<File>(), this, null);
+        VerifyClassLinkage.read(module, classfiles, new HashSet<File>(Collections.singleton(new File(module.getName()))), this, null);
         final Set<String> imports = new TreeSet<String>();
         ClassLoader jre = ClassLoader.getSystemClassLoader().getParent();
         for (byte[] data : classfiles.values()) {
