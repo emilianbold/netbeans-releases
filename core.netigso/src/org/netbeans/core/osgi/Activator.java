@@ -48,9 +48,14 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.startup.RunLevel;
@@ -63,8 +68,6 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.Constants;
-import org.osgi.framework.FrameworkEvent;
-import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.SynchronousBundleListener;
 import org.osgi.service.url.AbstractURLStreamHandlerService;
 import org.osgi.service.url.URLConstants;
@@ -73,11 +76,14 @@ import org.osgi.service.url.URLStreamHandlerService;
 /**
  * Initializes critical NetBeans infrastructure inside an OSGi container.
  */
-public class Activator implements BundleActivator, SynchronousBundleListener, FrameworkListener {
+public class Activator implements BundleActivator, SynchronousBundleListener {
 
     private static final Logger LOG = Logger.getLogger(Activator.class.getName());
 
     public Activator() {}
+
+    /** Bundles which have been loaded or are in line to be loaded. */
+    private final DependencyQueue<String,Bundle> queue = new DependencyQueue<String,Bundle>();
 
     public @Override void start(BundleContext context) throws Exception {
         if (System.getProperty("netbeans.home") != null) {
@@ -89,15 +95,21 @@ public class Activator implements BundleActivator, SynchronousBundleListener, Fr
         }
         System.setProperty("TopSecurityManager.disable", "true");
         OSGiMainLookup.initialize(context);
-        context.addFrameworkListener(this);
         context.addBundleListener(this);
+        /*
+        System.err.println("framework state: " + ((Framework) context.getBundle(0)).getState());
+        context.addFrameworkListener(new FrameworkListener() {
+            public @Override void frameworkEvent(FrameworkEvent event) {
+                System.err.println("framework event: " + event.getType());
+            }
+        });
+         */
 //        System.err.println("processing already loaded bundles...");
         for (Bundle b : context.getBundles()) {
             switch (b.getState()) {
             case Bundle.ACTIVE:
                 // XXX coalesce these layer events
                 bundleChanged(new BundleEvent(BundleEvent.RESOLVED, b));
-                // XXX should resolve all first, then start all:
                 bundleChanged(new BundleEvent(BundleEvent.STARTED, b));
                 break;
             case Bundle.RESOLVED:
@@ -115,52 +127,102 @@ public class Activator implements BundleActivator, SynchronousBundleListener, Fr
     public @Override void bundleChanged(BundleEvent event) {
         Bundle bundle = event.getBundle();
         switch (event.getType()) {
+        /*
         case BundleEvent.RESOLVED:
-//            System.err.println("resolved " + bundle.getSymbolicName());
-            OSGiMainLookup.bundleResolved(bundle);
-            OSGiRepository.DEFAULT.addLayers(layersFor(bundle));
-            if (bundle.getSymbolicName().equals("org.netbeans.bootstrap")) { // NOI18N
-                System.setProperty("netbeans.buildnumber", bundle.getVersion().getQualifier()); // NOI18N
-            }
+            System.err.println("resolved " + bundle.getSymbolicName());
             break;
         case BundleEvent.UNRESOLVED:
-//            System.err.println("unresolved " + bundle.getSymbolicName());
-            OSGiMainLookup.bundleUnresolved(bundle);
-            OSGiRepository.DEFAULT.removeLayers(layersFor(bundle));
+            System.err.println("unresolved " + bundle.getSymbolicName());
             break;
+         */
         case BundleEvent.STARTED:
 //            System.err.println("started " + bundle.getSymbolicName());
-            registerUrlProtocolHandlers(bundle); // must be active
-            ModuleInstall mi = installerFor(bundle);
-            if (mi != null) {
-//                System.err.println("running " + mi.getClass().getName() + ".restored()");
-                mi.restored();
-            }
-            // XXX if o.n.core (or o.n.m.settings?) tell OSGiMainLookup to use CoreBridge.getDefault().lookupCacheLoad()
-            if (bundle.getSymbolicName().equals("org.netbeans.core.windows")) { // NOI18N
-                // Trigger for showing main window and setting up related GUI elements.
-                // - Main.initUICustomizations()
-                // - add "org.netbeans.beaninfo" to Introspector.beanInfoSearchPath
-                // - CoreBridge.getDefault().registerPropertyEditors()
-                for (RunLevel rl : Lookup.getDefault().lookupAll(RunLevel.class)) {
-                    rl.run();
-                }
+            Dictionary<?,?> headers = bundle.getHeaders();
+            for (Bundle b : queue.offer(bundle, provides(headers), requires(headers), needs(headers))) {
+                load(b);
             }
             break;
         case BundleEvent.STOPPED:
 //            System.err.println("stopped " + bundle.getSymbolicName());
-            mi = installerFor(bundle);
-            if (mi != null) {
-//                System.err.println("running " + mi.getClass().getName() + ".uninstalled()");
-                mi.uninstalled();
+            for (Bundle b : queue.retract(bundle)) {
+                unload(b);
             }
             break;
         }
     }
 
-    public @Override void frameworkEvent(FrameworkEvent event) {
-//        System.err.println("XXX framework event " + event.getType() + " on " + event.getBundle().getSymbolicName());
-        // XXX perhaps defer processing various things until the framework is started
+    static Set<String> provides(Dictionary<?,?> headers) {
+        Set<String> deps = new TreeSet<String>(splitTokens((String) headers.get("OpenIDE-Module-Provides")));
+        String name = (String) headers.get(Constants.BUNDLE_SYMBOLICNAME);
+        if (name != null) {
+            deps.add(name);
+        }
+        return deps;
+    }
+
+    static Set<String> requires(Dictionary<?,?> headers) {
+        Set<String> deps = new TreeSet<String>();
+        String v = (String) headers.get(Constants.REQUIRE_BUNDLE);
+        if (v != null) {
+            // PackageAdmin.getRequiredBundles is not suitable for this - it is backwards.
+            // XXX try to follow the spec more closely; this will work at least for headers created by MakeOSGi:
+            for (String item : v.split(", ")) {
+                deps.add(item.replaceFirst(";.+", ""));
+            }
+        }
+        for (String tok : splitTokens((String) headers.get("OpenIDE-Module-Requires"))) {
+            if (!tok.matches("org[.]openide[.]modules[.](ModuleFormat\\d+|os[.].+)")) {
+                deps.add(tok);
+            }
+        }
+        return deps;
+    }
+
+    static Set<String> needs(Dictionary<?,?> headers) {
+        return splitTokens((String) headers.get("OpenIDE-Module-Needs"));
+    }
+
+    private static Set<String> splitTokens(String tokens) {
+        if (tokens == null) {
+            return Collections.emptySet();
+        }
+        Set<String> split = new TreeSet<String>(Arrays.asList(tokens.split("[, ]+")));
+        split.remove("");
+        return split;
+    }
+
+    private void load(Bundle bundle) {
+        OSGiMainLookup.bundleAdded(bundle);
+        OSGiRepository.DEFAULT.addLayers(layersFor(bundle));
+        if (bundle.getSymbolicName().equals("org.netbeans.bootstrap")) { // NOI18N
+            System.setProperty("netbeans.buildnumber", bundle.getVersion().getQualifier()); // NOI18N
+        }
+        registerUrlProtocolHandlers(bundle); // must be active
+        ModuleInstall mi = installerFor(bundle);
+        if (mi != null) {
+//                System.err.println("running " + mi.getClass().getName() + ".restored()");
+            mi.restored();
+        }
+        // XXX if o.n.core (or o.n.m.settings?) tell OSGiMainLookup to use CoreBridge.getDefault().lookupCacheLoad()
+        if (bundle.getSymbolicName().equals("org.netbeans.core.windows")) { // NOI18N
+            // Trigger for showing main window and setting up related GUI elements.
+            // - Main.initUICustomizations()
+            // - add "org.netbeans.beaninfo" to Introspector.beanInfoSearchPath
+            // - CoreBridge.getDefault().registerPropertyEditors()
+            for (RunLevel rl : Lookup.getDefault().lookupAll(RunLevel.class)) {
+                rl.run();
+            }
+        }
+    }
+
+    private void unload(Bundle bundle) {
+        ModuleInstall mi = installerFor(bundle);
+        if (mi != null) {
+//            System.err.println("running " + mi.getClass().getName() + ".uninstalled()");
+            mi.uninstalled();
+        }
+        OSGiRepository.DEFAULT.removeLayers(layersFor(bundle));
+        OSGiMainLookup.bundleRemoved(bundle);
     }
 
     private static URL[] layersFor(Bundle b) {

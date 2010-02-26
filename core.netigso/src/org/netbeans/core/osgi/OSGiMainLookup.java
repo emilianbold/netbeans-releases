@@ -82,13 +82,13 @@ public class OSGiMainLookup extends ProxyLookup {
         lkp.postInit();
     }
 
-    static void bundleResolved(Bundle bundle) {
+    static void bundleAdded(Bundle bundle) {
         // XXX extend existing classLoader
         get().setClassLoader();
         get().moduleInfoContent.add(bundle, moduleInfoConvertor);
     }
 
-    static void bundleUnresolved(Bundle bundle) {
+    static void bundleRemoved(Bundle bundle) {
         get().setClassLoader();
         get().moduleInfoContent.remove(bundle, moduleInfoConvertor);
     }

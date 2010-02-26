@@ -107,7 +107,7 @@ public class RESTClientGenerator implements CodeGenerator {
             Node resourceNode = resourcesPanel.getResourceNode();
             if (resourceNode != null) {
                 // Generate Jersey Client
-                ClientJavaSourceHelper.generateJerseyClient(resourceNode, targetSource, resourcesPanel.getClassName());
+                ClientJavaSourceHelper.generateJerseyClient(resourceNode, targetSource, resourcesPanel.getClassName(), resourcesPanel.getSecurity());
                 // logging usage of action
                 Object[] params = new Object[2];
                 params[0] = LogUtils.WS_STACK_JAXRS;

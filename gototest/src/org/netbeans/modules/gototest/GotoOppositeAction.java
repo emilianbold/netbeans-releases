@@ -59,6 +59,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -249,27 +250,32 @@ public class GotoOppositeAction extends CallableSystemAction {
 
         // TODO: Use the new editor library to compute this:
         // JTextComponent pane = EditorRegistry.lastFocusedComponent();
+
         TopComponent comp = TopComponent.getRegistry().getActivated();
-
-        if (comp instanceof CloneableEditorSupport.Pane) {
-            JEditorPane editorPane = ((CloneableEditorSupport.Pane)comp).getEditorPane();
-            if (editorPane != null) {
-                if (editorPane.getCaret() != null) {
-                    caretPosHolder[0] = editorPane.getCaret().getDot();
+        if(comp == null) {
+            return null;
+        }
+        Node[] nodes = comp.getActivatedNodes();
+        if (nodes != null && nodes.length == 1) {
+            if (comp instanceof CloneableEditorSupport.Pane) { //OK. We have an editor
+                EditorCookie ec = nodes[0].getLookup().lookup(EditorCookie.class);
+                if (ec != null) {
+                    JEditorPane editorPane = NbDocument.findRecentEditorPane(ec);
+                    if (editorPane != null) {
+                        if (editorPane.getCaret() != null) {
+                                caretPosHolder[0] = editorPane.getCaret().getDot();
+                        }
+                        Document document = editorPane.getDocument();
+                        Object sdp = document.getProperty(Document.StreamDescriptionProperty);
+                        if (sdp instanceof FileObject) {
+                                return (FileObject)sdp;
+                        } else if (sdp instanceof DataObject) {
+                                return ((DataObject) sdp).getPrimaryFile();
+                        }
+                    }
                 }
-                Document document = editorPane.getDocument();
-
-                Object sdp = document.getProperty(Document.StreamDescriptionProperty);
-                if (sdp instanceof FileObject) {
-                    return (FileObject)sdp;
-                } else if (sdp instanceof DataObject) {
-                    return ((DataObject) sdp).getPrimaryFile();
-                }
-            }
-        } else if (comp != null) {
-            Node[] selectedNodes = comp.getActivatedNodes();
-            if (selectedNodes != null && selectedNodes.length == 1) {
-                DataObject dataObj = selectedNodes[0].getLookup().lookup(DataObject.class);
+            }else {
+                DataObject dataObj = nodes[0].getLookup().lookup(DataObject.class);
                 if (dataObj != null) {
                     return dataObj.getPrimaryFile();
                 }

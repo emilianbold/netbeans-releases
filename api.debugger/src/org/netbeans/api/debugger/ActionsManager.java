@@ -106,6 +106,10 @@ public final class ActionsManager {
     /** Action constant for Toggle Breakpoint Action. */
     public static final Object              ACTION_TOGGLE_BREAKPOINT = "toggleBreakpoint";
     
+    /** Action constant for New Watch Action.
+     * @since 1.24 */
+    public static final Object              ACTION_NEW_WATCH = "newWatch";
+
     
     // variables ...............................................................
     

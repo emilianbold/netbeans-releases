@@ -74,6 +74,7 @@ made subject to such option by the copyright holder.
                 <package>com.sun.jersey.api.uri</package>
                 <package>com.sun.jersey.api.view</package>
                 <package>com.sun.jersey.api.wadl</package>
+                <package>com.sun.jersey.client.urlconnection</package>
                 <package>com.sun.jersey.core.util</package>
                 <package>com.sun.jersey.spi</package>
                 <package>com.sun.jersey.spi.container</package>
