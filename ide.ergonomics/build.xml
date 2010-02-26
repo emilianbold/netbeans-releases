@@ -124,24 +124,19 @@
     <!--
     - single cluster operations
     -->
-    <target name="-init-one-cluster-properties">
+    <target name="-proxy-one-cluster">
+        <property name="cluster" location="."/>
         <pathconvert property="cluster.name">
             <path location="${cluster}"/>
             <mapper type="regexp" from=".*[/\\]([a-z]*)[0-9\.]*" to="\1"/>
         </pathconvert>
-
         <property name="proxytmp" value="${ergonomicsdir}/build/proxies/${cluster.name}"/>
         <property name="proxydir" value="${ergonomicsdir}/build/classes/org/netbeans/modules/ide/ergonomics/${cluster.name}"/>
-    </target>
-    <target
-        name="-proxy-one-cluster" depends="-init-one-cluster-properties"
-    >
         <property name="cluster.properties" value="${ergonomicsdir}/${cluster.name}.properties"/>
         <available
             file="${cluster.properties}" value="${cluster.properties}" property="proxyprop"
         />
         <property name="proxyprop" location="${ergonomicsdir}/empty.properties"/>
-        <property name="cluster" location="."/>
         <property name="cluster.entries" location="${cluster}"/>
         <mkdir dir="${proxydir}"/>
         <extractlayer
