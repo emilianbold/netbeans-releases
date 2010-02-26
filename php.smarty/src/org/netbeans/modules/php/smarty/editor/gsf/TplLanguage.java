@@ -41,15 +41,12 @@
 package org.netbeans.modules.php.smarty.editor.gsf;
 
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.DeclarationFinder;
-import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.api.KeystrokeHandler;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.CommentHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 
 @LanguageRegistration(mimeType="text/tpl", useCustomEditorKit=false) //NOI18N
 public class TplLanguage extends DefaultLanguageConfig {
@@ -65,8 +62,7 @@ public class TplLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language getLexerLanguage() {
-        //return HTMLTokenId.language();
-        return null;
+        return TplTopTokenId.language();
     }
 
     @Override

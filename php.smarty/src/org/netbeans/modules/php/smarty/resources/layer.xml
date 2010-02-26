@@ -22,7 +22,7 @@
         <folder name="text">
             <folder name="x-tpl">
                 <file name="language.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.smarty.editor.lexer.TplTokenId.language"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
             </folder>
