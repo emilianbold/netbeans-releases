@@ -120,6 +120,9 @@ class AntDeploymentProviderImpl implements AntDeploymentProvider {
         String webUrl = "http://" + commonSupport.getInstanceProperties().get(GlassfishModule.HOSTNAME_ATTR) + 
                 ":" + commonSupport.getInstanceProperties().get(GlassfishModule.HTTPPORT_ATTR);
         retVal.setProperty("gfv3.url", webUrl);                // NOI18N
+        webUrl = "http://" + commonSupport.getInstanceProperties().get(GlassfishModule.HOSTNAME_ATTR) +
+                ":" + commonSupport.getInstanceProperties().get(GlassfishModule.ADMINPORT_ATTR);
+        retVal.setProperty("gfv3.admin.url", webUrl);                // NOI18N
         retVal.setProperty("gfv3.username", commonSupport.getInstanceProperties().get(GlassfishModule.USERNAME_ATTR));
         retVal.setProperty("gfv3.host",commonSupport.getInstanceProperties().get(GlassfishModule.HOSTNAME_ATTR));
         retVal.setProperty("gfv3.port",commonSupport.getInstanceProperties().get(GlassfishModule.ADMINPORT_ATTR));
