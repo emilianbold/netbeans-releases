@@ -401,7 +401,7 @@ public class ReformatterImpl {
                 {
                     if (doFormat()) {
                         if (isOperator()) {
-                            spaceBefore(previous, false, true);
+                            spaceBefore(previous, false, false);
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
                         } else {
                             spaceAfter(current, codeStyle.spaceAroundUnaryOps(), codeStyle.spaceKeepExtra());
@@ -414,7 +414,7 @@ public class ReformatterImpl {
                 {
                     if (doFormat()) {
                         if (isOperator()) {
-                            spaceBefore(previous, false, true);
+                            spaceBefore(previous, false, false);
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
                         } else {
                             if (ts.isPrefixOperator(current)){
@@ -431,7 +431,7 @@ public class ReformatterImpl {
                 {
                     if (doFormat()) {
                         if (isOperator()) {
-                            spaceBefore(previous, false, true);
+                            spaceBefore(previous, false, false);
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
                         } else {
                             OperatorKind kind = ts.getOperatorKind(current);
@@ -450,7 +450,7 @@ public class ReformatterImpl {
                 {
                     if (doFormat()) {
                         if (isOperator()) {
-                            spaceBefore(previous, false, true);
+                            spaceBefore(previous, false, false);
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
                         } else {
                             OperatorKind kind = ts.getOperatorKind(current);
@@ -506,7 +506,7 @@ public class ReformatterImpl {
                 {
                     if (doFormat()) {
                         if (isOperator()) {
-                            spaceBefore(previous, false, true);
+                            spaceBefore(previous, false, false);
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
                         } else {
                             spaceBefore(previous, codeStyle.spaceAroundBinaryOps(), codeStyle.spaceKeepExtra());
@@ -535,7 +535,7 @@ public class ReformatterImpl {
                             spaceBefore(previous, codeStyle.spaceAroundAssignOps(), codeStyle.spaceKeepExtra());
                             spaceAfter(current, codeStyle.spaceAroundAssignOps(), codeStyle.spaceKeepExtra());
                         } else {
-                            spaceBefore(previous, false, true);
+                            spaceBefore(previous, false, false);
                             spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
                         }
                     }
@@ -615,7 +615,7 @@ public class ReformatterImpl {
                     braces.push(ts);
                     if (doFormat()) {
                         // TODO need UI?
-                        spaceBefore(previous, true, true);
+                        spaceBefore(previous, true, false);
                     }
                     break;
                 }
@@ -685,9 +685,9 @@ public class ReformatterImpl {
                     if (doFormat()) {
                         Token<CppTokenId> p = ts.lookPreviousImportant(1);
                         if (p != null && p.id() == IDENTIFIER) {
-                            spaceBefore(previous, false, true);
+                            spaceBefore(previous, false, false);
                         }
-                        spaceAfter(current, false, true);
+                        spaceAfter(current, false, false);
                     }
                     break;
                 }
@@ -1532,7 +1532,7 @@ public class ReformatterImpl {
         braces.isLabel = false;
         if (doFormat()) {
             if (isLabel) {
-                spaceBefore(previous, false, true);
+                spaceBefore(previous, false, false);
                 if (!ts.isLastLineToken()) {
                     ts.addAfterCurrent(current, 1, getIndent(), true);
                 }
@@ -1541,7 +1541,7 @@ public class ReformatterImpl {
             }
             Token<CppTokenId> p = ts.lookPreviousImportant();
             if (p != null && (p.id() == PRIVATE || p.id() == PROTECTED || p.id() == PUBLIC)) {
-                spaceBefore(previous, false, true);
+                spaceBefore(previous, false, false);
                 if (!ts.isLastLineToken()) {
                     // TODO use flase?
                     ts.addAfterCurrent(current, 1, getIndent(), true);
@@ -1550,13 +1550,13 @@ public class ReformatterImpl {
             }
             if (p != null && p.id() == DEFAULT) {
                 // TODO use flase?
-                spaceBefore(previous, false, true);
+                spaceBefore(previous, false, false);
                 braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
                 return;
             }
             if (p != null && p.id() == IDENTIFIER && qtExtension.isQtObject()) {
                 if (qtExtension.isSlots(p) || qtExtension.isSignals(p)) {
-                    spaceBefore(previous, false, true);
+                    spaceBefore(previous, false, false);
                     if (!ts.isLastLineToken()) {
                         // TODO use flase?
                         ts.addAfterCurrent(current, 1, getIndent(), true);
@@ -1567,7 +1567,7 @@ public class ReformatterImpl {
             Token<CppTokenId> p2 = ts.lookPreviousLineImportant(CppTokenId.CASE);
             if (p2 != null && p2.id() == CASE) {
                 // TODO use flase?
-                spaceBefore(previous, false, true);
+                spaceBefore(previous, false, false);
                 braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
                 return;
             }
@@ -1684,7 +1684,7 @@ public class ReformatterImpl {
                     newLineBefore(IndentKind.PARENT);
                 }
             } else {
-                spaceBefore(previous, spaceBefore, true);
+                spaceBefore(previous, spaceBefore, false);
             }
         }
         if (newLineAfter>0){
