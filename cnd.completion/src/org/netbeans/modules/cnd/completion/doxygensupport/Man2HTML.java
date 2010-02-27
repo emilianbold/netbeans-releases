@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.completion.doxygensupport;
 
 import java.io.BufferedReader;
@@ -48,8 +47,13 @@ import java.io.IOException;
  * Simple man output to HTML formatter. 
  */
 public class Man2HTML {
-    private enum MODE {NORMAL, BOLD, ITALIC;};
 
+    public static int MAX_WIDTH = 58;
+
+    private enum MODE {
+
+        NORMAL, BOLD, ITALIC;
+    };
     private BufferedReader br;
     private MODE mode = MODE.NORMAL;
 
@@ -65,8 +69,7 @@ public class Man2HTML {
         if (mode != MODE.NORMAL) {
             if (mode == MODE.BOLD) {
                 buf.append("</B>"); // NOI18N
-            }
-            else if (mode == MODE.ITALIC) {
+            } else if (mode == MODE.ITALIC) {
                 buf.append("</I>"); // NOI18N
             }
             mode = MODE.NORMAL;
@@ -83,6 +86,35 @@ public class Man2HTML {
         mode = MODE.ITALIC;
     }
 
+    private int countIndent(String line) {
+        int indent = 0;
+        while (indent < line.length() && line.charAt(indent) == ' ') {
+            indent++;
+        }
+        return indent;
+    }
+
+    private int breakAtColumn(String line) {
+        int breakAt = MAX_WIDTH;
+        int column = 0;
+        int i = 0;
+        while (i < line.length() && column < MAX_WIDTH) {
+            char ch = line.charAt(i);
+            if (ch == '\b') {
+                column--;
+            } else if (ch == ' ') {
+                breakAt = column - 1;
+                column++;
+            } else {
+                column++;
+            }
+            i++;
+        }
+        if (column < MAX_WIDTH) {
+            breakAt = MAX_WIDTH;
+        }
+        return breakAt;
+    }
 
     /**
      * Run the formatter.
@@ -93,19 +125,17 @@ public class Man2HTML {
         buf.append("<HTML>\n"); // NOI18N
         buf.append("<BODY>\n"); // NOI18N
         buf.append("<PRE>\n"); // NOI18N
-        buf.append("<small>\n"); // NOI18N
+//        buf.append("<small>\n"); // NOI18N
 
         char prevCh = 0;
         char curCh = 0;
         char nextCh = 0;
 
+        int curColumn = 0;
+
         try {
             String line = null;
             while ((line = br.readLine()) != null) {
-//                if (line.length() == 0) {
-//                    // Skip empty lines (like -compress)
-//                    continue;
-//                }
                 for (int i = 0; i < line.length(); i++) {
                     prevCh = curCh;
                     curCh = nextCh;
@@ -115,13 +145,11 @@ public class Man2HTML {
                         if (mode == MODE.NORMAL) {
                             if (curCh == '_') {
                                 startItalic(buf);
-                            }
-                            else {
+                            } else {
                                 startBold(buf);
                             }
                         }
-                    }
-                    else {
+                    } else {
                         if (curCh != 0 && curCh != '\b') {
                             if (prevCh != 0 && prevCh != '\b') {
                                 startNormal(buf);
@@ -129,24 +157,22 @@ public class Man2HTML {
                             // Just append the char to line. Escape if necessary.
                             if (curCh == '<') {
                                 buf.append("&lt;"); // NOI18N
-                            }
-                            else if (curCh == '>') {
+                            } else if (curCh == '>') {
                                 buf.append("&gt;"); // NOI18N
-                            }
-                            else if (curCh == '\"') {
+                            } else if (curCh == '\"') {
                                 buf.append("&rdquo;"); // NOI18N
-                            }
-                            else if (curCh == '\'') {
+                            } else if (curCh == '\'') {
                                 buf.append("&rsquo;"); // NOI18N
-                            }
-                            else if (curCh == '`') {
+                            } else if (curCh == '`') {
                                 buf.append("&lsquo;"); // NOI18N
-                            }
-                            else if (curCh == '&') {
+                            } else if (curCh == '&') {
                                 buf.append("&amp;"); // NOI18N
-                            }
-                            else {
+                            } else {
                                 buf.append(curCh);
+                            }
+                            curColumn++;
+                            if (curColumn >= MAX_WIDTH) {
+                                break;
                             }
                         }
                     }
@@ -160,13 +186,13 @@ public class Man2HTML {
                 prevCh = 0;
                 curCh = 0;
                 nextCh = 0;
+                curColumn = 0;
                 buf.append("\n"); // NOI18N
             }
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
         }
 
-        buf.append("</small>\n"); // NOI18N
+//        buf.append("</small>\n"); // NOI18N
         buf.append("</PRE>\n"); // NOI18N
         buf.append("</BODY>\n"); // NOI18N
         buf.append("</HTML>\n"); // NOI18N
