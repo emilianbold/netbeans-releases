@@ -161,7 +161,7 @@ public final class MIMENames {
         return mime.equals(CPLUSPLUS_MIME_TYPE) || mime.equals(C_MIME_TYPE) || mime.equals(HEADER_MIME_TYPE) || mime.equals(C_HEADER_MIME_TYPE) || mime.equals(FORTRAN_MIME_TYPE);
     }
 
-    public static boolean isExe(String mime) {
+    public static boolean isBinary(String mime) {
         if (mime == null || mime.length() == 0) {
             return false;
         }
@@ -172,5 +172,12 @@ public final class MIMENames {
                 mime.equals(ELF_SHOBJ_MIME_TYPE) ||
                 mime.equals(ELF_GENERIC_MIME_TYPE) ||
                 mime.equals(ELF_OBJECT_MIME_TYPE);
+    }
+
+    public static boolean isBinaryExecutable(String mime) {
+        if (mime == null || mime.length() == 0) {
+            return false;
+        }
+        return  mime.equals(EXE_MIME_TYPE) || mime.equals(ELF_EXE_MIME_TYPE);
     }
 }

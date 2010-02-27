@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
@@ -440,17 +440,17 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     public Item findProjectItemByPath(String path) {
         // Try first as-is
-        path = IpeUtils.normalize(path);
+        path = CndPathUtilitities.normalize(path);
         Item item = projectItems.get(path);
         if (item == null) {
             // Then try absolute if relative or relative if absolute
             String newPath;
-            if (IpeUtils.isPathAbsolute(path)) {
-                newPath = IpeUtils.toRelativePath(getBaseDir(), IpeUtils.naturalize(path));
+            if (CndPathUtilitities.isPathAbsolute(path)) {
+                newPath = CndPathUtilitities.toRelativePath(getBaseDir(), CndPathUtilitities.naturalize(path));
             } else {
-                newPath = IpeUtils.toAbsolutePath(getBaseDir(), path);
+                newPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), path);
             }
-            newPath = IpeUtils.normalize(newPath);
+            newPath = CndPathUtilitities.normalize(newPath);
             item = projectItems.get(newPath);
         }
         return item;
@@ -461,17 +461,17 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         if (externalFileItems == null) {
             return null;
         }
-        path = IpeUtils.normalize(path);
+        path = CndPathUtilitities.normalize(path);
         Item item = externalFileItems.findItemByPath(path);
         if (item == null) {
             // Then try absolute if relative or relative if absolute
             String newPath;
-            if (IpeUtils.isPathAbsolute(path)) {
-                newPath = IpeUtils.toRelativePath(getBaseDir(), IpeUtils.naturalize(path));
+            if (CndPathUtilitities.isPathAbsolute(path)) {
+                newPath = CndPathUtilitities.toRelativePath(getBaseDir(), CndPathUtilitities.naturalize(path));
             } else {
-                newPath = IpeUtils.toAbsolutePath(getBaseDir(), path);
+                newPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), path);
             }
-            newPath = IpeUtils.normalize(newPath);
+            newPath = CndPathUtilitities.normalize(newPath);
             item = externalFileItems.findItemByPath(newPath);
         }
         return item;
@@ -707,7 +707,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
         }
         if (!allOk) {
-            String projectName = IpeUtils.getBaseName(getBaseDir());
+            String projectName = CndPathUtilitities.getBaseName(getBaseDir());
             StringBuilder text = new StringBuilder();
             text.append(getString("CannotSaveTxt", projectName)); // NOI18N
             for (int i = 0; i < notOkFiles.size(); i++) {
@@ -873,16 +873,16 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     private void addTestRoot(String path) {
-        String absPath = IpeUtils.toAbsolutePath(getBaseDir(), path);
-        String relPath = IpeUtils.normalize(IpeUtils.toRelativePath(getBaseDir(), path));
+        String absPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), path);
+        String relPath = CndPathUtilitities.normalize(CndPathUtilitities.toRelativePath(getBaseDir(), path));
         boolean addPath = true;
 
-        //if (IpeUtils.isPathAbsolute(relPath) || relPath.startsWith("..") || relPath.startsWith(".")) { // NOI18N
+        //if (CndPathUtilitities.isPathAbsolute(relPath) || relPath.startsWith("..") || relPath.startsWith(".")) { // NOI18N
         synchronized (testRoots) {
             if (addPath) {
                 String usePath;
                 if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                    usePath = IpeUtils.normalize(IpeUtils.toAbsoluteOrRelativePath(getBaseDir(), path));
+                    usePath = CndPathUtilitities.normalize(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
                 } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                     usePath = relPath;
                 } else {
@@ -901,23 +901,23 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
      * Don't add if root is subdir of existing root
      */
     private void addSourceRoot(String path) {
-        String absPath = IpeUtils.toAbsolutePath(getBaseDir(), path);
+        String absPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), path);
         String canonicalPath = null;
         try {
             canonicalPath = new File(absPath).getCanonicalPath();
         } catch (IOException ioe) {
             canonicalPath = null;
         }
-        String relPath = IpeUtils.normalize(IpeUtils.toRelativePath(getBaseDir(), path));
+        String relPath = CndPathUtilitities.normalize(CndPathUtilitities.toRelativePath(getBaseDir(), path));
         boolean addPath = true;
         ArrayList<String> toBeRemoved = new ArrayList<String>();
 
-        //if (IpeUtils.isPathAbsolute(relPath) || relPath.startsWith("..") || relPath.startsWith(".")) { // NOI18N
+        //if (CndPathUtilitities.isPathAbsolute(relPath) || relPath.startsWith("..") || relPath.startsWith(".")) { // NOI18N
         synchronized (sourceRoots) {
             if (canonicalPath != null) {
                 int canonicalPathLength = canonicalPath.length();
                 for (String sourceRoot : sourceRoots) {
-                    String absSourceRoot = IpeUtils.toAbsolutePath(getBaseDir(), sourceRoot);
+                    String absSourceRoot = CndPathUtilitities.toAbsolutePath(getBaseDir(), sourceRoot);
                     String canonicalSourceRoot = null;
                     try {
                         canonicalSourceRoot = new File(absSourceRoot).getCanonicalPath();
@@ -952,7 +952,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             if (addPath) {
                 String usePath;
                 if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                    usePath = IpeUtils.normalize(IpeUtils.toAbsoluteOrRelativePath(getBaseDir(), path));
+                    usePath = CndPathUtilitities.normalize(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
                 } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
                     usePath = relPath;
                 } else {
@@ -1044,7 +1044,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             // Add new source root folders
             if (toBeAdded.size() > 0) {
                 for (String root : toBeAdded) {
-                    String absSourceRoot = IpeUtils.toAbsolutePath(getBaseDir(), root);
+                    String absSourceRoot = CndPathUtilitities.toAbsolutePath(getBaseDir(), root);
                     File absSourceRootFile = new File(absSourceRoot);
                     addSourceFilesFromRoot(getLogicalFolders(), absSourceRootFile, true, true);
                 }
@@ -1139,7 +1139,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         List<String> copy = new ArrayList<String>();
         synchronized (sourceRoots) {
             for (String sr : sourceRoots) {
-                copy.add(IpeUtils.toAbsolutePath(baseDir, sr));
+                copy.add(CndPathUtilitities.toAbsolutePath(baseDir, sr));
             }
         }
         return copy;
@@ -1152,7 +1152,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         List<String> copy = new ArrayList<String>();
         synchronized (testRoots) {
             for (String s : testRoots) {
-                copy.add(IpeUtils.toAbsolutePath(baseDir, s));
+                copy.add(CndPathUtilitities.toAbsolutePath(baseDir, s));
             }
         }
         return copy;
@@ -1207,13 +1207,13 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         if (asDiskFolder) {
             String rootPath;
             if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                rootPath = IpeUtils.toAbsoluteOrRelativePath(baseDir, dir.getPath());
+                rootPath = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, dir.getPath());
             } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                rootPath = IpeUtils.toRelativePath(baseDir, dir.getPath());
+                rootPath = CndPathUtilitities.toRelativePath(baseDir, dir.getPath());
             } else {
-                rootPath = IpeUtils.toAbsolutePath(baseDir, dir.getPath());
+                rootPath = CndPathUtilitities.toAbsolutePath(baseDir, dir.getPath());
             }
-            rootPath = IpeUtils.normalize(rootPath);
+            rootPath = CndPathUtilitities.normalize(rootPath);
             top.setRoot(rootPath);
         }
         addFiles(top, dir, null, filesAdded, true, true);
@@ -1277,13 +1277,13 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             } else {
                 String filePath;
                 if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                    filePath = IpeUtils.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
+                    filePath = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
                 } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                    filePath = IpeUtils.toRelativePath(baseDir, files[i].getPath());
+                    filePath = CndPathUtilitities.toRelativePath(baseDir, files[i].getPath());
                 } else {
-                    filePath = IpeUtils.toAbsolutePath(baseDir, files[i].getPath());
+                    filePath = CndPathUtilitities.toAbsolutePath(baseDir, files[i].getPath());
                 }
-                Item item = new Item(IpeUtils.normalize(filePath));
+                Item item = new Item(CndPathUtilitities.normalize(filePath));
                 if (folder.addItem(item, notify, setModified) != null) {
                     filesAdded.add(item);
                 }

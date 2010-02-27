@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.utils;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -45,64 +45,64 @@ import static org.junit.Assert.*;
 /**
  * @author Alexey Vladykin
  */
-public class IpeUtilsTest {
+public class CndPathUtilititiesTest {
 
     @Test
     public void testGetPathNameArray() {
         assertArrayEquals(new String[] {"C:", "tmp", "test.cpp"}, // NOI18N
-                     IpeUtils.getPathNameArray("C:\\tmp\\test.cpp")); // NOI18N
+                     CndPathUtilitities.getPathNameArray("C:\\tmp\\test.cpp")); // NOI18N
         assertArrayEquals(new String[] {"C:", "tmp", "test.cpp"}, // NOI18N
-                     IpeUtils.getPathNameArray("C:/tmp/test.cpp")); // NOI18N
+                     CndPathUtilitities.getPathNameArray("C:/tmp/test.cpp")); // NOI18N
         assertArrayEquals(new String[] {"tmp", "test.cpp"}, // NOI18N
-                     IpeUtils.getPathNameArray("\\tmp\\test.cpp")); // NOI18N
+                     CndPathUtilitities.getPathNameArray("\\tmp\\test.cpp")); // NOI18N
         assertArrayEquals(new String[] {"tmp", "test.cpp"}, // NOI18N
-                     IpeUtils.getPathNameArray("/tmp/test.cpp")); // NOI18N
+                     CndPathUtilitities.getPathNameArray("/tmp/test.cpp")); // NOI18N
         assertArrayEquals(new String[] {}, // NOI18N
-                     IpeUtils.getPathNameArray("tmp/test.cpp")); // NOI18N
+                     CndPathUtilitities.getPathNameArray("tmp/test.cpp")); // NOI18N
     }
 
     @Test
     public void testIsPathAbsolute() {
-        assertTrue(IpeUtils.isPathAbsolute("C:\\tmp\\test.cpp")); // NOI18N
-        assertTrue(IpeUtils.isPathAbsolute("C:/tmp/test.cpp")); // NOI18N
-        assertTrue(IpeUtils.isPathAbsolute("C:/./test.cpp")); // NOI18N
-        assertTrue(IpeUtils.isPathAbsolute("\\temp\\..\\tmp\\test.cpp")); // NOI18N
-        assertTrue(IpeUtils.isPathAbsolute("/tmp/test.cpp")); // NOI18N
-        assertTrue(IpeUtils.isPathAbsolute("/../tmp/test.cpp")); // NOI18N
-        assertTrue(IpeUtils.isPathAbsolute("/.")); // NOI18N
-        assertFalse(IpeUtils.isPathAbsolute("../tmp/test.cpp")); // NOI18N
-        assertFalse(IpeUtils.isPathAbsolute("./")); // NOI18N
-        assertFalse(IpeUtils.isPathAbsolute("tmp\\test.cpp")); // NOI18N
+        assertTrue(CndPathUtilitities.isPathAbsolute("C:\\tmp\\test.cpp")); // NOI18N
+        assertTrue(CndPathUtilitities.isPathAbsolute("C:/tmp/test.cpp")); // NOI18N
+        assertTrue(CndPathUtilitities.isPathAbsolute("C:/./test.cpp")); // NOI18N
+        assertTrue(CndPathUtilitities.isPathAbsolute("\\temp\\..\\tmp\\test.cpp")); // NOI18N
+        assertTrue(CndPathUtilitities.isPathAbsolute("/tmp/test.cpp")); // NOI18N
+        assertTrue(CndPathUtilitities.isPathAbsolute("/../tmp/test.cpp")); // NOI18N
+        assertTrue(CndPathUtilitities.isPathAbsolute("/.")); // NOI18N
+        assertFalse(CndPathUtilitities.isPathAbsolute("../tmp/test.cpp")); // NOI18N
+        assertFalse(CndPathUtilitities.isPathAbsolute("./")); // NOI18N
+        assertFalse(CndPathUtilitities.isPathAbsolute("tmp\\test.cpp")); // NOI18N
     }
 
     @Test
     public void test158596() {
         assertEquals("c", // NOI18N
-                     normalize(IpeUtils.toRelativePath("\\C:\\f", "C:\\f\\c"))); // NOI18N
+                     normalize(CndPathUtilitities.toRelativePath("\\C:\\f", "C:\\f\\c"))); // NOI18N
     }
 
     @Test
     public void testToRelativePath() {
         assertEquals("D:\\tmp\\test.cpp", // NOI18N
-                     IpeUtils.toRelativePath("C:\\tmp", "D:\\tmp\\test.cpp")); // NOI18N
+                     CndPathUtilitities.toRelativePath("C:\\tmp", "D:\\tmp\\test.cpp")); // NOI18N
         assertEquals("/tmp/test.cpp", // NOI18N
-                     IpeUtils.toRelativePath("/temp/", "/tmp/test.cpp")); // NOI18N
+                     CndPathUtilitities.toRelativePath("/temp/", "/tmp/test.cpp")); // NOI18N
         assertEquals("1\\test.cpp", // NOI18N
-                     IpeUtils.toRelativePath("C:\\tmp", "C:\\tmp\\1\\test.cpp")); // NOI18N
+                     CndPathUtilitities.toRelativePath("C:\\tmp", "C:\\tmp\\1\\test.cpp")); // NOI18N
         assertEquals("1/test.cpp", // NOI18N
-                     IpeUtils.toRelativePath("/tmp", "/tmp/1/test.cpp")); // NOI18N
+                     CndPathUtilitities.toRelativePath("/tmp", "/tmp/1/test.cpp")); // NOI18N
         assertEquals("test.cpp", // NOI18N
-                     IpeUtils.toRelativePath("C:\\tmp", "C:\\tmp\\test.cpp")); // NOI18N
+                     CndPathUtilitities.toRelativePath("C:\\tmp", "C:\\tmp\\test.cpp")); // NOI18N
         assertEquals("test.cpp", // NOI18N
-                     IpeUtils.toRelativePath("/tmp", "/tmp/test.cpp")); // NOI18N
+                     CndPathUtilitities.toRelativePath("/tmp", "/tmp/test.cpp")); // NOI18N
         assertEquals("../../../3/2/1/test.cpp", // NOI18N
-                     normalize(IpeUtils.toRelativePath("C:\\tmp\\dir\\1\\2\\3", "C:\\tmp\\dir\\3\\2\\1\\test.cpp"))); // NOI18N
+                     normalize(CndPathUtilitities.toRelativePath("C:\\tmp\\dir\\1\\2\\3", "C:\\tmp\\dir\\3\\2\\1\\test.cpp"))); // NOI18N
         assertEquals("../../../3/2/1/test.cpp", // NOI18N
-                     normalize(IpeUtils.toRelativePath("/tmp/dir/1/2/3", "/tmp/dir/3/2/1/test.cpp"))); // NOI18N
+                     normalize(CndPathUtilitities.toRelativePath("/tmp/dir/1/2/3", "/tmp/dir/3/2/1/test.cpp"))); // NOI18N
         assertEquals(".", // NOI18N
-                     IpeUtils.toRelativePath("C:\\", "C:\\")); // NOI18N
+                     CndPathUtilitities.toRelativePath("C:\\", "C:\\")); // NOI18N
         assertEquals(".", // NOI18N
-                     IpeUtils.toRelativePath("/tmp", "/tmp")); // NOI18N
+                     CndPathUtilitities.toRelativePath("/tmp", "/tmp")); // NOI18N
     }
 
     private String normalize(String path) {

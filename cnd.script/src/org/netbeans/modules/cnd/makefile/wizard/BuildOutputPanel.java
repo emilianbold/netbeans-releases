@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.makefile.wizard;
 
 import java.io.File;
 import java.util.ArrayList;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 /**
  * Create the BuildOutputPanel in the MakefileWizard.
@@ -81,7 +81,7 @@ public class BuildOutputPanel extends DirectoryChooserPanel {
     public void validateData(ArrayList<String> msgs, int key) {
         TargetData target = getMakefileData().getTarget(key);
         String cwd = getMakefileData().getBaseDirectory(MakefileData.EXPAND);
-        String odir = IpeUtils.expandPath(target.getOutputDirectory());
+        String odir = CndPathUtilitities.expandPath(target.getOutputDirectory());
         File outdir = null;
         File outpar = null;
         File cwf = null;
@@ -121,13 +121,13 @@ public class BuildOutputPanel extends DirectoryChooserPanel {
         }
 
         if (od.charAt(0) == '$') {
-            od = IpeUtils.expandPath(real_od);
+            od = CndPathUtilitities.expandPath(real_od);
         }
         if (od.charAt(0) == '/' || od.charAt(0) == '~') {
             getText().setText(real_od);
         } else {
             //getText().setText(getMakefileData().getBaseDirectory() + File.separator + real_od);
-            getText().setText(IpeUtils.getRelativePath(getMakefileData().getBaseDirectory(), real_od));
+            getText().setText(CndPathUtilitities.getRelativePath(getMakefileData().getBaseDirectory(), real_od));
         }
         super.addNotify();
     }
@@ -144,7 +144,7 @@ public class BuildOutputPanel extends DirectoryChooserPanel {
         }
         od = od.trim();
         if (od.length() > 1) {
-            od = IpeUtils.trimpath(od);
+            od = CndPathUtilitities.trimpath(od);
         }
         if (od.length() == 0) {
             od = "."; // NOI18N

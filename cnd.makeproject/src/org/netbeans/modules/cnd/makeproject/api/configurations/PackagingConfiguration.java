@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
@@ -424,7 +424,7 @@ public class PackagingConfiguration {
     }
     
     public String getOutputName() {
-        String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir());
+        String outputName = CndPathUtilitities.getBaseName(getMakeConfiguration().getBaseDir());
         if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION) {
             outputName = outputName.toLowerCase();
         } else if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
@@ -481,7 +481,7 @@ public class PackagingConfiguration {
 
         @Override
         public void setValue(String v) {
-            if (IpeUtils.hasMakeSpecialCharacters(v)) {
+            if (CndPathUtilitities.hasMakeSpecialCharacters(v)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
                 return;
             }
@@ -505,7 +505,7 @@ public class PackagingConfiguration {
     
     public String expandMacros(String s) {
         s = makeConfiguration.expandMacros(s);
-        s = IpeUtils.expandMacro(s, "${PACKAGE_TOP_DIR}", getTopDirValue().length() > 0 ? getTopDirValue() + "/" : ""); // NOI18N
+        s = CndPathUtilitities.expandMacro(s, "${PACKAGE_TOP_DIR}", getTopDirValue().length() > 0 ? getTopDirValue() + "/" : ""); // NOI18N
         return s;
     }
     

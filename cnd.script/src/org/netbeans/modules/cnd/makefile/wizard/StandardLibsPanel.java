@@ -48,8 +48,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.border.Border;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 
 /**
  * Create the standard libraries panel in the Makefile wizard.
@@ -273,7 +272,7 @@ public class StandardLibsPanel extends MakefileWizardPanel {
 	    currentCheckBoxPanel = getCheckBoxPanel();
 	    addCheckBoxPanel(currentCheckBoxPanel);
 	}
-	IpeUtils.requestFocus(getCheckBoxes()[0]);
+	CndUIUtilities.requestFocus(getCheckBoxes()[0]);
 
 	// Preset certain libs if x-designer
 	if (target.containsXdFiles()) {

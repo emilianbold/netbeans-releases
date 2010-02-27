@@ -45,7 +45,7 @@ import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
@@ -138,7 +138,7 @@ public class LibraryItem {
 
 	public Project getProject(String baseDir) {
 	    if (project == null) {
-		String location = IpeUtils.toAbsolutePath(baseDir, getMakeArtifact().getProjectLocation());
+		String location = CndPathUtilitities.toAbsolutePath(baseDir, getMakeArtifact().getProjectLocation());
 		try {
 		    FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile());
                     project = ProjectManager.getDefault().findProject(fo);
@@ -166,7 +166,7 @@ public class LibraryItem {
 
         @Override
         public String toString() {
-            String ret = IpeUtils.getBaseName(getMakeArtifact().getProjectLocation());
+            String ret = CndPathUtilitities.getBaseName(getMakeArtifact().getProjectLocation());
             if (getMakeArtifact().getOutput() != null && getMakeArtifact().getOutput().length() > 0) {
                 ret = ret + " (" + getMakeArtifact().getOutput() + ")"; // NOI18N
             }
@@ -181,7 +181,7 @@ public class LibraryItem {
         @Override
         public String getPath() {
             String libPath = getMakeArtifact().getOutput();
-            if (!IpeUtils.isPathAbsolute(libPath)) {
+            if (!CndPathUtilitities.isPathAbsolute(libPath)) {
                 libPath = getMakeArtifact().getProjectLocation() + '/' + libPath; // UNIX path
             }
             return libPath;
@@ -192,8 +192,8 @@ public class LibraryItem {
             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
             Platform platform = Platforms.getPlatform(conf.getDevelopmentHost().getBuildPlatform());
             String libPath = getPath();
-            String libDir = IpeUtils.getDirName(libPath);
-            String libName = IpeUtils.getBaseName(libPath);
+            String libDir = CndPathUtilitities.getDirName(libPath);
+            String libName = CndPathUtilitities.getBaseName(libPath);
             return platform.getLibraryLinkOption(libName, libDir, libPath, compilerSet);
         }
 

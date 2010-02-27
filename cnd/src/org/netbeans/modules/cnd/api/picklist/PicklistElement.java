@@ -41,16 +41,13 @@
 
 package org.netbeans.modules.cnd.api.picklist;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 /**
  * PicklistElement
  */
 public interface PicklistElement {
     /**
-     * Compares two PicklistElement for equality. Returns true if equeal,
-     * othervise false.
+     * Compares two PicklistElement for equality. Returns true if equal,
+     * otherwise false.
      */
     public boolean equals(PicklistElement elem);
 

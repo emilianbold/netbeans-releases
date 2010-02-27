@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions;
 import org.netbeans.modules.cnd.gizmo.GizmoServiceInfoAccessor;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
@@ -173,7 +173,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         if (consoleType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
             String termPath = pae.getProfile().getTerminalPath();
             if (termPath != null) {
-                String termBaseName = IpeUtils.getBaseName(termPath);
+                String termBaseName = CndPathUtilitities.getBaseName(termPath);
                 if (ExternalTerminalProvider.getSupportedTerminalIDs().contains(termBaseName)) {
                     targetConf.useExternalTerminal(ExternalTerminalProvider.getTerminal(execEnv, termBaseName));
                 }
@@ -198,7 +198,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         DLightSessionConfiguration sessionConfiguration = new DLightSessionConfiguration();
         sessionConfiguration.setDLightTarget(target);
         sessionConfiguration.setDLightConfiguration(configuration);
-        sessionConfiguration.setSessionName(IpeUtils.getBaseName(pae.getExecutable()));
+        sessionConfiguration.setSessionName(CndPathUtilitities.getBaseName(pae.getExecutable()));
         final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(
                 sessionConfiguration);
 

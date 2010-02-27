@@ -48,7 +48,7 @@ import java.beans.PropertyEditorSupport;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -132,7 +132,7 @@ public class MakefileConfiguration {
     }
     
     public String getAbsBuildCommandWorkingDir() {
-        if (getBuildCommandWorkingDirValue().length() > 0 && IpeUtils.isPathAbsolute(getBuildCommandWorkingDirValue())) {
+        if (getBuildCommandWorkingDirValue().length() > 0 && CndPathUtilitities.isPathAbsolute(getBuildCommandWorkingDirValue())) {
             return getBuildCommandWorkingDirValue();
         } else {
             return getMakeConfiguration().getBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
@@ -146,7 +146,7 @@ public class MakefileConfiguration {
     public String getAbsOutput() {
         if (getOutput().getValue().length() == 0) {
             return ""; // NOI18N
-        } else if (IpeUtils.isPathAbsolute(getOutput().getValue())) {
+        } else if (CndPathUtilitities.isPathAbsolute(getOutput().getValue())) {
             return getOutput().getValue();
         } else {
             return getMakeConfiguration().getBaseDir() + "/" + getOutput().getValue(); // NOI18N
@@ -196,8 +196,8 @@ public class MakefileConfiguration {
         
         @Override
         public void setValue(String v) {
-            String path = IpeUtils.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
-            path = IpeUtils.normalize(path);
+            String path = CndPathUtilitities.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
+            path = CndPathUtilitities.normalize(path);
             super.setValue(path);
         }
         
@@ -214,8 +214,8 @@ public class MakefileConfiguration {
         
         @Override
         public void setValue(String v) {
-            String path = IpeUtils.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
-            path = IpeUtils.normalize(path);
+            String path = CndPathUtilitities.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
+            path = CndPathUtilitities.normalize(path);
             super.setValue(path);
         }
         
@@ -296,8 +296,8 @@ public class MakefileConfiguration {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
-                String path = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), getSelectedFile().getPath()); // FIXUP: not always relative path
-                path = IpeUtils.normalize(path);
+                String path = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), getSelectedFile().getPath()); // FIXUP: not always relative path
+                path = CndPathUtilitities.normalize(path);
                 editor.setValue(path);
             }
         }
@@ -386,8 +386,8 @@ public class MakefileConfiguration {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID && getSelectedFile() != null) {
-                String path = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), getSelectedFile().getPath()); // FIXUP: not always relative path
-                path = IpeUtils.normalize(path);
+                String path = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), getSelectedFile().getPath()); // FIXUP: not always relative path
+                path = CndPathUtilitities.normalize(path);
                 editor.setValue(path);
             }
         }

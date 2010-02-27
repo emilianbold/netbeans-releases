@@ -55,7 +55,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 
 /**
  * Create the Sources panel in the Makefile wizard.
@@ -307,7 +307,7 @@ public final class CompilerOptionsPanel extends MakefileWizardPanel
 	fortranText.setText(copts.getF90Flags());
 	basicText.setText(copts.getBasicOptions(getMakefileData().getToolset()));
 	cText.selectAll();
-	IpeUtils.requestFocus(cText);
+	CndUIUtilities.requestFocus(cText);
 
 	// Compiler conformance level
 	cConformLevelCB.removeActionListener(cConformLevelCBActionListener);

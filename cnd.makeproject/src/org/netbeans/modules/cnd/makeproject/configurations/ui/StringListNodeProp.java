@@ -44,7 +44,7 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.util.List;
 import java.util.ArrayList;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.utils.StringListPanel;
@@ -144,7 +144,7 @@ public class StringListNodeProp extends PropertySupport<List> {
                 if (addSep) {
                     ret.append(' ');
                 }
-                ret.append(IpeUtils.quoteIfNecessary(value.get(i)));
+                ret.append(CndPathUtilitities.quoteIfNecessary(value.get(i)));
                 addSep = true;
             }
             return ret.toString();

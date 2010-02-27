@@ -49,7 +49,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -122,7 +122,7 @@ public class MakeSources implements Sources, AntProjectListener {
                     for (int i = 0; i < projectItems.length; i++) {
                         Item item = projectItems[i];
                         String name = item.getPath();
-                        if (!IpeUtils.isPathAbsolute(name)) {
+                        if (!CndPathUtilitities.isPathAbsolute(name)) {
                             continue;
                         }
                         File file = new File(name);
@@ -134,7 +134,7 @@ public class MakeSources implements Sources, AntProjectListener {
                         }
                         name = file.getPath();
                         set.add(name);
-                        epd.addSourceRootRaw(IpeUtils.toRelativePath(epd.getBaseDir(), name));
+                        epd.addSourceRootRaw(CndPathUtilitities.toRelativePath(epd.getBaseDir(), name));
                     }
                 }
             }
@@ -153,13 +153,13 @@ public class MakeSources implements Sources, AntProjectListener {
                         MakefileConfiguration makefileConfiguration = makeConfiguration.getMakefileConfiguration();
                         String path = makefileConfiguration.getAbsBuildCommandWorkingDir();
                         set.add(path);
-                        epd.addSourceRootRaw(IpeUtils.toRelativePath(epd.getBaseDir(), path));
+                        epd.addSourceRootRaw(CndPathUtilitities.toRelativePath(epd.getBaseDir(), path));
                     }
                 }
             }
             
             for (String name : set) {
-                String displayName = IpeUtils.toRelativePath(epd.getBaseDir(), name);
+                String displayName = CndPathUtilitities.toRelativePath(epd.getBaseDir(), name);
 //                int index1 = displayName.lastIndexOf(File.separatorChar);
 //                if (index1 > 0) {
 //                    int index2 = displayName.substring(0, index1).lastIndexOf(File.separatorChar);
@@ -167,7 +167,7 @@ public class MakeSources implements Sources, AntProjectListener {
 //                        displayName = "..." + displayName.substring(index2); // NOI18N
 //                    }
 //                }
-                displayName = IpeUtils.naturalize(displayName);
+                displayName = CndPathUtilitities.naturalize(displayName);
                 h.sourceRoot(name).displayName(displayName).add();
                 h.sourceRoot(name).type("generic").displayName(displayName).add(); // NOI18N
             }
