@@ -42,7 +42,6 @@
 package org.netbeans.modules.projectimport.eclipse.core.wizard;
 
 import java.io.File;
-import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -99,7 +98,11 @@ final class SelectionPanel extends JPanel {
             return;
         }
         boolean wsValid = EclipseUtils.isRegularWorkSpace(workspace);
-        setErrorMessage(wsValid ? null : ProjectImporterWizard.getMessage(
+        setErrorMessage(wsValid ? null :
+            EclipseUtils.isRegularProject(workspace) ?
+                ProjectImporterWizard.getMessage(
+                "MSG_NotRegularWorkspaceButProject", workspace):
+            ProjectImporterWizard.getMessage(
                 "MSG_NotRegularWorkspace", workspace)); // NOI18N
     }
     
