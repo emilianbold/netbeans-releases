@@ -216,14 +216,20 @@ final class FindersHelper {
     }
 
     static boolean isFinderMethod(String name) {
+        return isFinderMethod(name, true);
+    }
+
+    static boolean isFinderMethod(String name, boolean includeStandardFinders) {
         for (FinderType each : FinderType.values()) {
             if (name.startsWith(each.getPrefix())) {
                 return true;
             }
         }
-        for (String each : STANDARD_FINDERS) {
-            if (name.equals(each)) {
-                return true;
+        if (includeStandardFinders) {
+            for (String each : STANDARD_FINDERS) {
+                if (name.equals(each)) {
+                    return true;
+                }
             }
         }
         return false;

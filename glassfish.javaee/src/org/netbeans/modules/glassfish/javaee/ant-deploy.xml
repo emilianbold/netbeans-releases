@@ -24,7 +24,7 @@
         </xmlproperty>    
         <delete file="${temp.sun.web}"/>
         <property name="deploy.ant.client.url" value="${gfv3.url}${sun-web-app.context-root}"/>
-        <property name="deploy.context.root.argument" value="?contextroot=${sun-web-app.context-root}"/>
+        <property name="deploy.context.root.argument" value="&amp;contextroot=${sun-web-app.context-root}"/>
     </target>
     <target name="-no-parse-sun-web" depends="-init-cl-deployment-env" unless="sun.web.present">
         <property name="deploy.context.root.argument" value=""/>
@@ -46,14 +46,14 @@
         <echo message="Deploying ${deploy.ant.archive}"/>
         <tempfile prefix="gfv3" property="gfv3.results.file" destdir="${java.io.tmpdir}"/>  <!-- do not forget to delete this! -->
         <property name="full.deploy.ant.archive" location="${deploy.ant.archive}"/>
-        <get src="${gfv3.url}/__asadmin/deploy?path=${full.deploy.ant.archive}${deploy.context.root.argument}?force=true?name=${ant.project.name}"
+        <get src="${gfv3.admin.url}/__asadmin/deploy?path=${full.deploy.ant.archive}${deploy.context.root.argument}&amp;force=true&amp;name=${ant.project.name}"
             dest="${gfv3.results.file}"/>
         <delete file="${gfv3.results.file}"/>    
     </target>
     <target name="-undeploy-ant" depends="-init-cl-deployment-env" if="deploy.ant.enabled">
         <echo message="Undeploying ${deploy.ant.archive}"/>
         <tempfile prefix="gfv3" property="gfv3.results.file" destdir="${java.io.tmpdir}"/>  <!-- do not forget to delete this! -->
-        <get src="${gfv3.url}/__asadmin/undeploy?name=${ant.project.name}"
+        <get src="${gfv3.admin.url}/__asadmin/undeploy?name=${ant.project.name}"
             dest="${gfv3.results.file}"/>
         <delete file="${gfv3.results.file}"/>    
     </target>

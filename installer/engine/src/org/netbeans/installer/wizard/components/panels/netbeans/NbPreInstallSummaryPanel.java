@@ -575,6 +575,19 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 }
             }
         }
+        private String getRegisteredGlassFishV3Location(File nbLocation) throws IOException{
+            return NetBeansUtils.getJvmOption(
+                                nbLocation, GLASSFISH_MOD_JVM_OPTION_NAME);
+        }
+        private String getRegisteredTomcatLocation(File nbLocation) throws IOException{
+            return NetBeansUtils.getJvmOption(
+                                nbLocation, TOMCAT_JVM_OPTION_NAME_HOME);
+        }
+        private String getRegisteredGlassFishV2Location(File nbLocation) throws IOException{
+            return NetBeansUtils.getJvmOption(
+                                nbLocation, GLASSFISH_JVM_OPTION_NAME);
+        }
+
         // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
             gridy = 0 ;
@@ -640,8 +653,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                     try {
                         File installLocation = product.getInstallationLocation();
 
-                        String gfLocation = NetBeansUtils.getJvmOption(
-                                installLocation, GLASSFISH_JVM_OPTION_NAME);
+                        String gfLocation = getRegisteredGlassFishV2Location(installLocation);
                         if (gfLocation != null) {
                             List<Product> glassfishesAppservers = Registry.getInstance().queryProducts(
                                     new OrFilter(
@@ -651,8 +663,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                     SystemUtils.getCurrentPlatform())));
                             addProductCheckBox(glassfishesAppservers, gfLocation);
                         }
-                        String gfModLocation = NetBeansUtils.getJvmOption(
-                                installLocation, GLASSFISH_MOD_JVM_OPTION_NAME);
+                        String gfModLocation = getRegisteredGlassFishV3Location(installLocation);
                         if (gfModLocation != null) {
                             List<Product> glassfishV3servers = Registry.getInstance().queryProducts(
                                     new OrFilter(
@@ -665,8 +676,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         }
 
 
-                        String tomcatLocation = NetBeansUtils.getJvmOption(
-                                installLocation, TOMCAT_JVM_OPTION_NAME_HOME);
+                        String tomcatLocation = getRegisteredTomcatLocation(installLocation);
                         if (tomcatLocation != null) {
                             addProductCheckBox(Registry.getInstance().getProducts("tomcat"), tomcatLocation);
                         }                        

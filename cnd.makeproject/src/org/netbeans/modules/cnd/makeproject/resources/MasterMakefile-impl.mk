@@ -62,6 +62,16 @@ ALLCONFS=<CNS>
 	    ${MAKE} -f nbproject/Makefile-$${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .build-conf; \
 	done
 
+# build tests
+.build-tests-impl: .build-impl .build-tests-pre
+	@#echo "=> Running $@... Configuration=$(CONF)"
+	${MAKE} -f nbproject/Makefile-${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .build-tests-conf
+
+# run tests
+.test-impl: .build-tests-impl .test-pre
+	@#echo "=> Running $@... Configuration=$(CONF)"
+	${MAKE} -f nbproject/Makefile-${CONF}.mk SUBPROJECTS=${SUBPROJECTS} .test-conf
+
 # dependency checking support
 .depcheck-impl:
 	@echo "# This code depends on make tool being used" >.dep.inc

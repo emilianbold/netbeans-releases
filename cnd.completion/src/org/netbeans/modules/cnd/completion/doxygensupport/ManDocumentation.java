@@ -212,7 +212,7 @@ public class ManDocumentation {
         }
         
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        Process p0 = Runtime.getRuntime().exec(getManPath() + " " + name); // NOI18N
+        Process p0 = Runtime.getRuntime().exec(getManPath() + " " + name, new String[] {"MANWIDTH="+Man2HTML.MAX_WIDTH}); // NOI18N
         InputStream is = p0.getInputStream();
         InputStreamReader ist = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(ist);

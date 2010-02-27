@@ -330,9 +330,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 selectInCombo(componentCombo, component, true);
             }
         } else {
-            if(issue.getRepository() instanceof KenaiRepository) {
-                String productName = ((KenaiRepository)issue.getRepository()).getProductName();
+            BugzillaRepository repository = issue.getBugzillaRepository();
+            if (repository instanceof KenaiRepository) {
+                String productName = ((KenaiRepository)repository).getProductName();
                 selectInCombo(productCombo, productName, true);
+            } else if (BugzillaUtil.isNbRepository(repository)) {
+                // Issue 181224
+                String defaultProduct = "ide"; // NOI18N
+                String defaultComponent = "Code"; // NOI18N
+                productCombo.setSelectedItem(defaultProduct);
+                componentCombo.setSelectedItem(defaultComponent);
             } else {
                 productCombo.setSelectedIndex(0);
             }
