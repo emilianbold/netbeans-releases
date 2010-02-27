@@ -39,9 +39,11 @@
 
 package org.netbeans.core.osgi;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.LifecycleManager;
+import org.openide.util.Lookup;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -50,17 +52,24 @@ import org.osgi.framework.launch.Framework;
 class OSGiLifecycleManager extends LifecycleManager {
 
     private final BundleContext context;
+    private final AtomicBoolean exited = new AtomicBoolean();
 
     OSGiLifecycleManager(BundleContext context) {
         this.context = context;
     }
 
     public @Override void saveAll() {
-        // XXX should delegate to impl in o.n.core
+        for (LifecycleManager mgr : Lookup.getDefault().lookupAll(LifecycleManager.class)) {
+            if (!(mgr instanceof OSGiLifecycleManager)) { // NbLifecycleManager, perhaps
+                mgr.saveAll();
+            }
+        }
     }
 
     public @Override void exit() {
-        // XXX is there any better way to get the framework?
+        if (exited.getAndSet(true)) {
+            return; // cannot exit twice
+        }
         Bundle system = context.getBundle(0);
         if (system instanceof Framework) {
             try {
