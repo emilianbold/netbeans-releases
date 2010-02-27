@@ -46,10 +46,9 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.cnd.api.utils.ConfigureFileFilter;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.MakefileFileFilter;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -497,7 +496,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                 getString("CONFIGURE_CHOOSER_TITLE_TXT"),
                 getString("MAKEFILE_CHOOSER_BUTTON_TXT"),
                 JFileChooser.FILES_ONLY,
-                new FileFilter[] {ConfigureFileFilter.getInstance()},
+                new FileFilter[] {FileFilterFactory.getConfigureFileFilter()},
                 seed,
                 false
                 );
@@ -523,7 +522,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                 getString("MAKEFILE_CHOOSER_TITLE_TXT"),
                 getString("MAKEFILE_CHOOSER_BUTTON_TXT"),
                 JFileChooser.FILES_ONLY,
-                new FileFilter[] {MakefileFileFilter.getInstance()},
+                new FileFilter[] {FileFilterFactory.getMakefileFileFilter()},
                 seed,
                 false
                 );

@@ -42,13 +42,13 @@
 package org.netbeans.modules.cnd.source;
 
 /** A node to represent the C++ src object */
-public class CCDataNode extends CndDataNode {
+public class CCDataNode extends SourceDataNode {
 
     /** The base name of the C++ source icon */
     private static final String CCSrcIcon =
 		    "org/netbeans/modules/cnd/source/resources/CCSrcIcon.gif"; // NOI18N
 
-    public CCDataNode(CndDataObject obj) {
+    public CCDataNode(SourceDataObject obj) {
 	super(obj, obj.getLookup(), CCSrcIcon);
     }
 }

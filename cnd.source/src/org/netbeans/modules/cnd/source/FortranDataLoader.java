@@ -51,7 +51,7 @@ import org.openide.loaders.MultiDataObject;
  *
  * @author Alexander Simon
  */
-public class FortranDataLoader extends CndAbstractDataLoader {
+public class FortranDataLoader extends SourceAbstractDataLoader {
 
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975686L;
@@ -65,6 +65,7 @@ public class FortranDataLoader extends CndAbstractDataLoader {
         return MIMENames.FORTRAN_MIME_TYPE;
     }
 
+    @Override
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new FortranDataObject(primaryFile, this);
     }

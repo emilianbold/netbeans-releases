@@ -51,7 +51,7 @@ import org.openide.loaders.MultiDataObject;
  *
  * @author Alexander Simon
  */
-public class CCDataLoader extends CndAbstractDataLoader {
+public class CCDataLoader extends SourceAbstractDataLoader {
 
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975684L;
@@ -65,6 +65,7 @@ public class CCDataLoader extends CndAbstractDataLoader {
         return MIMENames.CPLUSPLUS_MIME_TYPE;
     }
 
+    @Override
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new CCDataObject(primaryFile, this);
     }

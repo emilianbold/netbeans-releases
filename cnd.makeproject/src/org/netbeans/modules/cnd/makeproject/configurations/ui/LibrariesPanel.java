@@ -44,7 +44,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.util.ResourceBundle;
-import java.util.Vector;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
@@ -54,14 +53,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeStaticLibraryFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.openide.DialogDescriptor;
@@ -290,16 +285,16 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             FileFilter[] filters;
             if (Utilities.isWindows()) {
                 filters = new FileFilter[]{
-                            PeStaticLibraryFileFilter.getInstance(),
-                            PeDynamicLibraryFileFilter.getInstance()};
+                            FileFilterFactory.getPeStaticLibraryFileFilter(),
+                            FileFilterFactory.getPeDynamicLibraryFileFilter()};
             } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                 filters = new FileFilter[]{
-                            ElfStaticLibraryFileFilter.getInstance(),
-                            MacOSXDynamicLibraryFileFilter.getInstance()};
+                            FileFilterFactory.getElfStaticLibraryFileFilter(),
+                            FileFilterFactory.getMacOSXDynamicLibraryFileFilter()};
             } else {
                 filters = new FileFilter[]{
-                            ElfStaticLibraryFileFilter.getInstance(),
-                            ElfDynamicLibraryFileFilter.getInstance()};
+                            FileFilterFactory.getElfStaticLibraryFileFilter(),
+                            FileFilterFactory.getElfDynamicLibraryFileFilter()};
             }
             FileChooser fileChooser = new FileChooser(getString("SELECT_LIBRARY_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"), JFileChooser.FILES_ONLY, filters, seed, true);
             int ret = fileChooser.showOpenDialog(myListEditorPanel);
@@ -337,16 +332,16 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             FileFilter[] filters;
             if (Utilities.isWindows()) {
                 filters = new FileFilter[]{
-                            PeStaticLibraryFileFilter.getInstance(),
-                            PeDynamicLibraryFileFilter.getInstance()};
+                            FileFilterFactory.getPeStaticLibraryFileFilter(),
+                            FileFilterFactory.getPeDynamicLibraryFileFilter()};
             } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                 filters = new FileFilter[]{
-                            ElfStaticLibraryFileFilter.getInstance(),
-                            MacOSXDynamicLibraryFileFilter.getInstance()};
+                            FileFilterFactory.getElfStaticLibraryFileFilter(),
+                            FileFilterFactory.getMacOSXDynamicLibraryFileFilter()};
             } else {
                 filters = new FileFilter[]{
-                            ElfStaticLibraryFileFilter.getInstance(),
-                            ElfDynamicLibraryFileFilter.getInstance()};
+                            FileFilterFactory.getElfStaticLibraryFileFilter(),
+                            FileFilterFactory.getElfDynamicLibraryFileFilter()};
             }
             FileChooser fileChooser = new FileChooser(getString("SELECT_LIBRARY_FILE_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"), JFileChooser.FILES_ONLY, filters, seed, true);
             PathPanel pathPanel = new PathPanel();

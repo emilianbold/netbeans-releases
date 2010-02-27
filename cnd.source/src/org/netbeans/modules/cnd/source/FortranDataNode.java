@@ -44,13 +44,13 @@ package org.netbeans.modules.cnd.source;
  *  A node representing this Fortran object. The Fortran file could be F77,
  *  F90, or F95.
  */
-public class FortranDataNode extends CndDataNode {
+public class FortranDataNode extends SourceDataNode {
 
     /** The base name of the Fortran source icon */
     private static final String FortranSrcIcon =
             "org/netbeans/modules/cnd/source/resources/FortranSrcIcon.gif"; // NOI18N
 
-    public FortranDataNode(CndDataObject obj) {
+    public FortranDataNode(SourceDataObject obj) {
         super(obj, obj.getLookup(), FortranSrcIcon);
     }
 }
