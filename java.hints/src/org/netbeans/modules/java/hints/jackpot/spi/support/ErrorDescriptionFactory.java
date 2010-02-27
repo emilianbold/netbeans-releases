@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.spi.support;
@@ -43,7 +43,9 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.text.MessageFormat;
@@ -55,6 +57,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
@@ -130,8 +133,18 @@ public class ErrorDescriptionFactory {
             case METHOD_INVOCATION:
                 return computeNameSpan(((MethodInvocationTree) tree).getMethodSelect(), context);
             default:
+                int start = (int) context.getInfo().getTrees().getSourcePositions().getStartPosition(context.getInfo().getCompilationUnit(), tree);
+                if (    StatementTree.class.isAssignableFrom(tree.getKind().asInterface())
+                    && tree.getKind() != Kind.EXPRESSION_STATEMENT
+                    && tree.getKind() != Kind.BLOCK) {
+                    TokenSequence<?> ts = context.getInfo().getTokenHierarchy().tokenSequence();
+                    ts.move(start);
+                    if (ts.moveNext()) {
+                        return new int[] {ts.offset(), ts.offset() + ts.token().length()};
+                    }
+                }
                 return new int[] {
-                    (int) context.getInfo().getTrees().getSourcePositions().getStartPosition(context.getInfo().getCompilationUnit(), tree),
+                    start,
                     (int) context.getInfo().getTrees().getSourcePositions().getEndPosition(context.getInfo().getCompilationUnit(), tree),
                 };
         }
