@@ -57,12 +57,12 @@ import org.openide.util.Lookup;
 /**
  *  Abstract superclass of a C/C++/Fortran DataObject.
  */
-public abstract class CndDataObject extends MultiDataObject {
+public abstract class SourceDataObject extends MultiDataObject {
 
     /** Serial version number */
     static final long serialVersionUID = -6788084224129713370L;
 
-    public CndDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
+    public SourceDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
 
         CookieSet cookies = getCookieSet();
@@ -90,7 +90,7 @@ public abstract class CndDataObject extends MultiDataObject {
             throws IOException {
 
         if ((name != null) && (!isValidName(name))) {
-            throw new IOException(NbBundle.getMessage(CndDataObject.class,
+            throw new IOException(NbBundle.getMessage(SourceDataObject.class,
                     "FMT_Not_Valid_FileName", name)); // NOI18N
         }
         return super.handleCreateFromTemplate(df, name);

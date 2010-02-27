@@ -53,10 +53,10 @@ import org.openide.util.Lookup;
 /**
  *  A base class for C/C++/Fortran (C-C-F) nodes.
  */
-public class CndDataNode extends DataNode {
+public class SourceDataNode extends DataNode {
 
     /** Constructor for this class */
-    public CndDataNode(DataObject obj, Lookup lookup, String icon) {
+    public SourceDataNode(DataObject obj, Lookup lookup, String icon) {
         super(obj, Children.LEAF, lookup);
         setIconBaseWithExtension(icon);
     }
