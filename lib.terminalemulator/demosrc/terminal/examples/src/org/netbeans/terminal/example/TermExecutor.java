@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.termsupport;
+package org.netbeans.terminal.example;
 
 import org.netbeans.lib.richexecution.PtyProcess;
 import org.netbeans.lib.richexecution.PtyExecutor;
