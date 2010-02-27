@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.utils.filters;
 
 import java.io.File;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
@@ -62,10 +62,12 @@ public class ShellFileFilter extends javax.swing.filechooser.FileFilter {
         return instance;
     }
 
+    @Override
     public String getDescription() {
         return NbBundle.getMessage(ShellFileFilter.class, "FILECHOOSER_SHELL_FILEFILTER"); // NOI18N
     }
 
+    @Override
     public boolean accept(File f) {
         if (f != null) {
             if (f.isDirectory()) {

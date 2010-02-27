@@ -39,46 +39,55 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.utils.filters;
 
 import java.io.File;
 import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 
-public class PeExecutableFileFilter extends javax.swing.filechooser.FileFilter {
+public class ConfigureFileFilter extends javax.swing.filechooser.FileFilter {
 
-    private static PeExecutableFileFilter instance = null;
+    private static ConfigureFileFilter instance = null;
 
-    public PeExecutableFileFilter() {
-	super();
+    public ConfigureFileFilter() {
+        super();
     }
 
-    public static PeExecutableFileFilter getInstance() {
-	if (instance == null)
-	    instance = new PeExecutableFileFilter();
-	return instance;
-    }
-
-    public String getDescription() {
-	return getString("PE_EXECUTABLE_FILTER"); // NOI18N
+    public static ConfigureFileFilter getInstance() {
+        if (instance == null) {
+            instance = new ConfigureFileFilter();
+        }
+        return instance;
     }
     
+    @Override
+    public String getDescription() {
+        return(getString("FILECHOOSER_CONFIGURE_FILEFILTER")); // NOI18N
+    }
+    
+    @Override
     public boolean accept(File f) {
-	if (f != null) {
-	    if (f.isDirectory()) {
-		return true;
-	    }
-	    return f.getName().endsWith(".exe"); // NOI18N
-	}
-	return false;
+        if(f != null) {
+            if(f.isDirectory()) {
+                return true;
+            }
+            if (f.getName().equals("configure")) { // NOI18N
+                return true;
+            } else if (f.getName().equals("CMakeLists.txt")) { // NOI18N
+                return true;
+            } else if (f.getAbsolutePath().endsWith(".pro")) { // NOI18N
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Look up i18n strings here */
     private ResourceBundle bundle;
     private String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(PeExecutableFileFilter.class);
-	}
-	return bundle.getString(s);
+        if (bundle == null) {
+            bundle = NbBundle.getBundle(MakefileFileFilter.class);
+        }
+        return bundle.getString(s);
     }
 }

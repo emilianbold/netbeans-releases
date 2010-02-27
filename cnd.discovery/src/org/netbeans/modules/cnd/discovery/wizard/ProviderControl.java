@@ -64,16 +64,10 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
-import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty.PropertyKind;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -116,6 +110,7 @@ public class ProviderControl {
                 Mnemonics.setLocalizedText(button, getString("ROOT_DIR_BROWSE_BUTTON_TXT"));
                 layout(panel);
                 button.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent evt) {
                         rootFolderButtonActionPerformed(evt, ProviderControl.this.property.getKind()==PropertyKind.BinaryFile,
                                                         getString("LOG_FILE_CHOOSER_TITLE_TXT"));
@@ -132,6 +127,7 @@ public class ProviderControl {
                 Mnemonics.setLocalizedText(button, getString("ROOT_DIR_BROWSE_BUTTON_TXT"));
                 layout(panel);
                 button.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent evt) {
                         rootFolderButtonActionPerformed(evt, ProviderControl.this.property.getKind()==PropertyKind.BinaryFile,
                                                         getString("BINARY_FILE_CHOOSER_TITLE_TXT"));
@@ -148,6 +144,7 @@ public class ProviderControl {
                 Mnemonics.setLocalizedText(button, getString("ROOT_DIR_BROWSE_BUTTON_TXT"));
                 layout(panel);
                 button.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent evt) {
                         rootFolderButtonActionPerformed(evt, true, getString("ROOT_DIR_CHOOSER_TITLE_TXT"));
                     }
@@ -163,6 +160,7 @@ public class ProviderControl {
                 Mnemonics.setLocalizedText(button, getString("ROOT_DIR_EDIT_BUTTON_TXT"));
                 layout(panel);
                 button.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent evt) {
                         additionalLibrariesButtonActionPerformed(evt);
                     }
@@ -245,6 +243,7 @@ public class ProviderControl {
     
     private void addListeners(){
         field.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 update();
             }
@@ -253,12 +252,15 @@ public class ProviderControl {
         Component component = editor.getEditorComponent();
         if (component instanceof JTextField) {
             ((JTextField)component).getDocument().addDocumentListener(new DocumentListener() {
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     update();
                 }
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     update();
                 }
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     update();
                 }
@@ -295,7 +297,7 @@ public class ProviderControl {
     }
     
     private void storeHistory() {
-        Vector<String> vector = new Vector<String>();
+        List<String> vector = new ArrayList<String>();
         vector.add(getComboBoxText());
         for(int i = 0; i < field.getModel().getSize(); i++){
             String s = field.getModel().getElementAt(i).toString();
@@ -419,19 +421,19 @@ public class ProviderControl {
         if (chooserMode == JFileChooser.FILES_ONLY){
             if (isBinary) {
                 if (Utilities.isWindows()) {
-                    filters = new FileFilter[]{PeExecutableFileFilter.getInstance(),
-                        ElfStaticLibraryFileFilter.getInstance(),
-                        PeDynamicLibraryFileFilter.getInstance()
+                    filters = new FileFilter[]{FileFilterFactory.getPeExecutableFileFilter(),
+                        FileFilterFactory.getElfStaticLibraryFileFilter(),
+                        FileFilterFactory.getPeDynamicLibraryFileFilter()
                     };
                 } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                    filters = new FileFilter[]{MacOSXExecutableFileFilter.getInstance(),
-                        ElfStaticLibraryFileFilter.getInstance(),
-                        MacOSXDynamicLibraryFileFilter.getInstance()
+                    filters = new FileFilter[]{FileFilterFactory.getMacOSXExecutableFileFilter(),
+                        FileFilterFactory.getElfStaticLibraryFileFilter(),
+                        FileFilterFactory.getMacOSXDynamicLibraryFileFilter()
                     };
                 } else {
-                    filters = new FileFilter[]{ElfExecutableFileFilter.getInstance(),
-                        ElfStaticLibraryFileFilter.getInstance(),
-                        ElfDynamicLibraryFileFilter.getInstance()
+                    filters = new FileFilter[]{FileFilterFactory.getElfExecutableFileFilter(),
+                        FileFilterFactory.getElfStaticLibraryFileFilter(),
+                        FileFilterFactory.getElfDynamicLibraryFileFilter()
                     };
                 }
             } else {
@@ -488,9 +490,11 @@ public class ProviderControl {
     private class LogFileFilter extends javax.swing.filechooser.FileFilter {
         public LogFileFilter() {
         }
+        @Override
         public String getDescription() {
             return(getString("FILECHOOSER_MAK_LOG_FILEFILTER")); // NOI18N
         }
+        @Override
         public boolean accept(File f) {
             if (f != null) {
                 if (f.isDirectory()) {

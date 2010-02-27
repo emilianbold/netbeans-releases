@@ -38,56 +38,45 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.utils.filters;
 
-package org.netbeans.modules.cnd.api.utils;
-
-import java.io.File;
-import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 
-public class MakefileFileFilter extends javax.swing.filechooser.FileFilter {
+public class ResourceFileFilter extends SourceFileFilter {
 
-    private static MakefileFileFilter instance = null;
+    private static String suffixes[] = {"gif", "jpg", "png", "htm", "html", "xml", "txt", "mk", "Makefile", "makefile"}; // NOI18N
+    private static ResourceFileFilter instance = null;
 
-    public MakefileFileFilter() {
-	super();
+    public static ResourceFileFilter getInstance() {
+        if (instance == null) {
+            instance = new ResourceFileFilter();
+        }
+        return instance;
     }
 
-    public static MakefileFileFilter getInstance() {
-	if (instance == null)
-	    instance = new MakefileFileFilter();
-	return instance;
-    }
-    
+    @Override
     public String getDescription() {
-	return(getString("FILECHOOSER_MAKEFILE_FILEFILTER")); // NOI18N
-    }
-    
-    public boolean accept(File f) {
-	if(f != null) {
-	    if(f.isDirectory()) {
-		return true;
-	    }
-	    return checkMakefile(f);
-	}
-	return false;
+        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_RESOURCE_FILEFILTER", getSuffixesAsString()); // NOI18N
     }
 
-    private boolean checkMakefile(File f) {
-        String name = f.getName();
-        if (name.indexOf("Makefile") >= 0 || // NOI18N
-                name.indexOf("makefile") >= 0 || // NOI18N
-                name.endsWith(".mk")) // NOI18N
-            return true;
-        return false;
+    @Override
+    public String getSuffixesAsString() {
+        StringBuilder ret = new StringBuilder();
+        for (int i = 0; i < getSuffixes().length; i++) {
+            if (i > 0) {
+                ret.append(" "); // NOI18N
+            }
+            if (!getSuffixes()[i].equals("Makefile") && !getSuffixes()[i].equals("makefile")) // NOI18N
+            {
+                ret.append(".");  // NOI18N
+            }
+            ret.append(getSuffixes()[i]); // NOI18N
+        }
+        return ret.toString();
     }
 
-    /** Look up i18n strings here */
-    private ResourceBundle bundle;
-    private String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(MakefileFileFilter.class);
-	}
-	return bundle.getString(s);
+    @Override
+    public String[] getSuffixes() {
+        return suffixes;
     }
 }

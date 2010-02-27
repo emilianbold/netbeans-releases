@@ -39,31 +39,34 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.utils.filters;
 
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.NbBundle;
 
-public class FortranSourceFileFilter extends SourceFileFilter{
+public class CCSourceFileFilter extends SourceFileFilter{
     
-    private static FortranSourceFileFilter instance = null;
+    private static CCSourceFileFilter instance = null;
     
     private String[] suffixList = null;
     
-    public static FortranSourceFileFilter getInstance() {
-        if (instance == null)
-            instance = new FortranSourceFileFilter();
+    public static SourceFileFilter getInstance() {
+        if (instance == null) {
+            instance = new CCSourceFileFilter();
+        }
         return instance;
     }
     
+    @Override
     public String getDescription() {
-        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_FORTRAN_SOURCES_FILEFILTER", getSuffixesAsString()); // NOI18N
+        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_CC_SOURCES_FILEFILTER", getSuffixesAsString()); // NOI18N
     }
     
+    @Override
     public String[] getSuffixes() {
         if (suffixList == null) {
-            suffixList = MIMEExtensions.get(MIMENames.FORTRAN_MIME_TYPE).getValues().toArray(new String[] {});
+            suffixList = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues().toArray(new String[]{});
         }
         return suffixList;
     }

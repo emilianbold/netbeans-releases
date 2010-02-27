@@ -54,10 +54,8 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
-import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
@@ -382,11 +380,11 @@ public final class RunDialogPanel extends javax.swing.JPanel {
         
         FileFilter[] filter;
         if (Utilities.isWindows()){
-            filter = new FileFilter[] {PeExecutableFileFilter.getInstance()};
+            filter = new FileFilter[] {FileFilterFactory.getPeExecutableFileFilter()};
         } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-            filter = new FileFilter[] {MacOSXExecutableFileFilter.getInstance()};
+            filter = new FileFilter[] {FileFilterFactory.getMacOSXExecutableFileFilter()};
         } else {
-            filter = new FileFilter[] {ElfExecutableFileFilter.getInstance()};
+            filter = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter()};
         }
         // Show the file chooser
         FileChooser fileChooser = new FileChooser(

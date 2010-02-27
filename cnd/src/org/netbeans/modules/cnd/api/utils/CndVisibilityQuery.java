@@ -70,10 +70,12 @@ public class CndVisibilityQuery  implements VisibilityQueryImplementation2 {
         return pattern.pattern();
     }
 
+    @Override
     public boolean isVisible(FileObject file) {
         return isVisible(file.getNameExt());
     }
 
+    @Override
     public boolean isVisible(File file) {
         return isVisible(file.getName());
     }
@@ -86,6 +88,7 @@ public class CndVisibilityQuery  implements VisibilityQueryImplementation2 {
      * Add a listener to changes.
      * @param l a listener to add
      */
+    @Override
     public void addChangeListener(ChangeListener l) {
         cs.addChangeListener(l);
     }
@@ -94,6 +97,7 @@ public class CndVisibilityQuery  implements VisibilityQueryImplementation2 {
      * Stop listening to changes.
      * @param l a listener to remove
      */
+    @Override
     public void removeChangeListener(ChangeListener l) {
         cs.removeChangeListener(l);
     }

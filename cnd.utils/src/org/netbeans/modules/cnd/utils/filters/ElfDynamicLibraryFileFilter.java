@@ -39,53 +39,49 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.utils.filters;
 
 import java.io.File;
 import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 
-public class ConfigureFileFilter extends javax.swing.filechooser.FileFilter {
+public class ElfDynamicLibraryFileFilter extends javax.swing.filechooser.FileFilter {
 
-    private static ConfigureFileFilter instance = null;
+    private static ElfDynamicLibraryFileFilter instance = null;
 
-    public ConfigureFileFilter() {
-        super();
+    public ElfDynamicLibraryFileFilter() {
+	super();
     }
 
-    public static ConfigureFileFilter getInstance() {
-        if (instance == null) {
-            instance = new ConfigureFileFilter();
+    public static ElfDynamicLibraryFileFilter getInstance() {
+	if (instance == null) {
+            instance = new ElfDynamicLibraryFileFilter();
         }
-        return instance;
+	return instance;
     }
-    
+
+    @Override
     public String getDescription() {
-        return(getString("FILECHOOSER_CONFIGURE_FILEFILTER")); // NOI18N
+	return getString("ELF_DYNAMIC_LIB_FILTER"); // NOI18N
     }
     
+    @Override
     public boolean accept(File f) {
-        if(f != null) {
-            if(f.isDirectory()) {
-                return true;
-            }
-            if (f.getName().equals("configure")) { // NOI18N
-                return true;
-            } else if (f.getName().equals("CMakeLists.txt")) { // NOI18N
-                return true;
-            } else if (f.getAbsolutePath().endsWith(".pro")) { // NOI18N
-                return true;
-            }
-        }
-        return false;
+	if (f != null) {
+	    if (f.isDirectory()) {
+		return true;
+	    }
+	    return f.getName().endsWith(".so"); // NOI18N
+	}
+	return false;
     }
 
     /** Look up i18n strings here */
     private ResourceBundle bundle;
     private String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(MakefileFileFilter.class);
-        }
-        return bundle.getString(s);
+	if (bundle == null) {
+	    bundle = NbBundle.getBundle(ElfDynamicLibraryFileFilter.class);
+	}
+	return bundle.getString(s);
     }
 }

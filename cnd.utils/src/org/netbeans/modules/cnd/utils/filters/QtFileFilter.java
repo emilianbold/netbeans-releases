@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,44 +31,37 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.utils.filters;
 
 import org.openide.util.NbBundle;
 
-public class ResourceFileFilter extends SourceFileFilter {
+/**
+ * @author Alexey Vladykin
+ */
+public class QtFileFilter extends SourceFileFilter {
 
-    private static String suffixes[] = {"gif", "jpg", "png", "htm", "html", "xml", "txt", "mk", "Makefile", "makefile"}; // NOI18N
-    private static ResourceFileFilter instance = null;
+    private static final String SUFFIXES[] = {"pro", "qrc", "ts", "ui"}; // NOI18N
+    private static QtFileFilter instance = null;
 
-    public static ResourceFileFilter getInstance() {
+    public synchronized static QtFileFilter getInstance() {
         if (instance == null) {
-            instance = new ResourceFileFilter();
+            instance = new QtFileFilter();
         }
         return instance;
     }
 
+    @Override
     public String getDescription() {
-        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_RESOURCE_FILEFILTER", getSuffixesAsString()); // NOI18N
+        return NbBundle.getMessage(QtFileFilter.class, "FILECHOOSER_QT_FILEFILTER", getSuffixesAsString()); // NOI18N
     }
 
     @Override
-    public String getSuffixesAsString() {
-        StringBuilder ret = new StringBuilder();
-        for (int i = 0; i < getSuffixes().length; i++) {
-            if (i > 0) {
-                ret.append(" "); // NOI18N
-            }
-            if (!getSuffixes()[i].equals("Makefile") && !getSuffixes()[i].equals("makefile")) // NOI18N
-            {
-                ret.append(".");  // NOI18N
-            }
-            ret.append(getSuffixes()[i]); // NOI18N
-        }
-        return ret.toString();
-    }
-
     public String[] getSuffixes() {
-        return suffixes;
+        return SUFFIXES;
     }
 }

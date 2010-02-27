@@ -38,76 +38,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.utils.filters;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import org.openide.loaders.ExtensionList;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMESupport;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
-public abstract class SourceFileFilter extends javax.swing.filechooser.FileFilter {
+public class HeaderSourceFileFilter extends SourceFileFilter {
 
-    public SourceFileFilter() {
-        super();
+    private static HeaderSourceFileFilter instance = null;
+    private String[] suffixList = null;
+
+    public static HeaderSourceFileFilter getInstance() {
+        if (instance == null) {
+            instance = new HeaderSourceFileFilter();
+        }
+        return instance;
     }
 
+    @Override
     public boolean accept(File f) {
         if (f != null) {
             if (f.isDirectory()) {
                 return true;
             }
-            int index = f.getName().lastIndexOf('.');
-            if (index >= 0) {
-                // Match suffix
-                String suffix = f.getName().substring(index + 1);
-                if (amongSuffixes(suffix, getSuffixes())) {
-                    return true;
-                }
+            // headers could be without extensions
+            if (FileUtil.getExtension(f.getPath()).length() == 0) {
+                return MIMENames.HEADER_MIME_TYPE.equals(MIMESupport.getFileMIMEType(f));
             } else {
-                // Match entire name
-                if (amongSuffixes(f.getName(), getSuffixes())) {
-                    return true;
-                }
+                return super.accept(f);
             }
         }
         return false;
-    }
-
-    public abstract String[] getSuffixes();
-
-    public String getSuffixesAsString() {
-        String[] suffixes = getSuffixes();
-        StringBuilder ret = new StringBuilder();
-        for (int i = 0; i < suffixes.length; i++) {
-            if (0 < i) {
-                ret.append(' '); // NOI18N
-            }
-            ret.append('.').append(suffixes[i]); // NOI18N
-        }
-        return ret.toString();
-    }
-
-    private boolean amongSuffixes(String suffix, String[] suffixes) {
-        for (int i = 0; i < suffixes.length; i++) {
-            if (IpeUtils.areFilenamesEqual(suffixes[i], suffix)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    protected String[] getSuffixList(ExtensionList elist) {
-        Enumeration<String> en = elist.extensions();
-        ArrayList<String> list = new ArrayList<String>();
-
-        while (en.hasMoreElements()) {
-            list.add(en.nextElement());
-        }
-        return list.toArray(new String[list.size()]);
     }
 
     @Override
-    public String toString() {
-        return getDescription();
+    public String getDescription() {
+        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_HEADER_SOURCES_FILEFILTER", getSuffixesAsString()); // NOI18N
+    }
+
+    @Override
+    public String[] getSuffixes() {
+        if (suffixList == null) {
+            suffixList = MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues().toArray(new String[]{});
+        }
+        return suffixList;
     }
 }

@@ -47,15 +47,9 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -380,17 +374,17 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         }
         FileFilter[] filters;
         if (Utilities.isWindows()){
-            filters = new FileFilter[] {PeExecutableFileFilter.getInstance(),
-            ElfStaticLibraryFileFilter.getInstance(),
-            PeDynamicLibraryFileFilter.getInstance()};
+            filters = new FileFilter[] {FileFilterFactory.getPeExecutableFileFilter(),
+            FileFilterFactory.getElfStaticLibraryFileFilter(),
+            FileFilterFactory.getPeDynamicLibraryFileFilter()};
         } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-            filters = new FileFilter[] {MacOSXExecutableFileFilter.getInstance(),
-            ElfStaticLibraryFileFilter.getInstance(),
-            MacOSXDynamicLibraryFileFilter.getInstance()};
+            filters = new FileFilter[] {FileFilterFactory.getMacOSXExecutableFileFilter(),
+            FileFilterFactory.getElfStaticLibraryFileFilter(),
+            FileFilterFactory.getMacOSXDynamicLibraryFileFilter()};
         } else {
-            filters = new FileFilter[] {ElfExecutableFileFilter.getInstance(),
-            ElfStaticLibraryFileFilter.getInstance(),
-            ElfDynamicLibraryFileFilter.getInstance()};
+            filters = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter(),
+            FileFilterFactory.getElfStaticLibraryFileFilter(),
+            FileFilterFactory.getElfDynamicLibraryFileFilter()};
         }
         JFileChooser fileChooser = new FileChooser(
                 getString("OUTPUT_CHOOSER_TITLE_TXT"),

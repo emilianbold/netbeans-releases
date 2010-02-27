@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.Vector;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -56,7 +55,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.SourceFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.util.NbBundle;
 
@@ -126,34 +124,6 @@ public class SourceFilesPanel extends javax.swing.JPanel {
 
     public List<FolderEntry> getTestListData() {
         return testData;
-    }
-
-    private static class CustomFileFilter extends SourceFileFilter {
-
-        private String[] suffixes;
-
-        CustomFileFilter(String suffixesString) {
-            StringTokenizer st = new StringTokenizer(suffixesString);
-            Vector<String> vec = new Vector<String>();
-            while (st.hasMoreTokens()) {
-                String nextToken = st.nextToken();
-                if (nextToken.charAt(0) == '.') {
-                    nextToken = nextToken.substring(1);
-                }
-                vec.add(nextToken);
-            }
-            suffixes = vec.toArray(new String[vec.size()]);
-        }
-
-        @Override
-        public String getDescription() {
-            return ""; // NOI18N
-        }
-
-        @Override
-        public String[] getSuffixes() {
-            return suffixes;
-        }
     }
 
     private class TargetSelectionListener implements ListSelectionListener {

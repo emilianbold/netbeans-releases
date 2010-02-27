@@ -39,88 +39,64 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.utils.filters;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ResourceBundle;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMESupport;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public class MacOSXExecutableFileFilter extends javax.swing.filechooser.FileFilter {
+public class AllSourceFileFilter extends SourceFileFilter {
 
-    private static MacOSXExecutableFileFilter instance = null;
+    private static AllSourceFileFilter instance = null;
+    private static String[] suffixes = null;
 
-    public MacOSXExecutableFileFilter() {
-	super();
+    public static AllSourceFileFilter getInstance() {
+        if (instance == null) {
+            instance = new AllSourceFileFilter();
+        }
+        return instance;
     }
 
-    public static MacOSXExecutableFileFilter getInstance() {
-	if (instance == null)
-	    instance = new MacOSXExecutableFileFilter();
-	return instance;
-    }
-    
+    @Override
     public String getDescription() {
-	return(getString("FILECHOOSER_MACHOEXECUTABLE_FILEFILTER")); // NOI18N
+        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_All_SOURCES_FILEFILTER", getSuffixesAsString()); // NOI18N
+    }
+
+    @Override
+    public boolean accept(File f) {
+        if (f != null) {
+            if (f.isDirectory()) {
+                return true;
+            }
+            if (FileUtil.getExtension(f.getPath()).length() == 0) {
+                // could be header without extension
+                return MIMENames.HEADER_MIME_TYPE.equals(MIMESupport.getFileMIMEType(f));
+            } else {
+                return super.accept(f);
+            }
+        }
+        return false;
     }
     
-    public boolean accept(File f) {
-	if(f != null) {
-	    if(f.isDirectory()) {
-		return true;
-	    }
-	    return checkHeader(f);
-	}
-	return false;
+    @Override
+    public String[] getSuffixes() {
+        if (suffixes == null) {
+            suffixes = getAllSuffixes();
+        }
+        return suffixes;
     }
-
-    /** Check if this file's header represents an elf executable */
-    private boolean checkHeader(File f) {
-        byte b[] = new byte[18];
-	int left = 18; // bytes left to read
-	int offset = 0; // offset into b array
-	InputStream is = null;
-	try {
-	    is = new FileInputStream(f);
-	    while (left > 0) {
-		int n = is.read(b, offset, left);
-		if (n <= 0) {
-		    // File isn't big enough to be an elf file...
-		    return false;
-		}
-		offset += n;
-		left -= n;
-	    }
-	} catch (Exception e) {
-	    return false;
-	} finally {
-	    if (is != null) {
-		try {
-		    is.close();
-		} catch (IOException e) {
-		}
-	    }
-	}
-
-        // FIXUP: not sure exactly how to check for executable on Mac OS X (Mach-O)
-        if (b[0] == -50 &&
-            b[1] == -6 &&
-            b[2] == -19 &&
-            b[3] == -2 &&
-            b[12] == 2)
-            return true;
-        else
-            return false;
-    }
-
-    /** Look up i18n strings here */
-    private ResourceBundle bundle;
-    private String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(MacOSXExecutableFileFilter.class);
-	}
-	return bundle.getString(s);
+    
+    private String[] getAllSuffixes() {
+        Set<String> allSuffixes = new HashSet<String>();
+        allSuffixes.addAll(MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
+        allSuffixes.addAll(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
+        allSuffixes.addAll(MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getValues());
+        allSuffixes.addAll(MIMEExtensions.get(MIMENames.FORTRAN_MIME_TYPE).getValues());
+        return allSuffixes.toArray(new String[allSuffixes.size()]);
     }
 }

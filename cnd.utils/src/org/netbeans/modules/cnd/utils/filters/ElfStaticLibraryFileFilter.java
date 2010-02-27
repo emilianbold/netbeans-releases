@@ -39,32 +39,49 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.utils.filters;
 
-import org.netbeans.modules.cnd.utils.MIMEExtensions;
-import org.netbeans.modules.cnd.utils.MIMENames;
+import java.io.File;
+import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 
-public class CCSourceFileFilter extends SourceFileFilter{
-    
-    private static CCSourceFileFilter instance = null;
-    
-    private String[] suffixList = null;
-    
-    public static SourceFileFilter getInstance() {
-        if (instance == null)
-            instance = new CCSourceFileFilter();
-        return instance;
+public class ElfStaticLibraryFileFilter extends javax.swing.filechooser.FileFilter {
+
+    private static ElfStaticLibraryFileFilter instance = null;
+
+    public ElfStaticLibraryFileFilter() {
+	super();
     }
-    
-    public String getDescription() {
-        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_CC_SOURCES_FILEFILTER", getSuffixesAsString()); // NOI18N
-    }
-    
-    public String[] getSuffixes() {
-        if (suffixList == null) {
-            suffixList = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues().toArray(new String[]{});
+
+    public static ElfStaticLibraryFileFilter getInstance() {
+	if (instance == null) {
+            instance = new ElfStaticLibraryFileFilter();
         }
-        return suffixList;
+	return instance;
+    }
+
+    @Override
+    public String getDescription() {
+	return getString("STATIC_LIB_FILTER"); // NOI18N
+    }
+    
+    @Override
+    public boolean accept(File f) {
+	if (f != null) {
+	    if (f.isDirectory()) {
+		return true;
+	    }
+	    return f.getName().endsWith(".a"); // NOI18N
+	}
+	return false;
+    }
+
+    /** Look up i18n strings here */
+    private ResourceBundle bundle;
+    private String getString(String s) {
+	if (bundle == null) {
+	    bundle = NbBundle.getBundle(ElfStaticLibraryFileFilter.class);
+	}
+	return bundle.getString(s);
     }
 }
