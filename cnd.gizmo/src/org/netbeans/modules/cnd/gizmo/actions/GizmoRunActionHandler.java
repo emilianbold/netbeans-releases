@@ -78,7 +78,7 @@ import org.netbeans.modules.cnd.gizmo.CppSymbolDemanglerFactoryImpl;
 import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
 import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
 import org.netbeans.modules.dlight.api.execution.DLightSessionConfiguration;
-import org.netbeans.modules.dlight.terminal.api.TerminalIOProviderSupport;
+import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -285,7 +285,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
     private void targetFinished(Integer status) {
         int exitCode = -1;
 
-        boolean outStatus = !TerminalIOProviderSupport.isTerminalIO(io);
+        boolean outStatus = !IOTerm.isSupported(io);
         
         if (outStatus) {
             io.getOut().println();
