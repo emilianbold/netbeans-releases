@@ -38,25 +38,38 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.terminal;
+package org.netbeans.terminal.example;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import javax.swing.JOptionPane;
 import org.openide.util.NbBundle;
+import org.openide.windows.IOContainer;
+import org.openide.windows.IOProvider;
 
 /**
- * Action which shows Term component.
+ * Action which runs a command under a shell under a Term component.
  */
-public class TermWindowAction extends AbstractAction {
+public class CmdTermAction extends AbstractAction {
 
-    public TermWindowAction() {
-        super(NbBundle.getMessage(TermWindowAction.class, "CTL_TermWindowAction"));
+    public CmdTermAction() {
+        super(NbBundle.getMessage(CmdTermAction.class, "CTL_CmdTermAction"));
 //        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(TermTopComponent.ICON_PATH, true)));
     }
 
     public void actionPerformed(ActionEvent evt) {
-        TermTopComponent ttc = TermTopComponent.findInstance();
-        ttc.open();
-        ttc.requestActive();
+        // Ask user what command they want to run
+        String cmd = JOptionPane.showInputDialog("Command");
+        if (cmd == null || cmd.trim().equals(""))
+            return;
+
+	final TerminalIOProviderSupport support = new TerminalIOProviderSupport();
+
+	IOContainer container = TerminalIOProviderSupport.getIOContainer();
+	container = null;	// work with default IO container
+
+        boolean restartable = true;
+	IOProvider iop = TerminalIOProviderSupport.getIOProvider();
+	support.executeCommand(iop, container, cmd, restartable);
     }
 }

@@ -6,36 +6,18 @@ package org.netbeans.terminal.example.comprehensive;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JOptionPane;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.IOContainer;
-import org.openide.windows.InputOutput;
 
-import org.netbeans.lib.richexecution.program.Command;
-import org.netbeans.lib.richexecution.program.Program;
 
-import org.netbeans.modules.terminal.api.HyperlinkListener;
-import org.netbeans.modules.terminal.api.Terminal;
-import org.netbeans.modules.terminal.api.TerminalProvider;
 import org.netbeans.terminal.example.TerminalIOProviderSupport;
 
 public final class CommandTerminalAction implements ActionListener {
 
-    private final TerminalIOProviderSupport support = new TerminalIOProviderSupport();
-
     private final TerminalPanel terminalPanel = new TerminalPanel();
-
-    private static IOProvider getIOProvider() {
-        IOProvider iop = IOProvider.get("Terminal");       // NOI18N
-        if (iop == null) {
-            System.out.printf("IOProviderActionSupport.getTermIOProvider() couldn't find our provider\n");
-            iop = IOProvider.getDefault();
-        }
-        return iop;
-    }
 
     public void actionPerformed(ActionEvent e) {
 
@@ -70,6 +52,10 @@ public final class CommandTerminalAction implements ActionListener {
             return;
 
 
+	final TerminalIOProviderSupport support = new TerminalIOProviderSupport();
+
+	boolean restartable = true;
+
 	TerminalPanel.Provider provider = terminalPanel.getProvider();
 	TerminalPanel.TC tc = terminalPanel.getTC();
 	if (tc == TerminalPanel.TC.DEDICATED) {
@@ -86,30 +72,27 @@ public final class CommandTerminalAction implements ActionListener {
 	    */
 	    {
 		IOContainer container = TerminalIOProviderSupport.getIOContainer();
-		IOProvider iop = getIOProvider();
-		javax.swing.Action[] actions = null;
-		InputOutput io = iop.getIO("Cmd: " + cmd, actions, container);
-		support.executeCommand(io, cmd);
+		IOProvider iop = TerminalIOProviderSupport.getIOProvider();
+		support.executeCommand(iop, container, cmd, restartable);
 	    }
 
 	} else {
 	    switch (provider) {
 		case TERM:
 		    {
-		    IOProvider iop = getIOProvider();
-		    InputOutput io = iop.getIO("Cmd: " + cmd, true);
-		    support.executeCommand(io, cmd);
+		    IOProvider iop = TerminalIOProviderSupport.getIOProvider();
+		    support.executeCommand(iop, null, cmd, restartable);
 		    }
 		    break;
 		case DEFAULT:
 		    {
 		    IOProvider iop = IOProvider.getDefault();
-		    InputOutput io = iop.getIO("Cmd: " + cmd, true);
-		    support.executeCommand(io, cmd);
+		    support.executeCommand(iop, null, cmd, restartable);
 		    }
 		    break;
 
 		case DIRECT:
+		    /* OLD
 		    {
 		    TerminalProvider terminalProvider = TerminalProvider.getDefault();
 
@@ -124,9 +107,9 @@ public final class CommandTerminalAction implements ActionListener {
 		    });
 
 		    Program program = new Command(cmd);
-		    boolean restartable = true;
 		    terminal.startProgram(program, restartable);
 		    }
+		     */
 
 		    break;
 	    }

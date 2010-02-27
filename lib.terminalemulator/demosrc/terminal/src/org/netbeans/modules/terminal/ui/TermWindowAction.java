@@ -38,30 +38,25 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.terminal;
+package org.netbeans.modules.terminal.ui;
 
-import org.netbeans.modules.terminal.api.Terminal;
-import org.netbeans.modules.terminal.api.TerminalProvider;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.openide.util.NbBundle;
-import org.netbeans.lib.richexecution.program.Program;
-import org.netbeans.lib.richexecution.program.Shell;
 
 /**
- * Action which starts a shell under a Term component.
+ * Action which shows Term component.
  */
-public class ShellTermAction extends AbstractAction {
+public class TermWindowAction extends AbstractAction {
 
-    public ShellTermAction() {
-        super(NbBundle.getMessage(ShellTermAction.class, "CTL_ShellTermAction"));
+    public TermWindowAction() {
+        super(NbBundle.getMessage(TermWindowAction.class, "CTL_TermWindowAction"));
 //        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(TermTopComponent.ICON_PATH, true)));
     }
 
     public void actionPerformed(ActionEvent evt) {
-        TerminalProvider terminalProvider = TerminalProvider.getDefault();
-        Terminal terminal = terminalProvider.createTerminal("shell");
-        Program program = new Shell();
-        terminal.startProgram(program, false);
+        TermTopComponent ttc = TermTopComponent.findInstance();
+        ttc.open();
+        ttc.requestActive();
     }
 }

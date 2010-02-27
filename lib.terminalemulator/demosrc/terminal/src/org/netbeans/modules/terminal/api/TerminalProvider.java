@@ -41,11 +41,13 @@
 
 package org.netbeans.modules.terminal.api;
 
-import org.netbeans.modules.terminal.TermTopComponent;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import org.openide.windows.IOContainer;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+
+import org.netbeans.modules.terminal.ui.TermTopComponent;
 
 public final class TerminalProvider {
 
@@ -87,8 +89,8 @@ public final class TerminalProvider {
     /**
      * Get a Terminal in the given IOContainer.
      */
-    public Terminal createTerminal(String name, IOContainer ioContainer) {
-        return new Terminal(ioContainer, name);
+    public Terminal createTerminal(String name, Action[] actions, IOContainer ioContainer) {
+        return new Terminal(ioContainer, actions, name);
     }
 
     /**
@@ -96,7 +98,7 @@ public final class TerminalProvider {
      */
     public Terminal createTerminal(String name) {
         TermTopComponent tc = TermTopComponent.findInstance();
-        return new Terminal(tc.ioContainer(), name);
+        return new Terminal(tc.ioContainer(), null, name);
     }
 
     /**
@@ -105,6 +107,6 @@ public final class TerminalProvider {
      */
     public synchronized Terminal createTerminal(String name, String preferredID) {
         IOContainer ioContainer = getInstance(preferredID);
-        return new Terminal(ioContainer, name);
+        return new Terminal(ioContainer, null, name);
     }
 }
