@@ -57,8 +57,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
-import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -1007,7 +1007,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         if (!file.exists() || file.isDirectory()) {
             return; // FIXUP: error
         }
-        if (!AllSourceFileFilter.getInstance().accept(file)) {
+        if (!FileFilterFactory.getAllSourceFileFilter().accept(file)) {
             return;
         }
         String itemPath = file.getPath();

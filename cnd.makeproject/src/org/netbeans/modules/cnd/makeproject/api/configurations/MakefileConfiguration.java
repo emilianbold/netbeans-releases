@@ -46,17 +46,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeStaticLibraryFileFilter;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Sheet;
@@ -370,17 +363,17 @@ public class MakefileConfiguration {
             setControlButtonsAreShown(false);
             
             if (Utilities.isWindows()) {
-                addChoosableFileFilter(PeExecutableFileFilter.getInstance());
-                addChoosableFileFilter(PeStaticLibraryFileFilter.getInstance());
-                addChoosableFileFilter(PeDynamicLibraryFileFilter.getInstance());
+                addChoosableFileFilter(FileFilterFactory.getPeExecutableFileFilter());
+                addChoosableFileFilter(FileFilterFactory.getPeStaticLibraryFileFilter());
+                addChoosableFileFilter(FileFilterFactory.getPeDynamicLibraryFileFilter());
             } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                addChoosableFileFilter(MacOSXExecutableFileFilter.getInstance());
-                addChoosableFileFilter(ElfStaticLibraryFileFilter.getInstance());
-                addChoosableFileFilter(MacOSXDynamicLibraryFileFilter.getInstance());
+                addChoosableFileFilter(FileFilterFactory.getMacOSXExecutableFileFilter());
+                addChoosableFileFilter(FileFilterFactory.getElfStaticLibraryFileFilter());
+                addChoosableFileFilter(FileFilterFactory.getMacOSXDynamicLibraryFileFilter());
             } else {
-                addChoosableFileFilter(ElfExecutableFileFilter.getInstance());
-                addChoosableFileFilter(ElfStaticLibraryFileFilter.getInstance());
-                addChoosableFileFilter(ElfDynamicLibraryFileFilter.getInstance());
+                addChoosableFileFilter(FileFilterFactory.getElfExecutableFileFilter());
+                addChoosableFileFilter(FileFilterFactory.getElfStaticLibraryFileFilter());
+                addChoosableFileFilter(FileFilterFactory.getElfDynamicLibraryFileFilter());
             }
             setFileFilter(getAcceptAllFileFilter());
             

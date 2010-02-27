@@ -78,6 +78,9 @@ final class IOShuttle {
         }
     }
 
+    /**
+     * Copies kestrokes in io window to external process.
+     */
     private static class InputMonitor extends Thread {
 
         private final Reader reader;

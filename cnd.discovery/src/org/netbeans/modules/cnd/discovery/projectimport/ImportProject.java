@@ -83,7 +83,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
-import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.wizard.ConsolidationStrategyPanel;
@@ -206,7 +206,7 @@ public class ImportProject implements PropertyChangeListener {
 
             @Override
             public FileFilter getFileFilter() {
-                return AllSourceFileFilter.getInstance();
+                return FileFilterFactory.getAllSourceFileFilter();
             }
         });
         sources = list.iterator();

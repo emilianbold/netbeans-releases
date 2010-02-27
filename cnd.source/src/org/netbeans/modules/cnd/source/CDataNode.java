@@ -41,13 +41,13 @@
 package org.netbeans.modules.cnd.source;
 
 /** A node to represent the C source object */
-public class CDataNode extends CndDataNode {
+public class CDataNode extends SourceDataNode {
 
     /** The base name of the C source icon */
     private static final String CSrcIcon =
             "org/netbeans/modules/cnd/source/resources/CSrcIcon.gif"; // NOI18N
 
-    public CDataNode(CndDataObject obj) {
+    public CDataNode(SourceDataObject obj) {
         super(obj, obj.getLookup(), CSrcIcon);
     }
 }
