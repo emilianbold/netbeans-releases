@@ -67,6 +67,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 
 /**
  * Create the third panel in the Makefile wizard.
@@ -664,7 +665,7 @@ public class CreateTargetsPanel extends MakefileWizardPanel implements FocusList
 
         super.addNotify();
         nameText.selectAll();
-        IpeUtils.requestFocus(nameText);
+        CndUIUtilities.requestFocus(nameText);
     }
 
     /** Remove the file chooser if its showing */

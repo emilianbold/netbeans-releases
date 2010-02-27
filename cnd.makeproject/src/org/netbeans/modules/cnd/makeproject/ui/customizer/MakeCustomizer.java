@@ -56,7 +56,6 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
@@ -67,6 +66,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
+import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
@@ -549,7 +549,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
                     customizerPanel.repaint();
                     currentCustomizer = panel;
 
-                    IpeUtils.requestFocus(btv);
+                    CndUIUtilities.requestFocus(btv);
 
                     if (dialogDescriptor != null && currentConfigurationNode != null) {
                         dialogDescriptor.setHelpCtx(HelpCtx.findHelp(currentConfigurationNode));

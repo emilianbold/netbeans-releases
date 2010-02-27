@@ -56,6 +56,7 @@ import javax.swing.table.DefaultTableModel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 import org.openide.util.NbBundle;
 
 public class SourceFilesPanel extends javax.swing.JPanel {
@@ -115,7 +116,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
     }
 
     public void initFocus() {
-        IpeUtils.requestFocus(addButton);
+        CndUIUtilities.requestFocus(addButton);
     }
 
     public List<FolderEntry> getSourceListData() {

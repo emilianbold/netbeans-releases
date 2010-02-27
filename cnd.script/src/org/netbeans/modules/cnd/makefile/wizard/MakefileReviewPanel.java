@@ -57,6 +57,7 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -366,7 +367,7 @@ public class MakefileReviewPanel extends MakefileWizardPanel
         finishButton.setMnemonic(mw.getFinishMnemonic());
         finishButton.setEnabled(true);
         getRootPane().setDefaultButton(finishButton);
-        IpeUtils.requestFocus(finishButton);
+        CndUIUtilities.requestFocus(finishButton);
         enableTextSelection = false;
 
         if (finishButtonListener == null) {

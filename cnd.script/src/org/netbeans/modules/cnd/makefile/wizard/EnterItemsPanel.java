@@ -74,6 +74,7 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.cnd.makefile.utils.IpeFileSystemView;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makefile.utils.UnixRE;
+import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -1029,13 +1030,11 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 
 	if (dynamicNext && entryText.getDocument().getLength() > 0) {
 	    addBtn.setEnabled(true);
-	    //getRootPane().setDefaultButton(addBtn);
-	    IpeUtils.setDefaultButton(getRootPane(), addBtn);
+	    CndUIUtilities.setDefaultButton(getRootPane(), addBtn);
 	}
 	entryText.selectAll();
-	IpeUtils.requestFocus(entryText);
+	CndUIUtilities.requestFocus(entryText);
     }
-
 
     @Override
     public void removeNotify() {
