@@ -89,7 +89,7 @@ public class RunDialogAction extends NodeAction {
         if (activatedNodes != null && activatedNodes.length == 1) {
             DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
             String mime = getMime(dataObject);
-            if (dataObject != null  && dataObject.isValid() && MIMENames.isExe(mime)) {
+            if (dataObject != null  && dataObject.isValid() && MIMENames.isBinary(mime)) {
                 FileObject fo = dataObject.getPrimaryFile();
                 if (fo != null) {
                     File file = FileUtil.toFile(fo);
@@ -116,7 +116,7 @@ public class RunDialogAction extends NodeAction {
         DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
         String mime = getMime(dataObject);
         // disabled for core files, see issue 136696
-        if (!MIMENames.isExe(mime) || MIMENames.ELF_CORE_MIME_TYPE.equals(mime)) {
+        if (!MIMENames.isBinary(mime) || MIMENames.ELF_CORE_MIME_TYPE.equals(mime)) {
             return false;
         }
         return true;
