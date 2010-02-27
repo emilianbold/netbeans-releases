@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,68 +34,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints;
+package org.netbeans.modules.java.hints.jdk;
 
-import com.sun.source.util.TreePath;
-import java.util.List;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
 import org.netbeans.spi.editor.hints.Fix;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class ConvertToStringSwitchTest extends TreeRuleTestBase {
+public class ConvertToStringSwitchTest extends TestBase {
 
     public ConvertToStringSwitchTest(String name) {
-        super(name);
+        super(name, ConvertToStringSwitch.class);
     }
 
     public void testSimple() throws Exception {
-        ConvertToStringSwitch.checkSourceLevel = false;
+        setSourceLevel("1.7");
         performFixTest("test/Test.java",
                        "package test;" +
                        "public class Test {" +
                        "     public void test() {" +
                        "         String g = null;" +
-                       "         i|f (g == \"j\") {" +
+                       "         if (g == \"j\") {" +
                        "             System.err.println(1);" +
                        "         } else if (g == \"k\") {" +
                        "             System.err.println(2);" +
+                       "         } else if (g == \"l\") {" +
+                       "             System.err.println(3);" +
                        "         }" +
                        "     }" +
                        "}",
-                       "0:91-0:92:verifier:Convert to switch",
+                       "0:91-0:93:verifier:Convert to switch",
                        "FixImpl",
-                       "package test;public class Test { public void test() { String g = null;switch (g) { case \"j\": System.err.println(1); break; case \"k\": System.err.println(2); break; } }}");
-    }
-
-    public void testReportOnlyOnce() throws Exception {
-        ConvertToStringSwitch.checkSourceLevel = false;
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "     public void test() {" +
-                            "         String g = null;" +
-                            "         if (g == \"j\") {" +
-                            "             System.err.println(1);" +
-                            "         } else i|f (g == \"k\") {" +
-                            "             System.err.println(2);" +
-                            "         } else if (g == \"l\") {" +
-                            "             System.err.println(3);" +
-                            "         }" +
-                            "     }" +
-                            "}");
-    }
-
-    @Override
-    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
-        return new ConvertToStringSwitch().run(info, path);
+                       "package test;public class Test { public void test() { String g = null;switch (g) { case \"j\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": System.err.println(3); break; } }}");
     }
 
     @Override
