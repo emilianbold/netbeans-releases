@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.api.xml;
  * Thrown by {@link XMLDecoder#checkVersion} if a version mismatch is
  * detected.
  */
-
 public final class VersionException extends Exception {
 
     private String element;

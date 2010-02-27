@@ -52,7 +52,6 @@ import java.io.OutputStream;
  * is to define one or more specialized <code>XMLEncoder</code>s for the
  * expected top-level elements and delegate to their {@link XMLEncoder#encode}.
  */
-
 abstract public class XMLDocWriter implements XMLEncoder {
 
     private int indentChars = 2;
@@ -109,7 +108,6 @@ abstract public class XMLDocWriter implements XMLEncoder {
      *	<?xml version="1.0" encoding="UTF-8"?>
      * (Or the correct encoding)
      */
-
     private void writeHeader() {
 	String version = "1.0";		// NOI18N
 	encoderStream.println
@@ -121,7 +119,6 @@ abstract public class XMLDocWriter implements XMLEncoder {
      *	<!DOCTYPE ... >
      * LATER though ...
      */
-
     private void writeDoctype() {
     } 
 
