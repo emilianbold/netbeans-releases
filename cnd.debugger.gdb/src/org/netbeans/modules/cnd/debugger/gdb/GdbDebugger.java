@@ -102,7 +102,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.dlight.terminal.api.TerminalIOProviderSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
@@ -317,7 +316,6 @@ public class GdbDebugger implements PropertyChangeListener {
                     tty = ExternalTerminal.create(this, termpath, debuggerEnv);
                 }
             } else if (conType == RunProfile.CONSOLE_TYPE_INTERNAL) {
-                assert TerminalIOProviderSupport.isTerminalIO(iotab);
                 pty = PtySupport.allocate(execEnv);
                 PtySupport.connect(iotab, pty);
                 tty = pty.getSlaveName();
