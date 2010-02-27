@@ -59,7 +59,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.makefile.utils.IpeFileSystemView;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 
 /**
@@ -191,7 +191,7 @@ public abstract class FileChooserPanel extends MakefileWizardPanel
 		}
 
 		// See if the user has already typed a directory. If so use it.
-		String cur = IpeUtils.expandPath(text.getText());
+		String cur = CndPathUtilitities.expandPath(text.getText());
 		if (cur.length() > 0 && (file = new File(cur)).isDirectory()) {
 		    if (cur.charAt(0) == '.') {
                         cwd = new File(getMakefileData().getBaseDirectory() + File.separator + cur);

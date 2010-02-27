@@ -48,7 +48,7 @@ import java.util.Stack;
 import java.util.Vector;
 import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -838,7 +838,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private String adjustOffset(String path) {
         if (relativeOffset != null && path.startsWith("..")) // NOI18N
         {
-            path = IpeUtils.trimDotDot(relativeOffset + path);
+            path = CndPathUtilitities.trimDotDot(relativeOffset + path);
         }
         return path;
     }

@@ -55,7 +55,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
@@ -188,8 +188,8 @@ public class ProjectCreator {
 
         // TODO: create localhost based project
         MakeConfiguration extConf = new MakeConfiguration(dirF.getPath(), target, MakeConfiguration.TYPE_MAKEFILE, HostInfoUtils.LOCALHOST);
-        String workingDirRel = IpeUtils.toRelativePath(dirF.getPath(), IpeUtils.naturalize(workingDir));
-        workingDirRel = IpeUtils.normalize(workingDirRel);
+        String workingDirRel = CndPathUtilitities.toRelativePath(dirF.getPath(), CndPathUtilitities.naturalize(workingDir));
+        workingDirRel = CndPathUtilitities.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         if (displayName.indexOf(".lib.")>0 || displayName.indexOf(".cmd.")>0) { // NOI18N
             extConf.getMakefileConfiguration().getBuildCommand().setValue("bldenv -d ../../../../"+buildScript+" 'dmake all'"); // NOI18N
@@ -229,8 +229,8 @@ public class ProjectCreator {
         Iterator<String> importantItemsIterator = null;
         if (makefilePath != null && makefilePath.length() > 0) {
             List<String> importantItems = new ArrayList<String>();
-            makefilePath = IpeUtils.toRelativePath(dirF.getPath(), IpeUtils.naturalize(makefilePath));
-            makefilePath = IpeUtils.normalize(makefilePath);
+            makefilePath = CndPathUtilitities.toRelativePath(dirF.getPath(), CndPathUtilitities.naturalize(makefilePath));
+            makefilePath = CndPathUtilitities.normalize(makefilePath);
             importantItems.add(makefilePath);
             importantItemsIterator = importantItems.iterator();
         }
@@ -297,7 +297,7 @@ public class ProjectCreator {
         projectDescriptor.initLogicalFolders(null, false, null, importantItems, null);
         rootFolder = projectDescriptor.getLogicalFolders();
         //projectDescriptor.addSourceRootRaw(workingDir);
-        projectDescriptor.addSourceRootRaw(IpeUtils.toRelativePath(baseDir, workingDir));
+        projectDescriptor.addSourceRootRaw(CndPathUtilitities.toRelativePath(baseDir, workingDir));
         
         addFiles(sourceFiles);
         
@@ -323,9 +323,9 @@ public class ProjectCreator {
         }
         while (filelist.hasNext()) {
             File f = filelist.next();
-            String path = IpeUtils.toRelativePath(workingDir, f.getPath());
+            String path = CndPathUtilitities.toRelativePath(workingDir, f.getPath());
             StringTokenizer tok = new StringTokenizer(path, File.separator);
-            String relativePath = IpeUtils.toRelativePath(baseDir, f.getPath());
+            String relativePath = CndPathUtilitities.toRelativePath(baseDir, f.getPath());
             addFile(rootFolder, tok, f.getPath(), relativePath);
         }
     }

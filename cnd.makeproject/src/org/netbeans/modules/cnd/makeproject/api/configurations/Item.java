@@ -52,7 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
@@ -77,7 +77,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     public Item(String path) {
         this.path = path;
-        //this.sortName = IpeUtils.getBaseName(path);
+        //this.sortName = CndPathUtilitities.getBaseName(path);
 //        int i = sortName.lastIndexOf("."); // NOI18N
 //        if (i > 0) {
 //            this.sortName = sortName.substring(0, i);
@@ -153,7 +153,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public String getName() {
-        return IpeUtils.getBaseName(path);
+        return CndPathUtilitities.getBaseName(path);
     }
 
     public String getPath(boolean norm) {
@@ -167,7 +167,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     public String getAbsPath() {
         String retPath = null;
-        if (IpeUtils.isPathAbsolute(getPath())) {// UNIX path
+        if (CndPathUtilitities.isPathAbsolute(getPath())) {// UNIX path
             retPath = getPath();
         } else if (getFolder() != null) {
             retPath = getFolder().getConfigurationDescriptor().getBaseDir() + '/' + getPath(); // UNIX path
@@ -226,10 +226,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             if (getFolder() != null) {
                 FileObject fo = (FileObject) evt.getNewValue();
                 String newPath = FileUtil.toFile(fo).getPath();
-                if (!IpeUtils.isPathAbsolute(getPath())) {
-                    newPath = IpeUtils.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDir(), newPath);
+                if (!CndPathUtilitities.isPathAbsolute(getPath())) {
+                    newPath = CndPathUtilitities.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDir(), newPath);
                 }
-                newPath = IpeUtils.normalize(newPath);
+                newPath = CndPathUtilitities.normalize(newPath);
                 renameTo(newPath);
             }
         }
@@ -483,7 +483,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             // Convert all paths to absolute paths
             Iterator<String> iter = vec2.iterator();
             while (iter.hasNext()) {
-                vec.add(IpeUtils.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), iter.next()));
+                vec.add(CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), iter.next()));
             }
             if (cccCompilerConfiguration instanceof AllOptionsProvider) {
                 vec = SPI_ACCESSOR.getItemUserIncludePaths(vec, (AllOptionsProvider) cccCompilerConfiguration, compiler, makeConfiguration);

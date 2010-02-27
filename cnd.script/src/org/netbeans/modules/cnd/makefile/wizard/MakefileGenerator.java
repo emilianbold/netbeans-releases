@@ -59,7 +59,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import org.netbeans.modules.cnd.makefile.utils.FortranParser;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.openide.DialogDisplayer;
@@ -171,7 +171,7 @@ public class MakefileGenerator {
                  * Makefile has been opened for writing so we know the error is
                  * a write error, possibly a full disk.
                  */
-                if (IpeUtils.IfdefDiagnostics) {
+                if (CndPathUtilitities.IfdefDiagnostics) {
                     System.out.println("Failure in Makefile Generation"); // NOI18N
                 }
                 fmakefile.delete();		    // remove partial Makefile
@@ -1127,7 +1127,7 @@ public class MakefileGenerator {
             compiler = "$(AS)";						// NOI18N
             flagBase = "ASFLAGS_";					// NOI18N
         } else {
-            if (IpeUtils.IfdefDiagnostics) {
+            if (CndPathUtilitities.IfdefDiagnostics) {
                 System.out.println("Generator: Can't determine language of " + src); // NOI18N
             }
             return;

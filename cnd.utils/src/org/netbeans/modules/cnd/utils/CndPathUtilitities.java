@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.utils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -49,12 +49,12 @@ import org.openide.util.Utilities;
 /**
  * Miscellaneous utility classes useful for the Ipe module
  */
-public class IpeUtils {
+public class CndPathUtilitities {
 
     /**
      * Constructor is private. This class should not be instantiated.
      */
-    private IpeUtils() {
+    private CndPathUtilitities() {
     }
 
     /** Store the real environment here */
@@ -210,7 +210,7 @@ public class IpeUtils {
                 relPath = "."; // NOI18N
             } // NOI18N
             else if (isPathAbsolute(base)) {
-                relPath = IpeUtils.getRelativePath(base, relPath);
+                relPath = CndPathUtilitities.getRelativePath(base, relPath);
             } else {
                 relPath = path;
             }
@@ -522,7 +522,7 @@ public class IpeUtils {
             return false;
         }
         for (int x = 0; x < a.length; x++) {
-            if (!IpeUtils.sameString(a[x], b[x])) {
+            if (!CndPathUtilitities.sameString(a[x], b[x])) {
                 return false;
             }
         }

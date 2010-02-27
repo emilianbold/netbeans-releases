@@ -71,7 +71,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement.FileType;
@@ -210,13 +210,13 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
             for (int i = 0; i < files.length; i++) {
                 String itemPath;
                 if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                    itemPath = IpeUtils.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
+                    itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
                 } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                    itemPath = IpeUtils.toRelativePath(baseDir, files[i].getPath());
+                    itemPath = CndPathUtilitities.toRelativePath(baseDir, files[i].getPath());
                 } else {
                     itemPath = files[i].getPath();
                 }
-                itemPath = IpeUtils.normalize(itemPath);
+                itemPath = CndPathUtilitities.normalize(itemPath);
                 String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
                 if (files[i].isDirectory()) {
                     addObjectAction(new PackagerFileElement(
@@ -366,15 +366,15 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                 } else {
                     String path;
                     if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                        path = IpeUtils.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
+                        path = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
                     } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                        path = IpeUtils.toRelativePath(baseDir, files[i].getPath());
+                        path = CndPathUtilitities.toRelativePath(baseDir, files[i].getPath());
                     } else {
                         path = files[i].getPath();
                     }
-                    path = IpeUtils.normalize(path);
-                    String toFile = IpeUtils.toRelativePath(origDir.getParentFile().getAbsolutePath(), files[i].getPath());
-                    toFile = IpeUtils.normalize(toFile);
+                    path = CndPathUtilitities.normalize(path);
+                    String toFile = CndPathUtilitities.toRelativePath(origDir.getParentFile().getAbsolutePath(), files[i].getPath());
+                    toFile = CndPathUtilitities.normalize(toFile);
                     String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
                     String perm;
                     if (files[i].getName().endsWith(".exe") || files[i].isDirectory() || isExecutable(files[i])) { //NOI18N
@@ -572,7 +572,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                     String msg = getString("Directory_tt", elem.getTo()); // NOI18N
                     label.setToolTipText(msg);
                 } else if (elem.getType() == PackagerFileElement.FileType.FILE) {
-                    String msg = getString("File_tt", (new File(IpeUtils.toAbsolutePath(baseDir, elem.getFrom())).getAbsolutePath())); // NOI18N
+                    String msg = getString("File_tt", (new File(CndPathUtilitities.toAbsolutePath(baseDir, elem.getFrom())).getAbsolutePath())); // NOI18N
                     label.setToolTipText(msg);
                 }
                 String val = elem.getTo();

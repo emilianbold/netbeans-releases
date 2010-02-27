@@ -56,7 +56,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 import org.openide.util.NbBundle;
 
@@ -141,7 +141,7 @@ public class MakefileReviewPanel extends MakefileWizardPanel
         grid.fill = GridBagConstraints.BOTH;
         add(reviewSP, grid);
 
-        if (IpeUtils.IfdefDiagnostics) {
+        if (CndPathUtilitities.IfdefDiagnostics) {
             reviewText.addKeyListener(new KeyAdapter() {
 
                 @Override
@@ -186,7 +186,7 @@ public class MakefileReviewPanel extends MakefileWizardPanel
                 append("LBL_SingleMake", td.getName());			// NOI18N
             } else if (td.isCustomTarget()) {
                 append("LBL_SingleCustom", td.getName());		// NOI18N
-            } else if (IpeUtils.IfdefDiagnostics) {
+            } else if (CndPathUtilitities.IfdefDiagnostics) {
                 System.out.println(
                         "Error: Unknown target type in summary");	// NOI18N
             }
@@ -244,7 +244,7 @@ public class MakefileReviewPanel extends MakefileWizardPanel
                         append("LBL_MultiCustom", td.getName(), // NOI18N
                                 Integer.valueOf(srcCnt));
                     }
-                } else if (IpeUtils.IfdefDiagnostics) {
+                } else if (CndPathUtilitities.IfdefDiagnostics) {
                     System.out.println(
                             "Error: Unknown target type in summary");	// NOI18N
                 }
@@ -257,7 +257,7 @@ public class MakefileReviewPanel extends MakefileWizardPanel
             append("LBL_DebugOptCompile");				// NOI18N
         } else if (isOptimize()) {
             append("LBL_OptimizeCompile");				// NOI18N
-        } else if (IpeUtils.IfdefDiagnostics) {
+        } else if (CndPathUtilitities.IfdefDiagnostics) {
             append("LBL_NoOptDebugCompile");				// NOI18N
         }
 

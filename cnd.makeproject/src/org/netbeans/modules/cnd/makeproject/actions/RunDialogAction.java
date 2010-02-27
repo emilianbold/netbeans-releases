@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -149,7 +149,7 @@ public class RunDialogAction extends NodeAction {
             if (conf != null) {
                 RunProfile profile = conf.getProfile();
                 String path = runDialogPanel.getExecutablePath();
-                path = IpeUtils.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
+                path = CndPathUtilitities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                         project,
                         PredefinedType.RUN,

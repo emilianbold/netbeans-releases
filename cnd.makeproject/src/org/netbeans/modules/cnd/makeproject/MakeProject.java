@@ -73,7 +73,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -707,7 +707,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
             String baseDir = FileUtil.toFile(getProjectDirectory()).getPath();
             for (String loc : subProjectLocations) {
-                String location = IpeUtils.toAbsolutePath(baseDir, loc);
+                String location = CndPathUtilitities.toAbsolutePath(baseDir, loc);
                 try {
                     FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile());
                     Project project = ProjectManager.getDefault().findProject(fo);
