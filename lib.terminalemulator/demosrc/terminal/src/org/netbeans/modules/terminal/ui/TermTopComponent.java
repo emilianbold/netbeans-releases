@@ -49,7 +49,7 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.windows.IOContainer;
 
-import org.netbeans.modules.terminal.api.TerminalContainer;
+import org.netbeans.modules.terminal.ioprovider.TerminalContainer;
 import org.netbeans.modules.terminal.api.TerminalWindow;
 
 /**

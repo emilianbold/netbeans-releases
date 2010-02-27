@@ -39,10 +39,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.terminal.api;
+package org.netbeans.modules.terminal.ioprovider;
 
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.modules.terminal.api.TerminalWindow;
 import org.openide.windows.IOContainer;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;

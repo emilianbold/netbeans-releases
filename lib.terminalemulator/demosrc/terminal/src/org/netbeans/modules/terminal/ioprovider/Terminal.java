@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.terminal.api;
+package org.netbeans.modules.terminal.ioprovider;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -77,6 +77,7 @@ import org.netbeans.lib.terminalemulator.StreamTerm;
 import org.netbeans.lib.terminalemulator.support.DefaultFindState;
 import org.netbeans.lib.terminalemulator.support.FindState;
 import org.netbeans.lib.terminalemulator.support.TermOptions;
+import org.netbeans.modules.terminal.api.HyperlinkListener;
 
 import org.netbeans.modules.terminal.ui.TermAdvancedOption;
 

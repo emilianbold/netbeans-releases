@@ -1,4 +1,4 @@
-package org.netbeans.modules.terminal.api;
+package org.netbeans.modules.terminal.ioprovider;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
