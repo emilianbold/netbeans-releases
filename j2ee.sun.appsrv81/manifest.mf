@@ -7,6 +7,3 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/sun/ide/j2ee/Bundle.
 OpenIDE-Module: org.netbeans.modules.j2ee.sun.appsrv81/1
 OpenIDE-Module-Provides: org.netbeans.modules.serverplugins.javaee
 OpenIDE-Module-Recommends: org.netbeans.modules.identity.kit
-
-Name: org/netbeans/modules/j2ee/sun/ide/j2ee/runtime/actions/RunASVerifierAction.class
-OpenIDE-Module-Class: Action

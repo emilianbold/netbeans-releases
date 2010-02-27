@@ -49,6 +49,20 @@ made subject to such option by the copyright holder.
           <file name="org-netbeans-modules-diff-PatchAction.instance"/>
       </folder>
   </folder>
+  <folder name="UI">
+      <folder name="ToolActions">
+          <folder name="Files">
+              <file name="org-netbeans-modules-diff-PatchAction.shadow">
+                  <attr name="position" intvalue="100"/>
+                  <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-diff-PatchAction.instance"/>
+              </file>
+              <file name="org-netbeans-modules-diff-DiffAction.shadow">
+                  <attr name="position" intvalue="200"/>
+                  <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-diff-DiffAction.instance"/>
+              </file>
+          </folder>
+      </folder>
+  </folder>
     
     <folder name="Services">
         <folder name="DiffProviders">

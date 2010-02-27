@@ -49,6 +49,20 @@ made subject to such option by the copyright holder.
 <changes>
 <change>
       <api name="actions"/>
+      <summary><code>ToolsAction via layers</code></summary>
+      <version major="6" minor="15"/>
+      <date day="26" month="2" year="2010"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="yes" deletion="no" modification="no"/>
+      <description>
+          Register your actions for <code>ToolsAction</code> via
+          layer, don't use the deprecated manifest style.
+      </description>
+      <class package="org.openide.actions" name="ToolsAction"/>
+      <issue number="180979 "/>
+</change>
+<change>
+      <api name="actions"/>
       <summary><code>HeapView</code> preserves its settings between sessions</summary>
       <version major="6" minor="5"/>
       <date day="24" month="6" year="2008"/>
