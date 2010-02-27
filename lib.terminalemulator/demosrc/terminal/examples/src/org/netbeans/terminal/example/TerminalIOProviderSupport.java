@@ -28,7 +28,6 @@ import org.netbeans.lib.richexecution.program.Shell;
 import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOTerm;
-import org.netbeans.modules.terminal.api.Terminal;
 
 import org.netbeans.modules.terminal.ui.TermTopComponent;
 
@@ -59,7 +58,7 @@ public final class TerminalIOProviderSupport {
         @Override
         public Object getValue(String key) {
             if (key.equals(Action.SMALL_ICON)) {
-                return new ImageIcon(Terminal.class.getResource("rerun.png"));
+                return new ImageIcon(TerminalIOProviderSupport.class.getResource("rerun.png"));
             } else if (key.equals(Action.SHORT_DESCRIPTION)) {
                 return "Re-run";
             } else {
@@ -87,7 +86,7 @@ public final class TerminalIOProviderSupport {
         @Override
         public Object getValue(String key) {
             if (key.equals(Action.SMALL_ICON)) {
-                return new ImageIcon(Terminal.class.getResource("stop.png"));
+                return new ImageIcon(TerminalIOProviderSupport.class.getResource("stop.png"));
             } else if (key.equals(Action.SHORT_DESCRIPTION)) {
                 return "Stop";
             } else {

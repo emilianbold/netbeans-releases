@@ -41,7 +41,6 @@ import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 
 import org.netbeans.modules.terminal.api.Terminal;
-import org.netbeans.modules.terminal.api.TerminalProvider;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IOTerm;
@@ -412,7 +411,22 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
     TerminalInputOutput(String name, Action[] actions, IOContainer ioContainer) {
         this.ioContainer = ioContainer;
-        terminal = TerminalProvider.getDefault().createTerminal(name, actions, ioContainer);
+
+	/*
+	 * Other ways of getting a terminal
+
+	public Terminal createTerminal(String name) {
+	    TermTopComponent tc = TermTopComponent.findInstance();
+	    return new Terminal(tc.ioContainer(), null, name);
+	}
+
+	public synchronized Terminal createTerminal(String name, String preferredID) {
+	    IOContainer ioContainer = getInstance(preferredID);
+	    return new Terminal(ioContainer, null, name);
+	}
+	 */
+
+        terminal = new Terminal(ioContainer, actions, name);
         term = terminal.term();
 
         if (! (term instanceof ActiveTerm))

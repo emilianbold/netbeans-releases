@@ -50,7 +50,6 @@ import org.openide.windows.WindowManager;
 import org.openide.windows.IOContainer;
 
 import org.netbeans.modules.terminal.api.TerminalContainer;
-import org.netbeans.modules.terminal.api.TerminalProvider;
 import org.netbeans.modules.terminal.api.TerminalWindow;
 
 /**

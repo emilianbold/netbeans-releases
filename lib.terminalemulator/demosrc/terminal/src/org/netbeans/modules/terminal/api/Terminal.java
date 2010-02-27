@@ -169,7 +169,7 @@ public final class Terminal extends JComponent {
         }
     }
 
-    Terminal(IOContainer ioContainer, Action[] actions, String name) {
+    public Terminal(IOContainer ioContainer, Action[] actions, String name) {
         termOptions = TermOptions.getDefault(prefs);
 
         this.terminalContainer = null;

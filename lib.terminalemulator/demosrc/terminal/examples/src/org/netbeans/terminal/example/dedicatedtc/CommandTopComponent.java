@@ -9,17 +9,17 @@ import java.io.Serializable;
 import java.util.logging.Logger;
 
 import org.openide.util.NbBundle;
-import org.openide.windows.IOContainer;
+// OLD import org.openide.windows.IOContainer;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
-import org.netbeans.modules.terminal.api.TerminalWindow;
-import org.netbeans.modules.terminal.api.TerminalContainer;
+// OLD import org.netbeans.modules.terminal.api.TerminalWindow;
+// OLD import org.netbeans.modules.terminal.api.TerminalContainer;
 
 /**
  * Top component which displays something.
  */
-final class CommandTopComponent extends TopComponent implements TerminalWindow{
+final class CommandTopComponent extends TopComponent /* OLD implements TerminalWindow */ {
 
     private static CommandTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -115,6 +115,7 @@ final class CommandTopComponent extends TopComponent implements TerminalWindow{
         }
     }
 
+    /* OLD
     //
     // Stuff in addition to the boilerplate TopComponent code
     //
@@ -123,9 +124,12 @@ final class CommandTopComponent extends TopComponent implements TerminalWindow{
     public IOContainer ioContainer() {
         return tc.ioContainer();
     }
+     */
 
     private void initComponents2(String name) {
+	/* OLD
         tc = TerminalContainer.create(this, name);
         add(tc);
+	 */
     }
 }

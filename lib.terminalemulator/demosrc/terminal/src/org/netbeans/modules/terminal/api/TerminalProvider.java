@@ -89,9 +89,11 @@ public final class TerminalProvider {
     /**
      * Get a Terminal in the given IOContainer.
      */
+    /* OLD
     public Terminal createTerminal(String name, Action[] actions, IOContainer ioContainer) {
         return new Terminal(ioContainer, actions, name);
     }
+     */
 
     /**
      * Get a Terminal in the default terminal TopComponent.
