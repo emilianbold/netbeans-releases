@@ -61,15 +61,4 @@
             </file>
         </folder>
     </folder>
-
-    <folder name="Windows2">
-        <folder name="Components">
-            <file name="CommandTopComponent.settings" url="/org/netbeans/terminal/example/dedicatedtc/CommandTopComponentSettings.xml"/>
-        </folder>
-        <folder name="Modes">
-            <folder name="output">
-                <file name="CommandTopComponent.wstcref" url="/org/netbeans/terminal/example/dedicatedtc/CommandTopComponentWstcref.xml"/>
-            </folder>
-        </folder>
-    </folder>
 </filesystem>
