@@ -40,12 +40,40 @@
  */
 package org.netbeans.modules.cnd.source;
 
-/** A node to represent a header file */
-public class HDataNode extends SourceDataNode {
+import javax.swing.Action;
 
-    private static final String HDataIcon = "org/netbeans/modules/cnd/source/resources/HDataIcon.gif";  // NOI18N
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Children;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.SystemAction;
+import org.openide.actions.OpenAction;
+import org.openide.util.Lookup;
 
-    public HDataNode(HDataObject obj) {
-        super(obj, obj.getLookup(), HDataIcon);
+/**
+ *  A base class for C/C++/Fortran (C-C-F) nodes.
+ */
+public class SourceDataNode extends DataNode {
+
+    /** Constructor for this class */
+    public SourceDataNode(DataObject obj, Lookup lookup, String icon) {
+        super(obj, Children.LEAF, lookup);
+        setIconBaseWithExtension(icon);
+    }
+
+    /**
+     *  Overrides default action from DataNode.
+     *  Instantiate a template, if isTemplate() returns true.
+     *  Opens otherwise.
+     */
+    @Override
+    public Action getPreferredAction() {
+        Action result = super.getPreferredAction();
+        return result == null ? SystemAction.get(OpenAction.class) : result;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("Welcome_cpp_home"); // NOI18N
     }
 }

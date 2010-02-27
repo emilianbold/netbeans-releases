@@ -42,24 +42,25 @@
 package org.netbeans.modules.cnd.source;
 
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.nodes.Node;
 
 
 /** Represents a Fortran object in the Repository.
  *
  */
 
-public class FortranDataObject extends CndDataObject {
+public class FortranDataObject extends SourceDataObject {
 
     /** Serial version number */
     static final long serialVersionUID = -4941665960293429191L;
 
-    public FortranDataObject(FileObject pf, CndAbstractDataLoader loader)
+    public FortranDataObject(FileObject pf, SourceAbstractDataLoader loader)
 			    throws DataObjectExistsException {
 	super(pf, loader);
     }
 
+    @Override
     protected Node createNodeDelegate() {
 	return new FortranDataNode(this);
     }

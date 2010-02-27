@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,14 +38,68 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.source;
+package org.netbeans.lib.terminalemulator.support;
 
-/** A node to represent a header file */
-public class HDataNode extends SourceDataNode {
+/**
+ * FindState is the "model" and engine for find operations where {@link FindBar}
+ * is the controller. Different Term's in one window may share one
+ * {@link FindBar} which can multiplex between per-instance FindState.
+ * @author ivan
+ */
+public interface FindState {
 
-    private static final String HDataIcon = "org/netbeans/modules/cnd/source/resources/HDataIcon.gif";  // NOI18N
+    public enum Status {
+        /** Pattern found w/o the need for wrapping */
+        OK,
 
-    public HDataNode(HDataObject obj) {
-        super(obj, obj.getLookup(), HDataIcon);
+        /** Pattern not found */
+        NOTFOUND,
+
+        /** pattern found but need to wrap by issuing one next() // or prev */
+        WILLWRAP,
+
+        /** pattern is null or "" */
+        EMPTYPATTERN
     }
+
+    /**
+     * Set the pattern to be searched.
+     * At the moment no searches are performed on setting.
+     * Upon return status is either OK or EMPTYPATTERN.
+     */
+    public void setPattern(String pattern);
+
+    /**
+     * Return the pattern being searched.
+     * @return the pattern.
+     */
+    public String getPattern();
+
+    /**
+     * Remember whether the FindBar is visible in this instance of Term.
+     * @param visible the FindBar is visible.
+     */
+    public void setVisible(boolean visible);
+
+    /**
+     * Recall whether the FindBar is visible in this instance of Term.
+     * @return the FindBar is visible.
+     */
+    public boolean isVisible();
+
+    /**
+     * Search for the next occurance of the pattern.
+     */
+    public void next();
+
+    /**
+     * Search for the previous occurance of the pattern.
+     */
+    public void prev();
+
+    /**
+     * Get the status of a search after a call to prev() or next().
+     * @return the status.
+     */
+    public Status getStatus();
 }

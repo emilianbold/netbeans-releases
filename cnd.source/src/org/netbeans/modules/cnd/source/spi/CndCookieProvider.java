@@ -73,6 +73,7 @@ public abstract class CndCookieProvider {
             providers = Lookup.getDefault().lookupAll(CndCookieProvider.class);
         }
 
+        @Override
         public void addCookies(DataObject dao, CookieSet cookies) {
             for (CndCookieProvider provider : providers) {
                 provider.addCookies(dao, cookies);

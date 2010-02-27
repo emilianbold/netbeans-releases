@@ -9,10 +9,14 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.InputEvent;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.Action;
 import javax.swing.Icon;
+
 import org.netbeans.lib.terminalemulator.ActiveRegion;
 import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.lib.terminalemulator.ActiveTermListener;
@@ -22,10 +26,10 @@ import org.netbeans.lib.terminalemulator.LineDiscipline;
 import org.netbeans.lib.terminalemulator.StreamTerm;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.lib.terminalemulator.TermListener;
-import org.netbeans.modules.terminal.api.Terminal;
-import org.netbeans.modules.terminal.api.TerminalProvider;
+
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+
 import org.openide.windows.IOColorLines;
 import org.openide.windows.IOColors;
 import org.openide.windows.IOContainer;
@@ -35,6 +39,10 @@ import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
+
+import org.netbeans.modules.terminal.api.IOResizable;
+import org.netbeans.modules.terminal.api.IOEmulation;
+import org.netbeans.modules.terminal.api.IOTerm;
 
 /**
  * An implementation of {@link InputOutput} based on
@@ -85,6 +93,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
                                                 new MyIOPosition(),
 						new MyIOResizable(),
 						new MyIOEmulation(),
+						new MyIOTerm(),
                                                 new MyIOTab()
                                                 );
 
@@ -335,6 +344,19 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	}
     }
 
+    private class MyIOTerm extends IOTerm {
+
+	@Override
+	protected Term term() {
+	    return term;
+	}
+
+	@Override
+	protected void connect(OutputStream pin, InputStream pout, InputStream perr) {
+	    term.connect(pin, pout, perr);
+	}
+    }
+
 
     /* OLD
     private class MyIOExecution extends IOExecution {
@@ -386,9 +408,24 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         }
     }
 
-    TerminalInputOutput(String name, IOContainer ioContainer) {
+    TerminalInputOutput(String name, Action[] actions, IOContainer ioContainer) {
         this.ioContainer = ioContainer;
-        terminal = TerminalProvider.getDefault().createTerminal(name, ioContainer);
+
+	/*
+	 * Other ways of getting a terminal
+
+	public Terminal createTerminal(String name) {
+	    TermTopComponent tc = TermTopComponent.findInstance();
+	    return new Terminal(tc.ioContainer(), null, name);
+	}
+
+	public synchronized Terminal createTerminal(String name, String preferredID) {
+            IOContainer ioContainer = TermTopComponent.getInstance(preferredID);
+	    return new Terminal(ioContainer, null, name);
+	}
+	 */
+
+        terminal = new Terminal(ioContainer, actions, name);
         term = terminal.term();
 
         if (! (term instanceof ActiveTerm))

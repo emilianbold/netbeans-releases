@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,13 +37,8 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.source;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -46,57 +47,57 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
-import java.text.DateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.text.DateFormat;
+import java.util.HashMap;
+import javax.swing.JEditorPane;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.cnd.settings.CppSettings;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.filesystems.FileLock;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.FileEntry;
+import org.openide.loaders.UniFileLoader;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.FileEntry;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.UniFileLoader;
-import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
- * This class is introduced to reuse CndFormat defined in CndAbstractDataLoader.
+ * DataLoader for recognizing C/C++/Fortran (C-C-F) source files.
  *
- * @author Alexey Vladykin
+ * It also defines an inner class, CndFormat, whose derived classes are
+ * used to format template files (e.g. substitute values for parameters such as
+ * __FILENAME__, __NAME__, __DATE__, __TIME__, __USER__, __GUARD_NAME etc.).
  */
-public class QtUiDataLoader extends UniFileLoader {
+public abstract class SourceAbstractDataLoader extends UniFileLoader {
 
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975682L;
 
-    public QtUiDataLoader() {
-        super("org.netbeans.modules.cnd.loaders.QtUiDataObject"); // NOI18N
+    protected SourceAbstractDataLoader(String representationClassName) {
+        super(representationClassName);
     }
 
-    private String getMimeType() {
-        return MIMENames.QT_UI_MIME_TYPE;
-    }
-
-    @Override
-    protected String actionsContext() {
-        return "Loaders/" + getMimeType() + "/Actions/"; // NOI18N
-    }
-
-    @Override
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new QtUiDataObject(primaryFile, this);
-    }
+    protected abstract String getMimeType();
 
     @Override
     protected final void initialize() {
         super.initialize();
         getExtensions().addMimeType(getMimeType());
+    }
+
+    @Override
+    protected String actionsContext() {
+        return "Loaders/text/x-cnd-sourcefile/Actions/"; // NOI18N
     }
 
     @Override
@@ -117,7 +118,7 @@ public class QtUiDataLoader extends UniFileLoader {
         @Override
         protected java.text.Format createFormat(FileObject target, String name, String ext) {
 
-            Map<Object, Object> map = (CppSettings.findObject(CppSettings.class, true)).getReplaceableStringsProps();
+            Map<String, Object> map = new HashMap<String, Object>();
 
             String packageName = target.getPath().replace('/', '_');
             // add an underscore to the package name if it is not an empty string
@@ -180,10 +181,8 @@ public class QtUiDataLoader extends UniFileLoader {
                 Map<String, ?> attrs = provider.attributesFor(getDataObject(),
                         DataFolder.findFolder(target), name);
                 if (attrs != null) {
-                    Object username = attrs.get("user"); // NOI18N
-                    if (username instanceof String) {
-                        map.put("USER", (String) username); // NOI18N
-                        break;
+                    for (Map.Entry<String, ?> entry : attrs.entrySet()) {
+                        map.put(entry.getKey().toUpperCase(), entry.getValue());
                     }
                 }
             }
@@ -214,13 +213,24 @@ public class QtUiDataLoader extends UniFileLoader {
          */
         @Override
         public FileObject createFromTemplate(FileObject f, String name) throws IOException {
-            String ext = getFile().getExt();
-            if (name == null) {
-                name = FileUtil.findFreeFileName(f, getFile().getName(), ext);
+            // we don't want extension to be taken from template filename for our customized dialog
+            String ext;
+            if (MIMEExtensions.isCustomizableExtensions(getFile().getMIMEType())) {
+                ext = FileUtil.getExtension(name);
+                if (ext.length() != 0) {
+                    name = name.substring(0, name.length() - ext.length() - 1);
+                }
+            } else {
+                // use default
+                ext = getFile().getExt();
             }
 
             FileObject fo = f.createData(name, ext);
+
             java.text.Format frm = createFormat(f, name, ext);
+
+            EditorKit kit = createEditorKit(getFile().getMIMEType());
+            Document doc = kit.createDefaultDocument();
 
             BufferedReader r = new BufferedReader(new InputStreamReader(
                     getFile().getInputStream(), FileEncodingQuery.getEncoding(getFile())));
@@ -232,10 +242,29 @@ public class QtUiDataLoader extends UniFileLoader {
                             fo.getOutputStream(lock), encoding));
                     try {
                         String current;
+                        String line = null;
+                        int offset = 0;
                         while ((current = r.readLine()) != null) {
-                            w.write(frm.format(current));
-                            w.newLine();
+                            if (line != null) {
+                                doc.insertString(offset, "\n", null); // NOI18N
+                                offset++;
+                            }
+                            line = frm.format(current);
+                            doc.insertString(offset, line, null);
+                            offset += line.length();
                         }
+                        doc.insertString(doc.getLength(), "\n", null); // NOI18N
+                        offset++;
+                        Reformat reformat = Reformat.get(doc);
+                        reformat.lock();
+                        try {
+                            reformat.reformat(0, doc.getLength());
+                        } finally {
+                            reformat.unlock();
+                        }
+                        w.write(doc.getText(0, doc.getLength()));
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
                     } finally {
                         w.close();
                     }
@@ -256,7 +285,16 @@ public class QtUiDataLoader extends UniFileLoader {
         }
     }
 
-    protected static boolean setTemplate(FileObject fo, boolean newTempl) throws IOException {
+    private static EditorKit createEditorKit(String mimeType) {
+        EditorKit kit;
+        kit = JEditorPane.createEditorKitForContentType(mimeType);
+        if (kit == null) {
+            kit = new javax.swing.text.DefaultEditorKit();
+        }
+        return kit;
+    }
+
+    private static boolean setTemplate(FileObject fo, boolean newTempl) throws IOException {
         boolean oldTempl = false;
 
         Object o = fo.getAttribute(DataObject.PROP_TEMPLATE);
