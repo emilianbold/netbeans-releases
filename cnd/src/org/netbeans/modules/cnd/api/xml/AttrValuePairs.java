@@ -41,7 +41,8 @@
 
 package org.netbeans.modules.cnd.api.xml;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -59,10 +60,9 @@ import java.util.Vector;
  xes.elementOpen("person", pairs.toArray());
  * </pre>
  */
-
 public final class AttrValuePairs {
 
-    private Vector<AttrValuePair> vector = new Vector<AttrValuePair>();
+    private List<AttrValuePair> vector = new ArrayList<AttrValuePair>();
 
     public void add(String name, String value) {
         AttrValuePair attr;

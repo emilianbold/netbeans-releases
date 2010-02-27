@@ -381,7 +381,7 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
                         f = ((DataShadow) d).getOriginal().getPrimaryFile();
                     }
                 } catch (DataObjectNotFoundException x) {
-                    LOG.log(Level.INFO, f.getPath(), x);
+                    LOG.log(Level.FINE, f.getPath(), x);
                 }
             }
         }

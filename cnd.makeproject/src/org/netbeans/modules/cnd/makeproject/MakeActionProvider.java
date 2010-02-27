@@ -82,7 +82,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -497,7 +497,7 @@ public final class MakeActionProvider implements ActionProvider {
                     Item[] items = folder.getAllItemsAsArray();
                     for (int k = 0; k < items.length; k++) {
                         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-                        String file = IpeUtils.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[k].getPath()));
+                        String file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[k].getPath()));
                         String target = file.replaceFirst("\\..*", ""); // NOI18N
                         target = MakeConfiguration.BUILD_FOLDER + '/' + "${CND_CONF}" + '/' + "${CND_PLATFORM}" + "/" + "tests" + "/" + target; // NOI18N
 
@@ -513,16 +513,16 @@ public final class MakeActionProvider implements ActionProvider {
             String path;
             if (actionEvent == ProjectActionEvent.PredefinedType.RUN) {
                 path = conf.getMakefileConfiguration().getOutput().getValue();
-                if (path.length() > 0 && !IpeUtils.isPathAbsolute(path)) {
+                if (path.length() > 0 && !CndPathUtilitities.isPathAbsolute(path)) {
                     // make path relative to run working directory
                     // path here should always be in unix style, see issue 149404
                     path = conf.getMakefileConfiguration().getAbsOutput();
-                    path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
+                    path = CndPathUtilitities.toRelativePath(conf.getProfile().getRunDirectory(), path);
                 }
             } else {
                 // Always absolute
                 path = conf.getMakefileConfiguration().getAbsOutput();
-                path = IpeUtils.normalize(path);
+                path = CndPathUtilitities.normalize(path);
             }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
             actionEvents.add(projectActionEvent);
@@ -542,14 +542,14 @@ public final class MakeActionProvider implements ActionProvider {
                 // Add paths from subprojetcs
                 Iterator<String> iter = subProjectOutputLocations.iterator();
                 while (iter.hasNext()) {
-                    String location = IpeUtils.naturalize(iter.next());
+                    String location = CndPathUtilitities.naturalize(iter.next());
                     path = location + ";" + path; // NOI18N
                 }
                 // Add paths from -L option
                 List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
                 iter = list.iterator();
                 while (iter.hasNext()) {
-                    String location = IpeUtils.naturalize(iter.next());
+                    String location = CndPathUtilitities.naturalize(iter.next());
                     path = location + ";" + path; // NOI18N
                 }
                 String userPath = runProfile.getEnvironment().getenv(pi.getPathName());
@@ -568,7 +568,7 @@ public final class MakeActionProvider implements ActionProvider {
                 // Add paths from subprojetcs
                 Iterator<String> iter = subProjectOutputLocations.iterator();
                 while (iter.hasNext()) {
-                    String location = IpeUtils.naturalize(iter.next());
+                    String location = CndPathUtilitities.naturalize(iter.next());
                     if (path.length() > 0) {
                         path.append(":"); // NOI18N
                     }
@@ -578,7 +578,7 @@ public final class MakeActionProvider implements ActionProvider {
                 List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
                 iter = list.iterator();
                 while (iter.hasNext()) {
-                    String location = IpeUtils.naturalize(iter.next());
+                    String location = CndPathUtilitities.naturalize(iter.next());
                     if (path.length() > 0) {
                         path.append(":"); // NOI18N
                     }
@@ -604,7 +604,7 @@ public final class MakeActionProvider implements ActionProvider {
                 List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
                 Iterator<String> iter = list.iterator();
                 while (iter.hasNext()) {
-                    String location = IpeUtils.naturalize(iter.next());
+                    String location = CndPathUtilitities.naturalize(iter.next());
                     if (path.length() > 0) {
                         path.append(":"); // NOI18N
                     }
@@ -645,17 +645,17 @@ public final class MakeActionProvider implements ActionProvider {
             if (actionEvent == ProjectActionEvent.PredefinedType.RUN) {
                 // naturalize if relative
                 path = makeArtifact.getOutput();
-                //TODO: we also need remote aware IpeUtils..........
-                if (!IpeUtils.isPathAbsolute(path)) {
+                //TODO: we also need remote aware CndPathUtilitities..........
+                if (!CndPathUtilitities.isPathAbsolute(path)) {
                     // make path relative to run working directory
                     path = makeArtifact.getWorkingDirectory() + "/" + path; // NOI18N
-                    path = IpeUtils.naturalize(path);
-                    path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
-                    path = IpeUtils.naturalize(path);
+                    path = CndPathUtilitities.naturalize(path);
+                    path = CndPathUtilitities.toRelativePath(conf.getProfile().getRunDirectory(), path);
+                    path = CndPathUtilitities.naturalize(path);
                 }
             } else {
                 // Always absolute
-                path = IpeUtils.toAbsolutePath(conf.getBaseDir(), makeArtifact.getOutput());
+                path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), makeArtifact.getOutput());
             }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, runProfile, false);
             actionEvents.add(projectActionEvent);
@@ -1236,9 +1236,9 @@ public final class MakeActionProvider implements ActionProvider {
 //        if (errormsg == null) {
 //            String tool = conf.getPackagingConfiguration().getToolValue();
 //            if (conf.getDevelopmentHost().isLocalhost()) {
-//                if (!IpeUtils.isPathAbsolute(tool) && Path.findCommand(tool) == null) {
+//                if (!CndPathUtilitities.isPathAbsolute(tool) && Path.findCommand(tool) == null) {
 //                    errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL1", tool); // NOI18N
-//                } else if (IpeUtils.isPathAbsolute(tool) && !(new File(tool).exists())) {
+//                } else if (CndPathUtilitities.isPathAbsolute(tool) && !(new File(tool).exists())) {
 //                    errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL2", tool); // NOI18N
 //                }
 //            } else {

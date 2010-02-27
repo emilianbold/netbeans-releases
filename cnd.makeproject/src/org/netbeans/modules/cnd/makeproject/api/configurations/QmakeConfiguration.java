@@ -39,7 +39,7 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
@@ -198,7 +198,7 @@ public class QmakeConfiguration implements Cloneable {
     }
 
     private String getTargetDefault() {
-        return ConfigurationSupport.makeNameLegal(IpeUtils.getBaseName(makeConfiguration.getBaseDir()));
+        return ConfigurationSupport.makeNameLegal(CndPathUtilitities.getBaseName(makeConfiguration.getBaseDir()));
     }
 
     public StringConfiguration getTarget() {

@@ -38,43 +38,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.utils;
 
-import java.awt.Component;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Stack;
 import java.util.StringTokenizer;
-import javax.swing.JButton;
-import javax.swing.JRootPane;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.loaders.CoreElfObject;
-import org.netbeans.modules.cnd.loaders.ExeObject;
-import org.netbeans.modules.cnd.loaders.OrphanedElfObject;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataNode;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.modules.ModuleInfo;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 /**
  * Miscellaneous utility classes useful for the Ipe module
  */
-public class IpeUtils {
+public class CndPathUtilitities {
 
     /**
      * Constructor is private. This class should not be instantiated.
      */
-    private IpeUtils() {
+    private CndPathUtilitities() {
     }
 
     /** Store the real environment here */
@@ -230,7 +210,7 @@ public class IpeUtils {
                 relPath = "."; // NOI18N
             } // NOI18N
             else if (isPathAbsolute(base)) {
-                relPath = IpeUtils.getRelativePath(base, relPath);
+                relPath = CndPathUtilitities.getRelativePath(base, relPath);
             } else {
                 relPath = path;
             }
@@ -472,54 +452,6 @@ public class IpeUtils {
         }
     }
 
-    // Utility to request focus for a component by using the
-    // swing utilities to invoke it at a later
-    public static void requestFocus(final Component c) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                if (c != null) {
-                    if (c.getParent() != null) {
-                        try {
-                            c.requestFocus();
-                        } catch (NullPointerException npe) {
-                            // Throw away the npe. This is probably due to
-                            // the parent of this component not existing
-                            // before we're through processing the
-                            // requestFocus() call. This can happen when
-                            // quickly clicking through a wizard.
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    // Utility to request focus for a component by using the
-    // swing utilities to invoke it at a later
-    public static void setDefaultButton(final JRootPane rootPane, final JButton button) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                if (button != null) {
-                    if (button.getParent() != null && button.isVisible()) {
-                        try {
-                            rootPane.setDefaultButton(button);
-                        } catch (NullPointerException npe) {
-                            // Throw away the npe. This is probably due to
-                            // the parent of this component not existing
-                            // before we're through processing the
-                            // requestFocus() call. This can happen when
-                            // quickly clicking through a wizard.
-                        }
-                    }
-                }
-            }
-        });
-    }
-
     /** Add quotes around the string if necessary.
      * This is the case when the string contains space or meta characters.
      * For now, we only worry about space, tab, *, [, ], ., ( and )
@@ -563,83 +495,6 @@ public class IpeUtils {
         }
     }
 
-    public static Node findNode(String filePath) {
-        FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(new File(filePath)));
-        if (fo == null) {
-            return null; // FIXUP
-        }
-        DataObject dataObject = null;
-        try {
-            dataObject = DataObject.find(fo);
-        } catch (Exception e) {
-            // FIXUP
-        }
-        if (dataObject == null) {
-            return null; // FIXUP
-        }
-        Node node = dataObject.getNodeDelegate();
-        if (node == null) {
-            return null; // FIXUP
-        }
-        return node;
-    }
-
-    public static DataNode findCorefileNode(String filePath) {
-        if (filePath == null) {
-            return null;
-        }
-        Node node = findNode(filePath);
-        if (node == null) {
-            return null;
-        }
-        if (!(node instanceof DataNode)) {
-            return null;
-        }
-        DataObject dataObject = node.getCookie(DataObject.class);
-        if (!(dataObject instanceof CoreElfObject)) {
-            return null;
-        }
-
-        return (DataNode) node;
-    }
-
-//    // From PicklistUtils. FIXUP: probably not really needed anymore
-//    public static ExecutionSupport findExecutionSupport(DataNode executionNode) {
-//        if (executionNode == null) {
-//            return null;
-//        }
-//        if (executionNode.getDataObject() instanceof CDataObject) {
-//            return null;
-//        }
-//        if (executionNode.getDataObject() instanceof CoreElfObject) {
-//            return null;
-//        }
-//        if (executionNode.getDataObject() instanceof MakefileDataObject) {
-//            return null;
-//        }
-//        ExecutionSupport bes = executionNode.getCookie(ExecutionSupport.class);
-//        return bes;
-//    }
-
-    public static DataNode findDebuggableNode(String filePath) {
-        if (filePath == null) {
-            return null;
-        }
-        Node node = findNode(filePath);
-        if (node == null) {
-            return null;
-        }
-        if (!(node instanceof DataNode)) {
-            return null;
-        }
-        /*
-        if (node.getCookie(DebuggerCookie.class) == null)
-        return null;
-         */
-
-        return (DataNode) node;
-    }
-
     /**
      * Same as String.equals, but allows arguments to be null
      */
@@ -667,7 +522,7 @@ public class IpeUtils {
             return false;
         }
         for (int x = 0; x < a.length; x++) {
-            if (!IpeUtils.sameString(a[x], b[x])) {
+            if (!CndPathUtilitities.sameString(a[x], b[x])) {
                 return false;
             }
         }
@@ -813,67 +668,6 @@ public class IpeUtils {
             }
         }
         return newName;
-    }
-    private static final boolean CASE_INSENSITIVE =
-            (Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2)) || Utilities.getOperatingSystem() == Utilities.OS_VMS;
-
-    public static boolean isSystemCaseInsensitive() {
-        return CASE_INSENSITIVE;
-    }
-
-    public static boolean areFilenamesEqual(String firstFile, String secondFile) {
-        return isSystemCaseInsensitive() ? firstFile.equalsIgnoreCase(secondFile) : firstFile.equals(secondFile);
-    }
-
-    /**
-     * Check if the dbxgui module is enabled. Don't show the dbxgui line if it isn't.
-     *
-     * @return true if the dbxgui module is enabled, false if missing or disabled
-     */
-    public static boolean isDbxguiEnabled() {
-        if (!CndUtils.isStandalone()) {
-            Iterator<? extends ModuleInfo> iter = Lookup.getDefault().lookupAll(ModuleInfo.class).iterator();
-            while (iter.hasNext()) {
-                ModuleInfo info = iter.next();
-                if (info.getCodeNameBase().indexOf("dbxgui") >= 0 && info.isEnabled()) { // NOI18N
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /*
-     * Return true if file is an executable
-     */
-    public static boolean isExecutable(File file) {
-        FileObject fo = null;
-
-        if (file.getName().endsWith(".exe")) { //NOI18N
-            return true;
-        }
-
-        try {
-            fo = FileUtil.toFileObject(file.getCanonicalFile());
-        } catch (IOException e) {
-            return false;
-        }
-        if (fo == null) { // 149058
-            return false;
-        }
-        DataObject dataObject = null;
-        try {
-            dataObject = DataObject.find(fo);
-        } catch (DataObjectNotFoundException e) {
-            return false;
-        }
-        if (dataObject instanceof ExeObject || dataObject.getPrimaryFile().getMIMEType().equals(MIMENames.SHELL_MIME_TYPE)) {
-            if (dataObject instanceof OrphanedElfObject || dataObject instanceof CoreElfObject) {
-                return false;
-            }
-            return true;
-        }
-        return false;
     }
 
     public static String expandMacro(String string, String macro, String value) {

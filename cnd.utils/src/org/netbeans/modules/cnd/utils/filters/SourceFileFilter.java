@@ -41,7 +41,7 @@
 package org.netbeans.modules.cnd.utils.filters;
 
 import java.io.File;
-import org.openide.util.Utilities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 public abstract class SourceFileFilter extends javax.swing.filechooser.FileFilter {
 
@@ -95,31 +95,13 @@ public abstract class SourceFileFilter extends javax.swing.filechooser.FileFilte
         return false;
     }
 
-//    protected String[] getSuffixList(ExtensionList elist) {
-//        Enumeration<String> en = elist.extensions();
-//        ArrayList<String> list = new ArrayList<String>();
-//
-//        while (en.hasMoreElements()) {
-//            list.add(en.nextElement());
-//        }
-//        return list.toArray(new String[list.size()]);
-//    }
-
     @Override
     public String toString() {
         return getDescription();
     }
 
-
-    private static final boolean CASE_INSENSITIVE =
-            (Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2)) || Utilities.getOperatingSystem() == Utilities.OS_VMS;
-
-    private static boolean isSystemCaseInsensitive() {
-        return CASE_INSENSITIVE;
-    }
-
     private static boolean areFilenamesEqual(String firstFile, String secondFile) {
-        return isSystemCaseInsensitive() ? firstFile.equalsIgnoreCase(secondFile) : firstFile.equals(secondFile);
+        return CndFileUtils.isSystemCaseSensitive() ? firstFile.equals(secondFile) : firstFile.equalsIgnoreCase(secondFile);
     }
 
 }

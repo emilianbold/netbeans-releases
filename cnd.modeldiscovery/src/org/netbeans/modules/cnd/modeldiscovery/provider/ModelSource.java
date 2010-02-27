@@ -55,7 +55,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
@@ -169,8 +169,8 @@ public class ModelSource implements SourceFileProperties {
         if (Utilities.isWindows()) {
             path = path.replace('/', File.separatorChar);
         }
-        path = IpeUtils.toRelativePath(getCompilePath(), path);
-        path = IpeUtils.normalize(path);
+        path = CndPathUtilitities.toRelativePath(getCompilePath(), path);
+        path = CndPathUtilitities.normalize(path);
         return path;
     }
     

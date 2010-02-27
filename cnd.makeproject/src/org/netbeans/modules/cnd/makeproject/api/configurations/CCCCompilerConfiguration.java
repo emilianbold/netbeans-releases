@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
@@ -283,7 +283,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
                 if (compilerSet != null) {
                     item = CppUtils.normalizeDriveLetter(compilerSet, item);
                 }
-                item = IpeUtils.escapeOddCharacters(item);
+                item = CndPathUtilitities.escapeOddCharacters(item);
                 return prepend == null ? item : prepend + item;
             } else {
                 return ""; // NOI18N

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,27 +31,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.execution41.org.openide.cookies;
+package org.openide.actions;
 
-import org.openide.nodes.Node;
+import javax.swing.Action;
+import java.util.List;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileObject;
+import org.netbeans.junit.NbTestCase;
+import static org.junit.Assert.*;
 
-/** Provides ability for a data object or node to be passed runtime arguments.
-* This is useful for, e.g., execution of a standalone class.
-* @see org.openide.util.Utilities#parseParameters
-* @author  Ian Formanek
-* @version 1.00, Sep 04, 1998
-*/
-public interface ArgumentsCookie extends Node.Cookie {
-    /** Get the arguments.
-     * @return the arguments. May be empty but not <code>null</code>.
-     */
-    public String[] getArguments ();
+/**
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+public class ToolsActionTest extends NbTestCase {
 
-    /** Set the arguments.
-     * @param args the arguments. May be empty but not <code>null</code>.
-     * @throws IOException if the arguments could not be set
-     */
-    public void setArguments (String[] args) throws java.io.IOException;
+    public ToolsActionTest(String n) {
+        super(n);
+    }
+
+    public void testActionReadFromLayer () throws Exception {
+        CopyAction copy = CopyAction.get(CopyAction.class);
+        CutAction cut = CutAction.get(CutAction.class);
+        PasteAction paste = PasteAction.get(PasteAction.class);
+
+        FileObject fo = FileUtil.createFolder(FileUtil.getConfigRoot(), "UI/ToolActions");
+        assertNotNull("ToolActions folder found", fo);
+
+        fo.createFolder("Cat1").createData("org-openide-actions-CutAction.instance").setAttribute("position", 100);
+        fo.getFileObject("Cat1").createData("org-openide-actions-PasteAction.instance").setAttribute("position", 200);
+        fo.createFolder("Cat2").createData("org-openide-actions-CopyAction.instance");
+
+        List<Action> ToolActions = ToolsAction.getToolActions();
+        assertEquals("Four actions: " + ToolActions, 4, ToolActions.size());
+        assertEquals("Cut first", cut, ToolActions.get(0));
+        assertEquals("Paste snd", paste, ToolActions.get(1));
+        assertEquals("Separator in middle", null, ToolActions.get(2));
+        assertEquals("Copy last", copy, ToolActions.get(3));
+
+    }
+
 }

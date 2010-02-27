@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -89,7 +89,7 @@ public class RunDialogAction extends NodeAction {
         if (activatedNodes != null && activatedNodes.length == 1) {
             DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
             String mime = getMime(dataObject);
-            if (dataObject != null  && dataObject.isValid() && MIMENames.isExe(mime)) {
+            if (dataObject != null  && dataObject.isValid() && MIMENames.isBinary(mime)) {
                 FileObject fo = dataObject.getPrimaryFile();
                 if (fo != null) {
                     File file = FileUtil.toFile(fo);
@@ -116,7 +116,7 @@ public class RunDialogAction extends NodeAction {
         DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
         String mime = getMime(dataObject);
         // disabled for core files, see issue 136696
-        if (!MIMENames.isExe(mime) || MIMENames.ELF_CORE_MIME_TYPE.equals(mime)) {
+        if (!MIMENames.isBinary(mime) || MIMENames.ELF_CORE_MIME_TYPE.equals(mime)) {
             return false;
         }
         return true;
@@ -149,7 +149,7 @@ public class RunDialogAction extends NodeAction {
             if (conf != null) {
                 RunProfile profile = conf.getProfile();
                 String path = runDialogPanel.getExecutablePath();
-                path = IpeUtils.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
+                path = CndPathUtilitities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                         project,
                         PredefinedType.RUN,

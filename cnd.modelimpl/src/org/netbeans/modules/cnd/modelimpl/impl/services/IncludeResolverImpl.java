@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
@@ -219,7 +219,7 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
                         String bestSystemPath = getRelativePath(nativeFile.getSystemIncludePaths(), incFilePath);
                         if (!bestSystemPath.equals("")) { // NOI18N
                             includeDirective.append("<"); // NOI18N
-                            includeDirective.append(IpeUtils.toRelativePath(bestSystemPath, incFilePath));
+                            includeDirective.append(CndPathUtilitities.toRelativePath(bestSystemPath, incFilePath));
                             includeDirective.append(">"); // NOI18N
                             return includeDirective.toString();
                         }
@@ -232,9 +232,9 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
                         }
                         String bestUserPath = getRelativePath(nativeFile.getUserIncludePaths(), incFilePath);
                         if (bestUserPath.length() < projectPath.length()) {
-                            includeDirective.append(IpeUtils.toRelativePath(projectPath, incFilePath));
+                            includeDirective.append(CndPathUtilitities.toRelativePath(projectPath, incFilePath));
                         } else {
-                            includeDirective.append(IpeUtils.toRelativePath(bestUserPath, incFilePath));
+                            includeDirective.append(CndPathUtilitities.toRelativePath(bestUserPath, incFilePath));
                         }
                         if (!bestUserPath.equals("") || !projectPath.equals("")) // NOI18N
                         {

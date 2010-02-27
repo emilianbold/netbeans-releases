@@ -95,7 +95,7 @@ import java.util.logging.Logger;
  * you can specify higher
  * throughput via {@link #RequestProcessor(java.lang.String, int)}. Then
  * the <code>RP</code> works like a queue of requests passing through a
- * semafore with predefined number of <CODE>DOWN()</CODE>s.
+ * semaphore with predefined number of <CODE>DOWN()</CODE>s.
  * <p>
  * You can wait for your tasks to be processed by keeping a reference to the
  * last one and using {@link RequestProcessor.Task#waitFinished waitFinished()}:
@@ -148,7 +148,7 @@ import java.util.logging.Logger;
  *   }
  * }
  * </pre>
- * The above code coaleases all events that arrive in 1s and for all of them
+ * The above code coalesces all events that arrive in 1s and for all of them
  * does <code>doTheWork</code> just once.
  *
  *
@@ -161,7 +161,7 @@ import java.util.logging.Logger;
  * the thread running the task is interrupted and the Runnable can check for that
  * and terminate its execution sooner. In the runnable one shall check for 
  * thread interruption (done from {@link RequestProcessor.Task#cancel }) and 
- * if true, return immediatelly as in this example:
+ * if true, return immediately as in this example:
  * <pre>
  * private static final RequestProcessor RP = new {@link #RequestProcessor(String,int,boolean) RequestProcessor("Interruptible", 1, true)};
  * public void run () {
@@ -178,15 +178,20 @@ import java.util.logging.Logger;
  * @author Petr Nejedly, Jaroslav Tulach, Tim Boudreau
  */
 public final class RequestProcessor implements ScheduledExecutorService {
+
+    static {
+        Processor.class.hashCode(); // ensure loaded; cf. FELIX-2128
+    }
+
     /** the static instance for users that do not want to have own processor */
-    private static RequestProcessor DEFAULT = new RequestProcessor();
+    private static final RequestProcessor DEFAULT = new RequestProcessor();
 
     // 50: a conservative value, just for case of misuse
 
     /** the static instance for users that do not want to have own processor */
     private static final RequestProcessor UNLIMITED = new RequestProcessor("Default RequestProcessor", 50); // NOI18N
 
-    /** A shared timer used to pass timeouted tasks to pending queue */
+    /** A shared timer used to pass timed-out tasks to pending queue */
     private static Timer starterThread = new Timer(true);
 
     /** logger */

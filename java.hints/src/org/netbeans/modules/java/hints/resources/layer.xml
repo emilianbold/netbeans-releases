@@ -86,6 +86,15 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="UI">
+        <folder name="ToolActions">
+            <folder name="Java">
+                <file name="org-netbeans-modules-java-hints-analyzer-AnalyzeFolder.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-java-hints-analyzer-AnalyzeFolder.instance"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">

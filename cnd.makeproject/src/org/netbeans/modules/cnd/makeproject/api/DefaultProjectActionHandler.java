@@ -67,7 +67,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
@@ -187,9 +187,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
             if (consoleType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                 if (pi.getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-                    exe = IpeUtils.naturalize(exe);
+                    exe = CndPathUtilitities.naturalize(exe);
                 } else if (conf.getDevelopmentHost().isLocalhost()) {
-                    exe = IpeUtils.toAbsolutePath(runDirectory, exe);
+                    exe = CndPathUtilitities.toAbsolutePath(runDirectory, exe);
                 }
                 unbuffer = true;
             } else if (!runInInternalTerminal) {
@@ -236,7 +236,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             if (conf.isQmakeConfiguration()) {
                 String qmakePath = compilerSet.getTool(PredefinedToolKind.QMakeTool).getPath();
                 qmakePath = CppUtils.normalizeDriveLetter(compilerSet, qmakePath.replace('\\', '/')); // NOI18N
-                args.add("QMAKE=" + IpeUtils.escapeOddCharacters(qmakePath)); // NOI18N
+                args.add("QMAKE=" + CndPathUtilitities.escapeOddCharacters(qmakePath)); // NOI18N
             }
         }
 
@@ -281,7 +281,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             String termPath = pae.getProfile().getTerminalPath();
             CndUtils.assertNotNull(termPath, "null terminal path"); // NOI18N; should be checked above
             if (termPath != null) {
-                String termBaseName = IpeUtils.getBaseName(termPath);
+                String termBaseName = CndPathUtilitities.getBaseName(termPath);
                 if (ExternalTerminalProvider.getSupportedTerminalIDs().contains(termBaseName)) {
                     npb.useExternalTerminal(ExternalTerminalProvider.getTerminal(execEnv, termBaseName));
                 }
