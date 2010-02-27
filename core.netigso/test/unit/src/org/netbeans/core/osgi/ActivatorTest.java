@@ -210,7 +210,7 @@ public class ActivatorTest extends NbTestCase {
         new OSGiProcess(getWorkDir()).
                 newModule().manifest(
                 "OpenIDE-Module: zz.api",
-                "OpenIDE-Module-Public-Packages: api",
+                "OpenIDE-Module-Public-Packages: api.*",
                 "OpenIDE-Module-Needs: api.Interface").
                 sourceFile("api/Interface.java", "package api;",
                 "public interface Interface {}").done().
@@ -232,6 +232,24 @@ public class ActivatorTest extends NbTestCase {
                 "}").done().
                 run();
         assertEquals("impl.Provider", System.getProperty("provider.name"));
+    }
+
+    public void testClassPathExtensions() throws Exception {
+        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
+                "public class Install extends org.openide.modules.ModuleInstall {",
+                "public @Override void restored() {",
+                "org.netbeans.api.javahelp.Help.class.hashCode();",
+                "javax.help.HelpSet.class.hashCode();",
+                "javax.help.event.HelpSetEvent.class.hashCode();",
+                "System.setProperty(\"used.javahelp\", \"true\");}",
+                "}").manifest(
+                "OpenIDE-Module: custom",
+                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.netbeans.modules.javahelp/1").done().
+                module("org.netbeans.modules.javahelp").
+                module("org.netbeans.modules.editor.mimelookup.impl"). // indirect dep of editor.mimelookup, from openide.loaders
+                run();
+        assertTrue(Boolean.getBoolean("used.javahelp"));
     }
 
 }

@@ -171,9 +171,9 @@ public class Man2HTML {
                                 buf.append(curCh);
                             }
                             curColumn++;
-                            if (curColumn >= MAX_WIDTH) {
-                                break;
-                            }
+//                            if (curColumn >= MAX_WIDTH) {
+//                                break;
+//                            }
                         }
                     }
                 }
