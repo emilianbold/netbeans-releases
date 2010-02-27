@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.startup.RunLevel;
@@ -68,7 +69,10 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.SynchronousBundleListener;
+import org.osgi.framework.launch.Framework;
 import org.osgi.service.url.AbstractURLStreamHandlerService;
 import org.osgi.service.url.URLConstants;
 import org.osgi.service.url.URLStreamHandlerService;
@@ -85,7 +89,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
     /** Bundles which have been loaded or are in line to be loaded. */
     private final DependencyQueue<String,Bundle> queue = new DependencyQueue<String,Bundle>();
 
-    public @Override void start(BundleContext context) throws Exception {
+    public @Override void start(final BundleContext context) throws Exception {
         if (System.getProperty("netbeans.home") != null) {
             throw new IllegalStateException("Should not be run from inside regular NetBeans module system");
         }
@@ -95,31 +99,38 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         }
         System.setProperty("TopSecurityManager.disable", "true");
         OSGiMainLookup.initialize(context);
-        context.addBundleListener(this);
-        /*
-        System.err.println("framework state: " + ((Framework) context.getBundle(0)).getState());
-        context.addFrameworkListener(new FrameworkListener() {
-            public @Override void frameworkEvent(FrameworkEvent event) {
-                System.err.println("framework event: " + event.getType());
-            }
-        });
-         */
-//        System.err.println("processing already loaded bundles...");
+        if (((Framework) context.getBundle(0)).getState() == Bundle.STARTING) {
+//            System.err.println("framework still starting");
+            final AtomicReference<FrameworkListener> frameworkListener = new AtomicReference<FrameworkListener>();
+            frameworkListener.set(new FrameworkListener() {
+                public @Override void frameworkEvent(FrameworkEvent event) {
+                    if (event.getType() == FrameworkEvent.STARTED) {
+//                        System.err.println("framework started");
+                        context.removeFrameworkListener(frameworkListener.get());
+                        context.addBundleListener(Activator.this);
+                        processLoadedBundles(context);
+                    }
+                }
+            });
+            context.addFrameworkListener(frameworkListener.get());
+        } else {
+            context.addBundleListener(this);
+            processLoadedBundles(context);
+        }
+    }
+
+    private void processLoadedBundles(BundleContext context) {
+        List<Bundle> toLoad = new ArrayList<Bundle>();
         for (Bundle b : context.getBundles()) {
             switch (b.getState()) {
             case Bundle.ACTIVE:
-                // XXX coalesce these layer events
-                bundleChanged(new BundleEvent(BundleEvent.RESOLVED, b));
-                bundleChanged(new BundleEvent(BundleEvent.STARTED, b));
-                break;
-            case Bundle.RESOLVED:
-            case Bundle.STARTING:
-            case Bundle.STOPPING:
-                bundleChanged(new BundleEvent(BundleEvent.RESOLVED, b));
+                Dictionary<?,?> headers = b.getHeaders();
+                toLoad.addAll(queue.offer(b, provides(headers), requires(headers), needs(headers)));
                 break;
             }
         }
-//        System.err.println("done processing already loaded bundles.");
+//        System.err.println("processing already loaded bundles: " + toLoad);
+        load(toLoad);
     }
 
     public @Override void stop(BundleContext context) throws Exception {}
@@ -127,26 +138,14 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
     public @Override void bundleChanged(BundleEvent event) {
         Bundle bundle = event.getBundle();
         switch (event.getType()) {
-        /*
-        case BundleEvent.RESOLVED:
-            System.err.println("resolved " + bundle.getSymbolicName());
-            break;
-        case BundleEvent.UNRESOLVED:
-            System.err.println("unresolved " + bundle.getSymbolicName());
-            break;
-         */
         case BundleEvent.STARTED:
 //            System.err.println("started " + bundle.getSymbolicName());
             Dictionary<?,?> headers = bundle.getHeaders();
-            for (Bundle b : queue.offer(bundle, provides(headers), requires(headers), needs(headers))) {
-                load(b);
-            }
+            load(queue.offer(bundle, provides(headers), requires(headers), needs(headers)));
             break;
         case BundleEvent.STOPPED:
 //            System.err.println("stopped " + bundle.getSymbolicName());
-            for (Bundle b : queue.retract(bundle)) {
-                unload(b);
-            }
+            unload(queue.retract(bundle));
             break;
         }
     }
@@ -192,24 +191,27 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         return split;
     }
 
-    private void load(Bundle bundle) {
-        OSGiMainLookup.bundleAdded(bundle);
-        if (bundle.getSymbolicName().equals("org.netbeans.modules.autoupdate.ui")) { // NOI18N
-            // Won't work anyway, so don't even try.
-            return;
+    private void load(List<Bundle> bundles) {
+        OSGiMainLookup.bundlesAdded(bundles);
+        for (Bundle bundle : bundles) {
+            registerUrlProtocolHandlers(bundle);
         }
-        OSGiRepository.DEFAULT.addLayers(layersFor(bundle));
-        if (bundle.getSymbolicName().equals("org.netbeans.bootstrap")) { // NOI18N
-            System.setProperty("netbeans.buildnumber", bundle.getVersion().getQualifier()); // NOI18N
+        OSGiRepository.DEFAULT.addLayers(layersFor(bundles));
+        boolean showWindowSystem = false;
+        for (Bundle bundle : bundles) {
+            if (bundle.getSymbolicName().equals("org.netbeans.bootstrap")) { // NOI18N
+                System.setProperty("netbeans.buildnumber", bundle.getVersion().getQualifier()); // NOI18N
+            }
+            // XXX if o.n.core (or o.n.m.settings?) tell OSGiMainLookup to use CoreBridge.getDefault().lookupCacheLoad()
+            if (bundle.getSymbolicName().equals("org.netbeans.core.windows")) { // NOI18N
+                showWindowSystem = true;
+            }
+            ModuleInstall mi = installerFor(bundle);
+            if (mi != null) {
+                mi.restored();
+            }
         }
-        registerUrlProtocolHandlers(bundle); // must be active
-        ModuleInstall mi = installerFor(bundle);
-        if (mi != null) {
-//                System.err.println("running " + mi.getClass().getName() + ".restored()");
-            mi.restored();
-        }
-        // XXX if o.n.core (or o.n.m.settings?) tell OSGiMainLookup to use CoreBridge.getDefault().lookupCacheLoad()
-        if (bundle.getSymbolicName().equals("org.netbeans.core.windows")) { // NOI18N
+        if (showWindowSystem) {
             // Trigger for showing main window and setting up related GUI elements.
             // - Main.initUICustomizations()
             // - add "org.netbeans.beaninfo" to Introspector.beanInfoSearchPath
@@ -220,31 +222,42 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         }
     }
 
-    private void unload(Bundle bundle) {
-        ModuleInstall mi = installerFor(bundle);
-        if (mi != null) {
-//            System.err.println("running " + mi.getClass().getName() + ".uninstalled()");
-            mi.uninstalled();
+    private void unload(List<Bundle> bundles) {
+        for (Bundle bundle : bundles) {
+            ModuleInstall mi = installerFor(bundle);
+            if (mi != null) {
+                mi.uninstalled();
+            }
         }
-        OSGiRepository.DEFAULT.removeLayers(layersFor(bundle));
-        OSGiMainLookup.bundleRemoved(bundle);
+        OSGiRepository.DEFAULT.removeLayers(layersFor(bundles));
+        OSGiMainLookup.bundlesRemoved(bundles);
     }
 
-    private static URL[] layersFor(Bundle b) {
+    private static URL[] layersFor(List<Bundle> bundles) {
         List<URL> layers = new ArrayList<URL>(2);
-        String explicit = (String) b.getHeaders().get("OpenIDE-Module-Layer");
-        if (explicit != null) {
-            layers.add(b.getResource(explicit));
-            // XXX could also add localized/branded variants
-        }
-        URL generated = b.getResource("META-INF/generated-layer.xml");
-        if (generated != null) {
-            layers.add(generated);
+        for (Bundle b : bundles) {
+            if (b.getSymbolicName().equals("org.netbeans.modules.autoupdate.ui")) { // NOI18N
+                // Won't work anyway, so don't even try.
+                continue;
+            }
+            String explicit = (String) b.getHeaders().get("OpenIDE-Module-Layer");
+            if (explicit != null) {
+                layers.add(b.getResource(explicit));
+                // XXX could also add localized/branded variants
+            }
+            URL generated = b.getResource("META-INF/generated-layer.xml");
+            if (generated != null) {
+                layers.add(generated);
+            }
         }
         return layers.toArray(new URL[layers.size()]);
     }
 
     private static ModuleInstall installerFor(Bundle b) {
+        if (b.getSymbolicName().equals("org.netbeans.modules.autoupdate.ui")) { // NOI18N
+            // Won't work anyway, so don't even try.
+            return null;
+        }
         String respath = (String) b.getHeaders().get("OpenIDE-Module-Install");
         if (respath != null) {
             String fqn = respath.replaceFirst("[.]class$", "").replace('/', '.');
