@@ -45,7 +45,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 
 /**
  * Create the third panel in the Makefile wizard.
@@ -176,7 +176,7 @@ public class SelectPreferencesPanel extends MakefileWizardPanel {
 	optimizeCheckBox.setSelected(copts.isSimpleOptimize());
 	// Try to get focus (two different methods ...)
 	debugCheckBox.requestFocus();
-	IpeUtils.requestFocus(debugCheckBox);
+	CndUIUtilities.requestFocus(debugCheckBox);
     }
 
 

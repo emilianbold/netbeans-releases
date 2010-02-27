@@ -54,7 +54,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
@@ -701,7 +701,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             // Convert all paths to absolute paths
             Iterator<String> iter = vec2.iterator();
             while (iter.hasNext()) {
-                vec.add(IpeUtils.toAbsolutePath(makeConfiguration.getBaseDir(), iter.next()));
+                vec.add(CndPathUtilitities.toAbsolutePath(makeConfiguration.getBaseDir(), iter.next()));
             }
         }
         return vec;

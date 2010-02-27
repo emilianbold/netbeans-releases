@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -120,7 +120,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             log.log(Level.FINER, "----------refreshDiskFolder {0}", getPath()); // NOI18N
         }
         String rootPath = getRootPath();
-        String AbsRootPath = IpeUtils.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
+        String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
 
         File folderFile = new File(AbsRootPath);
 
@@ -199,7 +199,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public void attachListeners() {
         String rootPath = getRootPath();
-        String AbsRootPath = IpeUtils.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
+        String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
         File folderFile = new File(AbsRootPath);
 
         if (!folderFile.exists() || !folderFile.isDirectory()) {
@@ -1011,8 +1011,8 @@ public class Folder implements FileChangeListener, ChangeListener {
             return;
         }
         String itemPath = file.getPath();
-        itemPath = IpeUtils.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
-        itemPath = IpeUtils.normalize(itemPath);
+        itemPath = CndPathUtilitities.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
+        itemPath = CndPathUtilitities.normalize(itemPath);
         Item item = new Item(itemPath);
         addItemAction(item, false);
     }

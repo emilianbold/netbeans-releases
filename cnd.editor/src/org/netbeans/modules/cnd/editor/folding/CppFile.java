@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.editor.parser;
+package org.netbeans.modules.cnd.editor.folding;
 
 import java.io.File;
 import java.io.StringReader;
@@ -49,6 +49,8 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
+import org.netbeans.modules.cnd.editor.parser.FoldingParser;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 

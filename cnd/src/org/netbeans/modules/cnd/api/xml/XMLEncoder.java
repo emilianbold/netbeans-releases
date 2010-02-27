@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.api.xml;
  * An XMLEncoder should be implemented by a subclass, which would typically also
  * extend {@link XMLDecoder} to create a <b>codec</b>.
  */
-
 public interface XMLEncoder {
     /**
      * Encode the contents of implementing object into the provided

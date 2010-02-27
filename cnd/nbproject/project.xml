@@ -336,9 +336,7 @@
                 <package>org.netbeans.modules.cnd.api.utils</package>
                 <package>org.netbeans.modules.cnd.api.xml</package>
                 <package>org.netbeans.modules.cnd.builds</package>
-                <package>org.netbeans.modules.cnd.editor.parser</package>
                 <package>org.netbeans.modules.cnd.execution</package>
-                <package>org.netbeans.modules.cnd.execution41.org.openide.cookies</package>
                 <package>org.netbeans.modules.cnd.execution41.org.openide.loaders</package>
                 <package>org.netbeans.modules.cnd.settings</package>
             </friend-packages>

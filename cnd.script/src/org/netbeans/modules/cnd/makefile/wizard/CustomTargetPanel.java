@@ -59,7 +59,7 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.text.NbDocument;
 
 /**
@@ -188,7 +188,7 @@ public class CustomTargetPanel extends MakefileWizardPanel {
             try {
                 actionDoc.insertString(off, nuePart, null);
             } catch (BadLocationException ex) {
-                if (IpeUtils.IfdefDiagnostics) {
+                if (CndPathUtilitities.IfdefDiagnostics) {
                     System.out.println("BadLocationException: " + // NOI18N
                             ex.getMessage() +
                             "\n\toffset = " + ex.offsetRequested());	// NOI18N
@@ -214,7 +214,7 @@ public class CustomTargetPanel extends MakefileWizardPanel {
             try {
                 actionDoc.remove(off, e.getLength());
             } catch (BadLocationException ex) {
-                if (IpeUtils.IfdefDiagnostics) {
+                if (CndPathUtilitities.IfdefDiagnostics) {
                     System.out.println("BadLocationException[6]: " + // NOI18N
                             ex.getMessage() +
                             "\n\toffset = " + ex.offsetRequested());	// NOI18N
@@ -240,7 +240,7 @@ public class CustomTargetPanel extends MakefileWizardPanel {
         } catch (BadLocationException e) {
             // Shouldn't happen but this will suppress NPE if it does
             action = "";// NOI18N
-            if (IpeUtils.IfdefDiagnostics) {
+            if (CndPathUtilitities.IfdefDiagnostics) {
                 System.out.println("BadLocationException validating target"); // NOI18N
                 e.printStackTrace();
             }
@@ -289,7 +289,7 @@ public class CustomTargetPanel extends MakefileWizardPanel {
         try {
             actionDoc.remove(0, actionDoc.getLength());
         } catch (BadLocationException e) {
-            if (IpeUtils.IfdefDiagnostics) {
+            if (CndPathUtilitities.IfdefDiagnostics) {
                 System.out.println("BadLocationException[1]: " + // NOI18N
                         e.getMessage() +
                         "\n\toffset = " + e.offsetRequested());		// NOI18N
@@ -312,7 +312,7 @@ public class CustomTargetPanel extends MakefileWizardPanel {
         try {
             actionDoc.insertString(0, depline.toString(), null);
         } catch (BadLocationException e) {
-            if (IpeUtils.IfdefDiagnostics) {
+            if (CndPathUtilitities.IfdefDiagnostics) {
                 System.out.println("BadLocationException[2]: " + // NOI18N
                         e.getMessage() +
                         "\n\toffset = " + e.offsetRequested());		// NOI18N
@@ -337,7 +337,7 @@ public class CustomTargetPanel extends MakefileWizardPanel {
         try {
             actionDoc.insertString(depline.length(), action.toString(), null);
         } catch (BadLocationException e) {
-            if (IpeUtils.IfdefDiagnostics) {
+            if (CndPathUtilitities.IfdefDiagnostics) {
                 System.out.println("BadLocationException[3]: " + // NOI18N
                         e.getMessage() +
                         "\n\toffset = " + e.offsetRequested());		// NOI18N
@@ -361,7 +361,7 @@ public class CustomTargetPanel extends MakefileWizardPanel {
         try {
             action = actionDoc.getText(0, actionDoc.getLength());
         } catch (BadLocationException e) {
-            if (IpeUtils.IfdefDiagnostics) {
+            if (CndPathUtilitities.IfdefDiagnostics) {
                 System.out.println("BadLocationException[4]: " + // NOI18N
                         e.getMessage() +
                         "\n\toffset = " + e.offsetRequested());		// NOI18N

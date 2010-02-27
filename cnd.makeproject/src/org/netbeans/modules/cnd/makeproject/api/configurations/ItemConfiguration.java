@@ -48,7 +48,7 @@ import java.util.Date;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.makeproject.configurations.ItemXMLCodec;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
@@ -437,9 +437,9 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         set.setName("Item"); // NOI18N
         set.setDisplayName(getString("ItemTxt"));
         set.setShortDescription(getString("ItemHint"));
-        set.put(new StringRONodeProp(getString("NameTxt"), IpeUtils.getBaseName(item.getPath())));
+        set.put(new StringRONodeProp(getString("NameTxt"), CndPathUtilitities.getBaseName(item.getPath())));
         set.put(new StringRONodeProp(getString("FilePathTxt"), item.getPath()));
-        String fullPath = IpeUtils.toAbsolutePath(((MakeConfiguration) configuration).getBaseDir(), item.getPath());
+        String fullPath = CndPathUtilitities.toAbsolutePath(((MakeConfiguration) configuration).getBaseDir(), item.getPath());
         String mdate = ""; // NOI18N
         File itemFile = new File(fullPath);
         if (itemFile.exists()) {

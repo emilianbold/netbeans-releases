@@ -45,7 +45,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefile
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
@@ -271,23 +271,23 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
             dirName = MakeConfiguration.OBJECTDIR_MACRO;
         }
 
-        if (IpeUtils.isPathAbsolute(fileName)) {
+        if (CndPathUtilitities.isPathAbsolute(fileName)) {
             String absPath = fileName;
             if (absPath.charAt(0) != '/') {
                 absPath = '/' + absPath;
             }
             absPath = dirName + '/' + MakeConfiguration.EXT_FOLDER + absPath; // UNIX path
-            absPath = IpeUtils.replaceOddCharacters(absPath, '_');
+            absPath = CndPathUtilitities.replaceOddCharacters(absPath, '_');
             return absPath;
         } else if (filePath.startsWith("..")) { // NOI18N
-//            String absPath = IpeUtils.toAbsolutePath(getBaseDir(), fileName);
+//            String absPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), fileName);
 //            absPath = FilePathAdaptor.normalize(absPath);
-//            absPath = IpeUtils.replaceOddCharacters(absPath, '_');
+//            absPath = CndPathUtilitities.replaceOddCharacters(absPath, '_');
 //            if (absPath.charAt(0) != '/') {
 //                absPath = '/' + absPath;
 //            }
             String ofilePath = fileName.replace("..", "_DOTDOT"); // NOI18N
-            ofilePath = IpeUtils.replaceOddCharacters(ofilePath, '_');
+            ofilePath = CndPathUtilitities.replaceOddCharacters(ofilePath, '_');
             return dirName + '/' + MakeConfiguration.EXT_FOLDER + '/' + ofilePath; // UNIX path
         } else {
             return dirName + '/' + fileName; // UNIX path

@@ -49,7 +49,7 @@ import java.util.StringTokenizer;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.openide.DialogDescriptor;
@@ -416,7 +416,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                 return null;
             }
             String itemPath = fileChooser.getSelectedFile().getPath();
-            itemPath = IpeUtils.normalize(itemPath);
+            itemPath = CndPathUtilitities.normalize(itemPath);
             return itemPath;
         }
 

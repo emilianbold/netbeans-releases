@@ -73,12 +73,12 @@ import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
 import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldPanel.InsertPoint;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
@@ -369,7 +369,7 @@ public class GeneratorUtils {
         Collection<CsmFile> includers = CsmIncludeHierarchyResolver.getDefault().getFiles(header);
 
         for (CsmFile f : includers) {
-            if (IpeUtils.areFilenamesEqual(getFileName(f.getAbsolutePath()), name)) {
+            if (CndFileUtils.areFilenamesEqual(getFileName(f.getAbsolutePath()), name)) {
                 // we found source file with the same name
                 // as header and with dependency to it. Best shot.
                 return f;
@@ -378,7 +378,7 @@ public class GeneratorUtils {
 
         // look for random namesake
         for (CsmFile f : header.getProject().getSourceFiles()) {
-            if (IpeUtils.areFilenamesEqual(getFileName(f.getAbsolutePath().toString()), name)) {
+            if (CndFileUtils.areFilenamesEqual(getFileName(f.getAbsolutePath().toString()), name)) {
                 return f;
             }
         }

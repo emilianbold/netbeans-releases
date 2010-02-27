@@ -55,7 +55,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.cnd.editor.parser.CppFile;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;

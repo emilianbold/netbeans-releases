@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.makefile.utils;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.filechooser.FileSystemView;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 /**
  *  Replace the default FileSystemView with one which understands tilde and
@@ -72,7 +72,7 @@ public class IpeFileSystemView extends FileSystemView {
      */
     @Override
     public File createFileObject(String path) {
-	return new File(IpeUtils.expandPath(path));
+	return new File(CndPathUtilitities.expandPath(path));
     }
 
 
@@ -83,7 +83,7 @@ public class IpeFileSystemView extends FileSystemView {
      */
     @Override
     public File createFileObject(File dir, String path) {
-	String newPath = IpeUtils.expandPath(path);
+	String newPath = CndPathUtilitities.expandPath(path);
 	if (dir == null) {
 	    return new File(newPath);
 	} else {

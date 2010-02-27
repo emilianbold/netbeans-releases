@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.makeproject.platform;
 
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
 public class PlatformLinux extends Platform {
@@ -84,13 +84,13 @@ public class PlatformLinux extends Platform {
             }
 
             return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag()
-                    + IpeUtils.escapeOddCharacters(libDir)
+                    + CndPathUtilitities.escapeOddCharacters(libDir)
                     + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag() // NOI18N
-                    + IpeUtils.escapeOddCharacters(libDir)
+                    + CndPathUtilitities.escapeOddCharacters(libDir)
                     + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() // NOI18N
-                    + IpeUtils.escapeOddCharacters(libName);
+                    + CndPathUtilitities.escapeOddCharacters(libName);
         } else {
-            return IpeUtils.escapeOddCharacters(libPath);
+            return CndPathUtilitities.escapeOddCharacters(libPath);
         }
     }
 }

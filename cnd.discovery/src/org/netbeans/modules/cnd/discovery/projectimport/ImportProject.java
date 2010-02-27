@@ -84,7 +84,7 @@ import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.wizard.ConsolidationStrategyPanel;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
@@ -252,26 +252,26 @@ public class ImportProject implements PropertyChangeListener {
         MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE); // NOI18N
         String workingDirRel;
         if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-            workingDirRel = IpeUtils.toAbsoluteOrRelativePath(projectFolder.getPath(), IpeUtils.naturalize(workingDir));
+            workingDirRel = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(workingDir));
         } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-            workingDirRel = IpeUtils.toRelativePath(projectFolder.getPath(), IpeUtils.naturalize(workingDir));
+            workingDirRel = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(workingDir));
         } else {
-            workingDirRel = IpeUtils.toAbsolutePath(projectFolder.getPath(), IpeUtils.naturalize(workingDir));
+            workingDirRel = CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), CndPathUtilitities.naturalize(workingDir));
         }
-        workingDirRel = IpeUtils.normalize(workingDirRel);
+        workingDirRel = CndPathUtilitities.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommand().setValue(buildCommand);
         extConf.getMakefileConfiguration().getCleanCommand().setValue(cleanCommand);
         // Build result
         if (buildResult != null && buildResult.length() > 0) {
             if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                buildResult = IpeUtils.toAbsoluteOrRelativePath(projectFolder.getPath(), IpeUtils.naturalize(buildResult));
+                buildResult = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(buildResult));
             } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                buildResult = IpeUtils.toRelativePath(projectFolder.getPath(), IpeUtils.naturalize(buildResult));
+                buildResult = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(buildResult));
             } else {
-                buildResult = IpeUtils.toAbsolutePath(projectFolder.getPath(), IpeUtils.naturalize(buildResult));
+                buildResult = CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), CndPathUtilitities.naturalize(buildResult));
             }
-            buildResult = IpeUtils.normalize(buildResult);
+            buildResult = CndPathUtilitities.normalize(buildResult);
             extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
         }
         // Include directories
@@ -280,8 +280,8 @@ public class ImportProject implements PropertyChangeListener {
             List<String> includeDirectoriesVector = new ArrayList<String>();
             while (tokenizer.hasMoreTokens()) {
                 String includeDirectory = tokenizer.nextToken();
-                includeDirectory = IpeUtils.toRelativePath(projectFolder.getPath(), IpeUtils.naturalize(includeDirectory));
-                includeDirectory = IpeUtils.normalize(includeDirectory);
+                includeDirectory = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(includeDirectory));
+                includeDirectory = CndPathUtilitities.normalize(includeDirectory);
                 includeDirectoriesVector.add(includeDirectory);
             }
             extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includeDirectoriesVector);
@@ -303,25 +303,25 @@ public class ImportProject implements PropertyChangeListener {
         if (makefilePath != null && makefilePath.length() > 0) {
             makefileFile = CndFileUtils.normalizeFile(new File(makefilePath));
             if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                makefilePath = IpeUtils.toAbsoluteOrRelativePath(projectFolder.getPath(), IpeUtils.naturalize(makefilePath));
+                makefilePath = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath));
             } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                makefilePath = IpeUtils.toRelativePath(projectFolder.getPath(), IpeUtils.naturalize(makefilePath));
+                makefilePath = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath));
             } else {
-                makefilePath = IpeUtils.toAbsolutePath(projectFolder.getPath(), IpeUtils.naturalize(makefilePath));
+                makefilePath = CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath));
             }
-            makefilePath = IpeUtils.normalize(makefilePath);
+            makefilePath = CndPathUtilitities.normalize(makefilePath);
             importantItems.add(makefilePath);
         }
         if (configurePath != null && configurePath.length() > 0) {
             configureFile = CndFileUtils.normalizeFile(new File(configurePath));
             if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                configurePath = IpeUtils.toAbsoluteOrRelativePath(projectFolder.getPath(), IpeUtils.naturalize(configurePath));
+                configurePath = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(configurePath));
             } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                configurePath = IpeUtils.toRelativePath(projectFolder.getPath(), IpeUtils.naturalize(configurePath));
+                configurePath = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(configurePath));
             } else {
-                configurePath = IpeUtils.toAbsolutePath(projectFolder.getPath(), IpeUtils.naturalize(configurePath));
+                configurePath = CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), CndPathUtilitities.naturalize(configurePath));
             }
-            configurePath = IpeUtils.normalize(configurePath);
+            configurePath = CndPathUtilitities.normalize(configurePath);
             importantItems.add(configurePath);
         }
         Iterator<String> importantItemsIterator = importantItems.iterator();

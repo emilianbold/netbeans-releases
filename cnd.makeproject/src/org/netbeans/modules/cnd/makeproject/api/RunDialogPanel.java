@@ -50,7 +50,7 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
@@ -559,13 +559,13 @@ public final class RunDialogPanel extends javax.swing.JPanel {
                 MakeConfiguration conf = new MakeConfiguration(baseDir, "Default", MakeConfiguration.TYPE_MAKEFILE);  // NOI18N
                 // Working dir
                 String wd = new File(getExecutablePath()).getParentFile().getPath();
-                wd = IpeUtils.toRelativePath(baseDir, wd);
-                wd = IpeUtils.normalize(wd);
+                wd = CndPathUtilitities.toRelativePath(baseDir, wd);
+                wd = CndPathUtilitities.normalize(wd);
                 conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(wd);
                 // Executable
                 String exe = getExecutablePath();
-                exe = IpeUtils.toRelativePath(baseDir, exe);
-                exe = IpeUtils.normalize(exe);
+                exe = CndPathUtilitities.toRelativePath(baseDir, exe);
+                exe = CndPathUtilitities.normalize(exe);
                 conf.getMakefileConfiguration().getOutput().setValue(exe);
                 
                 updateRunProfile(baseDir, conf.getProfile());
@@ -584,8 +584,8 @@ public final class RunDialogPanel extends javax.swing.JPanel {
         runProfile.setArgs(argumentTextField.getText());
         // Working dir
         String wd = runDirectoryTextField.getText();
-        wd = IpeUtils.toRelativePath(baseDir, wd);
-        wd = IpeUtils.normalize(wd);
+        wd = CndPathUtilitities.toRelativePath(baseDir, wd);
+        wd = CndPathUtilitities.normalize(wd);
         runProfile.setRunDirectory(wd);
         // Environment
         Env env = runProfile.getEnvironment();
