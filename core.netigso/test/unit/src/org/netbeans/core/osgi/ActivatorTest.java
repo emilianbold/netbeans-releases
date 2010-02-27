@@ -268,4 +268,30 @@ public class ActivatorTest extends NbTestCase {
         assertTrue(Boolean.getBoolean("com.sun.available"));
     }
 
+    public void testServicesFolder() throws Exception {
+        new OSGiProcess(getWorkDir()).newModule().
+                sourceFile("custom/Interface.java", "package custom; public interface Interface {String result();}").
+                sourceFile("custom/Install.java", "package custom;",
+                "public class Install extends org.openide.modules.ModuleInstall {",
+                "public @Override void restored() {System.setProperty(\"custom.service.result\", ",
+                "org.openide.util.Lookup.getDefault().lookup(Interface.class).result());}",
+                "}").
+                sourceFile("custom/Service.java", "package custom; public class Service implements Interface {",
+                "public String result() {return \"ok\";}",
+                "}").
+                sourceFile("custom/layer.xml", "<filesystem>",
+                "<folder name='Services'>",
+                "<file name='custom-Service.instance'><attr name='instanceOf' stringvalue='custom.Interface'/></file>",
+                "</folder>",
+                "</filesystem>").manifest(
+                "OpenIDE-Module: custom",
+                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Layer: custom/layer.xml",
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.util.lookup, org.netbeans.core/2").done().
+                module("org.netbeans.core").
+                module("org.netbeans.modules.editor.mimelookup.impl"). // indirect dep of editor.mimelookup, from openide.loaders
+                run();
+        assertEquals("ok", System.getProperty("custom.service.result"));
+    }
+
 }

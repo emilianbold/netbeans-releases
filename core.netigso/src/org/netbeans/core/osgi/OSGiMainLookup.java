@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.core.startup.CoreBridge;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
@@ -95,6 +96,11 @@ public class OSGiMainLookup extends ProxyLookup {
         for (Bundle bundle : bundles) {
             get().moduleInfoContent.remove(bundle, moduleInfoConvertor);
         }
+    }
+
+    static void loadServicesFolder() {
+        get().nonClassLoaderDelegates.add(CoreBridge.getDefault().lookupCacheLoad());
+        get().setDelegates();
     }
 
     private ClassLoader classLoader;

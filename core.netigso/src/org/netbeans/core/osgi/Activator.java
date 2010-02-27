@@ -193,19 +193,23 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
 
     private void load(List<Bundle> bundles) {
         OSGiMainLookup.bundlesAdded(bundles);
+        boolean showWindowSystem = false;
+        boolean loadServicesFolder = false;
         for (Bundle bundle : bundles) {
             registerUrlProtocolHandlers(bundle);
-        }
-        OSGiRepository.DEFAULT.addLayers(layersFor(bundles));
-        boolean showWindowSystem = false;
-        for (Bundle bundle : bundles) {
-            if (bundle.getSymbolicName().equals("org.netbeans.bootstrap")) { // NOI18N
+            if (bundle.getSymbolicName().equals("org.netbeans.core")) { // NOI18N
+                loadServicesFolder = true;
+            } else if (bundle.getSymbolicName().equals("org.netbeans.bootstrap")) { // NOI18N
                 System.setProperty("netbeans.buildnumber", bundle.getVersion().getQualifier()); // NOI18N
-            }
-            // XXX if o.n.core (or o.n.m.settings?) tell OSGiMainLookup to use CoreBridge.getDefault().lookupCacheLoad()
-            if (bundle.getSymbolicName().equals("org.netbeans.core.windows")) { // NOI18N
+            } else if (bundle.getSymbolicName().equals("org.netbeans.core.windows")) { // NOI18N
                 showWindowSystem = true;
             }
+        }
+        OSGiRepository.DEFAULT.addLayers(layersFor(bundles));
+        if (loadServicesFolder) {
+            OSGiMainLookup.loadServicesFolder();
+        }
+        for (Bundle bundle : bundles) {
             ModuleInstall mi = installerFor(bundle);
             if (mi != null) {
                 mi.restored();
