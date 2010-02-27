@@ -38,18 +38,12 @@
  */
 package org.netbeans.modules.css.gsf;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -57,20 +51,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.ImageIcon;
-import javax.swing.JColorChooser;
-import javax.swing.JDialog;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.api.ElementHandle.UrlHandle;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
@@ -79,7 +66,6 @@ import org.netbeans.modules.css.editor.PropertyModel.Element;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
 import org.netbeans.modules.css.editor.CssHelpResolver;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.editor.CssPropertyValue;
@@ -97,9 +83,7 @@ import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -111,10 +95,6 @@ public class CssCompletion implements CodeCompletionHandler {
     private final PropertyModel PROPERTIES = PropertyModel.instance();
     private static final Collection<String> AT_RULES = Arrays.asList(new String[]{"@media", "@page", "@import", "@charset", "@font-face"}); //NOI18N
     private static char firstPrefixChar; //read getPrefix() comment!
-
-    private static final String RELATED_SELECTOR_COLOR = "007c00"; //NOI18N
-    private static String GRAY_COLOR_CODE = Integer.toHexString(Color.GRAY.getRGB()).substring(2);
-
 
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
@@ -173,7 +153,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
             if (hasNext && ts.token().text().charAt(0) == '@') { //NOI18N
                 //complete rules
-                return wrapRAWValues(AT_RULES, CompletionItemKind.VALUE, ts.offset());
+                return wrapRAWValues(AT_RULES, CssCompletionItem.Kind.VALUE, ts.offset());
             }
 
             return CodeCompletionResult.NONE; //no parse tree, just quit
@@ -231,9 +211,9 @@ public class CssCompletion implements CodeCompletionHandler {
                 //lets create the completion items
                 List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(refclasses.size());
                 for(String clazz : allclasses) {
-                   proposals.add(new SelectorCompletionItem(new CssElement(clazz),
+                   proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(clazz),
                         clazz,
-                        CompletionItemKind.VALUE,
+                        CssCompletionItem.Kind.VALUE,
                         offset,
                         refclasses.contains(clazz)));
                 }
@@ -277,9 +257,9 @@ public class CssCompletion implements CodeCompletionHandler {
                 //lets create the completion items
                 List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(allids.size());
                 for (String id : allids) {
-                    proposals.add(new SelectorCompletionItem(new CssElement(id),
+                    proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(id),
                             id,
-                            CompletionItemKind.VALUE,
+                            CssCompletionItem.Kind.VALUE,
                             offset,
                             refids.contains(id)));
                 }
@@ -290,7 +270,7 @@ public class CssCompletion implements CodeCompletionHandler {
         } else if (node.kind() == CssParserTreeConstants.JJTSTYLESHEETRULELIST) {
             List<CompletionProposal> all = new ArrayList<CompletionProposal>();
             //complete at keywords without prefix
-            all.addAll(wrapRAWValues(AT_RULES, CompletionItemKind.VALUE, caretOffset).getItems());
+            all.addAll(wrapRAWValues(AT_RULES, CssCompletionItem.Kind.VALUE, caretOffset).getItems());
             //complete html selector names
             all.addAll(completeHtmlSelectors(prefix, caretOffset));
             return new DefaultCompletionResult(all, false);
@@ -303,7 +283,7 @@ public class CssCompletion implements CodeCompletionHandler {
             SimpleNode parent = (SimpleNode) node.jjtGetParent();
             if (parent != null && parent.kind() == CssParserTreeConstants.JJTUNKNOWNRULE) {  //test the parent node
                 Collection<String> possibleValues = filterStrings(AT_RULES, prefix);
-                return wrapRAWValues(possibleValues, CompletionItemKind.VALUE, snapshot.getOriginalOffset(parent.startOffset()));
+                return wrapRAWValues(possibleValues, CssCompletionItem.Kind.VALUE, snapshot.getOriginalOffset(parent.startOffset()));
             }
         } else if (node.kind() == CssParserTreeConstants.JJTIMPORTRULE || node.kind() == CssParserTreeConstants.JJTMEDIARULE || node.kind() == CssParserTreeConstants.JJTPAGERULE || node.kind() == CssParserTreeConstants.JJTCHARSETRULE || node.kind() == CssParserTreeConstants.JJTFONTFACERULE) {
             //complete at keywords with prefix - parse tree OK
@@ -313,18 +293,18 @@ public class CssCompletion implements CodeCompletionHandler {
                     //we are on the right place in the node
 
                     Collection<String> possibleValues = filterStrings(AT_RULES, prefix);
-                    return wrapRAWValues(possibleValues, CompletionItemKind.VALUE, snapshot.getOriginalOffset(node.startOffset()));
+                    return wrapRAWValues(possibleValues, CssCompletionItem.Kind.VALUE, snapshot.getOriginalOffset(node.startOffset()));
                 }
             }
 
         } else if (node.kind() == CssParserTreeConstants.JJTPROPERTY && (prefix.length() > 0 || astCaretOffset == node.startOffset())) {
             //css property name completion with prefix
             Collection<Property> possibleProps = filterProperties(PROPERTIES.properties(), prefix);
-            return wrapProperties(possibleProps, CompletionItemKind.PROPERTY, snapshot.getOriginalOffset(node.startOffset()));
+            return wrapProperties(possibleProps, CssCompletionItem.Kind.PROPERTY, snapshot.getOriginalOffset(node.startOffset()));
 
         } else if (node.kind() == CssParserTreeConstants.JJTSTYLERULE) {
             //should be no prefix 
-            return wrapProperties(PROPERTIES.properties(), CompletionItemKind.PROPERTY, caretOffset);
+            return wrapProperties(PROPERTIES.properties(), CssCompletionItem.Kind.PROPERTY, caretOffset);
         } else if (node.kind() == CssParserTreeConstants.JJTDECLARATION) {
             //value cc without prefix
             //find property node
@@ -401,7 +381,7 @@ public class CssCompletion implements CodeCompletionHandler {
                         prefix,
                         prop,
                         filteredByPrefix,
-                        CompletionItemKind.VALUE,
+                        CssCompletionItem.Kind.VALUE,
                         completionItemInsertPosition,
                         false,
                         addSpaceBeforeItem,
@@ -509,7 +489,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     prefix,
                     prop,
                     filteredByPrefix,
-                    CompletionItemKind.VALUE,
+                    CssCompletionItem.Kind.VALUE,
                     completionItemInsertPosition,
                     false,
                     addSpaceBeforeItem,
@@ -541,21 +521,22 @@ public class CssCompletion implements CodeCompletionHandler {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(20);
         for (String tagName : HtmlTags.getTags()) {
             if (tagName.startsWith(prefix.toLowerCase(Locale.ENGLISH))) {
-                proposals.add(new SelectorCompletionItem(new CssElement(tagName),
+                proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(tagName),
                         tagName,
-                        CompletionItemKind.VALUE,
-                        offset));
+                        CssCompletionItem.Kind.VALUE,
+                        offset,
+                        true));
             }
         }
         return proposals;
 
     }
 
-    private CodeCompletionResult wrapRAWValues(Collection<String> props, CompletionItemKind kind, int anchor) {
+    private CodeCompletionResult wrapRAWValues(Collection<String> props, CssCompletionItem.Kind kind, int anchor) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         for (String value : props) {
             CssElement handle = new CssElement(value);
-            CompletionProposal proposal = createCompletionItem(handle, value, kind, anchor, false);
+            CompletionProposal proposal = CssCompletionItem.createCompletionItem(handle, value, kind, anchor, false);
             proposals.add(proposal);
         }
         return new DefaultCompletionResult(proposals, false);
@@ -565,7 +546,7 @@ public class CssCompletion implements CodeCompletionHandler {
             String prefix,
             Property property,
             Collection<Element> props,
-            CompletionItemKind kind,
+            CssCompletionItem.Kind kind,
             int anchor,
             boolean addSemicolon,
             boolean addSpaceBeforeItem,
@@ -583,17 +564,17 @@ public class CssCompletion implements CodeCompletionHandler {
             if("color".equals(origin)) { //NOI18N
                 if(!colorChooserAdded) {
                     //add color chooser item
-                    proposals.add(new ColorChooserItem(anchor, origin, addSemicolon));
+                    proposals.add(CssCompletionItem.createColorChooserCompletionItem(anchor, origin, addSemicolon));
                     //add used colors items
                     proposals.addAll(getUsedColorsItems(context, prefix, handle, origin, kind, anchor, addSemicolon, addSpaceBeforeItem));
                     colorChooserAdded = true;
                 }
                 if(!extendedItemsOnly) {
-                    proposals.add(createColorValueCompletionItem(handle, e, kind, anchor, addSemicolon, addSpaceBeforeItem));
+                    proposals.add(CssCompletionItem.createColorValueCompletionItem(handle, e, kind, anchor, addSemicolon, addSpaceBeforeItem));
                 }
             } else {
                 if(!extendedItemsOnly) {
-                    proposals.add(createValueCompletionItem(handle, e, kind, anchor, addSemicolon, addSpaceBeforeItem));
+                    proposals.add(CssCompletionItem.createValueCompletionItem(handle, e, kind, anchor, addSemicolon, addSpaceBeforeItem));
                 }
             }
         }
@@ -601,7 +582,7 @@ public class CssCompletion implements CodeCompletionHandler {
     }
 
     private Collection<CompletionProposal> getUsedColorsItems(CodeCompletionContext context, String prefix,
-            CssElement element, String origin, CompletionItemKind kind, int anchor, boolean addSemicolon,
+            CssElement element, String origin, CssCompletionItem.Kind kind, int anchor, boolean addSemicolon,
             boolean addSpaceBeforeItem) {
         FileObject current = context.getParserResult().getSnapshot().getSource().getFileObject();
         if(current == null) {
@@ -624,7 +605,7 @@ public class CssCompletion implements CodeCompletionHandler {
             boolean usedInCurrentFile = file.equals(current);
             for(String color : colors) {
                 if(color.startsWith(prefix)) {
-                    proposals.add(new HashColorCompletionItem(element, color, origin,
+                    proposals.add(CssCompletionItem.createHashColorCompletionItem(element, color, origin,
                             kind, anchor, addSemicolon, addSpaceBeforeItem, usedInCurrentFile));
                 }
             }
@@ -654,13 +635,13 @@ public class CssCompletion implements CodeCompletionHandler {
         return filtered;
     }
 
-    private CodeCompletionResult wrapProperties(Collection<Property> props, CompletionItemKind kind, int anchor) {
+    private CodeCompletionResult wrapProperties(Collection<Property> props, CssCompletionItem.Kind kind, int anchor) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         for (Property p : props) {
             //filter out non-public properties
             if (!p.name().startsWith("-")) { //NOI18N
                 CssElement handle = new CssPropertyElement(p);
-                CompletionProposal proposal = createPropertyNameCompletionItem(handle, p.name(), kind, anchor, false);
+                CompletionProposal proposal = CssCompletionItem.createPropertyNameCompletionItem(handle, p.name(), kind, anchor, false);
                 proposals.add(proposal);
             }
         }
@@ -880,624 +861,7 @@ public class CssCompletion implements CodeCompletionHandler {
         return ParameterInfo.NONE;
     }
 
-    private static enum CompletionItemKind {
 
-        PROPERTY, VALUE;
-    }
 
-    private CssCompletionItem createValueCompletionItem(CssValueElement element,
-            Element value,
-            CompletionItemKind kind,
-            int anchorOffset,
-            boolean addSemicolon,
-            boolean addSpaceBeforeItem) {
-
-        return new ValueCompletionItem(element, value.toString(), value.getResolvedOrigin(), kind, anchorOffset, addSemicolon, addSpaceBeforeItem);
-    }
-
-    private CssCompletionItem createColorValueCompletionItem(CssValueElement element,
-            Element value,
-            CompletionItemKind kind,
-            int anchorOffset,
-            boolean addSemicolon,
-            boolean addSpaceBeforeItem) {
-
-        return new ColorCompletionItem(element, value.toString(), value.getResolvedOrigin(), kind, anchorOffset, addSemicolon, addSpaceBeforeItem);
-
-    }
-
-    private CssCompletionItem createPropertyNameCompletionItem(CssElement element,
-            String value,
-            CompletionItemKind kind,
-            int anchorOffset,
-            boolean addSemicolon) {
-
-        return new PropertyCompletionItem(element, value, kind, anchorOffset, addSemicolon);
-    }
-
-    private CssCompletionItem createCompletionItem(CssElement element,
-            String value,
-            CompletionItemKind kind,
-            int anchorOffset,
-            boolean addSemicolon) {
-
-        return new CssCompletionItem(element, value, kind, anchorOffset, addSemicolon);
-    }
-    private final HashMap<String, String> colors = new HashMap<String, String>(20);
-
-    //TODO add support for non w3c standart colors, CSS3 seems to be more vague in checking the color values
-    private synchronized HashMap<String, String> colors() {
-        if (colors.isEmpty()) {
-            colors.put("aliceblue", "f0f8ff"); //NOI18N
-            colors.put("antiquewhite", "faebd7"); //NOI18N
-            colors.put("aqua", "00ffff"); //NOI18N
-            colors.put("aquamarine", "7fffd4"); //NOI18N
-            colors.put("azure", "f0ffff"); //NOI18N
-            colors.put("beige", "f5f5dc"); //NOI18N
-            colors.put("bisque", "ffe4c4"); //NOI18N
-            colors.put("black", "000000"); //NOI18N
-            colors.put("blanchedalmond", "ffebcd"); //NOI18N
-            colors.put("blue", "0000ff"); //NOI18N
-            colors.put("blueviolet", "8a2be2"); //NOI18N
-            colors.put("brown", "a52a2a"); //NOI18N
-            colors.put("burlywood", "deb887"); //NOI18N
-            colors.put("cadetblue", "5f9ea0"); //NOI18N
-            colors.put("chartreuse", "7fff00"); //NOI18N
-            colors.put("chocolate", "d2691e"); //NOI18N
-            colors.put("coral", "ff7f50"); //NOI18N
-            colors.put("cornflowerblue", "6495ed"); //NOI18N
-            colors.put("cornsilk", "fff8dc"); //NOI18N
-            colors.put("crimson", "dc143c"); //NOI18N
-            colors.put("cyan", "00ffff"); //NOI18N
-            colors.put("darkblue", "00008b"); //NOI18N
-            colors.put("darkcyan", "008b8b"); //NOI18N
-            colors.put("darkgoldenrod", "b8860b"); //NOI18N
-            colors.put("darkgray", "a9a9a9"); //NOI18N
-            colors.put("darkgreen", "006400"); //NOI18N
-            colors.put("darkgrey", "a9a9a9"); //NOI18N
-            colors.put("darkkhaki", "bdb76b"); //NOI18N
-            colors.put("darkmagenta", "8b008b"); //NOI18N
-            colors.put("darkolivegreen", "556b2f"); //NOI18N
-            colors.put("darkorange", "ff8c00"); //NOI18N
-            colors.put("darkorchid", "9932cc"); //NOI18N
-            colors.put("darkred", "8b0000"); //NOI18N
-            colors.put("darksalmon", "e9967a"); //NOI18N
-            colors.put("darkseagreen", "8fbc8f"); //NOI18N
-            colors.put("darkslateblue", "483d8b"); //NOI18N
-            colors.put("darkslategray", "2f4f4f"); //NOI18N
-            colors.put("darkslategrey", "2f4f4f"); //NOI18N
-            colors.put("darkturquoise", "00ced1"); //NOI18N
-            colors.put("darkviolet", "9400d3"); //NOI18N
-            colors.put("deeppink", "ff1493"); //NOI18N
-            colors.put("deepskyblue", "00bfff"); //NOI18N
-            colors.put("dimgray", "696969"); //NOI18N
-            colors.put("dimgrey", "696969"); //NOI18N
-            colors.put("dodgerblue", "1e90ff"); //NOI18N
-            colors.put("firebrick", "b22222"); //NOI18N
-            colors.put("floralwhite", "fffaf0"); //NOI18N
-            colors.put("forestgreen", "228b22"); //NOI18N
-            colors.put("fuchsia", "ff00ff"); //NOI18N
-            colors.put("gainsboro", "dcdcdc"); //NOI18N
-            colors.put("ghostwhite", "f8f8ff"); //NOI18N
-            colors.put("gold", "ffd700"); //NOI18N
-            colors.put("goldenrod", "daa520"); //NOI18N
-            colors.put("gray", "808080"); //NOI18N
-            colors.put("green", "008000"); //NOI18N
-            colors.put("greenyellow", "adff2f"); //NOI18N
-            colors.put("grey", "808080"); //NOI18N
-            colors.put("honeydew", "f0fff0"); //NOI18N
-            colors.put("hotpink", "ff69b4"); //NOI18N
-            colors.put("indianred", "cd5c5c"); //NOI18N
-            colors.put("indigo", "4b0082"); //NOI18N
-            colors.put("ivory", "fffff0"); //NOI18N
-            colors.put("khaki", "f0e68c"); //NOI18N
-            colors.put("lavender", "e6e6fa"); //NOI18N
-            colors.put("lavenderblush", "fff0f5"); //NOI18N
-            colors.put("lawngreen", "7cfc00"); //NOI18N
-            colors.put("lemonchiffon", "fffacd"); //NOI18N
-            colors.put("lightblue", "add8e6"); //NOI18N
-            colors.put("lightcoral", "f08080"); //NOI18N
-            colors.put("lightcyan", "e0ffff"); //NOI18N
-            colors.put("lightgoldenrodyellow", "fafad2"); //NOI18N
-            colors.put("lightgray", "d3d3d3"); //NOI18N
-            colors.put("lightgreen", "90ee90"); //NOI18N
-            colors.put("lightgrey", "d3d3d3"); //NOI18N
-            colors.put("lightpink", "ffb6c1"); //NOI18N
-            colors.put("lightsalmon", "ffa07a"); //NOI18N
-            colors.put("lightseagreen", "20b2aa"); //NOI18N
-            colors.put("lightskyblue", "87cefa"); //NOI18N
-            colors.put("lightslategray", "778899"); //NOI18N
-            colors.put("lightslategrey", "778899"); //NOI18N
-            colors.put("lightsteelblue", "b0c4de"); //NOI18N
-            colors.put("lightyellow", "ffffe0"); //NOI18N
-            colors.put("lime", "00ff00"); //NOI18N
-            colors.put("limegreen", "32cd32"); //NOI18N
-            colors.put("linen", "faf0e6"); //NOI18N
-            colors.put("magenta", "ff00ff"); //NOI18N
-            colors.put("maroon", "800000"); //NOI18N
-            colors.put("mediumaquamarine", "66cdaa"); //NOI18N
-            colors.put("mediumblue", "0000cd"); //NOI18N
-            colors.put("mediumorchid", "ba55d3"); //NOI18N
-            colors.put("mediumpurple", "9370db"); //NOI18N
-            colors.put("mediumseagreen", "3cb371"); //NOI18N
-            colors.put("mediumslateblue", "7b68ee"); //NOI18N
-            colors.put("mediumspringgreen", "00fa9a"); //NOI18N
-            colors.put("mediumturquoise", "48d1cc"); //NOI18N
-            colors.put("mediumvioletred", "c71585"); //NOI18N
-            colors.put("midnightblue", "191970"); //NOI18N
-            colors.put("mintcream", "f5fffa"); //NOI18N
-            colors.put("mistyrose", "ffe4e1"); //NOI18N
-            colors.put("moccasin", "ffe4b5"); //NOI18N
-            colors.put("navajowhite", "ffdead"); //NOI18N
-            colors.put("navy", "000080"); //NOI18N
-            colors.put("oldlace", "fdf5e6"); //NOI18N
-            colors.put("olive", "808000"); //NOI18N
-            colors.put("olivedrab", "6b8e23"); //NOI18N
-            colors.put("orange", "ffa500"); //NOI18N
-            colors.put("orangered", "ff4500"); //NOI18N
-            colors.put("orchid", "da70d6"); //NOI18N
-            colors.put("palegoldenrod", "eee8aa"); //NOI18N
-            colors.put("palegreen", "98fb98"); //NOI18N
-            colors.put("paleturquoise", "afeeee"); //NOI18N
-            colors.put("palevioletred", "db7093"); //NOI18N
-            colors.put("papayawhip", "ffefd5"); //NOI18N
-            colors.put("peachpuff", "ffdab9"); //NOI18N
-            colors.put("peru", "cd853f"); //NOI18N
-            colors.put("pink", "ffc0cb"); //NOI18N
-            colors.put("plum", "dda0dd"); //NOI18N
-            colors.put("powderblue", "b0e0e6"); //NOI18N
-            colors.put("purple", "800080"); //NOI18N
-            colors.put("red", "ff0000"); //NOI18N
-            colors.put("rosybrown", "bc8f8f"); //NOI18N
-            colors.put("royalblue", "4169e1"); //NOI18N
-            colors.put("saddlebrown", "8b4513"); //NOI18N
-            colors.put("salmon", "fa8072"); //NOI18N
-            colors.put("sandybrown", "f4a460"); //NOI18N
-            colors.put("seagreen", "2e8b57"); //NOI18N
-            colors.put("seashell", "fff5ee"); //NOI18N
-            colors.put("sienna", "a0522d"); //NOI18N
-            colors.put("silver", "c0c0c0"); //NOI18N
-            colors.put("skyblue", "87ceeb"); //NOI18N
-            colors.put("slateblue", "6a5acd"); //NOI18N
-            colors.put("slategray", "708090"); //NOI18N
-            colors.put("slategrey", "708090"); //NOI18N
-            colors.put("snow", "fffafa"); //NOI18N
-            colors.put("springgreen", "00ff7f"); //NOI18N
-            colors.put("steelblue", "4682b4"); //NOI18N
-            colors.put("tan", "d2b48c"); //NOI18N
-            colors.put("teal", "008080"); //NOI18N
-            colors.put("thistle", "d8bfd8"); //NOI18N
-            colors.put("tomato", "ff6347"); //NOI18N
-            colors.put("turquoise", "40e0d0"); //NOI18N
-            colors.put("violet", "ee82ee"); //NOI18N
-            colors.put("wheat", "f5deb3"); //NOI18N
-            colors.put("white", "ffffff"); //NOI18N
-            colors.put("whitesmoke", "f5f5f5"); //NOI18N
-            colors.put("yellow", "ffff00"); //NOI18N
-            colors.put("yellowgreen", "9acd32"); //NOI18N
-        }
-        return colors;
-    }
-
-    private class ValueCompletionItem extends CssCompletionItem {
-
-        private String origin; //property name to which this value belongs
-        private boolean addSpaceBeforeItem;
-
-        private ValueCompletionItem(CssElement element,
-                String value,
-                String origin,
-                CompletionItemKind kind,
-                int anchorOffset,
-                boolean addSemicolon,
-                boolean addSpaceBeforeItem) {
-
-            super(element, value, kind, anchorOffset, addSemicolon);
-            this.origin = origin;
-            this.addSpaceBeforeItem = addSpaceBeforeItem;
-        }
-
-        @Override
-        public String getInsertPrefix() {
-            return (addSpaceBeforeItem && textsStartsWith(getName()) ? " " : "") + getName() + (addSemicolon ? ";" : ""); //NOI18N
-        }
-
-        private boolean textsStartsWith(String text) {
-            char ch = text.charAt(0);
-            return Character.isLetterOrDigit(ch);
-        }
-
-        @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return "<font color=999999>" + origin + "</font>"; //NOI18N
-        }
-
-        @Override
-        public String getLhsHtml(HtmlFormatter formatter) {
-            Property owningProperty = ((CssValueElement) getElement()).property();
-            String initialValue = owningProperty.initialValue();
-            if (initialValue != null && initialValue.equals(getName())) {
-                //initial value
-                return "<i>" + super.getLhsHtml(formatter) + "</i>"; //NOI18N
-            }
-
-            return super.getLhsHtml(formatter);
-        }
-    }
-
-    private static final byte COLOR_ICON_SIZE = 16; //px
-    private static final byte COLOR_RECT_SIZE = 10; //px
-
-    //XXX fix the CssCompletionItem class so the Value and Property normally subclass it!!!!!!!!!
-    private class ColorCompletionItem extends ValueCompletionItem {
-
-
-        private ColorCompletionItem(CssElement element,
-                String value,
-                String origin,
-                CompletionItemKind kind,
-                int anchorOffset,
-                boolean addSemicolon,
-                boolean addSpaceBeforeItem) {
-
-            super(element, value, origin, kind, anchorOffset, addSemicolon, addSpaceBeforeItem);
-        }
-
-        @Override
-        public ImageIcon getIcon() {
-            return createIcon(colors().get(getName()));
-        }
-    }
-
-    private class HashColorCompletionItem extends ColorCompletionItem {
-
-        private boolean usedInCurrentFile;
-
-        private HashColorCompletionItem(CssElement element,
-                String value,
-                String origin,
-                CompletionItemKind kind,
-                int anchorOffset,
-                boolean addSemicolon,
-                boolean addSpaceBeforeItem,
-                boolean usedInCurrentFile) {
-
-            super(element, value, origin, kind, anchorOffset, addSemicolon, addSpaceBeforeItem);
-            this.usedInCurrentFile = usedInCurrentFile;
-        }
-
-        @Override
-        public ImageIcon getIcon() {
-            return createIcon(getName().substring(1)); //strip off the hash
-        }
-
-        @Override
-        public String getLhsHtml(HtmlFormatter formatter) {
-            return new StringBuilder().append(usedInCurrentFile ? "" : "<font color=999999>").
-                    append(getName()).append(usedInCurrentFile ? "" : "</font>").toString();
-        }
-
-        @Override
-        public int getSortPrioOverride() {
-            return super.getSortPrioOverride() + (usedInCurrentFile ? 1 : 0);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final HashColorCompletionItem other = (HashColorCompletionItem) obj;
-
-            if ((this.getName() == null) ? (other.getName() != null) : !this.getName().equals(other.getName())) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 37 * hash + (this.getName() != null ? this.getName().hashCode() : 0);
-            return hash;
-        }
-
-        
-
-
-    }
-
-    private static final JColorChooser COLOR_CHOOSER = new JColorChooser();
-
-    private static ImageIcon createIcon(String colorCode) {
-        BufferedImage i = new BufferedImage(COLOR_ICON_SIZE, COLOR_ICON_SIZE, BufferedImage.TYPE_4BYTE_ABGR);
-            Graphics g = i.createGraphics();
-
-            boolean defaultIcon = colorCode == null;
-            if (defaultIcon) {
-                //unknown color code, we still want a generic icon
-                colorCode = "ffffff"; //NOI18N
-            }
-
-            Color transparent = new Color(0x00ffffff, true);
-            g.setColor(transparent);
-            g.fillRect(0, 0, COLOR_ICON_SIZE, COLOR_ICON_SIZE);
-
-            g.setColor(Color.decode("0x" + colorCode)); //NOI18N
-            g.fillRect(COLOR_ICON_SIZE - COLOR_RECT_SIZE,
-                    COLOR_ICON_SIZE - COLOR_RECT_SIZE - 1,
-                    COLOR_RECT_SIZE - 1,
-                    COLOR_RECT_SIZE - 1);
-
-            g.setColor(Color.DARK_GRAY);
-            g.drawRect(COLOR_ICON_SIZE - COLOR_RECT_SIZE - 1,
-                    COLOR_ICON_SIZE - COLOR_RECT_SIZE - 2,
-                    COLOR_RECT_SIZE,
-                    COLOR_RECT_SIZE);
-
-            if (defaultIcon) {
-                //draw the X inside the icon
-                g.drawLine(COLOR_ICON_SIZE - COLOR_RECT_SIZE - 1,
-                        COLOR_ICON_SIZE - 2,
-                        COLOR_ICON_SIZE - 1,
-                        COLOR_ICON_SIZE - COLOR_RECT_SIZE - 2);
-            }
-
-            return new ImageIcon(i);
-    }
-
-    private class ColorChooserItem extends DefaultCompletionProposal {
-
-        private Color color;
-        private boolean addSemicolon;
-        private String origin;
-
-        public ColorChooserItem(int anchor, String origin, boolean addSemicolon) {
-            this.anchorOffset = anchor;
-            this.addSemicolon = addSemicolon;
-            this.origin = origin;
-        }
-
-        @Override
-        public boolean beforeDefaultAction() {
-            JDialog dialog = JColorChooser.createDialog(EditorRegistry.lastFocusedComponent(), 
-                    NbBundle.getMessage(CssCompletion.class, "MSG_Choose_Color"), //NOI18N
-                    true, COLOR_CHOOSER, new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    color = COLOR_CHOOSER.getColor();
-                }
-            }, new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    color = null;
-                }
-            });
-            dialog.setVisible(true);
-            dialog.dispose();
-
-            return color == null;
-        }
-
-        @Override
-        public int getAnchorOffset() {
-            return anchorOffset;
-        }
-
-        @Override
-        public ElementHandle getElement() {
-            return new CssElement(null);
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return getElement().getKind();
-        }
-
-        @Override
-        public ImageIcon getIcon() {
-            Color c = COLOR_CHOOSER.getColor();
-            String colorCode = c == null ? "ffffff" : WebUtils.toHexCode(c).substring(1); //strip off the hash
-            return createIcon(colorCode);
-        }
-
-        @Override
-        public String getName() {
-            return color == null ? "" : (WebUtils.toHexCode(color) + (addSemicolon ? ";" : "")); //NOI18N
-        }
-
-        @Override
-        public String getLhsHtml(HtmlFormatter formatter) {
-            return "<b>"+ NbBundle.getMessage(CssCompletion.class, "MSG_OpenColorChooser") +"</b>"; //NOI18N
-        }
-
-        @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return "<font color=999999>" + origin + "</font>"; //NOI18N
-        }
-
-        @Override
-        public boolean isSmart() {
-            return true;
-        }
-
-    }
-
-    private class PropertyCompletionItem extends CssCompletionItem {
-
-        private PropertyCompletionItem(CssElement element,
-                String value,
-                CompletionItemKind kind,
-                int anchorOffset,
-                boolean addSemicolon) {
-
-            super(element, value, kind, anchorOffset, addSemicolon);
-        }
-
-        @Override
-        public String getInsertPrefix() {
-            return super.getInsertPrefix() + ": "; //NOI18N
-        }
-    }
-
-    private class SelectorCompletionItem extends CssCompletionItem {
-
-        private boolean related;
-
-        private SelectorCompletionItem(CssElement element,
-                String value,
-                CompletionItemKind kind,
-                int anchorOffset) {
-            this(element, value, kind, anchorOffset, true);
-        }
-
-        private SelectorCompletionItem(CssElement element,
-                String value,
-                CompletionItemKind kind,
-                int anchorOffset,
-                boolean related) {
-            super(element, value, kind, anchorOffset, false);
-            this.related = related;
-        }
-
-        @Override
-        public String getLhsHtml(HtmlFormatter formatter) {
-            StringBuilder buf = new StringBuilder();
-            if(related) {
-                buf.append("<b><font color=#");
-                buf.append(RELATED_SELECTOR_COLOR);
-            } else {
-                buf.append("<font color=#");
-                buf.append(GRAY_COLOR_CODE);
-            }
-            buf.append(">");
-            buf.append(getName());
-            buf.append("</font>");
-            if(related) {
-                buf.append("</b>");
-            }
-
-            formatter.appendHtml(buf.toString());
-            return formatter.getText();
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.RULE;
-        }
-
-        @Override
-        public int getSortPrioOverride() {
-            return super.getSortPrioOverride() + (related ? 1 : 0);
-        }
-
-
-
-    }
-
-    /**
-     * @todo support for more completion type providers - like colors => subclass this class, remove the kind field, it's just temp. hack
-     * 
-     */
-    private class CssCompletionItem implements CompletionProposal {
-
-        private int anchorOffset;
-        private String value;
-        protected CompletionItemKind kind;
-        private CssElement element;
-        protected boolean addSemicolon;
-
-        private CssCompletionItem() {
-        }
-
-        private CssCompletionItem(
-                CssElement element, String value, CompletionItemKind kind, int anchorOffset, boolean addSemicolon) {
-            this.anchorOffset = anchorOffset;
-            this.value = value;
-            this.kind = kind;
-            this.element = element;
-            this.addSemicolon = addSemicolon;
-        }
-
-        @Override
-        public int getAnchorOffset() {
-            return anchorOffset;
-        }
-
-        @Override
-        public String getName() {
-            return value;
-        }
-
-        @Override
-        public String getInsertPrefix() {
-            return getName();
-        }
-
-        @Override
-        public String getSortText() {
-            return getName();
-        }
-
-        @Override
-        public ImageIcon getIcon() {
-            return null;
-        }
-
-        @Override
-        public ElementKind getKind() {
-            switch (kind) {
-                case PROPERTY:
-                    return ElementKind.METHOD;
-                case VALUE:
-                    return ElementKind.FIELD;
-                default:
-                    return ElementKind.OTHER;
-            }
-        }
-
-        @Override
-        public String getLhsHtml(HtmlFormatter formatter) {
-            formatter.appendText(getName());
-            return formatter.getText();
-        }
-
-        @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return null;
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public String toString() {
-            return getName();
-        }
-
-        @Override
-        public boolean isSmart() {
-            return false;
-        }
-
-        @Override
-        public String getCustomInsertTemplate() {
-            return null;
-        }
-
-        @Override
-        public ElementHandle getElement() {
-            return element;
-        }
-
-        @Override
-        public int getSortPrioOverride() {
-            return 0;
-        }
-    }
+   
 }
