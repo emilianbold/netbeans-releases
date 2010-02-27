@@ -48,7 +48,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.openide.loaders.MultiDataObject;
 
-import org.netbeans.modules.cnd.execution41.org.openide.cookies.ArgumentsCookie;
+import org.openide.nodes.Node;
 
 import org.openide.nodes.Sheet;
 import org.openide.nodes.PropertySupport;
@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
  * @author Jaroslav Tulach, Jesse Glick
  * @since 3.14
  */
-public class ExecutionSupport implements ArgumentsCookie {
+public class ExecutionSupport implements Node.Cookie {
 
     /** extended attribute for attributes */
     private static final String EA_ARGUMENTS = "NetBeansAttrArguments"; // NOI18N
@@ -105,7 +105,7 @@ public class ExecutionSupport implements ArgumentsCookie {
     /** Called when invocation of the executor fails. Allows to do some
      * modifications to the type of execution and try it again.
      *
-     * @param ex exeception that occured during execution
+     * @param ex exception that occurred during execution
      * @return true if the execution should be restarted
      */
     protected boolean startFailed(IOException ex) {
@@ -207,6 +207,7 @@ public class ExecutionSupport implements ArgumentsCookie {
 //                }
 //            }
 
+            @Override
             public String getValue() {
                 String[] args = getArguments();
                 StringBuilder b = new StringBuilder();
@@ -216,6 +217,7 @@ public class ExecutionSupport implements ArgumentsCookie {
                 return b.toString();
             }
 
+            @Override
             public void setValue(String val) throws InvocationTargetException {
                 if (val != null) {
                     try {
@@ -258,6 +260,7 @@ public class ExecutionSupport implements ArgumentsCookie {
     protected PropertySupport<String> createEnvironmentProperty(String propertyName, String displayName, String description) {
                 PropertySupport<String> result = new PropertySupport.ReadWrite<String>(
                 propertyName, String.class, displayName, description) {
+            @Override
             public String getValue() {
                 String[] args = getEnvironmentVariables();
                 List<String> list = new ArrayList<String>();
@@ -271,6 +274,7 @@ public class ExecutionSupport implements ArgumentsCookie {
                 }
                 return b.toString();
             }
+            @Override
             public void setValue(String val) throws InvocationTargetException {
                 if (val != null) {
                     try {
