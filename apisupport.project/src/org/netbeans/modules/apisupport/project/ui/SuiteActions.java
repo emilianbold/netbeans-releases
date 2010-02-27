@@ -57,6 +57,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.BrandingEditor;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
@@ -134,6 +135,7 @@ public final class SuiteActions implements ActionProvider {
         actions.add(null);
         actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
         actions.add(null);
+        actions.add(ProjectSensitiveActions.projectCommandAction("branding", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_branding"), null));
         actions.add(CommonProjectActions.customizeProjectAction());
         return actions.toArray(new Action[actions.size()]);
     }
@@ -179,6 +181,7 @@ public final class SuiteActions implements ActionProvider {
             "build-mac", // NOI18N
             "nbms", // NOI18N
             "profile", // NOI18N
+            "branding", // NOI18N
             ActionProvider.COMMAND_RENAME,
             ActionProvider.COMMAND_MOVE,
             ActionProvider.COMMAND_DELETE
@@ -193,7 +196,8 @@ public final class SuiteActions implements ActionProvider {
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
         if (ActionProvider.COMMAND_DELETE.equals(command) ||
                 ActionProvider.COMMAND_RENAME.equals(command) ||
-                ActionProvider.COMMAND_MOVE.equals(command)) {
+                ActionProvider.COMMAND_MOVE.equals(command)
+                || "branding".equals(command)) { //NOI18N
             return true;
         } else if (Arrays.asList(getSupportedActions()).contains(command)) {
             return findBuildXml(project) != null;
@@ -215,6 +219,8 @@ public final class SuiteActions implements ActionProvider {
             if (SuiteOperations.canRun(project)) {
                 DefaultProjectOperations.performDefaultMoveOperation(project);
             }
+        } else if ("branding".equals(command)) {//NOI18N
+            BrandingEditor.open( project );
         } else {
             NbPlatform plaf = project.getPlatform(false);
             if (plaf != null) {
