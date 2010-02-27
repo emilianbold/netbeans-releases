@@ -98,6 +98,7 @@ public class ExportDiffChangesAction extends ContextAction {
         return Lookup.getDefault().lookup(DiffProvider.class) != null;
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_ExportDiffChanges"; // NOI18N
     }
@@ -114,7 +115,6 @@ public class ExportDiffChangesAction extends ContextAction {
         if (activated instanceof DiffSetupSource) {
             noop = ((DiffSetupSource) activated).getSetups().isEmpty();
         } else {
-            // XXX containsFileOfStatus would be better (do not test exclusions from commit)
             File [] files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE, false);
             noop = files.length == 0;
         }
@@ -137,6 +137,7 @@ public class ExportDiffChangesAction extends ContextAction {
                 ExportDiffAction.saveFolderToPrefs(toFile);
                 RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                 HgProgressSupport ps = new HgProgressSupport() {
+                    @Override
                     protected void perform() {
                         OutputLogger logger = getLogger();
                         async(this, root, context, toFile, logger, singleDiffSetup);
@@ -179,7 +180,6 @@ public class ExportDiffChangesAction extends ContextAction {
                     }
                 }
             } else {
-                // XXX containsFileOfStatus would be better (do not test exclusions from commit)
                 File [] files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE, false);
                 setups = new ArrayList<Setup>(files.length);
                 for (int i = 0; i < files.length; i++) {
@@ -221,6 +221,7 @@ public class ExportDiffChangesAction extends ContextAction {
 
 
             Collections.sort(setups, new Comparator<Setup>() {
+                @Override
                 public int compare(Setup o1, Setup o2) {
                     return o1.getBaseFile().compareTo(o2.getBaseFile());
                 }

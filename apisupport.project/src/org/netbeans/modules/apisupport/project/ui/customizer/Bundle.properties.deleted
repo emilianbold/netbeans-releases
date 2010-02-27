@@ -1,0 +1,21 @@
+#Bundlizer backup file of deleted properties - Fri Feb 26 17:56:32 CET 2010
+CTL_AddButton_NoMnem=Add...
+CTL_AddButton_d=A&dd...
+CTL_CancelButton=&Cancel
+CTL_Cluster=Cluster
+
+
+# general
+CTL_EnableBranding=Use basic branding information for building
+CTL_HelpButton=&Help
+CTL_MoveDownButton=Move &Down
+CTL_MoveUpButton=Move &Up
+CTL_RemoveButton_NoMnem=Remove
+CTL_RemoveButton_v=Remo&ve
+DEPENDENCIES_ICON_BASE=org/netbeans/modules/apisupport/project/ui/resources/libraries.gif
+LBL_ConfigModuleList=Module List
+LBL_Friends=&Friends
+LBL_IconPreview=Icon Preview
+LBL_SplashBranding=Splash Screen
+LBL_WinSysBranding=Window System
+customizer.label=Build

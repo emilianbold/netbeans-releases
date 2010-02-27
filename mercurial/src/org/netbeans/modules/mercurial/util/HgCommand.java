@@ -231,6 +231,7 @@ public class HgCommand {
     private static final String HG_BACKOUT_COMMIT_MSG_CMD = "-m"; // NOI18N
     private static final String HG_REV_CMD = "-r"; // NOI18N
     private static final String HG_BASE_CMD = "--base"; // NOI18N
+    private static final String HG_OPTION_GIT = "--git"; //NOI18N
 
     private static final String HG_STRIP_CMD = "strip"; // NOI18N
     private static final String HG_STRIP_EXT_CMD = "extensions.mq="; // NOI18N
@@ -2363,6 +2364,7 @@ public class HgCommand {
         command.add(getHgCommand());
         command.add(HG_EXPORT_CMD);
         command.add(HG_VERBOSE_CMD);
+        command.add(HG_OPTION_GIT);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(HG_FLAG_OUTPUT_CMD);
@@ -2458,6 +2460,7 @@ public class HgCommand {
         command.add(revStr);
         command.add(HG_LOG_TEMPLATE_EXPORT_FILE_CMD);
         command.add(HG_LOG_PATCH_CMD);
+        command.add(HG_OPTION_GIT);
         command.add(file.getAbsolutePath());
 
         List<String> list = exec(command);
