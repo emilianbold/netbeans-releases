@@ -60,6 +60,7 @@
                 <friend>com.microchip.mplab.debugger.mdb</friend>
                 <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbx</friend>
+                <friend>com.sun.tools.debugger.dbxfacade.tool</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>com.sun.tools.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd</friend>

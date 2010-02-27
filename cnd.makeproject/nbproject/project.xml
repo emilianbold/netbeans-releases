@@ -324,6 +324,7 @@
                 <friend>com.sun.dlight.xyplot</friend>
                 <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbx</friend>
+                <friend>com.sun.tools.debugger.dbxfacade.tool</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>com.sun.tools.debugger.dbxtool</friend>
                 <friend>com.sun.tools.debugger.gdb</friend>
