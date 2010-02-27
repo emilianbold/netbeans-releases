@@ -74,7 +74,7 @@ import org.openide.util.NbBundle;
 public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, ListDataListener, DocumentListener {
     
     private final DefaultComboBoxModel scopeModel = new DefaultComboBoxModel();
-    
+    private boolean isCDIEnabled = false;
     /**
      * Creates new form PropertiesPanelVisual
      */
@@ -107,14 +107,15 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
             }
         }
         Object[] scopes;
-        if (JSFUtils.isCDIEnabled(wm)) {
+        isCDIEnabled = JSFUtils.isCDIEnabled(wm);
+        if (isCDIEnabled) {
             scopes = ManagedBeanIterator.NamedScope.values();
         } else {
             scopes = ManagedBean.Scope.values();
         }
-        
-        for (int i = 0; i < scopes.length; i++){
-            scopeModel.addElement(scopes[i]);
+
+        for (Object scope : scopes) {
+            scopeModel.addElement(scope);
         }
 
         jTextFieldName.setText("NewJSFManagedBean");
@@ -123,6 +124,24 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
 //        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FormBeanNewPanelVisual.class, "ACS_BeanFormProperties"));  // NOI18N
     }
 
+    private void updateScopeModel(boolean addToConfig) {
+        if (isCDIEnabled && addToConfig) {
+            scopeModel.removeAllElements();
+            for (ManagedBean.Scope scope : ManagedBean.Scope.values()) {
+                scopeModel.addElement(scope);
+            }
+        } else if (isCDIEnabled && !addToConfig) {
+            scopeModel.removeAllElements();
+            for (ManagedBeanIterator.NamedScope scope : ManagedBeanIterator.NamedScope.values()) {
+                scopeModel.addElement(scope);
+            }
+        } else {
+            return;
+        }
+        jComboBoxScope.setModel(scopeModel);
+        repaint();
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -231,7 +250,9 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     }//GEN-LAST:event_jComboBoxConfigFileActionPerformed
 
     private void jCheckBox1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox1ItemStateChanged
-        jComboBoxConfigFile.setEnabled(jCheckBox1.isSelected());
+        boolean addToConfig = jCheckBox1.isSelected();
+        jComboBoxConfigFile.setEnabled(addToConfig);
+        updateScopeModel(addToConfig);
     }//GEN-LAST:event_jCheckBox1ItemStateChanged
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
