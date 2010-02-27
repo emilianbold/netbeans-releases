@@ -38,15 +38,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.terminal.ui;
+package org.netbeans.terminal.example;
 
-import org.netbeans.modules.terminal.api.Terminal;
-import org.netbeans.modules.terminal.api.TerminalProvider;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.openide.util.NbBundle;
-import org.netbeans.lib.richexecution.program.Program;
-import org.netbeans.lib.richexecution.program.Shell;
+import org.openide.windows.IOProvider;
 
 /**
  * Action which starts a shell under a Term component.
@@ -59,9 +56,9 @@ public class ShellTermAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent evt) {
-        TerminalProvider terminalProvider = TerminalProvider.getDefault();
-        Terminal terminal = terminalProvider.createTerminal("shell");
-        Program program = new Shell();
-        terminal.startProgram(program, false);
+	final TerminalIOProviderSupport support = new TerminalIOProviderSupport();
+
+	IOProvider iop = TerminalIOProviderSupport.getIOProvider();
+	support.executeShell(iop, null);
     }
 }

@@ -57,7 +57,6 @@ import java.beans.PropertyChangeSupport;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
@@ -75,12 +74,8 @@ import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.terminalemulator.StreamTerm;
 
-import org.netbeans.lib.richexecution.program.Program;
-import org.netbeans.lib.richexecution.PtyProcess;
-
 import org.netbeans.lib.termsupport.DefaultFindState;
 import org.netbeans.lib.termsupport.FindState;
-import org.netbeans.lib.termsupport.TermExecutor;
 import org.netbeans.lib.termsupport.TermOptions;
 
 import org.netbeans.modules.terminal.ui.TermAdvancedOption;
@@ -108,7 +103,7 @@ import org.netbeans.modules.terminal.ui.TermAdvancedOption;
  * </pre>
  * @author ivan
  */
-public class Terminal extends JComponent {
+public final class Terminal extends JComponent {
 
 //    /**
 //     * Communicates state changes to container (TermTopComponent).
@@ -136,10 +131,10 @@ public class Terminal extends JComponent {
     private static final String PROP_TITLE = "Terminal_TITLE";
 
     private String title;
-    private PtyProcess termProcess;
+    // OLD private PtyProcess termProcess;
     private Action[] actions = new Action[0];
 
-    private Program lastProgram;
+    // OLD private Program lastProgram;
 
     private boolean closing;
     private boolean closed;
@@ -156,25 +151,25 @@ public class Terminal extends JComponent {
     private class CallBacks implements IOContainer.CallBacks {
 
         public void closed() {
-            System.out.printf("Terminal.CallBacks.closed()\n");
+            // System.out.printf("Terminal.CallBacks.closed()\n");
 	    // Causes assertion error in IOContainer/IOWindow.
             // OLD close();
         }
 
         public void selected() {
-            System.out.printf("Terminal.CallBacks.selected()\n");
+            // System.out.printf("Terminal.CallBacks.selected()\n");
         }
 
         public void activated() {
-            System.out.printf("Terminal.CallBacks.activated()\n");
+            // System.out.printf("Terminal.CallBacks.activated()\n");
         }
 
         public void deactivated() {
-            System.out.printf("Terminal.CallBacks.deactivated()\n");
+            // System.out.printf("Terminal.CallBacks.deactivated()\n");
         }
     }
 
-    Terminal(IOContainer ioContainer, String name) {
+    Terminal(IOContainer ioContainer, Action[] actions, String name) {
         termOptions = TermOptions.getDefault(prefs);
 
         this.terminalContainer = null;
@@ -225,6 +220,7 @@ public class Terminal extends JComponent {
         ioContainer.requestActive();
         if (name != null)
             setTitle(name);
+	setActions(actions);
     }
 
 
@@ -366,7 +362,7 @@ public class Terminal extends JComponent {
         return findState;
     }
 
-    public void setActions(Action[] actions) {
+    private void setActions(Action[] actions) {
         Action[] oldActions = actions;
         this.actions = actions;
         if (terminalContainer != null)
@@ -376,10 +372,11 @@ public class Terminal extends JComponent {
         pcs.firePropertyChange(PROP_ACTIONS, oldActions, actions);
     }
 
-    public Action[] getActions() {
+    Action[] getActions() {
         return actions;
     }
 
+    /* OLD
     private final class RerunAction extends AbstractAction {
         public RerunAction() {
             setEnabled(false);
@@ -433,6 +430,7 @@ public class Terminal extends JComponent {
             termProcess.terminate();
         }
     }
+     */
 
     private final class ClearAction extends AbstractAction {
         public ClearAction() {
@@ -469,7 +467,7 @@ public class Terminal extends JComponent {
             super("Copy");
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_C,
                                                            InputEvent.ALT_MASK);
-            System.out.printf("Accelerator for Copy: %s\n", accelerator);
+            // System.out.printf("Accelerator for Copy: %s\n", accelerator);
             putValue(ACCELERATOR_KEY, accelerator);
         }
 
@@ -485,7 +483,7 @@ public class Terminal extends JComponent {
             super("Paste");
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_V,
                                                            InputEvent.ALT_MASK);
-            System.out.printf("Accelerator for Paste: %s\n", accelerator);
+            // System.out.printf("Accelerator for Paste: %s\n", accelerator);
             putValue(ACCELERATOR_KEY, accelerator);
         }
 
@@ -501,7 +499,7 @@ public class Terminal extends JComponent {
             super("Find");
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_F,
                                                            InputEvent.ALT_MASK);
-            System.out.printf("Accelerator for Find: %s\n", accelerator);
+            // System.out.printf("Accelerator for Find: %s\n", accelerator);
             putValue(ACCELERATOR_KEY, accelerator);
         }
 
@@ -540,8 +538,10 @@ public class Terminal extends JComponent {
         }
     }
 
+    /* OLD
     private final Action stopAction = new StopAction();
     private final Action rerunAction = new RerunAction();
+     */
 
     private final Action copyAction = new CopyAction();
     private final Action pasteAction = new PasteAction();
@@ -565,7 +565,8 @@ public class Terminal extends JComponent {
      * @param program The Program to run.
      * @param restartable If true the Restart/Stop actions will be present.
      */
-    public void startProgram(Program program, final boolean restartable) {
+    /* OLD
+    private void startProgram(Program program, final boolean restartable) {
 
         if (termProcess != null)
             throw new IllegalStateException("Process already running");
@@ -607,6 +608,7 @@ public class Terminal extends JComponent {
         };
         reaperThread.start();
     }
+    */
 
     private void closeWork() {
         assert closing;
@@ -627,10 +629,13 @@ public class Terminal extends JComponent {
         // about even if we're restartable.
         closing = true;
 
+	/* LATER
         if (termProcess != null && !termProcess.isFinished()) {
             termProcess.hangup();
             // This should eventually end up in reaperThread.
-        } else {
+        } else
+	 */
+	{
             closeWork();
         }
     }

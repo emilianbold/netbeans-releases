@@ -41,15 +41,16 @@ public final class TerminalIOProvider extends IOProvider {
     @Override
     public InputOutput getIO(String name, boolean newIO) {
         IOContainer ioContainer = null;
-        if (true)
-            ioContainer = IOContainer.getDefault();
-        return new TerminalInputOutput(name, ioContainer);
+	ioContainer = IOContainer.getDefault();
+        return new TerminalInputOutput(name, null, ioContainer);
 
     }
 
     @Override
     public InputOutput getIO(String name, Action[] actions, IOContainer ioContainer) {
-        return new TerminalInputOutput(name, ioContainer);
+        if (ioContainer == null)
+            ioContainer = IOContainer.getDefault();
+        return new TerminalInputOutput(name, actions, ioContainer);
     }
 
     /**

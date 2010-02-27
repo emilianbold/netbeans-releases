@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.Action;
 import javax.swing.Icon;
 
 import org.netbeans.lib.terminalemulator.ActiveRegion;
@@ -409,9 +410,9 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         }
     }
 
-    TerminalInputOutput(String name, IOContainer ioContainer) {
+    TerminalInputOutput(String name, Action[] actions, IOContainer ioContainer) {
         this.ioContainer = ioContainer;
-        terminal = TerminalProvider.getDefault().createTerminal(name, ioContainer);
+        terminal = TerminalProvider.getDefault().createTerminal(name, actions, ioContainer);
         term = terminal.term();
 
         if (! (term instanceof ActiveTerm))

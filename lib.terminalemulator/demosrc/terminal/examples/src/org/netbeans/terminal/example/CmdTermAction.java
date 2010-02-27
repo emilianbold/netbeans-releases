@@ -38,16 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.terminal.ui;
+package org.netbeans.terminal.example;
 
-import org.netbeans.modules.terminal.api.Terminal;
-import org.netbeans.modules.terminal.api.TerminalProvider;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import org.openide.util.NbBundle;
-import org.netbeans.lib.richexecution.program.Command;
-import org.netbeans.lib.richexecution.program.Program;
+import org.openide.windows.IOContainer;
+import org.openide.windows.IOProvider;
 
 /**
  * Action which runs a command under a shell under a Term component.
@@ -65,10 +63,13 @@ public class CmdTermAction extends AbstractAction {
         if (cmd == null || cmd.trim().equals(""))
             return;
 
-        TerminalProvider terminalProvider = TerminalProvider.getDefault();
-        Terminal terminal = terminalProvider.createTerminal("command: " + cmd);
-        Program program = new Command(cmd);
+	final TerminalIOProviderSupport support = new TerminalIOProviderSupport();
+
+	IOContainer container = TerminalIOProviderSupport.getIOContainer();
+	container = null;	// work with default IO container
+
         boolean restartable = true;
-        terminal.startProgram(program, restartable);
+	IOProvider iop = TerminalIOProviderSupport.getIOProvider();
+	support.executeCommand(iop, container, cmd, restartable);
     }
 }
