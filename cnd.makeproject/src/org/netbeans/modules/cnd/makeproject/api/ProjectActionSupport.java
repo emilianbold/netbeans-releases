@@ -71,7 +71,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
-import org.netbeans.modules.dlight.terminal.api.TerminalIOProviderSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -382,7 +381,7 @@ public class ProjectActionSupport {
 
             InputOutput io = ioTab;
             int consoleType = pae.getProfile().getConsoleType().getValue();
-            if (consoleType == RunProfile.CONSOLE_TYPE_INTERNAL && !TerminalIOProviderSupport.isTerminalIO(io)) {
+            if (consoleType == RunProfile.CONSOLE_TYPE_INTERNAL) {
                 io = getTermIO();
                 if (io == null) {
                     io = ioTab;
