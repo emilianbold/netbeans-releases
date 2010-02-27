@@ -75,7 +75,7 @@ public class ManualArrayCopyTest extends TestBase {
                        "        }\n" +
                        "    }\n" +
                        "}\n",
-                       "7:8-9:9:verifier:ERR_manual-array-copy",
+                       "7:8-7:11:verifier:ERR_manual-array-copy",
                        "FIX_manual-array-copy",
                        ("package test;\n" +
                         "public class Test {\n" +
@@ -103,7 +103,7 @@ public class ManualArrayCopyTest extends TestBase {
                        "        }\n" +
                        "    }\n" +
                        "}\n",
-                       "7:8-9:9:verifier:ERR_manual-array-copy",
+                       "7:8-7:11:verifier:ERR_manual-array-copy",
                        "FIX_manual-array-copy",
                        ("package test;\n" +
                         "public class Test {\n" +
@@ -131,7 +131,7 @@ public class ManualArrayCopyTest extends TestBase {
                        "        }\n" +
                        "    }\n" +
                        "}\n",
-                       "7:8-9:9:verifier:ERR_manual-array-copy",
+                       "7:8-7:11:verifier:ERR_manual-array-copy",
                        "FIX_manual-array-copy",
                        ("package test;\n" +
                         "public class Test {\n" +
@@ -157,7 +157,7 @@ public class ManualArrayCopyTest extends TestBase {
                        "        }\n" +
                        "    }\n" +
                        "}\n",
-                       "5:8-7:9:verifier:ERR_manual-array-copy-coll",
+                       "5:8-5:11:verifier:ERR_manual-array-copy-coll",
                        "FIX_manual-array-copy-coll",
                        ("package test;\n" +
                         "import java.util.Arrays;\n" +
@@ -182,7 +182,7 @@ public class ManualArrayCopyTest extends TestBase {
                        "        }\n" +
                        "    }\n" +
                        "}\n",
-                       "5:8-7:9:verifier:ERR_manual-array-copy-coll",
+                       "5:8-5:11:verifier:ERR_manual-array-copy-coll",
                        "FIX_manual-array-copy-coll",
                        ("package test;\n" +
                         "import java.util.Arrays;\n" +

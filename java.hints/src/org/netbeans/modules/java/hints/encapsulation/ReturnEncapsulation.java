@@ -215,7 +215,7 @@ public class ReturnEncapsulation {
             }
             fixes[providers.length] = swFix;
         }
-        return ErrorDescriptionFactory.forName(ctx, tp,
+        return ErrorDescriptionFactory.forTree(ctx, tp,
             description,
             fixes);
     }
