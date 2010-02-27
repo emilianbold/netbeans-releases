@@ -420,7 +420,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	}
 
 	public synchronized Terminal createTerminal(String name, String preferredID) {
-	    IOContainer ioContainer = getInstance(preferredID);
+            IOContainer ioContainer = TermTopComponent.getInstance(preferredID);
 	    return new Terminal(ioContainer, null, name);
 	}
 	 */

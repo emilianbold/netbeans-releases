@@ -50,12 +50,12 @@ import org.openide.windows.WindowManager;
 import org.openide.windows.IOContainer;
 
 import org.netbeans.modules.terminal.ioprovider.TerminalContainer;
-import org.netbeans.modules.terminal.api.TerminalWindow;
 
 /**
- * Top component which displays something.
+ * A Top component which provides an IOContainer for displaying "Terminal"
+ * InputOutput's.
  */
-public final class TermTopComponent extends TopComponent implements TerminalWindow {
+public final class TermTopComponent extends TopComponent {
 
     private static TermTopComponent instance;
     /** path to the icon used by the component and its open action */
@@ -115,36 +115,60 @@ public final class TermTopComponent extends TopComponent implements TerminalWind
         return getDefault();
     }
 
+    public static synchronized  TermTopComponent getInstance(String preferredID) {
+        // The following is a mutated form of boilerplate
+        // TopComponent.getInstance().
+        TopComponent win = WindowManager.getDefault().findTopComponent(preferredID);
+
+        if (win == null) {
+            Logger.getLogger(TermTopComponent.class.getName()).warning(
+                    "Cannot find " + preferredID + " component. It will not be located properly in the window system.");
+            // fall back
+            win = TermTopComponent.findInstance();
+
+        } else if (! (win instanceof TermTopComponent)) {
+            Logger.getLogger(TermTopComponent.class.getName()).warning(
+                    "There seem to be multiple components with the '" + preferredID +
+                    "' ID. That is a potential source of errors and unexpected behavior.");
+
+            // fall back
+            win = TermTopComponent.findInstance();
+        }
+
+        TermTopComponent ttc = (TermTopComponent) win;
+        return ttc;
+    }
+
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
     }
 
     @Override
-    public void componentOpened() {
+    protected void componentOpened() {
         // TODO add custom code on component opening
     }
 
     @Override
-    public void componentClosed() {
+    protected void componentClosed() {
         // TODO add custom code on component closing
     }
 
     @Override
-    public void componentActivated() {
+    protected void componentActivated() {
         super.componentActivated();
         tc.componentActivated();
     }
 
     @Override
-    public void componentDeactivated() {
+    protected void componentDeactivated() {
         super.componentDeactivated();
         tc.componentDeactivated();
     }
 
     /** replaces this in object stream */
     @Override
-    public Object writeReplace() {
+    protected Object writeReplace() {
         return new ResolvableHelper();
     }
 

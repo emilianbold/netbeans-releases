@@ -69,15 +69,12 @@ import javax.swing.event.PopupMenuListener;
 import org.openide.util.NbPreferences;
 import org.openide.windows.IOContainer;
 
-import org.netbeans.lib.terminalemulator.ActiveRegion;
 import org.netbeans.lib.terminalemulator.ActiveTerm;
-import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.terminalemulator.StreamTerm;
 
 import org.netbeans.lib.terminalemulator.support.DefaultFindState;
 import org.netbeans.lib.terminalemulator.support.FindState;
 import org.netbeans.lib.terminalemulator.support.TermOptions;
-import org.netbeans.modules.terminal.api.HyperlinkListener;
 
 import org.netbeans.modules.terminal.ui.TermAdvancedOption;
 
@@ -708,6 +705,19 @@ public final class Terminal extends JComponent {
         menu.show(term.getScreen(), p.x, p.y);
     }
 
+    /**
+     * Callback for when a hyperlink in a Terminal is clicked.
+     * <p>
+     * A hyperlink can be created by outputting a sequence like this:
+     * <br>
+     * <b>ESC</b>]10;<i>clientData</i>;<i>text</i><b>BEL</b>
+     * @author ivan
+     */
+    /* LATER
+    public interface HyperlinkListener {
+	public void action(String clientData);
+    }
+
     public void setHyperlinkListener(final HyperlinkListener hyperlinkListener) {
 	((ActiveTerm) term).setActionListener(new ActiveTermListener() {
 	    public void action(ActiveRegion r, InputEvent e) {
@@ -718,4 +728,5 @@ public final class Terminal extends JComponent {
 	    }
 	});
     }
+     */
 }

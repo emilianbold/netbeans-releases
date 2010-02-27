@@ -38,10 +38,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.terminal.ui;
+package org.netbeans.terminal.example;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import org.netbeans.modules.terminal.ui.TermTopComponent;
 import org.openide.util.NbBundle;
 
 /**

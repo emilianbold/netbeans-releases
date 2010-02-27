@@ -22,6 +22,7 @@
         <folder name="Window">
             <file name="org-netbeans-terminal-example-ShellTermAction.instance"/>
             <file name="org-netbeans-terminal-example-CmdTermAction.instance"/>
+            <file name="org-netbeans-terminal-example-TermWindowAction.instance"/>
         </folder>
     </folder>
 
@@ -59,6 +60,13 @@
                 <attr name="instanceClass"
                       stringvalue="javax.swing.JSeparator"/>
             </file>
+        </folder>
+        <folder name="Window">
+            <folder name="Output">
+                <file name="TermWindowAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-terminal-example-TermWindowAction.instance"/>
+                </file>
+            </folder>
         </folder>
     </folder>
 </filesystem>
