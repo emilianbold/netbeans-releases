@@ -73,6 +73,30 @@ public class DefaultMakefileWriter implements MakefileWriter {
     }
 
     /**
+     * Writes build test target
+     *
+     * @param confDescriptor  project configuration descriptor
+     * @param conf  current project configuration
+     * @param writer  output stream to generated makefile
+     */
+    @Override
+    public void writeBuildTestTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
+        ConfigurationMakefileWriter.writeBuildTestTarget(confDescriptor, conf, writer);
+    }
+
+    /**
+     * Writes test target
+     *
+     * @param confDescriptor  project configuration descriptor
+     * @param conf  current project configuration
+     * @param writer  output stream to generated makefile
+     */
+    @Override
+    public void writeRunTestTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
+        ConfigurationMakefileWriter.writeRunTestTarget(confDescriptor, conf, writer);
+    }
+
+    /**
      * Writes all compile targets (only for managed projects)
      *
      * @param confDescriptor  project configuration descriptor
@@ -85,6 +109,18 @@ public class DefaultMakefileWriter implements MakefileWriter {
     }
 
     /**
+     * Writes all compile test targets (only for managed projects)
+     *
+     * @param confDescriptor  project configuration descriptor
+     * @param conf  current project configuration
+     * @param writer  output stream to generated makefile
+     */
+    @Override
+    public void writeCompileTestTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
+        ConfigurationMakefileWriter.writeCompileTestTargets(confDescriptor, conf, writer);
+    }
+
+    /**
      * Writes link target (only for linked projects)
      *
      * @param confDescriptor  project configuration descriptor
@@ -94,6 +130,18 @@ public class DefaultMakefileWriter implements MakefileWriter {
     @Override
     public void writeLinkTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
         ConfigurationMakefileWriter.writeLinkTarget(confDescriptor, conf, writer);
+    }
+
+    /**
+     * Writes link target (only for linked projects)
+     *
+     * @param confDescriptor  project configuration descriptor
+     * @param conf  current project configuration
+     * @param writer  output stream to generated makefile
+     */
+    @Override
+    public void writeLinkTestTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
+        ConfigurationMakefileWriter.writeLinkTestTarget(confDescriptor, conf, writer);
     }
 
     /**
@@ -133,7 +181,7 @@ public class DefaultMakefileWriter implements MakefileWriter {
     }
 
     /**
-     * Writes clan target
+     * Writes clean target
      *
      * @param confDescriptor  project configuration descriptor
      * @param conf  current project configuration

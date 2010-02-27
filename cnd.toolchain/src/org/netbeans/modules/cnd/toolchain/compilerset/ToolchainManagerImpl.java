@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.logging.Logger;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
@@ -78,7 +77,6 @@ public final class ToolchainManagerImpl {
     public static final String CONFIG_FOLDER = "CND/ToolChain"; // NOI18N
     private static final ToolchainManagerImpl manager = new ToolchainManagerImpl();
     private List<ToolchainDescriptor> descriptors = new ArrayList<ToolchainDescriptor>();
-    private static final Logger log = Logger.getLogger("cnd.toolchain.logger"); // NOI18N
 
     public static ToolchainManagerImpl getImpl() {
         return manager;
@@ -751,7 +749,7 @@ public final class ToolchainManagerImpl {
     private void writeScanner(Document doc, Element element, ScannerDescriptor scanner) {
         Element c;
         for (ScannerPattern pattern : scanner.getPatterns()) {
-            c = doc.createElement("error");
+            c = doc.createElement("error"); // NOI18N
             c.setAttribute("pattern", pattern.getPattern()); // NOI18N
             if (pattern.getSeverity() != null) {
                 c.setAttribute("severity", pattern.getSeverity()); // NOI18N

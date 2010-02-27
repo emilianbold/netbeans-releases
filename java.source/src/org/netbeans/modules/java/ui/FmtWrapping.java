@@ -111,7 +111,9 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                 new String[] { FmtOptions.redundantDoWhileBraces, CodeStyle.BracesGenerationStyle.LEAVE_ALONE.name() },
                 new String[] { FmtOptions.redundantForBraces, CodeStyle.BracesGenerationStyle.LEAVE_ALONE.name() },
                 new String[] { FmtOptions.redundantIfBraces, CodeStyle.BracesGenerationStyle.LEAVE_ALONE.name() },
-                new String[] { FmtOptions.redundantWhileBraces, CodeStyle.BracesGenerationStyle.LEAVE_ALONE.name() }
+                new String[] { FmtOptions.redundantWhileBraces, CodeStyle.BracesGenerationStyle.LEAVE_ALONE.name() },
+                new String[] { FmtOptions.blankLinesBeforeClass, "0" },
+                new String[] { FmtOptions.blankLinesAfterMethods, "1" }
         ); // NOI18N
     }
 

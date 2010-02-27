@@ -62,6 +62,7 @@ import java.io.*;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
@@ -82,6 +83,8 @@ import org.openide.nodes.Node;
  */
 public class ExportDiffChangesAction extends ContextAction {
 
+    private static final Logger LOG = Logger.getLogger(ExportDiffChangesAction.class.getName());
+
     @Override
     protected boolean enable(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
@@ -95,19 +98,23 @@ public class ExportDiffChangesAction extends ContextAction {
         return Lookup.getDefault().lookup(DiffProvider.class) != null;
     }
 
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_ExportDiffChanges"; // NOI18N
     }
 
     @Override
     protected void performContextAction(Node[] nodes) {
+        performContextAction(nodes, false);
+    }
+
+    void performContextAction (Node[] nodes, final boolean singleDiffSetup) {
         boolean noop;
         final VCSContext context = HgUtils.getCurrentContext(nodes);
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
             noop = ((DiffSetupSource) activated).getSetups().isEmpty();
         } else {
-            // XXX containsFileOfStatus would be better (do not test exclusions from commit)
             File [] files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE, false);
             noop = files.length == 0;
         }
@@ -117,18 +124,23 @@ public class ExportDiffChangesAction extends ContextAction {
             return;
         }
 
-        final File root = HgUtils.getRootFile(context);
-        Set<File> roots = context.getRootFiles();
-        File contextFile = roots != null && roots.size() > 0 ? roots.iterator().next() : null;
+        File[] roots = HgUtils.getActionRoots(context);
+        if (roots == null || roots.length == 0) {
+            LOG.log(Level.INFO, "Null roots for {0}", context.getRootFiles()); //NOI18N
+            return;
+        }
+        File contextFile = roots[0];
+        final File root = Mercurial.getInstance().getRepositoryRoot(contextFile);
         ExportDiffSupport exportDiffSupport = new ExportDiffSupport(new File[] {contextFile}, HgModuleConfig.getDefault().getPreferences()) {
             @Override
             public void writeDiffFile(final File toFile) {
                 ExportDiffAction.saveFolderToPrefs(toFile);
                 RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
                 HgProgressSupport ps = new HgProgressSupport() {
+                    @Override
                     protected void perform() {
                         OutputLogger logger = getLogger();
-                        async(this, context, toFile, logger);
+                        async(this, root, context, toFile, logger, singleDiffSetup);
                     }
                 };
                 ps.start(rp, root, org.openide.util.NbBundle.getMessage(ExportDiffChangesAction.class, "LBL_ExportChanges_Progress")).waitFinished();
@@ -138,38 +150,46 @@ public class ExportDiffChangesAction extends ContextAction {
 
     }
     
-    @SuppressWarnings("unchecked")
-    private void async(HgProgressSupport progress, VCSContext context, File destination, OutputLogger logger) {
+    private void async(HgProgressSupport progress, File root, VCSContext context, File destination, OutputLogger logger, boolean singleDiffSetup) {
         boolean success = false;
         OutputStream out = null;
         int exportedFiles = 0;
         try {
-
-            // prepare setups and common parent - root
-
-            File root;
             List<Setup> setups;
+            Mercurial hg = Mercurial.getInstance();
 
             TopComponent activated = TopComponent.getRegistry().getActivated();
             if (activated instanceof DiffSetupSource) {
-                setups = new ArrayList<Setup>(((DiffSetupSource) activated).getSetups());
-                List<File> setupFiles = new ArrayList<File>(setups.size());
+                if (!singleDiffSetup) {
+                    setups = new ArrayList<Setup>(((DiffSetupSource) activated).getSetups());
+                } else {
+                    DiffNode node = context.getElements().lookup(DiffNode.class);
+                    if (node != null) {
+                        setups = new ArrayList<Setup>(Collections.singletonList(node.getSetup()));
+                    } else {
+                        LOG.log(Level.INFO, "No DiffNode in the context: {0}", new Object[]{context.getElements().lookup(Object.class)}); //NOI18N
+                        return;
+                    }
+                }
                 for (Iterator i = setups.iterator(); i.hasNext();) {
                     Setup setup = (Setup) i.next();
-                    setupFiles.add(setup.getBaseFile()); 
+                    File file = setup.getBaseFile();
+                    // remove files from other repositories
+                    if (!root.equals(hg.getRepositoryRoot(file))) {
+                        i.remove();
+                    }
                 }
-                root = getCommonParent(setupFiles.toArray(new File[setupFiles.size()]));
             } else {
-                // XXX containsFileOfStatus would be better (do not test exclusions from commit)
                 File [] files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE, false);
-                root = getCommonParent(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
                 setups = new ArrayList<Setup>(files.length);
                 for (int i = 0; i < files.length; i++) {
                     File file = files[i];
-                    Mercurial.LOG.log(Level.FINE, "preparing setup {0}", file); //NOI18N
-                    Setup setup = new Setup(file, null, Setup.DIFFTYPE_LOCAL);
-                    Mercurial.LOG.log(Level.FINE, "setup prepared {0}", setup.getBaseFile()); //NOI18N
-                    setups.add(setup);
+                    if (root.equals(hg.getRepositoryRoot(file)))  {
+                        Mercurial.LOG.log(Level.FINE, "preparing setup {0}", file); //NOI18N
+                        Setup setup = new Setup(file, null, Setup.DIFFTYPE_LOCAL);
+                        Mercurial.LOG.log(Level.FINE, "setup prepared {0}", setup.getBaseFile()); //NOI18N
+                        setups.add(setup);
+                    }
                 }
             }
             if (root == null) {
@@ -201,6 +221,7 @@ public class ExportDiffChangesAction extends ContextAction {
 
 
             Collections.sort(setups, new Comparator<Setup>() {
+                @Override
                 public int compare(Setup o1, Setup o2) {
                     return o1.getBaseFile().compareTo(o2.getBaseFile());
                 }

@@ -74,7 +74,7 @@ public final class ServicesNode extends AbstractNode {
     public ServicesNode() {
         super(Children.create(new JCChildren(), true));
         setIconBaseWithExtension("org/netbeans/modules/javacard/platform/ui/root.png"); //NOI18N
-        setDisplayName(NbBundle.getMessage(ServicesNode.class, "SERVICES_NODE_NAME")); //NOI18N
+        setDisplayName(NbBundle.getMessage(ServicesNode.class, "UI/Runtime/ServicesNode.instance")); //NOI18N
     }
 
     @Override

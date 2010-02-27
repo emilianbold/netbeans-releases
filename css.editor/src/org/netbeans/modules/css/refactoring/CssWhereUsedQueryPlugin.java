@@ -47,7 +47,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.indexing.CssFileModel;
-import org.netbeans.modules.css.indexing.CssFileModel.Entry;
+import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.css.indexing.CssIndex;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
@@ -175,7 +175,7 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
                         boolean related = relatedFiles.contains(file);
                         for (Entry entry : entries) {
                             if (entry.isValidInSourceDocument() && elementImage.equals(entry.getName())) {
-                                WhereUsedElement elem = WhereUsedElement.create(entry, kind, related);
+                                WhereUsedElement elem = WhereUsedElement.create(file, entry, kind, related);
                                 elements.add(refactoring, elem);
                             }
                         }
@@ -201,13 +201,14 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
             String baseFileName = base.getNameExt();
             for (Node referingNode : deps.getSourceNode().getReferingNodes()) {
                 try {
-                    CssFileModel model = new CssFileModel(Source.create(referingNode.getFile()));
+                    FileObject file = referingNode.getFile();
+                    CssFileModel model = new CssFileModel(Source.create(file));
                     Collection<Entry> imports = model.getImports();
                     //find the import of the base file
                     for(Entry e : imports) {
                         if(e.getName().indexOf(baseFileName) != -1) {
                             //found
-                            WhereUsedElement elem = WhereUsedElement.create(e, ElementKind.FILE);
+                            WhereUsedElement elem = WhereUsedElement.create(file, e, ElementKind.FILE);
                             elements.add(refactoring, elem);
                         }
                     }

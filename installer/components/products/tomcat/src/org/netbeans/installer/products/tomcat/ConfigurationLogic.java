@@ -131,12 +131,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         } else {
                             //check if this IDE is not integrated with any other GF instance - we need integrate with such IDE instance
                             try {
-                                String path = NetBeansUtils.getJvmOption(ideLocation, JVM_OPTION_AUTOREGISTER_HOME_NAME);
-                                if (path == null || !FileUtils.exists(new File(path)) || FileUtils.isEmpty(new File(path))) {
+                                if(!isTomcatRegistred(location)) {
                                     LogManager.log("... will be integrated since there it is not yet integrated with any instance or such an instance does not exist");
                                     productsToIntegrate.add(ide);
                                 } else {
-                                    LogManager.log("... will not be integrated since it is already integrated with another instance at " + path);
+                                    LogManager.log("... will not be integrated since it is already integrated with another instance");
                                 }
                             } catch (IOException e) {
                                 LogManager.log(e);
@@ -151,18 +150,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 LogManager.log("... integrate " + getProduct().getDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + ideLocation);
                 /////////////////////////////////////////////////////////////////////////////
                 // Reference: http://wiki.netbeans.org/wiki/view/TomcatAutoRegistration
-        
-                NetBeansUtils.setJvmOption(
-                        ideLocation,
-                        JVM_OPTION_AUTOREGISTER_HOME_NAME,
-                        location.getAbsolutePath(),
-                        true);
-                NetBeansUtils.setJvmOption(
-                        ideLocation,
-                        JVM_OPTION_AUTOREGISTER_TOKEN_NAME,
-                        Long.toString(System.currentTimeMillis()),
-                        false);
-
+                registerTomcat(ideLocation, location);
+                
                 // if the IDE was installed in the same session as the
                 // appserver, we should add its "product id" to the IDE
                 if (productToIntegrate.hasStatusChanged()) {
@@ -179,6 +168,41 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
+    }
+
+    private boolean isTomcatRegistred(File nbLocation) throws IOException {
+        String path = NetBeansUtils.getJvmOption(nbLocation, JVM_OPTION_AUTOREGISTER_HOME_NAME);
+        return !(path == null || !FileUtils.exists(new File(path)) || FileUtils.isEmpty(new File(path)));
+    }
+    
+    private void registerTomcat(File nbLocation, File tomcatLocation) throws IOException {
+        NetBeansUtils.setJvmOption(
+                nbLocation,
+                JVM_OPTION_AUTOREGISTER_HOME_NAME,
+                tomcatLocation.getAbsolutePath(),
+                true);
+        NetBeansUtils.setJvmOption(
+                nbLocation,
+                JVM_OPTION_AUTOREGISTER_TOKEN_NAME,
+                Long.toString(System.currentTimeMillis()),
+                false);
+    }
+    
+    private void removeTomcatIntegration(File nbLocation, File tomcatLocation) throws IOException {
+        final String value = NetBeansUtils.getJvmOption(
+                nbLocation,
+                JVM_OPTION_AUTOREGISTER_HOME_NAME);
+        LogManager.log("... ide integrated with: " + value);
+        if ((value != null)
+                && (value.equals(tomcatLocation.getAbsolutePath()))) {
+            LogManager.log("... removing integration");
+            NetBeansUtils.removeJvmOption(
+                    nbLocation,
+                    JVM_OPTION_AUTOREGISTER_HOME_NAME);
+            NetBeansUtils.removeJvmOption(
+                    nbLocation,
+                    JVM_OPTION_AUTOREGISTER_TOKEN_NAME);
+        }
     }
 
     public void uninstall(
@@ -198,20 +222,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     
                     if (nbLocation != null) {
                         LogManager.log("... ide location is " + nbLocation);
-                        final String value = NetBeansUtils.getJvmOption(
-                                nbLocation,
-                                JVM_OPTION_AUTOREGISTER_HOME_NAME);
-                        LogManager.log("... ide integrated with: " + value);
-                        if ((value != null) &&
-                                (value.equals(location.getAbsolutePath()))) {
-			    LogManager.log("... removing integration");
-                            NetBeansUtils.removeJvmOption(
-                                    nbLocation,
-                                    JVM_OPTION_AUTOREGISTER_HOME_NAME);
-                            NetBeansUtils.removeJvmOption(
-                                    nbLocation,
-                                    JVM_OPTION_AUTOREGISTER_TOKEN_NAME);
-                        }
+                        removeTomcatIntegration(nbLocation, location);
                     } else {
                         LogManager.log("... ide location is null");
                     }
