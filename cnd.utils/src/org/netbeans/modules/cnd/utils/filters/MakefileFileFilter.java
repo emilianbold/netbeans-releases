@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,35 +37,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.api.utils;
 
+package org.netbeans.modules.cnd.utils.filters;
+
+import java.io.File;
+import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 
-/**
- * @author Alexey Vladykin
- */
-public class QtFileFilter extends SourceFileFilter {
+public class MakefileFileFilter extends javax.swing.filechooser.FileFilter {
 
-    private static final String SUFFIXES[] = {"pro", "qrc", "ts", "ui"}; // NOI18N
-    private static QtFileFilter instance = null;
+    private static MakefileFileFilter instance = null;
 
-    public synchronized static QtFileFilter getInstance() {
-        if (instance == null) {
-            instance = new QtFileFilter();
+    public MakefileFileFilter() {
+	super();
+    }
+
+    public static MakefileFileFilter getInstance() {
+	if (instance == null) {
+            instance = new MakefileFileFilter();
         }
-        return instance;
+	return instance;
     }
-
+    
+    @Override
     public String getDescription() {
-        return NbBundle.getMessage(QtFileFilter.class, "FILECHOOSER_QT_FILEFILTER", getSuffixesAsString()); // NOI18N
+	return(getString("FILECHOOSER_MAKEFILE_FILEFILTER")); // NOI18N
+    }
+    
+    @Override
+    public boolean accept(File f) {
+	if(f != null) {
+	    if(f.isDirectory()) {
+		return true;
+	    }
+	    return checkMakefile(f);
+	}
+	return false;
     }
 
-    public String[] getSuffixes() {
-        return SUFFIXES;
+    private boolean checkMakefile(File f) {
+        String name = f.getName();
+        if (name.indexOf("Makefile") >= 0 || // NOI18N
+                name.indexOf("makefile") >= 0 || // NOI18N
+                name.endsWith(".mk")) {
+            return true;
+        }
+        return false;
+    }
+
+    /** Look up i18n strings here */
+    private ResourceBundle bundle;
+    private String getString(String s) {
+	if (bundle == null) {
+	    bundle = NbBundle.getBundle(MakefileFileFilter.class);
+	}
+	return bundle.getString(s);
     }
 }

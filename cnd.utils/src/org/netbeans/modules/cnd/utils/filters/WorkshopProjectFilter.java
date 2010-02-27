@@ -39,56 +39,49 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.utils.filters;
 
-import java.util.Vector;
+import java.io.File;
+import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 
-public class AllFileFilter extends SourceFileFilter {
+public class WorkshopProjectFilter extends javax.swing.filechooser.FileFilter {
 
-    private static AllFileFilter instance = null;
-    private static String[] suffixes = null;
+    private static WorkshopProjectFilter instance = null;
 
-    public static AllFileFilter getInstance() {
-        if (instance == null) {
-            instance = new AllFileFilter();
-        }
-        return instance;
+    public WorkshopProjectFilter() {
+	super();
     }
 
-    public String getDescription() {
-        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_All_FILEFILTER", getSuffixesAsString()); // NOI18N
-    }
-
-
-    public String[] getSuffixes() {
-        if (suffixes == null) {
-            suffixes = getAllSuffixes();
+    public static WorkshopProjectFilter getInstance() {
+	if (instance == null) {
+            instance = new WorkshopProjectFilter();
         }
-        return suffixes;
+	return instance;
     }
 
     @Override
-    public String getSuffixesAsString() {
-        StringBuilder buf = new StringBuilder();
-        buf.append(AllSourceFileFilter.getInstance().getSuffixesAsString()).append(' '); // NOI18N
-        buf.append(ResourceFileFilter.getInstance().getSuffixesAsString()).append(' '); // NOI18N
-        buf.append(QtFileFilter.getInstance().getSuffixesAsString());
-        return buf.toString();
+    public String getDescription() {
+	return(getString("FILECHOOSER_WORKSHOP_PROJECT_FILEFILTER")); // NOI18N
+    }
+    
+    @Override
+    public boolean accept(File f) {
+	if (f != null) {
+	    if (f.isDirectory()) {
+		return true;
+	    }
+	    return f.getName().endsWith(".prd"); // NOI18N
+	}
+	return false;
     }
 
-    public static String[] getAllSuffixes() {
-        Vector<String> allSuffixes = new Vector<String>();
-        addSuffices(allSuffixes, AllSourceFileFilter.getInstance().getSuffixes());
-        addSuffices(allSuffixes, ResourceFileFilter.getInstance().getSuffixes());
-        addSuffices(allSuffixes, QtFileFilter.getInstance().getSuffixes());
-        return allSuffixes.toArray(new String[allSuffixes.size()]);
+    /** Look up i18n strings here */
+    private ResourceBundle bundle;
+    private String getString(String s) {
+	if (bundle == null) {
+	    bundle = NbBundle.getBundle(WorkshopProjectFilter.class);
+	}
+	return bundle.getString(s);
     }
-
-    private static void addSuffices(Vector<String> suffixes, String[] suffixes2) {
-        for (int i = 0; i < suffixes2.length; i++) {
-            suffixes.add(suffixes2[i]);
-        }
-    }
-
 }

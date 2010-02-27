@@ -39,46 +39,35 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.utils.filters;
 
-import java.io.File;
-import java.util.ResourceBundle;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.NbBundle;
 
-public class ElfStaticLibraryFileFilter extends javax.swing.filechooser.FileFilter {
-
-    private static ElfStaticLibraryFileFilter instance = null;
-
-    public ElfStaticLibraryFileFilter() {
-	super();
-    }
-
-    public static ElfStaticLibraryFileFilter getInstance() {
-	if (instance == null)
-	    instance = new ElfStaticLibraryFileFilter();
-	return instance;
-    }
-
-    public String getDescription() {
-	return getString("STATIC_LIB_FILTER"); // NOI18N
+public class FortranSourceFileFilter extends SourceFileFilter{
+    
+    private static FortranSourceFileFilter instance = null;
+    
+    private String[] suffixList = null;
+    
+    public static FortranSourceFileFilter getInstance() {
+        if (instance == null) {
+            instance = new FortranSourceFileFilter();
+        }
+        return instance;
     }
     
-    public boolean accept(File f) {
-	if (f != null) {
-	    if (f.isDirectory()) {
-		return true;
-	    }
-	    return f.getName().endsWith(".a"); // NOI18N
-	}
-	return false;
+    @Override
+    public String getDescription() {
+        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_FORTRAN_SOURCES_FILEFILTER", getSuffixesAsString()); // NOI18N
     }
-
-    /** Look up i18n strings here */
-    private ResourceBundle bundle;
-    private String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(ElfStaticLibraryFileFilter.class);
-	}
-	return bundle.getString(s);
+    
+    @Override
+    public String[] getSuffixes() {
+        if (suffixList == null) {
+            suffixList = MIMEExtensions.get(MIMENames.FORTRAN_MIME_TYPE).getValues().toArray(new String[] {});
+        }
+        return suffixList;
     }
 }

@@ -38,47 +38,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.utils.filters;
 
-package org.netbeans.modules.cnd.api.utils;
-
-import java.io.File;
-import java.util.ResourceBundle;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.NbBundle;
 
-public class ElfDynamicLibraryFileFilter extends javax.swing.filechooser.FileFilter {
+public class CSourceFileFilter extends SourceFileFilter {
 
-    private static ElfDynamicLibraryFileFilter instance = null;
+    private static CSourceFileFilter instance = null;
+    private String[] suffixList = null;
 
-    public ElfDynamicLibraryFileFilter() {
-	super();
+    public static SourceFileFilter getInstance() {
+        if (instance == null) {
+            instance = new CSourceFileFilter();
+        }
+        return instance;
     }
 
-    public static ElfDynamicLibraryFileFilter getInstance() {
-	if (instance == null)
-	    instance = new ElfDynamicLibraryFileFilter();
-	return instance;
-    }
-
+    @Override
     public String getDescription() {
-	return getString("ELF_DYNAMIC_LIB_FILTER"); // NOI18N
-    }
-    
-    public boolean accept(File f) {
-	if (f != null) {
-	    if (f.isDirectory()) {
-		return true;
-	    }
-	    return f.getName().endsWith(".so"); // NOI18N
-	}
-	return false;
+        return NbBundle.getMessage(SourceFileFilter.class, "FILECHOOSER_C_SOURCES_FILEFILTER", getSuffixesAsString()); // NOI18N
     }
 
-    /** Look up i18n strings here */
-    private ResourceBundle bundle;
-    private String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(ElfDynamicLibraryFileFilter.class);
-	}
-	return bundle.getString(s);
+    @Override
+    public String[] getSuffixes() {
+        if (suffixList == null) {
+            suffixList = MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues().toArray(new String[] {});
+        }
+        return suffixList;
     }
 }
