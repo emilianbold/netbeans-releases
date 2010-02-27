@@ -231,6 +231,13 @@ public class MakeOSGi extends Task {
         }
     }
 
+    /**
+     * Translate NetBeans module metadata to OSGi equivalents.
+     * @param netbeans manifest header to be read
+     * @param osgi manifest header to be written
+     * @param importedPackages any OSGi packages, or JRE packages outside the java.* namespace, which seem to be in use
+     * @param availablePackages packages defined in the module
+     */
     static void translate(Attributes netbeans, Attributes osgi, Set<String> importedPackages, Set<String> availablePackages) throws Exception {
         osgi.putValue("Manifest-Version", "1.0"); // workaround for JDK bug
         osgi.putValue("Bundle-ManifestVersion", "2");
@@ -273,7 +280,9 @@ public class MakeOSGi extends Task {
                 if (p.endsWith(".*")) {
                     exportedPackages.add(p.substring(0, p.length() - ".*".length()));
                 } else {
-                    assert p.endsWith(".**") : p;
+                    if (!p.endsWith(".**")) {
+                        throw new IllegalArgumentException("Invalid package export: " + p);
+                    }
                     for (String actual : availablePackages) {
                         if (actual.equals(p.substring(0, p.length() - ".**".length())) ||
                                 actual.startsWith(p.substring(0, p.length() - "**".length()))) {
@@ -320,19 +329,34 @@ public class MakeOSGi extends Task {
         if (requireBundles.length() > 0) {
             osgi.putValue("Require-Bundle", requireBundles.toString());
         }
-        if (!importedPackages.isEmpty() && !cnb.equals("org.netbeans.libs.osgi")) {
-            StringBuilder b = new StringBuilder();
+        if (!cnb.equals("org.netbeans.libs.osgi")) {
+            StringBuilder staticImports = new StringBuilder();
+            StringBuilder dynamicImports = new StringBuilder();
             for (String pkg : importedPackages) {
+                StringBuilder b = staticImports;
+                if (pkg.startsWith("com.sun.") || pkg.startsWith("sun.")) {
+                    // JRE-specific dependencies will not be exported by Felix by default.
+                    // But they might have been exported by another module
+                    // (Require-Bundle should trump DynamicImport-Package),
+                    // or Felix can be configured to offer export packages from the framework.
+                    // Do not use DynamicImport-Package where not really needed, as it can lead to deadlocks in Felix:
+                    // ModuleImpl.findClassOrResourceByDelegation -> Felix.acquireGlobalLock
+                    b = dynamicImports;
+                }
                 if (b.length() > 0) {
                     b.append(", ");
                 }
                 b.append(pkg);
             }
-            // DynamicImport-Package can lead to deadlocks in Felix: ModuleImpl.findClassOrResourceByDelegation -> Felix.acquireGlobalLock
-            osgi.putValue("Import-Package", b.toString());
+            if (staticImports.length() > 0) {
+                osgi.putValue("Import-Package", staticImports.toString());
+            }
+            if (dynamicImports.length() > 0) {
+                osgi.putValue("DynamicImport-Package", dynamicImports.toString());
+            }
         }
+        // ignore OpenIDE-Module-Package-Dependencies; rarely used, and bytecode analysis is probably more accurate anyway
         // XXX OpenIDE-Module-Java-Dependencies => Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-        // XXX OpenIDE-Module-Package-Dependencies => Import-Package
         for (String tokenAttr : new String[] {"OpenIDE-Module-Provides", "OpenIDE-Module-Requires", "OpenIDE-Module-Needs"}) {
             String v = netbeans.getValue(tokenAttr);
             if (v != null) {
@@ -465,14 +489,24 @@ public class MakeOSGi extends Task {
                 availablePackages.add(available.substring(0, idx));
             }
             for (String clazz : VerifyClassLinkage.dependencies(entry.getValue())) {
-                if (clazz.startsWith("com.sun.") || clazz.startsWith("sun.")) {
-                    // JRE-specific dependencies will not be exported by Felix at least.
-                    // XXX consider making these use DynamicImport-Package in case the container can offer them.
+                if (classfiles.containsKey(clazz)) {
+                    // Part of the same module; probably not an external import.
                     continue;
                 }
-                // XXX skip anything contained in the JAR itself if OpenIDE-Module-Hide-Classpath-Packages is defined
-                if (!clazz.startsWith("java.") && (clazz.startsWith("org.osgi.") || jre.getResource(clazz.replace('.', '/') + ".class") != null)) {
-                    importedPackages.add(clazz.replaceFirst("[.][^.]+$", ""));
+                if (clazz.startsWith("java.")) {
+                    // No need to declare as an import.
+                    continue;
+                }
+                // XXX should OpenIDE-Module-Hide-Classpath-Packages be considered for anything?
+                // Usually used when the module itself bundles those packages, in which case
+                // the OSGi container would presumably not create a wire to the framework bundle.
+                if (!clazz.startsWith("org.osgi.") && jre.getResource(clazz.replace('.', '/') + ".class") == null) {
+                    // Not part of either JRE (incl. implementation) or OSGi platform; assumed to be a module dependency.
+                    continue;
+                }
+                idx = clazz.lastIndexOf('.');
+                if (idx != -1) {
+                    importedPackages.add(clazz.substring(0, idx));
                 }
             }
         }

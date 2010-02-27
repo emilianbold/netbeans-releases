@@ -252,4 +252,20 @@ public class ActivatorTest extends NbTestCase {
         assertTrue(Boolean.getBoolean("used.javahelp"));
     }
 
+    public void testComSunPackages() throws Exception {
+        new OSGiProcess(getWorkDir()).
+                newModule().sourceFile("com/sun/java/swing/Painter.java", "package com.sun.java.swing;",
+                "public interface Painter extends Runnable {}").
+                manifest("OpenIDE-Module: painter", "OpenIDE-Module-Public-Packages: com.sun.java.swing.*").done().
+                newModule().sourceFile("custom/Install.java", "package custom;",
+                "public class Install extends org.openide.modules.ModuleInstall {",
+                "public @Override void restored() {System.setProperty(\"com.sun.available\"," +
+                "String.valueOf(Runnable.class.isAssignableFrom(com.sun.java.swing.Painter.class)));}",
+                "}").manifest(
+                "OpenIDE-Module: custom",
+                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, painter").done().run();
+        assertTrue(Boolean.getBoolean("com.sun.available"));
+    }
+
 }
