@@ -148,9 +148,15 @@ public final class JavaUtils {
         }
         
         if(methodName.startsWith(GET_PREFIX) || methodName.startsWith(SET_PREFIX)) {
-            return convertToPropertyName(methodName.substring(3));
+            String substring = methodName.substring(3);
+            if (!"".equals(substring)) {
+                return convertToPropertyName(substring);
+            }
         } else if(methodName.startsWith(IS_PREFIX)) {
-            return convertToPropertyName(methodName.substring(2));
+            String substring = methodName.substring(2);
+            if (!"".equals(substring)) {
+                return convertToPropertyName(substring);
+            }
         }
         
         return null;
