@@ -4,6 +4,3 @@ OpenIDE-Module-Implementation-Version: 4
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/java/hints/resources/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/java/hints/resources/layer.xml
 AutoUpdate-Show-In-Client: false
-
-Name: org/netbeans/modules/java/hints/analyzer/AnalyzeFolder$ToolsAction.class
-OpenIDE-Module-Class: Action
