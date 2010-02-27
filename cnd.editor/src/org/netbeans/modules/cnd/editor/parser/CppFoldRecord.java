@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.editor.parser;
 
+import org.netbeans.modules.cnd.editor.folding.CppFile;
 import org.openide.ErrorManager;
 
 public class CppFoldRecord {
