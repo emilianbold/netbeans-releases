@@ -69,7 +69,7 @@ public class RecognizeInstanceFilesTest extends NamedServicesLookupTest{
 
     @Override
     protected Level logLevel() {
-        return Level.FINE;
+        return Level.FINEST;
     }
     
     @Override

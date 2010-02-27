@@ -41,20 +41,10 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.awt.AlphaComposite;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import javax.swing.ImageIcon;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,7 +54,6 @@ import org.openide.util.NbBundle;
  */
 final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite  {
     
-    private URL iconSource;
     private BasicCustomizer.SubCategoryProvider prov;
     /**
      * Creates new form SuiteCustomizerLibraries
@@ -77,12 +66,12 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite  {
         refresh(); 
         checkValidity();
         DocumentListener textFieldChangeListener = new UIUtil.DocumentAdapter() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 checkValidity();
             }
         };
         nameValue.getDocument().addDocumentListener(textFieldChangeListener);
-        titleValue.getDocument().addDocumentListener(textFieldChangeListener);                
     }
     
     @Override
@@ -109,17 +98,13 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite  {
             panelValid = false;
         }
         
-        if (panelValid && titleValue.getText().trim().length() == 0) {
-            category.setErrorMessage(NbBundle.getMessage(SuiteCustomizerBasicBranding.class, "ERR_EmptyTitle"));//NOI18N
-            panelValid = false;
-        }        
-        
         if (panelValid) {        
             category.setErrorMessage(null);
         }
         category.setValid(panelValid);
     }
     
+    @Override
     void refresh() {
         getBrandingModel().brandingEnabledRefresh();        
         getBrandingModel().initName(true);
@@ -127,12 +112,6 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite  {
         standaloneApp.setSelected(getBrandingModel().isBrandingEnabled());
         addOn.setSelected(!getBrandingModel().isBrandingEnabled());
         nameValue.setText(getBrandingModel().getName());
-        titleValue.setText(getBrandingModel().getTitle());
-        iconSource = getBrandingModel().getIconSource();
-        if (iconSource != null) {
-            ((ImagePreview)iconPreview).setImage(new ImageIcon(iconSource));
-        }
-        //iconLocation.setText(getBrandingModel().getIconLocation());
         
         enableOrDisableComponents();
         
@@ -141,22 +120,11 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite  {
     public @Override void store() {
         //getBrandingModel().setBrandingEnabled(buildWithBranding.isSelected());        
         getBrandingModel().setName(nameValue.getText());
-        getBrandingModel().setTitle(titleValue.getText());
-        getBrandingModel().setIconSource(iconSource);
     }
     
     private void enableOrDisableComponents() {
         nameValue.setEnabled(standaloneApp.isSelected());
         name.setEnabled(standaloneApp.isSelected());        
-        
-        titleValue.setEnabled(standaloneApp.isSelected());
-        title.setEnabled(standaloneApp.isSelected());
-        
-        browse.setEnabled(standaloneApp.isSelected());
-        
-        icon.setEnabled(standaloneApp.isSelected());
-        
-        iconPreview.setEnabled(standaloneApp.isSelected());
     }
     
     /** This method is called from within the constructor to
@@ -169,52 +137,16 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite  {
         java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        title = new javax.swing.JLabel();
-        titleValue = new javax.swing.JTextField();
-        iconPreview = new ImagePreview(BasicBrandingModel.ICON_WIDTH, BasicBrandingModel.ICON_HEIGHT);
         name = new javax.swing.JLabel();
         nameValue = new javax.swing.JTextField();
-        browse = new javax.swing.JButton();
-        icon = new javax.swing.JLabel();
         addOn = new javax.swing.JRadioButton();
         standaloneApp = new javax.swing.JRadioButton();
+        lblSpacer = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        title.setLabelFor(titleValue);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle"); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(title, bundle.getString("LBL_AppTitle")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        add(title, gridBagConstraints);
-        title.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_Title")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        add(titleValue, gridBagConstraints);
-
-        iconPreview.setLabelFor(iconPreview);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(23, 0, 0, 12);
-        add(iconPreview, gridBagConstraints);
-
         name.setLabelFor(nameValue);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(name, bundle.getString("LBL_AppName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -234,29 +166,6 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite  {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
         add(nameValue, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(browse, bundle.getString("CTL_Browse")); // NOI18N
-        browse.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(23, 0, 0, 0);
-        add(browse, gridBagConstraints);
-        browse.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_Browse")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(icon, bundle.getString("LBL_AppIcon")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(23, 0, 0, 12);
-        add(icon, gridBagConstraints);
 
         buttonGroup1.add(addOn);
         org.openide.awt.Mnemonics.setLocalizedText(addOn, bundle.getString("LBL_AppAddOn")); // NOI18N
@@ -292,6 +201,13 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite  {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(standaloneApp, gridBagConstraints);
         standaloneApp.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_StandAloneApp")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(lblSpacer, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void standaloneAppActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_standaloneAppActionPerformed
@@ -304,77 +220,16 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite  {
         enableOrDisableComponents();
         getBrandingModel().setBrandingEnabled(standaloneApp.isSelected());                
     }//GEN-LAST:event_addOnActionPerformed
-    
-    private void browseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseActionPerformed
-        JFileChooser chooser = UIUtil.getIconFileChooser();
-        int ret = chooser.showDialog(this, NbBundle.getMessage(getClass(), "LBL_Select")); // NOI18N
-        if (ret == JFileChooser.APPROVE_OPTION) {
-            File file =  chooser.getSelectedFile();
-            try {
-                iconSource = file.toURI().toURL();
-            } catch (MalformedURLException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-            ((ImagePreview)iconPreview).setImage(new ImageIcon(iconSource));
-        }
-    }//GEN-LAST:event_browseActionPerformed
-        
+            
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton addOn;
-    private javax.swing.JButton browse;
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JLabel icon;
-    private javax.swing.JLabel iconPreview;
+    private javax.swing.JLabel lblSpacer;
     private javax.swing.JLabel name;
     private javax.swing.JTextField nameValue;
     private javax.swing.JRadioButton standaloneApp;
-    private javax.swing.JLabel title;
-    private javax.swing.JTextField titleValue;
     // End of variables declaration//GEN-END:variables
-    
-    static class ImagePreview extends JLabel {
-        private ImageIcon image = null;
-        private int width;
-        private int height;
-//        private javax.swing.border.Border border;
-        ImagePreview(int width, int height){
-            //this.image = im;
-            this.width = width;
-            this.height = height;            
-            //border = new TitledBorder(NbBundle.getMessage(getClass(),"LBL_IconPreview"));//NOI18N
-            //setBorder(border);
-        }
-        
-        @Override
-        public void paint(Graphics g) {
-            super.paint(g);
-            Graphics2D g2d = (Graphics2D)g;
-            
-            if (!isEnabled()) {
-                g2d.setComposite(AlphaComposite.getInstance(
-                        AlphaComposite.SRC_OVER, 0.3f));
-            }
-            
-            if ((getWidth() >  width) && (getHeight() > height) && image != null) {
-                /*if (getBorder() == null) {
-                    setBorder(border);
-                }*/
-                int x = 0;//(getWidth()/2)-(width/2);
-                int y = 0;//(getHeight()/2)-(height/2);
-                g.drawImage(image.getImage(),x, y, width, height, this.getBackground(),null);
-            } /*else {
-                if (getBorder() != null) {
-                    setBorder(null);
-                }
-            }*/
-        }
-        
-        private void setImage(ImageIcon image) {
-            this.image = image;
-            repaint();
-        }
-    }
     
     private BasicBrandingModel getBrandingModel() {
         return getProperties().getBrandingModel();

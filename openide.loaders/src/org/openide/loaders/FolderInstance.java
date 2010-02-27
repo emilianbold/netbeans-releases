@@ -350,7 +350,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
 
             Task[] toWait = waitFor;
             if (isLog) {
-                err.fine("toWait: " + toWait); // NOI18N
+                err.fine("toWait: " + Arrays.toString(toWait)); // NOI18N
             }
             if (toWait != null) {
                 for (int i = 0; i < toWait.length; i++) {
