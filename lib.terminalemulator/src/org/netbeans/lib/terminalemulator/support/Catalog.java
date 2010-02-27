@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.lib.termsupport;
+package org.netbeans.lib.terminalemulator.support;
 
 import java.util.ResourceBundle;
 

@@ -40,8 +40,8 @@
  */
 package org.netbeans.modules.terminal.ui;
 
-import org.netbeans.lib.termsupport.TermOptions;
-import org.netbeans.lib.termsupport.TermOptionsPanel;
+import org.netbeans.lib.terminalemulator.support.TermOptions;
+import org.netbeans.lib.terminalemulator.support.TermOptionsPanel;
 import java.util.prefs.Preferences;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;

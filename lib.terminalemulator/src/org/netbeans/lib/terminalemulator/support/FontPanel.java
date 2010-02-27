@@ -1,4 +1,4 @@
-package org.netbeans.lib.termsupport;
+package org.netbeans.lib.terminalemulator.support;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
