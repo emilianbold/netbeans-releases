@@ -171,6 +171,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             }
         }
         for (String tok : splitTokens((String) headers.get("OpenIDE-Module-Requires"))) {
+            // XXX at least ModuleFormat1/2 should probably be filtered out by MakeOSGi
             if (!tok.matches("org[.]openide[.]modules[.](ModuleFormat\\d+|os[.].+)")) {
                 deps.add(tok);
             }
@@ -193,6 +194,10 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
 
     private void load(Bundle bundle) {
         OSGiMainLookup.bundleAdded(bundle);
+        if (bundle.getSymbolicName().equals("org.netbeans.modules.autoupdate.ui")) { // NOI18N
+            // Won't work anyway, so don't even try.
+            return;
+        }
         OSGiRepository.DEFAULT.addLayers(layersFor(bundle));
         if (bundle.getSymbolicName().equals("org.netbeans.bootstrap")) { // NOI18N
             System.setProperty("netbeans.buildnumber", bundle.getVersion().getQualifier()); // NOI18N
