@@ -88,6 +88,7 @@ import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -440,10 +441,10 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     }
 
     public static Set<String> createExtensionSet() {
-        if (IpeUtils.isSystemCaseInsensitive()) {
-            return new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-        } else {
+        if (CndFileUtils.isSystemCaseSensitive()) {
             return new TreeSet<String>();
+        } else {
+            return new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
         }
     }
 

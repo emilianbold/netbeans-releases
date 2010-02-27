@@ -48,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -75,8 +76,13 @@ import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement.FileType;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
@@ -223,7 +229,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                 } else {
                     // Regular file
                     String perm;
-                    if (IpeUtils.isExecutable(files[i])) {
+                    if (isExecutable(files[i])) {
                         perm = packagingFilesOuterPanel.getDirPermTextField().getText();
                     } else {
                         perm = packagingFilesOuterPanel.getFilePermTextField().getText();
@@ -238,6 +244,34 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                 }
             }
         }
+    }
+
+    /*
+     * Return true if file is an executable
+     */
+    private boolean isExecutable(File file) {
+        FileObject fo = null;
+
+        if (file.getName().endsWith(".exe")) { //NOI18N
+            return true;
+        }
+
+        try {
+            fo = FileUtil.toFileObject(file.getCanonicalFile());
+        } catch (IOException e) {
+            return false;
+        }
+        if (fo == null) { // 149058
+            return false;
+        }
+        DataObject dataObject = null;
+        try {
+            dataObject = DataObject.find(fo);
+        } catch (DataObjectNotFoundException e) {
+            return false;
+        }
+        final String mime = dataObject.getPrimaryFile().getMIMEType();
+        return mime.equals(MIMENames.SHELL_MIME_TYPE) || MIMENames.isBinaryExecutable(mime);
     }
 
     private final class AddFilesButtonAction implements java.awt.event.ActionListener {
@@ -343,7 +377,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                     toFile = IpeUtils.normalize(toFile);
                     String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
                     String perm;
-                    if (files[i].getName().endsWith(".exe") || files[i].isDirectory() || IpeUtils.isExecutable(files[i])) { //NOI18N
+                    if (files[i].getName().endsWith(".exe") || files[i].isDirectory() || isExecutable(files[i])) { //NOI18N
                         perm = packagingFilesOuterPanel.getDirPermTextField().getText();
                     } else {
                         perm = packagingFilesOuterPanel.getFilePermTextField().getText();

@@ -40,23 +40,10 @@
  */
 package org.netbeans.modules.cnd.api.utils;
 
-import java.awt.Component;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Stack;
 import java.util.StringTokenizer;
-import javax.swing.JButton;
-import javax.swing.JRootPane;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataNode;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 
 /**
@@ -508,46 +495,6 @@ public class IpeUtils {
         }
     }
 
-    public static Node findNode(String filePath) {
-        FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(new File(filePath)));
-        if (fo == null) {
-            return null; // FIXUP
-        }
-        DataObject dataObject = null;
-        try {
-            dataObject = DataObject.find(fo);
-        } catch (Exception e) {
-            // FIXUP
-        }
-        if (dataObject == null) {
-            return null; // FIXUP
-        }
-        Node node = dataObject.getNodeDelegate();
-        if (node == null) {
-            return null; // FIXUP
-        }
-        return node;
-    }
-
-    public static DataNode findDebuggableNode(String filePath) {
-        if (filePath == null) {
-            return null;
-        }
-        Node node = findNode(filePath);
-        if (node == null) {
-            return null;
-        }
-        if (!(node instanceof DataNode)) {
-            return null;
-        }
-        /*
-        if (node.getCookie(DebuggerCookie.class) == null)
-        return null;
-         */
-
-        return (DataNode) node;
-    }
-
     /**
      * Same as String.equals, but allows arguments to be null
      */
@@ -721,44 +668,6 @@ public class IpeUtils {
             }
         }
         return newName;
-    }
-    private static final boolean CASE_INSENSITIVE =
-            (Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2)) || Utilities.getOperatingSystem() == Utilities.OS_VMS;
-
-    public static boolean isSystemCaseInsensitive() {
-        return CASE_INSENSITIVE;
-    }
-
-    public static boolean areFilenamesEqual(String firstFile, String secondFile) {
-        return isSystemCaseInsensitive() ? firstFile.equalsIgnoreCase(secondFile) : firstFile.equals(secondFile);
-    }
-
-    /*
-     * Return true if file is an executable
-     */
-    public static boolean isExecutable(File file) {
-        FileObject fo = null;
-
-        if (file.getName().endsWith(".exe")) { //NOI18N
-            return true;
-        }
-
-        try {
-            fo = FileUtil.toFileObject(file.getCanonicalFile());
-        } catch (IOException e) {
-            return false;
-        }
-        if (fo == null) { // 149058
-            return false;
-        }
-        DataObject dataObject = null;
-        try {
-            dataObject = DataObject.find(fo);
-        } catch (DataObjectNotFoundException e) {
-            return false;
-        }
-        final String mime = dataObject.getPrimaryFile().getMIMEType();
-        return mime.equals(MIMENames.SHELL_MIME_TYPE) || MIMENames.isBinaryExecutable(mime);
     }
 
     public static String expandMacro(String string, String macro, String value) {
