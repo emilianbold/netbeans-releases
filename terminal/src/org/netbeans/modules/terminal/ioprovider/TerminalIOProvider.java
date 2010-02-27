@@ -35,7 +35,9 @@ public final class TerminalIOProvider extends IOProvider {
 
     @Override
     public InputOutput getIO(String name, Action[] additionalActions) {
-        throw new UnsupportedOperationException("Not supported yet.");
+//        throw new UnsupportedOperationException("Not supported yet.");
+	// FIXUP: to try from CND
+	return getIO(name, true);
     }
 
     @Override
