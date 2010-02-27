@@ -40,20 +40,30 @@
  */
 package org.openide.actions;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.*;
-
-import java.beans.*;
-
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.event.*;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.util.actions.CookieAction;
+import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.Presenter;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 
@@ -239,7 +249,7 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
     /** @deprecated Useless, see {@link ActionManager}. */
     @Deprecated
     public static interface Model {
-        public Action[] getActions();
+        public SystemAction[] getActions();
 
         public void addChangeListener(javax.swing.event.ChangeListener l);
 
