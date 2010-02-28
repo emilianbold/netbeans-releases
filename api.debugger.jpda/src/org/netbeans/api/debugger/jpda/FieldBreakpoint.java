@@ -299,8 +299,8 @@ public class FieldBreakpoint extends JPDABreakpoint {
     private static final class FieldBreakpointImpl extends FieldBreakpoint implements ChangeListener,
                                                                                       PropertyChangeListener {
         
-        //@Override
-        public Object/*GroupProperties*/ getGroupProperties() {
+        @Override
+        public GroupProperties getGroupProperties() {
             return new FieldGroupProperties();
         }
 
@@ -318,16 +318,19 @@ public class FieldBreakpoint extends JPDABreakpoint {
             enginePropertyChange(evt);
         }
 
-        private final class FieldGroupProperties {//extends GroupProperties {
+        private final class FieldGroupProperties extends GroupProperties {
 
+            @Override
             public String getType() {
                 return "Field";
             }
 
+            @Override
             public String getLanguage() {
                 return "Java";
             }
 
+            @Override
             public FileObject[] getFiles() {
                 List<FileObject> files = new ArrayList<FileObject>();
                 String className = getClassName();
@@ -338,6 +341,7 @@ public class FieldBreakpoint extends JPDABreakpoint {
                 return files.toArray(new FileObject[] {});
             }
 
+            @Override
             public Project[] getProjects() {
                 FileObject[] files = getFiles();
                 List<Project> projects = new ArrayList<Project>();
@@ -359,10 +363,12 @@ public class FieldBreakpoint extends JPDABreakpoint {
                 return projects.toArray(new Project[] {});
             }
 
+            @Override
             public DebuggerEngine[] getEngines() {
                 return FieldBreakpointImpl.this.getEngines();
             }
 
+            @Override
             public boolean isHidden() {
                 return FieldBreakpointImpl.this.isHidden();
             }

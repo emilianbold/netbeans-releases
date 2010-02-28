@@ -402,6 +402,24 @@ made subject to such option by the copyright holder.
         <class package="org.netbeans.api.debugger" name="ActionsManager" />
         <issue number="180558"/>
     </change>
+    
+    <change id="BreakpointsGrouping">
+        <api name="DebuggerCoreAPI"/>
+        <summary>Breakpoints group properties.</summary>
+        <version major="1" minor="25"/>
+        <date day="28" month="2" year="2010"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
+        <description>
+             <p>
+             Add Breakpoint.getGroupProperties() method, that returns an implementation
+             of GroupProperties class with the relevant grouping information
+             used by BreakpointsWindow to create hierarchy of breakpoint groups
+             </p>
+        </description>
+        <class package="org.netbeans.api.debugger" name="Breakpoint" />
+        <issue number="179759"/>
+    </change>
 
 </changes>
 

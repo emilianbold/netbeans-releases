@@ -123,8 +123,8 @@ public class ThreadBreakpoint extends JPDABreakpoint {
 
     private static final class ThreadBreakpointImpl extends ThreadBreakpoint implements PropertyChangeListener {
 
-        //@Override
-        public Object /*public GroupProperties*/ getGroupProperties() {
+        @Override
+        public GroupProperties getGroupProperties() {
             return new ThreadGroupProperties();
         }
 
@@ -134,28 +134,34 @@ public class ThreadBreakpoint extends JPDABreakpoint {
         }
 
 
-        private final class ThreadGroupProperties {//extends GroupProperties {
+        private final class ThreadGroupProperties extends GroupProperties {
 
+            @Override
             public String getType() {
                 return "Thread";
             }
 
+            @Override
             public String getLanguage() {
                 return "Java";
             }
 
+            @Override
             public FileObject[] getFiles() {
                 return null;
             }
 
+            @Override
             public Project[] getProjects() {
                 return null;
             }
 
+            @Override
             public DebuggerEngine[] getEngines() {
                 return ThreadBreakpointImpl.this.getEngines();
             }
 
+            @Override
             public boolean isHidden() {
                 return ThreadBreakpointImpl.this.isHidden();
             }

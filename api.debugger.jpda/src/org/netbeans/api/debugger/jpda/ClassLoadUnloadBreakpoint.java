@@ -209,8 +209,8 @@ public class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
 
     private static final class ClassLoadUnloadBreakpointImpl extends ClassLoadUnloadBreakpoint implements PropertyChangeListener {
 
-        //@Override
-        public Object /*public GroupProperties*/ getGroupProperties() {
+        @Override
+        public GroupProperties getGroupProperties() {
             return new ClassGroupProperties();
         }
 
@@ -220,16 +220,19 @@ public class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
         }
 
 
-        private final class ClassGroupProperties {//extends GroupProperties {
+        private final class ClassGroupProperties extends GroupProperties {
 
+            @Override
             public String getType() {
                 return "Class Load/Unload";
             }
 
+            @Override
             public String getLanguage() {
                 return "Java";
             }
 
+            @Override
             public FileObject[] getFiles() {
                 String[] filters = getClassFilters();
                 String[] exfilters = getClassExclusionFilters();
@@ -243,6 +246,7 @@ public class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
                 return files.toArray(new FileObject[] {});
             }
 
+            @Override
             public Project[] getProjects() {
                 FileObject[] files = getFiles();
                 List<Project> projects = new ArrayList<Project>();
@@ -264,10 +268,12 @@ public class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
                 return projects.toArray(new Project[] {});
             }
 
+            @Override
             public DebuggerEngine[] getEngines() {
                 return ClassLoadUnloadBreakpointImpl.this.getEngines();
             }
 
+            @Override
             public boolean isHidden() {
                 return ClassLoadUnloadBreakpointImpl.this.isHidden();
             }

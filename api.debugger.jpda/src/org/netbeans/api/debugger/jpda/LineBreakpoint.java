@@ -468,8 +468,8 @@ public class LineBreakpoint extends JPDABreakpoint {
             }
         }
 
-//        @Override
-        public Object /*GroupProperties*/ getGroupProperties() {
+        @Override
+        public GroupProperties getGroupProperties() {
             return new LineGroupProperties();
         }
 
@@ -571,20 +571,24 @@ public class LineBreakpoint extends JPDABreakpoint {
             }
         }
 
-        private final class LineGroupProperties { //extends GroupProperties {
+        private final class LineGroupProperties extends GroupProperties {
 
+            @Override
             public String getType() {
                 return "Line";
             }
 
+            @Override
             public String getLanguage() {
                 return "Java";
             }
 
+            @Override
             public FileObject[] getFiles() {
                 return new FileObject[] { fo };
             }
 
+            @Override
             public Project[] getProjects() {
                 FileObject f = fo;
                 while (f != null) {
@@ -603,10 +607,12 @@ public class LineBreakpoint extends JPDABreakpoint {
                 return null;
             }
 
+            @Override
             public DebuggerEngine[] getEngines() {
                 return LineBreakpointImpl.this.getEngines();
             }
 
+            @Override
             public boolean isHidden() {
                 return LineBreakpointImpl.this.isHidden();
             }
