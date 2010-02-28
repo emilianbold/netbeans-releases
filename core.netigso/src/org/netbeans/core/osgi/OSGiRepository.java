@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
@@ -90,6 +91,12 @@ class OSGiRepository extends Repository {
     }
 
     private static final class LayerFS extends MultiFileSystem {
+
+        static {
+            @SuppressWarnings("deprecation") Object _1 = FileSystem.Environment.class; // FELIX-2128
+            @SuppressWarnings("deprecation") Object _2 = org.openide.filesystems.FileSystemCapability.class;
+            Object _3 = FileStatusListener.class;
+        }
 
         private final Map<URL,FileSystem> fss = new HashMap<URL,FileSystem>();
         private final FileSystem userdir;
