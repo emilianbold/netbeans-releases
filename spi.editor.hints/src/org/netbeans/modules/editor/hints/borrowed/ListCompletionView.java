@@ -54,8 +54,12 @@ import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
@@ -67,6 +71,11 @@ import javax.swing.JViewport;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.plaf.synth.Region;
+import javax.swing.plaf.synth.SynthConstants;
+import javax.swing.plaf.synth.SynthContext;
+import javax.swing.plaf.synth.SynthLookAndFeel;
+import javax.swing.plaf.synth.SynthStyle;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.modules.editor.hints.FixData;
 import org.netbeans.modules.editor.hints.HintsControllerImpl;
@@ -82,6 +91,7 @@ import org.openide.util.ImageUtilities;
 
 public class ListCompletionView extends JList {
 
+    private static final Logger LOG = Logger.getLogger(ListCompletionView.class.getName());
     public static final int COMPLETION_ITEM_HEIGHT = 16;
     private static final int DARKER_COLOR_COMPONENT = 5;
     private final static Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/editor/hints/resources/suggestion.gif", false); // NOI18N
@@ -389,7 +399,58 @@ public class ListCompletionView extends JList {
         }
 
         if (HintsControllerImpl.getSubfixes(f).iterator().hasNext()) {
-            subMenuIcon.paintIcon(new JMenuItem(), g, textEnd + AFTER_TEXT_GAP, (height - subMenuIcon.getIconHeight()) /2);
+            paintArrowIcon(g, textEnd + AFTER_TEXT_GAP, (height - subMenuIcon.getIconHeight()) /2);
         }
+    }
+
+    private static void paintArrowIcon(Graphics g, int x, int y) {
+        JMenuItem menu = new JMenuItem();
+
+        if (subMenuIconIsSynthIcon) {
+            //#181206: the subMenuIcon is a sun.swing.plaf.synth.SynthIcon, whose paintIcon method requires a SynthContext.
+            //see also 6635110
+            try {
+                Region region = SynthLookAndFeel.getRegion(menu);
+                SynthStyle style = SynthLookAndFeel.getStyle(menu, region);
+                SynthContext c = new SynthContext(menu, region, style, SynthConstants.ENABLED);
+
+                Method paitIcon = synthIcon.getDeclaredMethod("paintIcon", SynthContext.class, Graphics.class, int.class, int.class, int.class, int.class);
+                paitIcon.invoke(subMenuIcon, c, g, x, y, subMenuIcon.getIconWidth(), subMenuIcon.getIconHeight());
+
+                return;
+            } catch (IllegalAccessException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return ;
+            } catch (IllegalArgumentException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return ;
+            } catch (InvocationTargetException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return ;
+            } catch (NoSuchMethodException ex) {
+                LOG.log(Level.FINE, null, ex);
+                return ;
+            }
+        }
+
+        subMenuIcon.paintIcon( menu, g, x, y);
+    }
+
+    private static final Class<?> synthIcon;
+    private static final boolean subMenuIconIsSynthIcon;
+
+    static {
+        Class<?> icon;
+        
+        try {
+            icon = Class.forName("sun.swing.plaf.synth.SynthIcon");
+        } catch (ClassNotFoundException ex) {
+            //OK:
+            LOG.log(Level.FINEST, null, ex);
+            icon = null;
+        }
+
+        synthIcon = icon;
+        subMenuIconIsSynthIcon = synthIcon != null && subMenuIcon != null && synthIcon.isAssignableFrom(subMenuIcon.getClass());
     }
 }
