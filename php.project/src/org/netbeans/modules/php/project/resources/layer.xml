@@ -55,6 +55,15 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-php-project-ui-actions-tests-CreateTestsAction.instance"/>
         </folder>
     </folder>
+    <folder name="UI">
+        <folder name="ToolActions">
+            <folder name="PHP">
+                <file name="org-netbeans-modules-php-project-ui-actions-tests-CreateTestsAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-php-project-ui-actions-tests-CreateTestsAction.instance"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
 
     <!-- uncomment/change default values for actions Download, Upload
     <folder name="Shortcuts">

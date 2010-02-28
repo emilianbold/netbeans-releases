@@ -37,47 +37,44 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.osgi;
+package org.openide.actions;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openide.LifecycleManager;
-import org.openide.util.Lookup;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
-import org.osgi.framework.launch.Framework;
+import javax.swing.Action;
+import java.util.List;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileObject;
+import org.netbeans.junit.NbTestCase;
+import static org.junit.Assert.*;
 
-class OSGiLifecycleManager extends LifecycleManager {
+/**
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+public class ToolsActionTest extends NbTestCase {
 
-    private final BundleContext context;
-    private final AtomicBoolean exited = new AtomicBoolean();
-
-    OSGiLifecycleManager(BundleContext context) {
-        this.context = context;
+    public ToolsActionTest(String n) {
+        super(n);
     }
 
-    public @Override void saveAll() {
-        for (LifecycleManager mgr : Lookup.getDefault().lookupAll(LifecycleManager.class)) {
-            if (!(mgr instanceof OSGiLifecycleManager)) { // NbLifecycleManager, perhaps
-                mgr.saveAll();
-            }
-        }
-    }
+    public void testActionReadFromLayer () throws Exception {
+        CopyAction copy = CopyAction.get(CopyAction.class);
+        CutAction cut = CutAction.get(CutAction.class);
+        PasteAction paste = PasteAction.get(PasteAction.class);
 
-    public @Override void exit() {
-        if (exited.getAndSet(true)) {
-            return; // cannot exit twice
-        }
-        Bundle system = context.getBundle(0);
-        if (system instanceof Framework) {
-            try {
-                ((Framework) system).stop();
-            } catch (BundleException x) {
-                Logger.getLogger(OSGiLifecycleManager.class.getName()).log(Level.WARNING, "Could not stop OSGi framework", x);
-            }
-        }
+        FileObject fo = FileUtil.createFolder(FileUtil.getConfigRoot(), "UI/ToolActions");
+        assertNotNull("ToolActions folder found", fo);
+
+        fo.createFolder("Cat1").createData("org-openide-actions-CutAction.instance").setAttribute("position", 100);
+        fo.getFileObject("Cat1").createData("org-openide-actions-PasteAction.instance").setAttribute("position", 200);
+        fo.createFolder("Cat2").createData("org-openide-actions-CopyAction.instance");
+
+        List<Action> ToolActions = ToolsAction.getToolActions();
+        assertEquals("Four actions: " + ToolActions, 4, ToolActions.size());
+        assertEquals("Cut first", cut, ToolActions.get(0));
+        assertEquals("Paste snd", paste, ToolActions.get(1));
+        assertEquals("Separator in middle", null, ToolActions.get(2));
+        assertEquals("Copy last", copy, ToolActions.get(3));
+
     }
 
 }

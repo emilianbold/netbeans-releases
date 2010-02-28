@@ -825,8 +825,11 @@ No.
         </question>
 -->
 <answer id="resources-layer">
-No in fact. Just concrete action implementation provided by this module
-are typically used in xml layers.
+    <api name="UI-ToolActions" group="layer" type="export" category="stable">
+        Register your <a href="@JDK@/javax/swing/Action.html">javax.swing.Action</a>
+        instances in <code>UI/ToolActions</code> folder to make them known
+        to <a href="@TOP@/org/openide/actions/ToolsAction.html">ToolsAction</a>.
+    </api>
 </answer>
 
 

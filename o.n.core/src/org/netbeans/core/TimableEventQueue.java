@@ -92,6 +92,7 @@ implements Runnable {
     private volatile ActionListener stoppable;
     private volatile boolean isWaitCursor;
     static volatile Thread eq;
+    private final Frame mainWindow = WindowManager.getDefault().getMainWindow();
 
     public TimableEventQueue() {
         TIMEOUT = RP.create(this);
@@ -176,7 +177,7 @@ implements Runnable {
 
     private void tick(String name) {
         start = System.currentTimeMillis();
-        if (start >= ignoreTill && WindowManager.getDefault().getMainWindow().isShowing()) {
+        if (start >= ignoreTill && mainWindow.isShowing()) {
             LOG.log(Level.FINEST, "tick, schedule a timer for {0}", name);
             TIMEOUT.schedule(QUANTUM);
         }

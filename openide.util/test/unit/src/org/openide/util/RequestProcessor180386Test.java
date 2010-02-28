@@ -281,6 +281,7 @@ public class RequestProcessor180386Test extends NbTestCase {
         assertTrue (rp.isTerminated());
     }
 
+    @RandomlyFails // NB-Core-Build #4116
     public void testInvokeAll() throws Exception {
         int count = 20;
         final CountDownLatch waitAll = new CountDownLatch(count);
