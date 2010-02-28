@@ -80,7 +80,7 @@ public class MakefileFileFilter extends javax.swing.filechooser.FileFilter {
         String name = f.getName();
         if (name.indexOf("Makefile") >= 0 || // NOI18N
                 name.indexOf("makefile") >= 0 || // NOI18N
-                name.endsWith(".mk")) {
+                name.endsWith(".mk")) { // NOI18N
             return true;
         }
         return false;

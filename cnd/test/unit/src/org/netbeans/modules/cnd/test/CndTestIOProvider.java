@@ -57,7 +57,7 @@ import org.openide.windows.OutputWriter;
  *
  * @author Vladimir Kvashin
  */
-@ServiceProvider(service=org.openide.windows.IOProvider.class)
+@ServiceProvider(service=org.openide.windows.IOProvider.class, position=0)
 public class CndTestIOProvider extends IOProvider {
 
     public interface Listener {
@@ -71,6 +71,12 @@ public class CndTestIOProvider extends IOProvider {
 
     public CndTestIOProvider() {
     }
+
+    @Override
+    public String getName() {
+        return "CndTestIOProvider";
+    }
+
 
     public InputOutput getIO(String name, boolean newIO) {
         return new TrivialIO(name);
