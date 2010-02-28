@@ -169,6 +169,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
                 deps.add(item.replaceFirst(";.+", ""));
             }
         }
+        // XXX also check for BUNDLE_SYMBOLICNAME_ATTRIBUTE in IMPORT_PACKAGE (though not currently used by MakeOSGi)
         for (String tok : splitTokens((String) headers.get("OpenIDE-Module-Requires"))) {
             // XXX at least ModuleFormat1/2 should probably be filtered out by MakeOSGi
             if (!tok.matches("org[.]openide[.]modules[.](ModuleFormat\\d+|os[.].+)")) {

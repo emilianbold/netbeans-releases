@@ -106,6 +106,7 @@ made subject to such option by the copyright holder.
                         <filename name="modules/ext/felix*.jar"/>
                     </or>
                 </pathfileset>
+                <fileset dir="${java.home}/../lib" includes="*.jar"/><!-- tools.jar etc.; XXX should this be done conditionally? -->
             </classpath>
             <arg value="-b"/>
             <arg file="${osgi.dest.dir}"/>
