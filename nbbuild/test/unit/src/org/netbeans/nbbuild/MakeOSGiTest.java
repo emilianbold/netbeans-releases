@@ -41,6 +41,7 @@ package org.netbeans.nbbuild;
 
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -49,6 +50,7 @@ import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.nbbuild.MakeOSGi.Info;
 
 public class MakeOSGiTest extends NbTestCase {
 
@@ -59,6 +61,7 @@ public class MakeOSGiTest extends NbTestCase {
     public void testTranslate() throws Exception {
         assertTranslation("{Bundle-SymbolicName=m}",
                 "OpenIDE-Module: m\n", set(), set());
+        /* no longer testable:
         assertTranslation("{Bundle-SymbolicName=m}",
                 "OpenIDE-Module: m\nOpenIDE-Module-Public-Packages: -\n", set(), set());
         assertTranslation("{Bundle-SymbolicName=m, Export-Package=m1, m2}",
@@ -68,17 +71,23 @@ public class MakeOSGiTest extends NbTestCase {
         assertTranslation("{Bundle-SymbolicName=m, Bundle-Version=1.0.0.3, Export-Package=api, impl}",
                 "OpenIDE-Module: m\nOpenIDE-Module-Public-Packages: api.*\n" +
                 "OpenIDE-Module-Specification-Version: 1.0\nOpenIDE-Module-Implementation-Version: 3\n", set(), set("api", "impl"));
+         */
         assertTranslation("{Bundle-SymbolicName=m, Import-Package=javax.swing, javax.swing.text}",
                 "OpenIDE-Module: m\n", set("javax.swing", "javax.swing.text"), set());
         assertTranslation("{Bundle-SymbolicName=m, DynamicImport-Package=com.sun.source.tree, Import-Package=javax.swing}",
                 "OpenIDE-Module: m\n", set("javax.swing", "com.sun.source.tree"), set());
+        // XXX test hiddenPackages, that deps are not imported, etc.
     }
-    private void assertTranslation(String expectedOsgi, String netbeans, Set<String> importedPackages, final Set<String> availablePackages) throws Exception {
+    private void assertTranslation(String expectedOsgi, String netbeans, Set<String> importedPackages, Set<String> exportedPackages) throws Exception {
         assertTrue(netbeans.endsWith("\n")); // JRE bug
         Manifest nbmani = new Manifest(new ByteArrayInputStream(netbeans.getBytes()));
+        Attributes nbattr = nbmani.getMainAttributes();
         Manifest osgimani = new Manifest();
         Attributes osgi = osgimani.getMainAttributes();
-        MakeOSGi.translate(nbmani.getMainAttributes(), osgi, importedPackages, availablePackages);
+        Info info = new Info();
+        info.importedPackages.addAll(importedPackages);
+        info.exportedPackages.addAll(exportedPackages);
+        new MakeOSGi().translate(nbattr, osgi, Collections.singletonMap(nbattr.getValue("OpenIDE-Module"), info));
         // boilerplate:
         assertEquals("1.0", osgi.remove(new Attributes.Name("Manifest-Version")));
         assertEquals("2", osgi.remove(new Attributes.Name("Bundle-ManifestVersion")));
