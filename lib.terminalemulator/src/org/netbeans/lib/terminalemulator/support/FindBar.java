@@ -112,6 +112,7 @@ public final class FindBar extends JPanel {
             putValue(SMALL_ICON, new ImageIcon(FindBar.class.getResource("find_close.png")));
         }
 
+	@Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled()) {
                 return;
@@ -123,13 +124,14 @@ public final class FindBar extends JPanel {
     private final class NextAction extends AbstractAction {
 
         public NextAction() {
-            super("Next");
+            super(Catalog.get("CTL_Next"));	// NOI18N
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_N,
                                                            InputEvent.ALT_MASK);
             putValue(ACCELERATOR_KEY, accelerator);
             putValue(SMALL_ICON, new ImageIcon(FindBar.class.getResource("find_next.png")));
         }
 
+	@Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled()) {
                 return;
@@ -141,13 +143,14 @@ public final class FindBar extends JPanel {
     private final class PrevAction extends AbstractAction {
 
         public PrevAction() {
-            super("Previous");
+            super(Catalog.get("CTL_Previous"));		// NOI18N
             KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_P,
                                                            InputEvent.ALT_MASK);
             putValue(ACCELERATOR_KEY, accelerator);
             putValue(SMALL_ICON, new ImageIcon(FindBar.class.getResource("find_previous.png")));
         }
 
+	@Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled()) {
                 return;
@@ -167,7 +170,7 @@ public final class FindBar extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
         JLabel findLabel = new JLabel();
-        findLabel.setText("Find:");
+        findLabel.setText(Catalog.get("LBL_Find") + ":");// NOI18N
         findText = new JTextField() {
 
             @Override
@@ -189,6 +192,7 @@ public final class FindBar extends JPanel {
 
         findText.getDocument().addDocumentListener(new DocumentListener() {
 
+	    @Override
             public void insertUpdate(DocumentEvent e) {
                 if (!updating) {
                     state.setPattern(findText.getText());
@@ -196,10 +200,12 @@ public final class FindBar extends JPanel {
                 }
             }
 
+	    @Override
             public void removeUpdate(DocumentEvent e) {
                 insertUpdate(e);
             }
 
+	    @Override
             public void changedUpdate(DocumentEvent e) {
                 insertUpdate(e);
             }
@@ -266,16 +272,16 @@ public final class FindBar extends JPanel {
                 findText.setForeground(originalColor);
                 break;
             case NOTFOUND:
-                errorLabel.setText("Not found");
+                errorLabel.setText(Catalog.get("MSG_NotFound"));// NOI18N
                 findText.setForeground(errorColor);
                 break;
             case WILLWRAP:
-                errorLabel.setText("One more to wrap");
+                errorLabel.setText(Catalog.get("MSG_OneMore"));	// NOI18N
                 findText.setForeground(originalColor);
                 break;
             case EMPTYPATTERN:
                 if (prevNext)
-                    errorLabel.setText("Empty pattern");
+                    errorLabel.setText(Catalog.get("MSG_Empty"));// NOI18N
                 else
                     errorLabel.setText("");
                 findText.setForeground(originalColor);

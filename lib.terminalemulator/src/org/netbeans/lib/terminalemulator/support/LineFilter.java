@@ -187,9 +187,9 @@ public abstract class LineFilter {
     protected final String hyperlink(String clientData, String text) {
         StringBuilder buf = new StringBuilder();
         buf.append((char) 27); // ESC
-        buf.append("]10;");
+        buf.append("]10;");			// NOI18N
         buf.append(clientData);
-        buf.append(";");
+        buf.append(";");			// NOI18N
         buf.append(text);
         buf.append((char) 7); // BEL
         return buf.toString();
@@ -284,6 +284,7 @@ public abstract class LineFilter {
             }
         }
 
+	@Override
         public void actionPerformed(ActionEvent e) {
             // Called when timer fires
             doProcessLine(buf.toString(), false);
@@ -299,6 +300,7 @@ public abstract class LineFilter {
          * Implementation of LineSink.forwardLine.
          * @param line
          */
+	@Override
         public void forwardLine(String line) {
             toDTE.putChars(line.toCharArray(), 0, line.length());
             if (fullLine)
