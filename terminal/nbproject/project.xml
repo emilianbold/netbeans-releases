@@ -3,13 +3,31 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.dlight.terminal</code-name-base>
+            <code-name-base>org.netbeans.modules.terminal</code-name-base>
             <module-dependencies>
+                <dependency>
+                    <code-name-base>org.jdesktop.layout</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.6</specification-version>
+                    </run-dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.lib.terminalemulator</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.options.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
                         <specification-version>1.11</specification-version>
                     </run-dependency>
                 </dependency>
@@ -18,7 +36,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.21</specification-version>
+                        <specification-version>7.1.0.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -26,7 +44,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.21</specification-version>
+                        <specification-version>1.13</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -34,7 +52,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.1</specification-version>
+                        <specification-version>7.12.0.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -50,17 +68,14 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.32</specification-version>
+                        <specification-version>6.19</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
-                <friend>org.netbeans.modules.cnd.gizmo</friend>
-                <friend>org.netbeans.modules.cnd.makeproject</friend>
-                <friend>org.netbeans.modules.dlight.nativeexecution</friend>
-                <package>org.netbeans.modules.dlight.terminal.api</package>
-            </friend-packages>
+            <public-packages>
+                <package>org.netbeans.modules.terminal.api</package>
+                <package>org.netbeans.modules.terminal.ui</package>
+            </public-packages>
         </data>
     </configuration>
 </project>

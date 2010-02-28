@@ -224,6 +224,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         final AtomicReference<IOException> exRef = new AtomicReference<IOException>();
         final AtomicReference<Set<DataObject>> setRef = new AtomicReference<Set<DataObject>>();
         SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
             public void run() {
                 MakeSampleProjectIterator projectCreator = new MakeSampleProjectIterator();
                 TemplateWizard wiz = new TemplateWizard();
@@ -286,8 +287,9 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         final String failureLine = "BUILD FAILED";
 
         IOProvider iop = IOProvider.getDefault();
-        assert iop instanceof CndTestIOProvider;
+        assert iop instanceof CndTestIOProvider : "found " + iop.getClass();
         ((CndTestIOProvider) iop).addListener(new CndTestIOProvider.Listener() {
+            @Override
             public void linePrinted(String line) {
                 if(line != null) {
                     if (line.startsWith(successLine)) {

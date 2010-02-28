@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.core.startup.CoreBridge;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
@@ -82,15 +83,24 @@ public class OSGiMainLookup extends ProxyLookup {
         lkp.postInit();
     }
 
-    static void bundleAdded(Bundle bundle) {
+    static void bundlesAdded(List<Bundle> bundles) {
         // XXX extend existing classLoader
         get().setClassLoader();
-        get().moduleInfoContent.add(bundle, moduleInfoConvertor);
+        for (Bundle bundle : bundles) {
+            get().moduleInfoContent.add(bundle, moduleInfoConvertor);
+        }
     }
 
-    static void bundleRemoved(Bundle bundle) {
+    static void bundlesRemoved(List<Bundle> bundles) {
         get().setClassLoader();
-        get().moduleInfoContent.remove(bundle, moduleInfoConvertor);
+        for (Bundle bundle : bundles) {
+            get().moduleInfoContent.remove(bundle, moduleInfoConvertor);
+        }
+    }
+
+    static void loadServicesFolder() {
+        get().nonClassLoaderDelegates.add(CoreBridge.getDefault().lookupCacheLoad());
+        get().setDelegates();
     }
 
     private ClassLoader classLoader;
@@ -114,7 +124,7 @@ public class OSGiMainLookup extends ProxyLookup {
     public OSGiMainLookup() {}
 
     private void postInit() {
-        nonClassLoaderDelegates.add(Lookups.fixed(OSGiRepository.DEFAULT, new OSGiLifecycleManager(context)));
+        nonClassLoaderDelegates.add(Lookups.fixed(OSGiRepository.DEFAULT, new OSGiLifecycleManager(context), new OSGiInstalledFileLocator(context)));
         nonClassLoaderDelegates.add(Lookups.forPath("Services/"));
         nonClassLoaderDelegates.add(new AbstractLookup(moduleInfoContent));
         // XXX InstalledFileLocator impl for OSGI-INF/files/*
