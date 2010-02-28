@@ -124,7 +124,7 @@ public class OSGiMainLookup extends ProxyLookup {
     public OSGiMainLookup() {}
 
     private void postInit() {
-        nonClassLoaderDelegates.add(Lookups.fixed(OSGiRepository.DEFAULT, new OSGiLifecycleManager(context)));
+        nonClassLoaderDelegates.add(Lookups.fixed(OSGiRepository.DEFAULT, new OSGiLifecycleManager(context), new OSGiInstalledFileLocator(context)));
         nonClassLoaderDelegates.add(Lookups.forPath("Services/"));
         nonClassLoaderDelegates.add(new AbstractLookup(moduleInfoContent));
         // XXX InstalledFileLocator impl for OSGI-INF/files/*

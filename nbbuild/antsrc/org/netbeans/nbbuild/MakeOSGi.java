@@ -215,7 +215,6 @@ public class MakeOSGi extends Task {
                 for (Map.Entry<String,File> bundledFile : bundledFiles.entrySet()) {
                     InputStream is = new FileInputStream(bundledFile.getValue());
                     try {
-                        // XXX need matching IFL impl in netigso
                         writeEntry(zos, "OSGI-INF/files/" + bundledFile.getKey(), is, parents);
                     } finally {
                         is.close();
@@ -455,7 +454,7 @@ public class MakeOSGi extends Task {
                 NodeList nl = doc.getElementsByTagName("file");
                 for (int i = 0; i < nl.getLength(); i++) {
                     String path = ((Element) nl.item(i)).getAttribute("name");
-                    if (path.matches("config/Modules/.+[.]xml")) {
+                    if (path.matches("config/(Modules|ModuleAutoDeps)/.+[.]xml")) {
                         continue;
                     }
                     File f = new File(cluster, path);
