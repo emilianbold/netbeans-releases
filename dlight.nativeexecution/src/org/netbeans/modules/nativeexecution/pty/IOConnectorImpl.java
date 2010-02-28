@@ -41,16 +41,16 @@ package org.netbeans.modules.nativeexecution.pty;
 
 import java.awt.Dimension;
 import java.io.IOException;
-import org.netbeans.lib.terminalemulator.StreamTerm;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport.Pty;
-import org.netbeans.modules.dlight.terminal.api.IOResizable;
+import org.netbeans.modules.terminal.api.IOResizable;
 import org.netbeans.modules.nativeexecution.pty.PtyCreatorImpl.PtyImplementation;
 import org.netbeans.modules.nativeexecution.spi.pty.IOConnector;
 import org.netbeans.modules.nativeexecution.spi.pty.PtyImpl;
 import org.netbeans.modules.nativeexecution.spi.support.pty.PtyImplAccessor;
-import org.netbeans.modules.dlight.terminal.api.TerminalIOProviderSupport;
+import org.netbeans.modules.terminal.api.IOEmulation;
+import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -69,25 +69,22 @@ public class IOConnectorImpl implements IOConnector {
 
     @Override
     public boolean connect(final InputOutput io, final NativeProcess process) {
-        if (!TerminalIOProviderSupport.isTerminalIO(io)) {
+        if (!IOTerm.isSupported(io)) {
             return false;
         }
 
         final Pty pty = PtySupport.getPty(process);
         final PtyImpl ptyImpl = PtyImplAccessor.getDefault().getImpl(pty);
 
-        TerminalIOProviderSupport.setInternal(io, ptyImpl == null);
-        StreamTerm term = TerminalIOProviderSupport.getTerm(io);
-
-        if (term == null) {
-            return false;
+        if ((ptyImpl == null) && IOEmulation.isSupported(io)) {
+            IOEmulation.setDisciplined(io);
         }
-
+        
         if (ptyImpl == null || !(ptyImpl instanceof PtyImplementation)) {
-            term.connect(process.getOutputStream(), process.getInputStream(), process.getErrorStream());
+            IOTerm.connect(io, process.getOutputStream(), process.getInputStream(), process.getErrorStream());
         } else {
             PtyImplementation impl = (PtyImplementation) ptyImpl;
-            term.connect(impl.getOutputStream(), impl.getInputStream(), process.getErrorStream());
+            IOTerm.connect(io, impl.getOutputStream(), impl.getInputStream(), process.getErrorStream());
 
             if (IOResizable.isSupported(io)) {
                 IOResizable.addListener(io, new ResizeListener(impl));
@@ -105,7 +102,7 @@ public class IOConnectorImpl implements IOConnector {
             throw new NullPointerException();
         }
 
-        if (!TerminalIOProviderSupport.isTerminalIO(io)) {
+        if (!IOTerm.isSupported(io)) {
             return false;
         }
 
@@ -115,16 +112,8 @@ public class IOConnectorImpl implements IOConnector {
             return false;
         }
 
-        TerminalIOProviderSupport.setInternal(io, false);
-
-        StreamTerm term = TerminalIOProviderSupport.getTerm(io);
-
-        if (term == null) {
-            return false;
-        }
-
         PtyImplementation impl = (PtyImplementation) ptyImpl;
-        term.connect(impl.getOutputStream(), impl.getInputStream(), impl.getErrorStream());
+        IOTerm.connect(io, impl.getOutputStream(), impl.getInputStream(), impl.getErrorStream());
 
         if (IOResizable.isSupported(io)) {
             IOResizable.addListener(io, new ResizeListener(impl));

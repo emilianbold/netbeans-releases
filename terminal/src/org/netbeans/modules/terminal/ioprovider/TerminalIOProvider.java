@@ -2,7 +2,8 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.netbeans.modules.dlight.terminal;
+
+package org.netbeans.modules.terminal.ioprovider;
 
 import javax.swing.Action;
 import org.openide.util.lookup.ServiceProvider;
@@ -14,47 +15,44 @@ import org.openide.windows.OutputWriter;
 /**
  * An implementation of {@link IOProvider} based on
  * {@link org.netbeans.lib.terminalemulator.Term}.
+ * Lookup id is "Terminal".
  * <p>
- * This class is public to act as a signature for distinguishing us
- * from other IOProvider implementations:
  * <pre>
-IOProvider iop = null;
- *
-Lookup lookup = Lookup.getDefault();
- *
-Collection<? extends IOProvider> ioProviders = lookup.lookupAll(IOProvider.class);
- *
-for (IOProvider iopCandidate : ioProviders) {
-if (iopCandidate instanceof TerminalIOProvider)
-iop = iopCandidate;
-}
-if (iop == null)
-iop = IOProvider.getDefault();
-return iop;
+	IOProvider iop = IOProvider.get("Terminal");
+        if (iop == null)
+            iop = IOProvider.getDefault();
  * </pre>
  * @author ivan
  */
-@ServiceProvider(service = IOProvider.class)
-public final class TerminalIOProvider extends IOProvider {
 
+@ServiceProvider(service = IOProvider.class, position=100)
+
+public final class TerminalIOProvider extends IOProvider {
     @Override
     public String getName() {
-        return "Terminal"; // NOI18N
+        return "Terminal";      // NOI18N
     }
 
     @Override
     public InputOutput getIO(String name, Action[] additionalActions) {
-        return getIO(name, true);
 //        throw new UnsupportedOperationException("Not supported yet.");
+	// FIXUP: to try from CND
+	return getIO(name, true);
     }
 
     @Override
     public InputOutput getIO(String name, boolean newIO) {
         IOContainer ioContainer = null;
-        if (true) {
+	ioContainer = IOContainer.getDefault();
+        return new TerminalInputOutput(name, null, ioContainer);
+
+    }
+
+    @Override
+    public InputOutput getIO(String name, Action[] actions, IOContainer ioContainer) {
+        if (ioContainer == null)
             ioContainer = IOContainer.getDefault();
-        }
-        return new TerminalInputOutput(name, ioContainer);
+        return new TerminalInputOutput(name, actions, ioContainer);
     }
 
     /**
@@ -64,6 +62,7 @@ public final class TerminalIOProvider extends IOProvider {
      */
     @Override
     public OutputWriter getStdOut() {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        throw new UnsupportedOperationException("Not supported yet.");
     }
+
 }

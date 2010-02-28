@@ -101,13 +101,13 @@ made subject to such option by the copyright holder.
         </subant>
     </target>
 
-    <target name="test" depends="-init-modules">
+    <target name="test" depends="-init-modules" description="run tests">
         <subant buildpath="${cnd.modules.sorted}" target="test">
             <property name="cluster.config" value="cnd"/>
         </subant>
     </target>
 
-    <target name="test-xref" depends="-init-modules">
+    <target name="test-xref" depends="-init-modules" description="run xRef tests only">
         <subant buildpath="${cnd.modules.xref.fullpath}" target="test">
             <property name="cluster.config" value="cnd"/>
         </subant>
@@ -119,8 +119,6 @@ made subject to such option by the copyright holder.
             <property name="coverage.report.format" value="xml"/>
         </subant>
     </target>
-
-
 
     <target name="rebuild-dlight" description="rebuild dlight cluster">
         <exec executable="bash">
@@ -139,42 +137,6 @@ made subject to such option by the copyright holder.
         <exec executable="sh">
             <arg value="i18n-check.sh"/>
         </exec>
-        <!--
-        <exec executable="perl">
-            <arg value="../nbbuild/misc/i18ncheck.pl"/>
-            <arg value="../cnd.asm/src"/>
-            <arg value="../cnd/src"/>
-            <arg value="../cnd.antlr/src"/>
-            <arg value="../cnd.api.model/src"/>
-            <arg value="../cnd.api.project/src"/>
-            <arg value="../cnd.apt/src"/>
-            <arg value="../cnd.callgraph/src"/>
-            <arg value="../cnd.classview/src"/>
-            <arg value="../cnd.completion/src"/>
-            <arg value="../cnd.debugger.gdb/src"/>
-            <arg value="../cnd.discovery/src"/>
-            <arg value="../cnd.dwarfdiscovery/src"/>
-            <arg value="../cnd.dwarfdump/src"/>
-            <arg value="../cnd.editor/src"/>
-            <arg value="../cnd.folding/src"/>
-            <arg value="../cnd.gotodeclaration/src"/>
-            <arg value="../cnd.highlight/src"/>
-            <arg value="../cnd.lexer/src"/>
-            <arg value="../cnd.makeproject/src"/>
-            <arg value="../cnd.model.services/src"/>
-            <arg value="../cnd.modeldiscovery/src"/>
-            <arg value="../cnd.modelimpl/src"/>
-            <arg value="../cnd.modelui/src"/>
-            <arg value="../cnd.modelutil/src"/>
-            <arg value="../cnd.navigation/src"/>
-            <arg value="../cnd.qnavigator/src"/>
-            <arg value="../cnd.refactoring/src"/>
-            <arg value="../cnd.remote/src"/>
-            <arg value="../cnd.repository/src"/>
-            <arg value="../cnd.repository.api/src"/>
-            <arg value="../cnd.utils/src"/>
-        </exec>
-        -->
     </target>
 
 </project>
