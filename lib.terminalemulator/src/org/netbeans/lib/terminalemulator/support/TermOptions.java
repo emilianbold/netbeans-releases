@@ -73,14 +73,14 @@ public class TermOptions {
 	resetToDefault();
     }
 
-    public void resetToDefault() {
+    public final void resetToDefault() {
 	final Font controlFont = UIManager.getFont("controlFont");// NOI18N
 	fontSize = (controlFont == null)? 12: controlFont.getSize();
-        font = new Font("monospaced", Font.PLAIN, fontSize);
+        font = new Font("monospaced", Font.PLAIN, fontSize);	// NOI18N
 	foreground = Color.black;
 	background = Color.white;
 	selectionBackground =
-	    UIManager.getColor("TextArea.selectionBackground");
+	    UIManager.getColor("TextArea.selectionBackground");	// NOI18N
 	historySize = 5000;
 	tabSize = 8;
 	clickToType = true;

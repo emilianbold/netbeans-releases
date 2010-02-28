@@ -164,10 +164,10 @@ class FontPanel extends JPanel {
                                    };
 
     static final String[] styles = new String [] {
-                                       Catalog.get("CTL_Plain"),
-                                       Catalog.get("CTL_Bold"),
-                                       Catalog.get("CTL_Italic"),
-                                       Catalog.get("CTL_BoldItalic")
+                                       Catalog.get("CTL_Plain"),	// NOI18N
+                                       Catalog.get("CTL_Bold"),		// NOI18N
+                                       Catalog.get("CTL_Italic"),	// NOI18N
+                                       Catalog.get("CTL_BoldItalic")	// NOI18N
                                    };
 
     /**
@@ -185,6 +185,7 @@ class FontPanel extends JPanel {
             this.delegate = delegate;
         }
 
+	@Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             FontDescr fd = (FontDescr) value;
             Component c = delegate.getListCellRendererComponent(list, fd.name(), index, isSelected, cellHasFocus);
@@ -202,6 +203,7 @@ class FontPanel extends JPanel {
      * Handle font family selection changes (lFont).
      */
     private final ListSelectionListener lFontListener = new ListSelectionListener() {
+	@Override
         public void valueChanged(ListSelectionEvent e) {
             if (!lFont.isSelectionEmpty()) {
                 if (getFonts(size, style).size() > 0) {
@@ -235,25 +237,25 @@ class FontPanel extends JPanel {
             if (getFonts(size, style).size() > 0) {
                 font = new Font(fonts.get(0).name(), Font.PLAIN, 10);
             } else {
-                font = UIManager.getFont("Label.font");
+                font = UIManager.getFont("Label.font");		// NOI18N
             }
         }
 
 
         lFont = new JList(getFonts(size, style));
         lFont.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        lFont.getAccessibleContext().setAccessibleDescription("ACSD_CTL_Font");
+        lFont.getAccessibleContext().setAccessibleDescription("ACSD_CTL_Font");	// NOI18N
         lFont.setCellRenderer(new MyListCellRenderer(lFont.getCellRenderer()));
 
         lStyle = new JList(styles);
         lStyle.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        lStyle.getAccessibleContext().setAccessibleDescription("ACSD_CTL_FontStyle");
+        lStyle.getAccessibleContext().setAccessibleDescription("ACSD_CTL_FontStyle");	// NOI18N
         lSize = new JList(sizes);
         lSize.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        lSize.getAccessibleContext().setAccessibleDescription("ACSD_CTL_Size");
+        lSize.getAccessibleContext().setAccessibleDescription("ACSD_CTL_Size");	// NOI18N
         tfSize = new JTextField(String.valueOf(font.getSize()));
         tfSize.getAccessibleContext().setAccessibleDescription(lSize.getAccessibleContext().getAccessibleDescription());
-        getAccessibleContext().setAccessibleDescription("ACSD_FontCustomEditor");
+        getAccessibleContext().setAccessibleDescription("ACSD_FontCustomEditor");	// NOI18N
 
 
         GridBagLayout la = new GridBagLayout();
@@ -269,9 +271,10 @@ class FontPanel extends JPanel {
         c.gridwidth = GridBagConstraints.REMAINDER;
         showFixedCheckBox = new JCheckBox();
         showFixedCheckBox.setSelected(showFixed);
-        showFixedCheckBox.setText(Catalog.get("LBL_FixedOnly"));
-        showFixedCheckBox.setMnemonic(Catalog.get("MNM_FixedOnly").charAt(0));
+        showFixedCheckBox.setText(Catalog.get("LBL_FixedOnly"));	// NOI18N
+        showFixedCheckBox.setMnemonic(Catalog.get("MNM_FixedOnly").charAt(0));	// NOI18N
         showFixedCheckBox.addActionListener(new java.awt.event.ActionListener() {
+	    @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 // showFixedActionPerformed(evt);
                 showFixed = showFixedCheckBox.isSelected();
@@ -284,8 +287,8 @@ class FontPanel extends JPanel {
         c.fill = GridBagConstraints.NONE;
         c.gridwidth = 1;
         JLabel l = new JLabel();
-        l.setText(Catalog.get("LBL_Font"));
-        l.setDisplayedMnemonic(Catalog.mnemonic("MNM_Font"));
+        l.setText(Catalog.get("LBL_Font"));	// NOI18N
+        l.setDisplayedMnemonic(Catalog.mnemonic("MNM_Font"));	// NOI18N
         l.setLabelFor(lFont);
         la.setConstraints(l, c);
         add(l);
@@ -293,8 +296,8 @@ class FontPanel extends JPanel {
 
         c.insets = new Insets(0, 5, 0, 0);
         l = new JLabel();
-        l.setText(Catalog.get("LBL_FontStyle"));
-        l.setDisplayedMnemonic(Catalog.mnemonic("MNM_FontStyle"));
+        l.setText(Catalog.get("LBL_FontStyle"));	// NOI18N
+        l.setDisplayedMnemonic(Catalog.mnemonic("MNM_FontStyle"));	// NOI18N
         l.setLabelFor(lStyle);
         la.setConstraints(l, c);
         add(l);
@@ -303,8 +306,8 @@ class FontPanel extends JPanel {
         c.insets = new Insets(0, 5, 0, 0);
         c.gridwidth = GridBagConstraints.REMAINDER;
         l = new JLabel();
-        l.setText(Catalog.get("LBL_Size"));
-        l.setDisplayedMnemonic(Catalog.mnemonic("MNM_Size"));
+        l.setText(Catalog.get("LBL_Size"));	// NOI18N
+        l.setDisplayedMnemonic(Catalog.mnemonic("MNM_Size"));	// NOI18N
         l.setLabelFor(tfSize);
         la.setConstraints(l, c);
         add(l);
@@ -345,7 +348,7 @@ class FontPanel extends JPanel {
                 Component c = evt.getOppositeComponent();
                 if (c != null) {
                     if (c instanceof JButton) {
-                        if (((JButton) c).getText().equals("CTL_OK")) {
+                        if (((JButton) c).getText().equals("CTL_OK")) {	// NOI18N
                             setValue();
                         }
                     } else {
@@ -372,7 +375,7 @@ class FontPanel extends JPanel {
         lFont.setSelectedValue(descrByName(fontFamily), true);
         int is = lFont.getSelectedIndex();
         if (is ==-1) {
-            errorMsg = "font " + fontFamily + " not available";
+            errorMsg = Catalog.format("FMT_FontUnavailable", fontFamily);	// NOI18N
             fontFamily = fonts.get(0).name();
             lFont.setSelectedValue(fonts.get(0), true);
         } else {
@@ -389,6 +392,7 @@ class FontPanel extends JPanel {
         lStyle.setSelectedValue(parent.getStyleName(style), true);
 
         lStyle.addListSelectionListener(new ListSelectionListener() {
+	    @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (!lStyle.isSelectionEmpty()) {
                     int i = lStyle.getSelectedIndex();
@@ -412,6 +416,7 @@ class FontPanel extends JPanel {
         updateSizeList(font.getSize());
 
         lSize.addListSelectionListener(new ListSelectionListener() {
+	    @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (!lSize.isSelectionEmpty()) {
                     int i = lSize.getSelectedIndex();
@@ -429,7 +434,7 @@ class FontPanel extends JPanel {
         c.gridwidth = GridBagConstraints.REMAINDER;
         c.weighty = 2.0;
         JPanel p = new JPanel(new BorderLayout());
-        p.setBorder(new TitledBorder(" " + Catalog.get("CTL_Preview") + " "));
+        p.setBorder(new TitledBorder(" " + Catalog.get("CTL_Preview") + " "));	// NOI18N
         JPanel pp = new JPanel() {
             @Override
             public Dimension getPreferredSize() {
@@ -439,9 +444,9 @@ class FontPanel extends JPanel {
             @Override
             public void paint(Graphics g) {
                 //          super.paint (g);
-                paintValue(g, new Rectangle(0, 0, this.getSize().width - 1, this.getSize().height - 1),
+                paintValue(g, new Rectangle(0, 0, getSize().width - 1, getSize().height - 1),
                            font(),
-                           "The quick brown fox ...",
+			   Catalog.get("MSG_Sample"),	// NOI18N
                            errorMsg);
             }
         };
@@ -469,7 +474,7 @@ class FontPanel extends JPanel {
             lFont.setSelectedValue(descrByName(fontFamily), true);
             int i = lFont.getSelectedIndex();
             if (i ==-1) {
-                errorMsg = "Font '" + fontFamily + "' not available";
+		errorMsg = Catalog.format("FMT_FontUnavailable", fontFamily);	// NOI18N
                 fontFamily = fonts.get(0).name();
                 lFont.setSelectedValue(fonts.get(0), true);
                 tfFont.setText(fontFamily);
@@ -506,7 +511,7 @@ class FontPanel extends JPanel {
         }
         g.setFont(paintFont);
         int height = (rectangle.height - fm.getHeight()) / 2 + fm.getAscent();
-        g.drawString(sample == null ? "null" : sample,
+        g.drawString(sample == null ? "null" : sample,	// NOI18N
                      rectangle.x, rectangle.y + height);
         if (errorMsg != null) {
             Color originalColor = g.getColor();

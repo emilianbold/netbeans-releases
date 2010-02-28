@@ -71,7 +71,9 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.terminal.example</package>
+            </public-packages>
         </data>
     </configuration>
 </project>
