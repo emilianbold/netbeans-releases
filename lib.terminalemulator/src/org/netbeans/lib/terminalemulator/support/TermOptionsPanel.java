@@ -75,6 +75,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
             this.name = name;
         }
 
+	@Override
         public void actionPerformed(ActionEvent a) {
             Color newColor = JColorChooser.showDialog(
                 SwingUtilities.getAncestorOfClass(Dialog.class, button),
@@ -93,13 +94,38 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         }
     }
 
+    // Why variables???
+    // These are used in gui-builder-generated code
+    // If we use automatic bundle usage in the gui-builder it will
+    // use o.n.openide.NbBundel but we're ina "pure" module and don't
+    // want to be polluted with NB dependencies
+    // If we use cusom code and inline the Catalog.get() then there's
+    // no opportunity to insert a // NOI18N.
+    static final String LBL_ChooseForegroundColor = Catalog.get("LBL_ChooseForegroundColor");	// NOI18N
+    static final String LBL_ChooseBackgroundColor = Catalog.get("LBL_ChooseBackgroundColor");	// NOI18N
+    static final String LBL_ChooseSelectionBackgroundColor = Catalog.get("LBL_ChooseSelectionBackgroundColor");	// NOI18N
+    static final String LBL_Options = Catalog.get("LBL_Options");	// NOI18N
+    static final String CTL_Restore = Catalog.get("CTL_Restore");	// NOI18N
+    static final String LBL_Font = Catalog.get("LBL_Font");	// NOI18N
+    static final String CTL_Ellipsis = Catalog.get("CTL_Ellipsis");	// NOI18N
+    static final String LBL_FontSize = Catalog.get("LBL_FontSize");	// NOI18N
+    static final String LBL_ForegroundColor = Catalog.get("LBL_ForegroundColor");	// NOI18N
+    static final String LBL_BackgroundColor = Catalog.get("LBL_BackgroundColor");	// NOI18N
+    static final String LBL_SelectionBackgroundColor = Catalog.get("LBL_SelectionBackgroundColor");	// NOI18N
+    static final String LBL_HistorySize = Catalog.get("LBL_HistorySize");	// NOI18N
+    static final String LBL_TabSize = Catalog.get("LBL_TabSize");	// NOI18N
+    static final String CTL_ClickToType = Catalog.get("CTL_ClickToType");	// NOI18N
+    static final String CTL_ScrollOnInput = Catalog.get("CTL_ScrollOnInput");	// NOI18N
+    static final String CTL_SrollOnOutput = Catalog.get("CTL_SrollOnOutput");	// NOI18N
+    static final String LBL_WrapLines = Catalog.get("LBL_WrapLines");	// NOI18N
+    static final String LBL_Preview = Catalog.get("LBL_Preview");	// NOI18N
 
     /** Creates new form TermOptionsPanel */
     public TermOptionsPanel() {
         initComponents();
 
         term = new Term();
-        final String line1String = "Hello from term\r\n";
+        final String line1String = Catalog.get("MSG_Hello") + "\r\n";	// NOI18N
         final char line1[] = line1String.toCharArray();
         term.putChars(line1, 0, line1.length);
 
@@ -115,6 +141,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
 
     private final PropertyChangeListener propertyListener =
         new PropertyChangeListener() {
+	@Override
             public void propertyChange(PropertyChangeEvent e) {
                 previewTermOptions();
             }
@@ -145,7 +172,9 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
      */
     private void applyTermOptions() {
         // TMP fontSizeSpinner.setValue(termOptions.getFontSize());
-        fontText.setText(termOptions.getFont().getFamily() + " " + termOptions.getFont().getSize());
+        fontText.setText(termOptions.getFont().getFamily() +
+		         " " +					// NOI18N
+			 termOptions.getFont().getSize());
         foregroundButton.setBackground(termOptions.getForeground());
         backgroundButton.setBackground(termOptions.getBackground());
         selectionButton.setBackground(termOptions.getSelectionBackground());
@@ -253,15 +282,15 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
                 fontSizeSpinner = new javax.swing.JSpinner();
                 foregroundLabel = new javax.swing.JLabel();
                 foregroundButton = new javax.swing.JButton();
-                act = new ColorAction(foregroundButton, "Choose Foreground Color");
+                act = new ColorAction(foregroundButton, LBL_ChooseForegroundColor);
                 foregroundButton.setAction(act);
                 backgroundLabel = new javax.swing.JLabel();
                 backgroundButton = new javax.swing.JButton();
-                act = new ColorAction(backgroundButton, "Choose Background Color");
+                act = new ColorAction(backgroundButton, LBL_ChooseBackgroundColor);
                 backgroundButton.setAction(act);
                 selectionLabel = new javax.swing.JLabel();
                 selectionButton = new javax.swing.JButton();
-                act = new ColorAction(selectionButton, "Choose Selection Background Color");
+                act = new ColorAction(selectionButton, LBL_ChooseSelectionBackgroundColor);
                 selectionButton.setAction(act);
                 historySizeLabel = new javax.swing.JLabel();
                 historySizeSpinner = new javax.swing.JSpinner();
@@ -277,7 +306,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
 
                 setLayout(new java.awt.GridBagLayout());
 
-                descriptionLabel.setText("Options governing Terminal Windows");
+                descriptionLabel.setText(LBL_Options);
                 gridBagConstraints = new java.awt.GridBagConstraints();
                 gridBagConstraints.gridx = 0;
                 gridBagConstraints.gridy = 0;
@@ -286,7 +315,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
                 gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
                 add(descriptionLabel, gridBagConstraints);
 
-                restoreButton.setText("Restore");
+                restoreButton.setText(CTL_Restore);
                 restoreButton.addActionListener(new java.awt.event.ActionListener() {
                         public void actionPerformed(java.awt.event.ActionEvent evt) {
                                 restoreActionPerformed(evt);
@@ -299,7 +328,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
                 gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
                 add(restoreButton, gridBagConstraints);
 
-                fontLabel.setText("Font:");
+                fontLabel.setText(LBL_Font);
                 gridBagConstraints = new java.awt.GridBagConstraints();
                 gridBagConstraints.gridx = 0;
                 gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -316,7 +345,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
                 gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
                 add(fontText, gridBagConstraints);
 
-                fontButton.setText("...");
+                fontButton.setText(CTL_Ellipsis);
                 fontButton.setMaximumSize(new java.awt.Dimension(20, 20));
                 fontButton.setMinimumSize(new java.awt.Dimension(20, 20));
                 fontButton.addActionListener(new java.awt.event.ActionListener() {
@@ -332,7 +361,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
                 add(fontButton, gridBagConstraints);
 
                 fontSizeLabel.setLabelFor(fontSizeSpinner);
-                fontSizeLabel.setText("Font Size:");
+                fontSizeLabel.setText(LBL_FontSize);
                 gridBagConstraints = new java.awt.GridBagConstraints();
                 gridBagConstraints.gridx = 0;
                 gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -353,7 +382,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
                 add(fontSizeSpinner, gridBagConstraints);
 
                 foregroundLabel.setLabelFor(foregroundButton);
-                foregroundLabel.setText("Foreground Color:");
+                foregroundLabel.setText(LBL_ForegroundColor);
                 gridBagConstraints = new java.awt.GridBagConstraints();
                 gridBagConstraints.gridx = 0;
                 gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -369,7 +398,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
                 add(foregroundButton, gridBagConstraints);
 
                 backgroundLabel.setLabelFor(backgroundButton);
-                backgroundLabel.setText("Background Color:");
+                backgroundLabel.setText(LBL_BackgroundColor);
                 gridBagConstraints = new java.awt.GridBagConstraints();
                 gridBagConstraints.gridx = 0;
                 gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -391,7 +420,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
                 add(backgroundButton, gridBagConstraints);
 
                 selectionLabel.setLabelFor(selectionButton);
-                selectionLabel.setText("Selection Background Color:");
+                selectionLabel.setText(LBL_SelectionBackgroundColor);
                 gridBagConstraints = new java.awt.GridBagConstraints();
                 gridBagConstraints.gridx = 0;
                 gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -408,7 +437,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
                 add(selectionButton, gridBagConstraints);
 
                 historySizeLabel.setLabelFor(historySizeSpinner);
-                historySizeLabel.setText("History Size:");
+                historySizeLabel.setText(LBL_HistorySize);
                 gridBagConstraints = new java.awt.GridBagConstraints();
                 gridBagConstraints.gridx = 0;
                 gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -429,7 +458,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
                 add(historySizeSpinner, gridBagConstraints);
 
                 tabSizeLabel.setLabelFor(tabSizeSpinner);
-                tabSizeLabel.setText("Tab Size:");
+                tabSizeLabel.setText(LBL_TabSize);
                 gridBagConstraints = new java.awt.GridBagConstraints();
                 gridBagConstraints.gridx = 0;
                 gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -449,7 +478,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
                 gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
                 add(tabSizeSpinner, gridBagConstraints);
 
-                clickToTypeCheckBox.setText("Click To Type");
+                clickToTypeCheckBox.setText(CTL_ClickToType);
                 clickToTypeCheckBox.addActionListener(new java.awt.event.ActionListener() {
                         public void actionPerformed(java.awt.event.ActionEvent evt) {
                                 clickToTypeActionPerformed(evt);
@@ -462,7 +491,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
                 gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
                 add(clickToTypeCheckBox, gridBagConstraints);
 
-                scrollOnInputCheckBox.setText("Scroll On Input");
+                scrollOnInputCheckBox.setText(CTL_ScrollOnInput);
                 scrollOnInputCheckBox.addActionListener(new java.awt.event.ActionListener() {
                         public void actionPerformed(java.awt.event.ActionEvent evt) {
                                 scrollOnInputActionPerformed(evt);
@@ -475,7 +504,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
                 gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
                 add(scrollOnInputCheckBox, gridBagConstraints);
 
-                scrollOnOutputCheckBox.setText("Scroll On Output");
+                scrollOnOutputCheckBox.setText(CTL_SrollOnOutput);
                 scrollOnOutputCheckBox.addActionListener(new java.awt.event.ActionListener() {
                         public void actionPerformed(java.awt.event.ActionEvent evt) {
                                 scrollOnOutputActionPerformed(evt);
@@ -488,7 +517,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
                 gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
                 add(scrollOnOutputCheckBox, gridBagConstraints);
 
-                lineWrapCheckBox.setText("Wrap Lines");
+                lineWrapCheckBox.setText(LBL_WrapLines);
                 lineWrapCheckBox.addActionListener(new java.awt.event.ActionListener() {
                         public void actionPerformed(java.awt.event.ActionEvent evt) {
                                 lineWrapActionPerformed(evt);
@@ -502,7 +531,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
                 add(lineWrapCheckBox, gridBagConstraints);
 
                 previewLabel.setLabelFor(previewPanel);
-                previewLabel.setText("Preview:");
+                previewLabel.setText(LBL_Preview);
                 gridBagConstraints = new java.awt.GridBagConstraints();
                 gridBagConstraints.gridx = 0;
                 gridBagConstraints.gridy = 11;
@@ -585,11 +614,11 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
 
     String getStyleName (int i) {
         if ((i & Font.BOLD) > 0)
-            if ((i & Font.ITALIC) > 0) return "CTL_BoldItalic";
-            else return "CTL_Bold";
+            if ((i & Font.ITALIC) > 0) return "CTL_BoldItalic";	// NOI18N
+            else return "CTL_Bold";				// NOI18N
         else
-            if ((i & Font.ITALIC) > 0) return "CTL_Italic";
-            else return "CTL_Plain";
+            if ((i & Font.ITALIC) > 0) return "CTL_Italic";	// NOI18N
+            else return "CTL_Plain";				// NOI18N
     }
 
 
@@ -606,7 +635,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         FontPanel panel = new FontPanel(termOptions.getFont(),this);
         int choice = JOptionPane.showOptionDialog(previewPanel,
                                                   panel,
-                                                  "TITLE",
+                                                  Catalog.get("LBL_Title"),	// NOI18N
                                                   JOptionPane.OK_CANCEL_OPTION,
                                                   JOptionPane.PLAIN_MESSAGE, null, null, null);
         if (choice == JOptionPane.OK_OPTION) {
