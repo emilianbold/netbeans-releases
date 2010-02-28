@@ -25,7 +25,7 @@ import org.openide.windows.OutputWriter;
  * @author ivan
  */
 
-@ServiceProvider(service = IOProvider.class, position=100)
+@ServiceProvider(service = IOProvider.class, position=200)
 
 public final class TerminalIOProvider extends IOProvider {
     @Override
