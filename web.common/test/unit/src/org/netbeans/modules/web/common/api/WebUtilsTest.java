@@ -53,6 +53,19 @@ public class WebUtilsTest extends CslTestBase {
         super(testName);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        WebUtils.UNIT_TESTING = true;
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        WebUtils.UNIT_TESTING = false;
+    }
+
+    
     public void toHexColorCode() {
         assertEquals("#ff0000", WebUtils.toHexCode(Color.RED));
         assertEquals("#2201aa", WebUtils.toHexCode(Color.decode("#2201aa")));
@@ -86,6 +99,42 @@ public class WebUtilsTest extends CslTestBase {
         assertNotNull(resolved);
         assertEquals(one, resolved);
 
+    }
+
+    public void testFileReference() {
+        FileObject one = getTestFile("one.txt");
+        assertNotNull(one);
+        FileObject two = getTestFile("folder/second.txt");
+        assertNotNull(two);
+
+        //test resolve path reference
+        FileReference resolved = WebUtils.resolveToReference(one, "folder/second.txt");
+        assertNotNull(resolved);
+
+        assertEquals(one, resolved.source());
+        assertEquals(two, resolved.target());
+        assertEquals(FileReferenceType.RELATIVE, resolved.type());
+        assertEquals("folder/second.txt", resolved.linkPath());
+        assertEquals("folder/second.txt", resolved.optimizedLinkPath());
+
+    }
+
+    public void testOptimizedLink() {
+        FileObject one = getTestFile("one.txt");
+        assertNotNull(one);
+        FileObject fourth = getTestFile("folder/innerfolder/fourth.txt");
+        assertNotNull(fourth);
+
+        FileReference resolved = WebUtils.resolveToReference(one, "folder/innerfolder/fourth.txt");
+        assertNotNull(resolved);
+        assertEquals(fourth, resolved.target());
+        assertEquals("folder/innerfolder/fourth.txt", resolved.optimizedLinkPath());
+
+        //and back
+        resolved = WebUtils.resolveToReference(fourth, "../../one.txt");
+        assertNotNull(resolved);
+        assertEquals(one, resolved.target());
+        assertEquals("../../one.txt", resolved.optimizedLinkPath());
     }
 
 }

@@ -57,6 +57,8 @@ import org.openide.filesystems.FileUtil;
  */
 public class WebUtils {
 
+    static boolean UNIT_TESTING = false;
+
     /**
      * Resolves the relative or absolute link from the base file
      *
@@ -65,6 +67,18 @@ public class WebUtils {
      * @return
      */
     public static FileObject resolve(FileObject source, String importedFileName) {
+        FileReference ref = resolveToReference(source, importedFileName);
+        return ref == null ? null : ref.target();
+    }
+
+    /**
+     * Resolves the relative or absolute link from the base file
+     *
+     * @param source The base file
+     * @param importedFileName the link
+     * @return FileReference instance which is a reference descriptor
+     */
+    public static FileReference resolveToReference(FileObject source, String importedFileName) {
         try {
             URI u = URI.create(importedFileName);
             File file = null;
@@ -96,7 +110,8 @@ public class WebUtils {
                             //causes that fileobject representing the same file are not equal
                             File resolvedFile = FileUtil.toFile(resolvedFileObject);
                             FileObject resolvedFileObjectInCanonicalForm = FileUtil.toFileObject(resolvedFile.getCanonicalFile());
-                            return resolvedFileObjectInCanonicalForm;
+                            FileReference ref = new FileReference(source, resolvedFileObjectInCanonicalForm, importedFileName, FileReferenceType.RELATIVE);
+                            return ref;
                         }
                     }
                 } else {
@@ -106,7 +121,8 @@ public class WebUtils {
                         //resolve the link relative to the web root
                         FileObject resolved = webRoot.getFileObject(file.getAbsolutePath());
                         if (resolved != null && resolved.isValid()) {
-                            return resolved;
+                            FileReference ref = new FileReference(source, resolved, importedFileName, FileReferenceType.ABSOLUTE);
+                            return ref;
                         }
                     }
                 }
@@ -167,4 +183,68 @@ public class WebUtils {
         }
         return sb.toString();
     }
+
+    /**
+     * Returns a relative path from source to target in one web-like project.
+     * ProjectWebRootQuery must return the same folder for both arguments.
+     *
+     * @param source normalized FileObject in canonical form
+     * @param target normalized FileObject in canonical form
+     * @return
+     */
+    public static String getRelativePath(FileObject source, FileObject target) {
+        if(!UNIT_TESTING) {
+            FileObject root1 = ProjectWebRootQuery.getWebRoot(source);
+            FileObject root2 = ProjectWebRootQuery.getWebRoot(target);
+            if(root1 == null) {
+                throw new IllegalArgumentException("Cannot find web root for source file " + source.getPath());
+            }
+            if(root2 == null) {
+                throw new IllegalArgumentException("Cannot find web root for target file " + target.getPath());
+            }
+            if(!root1.equals(root2)) {
+                throw new IllegalArgumentException("Source " + source.getPath() +  "and target " +
+                        target.getPath() + " files have no common web root!");
+            }
+        }
+
+        if(source.getParent().equals(target.getParent())) {
+            //both files in the same directory
+            //something like:
+            //source: base/file.txt
+            //target: base/target.txt
+            //
+            //result: target.txt
+            return target.getNameExt();
+        } else if(FileUtil.isParentOf(source.getParent(), target)) {
+            //something like:
+            //source: base/file.txt
+            //target: base/folder/target.txt
+            //
+            //result: folder/target.txt
+            return FileUtil.getRelativePath(source.getParent(), target);
+        } else if(FileUtil.isParentOf(target.getParent(), source)){
+            //something like:
+            //source: base/folder/file.txt
+            //target: base/target.txt
+            //
+            //result: ../target.txt
+            StringBuilder b = new StringBuilder();
+            FileObject parent = source.getParent();
+            while(parent != target.getParent()) {
+                b.append("../"); //NOI18N
+                parent = parent.getParent();
+            }
+            b.append(target.getNameExt());
+            return b.toString();
+
+
+        } else {
+            //relatively unmappable in the same web-like project
+            //in theory we should not get here after the initial checks
+        }
+
+        return null;
+    }
+
 }
