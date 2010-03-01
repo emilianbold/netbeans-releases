@@ -49,7 +49,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
@@ -281,7 +280,7 @@ public class ProjectBridge {
     
     public Folder getRoot(){
         Folder folder = makeConfigurationDescriptor.getLogicalFolders();
-        Vector<Folder> sources = folder.getFolders();
+        List<Folder> sources = folder.getFolders();
         for (Folder sub : sources){
             if (sub.isProjectFiles()) {
                 if (MakeConfigurationDescriptor.SOURCE_FILES_FOLDER.equals(sub.getName())) {
