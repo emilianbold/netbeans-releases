@@ -40,6 +40,7 @@ package org.netbeans.modules.web.common.api;
 
 import java.awt.Color;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,6 +48,7 @@ import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Various web utilities
@@ -90,7 +92,11 @@ public class WebUtils {
                     if(parent != null) {
                         FileObject resolvedFileObject = parent.getFileObject(importedFileName);
                         if (resolvedFileObject != null && resolvedFileObject.isValid()) {
-                            return resolvedFileObject;
+                            //normalize the file (may contain xxx/../../yyy parts which
+                            //causes that fileobject representing the same file are not equal
+                            File resolvedFile = FileUtil.toFile(resolvedFileObject);
+                            FileObject resolvedFileObjectInCanonicalForm = FileUtil.toFileObject(resolvedFile.getCanonicalFile());
+                            return resolvedFileObjectInCanonicalForm;
                         }
                     }
                 } else {
@@ -107,6 +113,8 @@ public class WebUtils {
             }
 
         } catch (IllegalArgumentException e) {
+            Logger.getAnonymousLogger().log(Level.INFO, "Cannot resolve import '" + importedFileName + "' from file " + source.getPath(), e); //NOI18N
+        } catch (IOException e) {
             Logger.getAnonymousLogger().log(Level.INFO, "Cannot resolve import '" + importedFileName + "' from file " + source.getPath(), e); //NOI18N
         }
         return null;
