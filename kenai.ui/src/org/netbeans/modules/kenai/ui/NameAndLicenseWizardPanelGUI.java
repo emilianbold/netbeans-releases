@@ -139,15 +139,20 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             public void actionPerformed(final ActionEvent e) {
                 if (kenaiCombo.getSelectedItem() instanceof Kenai) {
                     panel.setKenai(((Kenai) kenaiCombo.getSelectedItem()));
+                    refreshUsername();
+                    updatePrjNamePreview();
                 } else {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
                             new AddInstanceAction().actionPerformed(e);
                             panel.setKenai(((Kenai) kenaiCombo.getSelectedItem()));
+                            refreshUsername();
+                            updatePrjNamePreview();
                         }
                     });
                 }
+                setupLicensesListModel();
             }
         });
 
