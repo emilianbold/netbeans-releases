@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.osgi.customizer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -78,8 +79,8 @@ public final class InstructionsConverter {
         return instructionsMap;
     }
 
-    public static Map<String, Boolean> computeExportList (Map<Integer, String> exportInstructions, Project project) {
-        Map<String, Boolean> pkgMap = new TreeMap<String, Boolean>();
+    public static SortedMap<String, Boolean> computeExportList (Map<Integer, String> exportInstructions, Project project) {
+        SortedMap<String, Boolean> pkgMap = new TreeMap<String, Boolean>();
         SortedSet<String> pkgNames = FileUtilities.getPackageNames(project);
         for (String name : pkgNames) {
             pkgMap.put(name, Boolean.FALSE);

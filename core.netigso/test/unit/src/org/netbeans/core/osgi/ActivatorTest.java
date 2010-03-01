@@ -298,18 +298,31 @@ public class ActivatorTest extends NbTestCase {
         new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
                 "public class Install extends org.openide.modules.ModuleInstall {",
                 "public @Override void restored() {try {",
+                /*
                 "System.setProperty(\"my.file.length\", ",
+                "Long.toString(new java.io.File(org.openide.modules.InstalledFileLocator.getDefault().locate(" +
+                "\"some/stuff\", null, false).getParentFile(), \"otherstuff\").length()));",
+                 */
+                "System.setProperty(\"my.url.length\", ",
                 "Integer.toString(new java.net.URL(\"nbinst://custom/some/stuff\").openConnection().getContentLength()));",
                 "} catch (Exception x) {x.printStackTrace();}",
                 "}",
-                "}").sourceFile("OSGI-INF/files/some/stuff", "some text").manifest(
+                "}").
+                sourceFile("OSGI-INF/files/some/stuff", "some text").
+                /*
+                sourceFile("OSGI-INF/files/some/otherstuff", "hello").
+                 */
+                manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: custom.Install",
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().
                 module("org.netbeans.modules.masterfs").
                 backwards(). // XXX will not pass otherwise
                 run();
-        assertEquals("10", System.getProperty("my.file.length"));
+        /*
+        assertEquals("6", System.getProperty("my.file.length"));
+         */
+        assertEquals("10", System.getProperty("my.url.length"));
     }
 
 }

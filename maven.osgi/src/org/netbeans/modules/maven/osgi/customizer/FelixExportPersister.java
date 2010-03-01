@@ -42,6 +42,7 @@ package org.netbeans.modules.maven.osgi.customizer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.ModelUtils;
@@ -70,7 +71,7 @@ public class FelixExportPersister implements SelectedItemsTablePersister {
     }
 
     @Override
-    public Map<String, Boolean> read() {
+    public SortedMap<String, Boolean> read() {
         String[] exports = PluginPropertyUtils.getPluginPropertyList(project,
                 OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN,
                 OSGIConstants.PARAM_INSTRUCTIONS, OSGIConstants.EXPORT_PACKAGE,
@@ -96,7 +97,7 @@ public class FelixExportPersister implements SelectedItemsTablePersister {
     }
 
     @Override
-    public void write(Map<String, Boolean> selItems) {
+    public void write(SortedMap<String, Boolean> selItems) {
         Map<Integer, String> exportIns = InstructionsConverter.computeExportInstructions(selItems);
         final POMModel pomModel = handle.getPOMModel();
         
