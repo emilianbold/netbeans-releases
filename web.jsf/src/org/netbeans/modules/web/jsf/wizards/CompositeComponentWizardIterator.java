@@ -56,6 +56,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -71,6 +72,7 @@ public final class CompositeComponentWizardIterator implements TemplateWizard.It
     private static final String COMPONENT_FOLDER = "ezcomp";  //NOI18N
 
 
+    @Override
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
         DataObject result = null;
         String targetName = Templates.getTargetName(wizard);
@@ -90,9 +92,10 @@ public final class CompositeComponentWizardIterator implements TemplateWizard.It
 
 
 
+    @Override
     public void initialize(TemplateWizard wizard) {
         this.wizard = wizard;
-        selectedText = (String) wizard.getProperty("selectedText");
+        selectedText = (String) wizard.getProperty("selectedText"); //NOI18N
 
         Project project = Templates.getProject( wizard );
         Sources sources = project.getLookup().lookup(org.netbeans.api.project.Sources.class);
@@ -139,26 +142,38 @@ public final class CompositeComponentWizardIterator implements TemplateWizard.It
 	}
 }
 
+    @Override
     public void uninitialize(TemplateWizard wizard) {
         panels = null;
     }
 
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
 
+    @Override
     public String name() {
-        return index + 1 + ". from " + panels.length;
+        return new StringBuilder().
+                append(index).
+                append(1).
+                append(". "). //NOI18N
+                append(NbBundle.getMessage(CompositeComponentWizardIterator.class, "MSG_From")). //NOI18N
+                append(panels.length).
+                toString();
     }
 
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
 
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
 
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -166,6 +181,7 @@ public final class CompositeComponentWizardIterator implements TemplateWizard.It
         index++;
     }
 
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -174,36 +190,12 @@ public final class CompositeComponentWizardIterator implements TemplateWizard.It
     }
 
     // If nothing unusual changes in the middle of the wizard, simply:
+    @Override
     public void addChangeListener(ChangeListener l) {
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
-    }
-
-    // You could safely ignore this method. Is is here to keep steps which were
-    // there before this wizard was instantiated. It should be better handled
-    // by NetBeans Wizard API itself rather than needed to be implemented by a
-    // client code.
-    private String[] createSteps() {
-        String[] beforeSteps = null;
-        Object prop = wizard.getProperty("WizardPanel_contentData");
-        if (prop != null && prop instanceof String[]) {
-            beforeSteps = (String[]) prop;
-        }
-
-        if (beforeSteps == null) {
-            beforeSteps = new String[0];
-        }
-
-        String[] res = new String[(beforeSteps.length - 1) + panels.length];
-        for (int i = 0; i < res.length; i++) {
-            if (i < (beforeSteps.length - 1)) {
-                res[i] = beforeSteps[i];
-            } else {
-                res[i] = panels[i - beforeSteps.length + 1].getComponent().getName();
-            }
-        }
-        return res;
     }
 
 }
