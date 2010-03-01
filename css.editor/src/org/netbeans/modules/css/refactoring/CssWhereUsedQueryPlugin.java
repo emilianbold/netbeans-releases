@@ -110,7 +110,7 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
                 //2.hash color
                 Collection<FileObject> files;
                 ElementKind kind;
-                String elementImage = element.image();
+                String elementImage = econtext.getElementName();
                 RefactoringElementType type;
                 switch(element.kind()) {
                     case CssParserTreeConstants.JJT_CLASS:

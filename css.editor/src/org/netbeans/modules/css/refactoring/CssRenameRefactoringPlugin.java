@@ -127,23 +127,23 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             
             CssElementContext.Editor econtext = (CssElementContext.Editor) context;
             //get selected element in the editor
-            SimpleNode element = econtext.getElement();
+            int kind = econtext.getElement().kind();
+            String elementImage = econtext.getElementName();
 
-            if (element.kind() == CssParserTreeConstants.JJT_CLASS) {
+            if (kind == CssParserTreeConstants.JJT_CLASS) {
                 int elementPrefixLength = 1;
-                 String elementImage = element.image().substring(elementPrefixLength); //cut off the dot
+                elementImage = elementImage.substring(elementPrefixLength); //cut off the dot
                 Collection<FileObject> files = index.findClasses(elementImage);
                 refactor(lookup, modificationResult, RefactoringElementType.CLASS, files, elementPrefixLength, econtext, index, SELECTOR_RENAME_MSG_KEY);
-            } else if (element.kind() == CssParserTreeConstants.JJTHASH) {
+            } else if (kind == CssParserTreeConstants.JJTHASH) {
                 int elementPrefixLength = 1;
-                String elementImage = element.image().substring(elementPrefixLength); //cut off the dot
+                elementImage = elementImage.substring(elementPrefixLength); //cut off the dot
                 Collection<FileObject> files = index.findIds(elementImage);
                 refactor(lookup, modificationResult, RefactoringElementType.ID, files, elementPrefixLength, econtext, index, SELECTOR_RENAME_MSG_KEY);
-            } else if (element.kind() == CssParserTreeConstants.JJTHEXCOLOR) {
-                String elementImage = element.image();
+            } else if (kind == CssParserTreeConstants.JJTHEXCOLOR) {
                 Collection<FileObject> files = index.findColor(elementImage);
                 refactor(lookup, modificationResult, RefactoringElementType.COLOR, files, 0, econtext, index, COLOR_RENAME_MSG_KEY);
-            } else if (element.kind() == CssParserTreeConstants.JJTELEMENTNAME) {
+            } else if (kind == CssParserTreeConstants.JJTELEMENTNAME) {
                 refactorElement(modificationResult, econtext, index);
             } else {
                 //other nodes which may appear under the simple selector node

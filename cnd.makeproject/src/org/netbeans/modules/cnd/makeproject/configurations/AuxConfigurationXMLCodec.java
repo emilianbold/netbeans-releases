@@ -40,7 +40,8 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -53,7 +54,7 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
     private String tag;
     private ConfigurationDescriptor configurationDescriptor;
-    private Vector<XMLDecoder> decoders = new Vector<XMLDecoder>();
+    private List<XMLDecoder> decoders = new ArrayList<XMLDecoder>();
 
     public AuxConfigurationXMLCodec(String tag,
             ConfigurationDescriptor configurationDescriptor) {
@@ -63,21 +64,25 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     // interface XMLDecoder
+    @Override
     public String tag() {
         return tag;
     }
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) throws VersionException {
         String what = "project configuration"; // NOI18N
         checkVersion(atts, what, CURRENT_VERSION);
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
     }
 
     // interface XMLDecoder
+    @Override
     public void startElement(String element, Attributes atts) {
         if (element.equals(CONF_ELEMENT)) {
             String currentConfName = atts.getValue(NAME_ATTR);
@@ -86,14 +91,14 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
             // switch out old decoders
             for (int dx = 0; dx < decoders.size(); dx++) {
-                XMLDecoder decoder = decoders.elementAt(dx);
+                XMLDecoder decoder = decoders.get(dx);
                 deregisterXMLDecoder(decoder);
             }
 
             // switch in new decoders
             ConfigurationAuxObject[] profileAuxObjects =
                     currentConf.getAuxObjects();
-            decoders = new Vector<XMLDecoder>();
+            decoders = new ArrayList<XMLDecoder>();
             for (int i = 0; i < profileAuxObjects.length; i++) {
                 if (!profileAuxObjects[i].shared()) {
                     XMLDecoder newDecoder = profileAuxObjects[i].getXMLDecoder();
@@ -105,6 +110,7 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String element, String currentText) {
         if (element.equals(DEFAULT_CONF_ELEMENT)) {
             configurationDescriptor.getConfs().setActive(new Integer(currentText).intValue());
