@@ -100,4 +100,26 @@ public class OSGiRepositoryTest extends NbTestCase {
         assertTrue(settings, settings.contains("<string>hello</string>"));
     }
 
+    public void testDynamic() throws Exception {
+        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
+                "public class Install extends org.openide.modules.ModuleInstall {",
+                "public @Override void restored() {System.setProperty(\"dyn.file.length\", ",
+                "Long.toString(org.openide.filesystems.FileUtil.getConfigFile(\"whatever\").getSize()));}",
+                "}").sourceFile("custom/DynLayer.java", "package custom;",
+                "@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.FileSystem.class)",
+                "public class DynLayer extends org.openide.filesystems.MultiFileSystem {",
+                "public DynLayer() throws Exception {",
+                "org.openide.filesystems.FileSystem mem = org.openide.filesystems.FileUtil.createMemoryFileSystem();",
+                "java.io.OutputStream os = mem.getRoot().createData(\"whatever\").getOutputStream();",
+                "os.write(\"hello\".getBytes());",
+                "os.close();",
+                "setDelegates(mem);",
+                "}",
+                "}").manifest(
+                "OpenIDE-Module: custom",
+                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.filesystems").done().run();
+        assertEquals("5", System.getProperty("dyn.file.length"));
+    }
+
 }
