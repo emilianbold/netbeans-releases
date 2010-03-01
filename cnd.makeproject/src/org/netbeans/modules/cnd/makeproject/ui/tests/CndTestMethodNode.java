@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.testrunner.ui;
+package org.netbeans.modules.cnd.makeproject.ui.tests;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,9 +57,9 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Marian Petras, Erno Mononen
  */
-public final class PythonTestMethodNode extends TestMethodNode {
+public final class CndTestMethodNode extends TestMethodNode {
 
-    public PythonTestMethodNode(Testcase testcase, Project project) {
+    public CndTestMethodNode(Testcase testcase, Project project) {
         super(testcase, project, Lookups.singleton(new Locator() {
 
             public void jumpToSource(Node node) {
@@ -80,7 +80,7 @@ public final class PythonTestMethodNode extends TestMethodNode {
                 : testLocation;
 
         return jumpToLocation == null
-                ? new JumpToTestAction(testcase, project, NbBundle.getMessage(PythonTestMethodNode.class, "LBL_GoToSource"), false)
+                ? new JumpToTestAction(testcase, project, NbBundle.getMessage(CndTestMethodNode.class, "LBL_GoToSource"), false)
                 : new JumpToCallStackAction(this, jumpToLocation);
     }
     
@@ -149,8 +149,8 @@ public final class PythonTestMethodNode extends TestMethodNode {
         List<Action> actions = new ArrayList<Action>();
         actions.add(getPreferredAction());
         actions.add(new DiffViewAction(testcase));
-        actions.add(new RunTestMethodAction(testcase, project, NbBundle.getMessage(PythonTestMethodNode.class, "LBL_RerunTest"), false));
-        actions.add(new RunTestMethodAction(testcase, project, NbBundle.getMessage(PythonTestMethodNode.class, "LBL_DebugTest"), true));
+        actions.add(new RunTestMethodAction(testcase, project, NbBundle.getMessage(CndTestMethodNode.class, "LBL_RerunTest"), false));
+        actions.add(new RunTestMethodAction(testcase, project, NbBundle.getMessage(CndTestMethodNode.class, "LBL_DebugTest"), true));
 //        actions.add(new DisplayOutputForNodeAction(testcase.getOutput(), testcase.getSession()));
         return actions.toArray(new Action[actions.size()]);
     }

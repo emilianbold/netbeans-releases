@@ -36,7 +36,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.testrunner.ui;
+package org.netbeans.modules.cnd.makeproject.ui.tests;
 
 import java.util.Collections;
 import java.util.List;
@@ -52,7 +52,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
  * 
  * @author Erno Mononen
  */
-abstract class TestRecognizerHandler {
+public abstract class TestRecognizerHandler {
 
     private static final Logger LOGGER = Logger.getLogger(TestRecognizerHandler.class.getName());
     
