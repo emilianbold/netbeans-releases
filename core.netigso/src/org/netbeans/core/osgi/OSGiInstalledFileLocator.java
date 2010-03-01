@@ -49,6 +49,7 @@ import java.util.Iterator;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -57,6 +58,8 @@ import org.osgi.framework.Constants;
  * Adapted from {@code org.netbeans.modules.apisupport.jnlplauncher.InstalledFileLocatorImpl}.
  */
 class OSGiInstalledFileLocator extends InstalledFileLocator {
+
+    private static final String FILES = "OSGI-INF/files/";
 
     private final BundleContext context;
 
@@ -90,7 +93,7 @@ class OSGiInstalledFileLocator extends InstalledFileLocator {
             if (storage == null) {
                 return null;
             }
-            File f = new File(storage, relativePath.replace('/', File.separatorChar));
+            File f = unpackedLocation(storage, relativePath);
             if (f.exists()) {
                 return f;
             }
@@ -103,40 +106,49 @@ class OSGiInstalledFileLocator extends InstalledFileLocator {
                 case Bundle.UNINSTALLED:
                     continue;
                 }
-                URL resource = owner.getResource("OSGI-INF/files/" + relativePath);
-                if (resource == null) {
-                    // XXX also check for directories using owner.findEntries
+                if (owner.getResource(FILES + relativePath) == null) {
                     continue;
                 }
-//                System.err.println("unpacking " + resource + " to " + f);
+                // OK, this bundle seems to own the file. Unpack everything it contains at once.
                 try {
-                    File dir = f.getParentFile();
-                    if (!dir.isDirectory() && !dir.mkdirs()) {
-                        throw new IOException("Could not make " + dir);
-                    }
-                    InputStream is = resource.openStream();
-                    try {
-                        OutputStream os = new FileOutputStream(f);
+                    for (URL resource : NbCollections.iterable(NbCollections.checkedEnumerationByFilter(owner.findEntries(FILES, null, true), URL.class, true))) {
+                        String bundlepath = resource.getPath();
+                        if (bundlepath.endsWith("/")) {
+                            continue;
+                        }
+                        File f2 = unpackedLocation(storage, bundlepath.substring(FILES.length()));
+//                        System.err.println("unpacking " + resource + " to " + f2);
+                        File dir = f2.getParentFile();
+                        if (!dir.isDirectory() && !dir.mkdirs()) {
+                            throw new IOException("Could not make " + dir);
+                        }
+                        InputStream is = resource.openStream();
                         try {
-                            byte[] buf = new byte[4096];
-                            int read;
-                            while ((read = is.read(buf)) != -1) {
-                                os.write(buf, 0, read);
+                            OutputStream os = new FileOutputStream(f2);
+                            try {
+                                byte[] buf = new byte[4096];
+                                int read;
+                                while ((read = is.read(buf)) != -1) {
+                                    os.write(buf, 0, read);
+                                }
+                            } finally {
+                                os.close();
                             }
                         } finally {
-                            os.close();
+                            is.close();
                         }
-                    } finally {
-                        is.close();
                     }
                     return f;
-                    // XXX may want to unpack _all_ files from this module
                 } catch (IOException x) {
                     Exceptions.printStackTrace(x);
                 }
             }
         }
         return null;
+    }
+
+    private File unpackedLocation(String storage, String relativePath) {
+        return new File(storage, "files/" + relativePath.replace('/', File.separatorChar)); // NOI18N
     }
 
 }

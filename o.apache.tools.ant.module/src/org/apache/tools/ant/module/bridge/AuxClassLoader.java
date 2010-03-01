@@ -111,6 +111,10 @@ final class AuxClassLoader extends AntBridge.AllPermissionURLClassLoader {
             )
         );
     }
+
+    public @Override String toString() {
+        return super.toString() + "[nbLoader=" + nbLoader + "]"; // NOI18N
+    }
     
     // XXX should maybe do something with packages... but oh well, it is rather hard.
     

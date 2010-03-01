@@ -39,7 +39,10 @@
 package org.netbeans.core.osgi;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -56,6 +59,7 @@ import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.resources.FileResource;
 import org.netbeans.SetupHid;
 import org.netbeans.nbbuild.MakeOSGi;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 import org.openide.util.test.TestFileUtils;
 import org.osgi.framework.Bundle;
@@ -84,6 +88,7 @@ class OSGiProcess {
 
         private final int counter;
         private final Map<String, String> sources = new HashMap<String, String>();
+        private final List<Class<?>> classes = new ArrayList<Class<?>>();
         private String manifest;
 
         private NewModule() {
@@ -92,6 +97,16 @@ class OSGiProcess {
 
         public NewModule sourceFile(String path, String... contents) {
             sources.put(path, join(contents));
+            return this;
+        }
+
+        public NewModule clazz(Class<?> clazz) {
+            classes.add(clazz);
+            return this;
+        }
+
+        public <T> NewModule service(Class<T> xface, Class<? extends T> impl) {
+            sources.put("META-INF/services/" + xface.getName(), impl.getName() + "\n");
             return this;
         }
 
@@ -178,6 +193,24 @@ class OSGiProcess {
             File srcdir = new File(workDir, "custom" + newModule.counter);
             for (Map.Entry<String,String> entry : newModule.sources.entrySet()) {
                 TestFileUtils.writeFile(new File(srcdir, entry.getKey()), entry.getValue());
+            }
+            for (Class<?> clazz : newModule.classes) {
+                File f = new File(srcdir, clazz.getName().replace('.', File.separatorChar) + ".class");
+                File dir = f.getParentFile();
+                if (!dir.isDirectory() && !dir.mkdirs()) {
+                    throw new IOException("could not make dir " + dir);
+                }
+                OutputStream os = new FileOutputStream(f);
+                try {
+                    InputStream is = OSGiProcess.class.getClassLoader().getResourceAsStream(clazz.getName().replace('.', '/') + ".class");
+                    try {
+                        FileUtil.copy(is, os);
+                    } finally {
+                        is.close();
+                    }
+                } finally {
+                    os.close();
+                }
             }
             if (newModule.manifest != null) {
                 TestFileUtils.writeFile(new File(workDir, "custom" + newModule.counter + ".mf"), newModule.manifest);
