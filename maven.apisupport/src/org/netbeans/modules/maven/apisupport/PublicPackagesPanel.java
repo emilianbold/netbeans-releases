@@ -45,11 +45,14 @@
 
 package org.netbeans.modules.maven.apisupport;
 
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.FileUtilities;
@@ -72,6 +75,9 @@ import org.netbeans.modules.maven.spi.customizer.SelectedItemsTablePersister;
  * @author Dafe Simonek
  */
 public class PublicPackagesPanel extends javax.swing.JPanel implements SelectedItemsTablePersister {
+    private static final String ALL_SUBPACKAGES = ".*";
+    private static final String ALL_SUBPACKAGES_2 = ".**";
+    private static final int COALESCE_LIMIT = 2;
     private static final String NBM_ARTIFACT_ID = "nbm-maven-plugin";
     private static final String NBM_GROUP_ID = "org.codehaus.mojo";
     private static final String PUBLIC_PACKAGE = "publicPackage";
@@ -136,16 +142,8 @@ public class PublicPackagesPanel extends javax.swing.JPanel implements SelectedI
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public Map<String, Boolean> read() {
-        Map<String, Boolean> pkgMap = new TreeMap<String, Boolean>();
-
-        /*SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (groups != null && groups.length > 0) {
-            ComboBoxModel cbm = PackageView.createListView(groups[0]);
-            for (int i = 0; i < cbm.getSize(); i++) {
-                pkgMap.put(cbm.getElementAt(i).toString(), Boolean.FALSE);
-            }
-        }*/
+    public SortedMap<String, Boolean> read() {
+        SortedMap<String, Boolean> pkgMap = new TreeMap<String, Boolean>();
 
         SortedSet<String> packageNames = FileUtilities.getPackageNames(project);
         for (String pkgName : packageNames) {
@@ -158,7 +156,22 @@ public class PublicPackagesPanel extends javax.swing.JPanel implements SelectedI
 
         if (publicPkgs != null) {
             for (int i = 0; i < publicPkgs.length; i++) {
-                pkgMap.put(publicPkgs[i], Boolean.TRUE);
+                String prefix = null;
+                String curPkg = publicPkgs[i];
+                if (curPkg.endsWith(ALL_SUBPACKAGES)) {
+                    prefix = curPkg.substring(0, curPkg.length() - ALL_SUBPACKAGES.length());
+                } else if (curPkg.endsWith(ALL_SUBPACKAGES_2)) {
+                    prefix = curPkg.substring(0, curPkg.length() - ALL_SUBPACKAGES_2.length());
+                }
+                if (prefix == null) {
+                    pkgMap.put(curPkg, Boolean.TRUE);
+                } else {
+                    for (String pkgName : packageNames) {
+                        if (pkgName.startsWith(prefix)) {
+                            pkgMap.put(pkgName, Boolean.TRUE);
+                        }
+                    }
+                }
             }
         }
 
@@ -166,7 +179,7 @@ public class PublicPackagesPanel extends javax.swing.JPanel implements SelectedI
     }
 
     @Override
-    public void write(Map<String, Boolean> selItems) {
+    public void write(SortedMap<String, Boolean> selItems) {
         POMModel pomModel = handle.getPOMModel();
         Build build = pomModel.getProject().getBuild();
         boolean selEmpty = true;
@@ -224,16 +237,48 @@ public class PublicPackagesPanel extends javax.swing.JPanel implements SelectedI
         }
         POMExtensibilityElement publicP;
 
-        for (Entry<String, Boolean> entry : selItems.entrySet()) {
-            if (entry.getValue()) {
-                publicP = pomModel.getFactory().createPOMExtensibilityElement(
-                        new QName(PUBLIC_PACKAGE));
-                publicP.setElementText(entry.getKey());
-                packages.addExtensibilityElement(publicP);
-            }
+        for (String elemText : getPublicPackagesForPlugin(selItems)) {
+            publicP = pomModel.getFactory().createPOMExtensibilityElement(
+                    new QName(PUBLIC_PACKAGE));
+            publicP.setElementText(elemText);
+            packages.addExtensibilityElement(publicP);
         }
 
         handle.markAsModified(pomModel);
+    }
+
+    /**
+     * Transforms public packages in form of "selected items" map into
+     * set of strings describing public packages in maven-nbm-plugin syntax.
+     */
+    public static SortedSet<String> getPublicPackagesForPlugin (SortedMap<String, Boolean> selItems) {
+        SortedSet<String> result = new TreeSet<String>();
+        Set<String> processed = new HashSet<String>();
+        for (Entry<String, Boolean> entry : selItems.entrySet()) {
+            if (entry.getValue() && !processed.contains(entry.getKey())) {
+                boolean allSubpackages = true;
+                Set<String> processedCandidates = new HashSet<String>();
+                String prefix = entry.getKey() + ".";
+                for (String key : selItems.keySet()) {
+                    if (key.startsWith(prefix)) {
+                        if (selItems.get(key)) {
+                            processedCandidates.add(key);
+                        } else {
+                            allSubpackages = false;
+                            break;
+                        }
+                    }
+                }
+                if (allSubpackages && processedCandidates.size() > COALESCE_LIMIT) {
+                    result.add(entry.getKey() + ALL_SUBPACKAGES);
+                    processed.addAll(processedCandidates);
+                } else {
+                    result.add(entry.getKey());
+                }
+            }
+        }
+
+        return result;
     }
 
 }
