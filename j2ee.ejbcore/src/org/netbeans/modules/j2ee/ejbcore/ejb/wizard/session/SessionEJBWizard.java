@@ -114,6 +114,10 @@ public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIte
                 );
         FileObject result = null;
         try {
+            if (ejbPanel.hasRemote() && ejbPanel.getRemoteInterfaceProject() != null) {
+                String packageName = (String)wiz.getProperty(MultiTargetChooserPanel.TARGET_PACKAGE);
+                sessionGenerator.setRemoteInterfaceDestination(ejbPanel.getRemoteInterfaceProject(), packageName);
+            }
             result = sessionGenerator.generate();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
