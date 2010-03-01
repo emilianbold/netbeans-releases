@@ -1240,7 +1240,7 @@ verifyJavaHome() {
 		if [ -n "$javaVersion" ] && [ -n "$javaVmVersion" ] && [ -n "$vendor" ] && [ -n "$osname" ] && [ -n "$osarch" ] ; then
 		    debug "... seems to be java indeed"
 		    javaVersionEsc=`escapeBackslash "$javaVersion"`
-                    javaVmVersionEsc=`escapeBackslash "$javaVersionEsc"`
+                    javaVmVersionEsc=`escapeBackslash "$javaVmVersion"`
                     javaVersion=`awk 'END { idx = index(b,a); if(idx!=0) { print substr(b,idx,length(b)) } else { print a } }' a="$javaVersionEsc" b="$javaVmVersionEsc" < /dev/null`
 
 		    #remove build number
