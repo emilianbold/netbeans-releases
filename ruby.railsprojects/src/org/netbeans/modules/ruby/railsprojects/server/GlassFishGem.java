@@ -49,10 +49,10 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.gems.GemInfo;
+import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil.RailsVersion;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -114,15 +114,15 @@ class GlassFishGem implements RubyServer, ServerInstanceImplementation {
         return location;
     }
 
-    public String getStartupParam() {
-        return null;
+    public List<String> getStartupParams(RailsVersion version) {
+        return Collections.emptyList();
     }
 
     public String getScriptPrefix() {
         return "-S";
     }
 
-    public String getServerPath() {
+    public String getServerPath(RailsVersion version) {
         // glassfish_rails is deprecated in 0.9.4 and newer
         return compareVersion("0.9.4") >= 0 ? "glassfish" : "glassfish_rails";
     }
