@@ -230,8 +230,10 @@ public class WebUtils {
             //
             //result: ../target.txt
             StringBuilder b = new StringBuilder();
-            while(source.getParent() != target.getParent()) {
+            FileObject parent = source.getParent();
+            while(parent != target.getParent()) {
                 b.append("../");
+                parent = parent.getParent();
             }
             b.append(target.getNameExt());
             return b.toString();
