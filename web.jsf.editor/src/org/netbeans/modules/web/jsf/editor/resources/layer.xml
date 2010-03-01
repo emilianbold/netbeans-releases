@@ -15,12 +15,6 @@
                 </file>
             </folder>
             <folder name="xhtml">
-		<folder name="Popup">
-		    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
-			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
-			<attr name="position" intvalue="1350"/>
-		    </file>
-		</folder>
 		<folder name="RefactoringActions">
 		    <file name="org-netbeans-modules-web-jsf-editor-refactoring-actions-ConvertToCCAction.shadow">
 			<attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-web-jsf-editor-refactoring-actions-ConvertToCCAction.instance"/>
