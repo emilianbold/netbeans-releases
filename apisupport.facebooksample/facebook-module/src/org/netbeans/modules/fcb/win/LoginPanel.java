@@ -42,7 +42,10 @@ package org.netbeans.modules.fcb.win;
 
 import facebook.socialnetworkingservice.facebookresponse.User;
 import java.awt.EventQueue;
+import java.io.IOException;
 import org.netbeans.saas.facebook.FacebookSocialNetworkingService;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -87,7 +90,7 @@ public class LoginPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE))
+                        .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(99, 99, 99)
                         .addComponent(jButton1)))
@@ -122,15 +125,26 @@ public class LoginPanel extends javax.swing.JPanel {
                     finish();
                 } else {
                     jProgressBar1.setString("Signing in...");
-                    u = FacebookSocialNetworkingService.getUserInfo();
+                    try {
+                        u = FacebookSocialNetworkingService.getUserInfo();
+                    } catch (Exception ioe) {
+                        if (!(ioe instanceof IOException)) {
+                            throw new RuntimeException(ioe);
+                        }
+                    }
                     EventQueue.invokeLater(this);
                 }
             }
 
             void finish() {
                 jProgressBar1.setVisible(false);
-                assert u != null : "user is null :-(";
-                FcbTopComponent.setUser(u);
+                if (u != null) {
+                    FcbTopComponent.setUser(u);
+                } else {
+                    final NotifyDescriptor nd = new NotifyDescriptor.Message("Try again...",
+                            NotifyDescriptor.INFORMATION_MESSAGE);
+                    DialogDisplayer.getDefault().notify(nd);
+                }
             }
         }
         new X().init();
