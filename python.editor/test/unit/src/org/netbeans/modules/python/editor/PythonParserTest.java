@@ -5,9 +5,13 @@
 
 package org.netbeans.modules.python.editor;
 
+import java.util.List;
+import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.python.antlr.PythonTree;
 import org.python.antlr.Visitor;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.Error;
 
 /**
  *
@@ -58,6 +62,9 @@ public class PythonParserTest extends PythonTestBase {
 //    }
 
     private void checkNoParseAbort(String file) throws Exception {
+        checkNoParseAbort(file, null);
+    }
+    private void checkNoParseAbort(String file, String caretLine) throws Exception {
         PythonParser.runtimeException = null;
         CompilationInfo info = getInfo(file);
         PythonTree root = PythonAstUtils.getRoot(info);
@@ -72,6 +79,31 @@ public class PythonParserTest extends PythonTestBase {
 
             }.visit(root);
         }
+    }
+
+    protected void checkErrors(String relFilePath, String caretLine) throws Exception {
+        GsfTestCompilationInfo info = getInfo(relFilePath);
+
+        if (caretLine != null) {
+            int caretDelta = caretLine.indexOf("^");
+            assertTrue(caretDelta != -1);
+            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
+            int lineOffset = info.getText().indexOf(caretLine);
+            assertTrue("NOT FOUND: " + info.getFileObject().getName() + ":" + caretLine, lineOffset != -1);
+
+            int caretOffset = lineOffset + caretDelta;
+            info.setCaretOffset(caretOffset);
+        }
+
+        String text = info.getText();
+        assertNotNull(text);
+
+        ParserResult pr = info.getEmbeddedResult(info.getPreferredMimeType(), 0);
+        assertNotNull(pr);
+
+        List<Error> diagnostics = pr.getDiagnostics();
+        String annotatedSource = annotateErrors(text, diagnostics);
+        assertDescriptionMatches(relFilePath, annotatedSource, false, ".errors");
     }
     
     public void testPartial11() throws Exception {
@@ -134,5 +166,13 @@ public class PythonParserTest extends PythonTestBase {
     public void testMissingColons2() throws Exception {
         checkNoParseAbort("testfiles/errors11.py");
         checkErrors("testfiles/errors11.py");
+    }
+
+    // https://netbeans.org/bugzilla/show_bug.cgi?id=178442
+    public void testIncremental1() throws Exception {
+        checkErrors("testfiles/errors12.py", "ABC,^DEF");
+    }
+    public void testIncremental2() throws Exception {
+        checkErrors("testfiles/errors13.py", "newparam,^");
     }
 }

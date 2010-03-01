@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.debugger.jpda.ui.actions;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
@@ -167,25 +169,21 @@ implements PropertyChangeListener {
         JEditorPane[] editorPane = new JEditorPane[1];
         int adjustedLineNumber = checkLineBreakability(url, lineNumber, editorPane);
         if (adjustedLineNumber != lineNumber) {
-            if (adjustedLineNumber == -1) {
+            if (adjustedLineNumber == -1 || findBreakpoint(url, adjustedLineNumber) != null) {
+                java.awt.Toolkit.getDefaultToolkit().beep();
                 if (editorPane[0] != null) {
+                    Utilities.setStatusText(editorPane[0], ""); // workaroud, no status text is displayed when the same text has been already set before
                     String msg = NbBundle.getMessage(ToggleBreakpointActionProvider.class, "CTL_Cannot_Toggle_Breakpoint");
                     Utilities.setStatusText(editorPane[0], msg);
                 }
-                java.awt.Toolkit.getDefaultToolkit().beep();
                 return;
             } else {
                 if (editorPane[0] != null) {
+                    Utilities.setStatusText(editorPane[0], ""); // workaroud, no status text is displayed when the same text has been already set before
                     String msg = NbBundle.getMessage(ToggleBreakpointActionProvider.class, "CTL_Breakpoint_Position_Adjusted");
                     Utilities.setStatusText(editorPane[0], msg);
                 }
-                lineNumber = adjustedLineNumber;
-                // check if the adjusted breakpoint already exists
-                lb = findBreakpoint(url, lineNumber);
-                if (lb != null) {
-                    d.removeBreakpoint (lb);
-                    return;
-                }
+                lineNumber = adjustedLineNumber;                
             }
         }
 
@@ -329,6 +327,15 @@ implements PropertyChangeListener {
                             long offs = positions.getStartPosition(compUnit, outerTree);
                             result[0] = Utilities.getLineOffset(doc, (int)offs) + 1;
                         } else {
+                            if (outerTree != null && outerTree instanceof BlockTree) {
+                                Tree pTree = outerTreePath.getParentPath().getLeaf();
+                                if (pTree instanceof MethodTree) {
+                                    long endOffs = positions.getEndPosition(compUnit, pTree);
+                                    if (endOffs <= rowEndOffset) {
+                                        return; // i.e. result[0] is original lineNumber - allow toggle breakpoint at method end
+                                    }
+                                }
+                            }
                             result[0] = -1; // do not allow to add a breakpoint
                         }
                     }
