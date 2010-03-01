@@ -149,12 +149,12 @@ public class RailsProjectUtil {
 
     /**
      * Gets the rails version the given <code>project</code> uses. Returns
-     * <code>null</code> if the version could not be determined.
+     * version <code>0</code> if the version could not be determined.
      *
      * @param project
-     * @return
+     * @return the version; <code>0</code> if unknown, never <code>null</code>.
      */
-    public static String getRailsVersion(Project project) {
+    public static RailsVersion getRailsVersion(Project project) {
         GemManager gemManager = RubyPlatform.gemManagerFor(project);
         // Add in the builtins first (since they provide some more specific
         // UI configuration for known generators (labelling the arguments etc.)
@@ -180,7 +180,10 @@ public class RailsProjectUtil {
             }
         }
 
-        return railsVersion;
+        if (railsVersion == null) {
+            return new RailsVersion(0);
+        }
+        return versionFor(railsVersion);
     }
 
     /** Return the version of Rails requested in environment.rb */
@@ -314,6 +317,9 @@ public class RailsProjectUtil {
 
     }
 
+    /**
+     * Represents a rails version.
+     */
     public static final class RailsVersion implements Comparable<RailsVersion> {
         private final int major;
         private final int minor;
@@ -346,6 +352,10 @@ public class RailsProjectUtil {
 
         public String asString() {
             return getMajor() + "." + getMinor() + "." + getRevision();
+        }
+
+        public boolean isRails3OrHigher() {
+            return compareTo(new RailsVersion(3)) >= 0;
         }
 
         public int compareTo(RailsVersion o) {
