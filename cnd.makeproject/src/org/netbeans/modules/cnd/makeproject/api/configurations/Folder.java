@@ -70,6 +70,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
 
 public class Folder implements FileChangeListener, ChangeListener {
+
     public enum Kind {SOURCE_LOGICAL_FOLDER, SOURCE_DISK_FOLDER, IMPORTANT_FILES_FOLDER, TEST_LOGICAL_FOLDER, TEST};
 
     public static final String DEFAULT_FOLDER_NAME = "f"; // NOI18N
@@ -96,6 +97,14 @@ public class Folder implements FileChangeListener, ChangeListener {
         this.displayName = displayName;
         this.projectFiles = projectFiles;
         this.items = new ArrayList<Object>();
+    }
+
+    /**
+     * For internal purpose.
+     * Method reduce folder items size
+     */
+    public void pack() {
+        items.trimToSize();
     }
 
     private void setKind(Kind kind) {

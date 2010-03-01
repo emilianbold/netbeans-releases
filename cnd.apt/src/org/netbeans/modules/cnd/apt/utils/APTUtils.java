@@ -160,6 +160,19 @@ public class APTUtils {
         }
     }
 
+    public static APTToken createAPTToken(int type, int startOffset, int endOffset, int startColumn, int startLine, int endColumn, int endLine) {
+        // TODO: optimize factory
+        APTToken out = createAPTToken(type);
+        out.setType(type);
+        out.setColumn(startColumn);
+        out.setLine(startLine);
+        out.setOffset(startOffset);
+        out.setEndOffset(endOffset);
+        out.setEndColumn(endColumn);
+        out.setEndLine(endLine);
+        return out;
+    }
+
     public static APTToken createAPTToken(int type) {
         // Preprocessor tokens can be made constText, but we can get '#define' and '# define'
         // which have different text. so for now they are treated as usual tokens
