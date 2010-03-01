@@ -123,7 +123,7 @@ public class FacebookSocialNetworkingService {
             String format = null;
 
             RestResponse result = authExpireSession(format);
-            L.log(Level.SEVERE, "auth.expireSession: {0}", result.getDataAsString());
+            L.log(Level.FINE, "auth.expireSession: {0}", result.getDataAsString());
 
             if (result.getDataAsObject(AuthExpireSessionResponse.class) instanceof AuthExpireSessionResponse) {
                 AuthExpireSessionResponse resultObj = result.getDataAsObject(AuthExpireSessionResponse.class);
