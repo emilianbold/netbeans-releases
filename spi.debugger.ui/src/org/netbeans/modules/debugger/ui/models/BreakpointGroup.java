@@ -39,14 +39,11 @@
 
 package org.netbeans.modules.debugger.ui.models;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,11 +53,9 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -175,8 +170,7 @@ public class BreakpointGroup {
         
         for (int bi = 0; bi < bs.length; bi++) {
             Breakpoint b = bs[bi];
-            //Breakpoint.GroupProperties bprops = b.getGroupProperties();
-            GroupProperties bprops = GroupProperties.getFrom(b);
+            Breakpoint.GroupProperties bprops = b.getGroupProperties();
             if (bprops != null) {
                 if (bprops.isHidden()) {
                     continue;
@@ -467,124 +461,5 @@ public class BreakpointGroup {
 
     }
 
-
-    static final class GroupProperties {
-
-        static GroupProperties getFrom(Breakpoint b) {
-            try {
-                java.lang.reflect.Method m;
-                try {
-                    m = b.getClass().getMethod("getGroupProperties");
-                } catch (NoSuchMethodException ex) {
-                    m = b.getClass().getDeclaredMethod("getGroupProperties");
-                }
-                m.setAccessible(true);
-                Object gp = m.invoke(b);
-                if (gp == null) {
-                    return null;
-                }
-                return new GroupProperties(gp);
-            } catch (NoSuchMethodException ex) {
-                return null;
-            } catch (SecurityException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            } catch (IllegalAccessException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
-        }
-
-        private Object gp;
-
-        public GroupProperties(Object gp) {
-            this.gp = gp;
-        }
-
-        private Object getMethod(String methodName) {
-            try {
-                java.lang.reflect.Method m;
-                m = gp.getClass().getMethod(methodName);
-                m.setAccessible(true);
-                return m.invoke(gp);
-            } catch (IllegalAccessException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            } catch (NoSuchMethodException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            } catch (SecurityException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
-        }
-
-        /**
-         * Get the language of the source file with the breakpoint.
-         * @return The human-readable language of the breakpoint source file or <code>null</code>
-         * when this does not apply.
-         * @see <code>org.netbeans.spi.debugger.ui.BreakpointType.getCategoryDisplayName()</code>
-         */
-        public String getLanguage() {
-            return (String) getMethod("getLanguage");
-        }
-
-        /**
-         * Get the breakpoint type.
-         * @return The human-readable type of the breakpoint or <code>null</code>
-         * when this does not apply.
-         * @see <code>org.netbeans.spi.debugger.ui.BreakpointType.getTypeDisplayName()</code>
-         */
-        public String getType() {
-            return (String) getMethod("getType");
-        }
-
-        /**
-         * Get the source files containing this breakpoint.
-         * @return The source files where this breakpoint is submitted or <code>null</code>
-         * when this does not apply.
-         */
-        public FileObject[] getFiles() {
-            return (FileObject[]) getMethod("getFiles");
-        }
-
-        /**
-         * Get the projects containing this breakpoint.
-         * @return The projects in which this breakpoint is submitted or <code>null</code>
-         * when this does not apply.
-         */
-        public Project[] getProjects() {
-            return (Project[]) getMethod("getProjects");
-        }
-
-        /**
-         * Get the debugger engines that are currently actively using this breakpoint.
-         * @return The engines in which this breakpoint is active or <code>null</code>
-         * when this does not apply.
-         */
-        public DebuggerEngine[] getEngines() {
-            return (DebuggerEngine[]) getMethod("getEngines");
-        }
-
-        /**
-         * Test is this breakpoint is hidden (not visible to the user).
-         * @return <code>true</code> when this breakpoint is hidden, <code>false</code> otherwise.
-         */
-        public boolean isHidden() {
-            return (Boolean) getMethod("isHidden");
-        }
-    }
 
 }

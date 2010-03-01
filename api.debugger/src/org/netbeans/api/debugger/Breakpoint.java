@@ -43,6 +43,8 @@ package org.netbeans.api.debugger;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
 
 /**
  * Abstract definition of breakpoint.
@@ -58,6 +60,9 @@ public abstract class Breakpoint {
     public static final String          PROP_DISPOSED = "disposed"; // NOI18N
     /** Property name for name of group of the breakpoint. */
     public static final String          PROP_GROUP_NAME = "groupName"; // NOI18N
+    /** Property name for other group properties of the breakpoint. 
+     * @since 1.25 */
+    public static final String          PROP_GROUP_PROPERTIES = "groupProperties"; // NOI18N
     /** Property name for breakpoint validity */
     public static final String          PROP_VALIDITY = "validity"; // NOI18N
     /** Property name constant. */
@@ -187,16 +192,39 @@ public abstract class Breakpoint {
         }
         firePropertyChange(PROP_HIT_COUNT_FILTER, old, newProp);
     }
-    
+
+    /**
+     * Get the name of a user-created group for this breakpoint.
+     */
     public String getGroupName () {
         return groupName;
     }
     
+    /**
+     * Set the name of a user-created group for this breakpoint.
+     */
     public void setGroupName (String newGroupName) {
         if (groupName.equals (newGroupName)) return;
         String old = groupName;
         groupName = newGroupName.intern();
         firePropertyChange (PROP_GROUP_NAME, old, newGroupName);
+    }
+
+    /**
+     * Get group properties of the breakpoint.
+     * These are implementation-defined group properties as oposed to {@link #getGroupName()},
+     * which returns user-defined group name.
+     * <p>
+     * These properties are used by the Breakpoint Window to show a tree
+     * hierarchy of groups and associated breakpoints.
+     * Implementation should fire {@link #PROP_GROUP_PROPERTIES} event when
+     * the group properties change.
+     * @return {@link GroupProperties} or <code>null</code> when no group properties
+     * are defined.
+     * @since 1.25
+     */
+    public GroupProperties getGroupProperties() {
+        return null;
     }
     
     /** 
@@ -262,5 +290,58 @@ public abstract class Breakpoint {
     void disposeOut () {
         dispose ();
         firePropertyChange (PROP_DISPOSED, Boolean.FALSE, Boolean.TRUE);
+    }
+    
+
+    /**
+     * Group properties of breakpoint.
+     * These are used by the Breakpoint Window to show a tree hierarchy of
+     * groups and associated breakpoints.
+     * @since 1.25
+     */
+    public static abstract class GroupProperties {
+
+        /**
+         * Get the language of the source file with the breakpoint.
+         * @return The human-readable language of the breakpoint source file or <code>null</code>
+         * when this does not apply.
+         * @see <code>org.netbeans.spi.debugger.ui.BreakpointType.getCategoryDisplayName()</code>
+         */
+        public abstract String getLanguage();
+
+        /**
+         * Get the breakpoint type.
+         * @return The human-readable type of the breakpoint or <code>null</code>
+         * when this does not apply.
+         * @see <code>org.netbeans.spi.debugger.ui.BreakpointType.getTypeDisplayName()</code>
+         */
+        public abstract String getType();
+
+        /**
+         * Get the source files containing this breakpoint.
+         * @return The source files where this breakpoint is submitted or <code>null</code>
+         * when this does not apply.
+         */
+        public abstract FileObject[] getFiles();
+
+        /**
+         * Get the projects containing this breakpoint.
+         * @return The projects in which this breakpoint is submitted or <code>null</code>
+         * when this does not apply.
+         */
+        public abstract Project[] getProjects();
+
+        /**
+         * Get the debugger engines that are currently actively using this breakpoint.
+         * @return The engines in which this breakpoint is active or <code>null</code>
+         * when this does not apply.
+         */
+        public abstract DebuggerEngine[] getEngines();
+
+        /**
+         * Test is this breakpoint is hidden (not visible to the user).
+         * @return <code>true</code> when this breakpoint is hidden, <code>false</code> otherwise.
+         */
+        public abstract boolean isHidden();
     }
 }

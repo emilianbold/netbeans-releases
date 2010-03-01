@@ -159,9 +159,9 @@ public class FacebookSocialNetworkingServiceAuthenticator {
         Preferences pref = NbPreferences.forModule(FacebookSocialNetworkingServiceAuthenticator.class);
         pref.remove("sessionKey");
         pref.remove("sessionSecret");
-        FacebookSocialNetworkingService.logout();
         sessionKey = null;
         sessionSecret = null;
+        FacebookSocialNetworkingService.logout();
     }
 
     private static String getToken() throws IOException {
