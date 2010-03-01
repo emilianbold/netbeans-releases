@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.openide.util;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -90,6 +92,21 @@ public class ServiceProviderProcessorTest extends NbTestCase {
 
     public void testPosition() throws Exception {
         assertEquals(Arrays.<Class<?>>asList(OrderedImpl3.class, OrderedImpl2.class, OrderedImpl1.class), classesOfLookup(OrderedInterface.class));
+        // #181095: order in file should also be fixed, for benefit of ServiceLoader.
+        BufferedReader r = new BufferedReader(new InputStreamReader(ServiceProviderProcessorTest.class.getResourceAsStream(
+                "/META-INF/services/" + OrderedInterface.class.getName())));
+        List<String> lines = new ArrayList<String>();
+        String line;
+        while ((line = r.readLine()) != null) {
+            lines.add(line);
+        }
+        assertEquals(Arrays.asList(
+                OrderedImpl3.class.getName(),
+                "#position=100",
+                OrderedImpl2.class.getName(),
+                "#position=200",
+                OrderedImpl1.class.getName()
+                ), lines);
     }
     public interface OrderedInterface {}
     @ServiceProvider(service=OrderedInterface.class)

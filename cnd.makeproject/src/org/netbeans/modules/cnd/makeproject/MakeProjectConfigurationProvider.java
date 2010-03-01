@@ -65,13 +65,15 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
         this.projectDescriptorProvider = projectDescriptorProvider;
     }
 
+    @Override
     public Collection<Configuration> getConfigurations() {
         if (projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD) == null) {
             return Collections.<Configuration>emptySet();
         }
-        return projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD).getConfs().getConfsAsCollection();
+        return projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD).getConfs().getConfigurations();
     }
 
+    @Override
     public ProjectConfiguration getActiveConfiguration() {
         if (projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD) == null) {
             return null;
@@ -79,12 +81,14 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
         return projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD).getConfs().getActive();
     }
 
+    @Override
     public void setActiveConfiguration(ProjectConfiguration configuration) throws IllegalArgumentException, IOException {
         if (configuration instanceof Configuration && projectDescriptorProvider != null && projectDescriptorProvider.getConfigurationDescriptor() != null) {
             projectDescriptorProvider.getConfigurationDescriptor().getConfs().setActive((Configuration) configuration);
         }
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener lst) {
         pcs.addPropertyChangeListener(lst);
         if (projectDescriptorProvider != null && projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD) != null) { // IZ 122372
@@ -92,6 +96,7 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
         }
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener lst) {
         pcs.removePropertyChangeListener(lst);
         if (projectDescriptorProvider != null && projectDescriptorProvider.getConfigurationDescriptor(!ASYNC_LOAD) != null) {
@@ -99,6 +104,7 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
         }
     }
 
+    @Override
     public boolean hasCustomizer() {
         if (projectDescriptorProvider != null && projectDescriptorProvider.getConfigurationDescriptor() != null) {
             return true;
@@ -108,11 +114,13 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
         }
     }
 
+    @Override
     public void customize() {
         MakeCustomizerProvider makeCustomizer = project.getLookup().lookup(MakeCustomizerProvider.class);
         makeCustomizer.showCustomizer("Build"); // NOI18N
     }
 
+    @Override
     public boolean configurationsAffectAction(String command) {
         return false;
     /*
@@ -123,6 +131,7 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
      */
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         assert pcs != null;
 

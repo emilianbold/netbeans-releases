@@ -533,99 +533,99 @@ A test is included in commit validation that checks the editor code changes.
 -->
 <answer id="exec-property">
     <br/>
-    <api type="import" group="property" name="netbeans.debug.editor.document" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.document" category="private">
         System property to deubg inserts and removals done in the document.
     </api>
 
     <br/>
-    <api type="import" group="property" name="netbeans.debug.editor.document.stack" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.document.stack" category="private">
         System property to dump thread stacks during inserts and removals done in the document.
     </api>
 
     <br/>
-    <api type="import" group="property" name="netbeans.debug.editor.document.read" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.document.read" category="private">
         System property to debug loading of the document from a <code>java.io.Reader</code> by an <code>EditorKit</code>.
     </api>
-    <api type="import" group="property" name="netbeans.debug.editor.document.undo" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.document.undo" category="private">
         System property to debug undoing/redoing of the modifications done in the document.
     </api>
 
     <br/>
-    <api type="import" group="property" name="netbeans.debug.editor.view.rebuild" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.view.rebuild" category="private">
         System property to debug the view regions being rebuilt during document modifications.
     </api>
 
     <br/>
-    <api type="import" group="property" name="netbeans.debug.editor.view.paint" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.view.paint" category="private">
         System property to debug paint operations done in views (clipping regions sizes etc.).
     </api>
 
     <br/>
-    <api type="import" group="property" name="netbeans.debug.editor.view.repaint" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.view.repaint" category="private">
         System property to debug when repaints are initiated in views.
     </api>
 
     <br/>
-    <api type="import" group="property" name="netbeans.debug.editor.draw" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.draw" category="private">
         System property to debug the tokens that the drawing engine is rendering.
     </api>
 
     <br/>
-    <api type="import" group="property" name="netbeans.debug.editor.draw.fragment" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.draw.fragment" category="private">
         System property to debug particular fragments of the text being rendered by the editor's drawing engine.
     </api>
 
     <br/>
-    <api type="import" group="property" name="netbeans.debug.editor.draw.graphics" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.draw.graphics" category="private">
         System property to debug graphics operations that the editor sends to a <code>java.awt.Graphics</code>
         of the component being rendered.
     </api>
 
     <br/>
-    <api type="import" group="property" name="netbeans.debug.editor.format.modify" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.format.modify" category="private">
         System property to debug particular token modifications during the text formatting process.
     </api>
 
     <br/>
-    <api type="import" group="property" name="netbeans.debug.editor.caret.focus" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.caret.focus" category="private">
         System property to debug when a focus is gained and lost by the editor's caret.
     </api>
 
     <br/>
-    <api type="import" group="property" name="netbeans.debug.editor.caret.focus.extra" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.caret.focus.extra" category="private">
         System property to debug details of a focus related processing of the editor's caret (e.g. caret blinking timer etc.).
     </api>
 
     <br/>
-    <api type="import" group="property" name="netbeans.debug.editor.atomic" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.atomic" category="private">
         System property to debug when atomic transactions are performed over the editor's document.
     </api>
 
     <br/>
-    <api type="import" group="property" name="netbeans.debug.editor.atomic.stack" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.atomic.stack" category="private">
         System property to debug thread stacks during atomic transactions performed over the editor's document.
     </api>
 
     <br/>
-    <api type="import" group="property" name="netbeans.debug.editor.warmup" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.warmup" category="private">
         System property to debug execution of the editor's warmup task (e.g. time intervals that each warmup section takes etc.).
     </api>
-    <api type="import" group="property" name="netbeans.debug.editor.popup.menu" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.editor.popup.menu" category="private">
         System property to debug creation of the editor's popup menu. It shows the added popup menu item's text, whether it's invisible and action that produced the item.
     </api>
 
     <br/>
-    <api type="import" group="property" name="netbeans.debug.exceptions" category="private">
+    <api type="import" group="systemproperty" name="netbeans.debug.exceptions" category="private">
         Obsolete now, we will remove those when time allows.
     </api>
 
     <br/>
-    <api type="import" group="property" name="line.separator" category="official">
+    <api type="import" group="systemproperty" name="line.separator" category="official">
         To determine the line separator on a particular platform.
     </api>
 
     <br/>
-    <api type="import" group="property" name="org.netbeans.lib.editor.hyperlink.HyperlinkOperation.activationKey" category="private">
+    <api type="import" group="systemproperty" name="org.netbeans.lib.editor.hyperlink.HyperlinkOperation.activationKey" category="private">
         To specify modifiers for which the hyperlinking should be enabled, or to switch the hyperlinking off.
         Valid values are "[CSMA]+" (to specify combination of modifiers) or "off" (to switch hyperlinking off).
     </api>

@@ -42,6 +42,12 @@
 package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.util.ArrayList;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /** Miscellaneous utility classes useful for the C/C++/Fortran module */
 public class CppUtils {
@@ -124,4 +130,49 @@ public class CppUtils {
         
         return list;
     }
+
+    /**
+     * Converts absolute Windows paths to paths without the ':'.
+     * Example: C:/abc/def.c -> /cygdrive/c/def/c
+     */
+    public static String normalizeDriveLetter(CompilerSet cs, String path) {
+        if (path.length() > 1 && path.charAt(1) == ':') { // NOI18N
+            return cs.getCompilerFlavor().getToolchainDescriptor().getDriveLetterPrefix() + path.charAt(0) + path.substring(2); // NOI18N
+        }
+        return path;
+    }
+
+    public static String getQmakeSpec(CompilerSet cs, int platform) {
+        CompilerFlavor flavor = cs.getCompilerFlavor();
+        String qmakespec = flavor.getToolchainDescriptor().getQmakeSpec();
+        if (qmakespec != null && 0 <= qmakespec.indexOf("${os}")) { // NOI18N
+            String os = null;
+            switch (platform) {
+                case PlatformTypes.PLATFORM_LINUX:
+                    os = "linux"; // NOI18N
+                    break;
+                case PlatformTypes.PLATFORM_MACOSX:
+                    os = "macx"; // NOI18N
+                    break;
+                case PlatformTypes.PLATFORM_SOLARIS_INTEL:
+                case PlatformTypes.PLATFORM_SOLARIS_SPARC:
+                    os = "solaris"; // NOI18N
+                    break;
+                case PlatformTypes.PLATFORM_WINDOWS:
+                    os = "win32"; // NOI18N
+                    break;
+            }
+            if (os == null) {
+                qmakespec = null;
+            } else {
+                qmakespec = qmakespec.replaceAll("\\$\\{os\\}", os); // NOI18N
+            }
+        }
+        return qmakespec;
+    }
+
+    public static String getDefaultDevelopmentHost() {
+        return ExecutionEnvironmentFactory.toUniqueID(ServerList.getDefaultRecord().getExecutionEnvironment());
+    }
+
 }

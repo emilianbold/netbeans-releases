@@ -799,6 +799,7 @@ public final class ModuleManager {
             Dependency failedPackageDep = null;
             try {
                 ev.log(Events.PERF_START, "module preparation" ); // NOI18N
+                NetigsoFramework.willEnable(toEnable);
                 for (Module m: toEnable) {
                     fallback.addFirst(m);
                     Util.err.fine("enable: bringing up: " + m);
@@ -853,7 +854,6 @@ public final class ModuleManager {
                     ev.log(Events.PERF_END, "ModuleInstaller.prepare " + m.getCodeName() ); // NOI18N
                 }
                 ev.log(Events.PERF_END, "module preparation" ); // NOI18N
-
             } catch (InvalidException ie) {
                 // Remember that there was a problem with this guy.
                 Module bad = ie.getModule();
@@ -925,6 +925,7 @@ public final class ModuleManager {
                 Util.err.fine("enable: no class loader yet, not appending");
             }
             Util.err.fine("enable: continuing to installation");
+            NetigsoFramework.turnOn(classLoader, this.modules);
             installer.load(toEnable);
         }
         {
@@ -1593,6 +1594,7 @@ public final class ModuleManager {
                 Util.err.log(Level.WARNING, null, e);
             }
         }
+        NetigsoFramework.shutdownFramework();
         installer.close(sortedModules);
         return true;
     }

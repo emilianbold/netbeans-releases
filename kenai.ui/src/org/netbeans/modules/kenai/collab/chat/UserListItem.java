@@ -55,7 +55,7 @@ public class UserListItem implements ContactListItem {
 
     @Override
     public String toString() {
-        return entry.getJid();
+        return entry.getUser();
     }
 
     @Override
@@ -91,6 +91,11 @@ public class UserListItem implements ContactListItem {
 
     public boolean hasMessages() {
         return ChatNotifications.getDefault().hasNewPrivateMessages(entry.getJid());
+    }
+
+    @Override
+    public String getKenaiName() {
+        return KenaiConnection.getKenai(entry.getJid()).getName();
     }
 
 

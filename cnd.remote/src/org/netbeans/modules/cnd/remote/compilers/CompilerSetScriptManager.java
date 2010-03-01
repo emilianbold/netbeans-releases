@@ -42,9 +42,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.remote.support.RemoteConnectionSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.spi.toolchain.ToolchainScriptGenerator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -77,7 +77,7 @@ import org.openide.util.Exceptions;
                 HostInfo hinfo = HostInfoUtils.getHostInfo(executionEnvironment);
                 pb.setExecutable(hinfo.getShell()).setArguments("-s"); // NOI18N
                 Process process = pb.call();
-                process.getOutputStream().write(CompilerSetManager.getRemoteScript(null).getBytes());
+                process.getOutputStream().write(ToolchainScriptGenerator.generateScript(null).getBytes());
                 process.getOutputStream().close();
 
                 List<String> lines = ProcessUtils.readProcessOutput(process);
@@ -90,24 +90,24 @@ import org.openide.util.Exceptions;
                 }
 
                 if (status != 0) {
-                    RemoteUtil.LOGGER.warning("CSSM.runScript: FAILURE "+status); // NOI18N
+                    RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: FAILURE {0}", status); // NOI18N
                     ProcessUtils.logError(Level.ALL, RemoteUtil.LOGGER, process);
                 } else {
                     int i = 0;
                     for (String s: lines) {
-                        RemoteUtil.LOGGER.fine("CSSM.runScript line: " + s); // NOI18N
+                        RemoteUtil.LOGGER.log(Level.FINE, "CSSM.runScript line: {0}", s); // NOI18N
                         if (i == 0) {
                             platform = s;
-                            RemoteUtil.LOGGER.fine("    platform [" + platform + "]"); // NOI18N
+                            RemoteUtil.LOGGER.log(Level.FINE, "    platform [{0}]", platform); // NOI18N
                         } else {
-                            RemoteUtil.LOGGER.fine("    line [" + s + "]"); // NOI18N
+                            RemoteUtil.LOGGER.log(Level.FINE, "    line [{0}]", s); // NOI18N
                             compilerSets.add(s);
                         }
                         i++;
                     }
                 }
             } catch (IOException ex) {
-                RemoteUtil.LOGGER.warning("CSSM.runScript: IOException [" + ex.getMessage() + "]"); // NOI18N
+                RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: IOException [{0}]", ex.getMessage()); // NOI18N
                 setFailed(ex.getMessage());
             }
         }

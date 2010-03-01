@@ -86,7 +86,7 @@ final class PersistenceClientSetupPanel implements WizardDescriptor.Panel, Wizar
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx("framework_jsf_fromentity"); // NOI18N
+        return new HelpCtx("framework_jsf_fromentity_setup"); // NOI18N
     }
     
     public boolean isValid() {

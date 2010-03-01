@@ -40,7 +40,6 @@
  */
 package org.eclipse.core.runtime;
 
-import java.io.File;
 import java.util.logging.Level;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.osgi.framework.Bundle;
@@ -49,8 +48,7 @@ import org.osgi.framework.BundleContext;
 /**
  * @author Maros Sandor
  */
-public class Plugin {
-    private IPath stateLocation;
+public class Plugin {    
     private ILog log;
 
     public final Bundle getBundle() {
@@ -97,29 +95,7 @@ public class Plugin {
     }
     
     public final IPath getStateLocation() throws IllegalStateException {
-        if(stateLocation == null) {
-            File f = new File(BugtrackingRuntime.getInstance().getCacheStore(), "statelocation");
-            stateLocation = new StateLocation(f);
-        }
-        return stateLocation;
-    }
-
-    private class StateLocation implements IPath {
-        private final File file;
-
-        private StateLocation(File file) {
-            this.file = file;
-        }
-
-        public IPath append(String path) {
-            File f = new File(file, path);
-            return new StateLocation(f);
-        }
-
-        public File toFile() {
-            return file;
-        }
-
+        return Platform.getStateLocation(null);
     }
 
 }

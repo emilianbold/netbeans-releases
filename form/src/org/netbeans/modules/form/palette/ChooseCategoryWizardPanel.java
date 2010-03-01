@@ -66,6 +66,7 @@ class ChooseCategoryWizardPanel implements WizardDescriptor.FinishablePanel<AddT
     // ----------
     // WizardDescriptor.Panel implementation
 
+    @Override
     public java.awt.Component getComponent() {
         if (categorySelector == null) { // create the UI component for the wizard step
             categorySelector = new CategorySelector();
@@ -77,6 +78,7 @@ class ChooseCategoryWizardPanel implements WizardDescriptor.FinishablePanel<AddT
 
             categorySelector.getExplorerManager().addPropertyChangeListener(
                 new PropertyChangeListener() {
+                    @Override
                     public void propertyChange(PropertyChangeEvent ev) {
                         if (ExplorerManager.PROP_SELECTED_NODES.equals(ev.getPropertyName()))
                             cs.fireChange();
@@ -87,33 +89,40 @@ class ChooseCategoryWizardPanel implements WizardDescriptor.FinishablePanel<AddT
         return categorySelector;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelp() {
         // PENDING
         return new org.openide.util.HelpCtx("beans.adding"); // NOI18N
     }
 
+    @Override
     public boolean isValid() {
         return categorySelector != null
                && categorySelector.getSelectedCategory() != null;
     }
 
+    @Override
     public void readSettings(AddToPaletteWizard settings) {
     }
 
+    @Override
     public void storeSettings(AddToPaletteWizard settings) {
         if (categorySelector != null)
             settings.setSelectedCategory(categorySelector.getSelectedCategory());
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         cs.addChangeListener(listener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         cs.removeChangeListener(listener);
     }
 
     // WizardDescriptor.FinishablePanel implementation
+    @Override
     public boolean isFinishPanel() {
         return true;
     }

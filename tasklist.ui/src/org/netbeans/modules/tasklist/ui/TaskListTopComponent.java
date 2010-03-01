@@ -164,15 +164,15 @@ final class TaskListTopComponent extends TopComponent {
 
         tableScroll.setBorder(null);
 
-        org.jdesktop.layout.GroupLayout tableHolderPanelLayout = new org.jdesktop.layout.GroupLayout(tableHolderPanel);
+        javax.swing.GroupLayout tableHolderPanelLayout = new javax.swing.GroupLayout(tableHolderPanel);
         tableHolderPanel.setLayout(tableHolderPanelLayout);
         tableHolderPanelLayout.setHorizontalGroup(
-            tableHolderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, tableScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)
+            tableHolderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(tableScroll, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
         );
         tableHolderPanelLayout.setVerticalGroup(
-            tableHolderPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(tableScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE)
+            tableHolderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(tableScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();

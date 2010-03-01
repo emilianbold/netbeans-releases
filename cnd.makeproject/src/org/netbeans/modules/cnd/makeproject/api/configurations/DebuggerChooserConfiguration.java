@@ -46,6 +46,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.PrioritizedCustomizerNode;
+import org.openide.util.Lookup;
 
 public class DebuggerChooserConfiguration {
 
@@ -57,8 +58,8 @@ public class DebuggerChooserConfiguration {
     private boolean modified;
     private boolean dirty = false;
 
-    public DebuggerChooserConfiguration() {
-        init();
+    public DebuggerChooserConfiguration(Lookup lookup) {
+        init(lookup);
         reset();
     }
 
@@ -67,9 +68,9 @@ public class DebuggerChooserConfiguration {
         setModified(false);
     }
 
-    private static void init() {
+    private static void init(Lookup lookup) {
         if (nodes == null) {
-            nodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Debug"); // NOI18N
+            nodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Debug", lookup); // NOI18N
             String[] defnames = new String[] { "" };
 
             if (nodes.size() >= 1) {
@@ -117,7 +118,7 @@ public class DebuggerChooserConfiguration {
         return value;
     }
 
-    public void setModified(boolean b) {
+    public final void setModified(boolean b) {
         this.modified = b;
     }
 
@@ -137,7 +138,7 @@ public class DebuggerChooserConfiguration {
         return def;
     }
 
-    public void reset() {
+    public final void reset() {
         value = getDefault();
         setModified(false);
     }

@@ -246,7 +246,7 @@ public final class EjbViewController {
                 public void run(CompilationController compilationController) throws IOException {
                     compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = compilationController.getElements().getTypeElement(ejbClass);
-                    result.add(ElementHandle.create(typeElement));
+                    result.add(typeElement != null ? ElementHandle.create(typeElement) : null);
                 }
             }, true);
             return result.get(0);

@@ -59,7 +59,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
-import javax.swing.*;
 import javax.swing.JToggleButton.ToggleButtonModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.Document;
@@ -70,12 +69,15 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
+import javax.swing.DefaultListModel;
+import javax.swing.JComboBox;
 import org.netbeans.modules.javacard.JCUtil;
 import org.netbeans.modules.javacard.project.deps.ArtifactKind;
 import org.netbeans.modules.javacard.project.deps.DependenciesProvider;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependencies;
 import org.netbeans.modules.javacard.project.deps.ResolvedDependency;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
+import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
 import org.openide.util.Cancellable;
 
@@ -103,7 +105,7 @@ public class JCProjectProperties implements PlatformAndDeviceProvider {
     public ToggleButtonModel ENABLE_DEPRECATION_BUTTON_MODEL;
     public ToggleButtonModel SIGN_JAR_BUTTON_MODEL;
     public Document KEYSTORE_DOCUMENT;
-    private StoreGroup group = new StoreGroup();
+    private JCStoreGroup group = new JCStoreGroup();
     private StoreGroup passwordsGroup = new StoreGroup();
 
     public JCProjectProperties(JCProject project) {
@@ -132,7 +134,11 @@ public class JCProjectProperties implements PlatformAndDeviceProvider {
         GENERATE_DEBUG_INFO_BUTTON_MODEL = group.createToggleButtonModel(eval, ProjectPropertyNames.PROJECT_PROP_JAVAC_DEBUG);
         ENABLE_DEPRECATION_BUTTON_MODEL = group.createToggleButtonModel(eval, ProjectPropertyNames.PROJECT_PROP_JAVAC_DEPRECATION);
         SIGN_JAR_BUTTON_MODEL = group.createToggleButtonModel(eval, ProjectPropertyNames.PROJECT_PROP_SIGN_JAR);
-        KEYSTORE_DOCUMENT = group.createStringDocument(eval, ProjectPropertyNames.PROJECT_PROP_KEYSTORE_PATH);
+        KEYSTORE_DOCUMENT = group.createResolvingDocument(eval,
+                ProjectPropertyNames.PROJECT_PROP_KEYSTORE_PATH,
+                JavacardPlatformKeyNames.PLATFORM_HOME,
+                JavacardPlatformKeyNames.PLATFORM_RI_HOME,
+                "basedir"); //NOI18N
         KEYSTORE_ALIAS_DOCUMENT = group.createStringDocument (eval, ProjectPropertyNames.PROJECT_PROP_KEYSTORE_ALIAS);
         KEYSTORE_PASSWORD_DOCUMENT = passwordsGroup.createStringDocument (eval, ProjectPropertyNames.PROJECT_PROP_KEYSTORE_PASSWORD);
         KEYSTORE_ALIAS_PASSWORD_DOCUMENT = passwordsGroup.createStringDocument (eval, ProjectPropertyNames.PROJECT_PROP_KEYSTORE_ALIAS_PASSWORD);

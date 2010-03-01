@@ -55,6 +55,7 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param writer  output stream to generated makefile
      */
+    @Override
     public void writePrelude(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
         ConfigurationMakefileWriter.writePrelude(confDescriptor, conf, writer);
     }
@@ -66,8 +67,33 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param writer  output stream to generated makefile
      */
+    @Override
     public void writeBuildTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
         ConfigurationMakefileWriter.writeBuildTarget(confDescriptor, conf, writer);
+    }
+
+    /**
+     * Writes build test target
+     *
+     * @param confDescriptor  project configuration descriptor
+     * @param conf  current project configuration
+     * @param writer  output stream to generated makefile
+     */
+    @Override
+    public void writeBuildTestTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
+        ConfigurationMakefileWriter.writeBuildTestTarget(confDescriptor, conf, writer);
+    }
+
+    /**
+     * Writes test target
+     *
+     * @param confDescriptor  project configuration descriptor
+     * @param conf  current project configuration
+     * @param writer  output stream to generated makefile
+     */
+    @Override
+    public void writeRunTestTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
+        ConfigurationMakefileWriter.writeRunTestTarget(confDescriptor, conf, writer);
     }
 
     /**
@@ -77,8 +103,21 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param writer  output stream to generated makefile
      */
+    @Override
     public void writeCompileTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
         ConfigurationMakefileWriter.writeCompileTargets(confDescriptor, conf, writer);
+    }
+
+    /**
+     * Writes all compile test targets (only for managed projects)
+     *
+     * @param confDescriptor  project configuration descriptor
+     * @param conf  current project configuration
+     * @param writer  output stream to generated makefile
+     */
+    @Override
+    public void writeCompileTestTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
+        ConfigurationMakefileWriter.writeCompileTestTargets(confDescriptor, conf, writer);
     }
 
     /**
@@ -88,8 +127,21 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param writer  output stream to generated makefile
      */
+    @Override
     public void writeLinkTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
         ConfigurationMakefileWriter.writeLinkTarget(confDescriptor, conf, writer);
+    }
+
+    /**
+     * Writes link target (only for linked projects)
+     *
+     * @param confDescriptor  project configuration descriptor
+     * @param conf  current project configuration
+     * @param writer  output stream to generated makefile
+     */
+    @Override
+    public void writeLinkTestTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
+        ConfigurationMakefileWriter.writeLinkTestTarget(confDescriptor, conf, writer);
     }
 
     /**
@@ -99,6 +151,7 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param writer  output stream to generated makefile
      */
+    @Override
     public void writeArchiveTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
         ConfigurationMakefileWriter.writeArchiveTarget(confDescriptor, conf, writer);
     }
@@ -110,6 +163,7 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param writer  output stream to generated makefile
      */
+    @Override
     public void writeMakefileTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
         ConfigurationMakefileWriter.writeMakefileTarget(confDescriptor, conf, writer);
     }
@@ -121,17 +175,19 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param writer  output stream to generated makefile
      */
+    @Override
     public void writeQTTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
         ConfigurationMakefileWriter.writeQTTarget(confDescriptor, conf, writer);
     }
 
     /**
-     * Writes clan target
+     * Writes clean target
      *
      * @param confDescriptor  project configuration descriptor
      * @param conf  current project configuration
      * @param writer  output stream to generated makefile
      */
+    @Override
     public void writeCleanTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
         ConfigurationMakefileWriter.writeCleanTarget(confDescriptor, conf, writer);
     }
@@ -143,6 +199,7 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param writer  output stream to generated makefile
      */
+    @Override
     public void writeSubProjectBuildTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
         ConfigurationMakefileWriter.writeSubProjectBuildTargets(confDescriptor, conf, writer);
     }
@@ -154,6 +211,7 @@ public class DefaultMakefileWriter implements MakefileWriter {
      * @param conf  current project configuration
      * @param writer  output stream to generated makefile
      */
+    @Override
     public void writeDependencyChecking(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
         ConfigurationMakefileWriter.writeDependencyChecking(confDescriptor, conf, writer);
     }

@@ -72,6 +72,10 @@ public class AjaxCometServlet extends HttpServlet {
 
     private static final long serialVersionUID = -2919167206889576860L;
 
+    private static final String JUNK = "<!-- Comet is a programming technique that enables web " +
+            "servers to send data to the client without having any need " +
+            "for the client to request it. -->\n";
+
     private Thread notifierThread = null;
 
     @Override
@@ -111,14 +115,15 @@ public class AjaxCometServlet extends HttpServlet {
         res.setHeader("Pragma", "no-cache");
         
         PrintWriter writer = res.getWriter();
-        // for IE
-        writer.println("<!-- Comet is a programming technique that enables web servers to send data to the client without having any need for the client to request it. -->\n");
+        // for Safari, Chrome, IE and Opera
+        for (int i = 0; i < 10; i++) {
+            writer.write(JUNK);
+        }
         writer.flush();
 
-        req.setAsyncTimeout(10 * 60 * 1000);
         final AsyncContext ac = req.startAsync();
-        queue.add(ac);
-        req.addAsyncListener(new AsyncListener() {
+        ac.setTimeout(10  * 60 * 1000);
+        ac.addListener(new AsyncListener() {
             public void onComplete(AsyncEvent event) throws IOException {
                 queue.remove(ac);
             }
@@ -127,9 +132,14 @@ public class AjaxCometServlet extends HttpServlet {
                 queue.remove(ac);
             }
 
-            public void onError(AsyncEvent arg0) throws IOException {
+            public void onError(AsyncEvent event) throws IOException {
+                queue.remove(ac);
+            }
+
+            public void onStartAsync(AsyncEvent event) throws IOException {
             }
         });
+        queue.add(ac);
     }
 
     @Override
@@ -169,7 +179,9 @@ public class AjaxCometServlet extends HttpServlet {
         try {
             messageQueue.put(cMessage);
         } catch(Exception ex) {
-            throw new IOException(ex);
+            IOException t = new IOException();
+            t.initCause(ex);
+            throw t;
         }
     }
 

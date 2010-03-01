@@ -42,7 +42,7 @@
 package org.netbeans.modules.subversion;
 
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.client.SvnClient;
 import java.io.File;
@@ -54,11 +54,12 @@ import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.notifications.NotificationsManager;
 import org.netbeans.modules.subversion.ui.status.StatusAction;
 import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.subversion.util.SvnSearchHistorySupport;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.*;
 
@@ -365,6 +366,8 @@ class FilesystemHandler extends VCSInterceptor {
                     }
                 }
             };
+        } else if (SearchHistorySupport.PROVIDED_EXTENSIONS_SEARCH_HISTORY.equals(attrName)){
+            return new SvnSearchHistorySupport(file);
         } else {
             return super.getAttribute(file, attrName);
         }

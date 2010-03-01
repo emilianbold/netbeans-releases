@@ -46,6 +46,7 @@ import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -57,6 +58,8 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.spi.CustomizerProvider;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
@@ -64,12 +67,15 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescriptionFactory;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.jackpot.spi.HintProvider;
+import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.Rule;
 import org.netbeans.modules.java.hints.spi.TreeRule;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -80,6 +86,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
+
+import static org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription;
 
 /** Manages rules read from the system filesystem.
  *
@@ -102,7 +110,7 @@ public class RulesManager implements FileChangeListener {
     private static final String SUGGESTIONS = "suggestions"; // NOI18N
 
     // Maps of registered rules
-    private final Map<String,List<ErrorRule>> errors = new HashMap<String, List<ErrorRule>>();
+    private final Map<String, Map<String,List<ErrorRule>>> mimeType2Errors = new HashMap<String, Map<String, List<ErrorRule>>>();
     private final Map<HintMetadata, Collection<? extends HintDescription>> metadata = new HashMap<HintMetadata, Collection<? extends HintDescription>>();
 
     private static RulesManager INSTANCE;
@@ -118,8 +126,14 @@ public class RulesManager implements FileChangeListener {
         return INSTANCE;
     }
 
-    public synchronized Map<String,List<ErrorRule>> getErrors() {
-        return errors;
+    public synchronized Map<String,List<ErrorRule>> getErrors(String mimeType) {
+        Map<String,List<ErrorRule>> res = mimeType2Errors.get(mimeType);
+
+        if (res == null) {
+            res = Collections.emptyMap();
+        }
+
+        return res;
     }
 
     private synchronized void doInit() {
@@ -131,10 +145,9 @@ public class RulesManager implements FileChangeListener {
     // Private methods ---------------------------------------------------------
 
     private void initErrors() {
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
         FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + ERRORS );
         List<Pair<Rule,FileObject>> rules = readRules( folder );
-        categorizeErrorRules(rules, errors, folder, rootNode);
+        categorizeErrorRules(rules, mimeType2Errors, folder);
     }
 
     private void initHints() {
@@ -193,27 +206,27 @@ public class RulesManager implements FileChangeListener {
     }
 
     private static void categorizeErrorRules( List<Pair<Rule,FileObject>> rules,
-                                             Map<String,List<ErrorRule>> dest,
-                                             FileObject rootFolder,
-                                             DefaultMutableTreeNode rootNode ) {
+                                             Map<String, Map<String,List<ErrorRule>>> dest,
+                                             FileObject rootFolder) {
         dest.clear();
-        Map<FileObject,DefaultMutableTreeNode> dir2node = new HashMap<FileObject, DefaultMutableTreeNode>();
-        dir2node.put(rootFolder, rootNode);
 
         for( Pair<Rule,FileObject> pair : rules ) {
             Rule rule = pair.getA();
             FileObject fo = pair.getB();
+            String mime = FileUtil.getRelativePath(rootFolder, fo.getParent());
+
+            if (mime.length() == 0) {
+                mime = Utilities.JAVA_MIME_TYPE;
+            }
 
             if ( rule instanceof ErrorRule ) {
-                addRule( (ErrorRule)rule, dest );
-                FileObject parent = fo.getParent();
-                DefaultMutableTreeNode category = dir2node.get( parent );
-                if ( category == null ) {
-                    category = new DefaultMutableTreeNode( parent );
-                    rootNode.add( category );
-                    dir2node.put( parent, category );
+                Map<String, List<ErrorRule>> map = dest.get(mime);
+
+                if (map == null) {
+                    dest.put(mime, map = new HashMap<String, List<ErrorRule>>());
                 }
-                category.add( new DefaultMutableTreeNode( rule, false ) );
+
+                addRule( (ErrorRule)rule, map );
             }
             else {
                 LOG.log( Level.WARNING, "The rule defined in " + fo.getPath() + "is not instance of ErrorRule" );
@@ -387,7 +400,26 @@ public class RulesManager implements FileChangeListener {
         }
 
         public Collection<? extends ErrorDescription> createErrors(HintContext ctx) {
-            return tr.run(ctx.getInfo(), ctx.getPath());
+            Collection<? extends ErrorDescription> result = tr.run(ctx.getInfo(), ctx.getPath());
+
+            if (result == null) return result;
+
+            Collection<ErrorDescription> wrapped = new LinkedList<ErrorDescription>();
+
+            for (ErrorDescription ed : result) {
+                List<Fix> fixesForED = ErrorDescriptionFactory.resolveDefaultFixes(ctx, ed.getFixes().getFixes().toArray(new Fix[0]));
+
+                ErrorDescription nue = createErrorDescription(ed.getSeverity(),
+                                                              ed.getDescription(),
+                                                              fixesForED,
+                                                              ed.getFile(),
+                                                              ed.getRange().getBegin().getOffset(),
+                                                              ed.getRange().getEnd().getOffset());
+
+                wrapped.add(nue);
+            }
+
+            return wrapped;
         }
     }
     

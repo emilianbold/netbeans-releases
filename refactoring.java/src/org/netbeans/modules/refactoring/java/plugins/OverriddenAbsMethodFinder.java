@@ -62,15 +62,10 @@ final class OverriddenAbsMethodFinder implements CancellableTask<CompilationCont
                 compilationController);
         for (ExecutableElement overriddenMethod : overriddenMethods) {
             if(overriddenMethod.getModifiers().contains(Modifier.ABSTRACT)){
-                TreePath overriddenMethTreePath = getTreePath(overriddenMethod, compilationController);
-                refactoringElements.add(new ElementGrip(overriddenMethTreePath, compilationController));
+                refactoringElements.add(new ElementGrip(overriddenMethod, compilationController));
             }
         }
 
-    }
-
-    private static TreePath getTreePath(ExecutableElement overriddenMethod, CompilationController compilationController) {
-        return compilationController.getTrees().getPath(overriddenMethod);
     }
 
 }

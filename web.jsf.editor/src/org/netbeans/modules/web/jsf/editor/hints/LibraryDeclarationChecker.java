@@ -128,13 +128,21 @@ public class LibraryDeclarationChecker extends HintsProvider {
                 } else if (node.type() == AstNode.NodeType.UNKNOWN_TAG && node.getNamespacePrefix() != null) {
                     //3. check for undeclared components
 
+                    List<HintFix> fixes = new ArrayList<HintFix>();
+                    List<FaceletsLibrary> libs = FixLibDeclaration.getLibsByPrefix(context.doc, node.getNamespacePrefix());
+
+                    for (FaceletsLibrary lib : libs){
+                        FixLibDeclaration fix = new FixLibDeclaration(context.doc, node.getNamespacePrefix(), lib);
+                        fixes.add(fix);
+                    }
+
                     //this itself means that the node is undeclared since
                     //otherwise it wouldn't appear in the pure html parse tree
                     Hint hint = new Hint(DEFAULT_ERROR_RULE,
                             NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT"), //NOI18N
                             context.parserResult.getSnapshot().getSource().getFileObject(),
                             JsfUtils.createOffsetRange(snapshot, node.startOffset(), node.startOffset() + node.name().length() + 1 /* "<".length */),
-                            Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
+                            fixes, DEFAULT_ERROR_HINT_PRIORITY);
                     hints.add(hint);
                 }
             }

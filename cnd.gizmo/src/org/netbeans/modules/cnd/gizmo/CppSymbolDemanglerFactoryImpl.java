@@ -40,7 +40,7 @@ package org.netbeans.modules.cnd.gizmo;
 
 import java.util.Map;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;

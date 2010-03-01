@@ -48,6 +48,7 @@ made subject to such option by the copyright holder.
                 <folder name="ApiSupport">
                     <file name="SampleCRUDAppProject.zip" url="SampleCRUDAppProject.zip">
                         <!--<attr name="position" intvalue="300"/>-->
+                        <attr name="position" intvalue="3000"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/crudsample/sampleCRUD.png"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.crudsample.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.crudsample.SampleAppWizardIterator.createIterator"/>

@@ -85,8 +85,10 @@ public final class BrokenPlatformReferenceTest extends NbTestCase {
         TestBase.makePlatform(install);
         // Now set up build.properties accordingly:
         InstalledFileLocatorImpl.registerDestDir(install);
-        assertEquals("set up run correctly", install.getAbsolutePath(),
-                PropertyUtils.getGlobalProperties().getProperty("nbplatform.default.netbeans.dest.dir"));
+        EditableProperties ep = PropertyUtils.getGlobalProperties();
+        ep.put("nbplatform.default.netbeans.dest.dir", install.getAbsolutePath());
+        ep.put("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness");
+        PropertyUtils.putGlobalProperties(ep);
         install2 = new File(getWorkDir(), "install2");
         TestBase.makePlatform(install2);
         NbPlatform.addPlatform("install2", install2, "install2");

@@ -91,29 +91,12 @@ made subject to such option by the copyright holder.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/emptyApplication.html"/>
                 </file>
             </folder>
-            <folder name="Maven2">
-                <file name="NbModule">
-                    <attr name="position" intvalue="400"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.SimpleWizardIterator.createNbModuleIterator"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/NbModuleDescription.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/nbmicon.png"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="NbApp">
-                    <attr name="position" intvalue="500"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.SimpleWizardIterator.createNbAppIterator"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/NbAppDescription.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/suiteicon.png"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-            </folder>
         </folder>
         <folder name="NetBeansModuleDevelopment">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
             <attr name="position" intvalue="200"/>
             <file name="newAction">
+                <attr name="position" intvalue="100"/>
                 <attr boolvalue="true" name="template"/>
                 <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.action.NewActionIterator.createIterator" name="instantiatingIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.action.Bundle"/>
@@ -121,47 +104,8 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newAction.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
-            <file name="emptyLibraryDescriptor">
-                <attr boolvalue="true" name="template"/>
-                <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.NewLibraryDescriptor.createIterator" name="instantiatingIterator"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/libraries.gif"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/emptyLibraryDescriptor.html"/>
-                <attr name="templateCategory" stringvalue="nbm-specific2"/>
-            </file>
-            <file name="newJavaHelp">
-                <attr boolvalue="true" name="template"/>
-                <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.javahelp.NewJavaHelpIterator.createIterator" name="instantiatingIterator"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.javahelp.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.png"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.html"/>
-                <attr name="templateCategory" stringvalue="nbm-specific2"/>
-            </file>
-            <file name="newOptions">
-                <attr boolvalue="true" name="template"/>
-                <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.options.NewOptionsIterator.createIterator" name="instantiatingIterator"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.options.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newOptions.png"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newOptions.html"/>
-                <attr name="templateCategory" stringvalue="nbm-specific"/>
-            </file>
-            <file name="newLoader">
-                <attr boolvalue="true" name="template"/>
-                <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.loader.NewLoaderIterator.createIterator" name="instantiatingIterator"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.loader.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newLoader.png"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newLoader.html"/>
-                <attr name="templateCategory" stringvalue="nbm-specific"/>
-            </file>
-            <file name="newProject">
-                <attr name="template" boolvalue="true"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.project.NewProjectIterator.createIterator"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.project.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newProject.png"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newProject.html"/>
-                <attr name="templateCategory" stringvalue="nbm-specific2"/>
-            </file>
             <file name="newWindow">
+                <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.winsys.NewTCIterator.createIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.winsys.Bundle"/>
@@ -170,6 +114,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
             <file name="newWizard">
+                <attr name="position" intvalue="300"/>
                 <attr boolvalue="true" name="template"/>
                 <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.wizard.NewWizardIterator.createIterator" name="instantiatingIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.wizard.Bundle"/>
@@ -177,15 +122,26 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newWizard.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
-            <file name="newModuleInstall">
+            <file name="newOptions">
+                <attr name="position" intvalue="400"/>
                 <attr boolvalue="true" name="template"/>
-                <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.moduleinstall.NewModuleInstallIterator.createIterator" name="instantiatingIterator"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.moduleinstall.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/resources/module.png"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newModuleInstall.html"/>
+                <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.options.NewOptionsIterator.createIterator" name="instantiatingIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.options.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newOptions.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newOptions.html"/>
+                <attr name="templateCategory" stringvalue="nbm-specific"/>
+            </file>
+            <file name="newLoader">
+                <attr name="position" intvalue="500"/>
+                <attr boolvalue="true" name="template"/>
+                <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.loader.NewLoaderIterator.createIterator" name="instantiatingIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.loader.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newLoader.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newLoader.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
             <file name="newUpdateCenter">
+                <attr name="position" intvalue="600"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.updatecenter.NewUpdateCenterIterator.createIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.updatecenter.Bundle"/>
@@ -193,20 +149,58 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newUpdateCenter.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
-            <file name="newCodeGenerator">
-                <attr name="template" boolvalue="true"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.codegenerator.NewCodeGeneratorIterator.createIterator"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.codegenerator.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.png"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.html"/>
+            <file name="newModuleInstall">
+                <attr name="position" intvalue="700"/>
+                <attr boolvalue="true" name="template"/>
+                <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.moduleinstall.NewModuleInstallIterator.createIterator" name="instantiatingIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.moduleinstall.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/resources/module.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newModuleInstall.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
-			<file name="newQuickSearch">
+            <file name="newQuickSearch">
+                <attr name="position" intvalue="800"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.quicksearch.NewQuickSearchIterator.createIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.quicksearch.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newQuickSearch.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newQuickSearch.html"/>
+                <attr name="templateCategory" stringvalue="nbm-specific"/>
+            </file>
+            <file name="newJavaHelp">
+                <attr name="position" intvalue="900"/>
+                <attr boolvalue="true" name="template"/>
+                <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.javahelp.NewJavaHelpIterator.createIterator" name="instantiatingIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.javahelp.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.html"/>
+                <attr name="templateCategory" stringvalue="nbm-specific2"/>
+            </file>
+            <file name="newProject">
+                <attr name="position" intvalue="1000"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.project.NewProjectIterator.createIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.project.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newProject.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newProject.html"/>
+                <attr name="templateCategory" stringvalue="nbm-specific2"/>
+            </file>
+            <file name="emptyLibraryDescriptor">
+                <attr name="position" intvalue="1100"/>
+                <attr boolvalue="true" name="template"/>
+                <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.NewLibraryDescriptor.createIterator" name="instantiatingIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/libraries.gif"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/emptyLibraryDescriptor.html"/>
+                <attr name="templateCategory" stringvalue="nbm-specific2"/>
+            </file>
+            <file name="newCodeGenerator">
+                <attr name="position" intvalue="1200"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.codegenerator.NewCodeGeneratorIterator.createIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.codegenerator.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
         </folder>
@@ -278,17 +272,22 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Services">
         <folder name="JavaHelp">
-            <!-- Merge after J2EE Help: -->
             <file name="org-netbeans-modules-apisupport-project-helpset.xml" url="helpset-decl.xml">
                 <attr name="position" intvalue="2700"/>
             </file>
-            <!-- Merge before 3rd party help: -->
         </folder>
         <folder name="Hidden">
             <folder name="CatalogProvider">
                 <!-- No use for this, since we are registering an instance (below), and it is a singleton: -->
                 <file name="org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance_hidden"/>
             </folder>
+        </folder>
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-apisupport-hidden-resolver.xml" url="hidden-resolver.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.layers.Bundle#LBL_hidden_files"/>
+                <attr name="icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif"/>
+                <attr name="position" intvalue="97447"/> <!-- late, to avoid capture of foo_hidden.jar etc. -->
+            </file>
         </folder>
     </folder>
     <folder name="Plugins">
@@ -321,11 +320,14 @@ made subject to such option by the copyright holder.
             <folder name="Customizer">
                 <file name="Formatting.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.indent.project.api.Customizers.createFormattingCategoryProvider"/>
                     <attr name="allowedMimeTypes" stringvalue="text/x-java"/>
                     <attr name="position" intvalue="1000"/>
                 </file>
             </folder>
+        </folder>
+        <folder name="org-netbeans-modules-apisupport-project-suite">
+            <folder name="Actions"/>
         </folder>
     </folder>
     <folder name="xml">
@@ -358,6 +360,20 @@ made subject to such option by the copyright holder.
                 <folder name="HyperlinkProviders">
                     <file name="org.netbeans.modules.apisupport.project.hyperlink.ManifestHyperlinkProvider.instance"/>
                 </folder>    
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Loaders">
+        <folder name="application">
+            <folder name="x-netbeans-hidden">
+                <folder name="Factories">
+                    <file name="HiddenDataLoader.instance">
+                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
+                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.apisupport.project.layers.HiddenDataObject"/>
+                        <attr name="mimeType" stringvalue="application/x-netbeans-hidden"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>

@@ -45,6 +45,7 @@ import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.openide.nodes.Node;
 
 public class CompilerSetNodeProp extends Node.Property<String> {
@@ -157,7 +158,9 @@ public class CompilerSetNodeProp extends Node.Property<String> {
 //                list.add(getOldname());
 //            }
             if (configuration.isDevHostSetUp()) {
-                list.addAll(configuration.getCompilerSetManager().getCompilerSetNames());
+                for(CompilerSet cs : configuration.getCompilerSetManager().getCompilerSets()) {
+                    list.add(cs.getName());
+                }
             }
             return list.toArray(new String[list.size()]);
         }

@@ -523,6 +523,19 @@ public class TreeFactory {
         return make.TypeApply((JCExpression)type, typeargs.toList());        
     }
     
+    public AnnotatedTypeTree AnnotatedType(List<? extends AnnotationTree> annotations,
+                                           ExpressionTree type) {
+        ListBuffer<JCTypeAnnotation> anns = new ListBuffer<JCTypeAnnotation>();
+        for (AnnotationTree t : annotations)
+            anns.append((JCTypeAnnotation)t);
+        return make.AnnotatedType(anns.toList(), (JCExpression) type);
+    }
+
+    public AnnotationTree TypeAnnotation(AnnotationTree t) {
+        JCAnnotation ann = (JCAnnotation) t;
+        return make.TypeAnnotation(ann.getAnnotationType(), ann.getArguments());
+    }
+
     public ParenthesizedTree Parenthesized(ExpressionTree expression) {
         return make.Parens((JCExpression)expression);
     }

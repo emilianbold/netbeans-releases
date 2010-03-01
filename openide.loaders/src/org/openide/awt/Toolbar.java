@@ -58,18 +58,14 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
-import javax.swing.text.Keymap;
 import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.FolderInstance;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.Task;
 import org.openide.util.actions.Presenter;
 
@@ -411,7 +407,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
 
                     if (obj instanceof Presenter.Toolbar) {
                         if (obj instanceof Action && file != null) {
-                            setAccelerator((Action)obj, file.getPrimaryFile());
+                            AcceleratorBinding.setAccelerator((Action)obj, file.getPrimaryFile());
                         }
                         obj = ((Presenter.Toolbar) obj).getToolbarPresenter();
                     }
@@ -447,7 +443,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                         b.putClientProperty("file", file);
                         org.openide.awt.Toolbar.this.add(b);
                         if (file != null) {
-                            setAccelerator(a, file.getPrimaryFile());
+                            AcceleratorBinding.setAccelerator(a, file.getPrimaryFile());
                         }
                         continue;
                     }
@@ -480,25 +476,6 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
 
     } // end of inner class Folder
-
-    static void setAccelerator(Action a, FileObject file) {
-        if (file == null) {
-            return;
-        }
-        a.putValue("definingFile", file); // cf. o.n.core.NbKeymap.getKeyStrokesForAction
-        KeyStroke[] keys;
-        try {
-            assert a.getValue("definingFile") == file : a.getClass() + " violated Action.putValue contract";
-            Keymap keymap = Lookup.getDefault().lookup(Keymap.class);
-            keys = keymap != null ? keymap.getKeyStrokesForAction(a) : new KeyStroke[0];
-            assert keys != null : keymap;
-        } finally {
-            a.putValue("definingFile", null);
-        }
-        if (keys.length > 0) {
-            a.putValue(Action.ACCELERATOR_KEY, keys[0]);
-        }
-    }
 
     @Override
     public void setUI(javax.swing.plaf.ToolBarUI ui) {

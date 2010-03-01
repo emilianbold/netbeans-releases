@@ -131,6 +131,24 @@ made subject to such option by the copyright holder.
         <issue number="138717"/>
     </change>
 
+    <change id="method-chooser">
+        <api name="DebuggerCoreSPI"/>
+        <summary><code>MethodChooser</code> added.</summary>
+        <version major="2" minor="22"/>
+        <date day="28" month="1" year="2010"/>
+        <author login="dprusa"/>
+        <compatibility binary="compatible" source="compatible" modification="yes" semantic="compatible"/>
+        <description>
+            <p>
+                <code>MethodChooser</code> class added. It is a support for Step Into action
+                    implementations. Providing a simple graphical interface, it allows the user
+                    to select in a source file a method call the debugger should step into.
+                    It has been originally implemented in the jpda debugger module, now it can be
+                    reused by other debuggers.
+            </p>
+        </description>
+        <issue number="171213"/>
+    </change>
 
 </changes>
 

@@ -42,7 +42,6 @@
 package org.netbeans.modules.j2ee.persistence.provider;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.openide.util.NbBundle;
@@ -62,6 +61,7 @@ class EclipseLinkProvider extends Provider {
         this(null); //NOI18N
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(EclipseLinkProvider.class, "LBL_EclipseLink") + (getVersion()!=null ? "(JPA "+getVersion()+")" : ""); //NOI18N
     }
@@ -86,22 +86,32 @@ class EclipseLinkProvider extends Provider {
         return Persistence.VERSION_1_0.equals(getVersion()) ? "eclipselink.jdbc.password" : "javax.persistence.jdbc.password";
     }
 
+    @Override
+    public String getAnnotationProcessor() {
+        return Persistence.VERSION_2_0.equals(getVersion()) ? "org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor" : super.getAnnotationProcessor();
+    }
+
+    @Override
     public String getTableGenerationPropertyName() {
         return "eclipselink.ddl-generation";
     }
 
+    @Override
     public String getTableGenerationDropCreateValue() {
         return "drop-and-create-tables";
     }
 
+    @Override
     public String getTableGenerationCreateValue() {
         return "create-tables";
     }
 
+    @Override
     public Map getUnresolvedVendorSpecificProperties() {
         return Collections.EMPTY_MAP;
     }
 
+    @Override
     public Map getDefaultVendorSpecificProperties() {
         return Collections.EMPTY_MAP;
     }

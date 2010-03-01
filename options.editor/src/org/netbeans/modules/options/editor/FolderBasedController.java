@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,15 +43,28 @@ package org.netbeans.modules.options.editor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
+import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -61,6 +74,7 @@ public final class FolderBasedController extends OptionsPanelController implemen
 
     private static final String OPTIONS_SUB_FOLDER = "optionsSubFolder"; //NOI18N
     private static final String HELP_CTX_ID = "helpContextId"; //NOI18N
+    private static final String ALLOW_FILTERING = "allowFiltering"; //NOI18N
     private static final String BASE_FOLDER = "OptionsDialog/Editor/"; //NOI18N
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -69,6 +83,9 @@ public final class FolderBasedController extends OptionsPanelController implemen
     private Lookup masterLookup;
     private FolderBasedOptionPanel panel;
     private Map<String, OptionsPanelController> mimeType2delegates;
+    private final boolean allowFiltering;
+    private final Set<String> supportFiltering = new HashSet<String>();
+    private final Document filterDocument = new PlainDocument();
 
     @OptionsPanelController.SubRegistration(
         id="Hints",
@@ -80,7 +97,7 @@ public final class FolderBasedController extends OptionsPanelController implemen
 //        toolTip="#CTL_Hints_ToolTip"
     )
     public static OptionsPanelController hints() {
-        return new FolderBasedController("Hints/", "netbeans.optionsDialog.editor.hints");
+        return new FolderBasedController("Hints/", "netbeans.optionsDialog.editor.hints", true);
     }
 
     @OptionsPanelController.SubRegistration(
@@ -93,28 +110,34 @@ public final class FolderBasedController extends OptionsPanelController implemen
 //        toolTip="#CTL_MarkOccurences_ToolTip"
     )
     public static OptionsPanelController markOccurrences() {
-        return new FolderBasedController("MarkOccurrences/", "netbeans.optionsDialog.editor.markOccurences");
+        return new FolderBasedController("MarkOccurrences/", "netbeans.optionsDialog.editor.markOccurences", false);
     }
 
     public static OptionsPanelController create (Map args) {
         FolderBasedController folderBasedController = new FolderBasedController(
                 (String) args.get (OPTIONS_SUB_FOLDER),
-                (String) args.get (HELP_CTX_ID)
+                (String) args.get (HELP_CTX_ID),
+                (Boolean) args.get (ALLOW_FILTERING)
         );
 
         return folderBasedController;
     }
 
-    private FolderBasedController(String subFolder, String helpCtxId) {
+    private FolderBasedController(String subFolder, String helpCtxId, boolean allowFiltering) {
         folder = subFolder != null ? BASE_FOLDER + subFolder : BASE_FOLDER;
         helpCtx = helpCtxId != null ? new HelpCtx(helpCtxId) : null;
+        this.allowFiltering = allowFiltering;
     }    
     
     public final synchronized void update() {
-        Collection<? extends OptionsPanelController> controllers = getMimeType2delegates ().values();
-        for(OptionsPanelController c : controllers) {
-            c.getComponent(masterLookup);
+        for (Entry<String, OptionsPanelController> e : getMimeType2delegates ().entrySet()) {
+            AtomicBoolean used = new AtomicBoolean();
+            OptionsFilter f = createTreeModelFilter(filterDocument, used);
+            Lookup innerLookup = new ProxyLookup(masterLookup, Lookups.singleton(f));
+            OptionsPanelController c = e.getValue();
+            c.getComponent(innerLookup);
             c.update();
+            if (used.get()) this.supportFiltering.add(e.getKey());
         }
 
         assert panel != null;
@@ -167,11 +190,16 @@ public final class FolderBasedController extends OptionsPanelController implemen
     public synchronized JComponent getComponent(Lookup masterLookup) {
         if (panel == null) {
             this.masterLookup = masterLookup;
-            for (OptionsPanelController controller : getMimeType2delegates ().values()) {
-                controller.getComponent(masterLookup);
+            for (Entry<String, OptionsPanelController> e : getMimeType2delegates ().entrySet()) {
+                AtomicBoolean used = new AtomicBoolean();
+                OptionsFilter f = createTreeModelFilter(filterDocument, used);
+                Lookup innerLookup = new ProxyLookup(masterLookup, Lookups.singleton(f));
+                OptionsPanelController controller = e.getValue();
+                controller.getComponent(innerLookup);
                 controller.addPropertyChangeListener(this);
+                if (used.get()) this.supportFiltering.add(e.getKey());
             }
-            panel = new FolderBasedOptionPanel(this);
+            panel = new FolderBasedOptionPanel(this, filterDocument, allowFiltering);
         }
         return panel;
     }
@@ -189,6 +217,44 @@ public final class FolderBasedController extends OptionsPanelController implemen
     @Override
     public Lookup getLookup() {
         return super.getLookup();
+    }
+
+    @Override
+    protected void setCurrentSubcategory(String subpath) {
+        for (Entry<String, OptionsPanelController> e : getMimeType2delegates().entrySet()) {
+            if (subpath.startsWith(e.getKey())) {
+                panel.setCurrentMimeType(e.getKey());
+                subpath = subpath.substring(e.getKey().length());
+
+                if (subpath.length() > 0 && subpath.startsWith("/")) {
+                    setCurrentSubcategory(e.getValue(), subpath.substring(1));
+                }
+
+                return ;
+            }
+        }
+
+        Logger.getLogger(FolderBasedController.class.getName()).log(Level.WARNING, "setCurrentSubcategory: cannot open: {0}", subpath);
+    }
+
+    private static void setCurrentSubcategory(OptionsPanelController c, String subpath) {
+        //#180821: cannot directly call setCurrentSubcategory on c as that is protected
+        try {
+            Method m = OptionsPanelController.class.getDeclaredMethod("setCurrentSubcategory", String.class);
+
+            m.setAccessible(true);
+            m.invoke(c, subpath);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     Iterable<String> getMimeTypes() {
@@ -215,5 +281,31 @@ public final class FolderBasedController extends OptionsPanelController implemen
 
     public void propertyChange(PropertyChangeEvent evt) {
         pcs.firePropertyChange(evt);
+    }
+
+    boolean supportsFilter(String mimeType) {
+        return supportFiltering.contains(mimeType);
+    }
+
+    private static OptionsFilterAccessor filterAccessor;
+
+    public static void setFilterAccessor(OptionsFilterAccessor filterAccessor) {
+        FolderBasedController.filterAccessor = filterAccessor;
+    }
+
+    public static OptionsFilter createTreeModelFilter(Document doc, AtomicBoolean used) {
+        if (filterAccessor == null) {
+            try {
+                Class.forName(OptionsFilter.class.getName(), true, OptionsFilter.class.getClassLoader());   //NOI18N
+                assert filterAccessor != null;
+            } catch (ClassNotFoundException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        return filterAccessor.create(doc, used);
+    }
+
+    public interface OptionsFilterAccessor {
+        public OptionsFilter create(Document doc, AtomicBoolean used);
     }
 }

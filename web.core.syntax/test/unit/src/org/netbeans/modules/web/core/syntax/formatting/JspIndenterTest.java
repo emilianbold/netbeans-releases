@@ -61,7 +61,6 @@ import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
-import org.netbeans.modules.csl.core.GsfIndentTaskFactory;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
@@ -143,7 +142,6 @@ public class JspIndenterTest extends TestBase2 {
         MockMimeLookup.setInstances(MimePath.parse("text/x-java"), factory, new JavacParserFactory(), new ClassParserFactory());
         ExpressionLanguageIndentTaskFactory elReformatFactory = new ExpressionLanguageIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-el"), elReformatFactory);
-        GsfIndentTaskFactory jsFactory = new GsfIndentTaskFactory();
         // adding javascript formatter makes some tests randomly fail;
         // for now I'm disabling
         //MockMimeLookup.setInstances(MimePath.parse("text/javascript"), jsFactory, new GsfParserFactory());

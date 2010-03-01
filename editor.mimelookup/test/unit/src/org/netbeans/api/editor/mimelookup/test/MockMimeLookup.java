@@ -33,8 +33,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.logging.Level;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.openide.util.Lookup;
@@ -56,7 +54,7 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public final class MockMimeLookup implements MimeDataProvider {
 
-    private static final Map<MimePath, Lkp> MAP = new WeakHashMap<MimePath, Lkp>();
+    private static final Map<MimePath, Lkp> MAP = new HashMap<MimePath, Lkp>();
     
     /**
      * Sets the lookup for <code>mimePath</code> with zero or more delegate lookups.
@@ -97,7 +95,7 @@ public final class MockMimeLookup implements MimeDataProvider {
     }
     
     /** You can call it, but it's probably not what you want. */
-    public Lookup getLookup(MimePath mimePath) {
+    public @Override Lookup getLookup(MimePath mimePath) {
         synchronized (MAP) {
             List<String> paths = Collections.singletonList(mimePath.getPath());
             

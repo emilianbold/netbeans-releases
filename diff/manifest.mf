@@ -4,10 +4,3 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/diff/Bundle.properties
 OpenIDE-Module-Implementation-Version: 42
 OpenIDE-Module-Layer: org/netbeans/modules/diff/mf-layer.xml
 AutoUpdate-Show-In-Client: false
-
-Name: org/netbeans/modules/diff/DiffAction.class
-OpenIDE-Module-Class: Action
-
-Name: org/netbeans/modules/diff/PatchAction.class
-OpenIDE-Module-Class: Action
-

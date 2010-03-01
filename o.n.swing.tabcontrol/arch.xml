@@ -355,7 +355,7 @@ made subject to such option by the copyright holder.
         </question>
 -->
     <answer id="exec-property">
-        <api category="devel" group="property" name="nb.tabs.suppressCloseButton" type="export">
+        <api category="devel" group="systemproperty" name="nb.tabs.suppressCloseButton" type="export">
             <p>
                 The system property <code>nb.tabs.suppressCloseButton</code>
                 can be used to hide close buttons by default.

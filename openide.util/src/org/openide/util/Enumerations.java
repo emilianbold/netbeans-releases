@@ -207,6 +207,8 @@ public final class Enumerations extends Object {
      * @see NbCollections#checkedEnumerationByFilter
      */
     public static <T,R> Enumeration<R> filter(Enumeration<? extends T> en, Processor<T,R> filter) {
+        Parameters.notNull("en", en);
+        Parameters.notNull("filter", filter);
         return new FilEn<T,R>(en, filter);
     }
 

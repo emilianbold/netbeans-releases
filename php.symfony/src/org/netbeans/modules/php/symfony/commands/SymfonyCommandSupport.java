@@ -71,7 +71,11 @@ import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramExcept
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
 import org.netbeans.modules.php.symfony.SymfonyScript;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -180,7 +184,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
             return null;
         }
         final CommandsLineProcessor lineProcessor = new CommandsLineProcessor();
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL)
+        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL)
                 .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
@@ -188,11 +192,26 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         });
 
         freshCommands = Collections.emptyList();
-        ExecutionService service = ExecutionService.newService(processBuilder, descriptor, "help"); // NOI18N
+        ExecutionService service = ExecutionService.newService(processBuilder, executionDescriptor, "help"); // NOI18N
         Future<Integer> task = service.run();
         try {
             if (task.get().intValue() == 0) {
                 freshCommands = lineProcessor.getCommands();
+            }
+            // #180425
+            if (freshCommands.isEmpty()) {
+                String error = lineProcessor.getError();
+                if (StringUtils.hasText(error)) {
+                    NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
+                            NbBundle.getMessage(SymfonyCommandSupport.class, "MSG_NoCommands"),
+                            NotifyDescriptor.YES_NO_OPTION);
+                    if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION) {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(error));
+                    }
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(error);
+                    }
+                }
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
@@ -234,7 +253,11 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
 
     @Override
     protected File getPluginsDirectory() {
-        return new File(FileUtil.toFile(phpModule.getSourceDirectory()), "plugins"); // NOI18N
+        FileObject plugins = SymfonyPhpFrameworkProvider.locate(phpModule, "plugins", true);
+        if (plugins != null && plugins.isFolder()) {
+            return FileUtil.toFile(plugins);
+        }
+        return null;
     }
 
     private static class RedirectOutputProcessor implements InputProcessor {
@@ -279,6 +302,8 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
     }
 
     class CommandsLineProcessor implements LineProcessor {
+        private final StringBuffer error = new StringBuffer();
+        private final String newLine = System.getProperty("line.separator"); // NOI18N
 
         // @GuardedBy(commands)
         private final List<FrameworkCommand> commands = new ArrayList<FrameworkCommand>();
@@ -289,6 +314,9 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
                 prefix = null;
                 return;
             }
+            error.append(line);
+            error.append(newLine);
+
             String trimmed = line.trim();
             Matcher prefixMatcher = PREFIX_PATTERN.matcher(trimmed);
             if (prefixMatcher.matches()) {
@@ -313,6 +341,10 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
                 copy = new ArrayList<FrameworkCommand>(commands);
             }
             return copy;
+        }
+
+        public String getError() {
+            return error.toString();
         }
 
         public void close() {

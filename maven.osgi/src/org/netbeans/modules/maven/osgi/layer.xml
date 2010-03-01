@@ -12,6 +12,8 @@
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.osgi.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.maven.osgi.ActivatorIterator" />
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/osgi/templates/new_OSGi_activator.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/osgi/templates/new_OSGi_file_16.png"/>
                 <attr name="templateCategory" stringvalue="osgi"/>
             </file>
         </folder>
@@ -24,22 +26,6 @@
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/OSGiDescription.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/maven_osgi_16.png"/>
                     <attr name="template" boolvalue="true"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-    <folder name="Projects">
-        <folder name="org-netbeans-modules-maven">
-            <folder name="Archetypes">
-                <file name="osgi-archetype">
-                    <attr name="position" intvalue="329"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.osgi.Bundle"/>
-                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
-                    <attr name="artifactId" stringvalue="osgi-archetype"/>
-                    <attr name="version" stringvalue="1.0-SNAPSHOT"/>
-                    <attr name="repository" stringvalue="http://snapshots.repository.codehaus.org"/>
-                    <attr name="nameBundleKey" stringvalue="TIT_OSGI_Archetype"/>
-                    <attr name="descriptionBundleKey" stringvalue="DESC_OSGI_Archetype"/>
                 </file>
             </folder>
         </folder>

@@ -90,6 +90,7 @@ public class ComponentChooserEditor implements PropertyEditor,
     // --------------
     // PropertyEditor implementation
 
+    @Override
     public void setValue(Object value) {
         defaultValue = null;
         if (value == null || value instanceof ComponentRef)
@@ -109,6 +110,7 @@ public class ComponentChooserEditor implements PropertyEditor,
         firePropertyChange();
     }
 
+    @Override
     public Object getValue() {
         if (value != null && INVALID_REF.equals(value.getDescription()))
             return BeanSupport.NO_VALUE; // special - invalid value was loaded
@@ -116,6 +118,7 @@ public class ComponentChooserEditor implements PropertyEditor,
         return isDefaultValue() ? defaultValue : value; 
     }
 
+    @Override
     public String[] getTags() {
         List compList = getComponents();
 
@@ -148,6 +151,7 @@ public class ComponentChooserEditor implements PropertyEditor,
         return value == null && defaultValue != null;
     }    
     
+    @Override
     public String getAsText() {
         if (isDefaultValue())
             return defaultString();
@@ -160,6 +164,7 @@ public class ComponentChooserEditor implements PropertyEditor,
         return NULL_REF.equals(str) ? noneString() : str;
     }
 
+    @Override
     public void setAsText(String str) {
         if (str == null || str.equals("") || str.equals(noneString())) // NOI18N
             setValue(null);
@@ -175,10 +180,12 @@ public class ComponentChooserEditor implements PropertyEditor,
             
     }
 
+    @Override
     public String getJavaInitializationString() {
         return value != null ? value.getJavaInitString() : null;
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
         synchronized (this) {
             if (changeSupport == null)
@@ -187,22 +194,27 @@ public class ComponentChooserEditor implements PropertyEditor,
         changeSupport.addPropertyChangeListener(l);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
         if (changeSupport != null)
             changeSupport.removePropertyChangeListener(l);
     }
 
+    @Override
     public boolean isPaintable() {
         return false;
     }
 
+    @Override
     public void paintValue(java.awt.Graphics gfx, java.awt.Rectangle box) {
     }
 
+    @Override
     public java.awt.Component getCustomEditor() {
         return null;
     }
 
+    @Override
     public boolean supportsCustomEditor() {
         return false;
     }
@@ -210,11 +222,13 @@ public class ComponentChooserEditor implements PropertyEditor,
     // ----------------
 
     // FormAwareEditor implementation
+    @Override
     public void setContext(FormModel model, FormProperty prop) {
         formModel = model;
     }
 
     // FormAwareEditor implementation
+    @Override
     public void updateFormVersionLevel() {
     }
 
@@ -244,6 +258,7 @@ public class ComponentChooserEditor implements PropertyEditor,
     private static final String XML_COMPONENT = "ComponentRef"; // NOI18N
     private static final String ATTR_NAME = "name"; // NOI18N
 
+    @Override
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         String nameStr;
         if (value != null)
@@ -257,6 +272,7 @@ public class ComponentChooserEditor implements PropertyEditor,
         return el;
     }
 
+    @Override
     public void readFromXML(org.w3c.dom.Node element)
         throws java.io.IOException
     {
@@ -339,6 +355,7 @@ public class ComponentChooserEditor implements PropertyEditor,
     }
 
     // NamedPropertyEditor implementation
+    @Override
     public String getDisplayName() {
         return NbBundle.getBundle(getClass()).getString("CTL_ComponentChooserEditor_DisplayName"); // NOI18N
     }
@@ -400,6 +417,7 @@ public class ComponentChooserEditor implements PropertyEditor,
             return componentName;
         }
 
+        @Override
         public RADComponent getComponent() {
             checkComponent();
             return component;
@@ -413,6 +431,7 @@ public class ComponentChooserEditor implements PropertyEditor,
         }
 
         /** FormDesignValue implementation. */
+        @Override
         public Object getDesignValue() {
             checkComponent();
             return component != null ?

@@ -57,7 +57,7 @@ public class LandingPagePanel extends javax.swing.JPanel {
     private String projectName;
     private String repoPath;
 
-    public LandingPagePanel(String prjName, String path) {
+    public LandingPagePanel(String prjName, String path, String kenaiName) {
 
         projectName = prjName;
         repoPath = path;
@@ -73,7 +73,7 @@ public class LandingPagePanel extends javax.swing.JPanel {
 
         String messagePattern = NbBundle.getMessage(LandingPagePanel.class,
                 "LandingPagePanel.messageEditorPane.message"); // NOI18N
-        String message = MessageFormat.format(messagePattern, projectName, repoMessage);
+        String message = MessageFormat.format(messagePattern, projectName, repoMessage, kenaiName);
         messageEditorPane.setText(message);
         
     }

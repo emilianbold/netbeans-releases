@@ -133,6 +133,10 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
         if (prj == null) {
             return null;
         }
+        //#180447
+        if (!prj.getProjectDirectory().isValid()) {
+            return null;
+        }
         NbMavenProject mvn = prj.getLookup().lookup(NbMavenProject.class);
         if (mvn == null) {
             return null;

@@ -973,8 +973,9 @@ public class CopyFinderTest extends NbTestCase {
         Set<List<Integer>> realSpans = new HashSet<List<Integer>>();
 
         for (MethodDuplicateDescription mdd : result) {
-            int startPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), mdd.block.getStatements().get(mdd.dupeStart));
-            int endPos = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), mdd.block.getStatements().get(mdd.dupeEnd));
+            List<? extends StatementTree> parentStatements = CopyFinder.getStatements(mdd.firstLeaf);
+            int startPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), parentStatements.get(mdd.dupeStart));
+            int endPos = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), parentStatements.get(mdd.dupeEnd));
 
             realSpans.add(Arrays.asList(startPos, endPos));
         }

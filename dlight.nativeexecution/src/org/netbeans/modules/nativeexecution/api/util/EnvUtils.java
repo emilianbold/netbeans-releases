@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.nativeexecution.api.util;
 
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+
 /**
  *
  * @author Egor Ushakov
@@ -64,5 +66,9 @@ public class EnvUtils {
         } else {
             return "";
         }
+    }
+
+    public static String toHostID(ExecutionEnvironment env) {
+        return env.getHost() + "_" + env.getSSHPort(); // NOI18N
     }
 }

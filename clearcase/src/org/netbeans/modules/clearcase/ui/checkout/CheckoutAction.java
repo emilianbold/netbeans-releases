@@ -235,6 +235,7 @@ public class CheckoutAction extends AbstractAction {
         
         final String message = panel.taMessage.getText();
         final boolean doReserved = panel.cbReserved.isSelected();
+        final boolean doUnreservedNonMaster = !panel.cbReserved.isSelected() && panel.cbNonMaster.isSelected();
         final boolean expand = panel.cbRecursive.isSelected();
 
         final ProgressSupport ps = new FileStatusCache.RefreshSupport(Clearcase.getInstance().getClient().getRequestProcessor(),
@@ -260,7 +261,11 @@ public class CheckoutAction extends AbstractAction {
                 new CheckoutCommand(
                         targetFiles,
                         message, 
-                        doReserved ? CheckoutCommand.Reserved.Reserved : CheckoutCommand.Reserved.Unreserved, 
+                        doReserved ? 
+                            CheckoutCommand.Reserved.Reserved :
+                            doUnreservedNonMaster ?
+                                CheckoutCommand.Reserved.UnreservedNonMaster :
+                                CheckoutCommand.Reserved.Unreserved,
                         false, 
                         new AfterCommandRefreshListener(targetFiles),
                         new OutputWindowNotificationListener());                

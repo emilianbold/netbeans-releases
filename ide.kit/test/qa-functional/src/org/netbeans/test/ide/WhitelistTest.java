@@ -176,7 +176,8 @@ public class WhitelistTest extends JellyTestCase {
     }
 
     public void openProject(String projectPath) throws Exception {
-        File projectsDir = new File(getDataDir(), projectPath);
+        File path=new File(getDataDir()+"/../../../../test/qa-functional/data").getCanonicalFile();
+        File projectsDir = new File(path, projectPath);
         Object prj = ProjectSupport.openProject(projectsDir);
         assertNotNull(prj);
         waitParsingFinished();

@@ -42,7 +42,6 @@
 package org.netbeans.modules.form;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.awt.geom.*;
 import javax.swing.*;
 import javax.swing.undo.*;
@@ -440,6 +439,7 @@ class ComponentDragger
 //        formDesigner.clearSelection(); // Issue 64342
         // select dropped components in designer (after everything updates)
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 formDesigner.setSelectedComponents(selectedComponents);
             }

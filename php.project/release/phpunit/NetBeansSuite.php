@@ -107,7 +107,7 @@ class NetBeansSuite extends PHPUnit_Framework_TestSuite {
             throw new Exception("No argument to run found.");
         }
         if (is_dir($run)) {
-            return self::rglob("*{T,t}est.php", $run.DIRECTORY_SEPARATOR, GLOB_BRACE);
+            return self::rglob("*[Tt]est.php", $run.DIRECTORY_SEPARATOR);
         } elseif (is_file($run)) {
             return array($run);
         }

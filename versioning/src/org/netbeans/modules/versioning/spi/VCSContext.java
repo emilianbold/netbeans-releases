@@ -374,6 +374,8 @@ public final class VCSContext {
         Set<File> tempRootFiles = new HashSet<File>(rootFiles);
         Set<File> tempExclusions = new HashSet<File>(exclusions);
         this.unfilteredRootFiles = Collections.unmodifiableSet(new HashSet<File>(tempRootFiles));
+        // exclusions that are also root files should be removed
+        tempExclusions.removeAll(tempRootFiles);
         while (normalize(tempRootFiles, tempExclusions));
         this.rootFiles = Collections.unmodifiableSet(tempRootFiles);
         this.exclusions = Collections.unmodifiableSet(tempExclusions);

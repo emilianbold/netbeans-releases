@@ -126,6 +126,7 @@ made subject to such option by the copyright holder.
             <li><a href="usecases.html">How to use certain NetBeans APIs</a></li>
             <li><a href="allclasses-frame.html">Index of all NetBeans API classes</a></li>
             <li><a href="layers.html">Extracted List of Layer APIs</a></li>
+            <li><a href="properties.html">Extracted List of Property APIs</a></li>
         </ul>
 
         <h4>FAQ and Mailing List</h4>

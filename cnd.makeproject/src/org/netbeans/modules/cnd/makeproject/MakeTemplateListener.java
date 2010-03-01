@@ -43,13 +43,12 @@ package org.netbeans.modules.cnd.makeproject;
 import java.io.File;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -66,21 +65,27 @@ public class MakeTemplateListener implements OperationListener {
 
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(MakeTemplateListener.class.getName());
 
+    @Override
     public void operationPostCreate(OperationEvent operationEvent) {
     }
 
+    @Override
     public void operationCopy(OperationEvent.Copy copy) {
     }
 
+    @Override
     public void operationMove(OperationEvent.Move move) {
     }
 
+    @Override
     public void operationDelete(OperationEvent operationEvent) {
     }
 
+    @Override
     public void operationRename(OperationEvent.Rename rename) {
     }
 
+    @Override
     public void operationCreateShadow(OperationEvent.Copy copy) {
     }
 
@@ -94,6 +99,7 @@ public class MakeTemplateListener implements OperationListener {
         return pdp.getConfigurationDescriptor();
     }
 
+    @Override
     public void operationCreateFromTemplate(OperationEvent.Copy copy) {
         Folder folder = Utilities.actionsGlobalContext().lookup(Folder.class);
         Project p = Utilities.actionsGlobalContext().lookup(Project.class);
@@ -168,14 +174,14 @@ public class MakeTemplateListener implements OperationListener {
                 return;
             }
             String itemPath;
-            if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
-                itemPath = IpeUtils.toAbsoluteOrRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
-            } else if (PathPanel.getMode() == PathPanel.REL) {
-                itemPath = IpeUtils.toRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                itemPath = CndPathUtilitities.toRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
             } else {
                 itemPath = ioFile.getPath();
             }
-            itemPath = FilePathAdaptor.normalize(itemPath);
+            itemPath = CndPathUtilitities.normalize(itemPath);
             Item item = new Item(itemPath);
 
             folder.addItemAction(item);

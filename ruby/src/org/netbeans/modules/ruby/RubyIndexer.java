@@ -663,11 +663,6 @@ public class RubyIndexer extends EmbeddingIndexer {
                         }
                     }
 
-                    String includes = getIncludedString(classElement.getIncludes());
-
-                    if (includes != null) {
-                        document.addPair(FIELD_INCLUDES, includes, false, true);
-                    }
                 } else {
                     assert element.getKind() == ElementKind.MODULE;
 
@@ -681,6 +676,11 @@ public class RubyIndexer extends EmbeddingIndexer {
                     }
 
                     flags |= IndexedClass.MODULE;
+                }
+
+                String includes = getIncludedString(((ClassElement) element).getIncludes());
+                if (includes != null) {
+                    document.addPair(FIELD_INCLUDES, includes, false, true);
                 }
 
                 String name = element.getName();

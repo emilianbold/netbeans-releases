@@ -132,16 +132,21 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         panel = pnl;
         initComponents();
 
-        panel.setKenai((Kenai) kenaiCombo.getModel().getSelectedItem());
-
+        kenaiCombo.setSelectedItem(panel.getKenai());
         kenaiCombo.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
                 if (kenaiCombo.getSelectedItem() instanceof Kenai) {
                     panel.setKenai(((Kenai) kenaiCombo.getSelectedItem()));
                 } else {
-                    new AddInstanceAction().actionPerformed(e);
-                    panel.setKenai(((Kenai) kenaiCombo.getSelectedItem()));
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            new AddInstanceAction().actionPerformed(e);
+                            panel.setKenai(((Kenai) kenaiCombo.getSelectedItem()));
+                        }
+                    });
                 }
             }
         });

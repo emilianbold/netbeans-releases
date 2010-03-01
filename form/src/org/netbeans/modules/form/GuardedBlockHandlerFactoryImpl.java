@@ -71,6 +71,7 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
     public GuardedBlockHandlerFactoryImpl() {
     }
     
+    @Override
     public GuardedBlockHandler createInstance(AbstractRefactoring refactoring) {
         RefactoringInfo refInfo = refactoring.getContext().lookup(RefactoringInfo.class);
         return new GuardedBlockHandlerImpl(refInfo);
@@ -88,6 +89,7 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
             this.refInfo = refInfo;
         }
 
+        @Override
         public Problem handleChange(RefactoringElementImplementation proposedChange,
                                     Collection<RefactoringElementImplementation> replacements,
                                     Collection<Transaction> transactions) {
@@ -195,6 +197,7 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
             }
         }
 
+        @Override
         public void commit() {
             for (GuardedBlockInfo block : guardedInfos) {
                 String newText = block.getNewSectionText();
@@ -206,6 +209,7 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
             }
         }
 
+        @Override
         public void rollback() {
             // rollback not needed - should be reverted by java refactoring as a whole file
 /*            for (GuardedBlockInfo block : guardedInfos) {
@@ -237,6 +241,7 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
                 this.newText = newText;
             }
 
+            @Override
             public int compareTo(ChangeInfo ch) {
                 return startPos - ch.startPos;
             }

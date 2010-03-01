@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -170,7 +170,7 @@ public class ResourceRegistrationHelper {
         List<String> resources = resourceFinder.getResourceNames();
         for (int i = 0; i < resources.size(); i++) {
             String jndiName = resources.get(i);
-            Map localData = resourceFinder.getResourceData().get(jndiName);
+            Map<String, String> localData = resourceFinder.getResourceData().get(jndiName);
             String remoteKey = prefix + jndiName + "."; // NOI18N
             Map<String, String> remoteData = new HashMap<String, String>();
             Iterator itr = allRemoteData.keySet().iterator();

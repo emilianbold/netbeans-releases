@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -109,6 +109,8 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
             ip = InstanceProperties.getInstanceProperties(url);
             if (ip == null) {
                 String username = props.get(InstanceProperties.USERNAME_ATTR);
+                // force the password into the keyring
+                commonModule.getPassword();
                 String password = props.get(InstanceProperties.PASSWORD_ATTR);
                 String displayName = props.get(InstanceProperties.DISPLAY_NAME_ATTR);
                     try {

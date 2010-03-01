@@ -52,21 +52,27 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
-public class PropertiesFolderAction extends NodeAction {
+/**
+ * node action to show folder's properties
+ * @author Gordon Prieur
+ */
+public final class PropertiesFolderAction extends NodeAction {
     
+    @Override
     protected boolean enable(Node[] activatedNodes)  {
         return activatedNodes.length == 1;
     }
     
+    @Override
     public String getName() {
         return NbBundle.getBundle(getClass()).getString("CTL_PropertiesFolderActionName"); // NOI18N
     }
     
+    @Override
     public void performAction(Node[] activatedNodes) {
         for (int i = 0; i < activatedNodes.length; i++) {
             Node n = activatedNodes[i];
             Folder folder = (Folder)n.getValue("Folder"); // NOI18N
-            Item item = (Item)n.getValue("Item"); // NOI18N
             Project project = (Project)n.getValue("Project"); // NOI18N
             if (project == null)
                 return; // FIXUP
@@ -77,10 +83,12 @@ public class PropertiesFolderAction extends NodeAction {
         }
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return null;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

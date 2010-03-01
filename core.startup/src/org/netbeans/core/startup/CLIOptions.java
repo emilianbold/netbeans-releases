@@ -41,6 +41,7 @@
 
 package org.netbeans.core.startup;
 
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.Locale;
@@ -97,7 +98,7 @@ public class CLIOptions extends CLIHandler {
     /** Checks whether we are supposed to use GUI features or not.
      */
     public static boolean isGui () {
-        return gui;
+        return gui && !GraphicsEnvironment.isHeadless();
     }
     
     private static boolean isOption (String value, String optionName) {

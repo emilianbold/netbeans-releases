@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
@@ -56,12 +57,10 @@ public class RemoteBuildProjectActionHandlerFactory implements ProjectActionHand
 
     @Override
     public boolean canHandle(Type type, Configuration configuration) {
-        switch (type) {
-            case BUILD:
-            case CLEAN:
-                return RfsSyncFactory.ENABLE_RFS;
-            default:
-                return false;
+        if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN) {
+            return RfsSyncFactory.ENABLE_RFS;
+        } else {
+            return false;
         }
     }
 

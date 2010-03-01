@@ -46,7 +46,6 @@ public class StringConfiguration {
 
     private StringConfiguration master;
     private String def;
-    ;
     private String value;
     private boolean modified;
 
@@ -105,7 +104,7 @@ public class StringConfiguration {
         return ret.toString();
     }
 
-    public void setModified(boolean b) {
+    public final void setModified(boolean b) {
         this.modified = b;
     }
 
@@ -117,7 +116,7 @@ public class StringConfiguration {
         return def;
     }
 
-    public void reset() {
+    public final void reset() {
         value = getDefault();
         setModified(false);
     }

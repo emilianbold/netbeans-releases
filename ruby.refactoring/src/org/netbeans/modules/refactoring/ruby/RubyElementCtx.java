@@ -390,7 +390,7 @@ public class RubyElementCtx {
                 Call call = Call.getCallType(doc, th, astOffset);
                 int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
 
-                RubyType types = RubyType.createUnknown();
+                RubyType types = RubyType.unknown();
                 final RubyType callType = call.getType();
                 if (callType.isKnown() && !call.isLHSConstant()) {
                     types = callType;

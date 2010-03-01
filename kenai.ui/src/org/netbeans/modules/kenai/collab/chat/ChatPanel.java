@@ -390,7 +390,7 @@ public class ChatPanel extends javax.swing.JPanel {
         this.muc=muc;
         KenaiProject kenaiProject = getKenaiProject();
         kenai = kenaiProject.getKenai();
-        setName(kenaiProject.getName() + "@" + kenai.getUrl().getHost().toString()); //NOI18N
+        setName(muc.getRoom()); //NOI18N
         kc = KenaiConnection.getDefault(kenai);
         init();
         if (!kenai.getXMPPConnection().isConnected()) {

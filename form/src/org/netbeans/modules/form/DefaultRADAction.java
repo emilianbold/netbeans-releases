@@ -56,6 +56,7 @@ public class DefaultRADAction extends CookieAction {
      * presented as an item in a menu.
      * @return the name of the action
      */
+    @Override
     public String getName() {
         return "DefaultRADAction"; // NOI18N
     }
@@ -63,12 +64,14 @@ public class DefaultRADAction extends CookieAction {
     /** Get a help context for the action.
      * @return the help context for this action
      */
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(DefaultRADAction.class);
     }
 
     /** @return the mode of action. Possible values are disjunctions of MODE_XXX
      * constants. */
+    @Override
     protected int mode() {
         return MODE_EXACTLY_ONE;
     }
@@ -77,6 +80,7 @@ public class DefaultRADAction extends CookieAction {
      *
      * @return list of classes the that the cookie tests
      */
+    @Override
     protected Class[] cookieClasses() {
         return new Class[] { RADComponentCookie.class };
     }
@@ -110,6 +114,7 @@ public class DefaultRADAction extends CookieAction {
      *
      * @param activatedNodes gives array of actually activated nodes.
      */
+    @Override
     protected void performAction(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
             RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);

@@ -241,6 +241,7 @@ public class FormCustomEditor extends JPanel implements PropertyChangeListener {
         cl.show(cardPanel, (String) editorsCombo.getSelectedItem());
 
         editorsCombo.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 CardLayout cl2 = (CardLayout) cardPanel.getLayout();
                 cl2.show(cardPanel, (String) editorsCombo.getSelectedItem());
@@ -300,6 +301,7 @@ public class FormCustomEditor extends JPanel implements PropertyChangeListener {
     /**
      * Called by property sheet when OK button is pressed and the value is valid.
      */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())
                 && evt.getNewValue() == PropertyEnv.STATE_VALID) {

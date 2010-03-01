@@ -53,9 +53,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.execution.SubstitutableTarget;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
@@ -64,6 +62,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
@@ -255,7 +255,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
 
     private void start(ExecutionEnvVariablesProvider executionEnvProvider) {
         synchronized (this) {
-            ExecutionDescriptor descr = new ExecutionDescriptor();
+            NativeExecutionDescriptor descr = new NativeExecutionDescriptor();
             descr = descr.controllable(true).frontWindow(true);
 
             NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(execEnv);
@@ -319,7 +319,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
                 }
             });
 
-            final ExecutionService es = ExecutionService.newService(
+            final NativeExecutionService es = NativeExecutionService.newService(
                     pb,
                     descr,
                     toString());

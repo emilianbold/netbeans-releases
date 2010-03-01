@@ -58,7 +58,7 @@ public class CallTest extends RubyTestBase {
     }
 
     private void assertType(String expected, RubyType actualType) {
-        RubyType expectedType = expected == null ? RubyType.createUnknown() : RubyType.create(expected);
+        RubyType expectedType = expected == null ? RubyType.unknown() : RubyType.create(expected);
         assertEquals(expectedType, actualType);
     }
 

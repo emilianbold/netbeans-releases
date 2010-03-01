@@ -108,6 +108,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     public static final String PHP_VERSION = "php.version"; // NOI18N
     public static final String IGNORE_PATH = "ignore.path"; // NOI18N
     public static final String PHP_UNIT_BOOTSTRAP = "phpunit.bootstrap"; // NOI18N
+    public static final String PHP_UNIT_BOOTSTRAP_FOR_CREATE_TESTS = "phpunit.bootstrap.create.tests"; // NOI18N
     public static final String PHP_UNIT_CONFIGURATION = "phpunit.configuration"; // NOI18N
     public static final String PHP_UNIT_SUITE = "phpunit.suite"; // NOI18N
 
@@ -165,6 +166,12 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         DO_NOT_OPEN_BROWSER
     }
 
+    public static enum XDebugUrlArguments {
+        XDEBUG_SESSION_START,
+        XDEBUG_SESSION_STOP,
+        XDEBUG_SESSION_STOP_NO_EXEC
+    }
+
     static final String CONFIG_PRIVATE_PROPERTIES_PATH = "nbproject/private/config.properties"; // NOI18N
 
     private final PhpProject project;
@@ -185,6 +192,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     private String aspTags;
     private String phpVersion;
     private String phpUnitBootstrap;
+    private Boolean phpUnitBootstrapForCreateTests;
     private String phpUnitConfiguration;
     private String phpUnitSuite;
 
@@ -382,6 +390,17 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         this.phpUnitBootstrap = phpUnitBootstrap;
     }
 
+    public boolean getPhpUnitBootstrapForCreateTests() {
+        if (phpUnitBootstrapForCreateTests == null) {
+            phpUnitBootstrapForCreateTests = ProjectPropertiesSupport.usePhpUnitBootstrapForCreateTests(project);
+        }
+        return phpUnitBootstrapForCreateTests;
+    }
+
+    public void setPhpUnitBootstrapForCreateTests(Boolean phpUnitBootstrapForCreateTests) {
+        this.phpUnitBootstrapForCreateTests = phpUnitBootstrapForCreateTests;
+    }
+
     public String getPhpUnitConfiguration() {
         if (phpUnitConfiguration == null) {
             File configuration = ProjectPropertiesSupport.getPhpUnitConfiguration(project);
@@ -488,6 +507,9 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         // phpunit
         if (phpUnitBootstrap != null) {
             projectProperties.setProperty(PHP_UNIT_BOOTSTRAP, relativizeFile(phpUnitBootstrap));
+        }
+        if (phpUnitBootstrapForCreateTests != null) {
+            projectProperties.setProperty(PHP_UNIT_BOOTSTRAP_FOR_CREATE_TESTS, phpUnitBootstrapForCreateTests.toString());
         }
         if (phpUnitConfiguration != null) {
             projectProperties.setProperty(PHP_UNIT_CONFIGURATION, relativizeFile(phpUnitConfiguration));

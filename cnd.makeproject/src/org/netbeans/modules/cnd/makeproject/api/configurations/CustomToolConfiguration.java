@@ -60,6 +60,7 @@ public class CustomToolConfiguration implements ConfigurationBase {
         additionalDependencies = new StringConfiguration(null, ""); // NOI18N
     }
 
+    @Override
     public boolean getModified() {
         return commandLine.getModified() || description.getModified() || outputs.getModified() || additionalDependencies.getModified();
     }

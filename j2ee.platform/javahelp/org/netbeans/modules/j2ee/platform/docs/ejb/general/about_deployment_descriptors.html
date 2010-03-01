@@ -44,7 +44,8 @@
 </ul>
 <h3>Deployment Descriptors in the IDE</h3>
 <p>The IDE generates a deployment descriptor from the settings for EJB modules, 
-  web application modules, and enterprise applications, when you create an empty enterprise project. 
+  web application modules, and enterprise applications, when you create an empty enterprise project. (Note that
+  deployment descriptors are NOT created automatically for EE6 projects. See <a href="#dd-ee6">below</a>.)
   It also reads your existing deployment descriptors when you import existing 
   enterprise beans, enterprise applications, and web applications into the IDE. 
   The deployment descriptors are located in the <tt>conf</tt> folder of your project directory, 
@@ -64,7 +65,11 @@
   You can therefore check and validate the XML in your deployment descriptors 
   according to the DTDs and schemas. You can view the DTDs by choosing Tools &gt; DTDs and XML Schemas
   from the main menu.</p>
-
+<h3><a name="dd-ee6"/>Deployment Descriptors in EE 6 Projects</h3>
+<p>By default, EE 6 applications use annotations instead of deployment descriptors. However, in some cases a
+    deployment descriptor is still necessary, such as when customizing the application. In these situations you can
+have the NetBeans IDE create a deployment descriptor. Right-click the project's node in the Project Manager and
+select New > Standard Deployment Descriptor.</p>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="../configuring/config_ejb_dd.html">Configuring EJB Deployment Descriptors</a></dd>

@@ -45,11 +45,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
-import org.netbeans.modules.cnd.toolchain.actions.BuildToolsAction;
+import org.netbeans.modules.cnd.api.toolchain.ui.BuildToolsAction;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.openide.nodes.Sheet;
@@ -63,13 +62,17 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Confi
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.settings.CppSettings;
-import org.netbeans.modules.cnd.toolchain.ui.api.LocalToolsPanelModel;
-import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelModel;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
+import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
-public class GdbProfile implements ConfigurationAuxObject {
+public final class GdbProfile implements ConfigurationAuxObject {
 
     public static final String GDB_PROFILE_ID = "gdbdebugger"; // NOI18N
     
@@ -97,6 +100,7 @@ public class GdbProfile implements ConfigurationAuxObject {
         initialize();
     }
     
+    @Override
     public void initialize() {
         if (gdb_command == null) {
             if (GdbDebugger.isUnitTest()) {
@@ -107,6 +111,7 @@ public class GdbProfile implements ConfigurationAuxObject {
         }
     }
 
+    @Override
     public boolean shared() {
 	return false;
     }
@@ -115,6 +120,7 @@ public class GdbProfile implements ConfigurationAuxObject {
      * Returns a unique id (String) used to retrive this object from the
      * pool of aux objects.
      */
+    @Override
     public String getId() {
         return GDB_PROFILE_ID;
     }
@@ -136,23 +142,22 @@ public class GdbProfile implements ConfigurationAuxObject {
     }
     
     public String getGdbPath(MakeConfiguration conf, boolean canAskUser) {
-        if (getClass().getName().contains("gd" + "b2")) { // NOI18N - Debugging code only...
-            return "/usr/local/bin/gd" + "b2"; // NOI18N - DEBUG tool for debugger co-existance development
-        }
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         CompilerSet cs;
         String csname;
         
         if (csconf.isValid()) {
             csname = csconf.getOption();
-            cs = CompilerSetManager.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(csname);
+            cs = CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(csname);
         } else {
             csname = csconf.getOldName();
-            cs = CompilerSet.getCompilerSet(conf.getDevelopmentHost().getExecutionEnvironment(), csname, conf.getPlatformInfo().getPlatform());
-            CompilerSetManager.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).add(cs);
+            final int platform = conf.getPlatformInfo().getPlatform();
+            CompilerFlavor flavor = CompilerFlavor.toFlavor(csname, platform);
+            flavor = flavor == null ? CompilerFlavor.getUnknown(platform) : flavor;
+            cs = CompilerSetFactory.getCompilerSet(conf.getDevelopmentHost().getExecutionEnvironment(), flavor, csname);
             csconf.setValid();
         }
-        Tool debuggerTool = cs.getTool(Tool.DebuggerTool);
+        Tool debuggerTool = cs.getTool(PredefinedToolKind.DebuggerTool);
         ExecutionEnvironment execEnv = null;
         if (debuggerTool != null) {
             String gdbPath = debuggerTool.getPath();
@@ -199,8 +204,8 @@ public class GdbProfile implements ConfigurationAuxObject {
 //                    setGdbCommand(model.getGdbName());
 //                }
                 conf.getCompilerSet().setValue(model.getSelectedCompilerSetName());
-                cs = CompilerSetManager.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(model.getSelectedCompilerSetName());
-                return cs.getTool(Tool.DebuggerTool).getPath();
+                cs = CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(model.getSelectedCompilerSetName());
+                return cs.getTool(PredefinedToolKind.DebuggerTool).getPath();
             }
         }
         return null;
@@ -299,20 +304,24 @@ public class GdbProfile implements ConfigurationAuxObject {
     // This stuff ends up in <projectdir>/nbproject/private/profiles.xml
     // 
 
+    @Override
     public XMLDecoder getXMLDecoder() {
 	return new GdbProfileXMLCodec(this);
     }
 
+    @Override
     public XMLEncoder getXMLEncoder() {
 	return new GdbProfileXMLCodec(this);
     }
 
     // interface ProfileAuxObject
+    @Override
     public boolean hasChanged() {
 	return needSave;
     }
 
     // interface ProfileAuxObject
+    @Override
     public void clearChanged() {
 	needSave = false;
     }
@@ -323,6 +332,7 @@ public class GdbProfile implements ConfigurationAuxObject {
      * Assign all values from a profileAuxObject to this object (reverse
      * of clone)
      */
+    @Override
     public void assign(ConfigurationAuxObject profileAuxObject) {
 	assert profileAuxObject instanceof GdbProfile;
 
@@ -366,10 +376,12 @@ public class GdbProfile implements ConfigurationAuxObject {
                     true, false);
         }
         
+        @Override
         public String getValue() {
             return getGdbCommand();
         }
         
+        @Override
         public void setValue(String v) {
             // TODO: shouldn't we check for null here?
             setGdbCommand(v);
@@ -384,10 +396,12 @@ public class GdbProfile implements ConfigurationAuxObject {
                     true, true);
         }
         
+        @Override
         public Integer getValue() {
             return getArrayRepeatThreshold();
         }
         
+        @Override
         public void setValue(Integer v) {
             // TODO: why do we need to check it here?
             if (v != null) {

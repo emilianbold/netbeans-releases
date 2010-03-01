@@ -434,7 +434,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         synchronized (instanceMap) {
                 try {
                     loadServerInstances();
-                    registerDefaultInstance();
+//                    registerDefaultInstance();
                 } catch (RuntimeException ex) {
                     getLogger().log(Level.INFO, null, ex);
                 }
@@ -645,96 +645,96 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         return result;
     }
     
-    private void registerDefaultInstance() {
-//        final boolean needToRegisterDefaultServer =
-//                !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
-
-        String candidate = System.getProperty(installRootPropName);
-        if (null == candidate) {
-            return;
-        }
-        candidate = new File(candidate).getAbsolutePath();
-
-        // sanity check the installRoot value.  Try to correct it
-        // if the most common mistake is made
-        //  (gfroot instead of installroot is the value given)
-        //
-        if (isValidHomeFolder(candidate)) {
-            String gfCandidate = candidate + File.separator + "glassfish";
-            if (!isValidGlassfishFolder(gfCandidate)) {
-                gfCandidate = candidate;
-                candidate = new File(gfCandidate).getParentFile().getAbsolutePath();
-                if (!isValidHomeFolder(candidate) || !isValidGlassfishFolder(gfCandidate)) {
-                    getLogger().log(Level.INFO, "Invalid value set for installRoot: " + System.getProperty(installRootPropName));
-                    return;
-                } else {
-                    getLogger().log(Level.INFO, "Fixed incorrect value set for installRoot: " + System.getProperty(installRootPropName));
-                }
-            } else {
-                // candidate and gfCandidate is valid
-            }
-        } else {
-            getLogger().log(Level.INFO, "Invalid installRoot: " + System.getProperty(installRootPropName));
-            return;
-        }
-        
-        String firstRunValue = NbPreferences.forModule(this.getClass()).get(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), "false"); // NOI18N
-        
-        // we may be migrating from 'old' to new
-        if ("false".equals(firstRunValue)) {
-            firstRunValue = NbPreferences.forModule(this.getClass()).get(ServerUtilities.PROP_FIRST_RUN, "false");
-        }
-        boolean needToRegisterDefaultServer = computeNeedToRegister(firstRunValue, candidate, getInstallRoots());
-        if ("true".equals(firstRunValue) && !needToRegisterDefaultServer && null != candidate) {  // NOI18N
-            //  change the "true" into the path for future checks
-            //
-            NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), new File(candidate).getAbsolutePath());
-        }
-
-        if (needToRegisterDefaultServer) {
-            try {
-                //String candidate = System.getProperty(installRootPropName); //NOI18N
-                NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), new File(candidate).getAbsolutePath());
-
-                if (null != candidate) {
-                    File f = new File(candidate);
-                    if (isValidHomeFolder(candidate) && f.exists()) {
-                        Map<String, String> ip = new HashMap<String, String>();
-                        ip.put(GlassfishModule.INSTALL_FOLDER_ATTR,
-                                f.getCanonicalPath());
-                        ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR,
-                                f.getCanonicalPath() + File.separator + "glassfish"); // NOI18N
-                        if (Utils.canWrite(f)) { // f.canWrite()) {
-                            String dn = getUniqueName(defaultDomainName);
-                            ip.put(GlassfishModule.DISPLAY_NAME_ATTR, dn);
-                            ip.put(GlassfishModule.HTTPPORT_ATTR,
-                                    Integer.toString(8080));
-                            ip.put(GlassfishModule.ADMINPORT_ATTR,
-                                    Integer.toString(4848));
-                            ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR,
-                                    ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR) +
-                                    File.separator + "domains"); // NOI18N
-                            ip.put(GlassfishModule.DOMAIN_NAME_ATTR, "domain1"); // NOI18N
-                            GlassfishInstance gi = GlassfishInstance.create(ip,this);
-                        } else {
-                            ip.put(GlassfishModule.DISPLAY_NAME_ATTR, defaultPersonalDomainName);
-                            String domainsFolderValue = System.getProperty("netbeans.user"); // NOI18N
-                            String domainNameValue = defaultInstallName;    // NOI18N
-                            ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsFolderValue);
-                            ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainNameValue);
-                            
-                            CreateDomain cd = new CreateDomain("anonymous", "", new File(f,"glassfish"), ip, this,true); // NOI18N
-                            cd.start();
-                        }
-
-                    }
-                }
-            } catch (IOException ex) {
-                NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), "false");
-                getLogger().log(Level.INFO, ex.getLocalizedMessage(), ex);
-            }
-        }
-    }
+//    private void registerDefaultInstance() {
+////        final boolean needToRegisterDefaultServer =
+////                !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
+//
+//        String candidate = System.getProperty(installRootPropName);
+//        if (null == candidate) {
+//            return;
+//        }
+//        candidate = new File(candidate).getAbsolutePath();
+//
+//        // sanity check the installRoot value.  Try to correct it
+//        // if the most common mistake is made
+//        //  (gfroot instead of installroot is the value given)
+//        //
+//        if (isValidHomeFolder(candidate)) {
+//            String gfCandidate = candidate + File.separator + "glassfish";
+//            if (!isValidGlassfishFolder(gfCandidate)) {
+//                gfCandidate = candidate;
+//                candidate = new File(gfCandidate).getParentFile().getAbsolutePath();
+//                if (!isValidHomeFolder(candidate) || !isValidGlassfishFolder(gfCandidate)) {
+//                    getLogger().log(Level.INFO, "Invalid value set for installRoot: " + System.getProperty(installRootPropName));
+//                    return;
+//                } else {
+//                    getLogger().log(Level.INFO, "Fixed incorrect value set for installRoot: " + System.getProperty(installRootPropName));
+//                }
+//            } else {
+//                // candidate and gfCandidate is valid
+//            }
+//        } else {
+//            getLogger().log(Level.INFO, "Invalid installRoot: " + System.getProperty(installRootPropName));
+//            return;
+//        }
+//
+//        String firstRunValue = NbPreferences.forModule(this.getClass()).get(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), "false"); // NOI18N
+//
+//        // we may be migrating from 'old' to new
+//        if ("false".equals(firstRunValue)) {
+//            firstRunValue = NbPreferences.forModule(this.getClass()).get(ServerUtilities.PROP_FIRST_RUN, "false");
+//        }
+//        boolean needToRegisterDefaultServer = computeNeedToRegister(firstRunValue, candidate, getInstallRoots());
+//        if ("true".equals(firstRunValue) && !needToRegisterDefaultServer && null != candidate) {  // NOI18N
+//            //  change the "true" into the path for future checks
+//            //
+//            NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), new File(candidate).getAbsolutePath());
+//        }
+//
+//        if (needToRegisterDefaultServer) {
+//            try {
+//                //String candidate = System.getProperty(installRootPropName); //NOI18N
+//                NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), new File(candidate).getAbsolutePath());
+//
+//                if (null != candidate) {
+//                    File f = new File(candidate);
+//                    if (isValidHomeFolder(candidate) && f.exists()) {
+//                        Map<String, String> ip = new HashMap<String, String>();
+//                        ip.put(GlassfishModule.INSTALL_FOLDER_ATTR,
+//                                f.getCanonicalPath());
+//                        ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR,
+//                                f.getCanonicalPath() + File.separator + "glassfish"); // NOI18N
+//                        if (Utils.canWrite(f)) { // f.canWrite()) {
+//                            String dn = getUniqueName(defaultDomainName);
+//                            ip.put(GlassfishModule.DISPLAY_NAME_ATTR, dn);
+//                            ip.put(GlassfishModule.HTTPPORT_ATTR,
+//                                    Integer.toString(8080));
+//                            ip.put(GlassfishModule.ADMINPORT_ATTR,
+//                                    Integer.toString(4848));
+//                            ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR,
+//                                    ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR) +
+//                                    File.separator + "domains"); // NOI18N
+//                            ip.put(GlassfishModule.DOMAIN_NAME_ATTR, "domain1"); // NOI18N
+//                            GlassfishInstance gi = GlassfishInstance.create(ip,this);
+//                        } else {
+//                            ip.put(GlassfishModule.DISPLAY_NAME_ATTR, defaultPersonalDomainName);
+//                            String domainsFolderValue = System.getProperty("netbeans.user"); // NOI18N
+//                            String domainNameValue = defaultInstallName;    // NOI18N
+//                            ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsFolderValue);
+//                            ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainNameValue);
+//
+//                            CreateDomain cd = new CreateDomain("anonymous", "", new File(f,"glassfish"), ip, this,true); // NOI18N
+//                            cd.start();
+//                        }
+//
+//                    }
+//                }
+//            } catch (IOException ex) {
+//                NbPreferences.forModule(this.getClass()).put(ServerUtilities.PROP_FIRST_RUN+getInstallRootKey(), "false");
+//                getLogger().log(Level.INFO, ex.getLocalizedMessage(), ex);
+//            }
+//        }
+//    }
 
     String[] getNoPasswordCreatDomainCommand(String startScript, String jarLocation, String domainDir, String portBase, String uname, String domain) {
         List<String> retVal = new ArrayList<String>();
@@ -756,69 +756,69 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         return retVal.toArray(new String[retVal.size()]);
     }
 
-    static boolean computeNeedToRegister(String firstRunValue, String candidate, Collection<String> registeredInstalls) {
-        boolean needToRegisterDefaultServer;
-        //String candidate = System.getProperty(installRootPropName);
-        //String firstRunValue = NbPreferences.forModule(this.getClass()).get(ServerUtilities.PROP_FIRST_RUN, "false");
-        if ("false".equals(firstRunValue)) {
-            // this really is a first run.
-            needToRegisterDefaultServer = true;
-        } else if ("true".equals(firstRunValue)) {
-            // the userdir has been run...
-            //
-            //Collection<GlassfishInstance> registeredInstances = getInternalInstances();
-            if (null != candidate) {
-                // we assume that this is userdir has not registered the current
-                // candidate server.
-                //
-                needToRegisterDefaultServer = true;
-                for (String i : registeredInstalls) {
-                    if (candidate.equals(i)) {
-                        // one of the registered servers is the candidate...
-                        //   do not register it again
-                        //
-                        needToRegisterDefaultServer = false;
-                        break;
-                    }
-                }
-            } else {
-                needToRegisterDefaultServer = false;
-            }
+//    static boolean computeNeedToRegister(String firstRunValue, String candidate, Collection<String> registeredInstalls) {
+//        boolean needToRegisterDefaultServer;
+//        //String candidate = System.getProperty(installRootPropName);
+//        //String firstRunValue = NbPreferences.forModule(this.getClass()).get(ServerUtilities.PROP_FIRST_RUN, "false");
+//        if ("false".equals(firstRunValue)) {
+//            // this really is a first run.
+//            needToRegisterDefaultServer = true;
+//        } else if ("true".equals(firstRunValue)) {
+//            // the userdir has been run...
+//            //
+//            //Collection<GlassfishInstance> registeredInstances = getInternalInstances();
+//            if (null != candidate) {
+//                // we assume that this is userdir has not registered the current
+//                // candidate server.
+//                //
+//                needToRegisterDefaultServer = true;
+//                for (String i : registeredInstalls) {
+//                    if (candidate.equals(i)) {
+//                        // one of the registered servers is the candidate...
+//                        //   do not register it again
+//                        //
+//                        needToRegisterDefaultServer = false;
+//                        break;
+//                    }
+//                }
+//            } else {
+//                needToRegisterDefaultServer = false;
+//            }
+//
+//        } else {
+//            // the firstRunValue is the path to the last "first_run" server...
+//            //
+//            if (firstRunValue.equals(candidate)) {
+//                // the paths match... so we do not need to register
+//                needToRegisterDefaultServer = false;
+//            } else {
+//                // the paths do not match... we do need to register
+//                needToRegisterDefaultServer = true;
+//            }
+//        }
+//        return needToRegisterDefaultServer;
+//    }
 
-        } else {
-            // the firstRunValue is the path to the last "first_run" server...
-            //
-            if (firstRunValue.equals(candidate)) {
-                // the paths match... so we do not need to register
-                needToRegisterDefaultServer = false;
-            } else {
-                // the paths do not match... we do need to register
-                needToRegisterDefaultServer = true;
-            }
-        }
-        return needToRegisterDefaultServer;
-    }
-
-    private Collection<String> getInstallRoots() {
-        Set<String> registeredRoots = new HashSet<String>();
-        //if (!instanceMap.isEmpty()) {
-        for (GlassfishInstance i : getInternalInstances()) {
-            registeredRoots.add(i.getInstallRoot());
-        //}
-        }
-        return registeredRoots;
-    }
-
-    private String getUniqueName(String defaultDomainName) {
-        synchronized(instanceMap) {
-            String candidate = defaultDomainName;
-            int n = 1;
-            while (activeDisplayNames.contains(candidate)) {
-                candidate = defaultDomainName + " " + n++;
-            }
-            return candidate;
-        }
-    }
+//    private Collection<String> getInstallRoots() {
+//        Set<String> registeredRoots = new HashSet<String>();
+//        //if (!instanceMap.isEmpty()) {
+//        for (GlassfishInstance i : getInternalInstances()) {
+//            registeredRoots.add(i.getInstallRoot());
+//        //}
+//        }
+//        return registeredRoots;
+//    }
+//
+//    private String getUniqueName(String defaultDomainName) {
+//        synchronized(instanceMap) {
+//            String candidate = defaultDomainName;
+//            int n = 1;
+//            while (activeDisplayNames.contains(candidate)) {
+//                candidate = defaultDomainName + " " + n++;
+//            }
+//            return candidate;
+//        }
+//    }
 
     CommandFactory getCommandFactory() {
        return cf;

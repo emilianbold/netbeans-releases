@@ -51,7 +51,13 @@ import org.openide.util.Parameters;
  */
 public final class GemRequirement implements Comparable<GemRequirement>{
 
-    // patterns for parsing requirement info from 'rake gems' output
+    /**
+     * Pattern for parsing Bundler output
+     */
+    private static final Pattern BUNDLER = Pattern.compile("\\s+\\*\\s(\\S+)\\s\\((\\S+)\\)\\s*");
+    /**
+     * Patterns for parsing requirement info from 'rake gems' output.
+     */
     private static final Pattern STATUS = Pattern.compile("\\s*-\\s*\\[(.*)\\].*");
     private static final Pattern NAME = Pattern.compile("\\s*-\\s*\\[.*\\]\\s(\\S*).*");
     private static final Pattern VERSION = Pattern.compile(".*\\s+(\\d+[\\.\\d]*)\\s*");
@@ -237,11 +243,17 @@ public final class GemRequirement implements Comparable<GemRequirement>{
 
     /**
      * Parser a <code>GemRequirement</code> from the given line. The expected
-     * format of the line is the same as what <code>rake gems</code> outputs.
-     * @param line
-     * @return
+     * format of the line is the same as what either <code>bundle show</code> or 
+     * <code>rake gems</code> outputs.
+     *
+     * @param line the line to parse.
+     * @return the parsed requirement or <code>null</code>.
      */
     public static GemRequirement parse(String line) {
+        Matcher bundlerMatcher = BUNDLER.matcher(line);
+        if (bundlerMatcher.matches()) {
+            return new GemRequirement(bundlerMatcher.group(1), bundlerMatcher.group(2), "=", Status.UNKNOWN);
+        }
         Matcher statusMatcher = STATUS.matcher(line);
         Matcher nameMatcher = NAME.matcher(line);
         Matcher versionMatcher = VERSION.matcher(line);
@@ -256,7 +268,6 @@ public final class GemRequirement implements Comparable<GemRequirement>{
         }
         return null;
     }
-
     /**
      * @return this in a string format, e.g. <code>some-gem >= 1.2.3</code>.
      */

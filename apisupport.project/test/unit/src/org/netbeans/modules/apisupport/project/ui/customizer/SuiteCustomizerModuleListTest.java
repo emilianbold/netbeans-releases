@@ -41,11 +41,9 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.util.Arrays;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 
 /** Checks the behaviour of enabled module list.
@@ -121,32 +119,32 @@ public class SuiteCustomizerModuleListTest extends TestBase {
 //        assertFalse(real.containsAll(c));
 //    }
     
-    private String doDisableCluster(int index, boolean doCheck) throws Exception {
-        Node n = customizer.getExplorerManager().getRootContext();
-        Node[] clusters = n.getChildren().getNodes();
-        if (clusters.length <= index) {
-            fail ("Wrong, there should be some clusters. at least: " + index + " and was: " + clusters.length);
-        }
-        Node[] modules = clusters[index].getChildren().getNodes();
-        if (modules.length == 0) {
-            fail("Expected more modules for cluster: " + clusters[index]);
-        }
-
-        setNodeEnabled(clusters[index], false);
-        assertEquals("No modules in disabled clusters", 
-                clusters[index].getChildren().getNodes().length, modules.length);
-        
-        customizer.store();
-        suite1Props.storeProperties();
-        
-        if (doCheck) {
-            String[] xyz = suite1Props.getEnabledClusters();
-            //assertEquals("One cluster is disabled", ???, xyz.length);
-            assertFalse("It's name is name of the node", Arrays.asList(xyz).contains(clusters[index].getName()));
-        }
-        
-        return clusters[index].getName();
-    }
+//    private String doDisableCluster(int index, boolean doCheck) throws Exception {
+//        Node n = customizer.getExplorerManager().getRootContext();
+//        Node[] clusters = n.getChildren().getNodes();
+//        if (clusters.length <= index) {
+//            fail ("Wrong, there should be some clusters. at least: " + index + " and was: " + clusters.length);
+//        }
+//        Node[] modules = clusters[index].getChildren().getNodes();
+//        if (modules.length == 0) {
+//            fail("Expected more modules for cluster: " + clusters[index]);
+//        }
+//
+//        setNodeEnabled(clusters[index], false);
+//        assertEquals("No modules in disabled clusters",
+//                clusters[index].getChildren().getNodes().length, modules.length);
+//
+//        customizer.store();
+//        suite1Props.storeProperties();
+//
+//        if (doCheck) {
+//            String[] xyz = suite1Props.getEnabledClusters();
+//            //assertEquals("One cluster is disabled", ???, xyz.length);
+//            assertFalse("It's name is name of the node", Arrays.asList(xyz).contains(clusters[index].getName()));
+//        }
+//
+//        return clusters[index].getName();
+//    }
     
     public void testDisableModule() throws Exception {
         //    XXX: failing test, fix or delete
@@ -173,41 +171,41 @@ public class SuiteCustomizerModuleListTest extends TestBase {
 //        assertEquals("It's name is name of the node", modules[0].getName(), xyz[0]);
     }
     
-    private static void assertNodeEnabled(Node n, Boolean value) throws Exception {
-        for (Node.PropertySet ps : n.getPropertySets()) {
-            for (Node.Property<?> prop : ps.getProperties()) {
-                if (prop.getName().equals("enabled")) {
-                    Object o = prop.getValue();
-                    assertEquals("Node is correctly enabled/disabled: " + n, value, o);
-                    return;
-                }
-            }
-        }
-        fail("No enabled property found: " + n);
-    }
-    private static void setNodeEnabled(Node n, boolean value) throws Exception {
-        for (Node.PropertySet ps : n.getPropertySets()) {
-            for (Node.Property<?> prop : ps.getProperties()) {
-                if (prop.getName().equals("enabled")) {
-                    @SuppressWarnings("unchecked") // value type is Boolean.TYPE, not Boolean.class, so Class.<T>cast will not help
-                    Node.Property<Boolean> _prop = (Node.Property<Boolean>) prop;
-                    _prop.setValue(value);
-                    return;
-                }
-            }
-        }
-        fail("No enabled property found: " + n);
-    }
+//    private static void assertNodeEnabled(Node n, Boolean value) throws Exception {
+//        for (Node.PropertySet ps : n.getPropertySets()) {
+//            for (Node.Property<?> prop : ps.getProperties()) {
+//                if (prop.getName().equals("enabled")) {
+//                    Object o = prop.getValue();
+//                    assertEquals("Node is correctly enabled/disabled: " + n, value, o);
+//                    return;
+//                }
+//            }
+//        }
+//        fail("No enabled property found: " + n);
+//    }
+//    private static void setNodeEnabled(Node n, boolean value) throws Exception {
+//        for (Node.PropertySet ps : n.getPropertySets()) {
+//            for (Node.Property<?> prop : ps.getProperties()) {
+//                if (prop.getName().equals("enabled")) {
+//                    @SuppressWarnings("unchecked") // value type is Boolean.TYPE, not Boolean.class, so Class.<T>cast will not help
+//                    Node.Property<Boolean> _prop = (Node.Property<Boolean>) prop;
+//                    _prop.setValue(value);
+//                    return;
+//                }
+//            }
+//        }
+//        fail("No enabled property found: " + n);
+//    }
 
-    private void enableAllClusters(boolean enableModulesAsWell) throws Exception {
-        Node n = customizer.getExplorerManager().getRootContext();
-        for (Node cluster : n.getChildren().getNodes()) {
-            setNodeEnabled(cluster, true);
-            if (enableModulesAsWell) {
-                for (Node module : cluster.getChildren().getNodes()) {
-                    setNodeEnabled(module, true);
-                }
-            }
-        }
-    }
+//    private void enableAllClusters(boolean enableModulesAsWell) throws Exception {
+//        Node n = customizer.getExplorerManager().getRootContext();
+//        for (Node cluster : n.getChildren().getNodes()) {
+//            setNodeEnabled(cluster, true);
+//            if (enableModulesAsWell) {
+//                for (Node module : cluster.getChildren().getNodes()) {
+//                    setNodeEnabled(module, true);
+//                }
+//            }
+//        }
+//    }
 }

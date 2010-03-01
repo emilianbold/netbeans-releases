@@ -91,12 +91,12 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
 
         // return files
         Set<FileObject> files = new HashSet<FileObject>();
-        FileObject databases = phpModule.getSourceDirectory().getFileObject("config/databases.yml"); // NOI18N
+        FileObject databases = SymfonyPhpFrameworkProvider.locate(phpModule, "config/databases.yml", true); // NOI18N
         if (databases != null) {
             // likely --orm=none
             files.add(databases);
         }
-        FileObject config = phpModule.getSourceDirectory().getFileObject("config/ProjectConfiguration.class.php"); // NOI18N
+        FileObject config = SymfonyPhpFrameworkProvider.locate(phpModule, "config/ProjectConfiguration.class.php", true); // NOI18N
         if (config != null) {
             // #176041
             files.add(config);
@@ -104,7 +104,7 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
 
         if (files.isEmpty()) {
             // open at least index.php
-            FileObject index = phpModule.getSourceDirectory().getFileObject("web/index.php"); // NOI18N
+            FileObject index = SymfonyPhpFrameworkProvider.locate(phpModule, "web/index.php", true); // NOI18N
             if (index != null) {
                 files.add(index);
             }

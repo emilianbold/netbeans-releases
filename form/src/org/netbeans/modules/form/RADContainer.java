@@ -52,12 +52,14 @@ import java.util.List;
 public class RADContainer extends RADComponent implements ComponentContainer {
     private List<RADComponent> subComponents;
 
+    @Override
     public RADComponent[] getSubBeans() {
         RADComponent[] components = new RADComponent [subComponents.size()];
         subComponents.toArray(components);
         return components;
     }
 
+    @Override
     public void initSubComponents(RADComponent[] initComponents) {
         subComponents = new ArrayList<RADComponent>(initComponents.length);
         for (int i = 0; i < initComponents.length; i++) {
@@ -66,6 +68,7 @@ public class RADContainer extends RADComponent implements ComponentContainer {
         }
     }
 
+    @Override
     public void reorderSubComponents(int[] perm) {
         RADComponent[] components = new RADComponent[subComponents.size()];
         for (int i=0; i < perm.length; i++)
@@ -75,16 +78,19 @@ public class RADContainer extends RADComponent implements ComponentContainer {
         subComponents.addAll(java.util.Arrays.asList(components));
     }
 
+    @Override
     public void add(RADComponent comp) {
         subComponents.add(comp);
         comp.setParentComponent(this);
     }
 
+    @Override
     public void remove(RADComponent comp) {
         if (subComponents.remove(comp))
             comp.setParentComponent(null);
     }
 
+    @Override
     public int getIndexOf(RADComponent comp) {
         return subComponents.indexOf(comp);
     }

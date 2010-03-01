@@ -68,7 +68,7 @@ public class AptSourceFileManager extends SourceFileManager {
         void finished(@NonNull URL source);
     }
 
-    private static final String ORIGIN_FILE = "apt-origin";    //NOI18N
+    public static final String ORIGIN_FILE = "apt-origin";    //NOI18N
 
     private final ClassPath userRoots;
     private final Marker marker;
@@ -78,9 +78,8 @@ public class AptSourceFileManager extends SourceFileManager {
 
     public AptSourceFileManager (final @NonNull ClassPath userRoots,
                               final @NonNull ClassPath aptRoots,
-                              final @NullAllowed Marker marker,
-                              final boolean ignoreExcludes) {
-        super(aptRoots,ignoreExcludes);
+                              final @NullAllowed Marker marker) {
+        super(aptRoots, true);
         assert userRoots != null;
         this.userRoots = userRoots;
         this.marker = marker;
@@ -146,7 +145,7 @@ public class AptSourceFileManager extends SourceFileManager {
                     throw new IllegalArgumentException("Invalid path argument: " + ownerRootURL);    //NOI18N
                 }
             }
-            return true;
+            return false;   //Pass the option to all FileManagers
         }
         else {
             return super.handleOption(head, tail);

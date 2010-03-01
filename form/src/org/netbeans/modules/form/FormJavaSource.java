@@ -92,8 +92,10 @@ public class FormJavaSource {
     public void refresh() {
         this.fields = Collections.<String>emptyList();
         runUserActionTask(new CancellableTask<CompilationController>() {
+            @Override
             public void cancel() {
             }
+            @Override
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.PARSED);
                 FormJavaSource.this.fields = getFieldNames(controller);
@@ -207,8 +209,10 @@ public class FormJavaSource {
         final Object[] result = new Object[1];
         
         runUserActionTask(new CancellableTask<CompilationController>() {
+            @Override
             public void cancel() {
             }
+            @Override
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 
@@ -229,8 +233,10 @@ public class FormJavaSource {
     public String getAnnotationCode(final String methodName, final Position startPosition, final Position endPosition, final boolean removeAnnotations) {
         final StringBuilder sb = new StringBuilder();
         runModificationTask(new CancellableTask<WorkingCopy>() {
+            @Override
             public void cancel() {
             }
+            @Override
             public void run(WorkingCopy wc) throws Exception {
                 wc.toPhase(JavaSource.Phase.RESOLVED);
                 ClassTree ct = findClassTree(wc);

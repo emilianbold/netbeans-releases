@@ -75,6 +75,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -174,7 +175,7 @@ public class InjectCompositeComponent {
 	ParserManager.parse(Collections.singleton(source), new UserTask() {
 	    @Override
 	    public void run(ResultIterator resultIterator) throws Exception {
-		ResultIterator ri = Utils.getResultIterator(resultIterator, HtmlKit.HTML_MIME_TYPE);
+		ResultIterator ri = WebUtils.getResultIterator(resultIterator, HtmlKit.HTML_MIME_TYPE);
 		if (ri != null) {
 		    HtmlParserResult result = (HtmlParserResult) ri.getParserResult();
 		    if(result != null) {

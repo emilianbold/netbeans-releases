@@ -60,6 +60,7 @@ import java.util.jar.Manifest;
 import junit.framework.Test;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
+import org.netbeans.NetigsoFramework;
 import org.netbeans.SetupHid;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
@@ -97,7 +98,6 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
     protected @Override void setUp() throws Exception {
         Locale.setDefault(Locale.US);
         clearWorkDir();
-        NetigsoModuleFactory.clear();
 
         
         data = new File(getDataDir(), "jars");
@@ -176,7 +176,11 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
 
 
     static Bundle findBundle(String cnb) throws Exception {
-        for (Bundle b : NetigsoModuleFactory.getContainer().getBundleContext().getBundles()) {
+        Object o = Lookup.getDefault().lookup(NetigsoFramework.class);
+        assertEquals("The right class", Netigso.class, o.getClass());
+        Netigso f = (Netigso)o;
+        Bundle[] arr = f.getFramework().getBundleContext().getBundles();
+        for (Bundle b : arr) {
             if (cnb.equals(b.getSymbolicName())) {
                 return b;
             }

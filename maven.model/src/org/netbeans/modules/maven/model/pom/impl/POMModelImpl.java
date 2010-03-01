@@ -63,18 +63,22 @@ public class POMModelImpl extends POMModel {
         componentFactory = new POMComponentFactoryImpl(this);
     }
     
+    @Override
     public POMComponent getRootComponent() {
         return rootComponent;
     }
 
+    @Override
     public POMComponentFactory getFactory() {
         return componentFactory;
     }
 
+    @Override
     public Project getProject() {
         return (Project) getRootComponent();
     }
 
+    @Override
     public POMComponent createRootComponent(Element root) {
         QName q = root == null ? null : AbstractDocumentComponent.getQName(root);
         if (root != null ) {
@@ -90,10 +94,12 @@ public class POMModelImpl extends POMModel {
         return getRootComponent();
     }
 
+    @Override
     protected ComponentUpdater<POMComponent> getComponentUpdater() {
         return new ChildComponentUpdateVisitor<POMComponent>();
     }
 
+    @Override
     public POMComponent createComponent(POMComponent parent, Element element) {
         return getFactory().create(element, parent);
     }

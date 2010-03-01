@@ -153,7 +153,7 @@ made subject to such option by the copyright holder.
                     the user can then interact directly with the server, thru
                     pages it serves.
                 </api>
-                <api name="org.netbeans.modules.uihandler.Submit" group="property"
+                <api name="org.netbeans.modules.uihandler.Submit" group="systemproperty"
                      category="private" type="export">
                     
                     For testing purposes one can 
@@ -1262,7 +1262,7 @@ made subject to such option by the copyright holder.
                 version 1.30 of this module.
             </api>
         </p>
-        <api type="export" group="property"  name="nb.show.statistics.ui" category="private">
+        <api type="export" group="systemproperty"  name="nb.show.statistics.ui" category="private">
             System property "nb.show.statistics.ui" controls if UI for Usage statistics is displayed in General panel.
             If this property is non null (for IDE) UI is shown. This property contains key of preference used
             to save status - true if usage statistics are collected and uploaded, false if not.

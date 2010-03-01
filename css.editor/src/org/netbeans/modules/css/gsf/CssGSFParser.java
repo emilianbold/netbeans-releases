@@ -47,8 +47,8 @@ import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.ASCII_CharStream;
 import java.io.StringReader;
 import java.util.List;
-import java.util.logging.Logger;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.css.editor.LexerUtils;
 import org.netbeans.modules.css.parser.CssParser;
 import org.netbeans.modules.css.parser.ParseException;
 import org.netbeans.modules.css.parser.SimpleNode;
@@ -71,6 +71,8 @@ public class CssGSFParser extends Parser {
     private final CssParser PARSER = new CssParser();
     private CssParserResult lastResult = null;
     private static final String PARSE_ERROR_KEY = "parse_error";
+
+    private static final int SEARCH_LIMIT = 10; //magic number :-)
 
     //string which is substituted instead of any 
     //templating language in case of css embedding
@@ -147,12 +149,16 @@ public class CssGSFParser extends Parser {
 
         if (!(containsGeneratedCode(lastSuccessToken.image) || containsGeneratedCode(errorToken.image))) {
             String errorMessage = buildErrorMessage(pe);
-            int documentStartOffset = snapshot.getOriginalOffset(from);
-            int documentEndOffset = snapshot.getOriginalOffset(from + errorToken.image.length());
+            int documentStartOffset = LexerUtils.findNearestMappableSourcePosition(snapshot, from, false, SEARCH_LIMIT);
+            int documentEndOffset = LexerUtils.findNearestMappableSourcePosition(snapshot, from + errorToken.image.length(), true, SEARCH_LIMIT);
 
-            if(documentStartOffset == -1 || documentEndOffset == -1) {
-                //error in virtual content, we cannot map back to the document :-(
-                return null;
+            if(documentStartOffset == -1 && documentEndOffset == -1) {
+                //the error is completely out of the mappable area, map it to the beginning of the document
+                documentStartOffset = documentEndOffset = 0;
+            } else if(documentStartOffset == -1) {
+                documentStartOffset = documentEndOffset;
+            } else if(documentEndOffset == -1) {
+                documentEndOffset = documentStartOffset;
             }
 
             assert documentStartOffset <= documentEndOffset;

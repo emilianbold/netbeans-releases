@@ -77,8 +77,8 @@ made subject to such option by the copyright holder.
         <tool name="gmake,make" skip="true"/>
         <alternative_path>
             <path directory="$MSYS"/>
-            <path toolchain_name="*"/>
             <path directory="$PATH"/>
+            <path toolchain_name="*"/>
         </alternative_path>
     </make>
 </toolchaindefinition>

@@ -43,6 +43,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -931,6 +932,94 @@ public class GoToSupportTest extends NbTestCase {
         assertTrue(wasCalled[0]);
     }
     
+    public void testTooltipForConciseConstructorCall1() throws Exception {
+        String code = "package test; public class Test {java.util.List<String> l = new java.util.Arr|ayList<>();}";
+        int offset = code.indexOf('|');
+        code = code.replaceAll(Pattern.quote("|"), "");
+        assertNotSame(-1, offset);
+        String golden = "<html><body>public  <b>ArrayList</b>&lt;java.lang.String&gt;()";
+
+        String tooltip = performTest(code, offset, new OrigUiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                fail("Should not be called.");
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called.");
+            }
+        }, true);
+
+        assertEquals(golden, tooltip);
+    }
+
+    public void testTooltipForConciseConstructorCall2() throws Exception {
+        String code = "package test; public class Test {java.util.List<String> l = new java.util.Arr|ayList<>() {};}";
+        int offset = code.indexOf('|');
+        code = code.replaceAll(Pattern.quote("|"), "");
+        assertNotSame(-1, offset);
+        String golden = "<html><body>public  <b>ArrayList</b>&lt;java.lang.String&gt;()";
+
+        String tooltip = performTest(code, offset, new OrigUiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                fail("Should not be called.");
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called.");
+            }
+        }, true);
+
+        assertEquals(golden, tooltip);
+    }
+
+    public void testTooltipForConciseConstructorCall3() throws Exception {
+        String code = "package test; public class Test {java.util.List<String> l = new java.util.L|ist<>() {};}";
+        int offset = code.indexOf('|');
+        code = code.replaceAll(Pattern.quote("|"), "");
+        assertNotSame(-1, offset);
+        String golden = "<html><body>public abstract interface java.util.List&lt;java.lang.String&gt;";
+
+        String tooltip = performTest(code, offset, new OrigUiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                fail("Should not be called.");
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called.");
+            }
+        }, true);
+
+        assertEquals(golden, tooltip);
+    }
+
+    public void testTooltipForConciseConstructorCall4() throws Exception {
+        String code = "package test; public class Test {java.util.List<String> l = new java.util.LinkedL|ist<>(java.util.Arrays.asList(\"\")) {};}";
+        int offset = code.indexOf('|');
+        code = code.replaceAll(Pattern.quote("|"), "");
+        assertNotSame(-1, offset);
+        String golden = "<html><body>public  <b>LinkedList</b>&lt;java.lang.String&gt;(java.util.Collection<? extends java.lang.String> arg0)";
+
+        String tooltip = performTest(code, offset, new OrigUiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                fail("Should not be called.");
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called.");
+            }
+        }, true);
+
+        assertEquals(golden, tooltip);
+    }
+
     private FileObject source;
     
     private String performTest(String sourceCode, final int offset, final OrigUiUtilsCaller validator, boolean tooltip) throws Exception {

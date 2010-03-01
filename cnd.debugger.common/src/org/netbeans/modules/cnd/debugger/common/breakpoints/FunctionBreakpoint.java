@@ -98,12 +98,12 @@ public class FunctionBreakpoint extends CndBreakpoint {
                 function = ""; // NOI18N
             }
             // Let's try to help user to set "correct" function name
-            int i = function.indexOf(' ');
-            if (i > 0) {
+//            int i = function.indexOf(' ');
+//            if (i > 0) {
                 // Remove spaces
-                function = function.replaceAll(" ", ""); // NOI18N
-            }
-            i = function.indexOf("(void)"); // NOI18N
+                //function = function.replaceAll(" ", ""); // NOI18N
+//            }
+            int i = function.indexOf("(void)"); // NOI18N
             if (i > 0) {
                 // Replace "(void)" with "()"
                 //function = function.replaceAll("(void)", "()"); // NOI18N

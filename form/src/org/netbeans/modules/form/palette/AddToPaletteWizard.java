@@ -187,35 +187,43 @@ class AddToPaletteWizard extends WizardDescriptor {
         // ------
         // WizardDescriptor.Iterator implementation
 
+        @Override
         public WizardDescriptor.Panel<AddToPaletteWizard> current() {
             return panels.get(stage - 1);
         }
 
+        @Override
         public boolean hasNext() {
             return stage < getPanelsCount();
         }
 
+        @Override
         public boolean hasPrevious() {
             return stage > 1;
         }
 
+        @Override
         public java.lang.String name() {
             return ""; // NOI18N
         }
 
+        @Override
         public void nextPanel() {
             if (stage < getPanelsCount())
                 stage++;
         }
 
+        @Override
         public void previousPanel() {
             if (stage > 1)
                 stage--;
         }
 
+        @Override
         public void addChangeListener(ChangeListener listener) {
         }
 
+        @Override
         public void removeChangeListener(ChangeListener listener) {
         }
     }

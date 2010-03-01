@@ -167,7 +167,7 @@ public abstract class AbstractIDEBridge {
                 return;
             }
             DebugSession current = 
-                SessionManager.getInstance().getCurrentSession(id);
+                SessionManager.getInstance().getSession(id);
             if ( current != null && !current.equals( getDebugSession() ) ){
                 return;
             }

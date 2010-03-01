@@ -63,6 +63,7 @@ import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -397,7 +398,7 @@ public class NbModuleProjectGenerator {
         EditableProperties props = new EditableProperties(true);
         props.put("nbplatform.active", platformID); // NOI18N
         NbPlatform plaf = NbPlatform.getPlatformByID(platformID);
-        if (plaf != null && plaf.getHarnessVersion() > NbPlatform.HARNESS_VERSION_65) {
+        if (plaf != null && plaf.getHarnessVersion().compareTo(HarnessVersion.V65) > 0) {
             List<String> clusterPath = new ArrayList<String>();
             File[] files = plaf.getDestDir().listFiles();
             for (File file : files) {

@@ -1,40 +1,40 @@
 [y.cha|, String charCodeAt ( index ) : Number, y.charCodeAt(index), 150]
-String charAt ( index ) : String
-String charCodeAt ( index ) : Number
+String charAt ( index ) : Stri
+String charCodeAt ( index ) : 
 End cursor position = 169
 [de|, debugger, debugger, 182]
-CSSMediaRule deleteRule ( Number index )
-CSSStyleSheet deleteRule ( Number index 
-CharacterData deleteData ( Number offset
-Core JS decodeURI ( encodedURI ) : void
-Core JS decodeURIComponent ( encodedURI 
+CSSMediaRule deleteRule ( Numb
+CSSStyleSheet deleteRule ( Num
+CharacterData deleteData ( Num
+Core JS decodeURI ( encodedURI
+Core JS decodeURIComponent ( e
 Document defaultView
 Document designMode
-DocumentView defaultView : AbstractView
+DocumentView defaultView : Abs
 Event detail
-HTMLInputElement defaultChecked : Boolea
-HTMLInputElement defaultValue : String
-HTMLObjectElement declare : Boolean
-HTMLOptionElement defaultSelected : Boo
-HTMLScriptElement defer : Boolean
-HTMLTableElement deleteCaption () : void
-HTMLTableElement deleteRow ( Number inde
-HTMLTableElement deleteTFoot () : void
-HTMLTableElement deleteTHead () : void
-HTMLTableRowElement deleteCell ( Number 
-HTMLTableSectionElement deleteRow ( Numb
-HTMLTextAreaElement defaultValue : Strin
-MediaList deleteMedium ( String oldMediu
+HTMLInputElement defaultChecke
+HTMLInputElement defaultValue 
+HTMLObjectElement declare : Bo
+HTMLOptionElement defaultSelec
+HTMLScriptElement defer : Bool
+HTMLTableElement deleteCaption
+HTMLTableElement deleteRow ( N
+HTMLTableElement deleteTFoot (
+HTMLTableElement deleteTHead (
+HTMLTableRowElement deleteCell
+HTMLTableSectionElement delete
+HTMLTextAreaElement defaultVal
+MediaList deleteMedium ( Strin
 NodeIterator detach () : void
 Range deleteContents () : void
 Range detach () : void
-Selection deleteFromDocument () : void
-Stylesheet deleteRule ( index ) : void
+Selection deleteFromDocument (
+Stylesheet deleteRule ( index 
 Table deleteCaption () : void
-Table deleteRow ( index ) : void
+Table deleteRow ( index ) : vo
 Table deleteTFoot () : void
 Table deleteTHead () : void
-TableRow deleteCell ( index ) : void
+TableRow deleteCell ( index ) 
 UIEvent detail : Number
 Window defaultStatus : String
 debugger
@@ -47,14 +47,14 @@ Attr value : String
 Boolean valueOf () : void
 Date valueOf () : Number
 Function valueOf () : void
-HTMLButtonElement value : String
-HTMLInputElement value : String
+HTMLButtonElement value : Stri
+HTMLInputElement value : Strin
 HTMLLIElement value : Number
-HTMLOptionElement value : String
-HTMLParamElement value : String
-HTMLParamElement valueType : String
-HTMLSelectElement value : String
-HTMLTextAreaElement value : String
+HTMLOptionElement value : Stri
+HTMLParamElement value : Strin
+HTMLParamElement valueType : S
+HTMLSelectElement value : Stri
+HTMLTextAreaElement value : St
 Number valueOf () : Number
 Object valueOf () : void
 String valueOf () : String

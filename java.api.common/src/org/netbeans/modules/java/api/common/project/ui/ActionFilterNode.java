@@ -141,7 +141,7 @@ final class ActionFilterNode extends FilterNode {
     public Action getPreferredAction() {
         if (mode == MODE_FILE) {
             Action[] actions = initActions();
-            if (actions.length > 0 && (actions[0] instanceof OpenAction || actions[0] instanceof EditAction)) {
+            if (actions.length > 0 && isOpenAction(actions[0])) {
                 return actions[0];
             }
         }
@@ -153,11 +153,7 @@ final class ActionFilterNode extends FilterNode {
             List<Action> result = new ArrayList<Action>(2);
             if (mode == MODE_FILE) {
                 for (Action superAction : super.getActions(false)) {
-                    if (superAction instanceof OpenAction || superAction instanceof EditAction) {
-                        result.add(superAction);
-                    }
-                    if (superAction != null &&
-                        "org.netbeans.api.actions.Openable".equals(superAction.getValue("type"))) { //NOI18N
+                    if (isOpenAction(superAction)) {
                         result.add(superAction);
                     }
                 }
@@ -178,6 +174,19 @@ final class ActionFilterNode extends FilterNode {
             actionCache = result.toArray(new Action[result.size()]);
         }
         return actionCache;
+    }
+
+    private static boolean isOpenAction(final Action action) {
+        if (action == null) {
+            return false;
+        }
+        if (action instanceof OpenAction || action instanceof EditAction) {
+            return true;
+        }
+        if ("org.netbeans.api.actions.Openable".equals(action.getValue("type"))) { //NOI18N
+            return true;
+        }
+        return false;
     }
 
     private static class ActionFilterChildren extends FilterNode.Children {

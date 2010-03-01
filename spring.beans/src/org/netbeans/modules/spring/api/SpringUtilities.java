@@ -62,7 +62,7 @@ import org.openide.util.Exceptions;
  */
 public final class SpringUtilities {
 
-    private static final String SPRING_CLASS_NAME = "org.springframework.core.SpringVersion"; // NOI18N
+    public static final String SPRING_CLASS_NAME = "org.springframework.core.SpringVersion"; // NOI18N
     private static final String JSTL_CLASS_NAME = "javax.servlet.jsp.jstl.core.Config"; // NOI18N
     private static final String SPRING_WEBMVC_CLASS_NAME = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N
 //    private static final String SPRING_WEBMVC_3_0_SPECIFIC_CLASS_NAME="org.springframework.web.servlet.config.MvcNamespaceHandler"; //NOI18N
@@ -143,7 +143,7 @@ public final class SpringUtilities {
         return null;
     }
 
-    private static String getImplementationVersion(JarFileSystem jarFile) {
+    public static String getImplementationVersion(JarFileSystem jarFile) {
         Manifest manifest = jarFile.getManifest();
         Attributes attributes = manifest.getMainAttributes();
         return attributes.getValue(Attributes.Name.IMPLEMENTATION_VERSION);

@@ -141,16 +141,15 @@ public class SAMLHolderOfKeyProfile extends ProfileBase
         return true;
     }
 
+    @Override
     public void setServiceDefaults(WSDLComponent component, Project p) {
         ProprietarySecurityPolicyModelHelper.clearValidators(component);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
-//        if (Util.isTomcat(p)) {
-            String storeLoc = ServerUtils.getStoreLocation(p, false, false);
-            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, storeLoc, false, false);
-            ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, false);
-            ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, false);
-//        }
+        String storeLoc = ServerUtils.getStoreLocation(p, false, false);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, storeLoc, false, false);
+        ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, false);
+        ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, false);
         ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component,ProfilesModelHelper.XWS_SECURITY_SERVER, false);
     }
     

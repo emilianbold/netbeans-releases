@@ -53,11 +53,16 @@ import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.DialogDescriptor;
 import org.openide.util.Exceptions;
@@ -70,7 +75,7 @@ import org.openide.util.NbBundle;
 /*package-local*/ final class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentListener {
 
     private DialogDescriptor dialogDescriptor = null;
-    private final CompilerSetManager csm;
+    private final CompilerSetManagerImpl csm;
     private final boolean local;
     private final Object lock = new Object();
     private final Object remoteCompilerCheckExecutorLock = new Object();
@@ -79,8 +84,8 @@ import org.openide.util.NbBundle;
     /** Creates new form AddCompilerSetPanel */
     public AddCompilerSetPanel(CompilerSetManager csm) {
         initComponents();
-        this.csm = csm;
-        this.local = csm.getExecutionEnvironment().isLocal();
+        this.csm = (CompilerSetManagerImpl) csm;
+        this.local = ((CompilerSetManagerImpl)csm).getExecutionEnvironment().isLocal();
 
         if (!local) {
             // we can't have Browse button for remote, so we use it to validate path on remote host
@@ -88,7 +93,7 @@ import org.openide.util.NbBundle;
             btBaseDirectory.setMnemonic(0);
         }
 
-        List<CompilerFlavor> list = CompilerFlavor.getFlavors(csm.getPlatform());
+        List<CompilerFlavor> list = CompilerFlavorImpl.getFlavors(csm.getPlatform());
         for (CompilerFlavor cf : list) {
             cbFamily.addItem(cf);
         }
@@ -99,8 +104,8 @@ import org.openide.util.NbBundle;
 
         setPreferredSize(new Dimension(800, 300));
 
-        tfBaseDirectory.getDocument().addDocumentListener(this);
-        tfName.getDocument().addDocumentListener(this);
+        tfBaseDirectory.getDocument().addDocumentListener(AddCompilerSetPanel.this);
+        tfName.getDocument().addDocumentListener(AddCompilerSetPanel.this);
     }
 
     @Override
@@ -133,7 +138,7 @@ import org.openide.util.NbBundle;
         if (local) {
             //This will be invoked in UI thread
             File dirFile = new File(tfBaseDirectory.getText());
-            List<CompilerFlavor> flavors = CompilerSet.getCompilerSetFlavor(dirFile.getAbsolutePath(), csm.getPlatform());
+            List<CompilerFlavor> flavors = CompilerSetFactory.getCompilerSetFlavor(dirFile.getAbsolutePath(), csm.getPlatform());
             if (flavors.size() > 0) {
                 cbFamily.setSelectedItem(flavors.get(0));
             } else {
@@ -230,7 +235,7 @@ import org.openide.util.NbBundle;
     }
 
     private void updateDataFamily() {
-        CompilerSet.CompilerFlavor flavor = (CompilerSet.CompilerFlavor) cbFamily.getSelectedItem();
+        CompilerFlavor flavor = (CompilerFlavor) cbFamily.getSelectedItem();
         int n = 0;
         String suggestedName = null;
         while (true) {
@@ -252,7 +257,7 @@ import org.openide.util.NbBundle;
 
         if (local) {
             File dirFile = new File(tfBaseDirectory.getText());
-            if (valid && !dirFile.exists() || !dirFile.isDirectory() || !CompilerSetUtils.isPathAbsolute(dirFile.getPath())) {
+            if (valid && !dirFile.exists() || !dirFile.isDirectory() || !ToolUtils.isPathAbsolute(dirFile.getPath())) {
                 valid = false;
                 lbError.setText(getString("BASE_INVALID"));
             }
@@ -268,7 +273,7 @@ import org.openide.util.NbBundle;
         cbFamily.setEnabled(valid);
         tfName.setEnabled(valid);
 
-        String compilerSetName = CompilerSetUtils.replaceOddCharacters(tfName.getText().trim(), '_');
+        String compilerSetName = ToolUtils.replaceOddCharacters(tfName.getText().trim(), '_');
         if (valid && compilerSetName.length() == 0 || compilerSetName.contains("|")) { // NOI18N
             valid = false;
             lbError.setText(getString("NAME_INVALID"));
@@ -313,27 +318,26 @@ import org.openide.util.NbBundle;
         return tfBaseDirectory.getText();
     }
 
-    private CompilerSet.CompilerFlavor getFamily() {
-        return (CompilerSet.CompilerFlavor) cbFamily.getSelectedItem();
+    private CompilerFlavor getFamily() {
+        return (CompilerFlavor) cbFamily.getSelectedItem();
     }
 
     private String getCompilerSetName() {
-        return CompilerSetUtils.replaceOddCharacters(tfName.getText().trim(), '_');
+        return ToolUtils.replaceOddCharacters(tfName.getText().trim(), '_');
     }
 
     public CompilerSet getCompilerSet() {
         String compilerSetName = getCompilerSetName().trim();
         if (local) {
             String baseDirectory = getBaseDirectory();
-            CompilerSet.CompilerFlavor flavor = getFamily();
-
-            CompilerSet cs = CompilerSet.getCustomCompilerSet(new File(baseDirectory).getAbsolutePath(), flavor, compilerSetName);
-            CompilerSetManager.getDefault().initCompilerSet(cs);
+            CompilerFlavor flavor = getFamily();
+            CompilerSet cs = CompilerSetFactory.getCustomCompilerSet(new File(baseDirectory).getAbsolutePath(), flavor, compilerSetName);
+            ((CompilerSetManagerImpl)CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal())).initCompilerSet(cs);
             return cs;
         } else {
             synchronized (lock) {
                 if (lastFoundRemoteCompilerSet != null){
-                    lastFoundRemoteCompilerSet.setName(compilerSetName);
+                    ((CompilerSetImpl)lastFoundRemoteCompilerSet).setName(compilerSetName);
                     return lastFoundRemoteCompilerSet;
                 }else{
                     return lastFoundRemoteCompilerSet;

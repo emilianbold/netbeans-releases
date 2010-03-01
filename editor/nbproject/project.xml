@@ -162,7 +162,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>4.11</specification-version>
+                        <specification-version>7.13</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

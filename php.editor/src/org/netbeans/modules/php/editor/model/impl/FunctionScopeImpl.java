@@ -63,7 +63,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  */
 class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableNameFactory {
     private List<? extends Parameter> paremeters;
-    String returnType;
+    volatile String returnType;
 
     //new contructors
     FunctionScopeImpl(Scope inScope, FunctionDeclarationInfo info, String returnType) {
@@ -126,18 +126,24 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         return retval;
     }
 
-    private static Set<String> recursionDetection = new HashSet<String>();//#168868
+    private static List<String> recursionDetection = new ArrayList<String>();//#168868
 
     public Collection<? extends TypeScope> getReturnTypes(boolean resolve) {
         Collection<TypeScope> retval = Collections.<TypeScope>emptyList();
-        if (returnType != null && returnType.length() > 0) {
-            retval = new ArrayList<TypeScope>();
-            for (String typeName : returnType.split("\\|")) {//NOI18N
+        String types = null;
+        synchronized(this) {
+            types = returnType;
+        }
+        if (types != null && types.length() > 0) {
+            boolean evaluate = types.indexOf("@") != -1;//NOI18N
+            retval = new HashSet<TypeScope>();
+            for (String typeName : types.split("\\|")) {//NOI18N
                 if (typeName.trim().length() > 0) {
                     if (resolve && typeName.contains("@")) {//NOI18N
                         try {
-                            if (recursionDetection.add(typeName) && recursionDetection.size() < 30) {
-                            retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
+                            recursionDetection.add(typeName);
+                            if (recursionDetection.size() < 30) {
+                                retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
                             }
                         } finally {
                             recursionDetection.remove(typeName);
@@ -147,13 +153,19 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                     }
                 }
             }
-            returnType = null;//NOI18N
-            for (TypeScope typeScope : retval) {
-                if (returnType == null) {
-                    returnType = typeScope.getNamespaceName().append(typeScope.getName()).toString();
-                } else {
-                    returnType += "|"+typeScope.getNamespaceName().append(typeScope.getName()).toString();//NOI18N
+            if (evaluate) {
+                StringBuilder sb = new StringBuilder();
+                for (TypeScope typeScope : retval) {
+                    if (sb.length() != 0 ) {
+                        sb.append("|");//NOI18N
+                    }
+                    sb.append(typeScope.getNamespaceName().append(typeScope.getName()).toString());
                 }
+                synchronized(this) {
+                    if (types.equals(returnType)) {
+                        returnType = sb.toString();
+                    }
+                }                
             }
         }
         return retval;

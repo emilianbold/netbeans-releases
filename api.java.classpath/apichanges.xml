@@ -73,6 +73,21 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="ClassPath.EMPTY">
+            <api name="classpath"/>
+            <summary>Added a constant representing an empty ClassPath</summary>
+            <version major="1" minor="24"/>
+            <date day="5" month="2" year="2010"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" modification="no" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Added a constant representing an empty ClassPath like java.util.Collections.EMPTY_LIST.
+                    This ClassPath has no entries and never fires any events.
+                </p>
+            </description>
+            <issue number="179799"/>
+        </change>
         <change id="classpath-api-module">
             <api name="classpath"/>
             <summary>Splitting the java API to independent ClassPath API and the rest of the java API</summary>

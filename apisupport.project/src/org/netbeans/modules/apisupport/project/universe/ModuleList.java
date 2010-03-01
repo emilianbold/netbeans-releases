@@ -70,7 +70,7 @@ import javax.xml.xpath.XPathFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.NbModuleProjectType;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider.NbModuleType;
@@ -206,8 +206,8 @@ public final class ModuleList {
         if (data == null) {
             throw new IOException("Not an NBM project in " + basedir); // NOI18N
         }
-        boolean suiteComponent = Util.findElement(data, "suite-component", NbModuleProjectType.NAMESPACE_SHARED) != null; // NOI18N
-        boolean standalone = Util.findElement(data, "standalone", NbModuleProjectType.NAMESPACE_SHARED) != null; // NOI18N
+        boolean suiteComponent = Util.findElement(data, "suite-component", NbModuleProject.NAMESPACE_SHARED) != null; // NOI18N
+        boolean standalone = Util.findElement(data, "standalone", NbModuleProject.NAMESPACE_SHARED) != null; // NOI18N
         assert !(suiteComponent && standalone) : basedir;
         if (suiteComponent) {
             PropertyEvaluator eval = parseProperties(basedir, null, NbModuleType.SUITE_COMPONENT, "irrelevant"); // NOI18N
@@ -451,6 +451,10 @@ public final class ModuleList {
             logCacheIgnored(MSG_FAILURE, root, null);
             LOG.log(Level.FINE, "Caught exception: ", x);
             return null;
+        } catch (LinkageError x) {
+            logCacheIgnored(MSG_FAILURE, root, null);
+            LOG.log(Level.FINE, "Caught exception: ", x);
+            return null;
         }
     }
 
@@ -594,7 +598,7 @@ public final class ModuleList {
         }
         assert root != null ^ type != NbModuleType.NETBEANS_ORG;
         assert path != null ^ type != NbModuleType.NETBEANS_ORG;
-        String cnb = Util.findText(Util.findElement(data, "code-name-base", NbModuleProjectType.NAMESPACE_SHARED)); // NOI18N
+        String cnb = Util.findText(Util.findElement(data, "code-name-base", NbModuleProject.NAMESPACE_SHARED)); // NOI18N
         PropertyEvaluator eval = parseProperties(basedir, root, type, cnb);
         String module = eval.getProperty("module.jar"); // NOI18N
         // Cf. ParseProjectXml.computeClasspath:
@@ -603,12 +607,12 @@ public final class ModuleList {
             if (!ext.getLocalName().equals("class-path-extension")) { // NOI18N
                 continue;
             }
-            Element binaryOrigin = Util.findElement(ext, "binary-origin", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+            Element binaryOrigin = Util.findElement(ext, "binary-origin", NbModuleProject.NAMESPACE_SHARED); // NOI18N
             String text;
             if (binaryOrigin != null) {
                 text = Util.findText(binaryOrigin);
             } else {
-                Element runtimeRelativePath = Util.findElement(ext, "runtime-relative-path", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+                Element runtimeRelativePath = Util.findElement(ext, "runtime-relative-path", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                 assert runtimeRelativePath != null : "Malformed <class-path-extension> in " + basedir;
                 String reltext = Util.findText(runtimeRelativePath);
                 // XXX assumes that module.jar is not overridden independently of module.jar.dir:
@@ -1075,13 +1079,13 @@ public final class ModuleList {
             return null;
         }
         Element cfg = Util.findElement(docel, "configuration", "http://www.netbeans.org/ns/project/1"); // NOI18N
-        Element data = Util.findElement(cfg, "data", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        Element data = Util.findElement(cfg, "data", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         if (data != null) {
             return data;
         } else {
-            data = Util.findElement(cfg, "data", NbModuleProjectType.NAMESPACE_SHARED_2); // NOI18N
+            data = Util.findElement(cfg, "data", NbModuleProject.NAMESPACE_SHARED_2); // NOI18N
             if (data != null) {
-                return Util.translateXML(data, NbModuleProjectType.NAMESPACE_SHARED);
+                return Util.translateXML(data, NbModuleProject.NAMESPACE_SHARED);
             } else {
                 return null;
             }

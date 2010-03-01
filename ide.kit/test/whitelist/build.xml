@@ -55,6 +55,11 @@ made subject to such option by the copyright holder.
         <os family="windows"/>
     </condition>
     <property name="allowed.violations" value="0"/>
+    <property name="debug.pause" value="y"/>
+    <condition property="debug.args" value="-Xdebug -Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=y,address=${debug.port}">
+        <isset property="debug.port"/>
+    </condition>
+    <property name="debug.args" value=""/>
 
     <target name="help">
         <echo>
@@ -86,7 +91,7 @@ made subject to such option by the copyright holder.
     
     <target name="download-project" depends="init-download-project" if="do-download-project">
         <mkdir dir="${temp_dir}"/>
-        <get src="http://hg.netbeans.org/binaries/0FB47E1F630A4074F493055291439BC18B025A95-lime6.zip"
+        <get src="http://hg.netbeans.org/binaries/FDCBE13B6CA7B154F6EE29BEF3B9404F7A7B1A57-lime6.zip"
             dest="${temp_dir}/lime6.zip"/>
     </target>
     
@@ -129,6 +134,7 @@ made subject to such option by the copyright holder.
 
     <target name="clean">
         <delete dir="${work_dir}"/>
+        <delete dir="${lime6_dest_dir}"/>
     </target>
 
     <!-- Don't use this task to run the test -->
@@ -141,7 +147,7 @@ made subject to such option by the copyright holder.
             <arg value="test-qa-functional"/>
             <arg value="-Dtest.includes=**/WhitelistTest.class"/>
             <arg value="-Dpermit.jdk6.builds=true"/>
-            <arg value="-Dtest.run.args=-ea -XX:PermSize=64m -XX:MaxPermSize=400m -Xmx512m -Xverify:none -Dtest.whitelist.stage=1 -Dorg.netbeans.core.TimeableEventQueue.quantum=60000"/>
+            <arg value="-Dtest.run.args=-ea -XX:PermSize=64m -XX:MaxPermSize=400m -Xmx512m -Xverify:none -Dtest.whitelist.stage=1 -Dorg.netbeans.core.TimeableEventQueue.quantum=60000 ${debug.args}"/>
             <arg value="-Dtest-qa-functional-sys-prop.allowed.violations=${allowed.violations}"/>
         </exec>
     </target>
@@ -156,7 +162,7 @@ made subject to such option by the copyright holder.
             <arg value="test-qa-functional"/>
             <arg value="-Dtest.includes=**/WhitelistTest.class"/>
             <arg value="-Dpermit.jdk6.builds=true"/>
-            <arg value="-Dtest.run.args=-ea -XX:PermSize=64m -XX:MaxPermSize=400m -Xmx512m -Xverify:none -Dtest.whitelist.stage=2 -Dorg.netbeans.core.TimeableEventQueue.quantum=60000"/>
+            <arg value="-Dtest.run.args=-ea -XX:PermSize=64m -XX:MaxPermSize=400m -Xmx512m -Xverify:none -Dtest.whitelist.stage=2 -Dorg.netbeans.core.TimeableEventQueue.quantum=60000 ${debug.args}"/>
             <arg value="-Dtest-qa-functional-sys-prop.allowed.violations=${allowed.violations}"/>
         </exec>
     </target>
@@ -171,12 +177,12 @@ made subject to such option by the copyright holder.
             <arg value="test-qa-functional"/>
             <arg value="-Dtest.includes=**/WhitelistTest.class"/>
             <arg value="-Dpermit.jdk6.builds=true"/>
-            <arg value="-Dtest.run.args=-ea -XX:PermSize=64m -XX:MaxPermSize=400m -Xmx512m -Xverify:none -Dtest.whitelist.stage=3 -Dorg.netbeans.core.TimeableEventQueue.quantum=60000"/>
+            <arg value="-Dtest.run.args=-ea -XX:PermSize=64m -XX:MaxPermSize=400m -Xmx512m -Xverify:none -Dtest.whitelist.stage=3 -Dorg.netbeans.core.TimeableEventQueue.quantum=60000 ${debug.args}"/>
             <arg value="-Dtest-qa-functional-sys-prop.allowed.violations=${allowed.violations}"/>
         </exec>
     </target>
 
-    <target name="test" depends="prepare,clean">
+    <target name="test" depends="clean, prepare">
         <antcall target="test1" inheritAll="true" inheritRefs="true"/>
         <antcall target="test2" inheritAll="true" inheritRefs="true"/>
         <antcall target="test3" inheritAll="true" inheritRefs="true"/>
@@ -197,6 +203,7 @@ made subject to such option by the copyright holder.
     
     <target name="unprepare">
         <delete dir="${lime6_dest_dir}"/>
+        <delete dir="${temp_dir}"/>
     </target>
         
 </project>

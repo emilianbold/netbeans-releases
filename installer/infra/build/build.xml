@@ -777,6 +777,7 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
     <target name="build-engine">
+        <property name="engine.dist.file.name" value="nbi-engine.jar"/>
 	<antcall target="build-core-engine"/>
         <antcall target="build-netbeans-engine"/>
     </target>
@@ -832,8 +833,6 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
     <target name="build-core-engine">
-	<property name="engine.dist.file.name" value="nbi-engine.jar"/>
-        
         <echo message="BUILDING CORE ENGINE ======================================"/>
         <ant dir="${nbi.core.dir}/infra/build/engine" target="build-all">
             <property 

@@ -249,7 +249,7 @@ public class ThreadsModel extends ViewModelSupport
                 return;
             }
             DebugSession current = 
-                SessionManager.getInstance().getCurrentSession(id);
+                SessionManager.getInstance().getSession(id);
             
             if (! session.equals( current)) {
                 StatusCommand command = new StatusCommand( 
@@ -357,7 +357,7 @@ public class ThreadsModel extends ViewModelSupport
     private boolean isCurrent( DebugSession session ){
         SessionId id = getSessionId();
         DebugSession current = 
-            SessionManager.getInstance().getCurrentSession(id);
+            SessionManager.getInstance().getSession(id);
         return session.equals( current );
     }
     

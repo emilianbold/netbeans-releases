@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 <project name="{0} (debug-test)" default="debug-test" basedir=".">
     <target name="-check-run-test-single-method-supported" if="methodname">
         <available property="run.test.single.method.supported"
-                   classname="org.apache.tools.ant.taskdefs.optional.junit.XMLResultParser"/>
+                   resource="org/apache/tools/ant/taskdefs/optional/junit/JUnit4TestMethodAdapter.class"/>
         <fail unless="run.test.single.method.supported">Execution of a single test method is not supported by this version of Ant.</fail>
     </target>
     <target name="-init-debug-args">

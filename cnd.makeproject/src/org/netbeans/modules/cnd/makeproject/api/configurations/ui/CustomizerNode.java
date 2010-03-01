@@ -42,51 +42,59 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations.ui;
 
 import javax.swing.JPanel;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 public class CustomizerNode {
     public static final String iconbase = "org/netbeans/modules/cnd/makeproject/ui/resources/general"; // NOI18N
     public static final String icon = "org/netbeans/modules/cnd/makeproject/ui/resources/general.gif"; // NOI18N
 
-    public final String name;
-    public final String displayName;
-    public final boolean advanced;
-    public final CustomizerNode[] children;
+    private final String name;
+    private final String displayName;
+    private final CustomizerNode[] children;
+    private final Lookup lookup;
 
     public enum CustomizerStyle {SHEET, PANEL};
         
-    public CustomizerNode(String name, String displayName, boolean advanced, CustomizerNode[] children) {
+    public final MakeContext getContext(){
+        return lookup.lookup(MakeContext.class);
+    }
+
+    public CustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
         this.name = name;
         this.displayName = displayName;
-        this.advanced = advanced;
         this.children = children;
-    }
-    
-    public CustomizerNode(String name, String displayName, CustomizerNode[] children) {
-        this(name, displayName, false, children);
+        this.lookup = lookup;
     }
     
     public CustomizerStyle customizerStyle() {
         return CustomizerStyle.SHEET; // Backward compatible
     }
 
-    public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-	return null;
-    }
-    
-    public JPanel getPanel(Project project, ConfigurationDescriptor configurationDescriptor) {
+    public Sheet getSheet(Configuration configuration) {
         return null;
     }
     
+    public JPanel getPanel(Configuration configuration) {
+        return null;
+    }
+
     public HelpCtx getHelpCtx() {
         return new HelpCtx(""); // NOI18N // See CR 6718766
     }
 
+    public String getName() {
+        return name;
+    }
+
     public String getDisplayName() {
         return displayName;
+    }
+
+    public CustomizerNode[] getChildren() {
+        return children;
     }
 }

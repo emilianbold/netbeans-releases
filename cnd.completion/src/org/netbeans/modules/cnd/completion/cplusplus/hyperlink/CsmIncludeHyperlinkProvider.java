@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -84,6 +85,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     public CsmIncludeHyperlinkProvider() {
     }
 
+    @Override
     protected boolean isValidToken(TokenItem<CppTokenId> token, HyperlinkType type) {
         return isSupportedToken(token, type);
     }
@@ -105,6 +107,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         return false;
     }
 
+    @Override
     protected void performAction(final Document originalDoc, final JTextComponent target, final int offset, final HyperlinkType type) {
         goToInclude(originalDoc, target, offset, type);
     }
@@ -113,13 +116,23 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         if (!preJump(doc, target, offset, "opening-include-element", type)) { //NOI18N
             return false;
         }
-        CsmOffsetable item = findTargetObject(doc, offset);
-        return postJump(item, "goto_source_source_not_found", "cannot-open-include-element"); //NOI18N
+        IncludeTarget item = findTargetObject(doc, offset);
+        if (type == HyperlinkType.ALT_HYPERLINK && ((item != null))) {
+            CsmInclude incl = item.getInclude();
+            CsmFile toShow = incl.getIncludeFile();
+            if (toShow == null) {
+                toShow = incl.getContainingFile();
+            }
+            CsmIncludeHierarchyResolver.showIncludeHierachyView(toShow);
+            return true;
+        } else {
+            return postJump(item, "goto_source_source_not_found", "cannot-open-include-element");//NOI18N
+        }
     }
 
-    /*package*/ CsmOffsetable findTargetObject(final Document doc, final int offset) {
+    /*package*/ IncludeTarget findTargetObject(final Document doc, final int offset) {
         CsmInclude incl = findInclude(doc, offset);
-        CsmOffsetable item = incl == null ? null : new IncludeTarget(incl);
+        IncludeTarget item = incl == null ? null : new IncludeTarget(incl);
         if (incl != null && NEED_TO_TRACE_UNRESOLVED_INCLUDE && incl.getIncludeFile() == null) {
             System.setProperty("cnd.modelimpl.trace.trace_now", "yes"); //NOI18N
             try {
@@ -132,7 +145,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     }
 
     private CsmInclude findInclude(Document doc, int offset) {
-        CsmFile csmFile = CsmUtilities.getCsmFile(doc, true);
+        CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
         if (csmFile != null) {
             return ReferencesSupport.findInclude(csmFile, offset);
         }
@@ -141,55 +154,69 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
 
     private static final class IncludeTarget implements CsmOffsetable {
 
-        private CsmInclude include;
+        private final CsmInclude include;
 
         public IncludeTarget(CsmInclude include) {
             this.include = include;
         }
 
+        public CsmInclude getInclude() {
+            return include;
+        }
+
+        @Override
         public CsmFile getContainingFile() {
             return include.getIncludeFile();
         }
 
+        @Override
         public int getStartOffset() {
             // start of the file
             return DUMMY_POSITION.getOffset();
         }
 
+        @Override
         public int getEndOffset() {
             // DUMMY of the file
             return DUMMY_POSITION.getOffset();
         }
 
+        @Override
         public CsmOffsetable.Position getStartPosition() {
             return DUMMY_POSITION;
         }
 
+        @Override
         public CsmOffsetable.Position getEndPosition() {
             return DUMMY_POSITION;
         }
 
+        @Override
         public CharSequence getText() {
             return include.getIncludeName();
         }
     }
     private static final CsmOffsetable.Position DUMMY_POSITION = new CsmOffsetable.Position() {
 
+        @Override
         public int getOffset() {
             return -1;
         }
 
+        @Override
         public int getLine() {
             return -1;
         }
 
+        @Override
         public int getColumn() {
             return -1;
         }
     };
 
+    @Override
     protected String getTooltipText(Document doc, TokenItem<CppTokenId> token, int offset, HyperlinkType type) {
-        CsmFile csmFile = CsmUtilities.getCsmFile(doc, true);
+        CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
         CsmInclude target = null;
         if (csmFile != null) {
             target = ReferencesSupport.findInclude(csmFile, offset);
@@ -279,9 +306,11 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             uid = UIDs.get(file);
         }
 
+        @Override
         public void outputLineSelected(OutputEvent ev) {
         }
 
+        @Override
         public void outputLineAction(OutputEvent ev) {
             CsmObject obj = uid.getObject();
             if (obj != null) {
@@ -289,6 +318,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             }
         }
 
+        @Override
         public void outputLineCleared(OutputEvent ev) {
         }
     }

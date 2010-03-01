@@ -45,6 +45,7 @@ public class InsertMenuAction extends NodeAction {
 
     private static String name;
     
+    @Override
     public String getName() {
         if (name == null) 
             name = org.openide.util.NbBundle.getBundle(InsertMenuAction.class)
@@ -52,6 +53,7 @@ public class InsertMenuAction extends NodeAction {
         return name;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
             RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
@@ -65,6 +67,7 @@ public class InsertMenuAction extends NodeAction {
                 if (clazz != null && JMenu.class.isAssignableFrom(clazz)) {
                     final PaletteItem it = item;
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             MenuEditLayer.addComponentToEndOfMenu(metacomp, it);
                         }
@@ -75,10 +78,12 @@ public class InsertMenuAction extends NodeAction {
         }
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         return true;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.containers.designing"); // NOI18N
     }

@@ -602,16 +602,16 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     private String computeModuleClasspath(ModuleList ml) {
         Element data = project.getPrimaryConfigurationData();
         Element moduleDependencies = Util.findElement(data,
-            "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+            "module-dependencies", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         assert moduleDependencies != null : "Malformed metadata in " + project;
         StringBuffer cp = new StringBuffer();
         for (Element dep : Util.findSubElements(moduleDependencies)) {
             if (Util.findElement(dep, "compile-dependency", // NOI18N
-                    NbModuleProjectType.NAMESPACE_SHARED) == null) {
+                    NbModuleProject.NAMESPACE_SHARED) == null) {
                 continue;
             }
             Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
-                NbModuleProjectType.NAMESPACE_SHARED);
+                NbModuleProject.NAMESPACE_SHARED);
             String cnb = Util.findText(cnbEl);
             ModuleEntry module = ml.getEntry(cnb);
             if (module == null) {

@@ -119,10 +119,17 @@ public class FolderArchive implements Archive {
             }
         }
         return Collections.<JavaFileObject>emptyList();
-    }               
-    
-    public void clear () {
-        
     }
-    
+
+    public JavaFileObject create (String relativePath, final JavaFileFilterImplementation filter) throws UnsupportedOperationException {
+        if (File.separatorChar != '/') {    //NOI18N
+            relativePath = relativePath.replace('/', File.separatorChar);
+        }
+        final File file = new File (root, relativePath);
+        return FileObjects.fileFileObject(file, root, filter, encoding);
+    }
+
+    public void clear () {
+
+    }
 }

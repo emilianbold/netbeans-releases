@@ -86,6 +86,12 @@ public class ManagerWizard extends JMXTestCase {
             initialized = true;
         }
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        waitNoEvent(2000);
+        super.tearDown();
+    }
     
     //========================= Init ==================================//
     
@@ -172,7 +178,7 @@ public class ManagerWizard extends JMXTestCase {
         System.out.println("Check created files");
         checkCreatedFiles(managerCreatedClassFile, manager);
     }
-    
+
     /**
      * Create JMX Manager.
      * Update some values.

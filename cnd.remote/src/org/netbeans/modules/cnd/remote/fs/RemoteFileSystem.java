@@ -41,9 +41,9 @@ package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
 import java.io.IOException;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
@@ -73,7 +73,7 @@ public class RemoteFileSystem extends FileSystem {
         this.remoteFileSupport = new RemoteFileSupport(execEnv);
         // FIXUP: it's better than asking a compiler instance... but still a fixup.
         // Should be moved to a proper place
-        this.filePrefix = BasicCompiler.getIncludeFilePrefix(execEnv);
+        this.filePrefix = CndUtils.getIncludeFilePrefix(EnvUtils.toHostID(execEnv));
         cache = new File(filePrefix);
         if (! cache.exists() && ! cache.mkdirs()) {
             throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath())); 
@@ -124,12 +124,17 @@ public class RemoteFileSystem extends FileSystem {
     private static class RootFileObject extends RemoteDirectory {
 
         public RootFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, File cache) {
-            super(fileSystem, execEnv, "", cache);
+            super(fileSystem, execEnv, null, "", cache);
         }
 
         @Override
         public boolean isRoot() {
             return false;
+        }
+
+        @Override
+        public boolean isValid() {
+            return true;
         }
     }
 }

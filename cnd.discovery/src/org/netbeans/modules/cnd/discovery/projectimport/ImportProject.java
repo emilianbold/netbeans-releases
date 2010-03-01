@@ -50,6 +50,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -69,7 +70,6 @@ import org.netbeans.modules.cnd.actions.CMakeAction;
 import org.netbeans.modules.cnd.actions.MakeAction;
 import org.netbeans.modules.cnd.actions.QMakeAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
@@ -81,9 +81,10 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
-import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.wizard.ConsolidationStrategyPanel;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
@@ -95,15 +96,14 @@ import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerato
 import org.netbeans.modules.cnd.discovery.wizard.bridge.ProjectBridge;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
-import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -128,7 +128,7 @@ import org.openide.util.RequestProcessor;
 public class ImportProject implements PropertyChangeListener {
 
     private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
-    private Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
     private File nativeProjectFolder;
     private File projectFolder;
     private String projectName;
@@ -150,10 +150,11 @@ public class ImportProject implements PropertyChangeListener {
     private String macros = ""; // NOI18N
     private String consolidationStrategy = ConsolidationStrategyPanel.FILE_LEVEL;
     private Iterator<SourceFolderInfo> sources;
+    private Iterator<SourceFolderInfo> tests;
     private String sourceFoldersFilter = null;
     private File configureFile;
     private File makefileFile;
-    private Map<Step, State> importResult = new HashMap<Step, State>();
+    private Map<Step, State> importResult = new EnumMap<Step, State>(Step.class);
 
     public ImportProject(WizardDescriptor wizard) {
         if (TRACE) {
@@ -205,7 +206,7 @@ public class ImportProject implements PropertyChangeListener {
 
             @Override
             public FileFilter getFileFilter() {
-                return AllSourceFileFilter.getInstance();
+                return FileFilterFactory.getAllSourceFileFilter();
             }
         });
         sources = list.iterator();
@@ -231,6 +232,9 @@ public class ImportProject implements PropertyChangeListener {
         @SuppressWarnings("unchecked")
         Iterator<SourceFolderInfo> it = (Iterator<SourceFolderInfo>) wizard.getProperty("sourceFolders"); // NOI18N
         sources = it;
+        @SuppressWarnings("unchecked")
+        Iterator<SourceFolderInfo> it2 = (Iterator<SourceFolderInfo>) wizard.getProperty("testFolders"); // NOI18N
+        tests = it2;
         sourceFoldersFilter = (String) wizard.getProperty("sourceFoldersFilter"); // NOI18N
         runConfigure = "true".equals(wizard.getProperty("runConfigure")); // NOI18N
         if (runConfigure) {
@@ -247,27 +251,27 @@ public class ImportProject implements PropertyChangeListener {
         projectFolder = CndFileUtils.normalizeFile(projectFolder);
         MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE); // NOI18N
         String workingDirRel;
-        if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
-            workingDirRel = IpeUtils.toAbsoluteOrRelativePath(projectFolder.getPath(), FilePathAdaptor.naturalize(workingDir));
-        } else if (PathPanel.getMode() == PathPanel.REL) {
-            workingDirRel = IpeUtils.toRelativePath(projectFolder.getPath(), FilePathAdaptor.naturalize(workingDir));
+        if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+            workingDirRel = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(workingDir));
+        } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+            workingDirRel = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(workingDir));
         } else {
-            workingDirRel = IpeUtils.toAbsolutePath(projectFolder.getPath(), FilePathAdaptor.naturalize(workingDir));
+            workingDirRel = CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), CndPathUtilitities.naturalize(workingDir));
         }
-        workingDirRel = FilePathAdaptor.normalize(workingDirRel);
+        workingDirRel = CndPathUtilitities.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommand().setValue(buildCommand);
         extConf.getMakefileConfiguration().getCleanCommand().setValue(cleanCommand);
         // Build result
         if (buildResult != null && buildResult.length() > 0) {
-            if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
-                buildResult = IpeUtils.toAbsoluteOrRelativePath(projectFolder.getPath(), FilePathAdaptor.naturalize(buildResult));
-            } else if (PathPanel.getMode() == PathPanel.REL) {
-                buildResult = IpeUtils.toRelativePath(projectFolder.getPath(), FilePathAdaptor.naturalize(buildResult));
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                buildResult = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(buildResult));
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                buildResult = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(buildResult));
             } else {
-                buildResult = IpeUtils.toAbsolutePath(projectFolder.getPath(), FilePathAdaptor.naturalize(buildResult));
+                buildResult = CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), CndPathUtilitities.naturalize(buildResult));
             }
-            buildResult = FilePathAdaptor.normalize(buildResult);
+            buildResult = CndPathUtilitities.normalize(buildResult);
             extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
         }
         // Include directories
@@ -276,8 +280,8 @@ public class ImportProject implements PropertyChangeListener {
             List<String> includeDirectoriesVector = new ArrayList<String>();
             while (tokenizer.hasMoreTokens()) {
                 String includeDirectory = tokenizer.nextToken();
-                includeDirectory = IpeUtils.toRelativePath(projectFolder.getPath(), FilePathAdaptor.naturalize(includeDirectory));
-                includeDirectory = FilePathAdaptor.normalize(includeDirectory);
+                includeDirectory = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(includeDirectory));
+                includeDirectory = CndPathUtilitities.normalize(includeDirectory);
                 includeDirectoriesVector.add(includeDirectory);
             }
             extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includeDirectoriesVector);
@@ -298,33 +302,33 @@ public class ImportProject implements PropertyChangeListener {
         ArrayList<String> importantItems = new ArrayList<String>();
         if (makefilePath != null && makefilePath.length() > 0) {
             makefileFile = CndFileUtils.normalizeFile(new File(makefilePath));
-            if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
-                makefilePath = IpeUtils.toAbsoluteOrRelativePath(projectFolder.getPath(), FilePathAdaptor.naturalize(makefilePath));
-            } else if (PathPanel.getMode() == PathPanel.REL) {
-                makefilePath = IpeUtils.toRelativePath(projectFolder.getPath(), FilePathAdaptor.naturalize(makefilePath));
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                makefilePath = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath));
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                makefilePath = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath));
             } else {
-                makefilePath = IpeUtils.toAbsolutePath(projectFolder.getPath(), FilePathAdaptor.naturalize(makefilePath));
+                makefilePath = CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath));
             }
-            makefilePath = FilePathAdaptor.normalize(makefilePath);
+            makefilePath = CndPathUtilitities.normalize(makefilePath);
             importantItems.add(makefilePath);
         }
         if (configurePath != null && configurePath.length() > 0) {
             configureFile = CndFileUtils.normalizeFile(new File(configurePath));
-            if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
-                configurePath = IpeUtils.toAbsoluteOrRelativePath(projectFolder.getPath(), FilePathAdaptor.naturalize(configurePath));
-            } else if (PathPanel.getMode() == PathPanel.REL) {
-                configurePath = IpeUtils.toRelativePath(projectFolder.getPath(), FilePathAdaptor.naturalize(configurePath));
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                configurePath = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(configurePath));
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                configurePath = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(configurePath));
             } else {
-                configurePath = IpeUtils.toAbsolutePath(projectFolder.getPath(), FilePathAdaptor.naturalize(configurePath));
+                configurePath = CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), CndPathUtilitities.naturalize(configurePath));
             }
-            configurePath = FilePathAdaptor.normalize(configurePath);
+            configurePath = CndPathUtilitities.normalize(configurePath);
             importantItems.add(configurePath);
         }
         Iterator<String> importantItemsIterator = importantItems.iterator();
         if (!importantItemsIterator.hasNext()) {
             importantItemsIterator = null;
         }
-        makeProject = ProjectGenerator.createProject(projectFolder, projectName, makefileName, new MakeConfiguration[]{extConf}, sources, sourceFoldersFilter, importantItemsIterator);
+        makeProject = ProjectGenerator.createProject(projectFolder, projectName, makefileName, new MakeConfiguration[]{extConf}, sources, sourceFoldersFilter, tests, importantItemsIterator);
         FileObject dir = FileUtil.toFileObject(projectFolder);
         importResult.put(Step.Project, State.Successful);
         switchModel(false);
@@ -506,7 +510,7 @@ public class ImportProject implements PropertyChangeListener {
                 }
             };
             if (TRACE) {
-                logger.log(Level.INFO, "#" + configureFile + " " + configureArguments); // NOI18N
+                logger.log(Level.INFO, "#{0} {1}", new Object[]{configureFile, configureArguments}); // NOI18N
             }
             if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
                 ShellRunAction.performAction(node, listener, outputListener, makeProject, null);
@@ -530,14 +534,14 @@ public class ImportProject implements PropertyChangeListener {
 
     private void downloadRemoteFile(File file){
         if (file != null && !file.exists()) {
-            ExecutionEnvironment developmentHost = CompilerSetManager.getDefaultExecutionEnvironment();
+            ExecutionEnvironment developmentHost = ServerList.getDefaultRecord().getExecutionEnvironment();
             if (developmentHost.isRemote()) {
                 String remoteFile = HostInfoProvider.getMapper(developmentHost).getRemotePath(file.getAbsolutePath());
                 try {
                     if (HostInfoUtils.fileExists(developmentHost, remoteFile)){
                         Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, developmentHost, file.getAbsolutePath(), null);
                         if (TRACE) {
-                            logger.log(Level.INFO, "#download file "+file.getAbsolutePath()); // NOI18N
+                            logger.log(Level.INFO, "#download file {0}", file.getAbsolutePath()); // NOI18N
                         }
                         /*int rc =*/ task.get();
                     }
@@ -651,7 +655,7 @@ public class ImportProject implements PropertyChangeListener {
             arguments = "clean"; // NOI18N
         }
         if (TRACE) {
-            logger.log(Level.INFO, "#make "+arguments); // NOI18N
+            logger.log(Level.INFO, "#make {0}", arguments); // NOI18N
         }
         MakeAction.execute(node, arguments, listener, null, makeProject, null, null); // NOI18N
     }
@@ -775,7 +779,7 @@ public class ImportProject implements PropertyChangeListener {
                         DiscoveryProvider provider = (DiscoveryProvider) map.get(DiscoveryWizardDescriptor.PROVIDER);
                         if (provider != null && "make-log".equals(provider.getID())) { // NOI18N
                             if (TRACE) {
-                                logger.log(Level.INFO, "#start discovery by log file " + provider.getProperty("make-log-file").getValue()); // NOI18N
+                                logger.log(Level.INFO, "#start discovery by log file {0}", provider.getProperty("make-log-file").getValue()); // NOI18N
                             }
                         } else {
                             if (TRACE) {
@@ -809,7 +813,7 @@ public class ImportProject implements PropertyChangeListener {
                     map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
                     if (extension.canApply(map, makeProject)) {
                         if (TRACE) {
-                            logger.log(Level.INFO, "#start discovery by log file " + makeLog.getAbsolutePath()); // NOI18N
+                            logger.log(Level.INFO, "#start discovery by log file {0}", makeLog.getAbsolutePath()); // NOI18N
                         }
                         try {
                             done = true;
@@ -820,7 +824,7 @@ public class ImportProject implements PropertyChangeListener {
                         }
                     } else {
                         if (TRACE) {
-                            logger.log(Level.INFO, "#discovery cannot be done by log file " + makeLog.getAbsolutePath()); // NOI18N
+                            logger.log(Level.INFO, "#discovery cannot be done by log file {0}", makeLog.getAbsolutePath()); // NOI18N
                         }
                     }
                 }
@@ -835,7 +839,7 @@ public class ImportProject implements PropertyChangeListener {
                     map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
                     if (extension.canApply(map, makeProject)) {
                         if (TRACE) {
-                            logger.log(Level.INFO, "#start fix macros by log file " + makeLog.getAbsolutePath()); // NOI18N
+                            logger.log(Level.INFO, "#start fix macros by log file {0}", makeLog.getAbsolutePath()); // NOI18N
                         }
                         @SuppressWarnings("unchecked")
                         List<ProjectConfiguration> confs = (List<ProjectConfiguration>) map.get(DiscoveryWizardDescriptor.CONFIGURATIONS);
@@ -843,7 +847,7 @@ public class ImportProject implements PropertyChangeListener {
                         importResult.put(Step.FixMacros, State.Successful);
                     } else {
                         if (TRACE) {
-                            logger.log(Level.INFO, "#fix macros cannot be done by log file " + makeLog.getAbsolutePath()); // NOI18N
+                            logger.log(Level.INFO, "#fix macros cannot be done by log file {0}", makeLog.getAbsolutePath()); // NOI18N
                         }
                     }
                 }
@@ -867,7 +871,7 @@ public class ImportProject implements PropertyChangeListener {
                     NativeFileItem item = findByNormalizedName(new File(fileConf.getFilePath()));
                     if (item instanceof Item) {
                         if (TRACE) {
-                            logger.log(Level.FINE, "#fix macros for file " + fileConf.getFilePath()); // NOI18N
+                            logger.log(Level.FINE, "#fix macros for file {0}", fileConf.getFilePath()); // NOI18N
                         }
                         ProjectBridge.fixFileMacros(fileConf.getUserMacros(), (Item) item);
                     }
@@ -919,7 +923,7 @@ public class ImportProject implements PropertyChangeListener {
                 public void projectParsingFinished(CsmProject project) {
                     if (project.equals(p)) {
                         ImportProject.listeners.remove(p);
-                        CsmListeners.getDefault().removeProgressListener(this);
+                        CsmListeners.getDefault().removeProgressListener(this); // ignore java warning "usage of this in anonymous class"
                         if (TRACE) {
                             logger.log(Level.INFO, "#model ready, explore model"); // NOI18N
                         }
@@ -942,6 +946,10 @@ public class ImportProject implements PropertyChangeListener {
     private boolean isFinished = false;
     public boolean isFinished(){
         return isFinished;
+    }
+
+    public Map<Step, State> getState(){
+        return new EnumMap<Step, State>(importResult);
     }
 
     public Project getProject(){
@@ -1001,7 +1009,7 @@ public class ImportProject implements PropertyChangeListener {
                         if (item != null && np.equals(item.getNativeProject()) && item.isExcluded()) {
                             if (item instanceof Item) {
                                 if (TRACE) {
-                                    logger.log(Level.FINE, "#fix excluded header for file " + impl.getAbsolutePath()); // NOI18N
+                                    logger.log(Level.FINE, "#fix excluded header for file {0}", impl.getAbsolutePath()); // NOI18N
                                 }
                                 ProjectBridge.setExclude((Item) item, false);
                                 if (file.isHeaderFile()) {
@@ -1107,12 +1115,12 @@ public class ImportProject implements PropertyChangeListener {
             NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             if (state) {
                 if (TRACE) {
-                    logger.log(Level.INFO, "#enable model for " + np.getProjectDisplayName()); // NOI18N
+                    logger.log(Level.INFO, "#enable model for {0}", np.getProjectDisplayName()); // NOI18N
                 }
                 ((ModelImpl) model).enableProject(np);
             } else {
                 if (TRACE) {
-                    logger.log(Level.INFO, "#disable model for " + np.getProjectDisplayName()); // NOI18N
+                    logger.log(Level.INFO, "#disable model for {0}", np.getProjectDisplayName()); // NOI18N
                 }
                 ((ModelImpl) model).disableProject(np);
             }
@@ -1129,12 +1137,12 @@ public class ImportProject implements PropertyChangeListener {
 
     private static final Map<CsmProject, CsmProgressListener> listeners = new WeakHashMap<CsmProject, CsmProgressListener>();
 
-    static enum State {
+    public static enum State {
 
         Successful, Fail, Skiped
     }
 
-    static enum Step {
+    public static enum Step {
 
         Project, Configure, MakeClean, Make, DiscoveryDwarf, DiscoveryLog, FixMacros, DiscoveryModel, FixExcluded
     }

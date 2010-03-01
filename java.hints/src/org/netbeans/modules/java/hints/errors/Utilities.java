@@ -110,6 +110,7 @@ import static com.sun.source.tree.Tree.Kind.*;
  * @author Jan Lahoda
  */
 public class Utilities {
+    public  static final String JAVA_MIME_TYPE = "text/x-java";
     private static final String DEFAULT_NAME = "name";
 
     public Utilities() {

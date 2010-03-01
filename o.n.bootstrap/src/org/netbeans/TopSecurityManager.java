@@ -611,7 +611,7 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
                 return;
             }
 
-            Class<?> appContextClass = Class.forName ("sun.awt.AppContext"); // NOI18N
+            Class<?> appContextClass = ClassLoader.getSystemClassLoader().loadClass("sun.awt.AppContext"); // NOI18N
             Method getAppContext = appContextClass.getMethod ("getAppContext"); // NOI18N
             Object appContext = getAppContext.invoke (null, new Object[0]);
             

@@ -45,8 +45,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
+import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDescriptor;
@@ -72,6 +74,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /** Customization of Make project
+ * shows dialog
  */
 public class MakeCustomizerProvider implements CustomizerProvider {
 
@@ -86,8 +89,9 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     public static final String COMMAND_APPLY = "APPLY";  // NOI18N
     private DialogDescriptor dialogDescriptor;
     private Map<Project, Dialog> customizerPerProject = new WeakHashMap<Project, Dialog>(); // Is is weak needed here?
-    private ConfigurationDescriptorProvider projectDescriptorProvider;
+    private final ConfigurationDescriptorProvider projectDescriptorProvider;
     private String currentCommand;
+    private final Map<MakeContext.Kind, String> lastCurrentNodeName = new EnumMap<MakeContext.Kind, String>(MakeContext.Kind.class);
     private final Set<ActionListener> actionListenerList = new HashSet<ActionListener>();
 
     public MakeCustomizerProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
@@ -95,16 +99,17 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         this.projectDescriptorProvider = projectDescriptorProvider;
     }
 
+    @Override
     public void showCustomizer() {
-        showCustomizer(null, null, null);
+        showCustomizer(lastCurrentNodeName.get(MakeContext.Kind.Project), null, null);
     }
 
     public void showCustomizer(Item item) {
-        showCustomizer(null, item, null);
+        showCustomizer(lastCurrentNodeName.get(MakeContext.Kind.Item), item, null);
     }
 
     public void showCustomizer(Folder folder) {
-        showCustomizer(null, null, folder);
+        showCustomizer(lastCurrentNodeName.get(MakeContext.Kind.Folder), null, folder);
     }
 
     public void showCustomizer(String preselectedNodeName) {
@@ -118,6 +123,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         }
         RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
 
+            @Override
             public void run() {
                 showCustomizerWorker(preselectedNodeName, item, folder);
             }
@@ -139,7 +145,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
         if (folder != null) {
             // Make sure all FolderConfigurations are created (they are lazyly created)
-            Configuration[] configurations = projectDescriptorProvider.getConfigurationDescriptor().getConfs().getConfs();
+            Configuration[] configurations = projectDescriptorProvider.getConfigurationDescriptor().getConfs().toArray();
             for (int i = 0; i < configurations.length; i++) {
                 folder.getFolderConfiguration(configurations[i]);
             }
@@ -175,7 +181,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         ConfigurationDescriptor clonedProjectdescriptor = projectDescriptorProvider.getConfigurationDescriptor().cloneProjectDescriptor();
         ArrayList<JComponent> controls = new ArrayList<JComponent>();
         controls.add(options[OPTION_OK]);
-        MakeCustomizer innerPane = new MakeCustomizer(project, preselectedNodeName, clonedProjectdescriptor, item, folder, controls);
+        MakeCustomizer innerPane = new MakeCustomizer(project, preselectedNodeName, clonedProjectdescriptor, item, folder, Collections.unmodifiableCollection(controls));
         ActionListener optionsListener = new OptionListener(project, projectDescriptorProvider.getConfigurationDescriptor(), clonedProjectdescriptor, innerPane, folder, item);
         options[OPTION_OK].addActionListener(optionsListener);
         options[OPTION_CANCEL].addActionListener(optionsListener);
@@ -213,13 +219,18 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         customizerPerProject.put(project, dialog);
         currentCommand = COMMAND_CANCEL;
         dialog.setVisible(true);
+        MakeContext lastContext = innerPane.getLastContext();
+        String nodeName = innerPane.getCurrentNodeName();
+        if (lastContext != null) {
+            lastCurrentNodeName.put(lastContext.getKind(), nodeName);
+        }
         if (currentCommand.equals(COMMAND_CANCEL)) {
             fireActionEvent(new ActionEvent(project, 0, currentCommand));
         }
     }
 
     /** Listens to the actions on the Customizer's option buttons */
-    private class OptionListener implements ActionListener {
+    private final class OptionListener implements ActionListener {
 
         private Project project;
         private ConfigurationDescriptor projectDescriptor;
@@ -237,6 +248,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
             this.item = item;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             currentCommand = e.getActionCommand();
 
@@ -257,6 +269,8 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
                 List<String> oldSourceRoots = ((MakeConfigurationDescriptor) projectDescriptor).getSourceRoots();
                 List<String> newSourceRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getSourceRoots();
+                List<String> oldTestRoots = ((MakeConfigurationDescriptor) projectDescriptor).getTestRoots();
+                List<String> newTestRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getTestRoots();
                 Configuration oldActive = projectDescriptor.getConfs().getActive();
                 Configuration newActive = clonedProjectdescriptor.getConfs().getActive();
 
@@ -265,6 +279,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                 projectDescriptor.save(); // IZ 133606
                 ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, item);
                 ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedSourceRoots(oldSourceRoots, newSourceRoots);
+                ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedTestRoots(oldTestRoots, newTestRoots);
                 ((MakeConfigurationDescriptor) projectDescriptor).checkConfigurations(oldActive, newActive);
             }
             if (currentCommand.equals(COMMAND_APPLY)) {
@@ -299,12 +314,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         }
     }
     /** Look up i18n strings here */
-    private static ResourceBundle bundle;
-
     private static String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(MakeCustomizerProvider.class);
-        }
-        return bundle.getString(s);
+        return NbBundle.getBundle(MakeCustomizerProvider.class).getString(s);
     }
 }

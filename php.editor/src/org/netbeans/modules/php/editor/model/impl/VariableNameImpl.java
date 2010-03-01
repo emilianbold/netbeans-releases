@@ -75,6 +75,15 @@ import org.openide.util.Union2;
  */
 class VariableNameImpl extends ScopeImpl implements VariableName {
     List<LazyFieldAssignment> assignmentDatas = new ArrayList<LazyFieldAssignment>();
+
+    private Collection<TypeScope> getMergedTypes() {
+        Collection<TypeScope> types = new HashSet<TypeScope>();
+        List<? extends VarAssignmentImpl> varAssignments = getVarAssignments();
+        for (VarAssignmentImpl vAssignment : varAssignments) {
+            types.addAll(vAssignment.getTypes());
+        }
+        return types;
+    }
     enum TypeResolutionKind {
         LAST_ASSIGNMENT,
         MERGE_ASSIGNMENTS
@@ -86,8 +95,8 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                 Union2.<String/*url*/, FileObject>createFirst(indexedVariable.getFilenameUrl()),
                 new OffsetRange(indexedVariable.getOffset(),indexedVariable.getOffset()+indexedVariable.getName().length()), true);
     }
-    VarAssignmentImpl createAssignment(Scope scope, OffsetRange blockRange, OffsetRange nameRange, Assignment assignment, Map<String, AssignmentImpl> allAssignments) {
-        VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, blockRange, nameRange,assignment, allAssignments);
+    VarAssignmentImpl createAssignment(Scope scope, boolean conditionalBlock,OffsetRange blockRange, OffsetRange nameRange, Assignment assignment, Map<String, AssignmentImpl> allAssignments) {
+        VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, conditionalBlock, blockRange, nameRange,assignment, allAssignments);
         return retval;
     }
 
@@ -212,17 +221,18 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                         }
                     }
                 }
-            }
-            for (AssignmentImpl assign : assignments) {
-                if (assign.getBlockRange().containsInclusive(offset)) {
+            }            
+            if (!assignments.isEmpty()) {
+                for (AssignmentImpl assign : assignments) {
                     if (retval == null || retval.getOffset() <= assign.getOffset()) {
-                         if (assign.getOffset() < offset) {
-                             if (expectedField == null || expectedField.equals(assign.getContainer())) {
-                                 retval = assign;
-                             }
-                         }
+                        if (assign.getOffset() < offset) {
+                            if (expectedField == null || expectedField.equals(assign.getContainer())) {
+                                retval = assign;
+                            }
+                        }
                     }
                 }
+
             }
         }
         return retval;
@@ -258,12 +268,17 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             ClassScope classScope = (ClassScope) getInScope();
             return Collections.singletonList(classScope.getName());
         }
-        Collection<String> retval = Collections.emptyList();
+        Collection<String> retval = new ArrayList<String>();
         TypeResolutionKind useTypeResolutionKind = arrayAccess ?
             TypeResolutionKind.MERGE_ASSIGNMENTS : typeResolutionKind;
         if (useTypeResolutionKind.equals(TypeResolutionKind.LAST_ASSIGNMENT)) {
             AssignmentImpl assignment = findVarAssignment(offset);
             while (assignment != null) {
+                if (assignment.isConditionalBlock()) {
+                    if (!assignment.getBlockRange().containsInclusive(offset)) {
+                        return getMergedTypeNames();
+                    }
+                }
                 Collection<String> typeNames = assignment.getTypeNames();
                 if (typeNames.isEmpty() || assignment.isArrayAccess()) {
                     if (assignment.isArrayAccess()) {
@@ -280,13 +295,17 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             }
             return retval;
         } else {
-            Collection<String> types = new HashSet<String>();
-            List<? extends VarAssignmentImpl> varAssignments = getVarAssignments();
-            for (VarAssignmentImpl vAssignment : varAssignments) {
-                    types.addAll(vAssignment.getTypeNames());
-            }
-            return types;
+            return getMergedTypeNames();
         }
+    }
+
+    private Collection<? extends String> getMergedTypeNames() {
+        Collection<String> types = new HashSet<String>();
+        List<? extends VarAssignmentImpl> varAssignments = getVarAssignments();
+        for (VarAssignmentImpl vAssignment : varAssignments) {
+            types.addAll(vAssignment.getTypeNames());
+        }
+        return types;
     }
 
     private Collection<? extends TypeScope> getTypesImpl(int offset, boolean arrayAccess) {
@@ -299,6 +318,11 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         if (useTypeResolutionKind.equals(TypeResolutionKind.LAST_ASSIGNMENT)) {
             AssignmentImpl assignment = findVarAssignment(offset);
             while (assignment != null) {
+                if (assignment.isConditionalBlock()) {
+                    if (!assignment.getBlockRange().containsInclusive(offset)) {
+                        return getMergedTypes();
+                    }
+                }
                 Collection<TypeScope> types = assignment.getTypes();
                 if (types.isEmpty() || assignment.isArrayAccess()) {
                     AssignmentImpl nextAssignment = findVarAssignment(assignment.getOffset() - 1);
@@ -311,12 +335,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                 return types;
             }
         } else {
-            Collection<TypeScope> types = new HashSet<TypeScope>();
-            List<? extends VarAssignmentImpl> varAssignments = getVarAssignments();
-            for (VarAssignmentImpl vAssignment : varAssignments) {
-                    types.addAll(vAssignment.getTypes());
-            }
-            return types;
+            return getMergedTypes();
         }
         return Collections.emptyList();
     }

@@ -45,6 +45,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.dlight.api.execution.DLightSessionConfiguration;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
 import org.netbeans.modules.dlight.api.support.NativeExecutableTarget;
@@ -112,8 +113,11 @@ public class DLightRunExecutableAction extends AbstractAction {
 
 
         //WE are here only when Profile On RUn
-        final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(
-                target, configuration, pname);
+        DLightSessionConfiguration sessionConfiguration = new DLightSessionConfiguration();
+        sessionConfiguration.setDLightTarget(target);
+        sessionConfiguration.setDLightConfiguration(configuration);
+        sessionConfiguration.setSessionName(pname);
+        final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(sessionConfiguration);
 
         DLightExecutorService.submit(new Runnable() {
 

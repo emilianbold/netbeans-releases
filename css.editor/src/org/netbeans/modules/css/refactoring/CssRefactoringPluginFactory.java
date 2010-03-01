@@ -40,6 +40,7 @@ package org.netbeans.modules.css.refactoring;
 
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 
@@ -50,12 +51,17 @@ import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position = 120)
 public class CssRefactoringPluginFactory implements RefactoringPluginFactory {
 
+    @Override
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
 	if (refactoring instanceof RenameRefactoring) {
 	    if (null != refactoring.getRefactoringSource().lookup(CssElementContext.class)) {
 		return new CssRenameRefactoringPlugin((RenameRefactoring)refactoring);
 	    }
-	}
+	} else if(refactoring instanceof WhereUsedQuery) {
+            if (null != refactoring.getRefactoringSource().lookup(CssElementContext.class)) {
+                return new CssWhereUsedQueryPlugin((WhereUsedQuery)refactoring);
+            }
+        }
 
 	return null;
 

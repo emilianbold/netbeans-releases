@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.source.parsing;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -53,6 +54,7 @@ import java.util.logging.Level;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardLocation;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -118,21 +120,11 @@ public class SourceFileManager implements JavaFileManager {
     }
 
     public javax.tools.FileObject getFileForInput (final Location l, final String pkgName, final String relativeName) {
-        String rp = FileObjects.getRelativePath (pkgName, relativeName);
-        for (ClassPath.Entry entry : this.sourceRoots.entries()) {
-            if (ignoreExcludes || entry.includes(rp)) {
-                FileObject root = entry.getRoot();            
-                if (root != null) {
-                    FileObject file = root.getFileObject(rp);
-                    if (file != null) {
-                        return SourceFileObject.create (file, root);
-                    }
-                }
-            }
-        }
-        return null;
+        final String rp = FileObjects.getRelativePath (pkgName, relativeName);
+        final FileObject[] fileRootPair = findFile(rp);
+        return fileRootPair == null ? null : SourceFileObject.create (fileRootPair[0], fileRootPair[1]);
     }
-    
+
     public JavaFileObject getJavaFileForInput (Location l, final String className, JavaFileObject.Kind kind) {
         String[] namePair = FileObjects.getParentRelativePathAndName (className);
         if (namePair == null) {
@@ -156,9 +148,27 @@ public class SourceFileManager implements JavaFileManager {
         return null;
     }
 
-    public javax.tools.FileObject getFileForOutput(Location l, String pkgName, String relativeName, javax.tools.FileObject sibling) 
+    public javax.tools.FileObject getFileForOutput(final Location l, final String pkgName, final String relativeName, final javax.tools.FileObject sibling)
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
-        throw new UnsupportedOperationException ("The SourceFileManager does not support write operations.");   // NOI18N
+        if (StandardLocation.SOURCE_PATH != l) {
+            throw new UnsupportedOperationException("Only StandardLocation.SOURCE_PATH is supported."); // NOI18N
+        }
+        final String rp = FileObjects.getRelativePath (pkgName, relativeName);
+        final FileObject[] fileRootPair = findFile(rp);
+        if (fileRootPair == null) {
+            final FileObject[] roots = this.sourceRoots.getRoots();
+            if (roots.length == 0) {
+                return null;
+            }
+            final File rootFile = FileUtil.toFile(roots[0]);
+            if (rootFile == null) {
+                return null;
+            }
+            return FileObjects.nbFileObject(new File(rootFile,FileObjects.convertFolder2Package(rp, File.separatorChar)).toURI().toURL(), roots[0]); //Todo: wrap to protect from write
+        }
+        else {
+            return SourceFileObject.create (fileRootPair[0], fileRootPair[1]); //Todo: wrap to protect from write
+        }
     }
 
     public JavaFileObject getJavaFileForOutput (Location l, String className, JavaFileObject.Kind kind, javax.tools.FileObject sibling)
@@ -192,8 +202,8 @@ public class SourceFileManager implements JavaFileManager {
 
     public String inferBinaryName (final Location l, final JavaFileObject jfo) {
         try {
-            if (jfo instanceof FileObjects.InferableJavaFileObject) {
-                final String result = ((FileObjects.InferableJavaFileObject)jfo).inferBinaryName();
+            if (jfo instanceof InferableJavaFileObject) {
+                final String result = ((InferableJavaFileObject)jfo).inferBinaryName();
                 if (result != null) {
                     return result;
                 }
@@ -228,5 +238,20 @@ public class SourceFileManager implements JavaFileManager {
             fileObject0 instanceof SourceFileObject &&
             ((SourceFileObject)fileObject).handle.file != null &&
             ((SourceFileObject)fileObject).handle.file == ((SourceFileObject)fileObject0).handle.file;
+    }
+
+    private FileObject[] findFile (final String relativePath) {
+        for (ClassPath.Entry entry : this.sourceRoots.entries()) {
+            if (ignoreExcludes || entry.includes(relativePath)) {
+                FileObject root = entry.getRoot();
+                if (root != null) {
+                    FileObject file = root.getFileObject(relativePath);
+                    if (file != null) {
+                        return new FileObject[] {file, root};
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

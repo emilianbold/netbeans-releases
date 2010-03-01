@@ -96,7 +96,7 @@ public class MakeProjectGenerator {
             } else {
                 projectName = name + baseCount;
             }
-            File projectNameFile = new File(projectFolder + File.separator + projectName);
+            File projectNameFile = new File(projectFolder, projectName);
             if (!projectNameFile.exists()) {
                 break;
             }
@@ -126,7 +126,7 @@ public class MakeProjectGenerator {
     }
 
     public static MakeProject createBlankProject(String projectName, String makefileName, String projectFolder, MakeConfiguration[] confs, boolean open) throws IOException {
-        File projectNameFile = new File(projectFolder + File.separator + projectName);
+        File projectNameFile = new File(projectFolder, projectName);
         if (confs == null) {
             confs = new MakeConfiguration[0];
         }
@@ -141,7 +141,7 @@ public class MakeProjectGenerator {
         }
 
         FileObject dirFO = createProjectDir(projectNameFile);
-        createProject(dirFO, projectName, makefileName, copyConfs, null, null, null, true, null);
+        createProject(dirFO, projectName, makefileName, copyConfs, null, null, null, null, true, null);
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
 
@@ -160,9 +160,9 @@ public class MakeProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static MakeProject createProject(File dir, String name, String makefileName, MakeConfiguration[] confs, Iterator<SourceFolderInfo> sourceFolders, String sourceFoldersFilter, Iterator<String> importantItems, String mainFile) throws IOException {
+    public static MakeProject createProject(File dir, String name, String makefileName, MakeConfiguration[] confs, Iterator<SourceFolderInfo> sourceFolders, String sourceFoldersFilter, Iterator<SourceFolderInfo> testFolders, Iterator<String> importantItems, String mainFile) throws IOException {
         FileObject dirFO = createProjectDir(dir);
-        AntProjectHelper h = createProject(dirFO, name, makefileName, confs, sourceFolders, sourceFoldersFilter, importantItems, false, mainFile); //NOI18N
+        AntProjectHelper h = createProject(dirFO, name, makefileName, confs, sourceFolders, sourceFoldersFilter, testFolders, importantItems, false, mainFile); //NOI18N
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         //FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
@@ -211,7 +211,7 @@ public class MakeProjectGenerator {
     return null;
     }
      */
-    private static AntProjectHelper createProject(FileObject dirFO, String name, String makefileName, Configuration[] confs, final Iterator<SourceFolderInfo> sourceFolders, final String sourceFoldersFilter, final Iterator<String> importantItems, boolean saveNow, String mainFile) throws IOException {
+    private static AntProjectHelper createProject(FileObject dirFO, String name, String makefileName, Configuration[] confs, final Iterator<SourceFolderInfo> sourceFolders, final String sourceFoldersFilter, final Iterator<SourceFolderInfo> testFolders, final Iterator<String> importantItems, boolean saveNow, String mainFile) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, MakeProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -252,8 +252,9 @@ public class MakeProjectGenerator {
         }
         Runnable task = new Runnable() {
 
+            @Override
             public void run() {
-                projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, importantItems, mainFilePath); // FIXUP: need a better check whether logical folder should be ccreated or not.
+                projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders, importantItems, mainFilePath); // FIXUP: need a better check whether logical folder should be ccreated or not.
                 projectDescriptor.save();
                 projectDescriptor.closed();
                 projectDescriptor.clean();
@@ -314,7 +315,7 @@ public class MakeProjectGenerator {
             if (!dir.mkdirs()) {
                 throw new IOException("Can not create project folder."); // NOI18N
             }
-        // refreshFileSystem (dir); // See 136445
+            // refreshFileSystem (dir); // See 136445
         }
         dirFO = FileUtil.toFileObject(dir);
         assert dirFO != null : "No such dir on disk: " + dir; // NOI18N

@@ -71,18 +71,22 @@ import org.openide.util.actions.NodeAction;
 public class AddSubItemAction extends NodeAction {
     
     //fix this
+    @Override
     protected boolean enable(Node[] nodes) {
         return true; 
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(AddSubItemAction.class, "ACT_AddFromPalette"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) { }
 
     @Override
@@ -103,13 +107,16 @@ public class AddSubItemAction extends NodeAction {
         HelpCtx.setHelpIDString(popupMenu, AlignAction.class.getName());
         
         popupMenu.addMenuListener(new MenuListener() {
+            @Override
             public void menuSelected(MenuEvent e) {
                 JMenu menu = (JMenu) e.getSource();
                 createInsertSubmenu(menu);
             }
             
+            @Override
             public void menuDeselected(MenuEvent e) {}
             
+            @Override
             public void menuCanceled(MenuEvent e) {}
         });
         return popupMenu;
@@ -123,6 +130,7 @@ public class AddSubItemAction extends NodeAction {
             this.pItem = pItem;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             Node[] nds = getNodes();
             for(Node nd : nds) {
@@ -141,6 +149,7 @@ public class AddSubItemAction extends NodeAction {
         if (!(menu.getMenuComponentCount() > 0)) {
             Set<Class> classes = new HashSet<Class>();
             SortedSet<PaletteItem> items = new TreeSet<PaletteItem>(new Comparator<PaletteItem>() {
+                @Override
                 public int compare(PaletteItem item1, PaletteItem item2) {
                     String name1 = item1.getNode().getDisplayName();
                     String name2 = item2.getNode().getDisplayName();

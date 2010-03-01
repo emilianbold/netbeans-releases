@@ -39,7 +39,6 @@
 
 package org.openide.util.lookup.implspi;
 
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,6 +52,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -76,8 +77,10 @@ import javax.tools.StandardLocation;
  */
 public abstract class AbstractServiceProviderProcessor extends AbstractProcessor {
 
-    private final Map<ProcessingEnvironment,Map<String,List<String>>> outputFilesByProcessor = new WeakHashMap<ProcessingEnvironment,Map<String,List<String>>>();
-    private final Map<ProcessingEnvironment,Map<String,List<Element>>> originatingElementsByProcessor = new WeakHashMap<ProcessingEnvironment,Map<String,List<Element>>>();
+    private final Map<ProcessingEnvironment,Map<String,SortedSet<ServiceLoaderLine>>> outputFilesByProcessor =
+            new WeakHashMap<ProcessingEnvironment,Map<String,SortedSet<ServiceLoaderLine>>>();
+    private final Map<ProcessingEnvironment,Map<String,List<Element>>> originatingElementsByProcessor =
+            new WeakHashMap<ProcessingEnvironment,Map<String,List<Element>>>();
     private final Map<TypeElement,Boolean> verifiedClasses = new WeakHashMap<TypeElement,Boolean>();
 
     /** Throws IllegalStateException. For access by selected subclasses. */
@@ -161,14 +164,14 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
             }
             origEls.add(clazz);
         }
-        Map<String,List<String>> outputFiles = outputFilesByProcessor.get(processingEnv);
+        Map<String,SortedSet<ServiceLoaderLine>> outputFiles = outputFilesByProcessor.get(processingEnv);
         if (outputFiles == null) {
-            outputFiles = new HashMap<String,List<String>>();
+            outputFiles = new HashMap<String,SortedSet<ServiceLoaderLine>>();
             outputFilesByProcessor.put(processingEnv, outputFiles);
         }
-        List<String> lines = outputFiles.get(rsrc);
+        SortedSet<ServiceLoaderLine> lines = outputFiles.get(rsrc);
         if (lines == null) {
-            lines = new ArrayList<String>();
+            lines = new TreeSet<ServiceLoaderLine>();
             try {
                 try {
                     FileObject in = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", rsrc);
@@ -190,11 +193,7 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
                     FileObject in = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", rsrc);
                     InputStream is = in.openInputStream();
                     try {
-                        BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-                        String line;
-                        while ((line = r.readLine()) != null) {
-                            lines.add(line);
-                        }
+                        ServiceLoaderLine.parse(new InputStreamReader(is, "UTF-8"), lines); // NOI18N
                     } finally {
                         is.close();
                     }
@@ -207,20 +206,7 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
             }
             outputFiles.put(rsrc, lines);
         }
-        int idx = lines.indexOf(impl);
-        if (idx != -1) {
-            lines.remove(idx);
-            while (lines.size() > idx && lines.get(idx).matches("#position=.+|#-.+")) {
-                lines.remove(idx);
-            }
-        }
-        lines.add(impl);
-        if (position != Integer.MAX_VALUE) {
-            lines.add("#position=" + position);
-        }
-        for (String exclude : supersedes) {
-            lines.add("#-" + exclude);
-        }
+        lines.add(new ServiceLoaderLine(impl, position, supersedes));
     }
 
     /**
@@ -254,7 +240,7 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
         return null;
     }
 
-    private final boolean verifyServiceProviderSignature(TypeElement clazz, Class<? extends Annotation> annotation) {
+    private boolean verifyServiceProviderSignature(TypeElement clazz, Class<? extends Annotation> annotation) {
         AnnotationMirror ann = findAnnotationMirror(clazz, annotation);
         if (!clazz.getModifiers().contains(Modifier.PUBLIC)) {
             processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must be public", clazz, ann);
@@ -281,16 +267,16 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
     }
 
     private void writeServices() {
-        for (Map.Entry<ProcessingEnvironment,Map<String,List<String>>> outputFiles : outputFilesByProcessor.entrySet()) {
-            for (Map.Entry<String, List<String>> entry : outputFiles.getValue().entrySet()) {
+        for (Map.Entry<ProcessingEnvironment,Map<String,SortedSet<ServiceLoaderLine>>> outputFiles : outputFilesByProcessor.entrySet()) {
+            for (Map.Entry<String,SortedSet<ServiceLoaderLine>> entry : outputFiles.getValue().entrySet()) {
                 try {
                     FileObject out = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", entry.getKey(),
                             originatingElementsByProcessor.get(outputFiles.getKey()).get(entry.getKey()).toArray(new Element[0]));
                     OutputStream os = out.openOutputStream();
                     try {
                         PrintWriter w = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
-                        for (String line : entry.getValue()) {
-                            w.println(line);
+                        for (ServiceLoaderLine line : entry.getValue()) {
+                            line.write(w);
                         }
                         w.flush();
                         w.close();

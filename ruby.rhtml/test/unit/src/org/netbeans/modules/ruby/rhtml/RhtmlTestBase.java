@@ -29,9 +29,6 @@
 package org.netbeans.modules.ruby.rhtml;
 
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -42,19 +39,13 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.rhtml.editor.RhtmlKit;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.csl.editor.codetemplates.CslCorePackageAccessor;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.ruby.RubyKeystrokeHandler;
-import org.netbeans.modules.ruby.RubyRenameHandler;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -99,23 +90,6 @@ public abstract class RhtmlTestBase extends RubyTestBase {
 
         Formatter.setFormatter(RhtmlKit.class, new ExtFormatter(RhtmlKit.class));
 
-        LanguageRegistry registry = LanguageRegistry.getInstance();
-        List<Action> actions = Collections.emptyList();
-        if (!LanguageRegistry.getInstance().isSupported(RhtmlTokenId.MIME_TYPE)) {
-            Language dl = new Language("org/netbeans/modules/ruby/jrubydoc.png", RhtmlTokenId.MIME_TYPE,
-                    actions, new RhtmlLanguage(),
-                    new RhtmlCompleter(), new RubyRenameHandler(), new RhtmlFinder(),
-                    null, new RubyKeystrokeHandler(), null, null, null, true);
-            List<Language> languages = new ArrayList<Language>();
-            languages.add(dl);
-            CslCorePackageAccessor.get().languageRegistryAddLanguages(languages);
-
-            String mimeFolder = "Editors/" + dl.getMimeType();
-            final FileObject root = FileUtil.getConfigFile(mimeFolder); // NOI18N
-            if (root == null) {
-                FileUtil.createFolder(FileUtil.getConfigRoot(), mimeFolder);
-            }
-        }
     }
 
     @Override

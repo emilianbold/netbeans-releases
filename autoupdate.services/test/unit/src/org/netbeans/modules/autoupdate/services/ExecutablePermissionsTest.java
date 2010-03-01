@@ -42,7 +42,6 @@ package org.netbeans.modules.autoupdate.services;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -110,37 +109,5 @@ public class ExecutablePermissionsTest extends NbmAdvancedTestCase {
         File f = new File(userDir, "bin/start.sh");
         assertTrue("File " + f + " should exist after module installation", f.exists());
         assertTrue("File " + f + " is not executable after module installation", f.canExecute());
-    }
-
-    private String readCommandOutput(String... command) {
-        ProcessBuilder builder = new ProcessBuilder(command);
-        boolean doRun = true;
-        StringBuilder sb = new StringBuilder();
-        byte[] bytes = new byte[8192];
-        int c = 0;
-
-        try {
-            Process process = builder.start();
-            while (doRun) {
-                try {
-                    Thread.sleep(20);
-                } catch (InterruptedException e) {
-                }
-                try {
-                    process.exitValue();
-                    doRun = false;
-                } catch (IllegalThreadStateException e) {
-                    ; // do nothing - the process is still running
-                }
-                InputStream is = process.getInputStream();
-                while ((c = is.read(bytes)) != -1) {
-                    sb.append(new String(bytes, 0, c));
-                }
-            }
-            return sb.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new String();
-        }
-    }
+    }    
 }

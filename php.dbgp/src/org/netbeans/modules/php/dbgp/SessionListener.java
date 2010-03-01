@@ -45,7 +45,6 @@ import java.util.List;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.php.dbgp.actions.KillActionProvider;
-import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.spi.debugger.ActionsProvider;
 
 

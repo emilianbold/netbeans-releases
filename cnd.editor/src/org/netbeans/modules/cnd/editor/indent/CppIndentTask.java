@@ -52,6 +52,7 @@ import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -150,7 +151,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                         Function function = CsmDocGeneratorProvider.getDefault().getFunction(doc, caretOffset);
                         if (function != null) {
                             StringBuilder buf = new StringBuilder();
-                            buf.append("*\n"); // NOI18N
+                            buf.append("* " + NbBundle.getMessage(CppIndentTask.class, "DOCUMENT_HERE_TXT", function.getSignature()) + "\n"); // NOI18N
                             for (Parameter p : function.getParametes()) {
                                 for (int i = 0; i < indent; i++) {
                                     buf.append(' ');
@@ -161,8 +162,8 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                                 for (int i = 0; i < indent; i++) {
                                     buf.append(' ');
                                 }
-                                buf.append("* @return").append('\n'); // NOI18N
-                            }
+                                buf.append("* @return ...").append('\n'); // NOI18N
+                                }
                             for (int i = 0; i < indent; i++) {
                                 buf.append(' ');
                             }

@@ -84,7 +84,7 @@ public class EvalResponse extends DbgpResponse {
         String expression = eval.getData();
         
         DebugSession currentSession = SessionManager.getInstance().
-            getCurrentSession( session.getSessionId());
+            getSession( session.getSessionId());
         if ( currentSession == session ){
             // perform view update only if response appears in current session
             IDESessionBridge bridge = session.getBridge();

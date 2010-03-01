@@ -1134,6 +1134,7 @@ exists or setup the property manually. For example like this:
             
             <target name="javadoc-build">
                 <xsl:attribute name="depends">init</xsl:attribute>
+                <xsl:attribute name="if">have.sources</xsl:attribute>
                 <mkdir dir="${{dist.javadoc.dir}}"/>
                 <!-- XXX do an up-to-date check first -->
                 <javadoc>

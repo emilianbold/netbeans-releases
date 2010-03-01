@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.bugtracking.util;
 
+import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import java.awt.AWTKeyStroke;
 import java.awt.Component;
 import java.awt.Container;
@@ -57,8 +59,11 @@ import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
@@ -76,18 +81,22 @@ import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.SwingConstants;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.issue.PatchContextChooser;
+import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelector;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -179,6 +188,28 @@ public class BugtrackingUtil {
     }
 
     /**
+     * Determines if the gives issue opened in the editor area
+     * @param issue
+     * @return true in case the given issue is opened in the editor are, otherwise false
+     */
+    public static boolean isOpened(Issue issue) {
+        IssueTopComponent tc = IssueTopComponent.find(issue, false);
+        return tc != null ? tc.isOpened() : false;
+    }
+
+    /**
+     * Determines if the gives issue opened in the editor area and
+     * showing on the screen
+     * @param issue
+     * @return true in case the given issue is opened in the editor area
+     *         and showing on the screen, otherwise false
+     */
+    public static boolean isShowing(Issue issue) {
+        IssueTopComponent tc = IssueTopComponent.find(issue, false);
+        return tc != null ? tc.isShowing() : false;
+    }
+
+    /**
      * Filters the given issue by the given criteria and returns
      * those which either case unsensitively contain the criteria
      * in their summary or those which id equals the criteria.
@@ -226,8 +257,8 @@ public class BugtrackingUtil {
         return editRepository(repository, null);
     }
 
-    public static Repository[] getKnownRepositories() {
-        return BugtrackingManager.getInstance().getKnownRepositories(true);
+    public static Repository[] getKnownRepositories(boolean pingOpenProjects) {
+        return BugtrackingManager.getInstance().getKnownRepositories(pingOpenProjects);
     }
 
     public static BugtrackingConnector[] getBugtrackingConnectors() {
@@ -531,7 +562,7 @@ public class BugtrackingUtil {
         }
         // log Kenai usage
         if (KenaiUtil.isKenai(repository)) {
-            UIUtils.logKenaiUsage("ISSUE_TRACKING", btType); // NOI18N
+            KenaiUtil.logKenaiUsage("ISSUE_TRACKING", btType); // NOI18N
         }
         if (operation == null) {
             return;
@@ -714,7 +745,7 @@ public class BugtrackingUtil {
         // XXX dummy implementation
         String url = repo.getUrl();
         return isNbRepository(url);
-}
+    }
 
     public static boolean isNbRepository(String url) {
         boolean ret = netbeansUrlPattern.matcher(url).matches();
@@ -727,4 +758,80 @@ public class BugtrackingUtil {
         }
         return url.startsWith(nbUrl);
     }
+
+    /**
+     *
+     * @param password
+     * @param prefix
+     * @param user
+     * @param url
+     * @throws MissingResourceException
+     */
+    public static void savePassword(String password, String prefix, String user, String url) throws MissingResourceException {
+        if (password != null && !password.trim().equals("")) {                  // NOI18N
+            Keyring.save(getPasswordKey(prefix, user, url), password.toCharArray(), NbBundle.getMessage(BugtrackingUtil.class, "password_keyring_description", url)); // NOI18N
+        } else {
+            Keyring.delete(getPasswordKey(prefix, user, url));
+        }
+    }
+
+    /**
+     *
+     * @param scrambledPassword
+     * @param keyPrefix
+     * @param url
+     * @param user
+     * @return
+     */
+    public static char[] readPassword(String scrambledPassword, String keyPrefix, String user, String url) {
+        if (!scrambledPassword.equals("")) {                                    // NOI18N
+            return BugtrackingUtil.descramble(scrambledPassword).toCharArray();
+        } else {
+            char[] password = Keyring.read(getPasswordKey(keyPrefix, user, url));
+            return password != null ? password : new char[0];
+        }
+    }
+    
+    private static String getPasswordKey(String prefix, String user, String url) {
+        return (prefix != null ? prefix + "-" : "") + user + "@" + url;         // NOI18N
+    }
+
+
+    /**
+     * Determines if the jira plugin is instaled or not
+     *
+     * @return true if jira plugin is installed, otherwise false
+     */
+    public static boolean isJiraInstalled() {
+        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        for (BugtrackingConnector c : connectors) {
+            // XXX hack
+            if(c.getClass().getName().startsWith("org.netbeans.modules.jira")) {    // NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void openQuery(final Query query, final Repository repository, final boolean suggestedSelectionOnly) {
+        QueryAction.openQuery(query, repository, suggestedSelectionOnly);
+    }
+
+    public static Map<String, List<RecentIssue>> getAllRecentIssues() {
+        return BugtrackingManager.getInstance().getAllRecentIssues();
+    }
+
+    public static Collection<Issue> getRecentIssues(Repository repo) {
+        return BugtrackingManager.getInstance().getRecentIssues(repo);
+    }
+
+    public static void closeQuery(Query query) {
+        QueryAction.closeQuery(query);
+    }
+
+    public static void createIssue(Repository repo) {
+        IssueAction.createIssue(repo);
+    }
+
+    
 }

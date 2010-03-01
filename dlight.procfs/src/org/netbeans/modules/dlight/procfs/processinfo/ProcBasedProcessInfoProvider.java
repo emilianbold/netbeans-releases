@@ -47,7 +47,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.ProcessInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.spi.ProcessInfoProvider;
+import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
 
 /**
  *

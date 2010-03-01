@@ -58,10 +58,8 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsf.spi.DefaultError;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.filesystems.FileUtil;
-import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.python.antlr.BaseParser;
-import org.python.antlr.GrammarActions;
 import org.python.antlr.ListErrorHandler;
 import org.python.antlr.ParseException;
 import org.python.antlr.PythonLexer;
@@ -365,7 +363,7 @@ public class PythonParser implements Parser {
                     }
                     Context context = new Context(file, listener, source, caretOffset, job.translatedSource, job);
 
-                    result = parse(context, Sanitize.EDITED_DOT);
+                    result = parse(context, Sanitize.NONE);
                     result.setSource(source);
                 }
             } catch (Exception ioe) {
@@ -393,14 +391,14 @@ public class PythonParser implements Parser {
         case NEVER:
             return createParseResult(null, context.file, false);
 
+        case NONE:
+            if (context.caretOffset != -1) {
+                return parse(context, Sanitize.EDITED_DOT);
+            }
+
         case EDITED_DOT:
             // We've tried removing whitespace around the edit location
-            // Fall through to try parsing with no sanitization
-            return parse(context, Sanitize.NONE);
-
-        case NONE:
-            // We've tried both plain parsing and removal of the dot location -
-            // now try editing the error location
+            // Fall through to try parsing with removing stuff around error location
             // (Don't bother doing this if errorOffset==caretOffset since that would try the same
             // source as EDITED_DOT which has no better chance of succeeding...)
             if (context.errorOffset != -1 && context.errorOffset != context.caretOffset) {

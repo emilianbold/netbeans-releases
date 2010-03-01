@@ -43,7 +43,6 @@ package org.netbeans.modules.css.editor.test;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.gsf.CssLanguage;
 
 /**
@@ -64,7 +63,7 @@ public class TestBase extends CslTestBase {
 
     @Override
     protected String getPreferredMimeType() {
-        return Css.CSS_MIME_TYPE;
+        return CssLanguage.CSS_MIME_TYPE;
     }
 
     @Override

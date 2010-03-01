@@ -47,6 +47,7 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JButton;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -60,9 +61,21 @@ import org.openide.util.NbBundle;
 
 public final class NewKenaiProjectAction implements ActionListener {
 
+    private Kenai kenai;
+
+    public NewKenaiProjectAction(Kenai kenai) {
+        this.kenai = kenai;
+    }
+
+    public NewKenaiProjectAction() {
+        kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
+    }
+
+
+    @Override
     public void actionPerformed(ActionEvent e) {
 
-        WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(new Node[0]));
+        WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(new Node[0], kenai));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         wizardDescriptor.setTitle(NbBundle.getMessage(NewKenaiProjectAction.class,
@@ -91,7 +104,7 @@ public final class NewKenaiProjectAction implements ActionListener {
         options[2] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.close"));
 
 
-        DialogDescriptor dialogDesc = new DialogDescriptor(new LandingPagePanel(kenaiPrj.getName(), localPath), 
+        DialogDescriptor dialogDesc = new DialogDescriptor(new LandingPagePanel(kenaiPrj.getName(), localPath, kenaiPrj.getKenai().getName()),
                 NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.dialogTitle"),
                 true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
 
@@ -114,5 +127,5 @@ public final class NewKenaiProjectAction implements ActionListener {
         }
 
     }
-    
-}
+
+    }

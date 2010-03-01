@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -85,7 +86,6 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
-import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.netbeans.modules.bugzilla.repository.IssueField;
@@ -109,7 +109,7 @@ import org.openide.util.RequestProcessor;
 public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
 
     public static final String RESOLVE_FIXED = "FIXED";                         // NOI18N
-    public static final String RESOLVE_DUPLICATE = "DUPLICATE";         //NOI18N
+    public static final String RESOLVE_DUPLICATE = "DUPLICATE";                 //NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");            // NOI18N
     private static final SimpleDateFormat MODIFIED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");   // NOI18N
     private static final SimpleDateFormat CREATED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");       // NOI18N
@@ -127,8 +127,18 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
     static final String LABEL_NAME_PRIORITY     = "bugzilla.issue.priority";    // NOI18N
     static final String LABEL_NAME_STATUS       = "bugzilla.issue.status";      // NOI18N
     static final String LABEL_NAME_RESOLUTION   = "bugzilla.issue.resolution";  // NOI18N
-    static final String LABEL_NAME_SUMMARY      = "bugzilla.issue.summary";     // NOI18N
     static final String LABEL_NAME_ASSIGNED_TO  = "bugzilla.issue.assigned";    // NOI18N
+    static final String LABEL_NAME_PRODUCT      = "bugzilla.issue.product";     // NOI18N
+    static final String LABEL_NAME_COMPONENT    = "bugzilla.issue.component";   // NOI18N
+    static final String LABEL_NAME_VERSION      = "bugzilla.issue.version";     // NOI18N
+    static final String LABEL_NAME_OS           = "bugzilla.issue.os";          // NOI18N
+    static final String LABEL_NAME_PLATFORM     = "bugzilla.issue.platform";    // NOI18N
+    static final String LABEL_NAME_MILESTONE    = "bugzilla.issue.milestone";   // NOI18N
+    static final String LABEL_NAME_REPORTER     = "bugzilla.issue.reporter";    // NOI18N
+    static final String LABEL_NAME_MODIFICATION = "bugzilla.issue.modified";    // NOI18N
+    static final String LABEL_NAME_QA_CONTACT   = "bugzilla.issue.qa_contact";  // NOI18N
+    static final String LABEL_NAME_KEYWORDS     = "bugzilla.issue.keywords";    // NOI18N
+    static final String LABEL_NAME_WHITEBOARD   = "bugzilla.issue.whiteboard";  // NOI18N
 
     /**
      * Issue wasn't seen yet
@@ -221,17 +231,17 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
 
     public static ColumnDescriptor[] getColumnDescriptors(BugzillaRepository repository) {
         ResourceBundle loc = NbBundle.getBundle(BugzillaIssue.class);
-        BugzillaConfiguration bc = repository.getConfiguration();
         JTable t = new JTable();
-        return new ColumnDescriptor[] {
-            new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
+        List<ColumnDescriptor<String>> ret = new LinkedList<ColumnDescriptor<String>>();
+        
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
                                               loc.getString("CTL_Issue_ID_Title"),                // NOI18N
                                               loc.getString("CTL_Issue_ID_Desc"),                 // NOI18N
-                                              BugtrackingUtil.getColumnWidthInPixels(6, t)),
-            new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
+                                              BugtrackingUtil.getColumnWidthInPixels(6, t)));
+            ret.add(new ColumnDescriptor<String>(IssueNode.LABEL_NAME_SUMMARY, String.class,
                                               loc.getString("CTL_Issue_Summary_Title"),           // NOI18N
-                                              loc.getString("CTL_Issue_Summary_Desc")),           // NOI18N
-            BugzillaUtil.isNbRepository(repository)
+                                              loc.getString("CTL_Issue_Summary_Desc")));          // NOI18N
+            ret.add(BugzillaUtil.isNbRepository(repository)
                                         ?
                                               new ColumnDescriptor<String>(LABEL_NAME_ISSUE_TYPE, String.class,
                                               loc.getString("CTL_Issue_Issue_Type_Title"),        // NOI18N
@@ -241,25 +251,74 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                                               new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
                                               loc.getString("CTL_Issue_Severity_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Severity_Desc"),           // NOI18N
-                                              0),
-            new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
+                                              0));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
                                               loc.getString("CTL_Issue_Priority_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Priority_Desc"),           // NOI18N
-                                              0),
-            new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
+                                              0));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
                                               loc.getString("CTL_Issue_Status_Title"),            // NOI18N
                                               loc.getString("CTL_Issue_Status_Desc"),             // NOI18N
-                                              0),
-            new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
+                                              0));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
                                               loc.getString("CTL_Issue_Resolution_Title"),        // NOI18N
                                               loc.getString("CTL_Issue_Resolution_Desc"),         // NOI18N
-                                              0),
-            new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
+                                              0));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
                                               loc.getString("CTL_Issue_Assigned_Title"),          // NOI18N
                                               loc.getString("CTL_Issue_Assigned_Desc"),           // NOI18N
-                                              0)
-        };
+                                              0));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_PRODUCT, String.class,
+                                              loc.getString("CTL_Issue_Product_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Product_Desc"),           // NOI18N
+                                              0, false));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_COMPONENT, String.class,
+                                              loc.getString("CTL_Issue_Component_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Component_Desc"),           // NOI18N
+                                              0, false));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_VERSION, String.class,
+                                              loc.getString("CTL_Issue_Version_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Version_Desc"),           // NOI18N
+                                              0, false));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_OS, String.class,
+                                              loc.getString("CTL_Issue_OS_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_OS_Desc"),           // NOI18N
+                                              0, false));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_PLATFORM, String.class,
+                                              loc.getString("CTL_Issue_Platform_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Platform_Desc"),           // NOI18N
+                                              0, false));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_MILESTONE, String.class,
+                                              loc.getString("CTL_Issue_Milestone_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Milestone_Desc"),           // NOI18N
+                                              0, false));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_REPORTER, String.class,
+                                              loc.getString("CTL_Issue_Reporter_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Reporter_Desc"),           // NOI18N
+                                              0, false));
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_MODIFICATION, String.class,
+                                              loc.getString("CTL_Issue_Modification_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Modification_Desc"),           // NOI18N
+                                              0, false));
+            if(BugzillaUtil.showQAContact(repository)) {
+                ret.add(new ColumnDescriptor<String>(LABEL_NAME_QA_CONTACT, String.class,
+                                              loc.getString("CTL_Issue_QA_Contact_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_QA_Contact_Desc"),           // NOI18N
+                                              0, false));
+            }
+            ret.add(new ColumnDescriptor<String>(LABEL_NAME_KEYWORDS, String.class,
+                                              loc.getString("CTL_Issue_Keywords_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Keywords_Desc"),           // NOI18N
+                                              0, false));
+            if(BugzillaUtil.showStatusWhiteboard(repository)) {
+                ret.add(new ColumnDescriptor<String>(LABEL_NAME_WHITEBOARD, String.class,
+                                              loc.getString("CTL_Issue_Whiteboard_Title"),          // NOI18N
+                                              loc.getString("CTL_Issue_Whiteboard_Desc"),           // NOI18N
+                                              0, false));
+            }
+        return ret.toArray(new ColumnDescriptor[ret.size()]);
     }
+
 
     @Override
     public BugtrackingController getController() {
@@ -501,6 +560,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
             public void run() {
                 ((BugzillaIssueNode)getNode()).fireDataChanged();
                 fireDataChanged();
+                refreshViewData(false);
             }
         });
     }
@@ -734,7 +794,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                             attachmentSource,
                             attAttribute,
                             new NullProgressMonitor());
-                refresh(); // XXX to much refresh - is there no other way?
+                refresh(getID(), true); // XXX to much refresh - is there no other way?
             }
         };
         repository.getExecutor().execute(cmd);
@@ -787,7 +847,10 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
 
     @Override
     public void attachPatch(File file, String description) {
-        addAttachment(file, null, description, null, true);
+        boolean isPatch = true;
+        // HACK for attaching hg bundles - they are NOT patches
+        isPatch = !file.getName().endsWith(".hg"); // NOI18N
+        addAttachment(file, null, description, null, isPatch);
     }
 
     private void prepareSubmit() {
@@ -866,7 +929,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         return refresh(getID(), false);
     }
 
-    public boolean refresh(String id, boolean cacheThisIssue) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+    private boolean refresh(String id, boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
             TaskData td = BugzillaUtil.getTaskData(repository, id);
@@ -874,13 +937,18 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                 return false;
             }
             getBugzillaRepository().getIssueCache().setIssueData(this, td); // XXX
-            if (controller != null) {
-                controller.refreshViewData();
-            }
+            refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }
         return true;
+    }
+
+    private void refreshViewData(boolean force) {
+        if (controller != null) {
+            // view might not exist yet and we won't unnecessarily create it
+            controller.refreshViewData(force);
+        }
     }
 
     /**

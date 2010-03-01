@@ -98,6 +98,9 @@ made subject to such option by the copyright holder.
                     </file> 
                      
                 </folder>
+                <file name="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory"/>
+                </file>
             </folder>
             <folder name="x-c++">
                 <folder name="ToolTips">
@@ -130,6 +133,9 @@ made subject to such option by the copyright holder.
 
 
                 </folder>
+                <file name="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory"/>
+                </file>
             </folder>
             
             <folder name="x-c">
@@ -165,6 +171,9 @@ made subject to such option by the copyright holder.
                      
                      
                 </folder>
+                <file name="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory"/>
+                </file>
             </folder>
             
             <folder name="x-asm">
@@ -225,6 +234,9 @@ made subject to such option by the copyright holder.
 
 
                 </folder>
+                <file name="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory"/>
+                </file>
             </folder>
         </folder>
         

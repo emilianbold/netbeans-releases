@@ -1,8 +1,9 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.core.netigso
-OpenIDE-Module-Install: org/netbeans/core/netigso/Installer.class
 OpenIDE-Module-Localizing-Bundle: org/netbeans/core/netigso/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Provides: org.netbeans.NetigsoFramework
+OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Needs: org.osgi.framework.launch.FrameworkFactory
 AutoUpdate-Essential-Module: true
-
+X-Comment: various OSGi headers are set by the MakeOSGi task
 

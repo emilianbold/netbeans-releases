@@ -147,7 +147,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         sNumberOfSpacesPerIndent.addChangeListener(this);
         sTabSize.setModel(new SpinnerNumberModel(4, 1, 50, 1));
         sTabSize.addChangeListener(this);
-        sRightMargin.setModel(new SpinnerNumberModel(120, 1, 200, 10));
+        sRightMargin.setModel(new SpinnerNumberModel(120, 0, 200, 10));
         sRightMargin.addChangeListener(this);
 
         // initialize controls

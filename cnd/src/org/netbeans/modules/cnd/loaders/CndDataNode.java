@@ -54,7 +54,7 @@ import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
 
 /**
- *  A base class for C/C++/Fortran (C-C-F) nodes. The functionality from
+ *  A base class for CND binary nodes. The functionality from
  *  this base class is the renaming of the PROP_name property to show an extension.
  */
 public class CndDataNode extends DataNode {

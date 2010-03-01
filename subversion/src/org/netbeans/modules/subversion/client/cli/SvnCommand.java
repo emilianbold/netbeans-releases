@@ -343,8 +343,14 @@ public abstract class SvnCommand implements CommandNotificationListener {
 
         public void add(SVNUrl url) {
             if(url != null) {
-                add(makeCliUrlString(url));
-            }            
+                add(makeCliUrlString(url, true));
+            }
+        }
+
+        public void addNonExistent (SVNUrl url) {
+            if(url != null) {
+                add(makeCliUrlString(url, false));
+            }
         }
 
         public void add(SVNRevision rev1, SVNRevision rev2) {
@@ -378,22 +384,22 @@ public abstract class SvnCommand implements CommandNotificationListener {
         public void addUrlArguments(SVNUrl... urls) throws IOException {        
             String[] paths = new String[urls.length];
             for (int i = 0; i < urls.length; i++) {
-                paths[i] = makeCliUrlString(urls[i]);
+                paths[i] = makeCliUrlString(urls[i], true);
             }
             add("--targets");
             add(createTempCommandFile(paths));
         }
 
-        private String makeCliUrlString(SVNUrl url) {
+        private String makeCliUrlString(SVNUrl url, boolean appendAtSign) {
             String cliUrlString = encodeUrl(url).toString();
-
-            for (String pathSegment : url.getPathSegments()) {
-                if (pathSegment.indexOf('@') != -1) {
-                    cliUrlString += '@';
-                    break;
+            if (appendAtSign) {
+                for (String pathSegment : url.getPathSegments()) {
+                    if (pathSegment.indexOf('@') != -1) {
+                        cliUrlString += '@';
+                        break;
+                    }
                 }
             }
-
             return cliUrlString;
         }
 

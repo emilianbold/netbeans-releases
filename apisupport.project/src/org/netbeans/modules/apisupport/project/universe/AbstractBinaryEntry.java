@@ -77,7 +77,7 @@ abstract class AbstractBinaryEntry extends AbstractEntry {
         this.clusterDir = clusterDir;
         StringBuffer _cpext = new StringBuffer();
         for (int i = 0; i < exts.length; i++) {
-            _cpext.append(':');
+            _cpext.append(File.pathSeparatorChar);
             _cpext.append(exts[i].getAbsolutePath());
         }
         cpext = _cpext.toString();

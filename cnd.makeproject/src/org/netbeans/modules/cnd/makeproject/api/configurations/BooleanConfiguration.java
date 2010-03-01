@@ -91,7 +91,7 @@ public class BooleanConfiguration {
         }
     }
 
-    public void setModified(boolean b) {
+    public final void setModified(boolean b) {
         this.modified = b;
     }
 
@@ -116,7 +116,7 @@ public class BooleanConfiguration {
         setModified(value != def);
     }
 
-    public void reset() {
+    public final void reset() {
         value = getDefault();
         setModified(false);
     }

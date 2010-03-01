@@ -48,12 +48,14 @@ import org.netbeans.modules.bugzilla.issue.BugzillaIssueFinder;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
+@org.openide.util.lookup.ServiceProviders({@ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class),
+                                           @ServiceProvider(service=org.netbeans.modules.bugzilla.BugzillaConnector.class)})
 public class BugzillaConnector extends BugtrackingConnector {
 
     private BugzillaIssueFinder issueFinder;

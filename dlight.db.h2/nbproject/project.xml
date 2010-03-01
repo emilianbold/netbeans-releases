@@ -79,6 +79,7 @@
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>ext/h2-1.0.79.jar</runtime-relative-path>
+                <binary-origin>external/h2-1.0.79.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

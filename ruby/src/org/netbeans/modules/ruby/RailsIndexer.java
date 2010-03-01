@@ -39,11 +39,12 @@
 package org.netbeans.modules.ruby;
 
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.jrubyparser.ast.CallNode;
-import org.jrubyparser.ast.Colon2Node;
 import org.jrubyparser.ast.FCallNode;
 import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.ast.ListNode;
@@ -65,10 +66,21 @@ final class RailsIndexer {
 
     private final ContextKnowledge knowledge;
     private final RubyIndexer.TreeAnalyzer analyzer;
+    private static final String INCLUDE = "include";
+    private static final String REQUIRE = "require";
+    private static final String EXTEND = "extend";
 
     RailsIndexer(ContextKnowledge knowledge, TreeAnalyzer analyzer) {
         this.knowledge = knowledge;
         this.analyzer = analyzer;
+    }
+
+    private static Map<String, Set<String>> createResultMap() {
+        Map<String, Set<String>> result = new HashMap<String, Set<String>>();
+        result.put(INCLUDE, new HashSet<String>());
+        result.put(REQUIRE, new HashSet<String>());
+        result.put(EXTEND, new HashSet<String>());
+        return result;
     }
 
     /**
@@ -78,6 +90,7 @@ final class RailsIndexer {
      */
     boolean index() {
         String fileName = analyzer.getFile().getNameExt();
+        String path = analyzer.getFile().getPath();
         // Rails special case
         // in case of 2.3.2 fall through to do normal indexing as well, these special cases
         // are needed for rails < 2.3.2, normal indexing handles 2.3.2 classes.
@@ -87,42 +100,40 @@ final class RailsIndexer {
         boolean fallThrough = RubyUtils.isRails23OrHigher(analyzer.getFile().getPath())
                 || analyzer.getFile().getPath().contains("vendor/rails"); //NOI18N
 
-        if (fileName.startsWith("acti")) { // NOI18N
-            if ("action_controller.rb".equals(fileName)) { // NOI18N
-                // Locate "ActionController::Base.class_eval do"
-                // and take those include statements and stick them into ActionController::Base
-                handleRailsBase("ActionController"); // NOI18N
-                if (!fallThrough) {
-                    return false;
-                }
-            } else if ("active_record.rb".equals(fileName)) { // NOI18N
-                handleRailsBase("ActiveRecord"); // NOI18N
-//                    handleRailsClass("ActiveRecord", "ActiveRecord" + "::Migration", "Migration", "migration");
-                // HACK
-                analyzer.getMigrationIndexer().handleMigrations();
-                if (!fallThrough) {
-                    return false;
-                }
-            } else if ("action_mailer.rb".equals(fileName)) { // NOI18N
-                handleRailsBase("ActionMailer"); // NOI18N
-                if (!fallThrough) {
-                    return false;
-                }
-            } else if ("action_view.rb".equals(fileName)) { // NOI18N
-                handleRailsBase("ActionView"); // NOI18N
-
-                // HACK
-                handleActionViewHelpers();
-                if (!fallThrough) {
-                    return false;
-                }
-
-                //} else if ("action_web_service.rb".equals(fileName)) { // NOI18N
-                // Uh oh - we have two different kinds of class eval here - one for ActionWebService, one for ActionController!
-                // Gotta make this shiznit smarter!
-                //handleRailsBase("ActionWebService::Base", "Base", "ActionWebService"); // NOI18N
-                //handleRailsBase("ActionController:Base", "Base", "ActionController"); // NOI18N
+        if ("action_controller.rb".equals(fileName)) { // NOI18N
+            // Locate "ActionController::Base.class_eval do"
+            // and take those include statements and stick them into ActionController::Base
+            handleRailsBase("ActionController"); // NOI18N
+            if (!fallThrough) {
+                return false;
             }
+        } else if ("active_record.rb".equals(fileName) || path.endsWith("active_record/base.rb")) { // NOI18N
+            handleRailsBase("ActiveRecord"); // NOI18N
+//                    handleRailsClass("ActiveRecord", "ActiveRecord" + "::Migration", "Migration", "migration");
+            // HACK
+            analyzer.getMigrationIndexer().handleMigrations();
+            if (!fallThrough) {
+                return false;
+            }
+        } else if ("action_mailer.rb".equals(fileName)) { // NOI18N
+            handleRailsBase("ActionMailer"); // NOI18N
+            if (!fallThrough) {
+                return false;
+            }
+        } else if ("action_view.rb".equals(fileName)) { // NOI18N
+            handleRailsBase("ActionView"); // NOI18N
+
+            // HACK
+            handleActionViewHelpers();
+            if (!fallThrough) {
+                return false;
+            }
+
+            //} else if ("action_web_service.rb".equals(fileName)) { // NOI18N
+            // Uh oh - we have two different kinds of class eval here - one for ActionWebService, one for ActionController!
+            // Gotta make this shiznit smarter!
+            //handleRailsBase("ActionWebService::Base", "Base", "ActionWebService"); // NOI18N
+            //handleRailsBase("ActionController:Base", "Base", "ActionController"); // NOI18N
         } else if (fileName.equals("assertions.rb") && analyzer.getUrl().endsWith("lib/action_controller/assertions.rb")) { // NOI18N
             handleRailsClass("Test::Unit", "Test::Unit::TestCase", "TestCase", "TestCase"); // NOI18N
             if (!fallThrough) {
@@ -153,25 +164,12 @@ final class RailsIndexer {
         IndexDocument document = analyzer.getSupport().createDocument(analyzer.getIndexable());
         analyzer.getDocuments().add(document);
 
-        Set<String> includeSet = new HashSet<String>();
-        Set<String> requireSet = new HashSet<String>();
-        scan(root, includeSet, requireSet);
+        Map<String, Set<String>> result = createResultMap();
+        scan(root, result);
 
+        addResults(document, result);
         // TODO:
         //addIncluded(indexed);
-        String r = analyzer.getRequireString(requireSet);
-        if (r != null) {
-            document.addPair(FIELD_REQUIRES, r, false, true);
-        }
-
-        analyzer.addRequire(document);
-
-        String includes = analyzer.getIncludedString(includeSet);
-
-        if (includes != null) {
-            document.addPair(FIELD_INCLUDES, includes, false, true);
-        }
-
         int flags = 0;
         document.addPair(FIELD_CLASS_ATTRS, IndexedElement.flagToString(flags), false, true);
 
@@ -218,13 +216,13 @@ final class RailsIndexer {
         }
     }
 
-    private boolean scan(Node node, Set<String> includes, Set<String> requires) {
+    private boolean scan(Node node, Map<String, Set<String>> result) {
         boolean found = false;
 
         if (node instanceof FCallNode) {
             String name = ((INameNode) node).getName();
 
-            if (name.equals("require")) { // XXX Load too?
+            if (name.equals(REQUIRE)) { // XXX Load too?
 
                 Node argsNode = ((FCallNode) node).getArgsNode();
 
@@ -240,27 +238,17 @@ final class RailsIndexer {
                         if (n instanceof StrNode) {
                             String require = ((StrNode) n).getValue();
 
-                            if ((require != null) && (require.length() > 0)) {
-                                requires.add(require.toString());
+                            if (require != null && require.length() > 0) {
+                                result.get(REQUIRE).add(require);
                             }
                         }
                     }
                 }
-            } else if ((includes != null) && name.equals("include")) {
+            } else if (name.equals(INCLUDE) || name.equals(EXTEND)) {
+                final String key = name.equals(INCLUDE) ? INCLUDE : EXTEND;
                 Node argsNode = ((FCallNode) node).getArgsNode();
-
                 if (argsNode instanceof ListNode) {
-                    ListNode args = (ListNode) argsNode;
-
-                    if (args.size() > 0) {
-                        Node n = args.get(0);
-
-                        if (n instanceof Colon2Node) {
-                            includes.add(AstUtilities.getFqn((Colon2Node) n));
-                        } else if (n instanceof INameNode) {
-                            includes.add(((INameNode) n).getName());
-                        }
-                    }
+                    result.get(key).addAll(AstUtilities.getValuesAsFqn((ListNode) argsNode));
                 }
             }
         } else if (node instanceof CallNode) {
@@ -269,9 +257,10 @@ final class RailsIndexer {
             CallNode call = (CallNode) node;
 
             if (call.getName().equals("class_eval")) { // NOI18N
-                found = true;
-
-                // TODO Make sure the receivernode is ActionController::Base?
+                Node receiver = call.getReceiverNode();
+                if ("Base".equals(AstUtilities.safeGetName(receiver))) {
+                    found = true;
+                }
             }
         }
 
@@ -281,7 +270,7 @@ final class RailsIndexer {
             if (child.isInvisible()) {
                 continue;
             }
-            if (scan(child, includes, requires)) {
+            if (scan(child, result)) {
                 found = true;
             }
         }
@@ -301,28 +290,15 @@ final class RailsIndexer {
             return;
         }
 
-        Set<String> includeSet = new HashSet<String>();
-        Set<String> requireSet = new HashSet<String>();
-        scan(root, includeSet, requireSet);
+        Map<String, Set<String>> result = createResultMap();
+        scan(root, result);
 
         IndexDocument document = analyzer.getSupport().createDocument(analyzer.getIndexable());
         analyzer.getDocuments().add(document);
 
+        addResults(document, result);
+
         // TODO:
-        //addIncluded(indexed);
-        String r = analyzer.getRequireString(requireSet);
-        if (r != null) {
-            document.addPair(FIELD_REQUIRES, r, false, true);
-        }
-
-        analyzer.addRequire(document);
-
-        String includes = analyzer.getIncludedString(includeSet);
-
-        if (includes != null) {
-            document.addPair(FIELD_INCLUDES, includes, false, true);
-        }
-
         int flags = 0;
         document.addPair(FIELD_CLASS_ATTRS, IndexedElement.flagToString(flags), false, true);
 
@@ -351,6 +327,24 @@ final class RailsIndexer {
             String signature = sb.toString();
 
             document.addPair(FIELD_METHOD_NAME, signature, true, true);
+        }
+    }
+
+    private void addResults(IndexDocument document, Map<String, Set<String>> result) {
+        String r = analyzer.getRequireString(result.get(REQUIRE));
+        if (r != null) {
+            document.addPair(FIELD_REQUIRES, r, false, true);
+        }
+        analyzer.addRequire(document);
+
+        String includes = analyzer.getIncludedString(result.get(INCLUDE));
+        if (includes != null) {
+            document.addPair(FIELD_INCLUDES, includes, false, true);
+        }
+
+        String extendz = analyzer.getIncludedString(result.get(EXTEND));
+        if (extendz != null) {
+            document.addPair(FIELD_EXTEND_WITH, extendz, false, true);
         }
     }
 }

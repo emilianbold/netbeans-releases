@@ -42,7 +42,6 @@
 package org.netbeans.modules.form;
 
 import java.lang.reflect.*;
-import java.util.*;
 import org.netbeans.modules.form.FormUtils.TypeHelper;
 
 /**

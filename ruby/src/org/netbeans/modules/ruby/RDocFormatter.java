@@ -867,7 +867,7 @@ class RDocFormatter {
         // best not to show the inferred type for 'new' at all as ATM we can't 
         // infer it correctly (it's inferred as Object, the return type of Class#new)
         if (element instanceof MethodElement && "new".equals(element.getName())) {
-            return RubyType.createUnknown();
+            return RubyType.unknown();
         }
         return element.getType();
     }

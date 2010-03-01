@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.Vector;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -55,15 +54,17 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.SourceFileFilter;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 import org.openide.util.NbBundle;
 
 public class SourceFilesPanel extends javax.swing.JPanel {
 
-    private Vector<FolderEntry> data = new Vector<FolderEntry>();
+    private Vector<FolderEntry> sourceData = new Vector<FolderEntry>();
+    private Vector<FolderEntry> testData = new Vector<FolderEntry>();
     private SourceFileTable sourceFileTable = null;
+    private SourceFileTable testFileTable = null;
     private String baseDir;
     private String wd;
     private ChangeListener listener;
@@ -115,39 +116,15 @@ public class SourceFilesPanel extends javax.swing.JPanel {
     }
 
     public void initFocus() {
-        IpeUtils.requestFocus(addButton);
+        CndUIUtilities.requestFocus(addButton);
     }
 
-    public List<FolderEntry> getListData() {
-        return data;
+    public List<FolderEntry> getSourceListData() {
+        return sourceData;
     }
 
-    private static class CustomFileFilter extends SourceFileFilter {
-
-        private String[] suffixes;
-
-        CustomFileFilter(String suffixesString) {
-            StringTokenizer st = new StringTokenizer(suffixesString);
-            Vector<String> vec = new Vector<String>();
-            while (st.hasMoreTokens()) {
-                String nextToken = st.nextToken();
-                if (nextToken.charAt(0) == '.') {
-                    nextToken = nextToken.substring(1);
-                }
-                vec.add(nextToken);
-            }
-            suffixes = vec.toArray(new String[vec.size()]);
-        }
-
-        @Override
-        public String getDescription() {
-            return ""; // NOI18N
-        }
-
-        @Override
-        public String[] getSuffixes() {
-            return suffixes;
-        }
+    public List<FolderEntry> getTestListData() {
+        return testData;
     }
 
     private class TargetSelectionListener implements ListSelectionListener {
@@ -163,24 +140,33 @@ public class SourceFilesPanel extends javax.swing.JPanel {
 
     private void validateSelection() {
         addButton.setEnabled(true);
-        if (data.isEmpty() || sourceFileTable.getSelectedRow() < 0) {
+        if (sourceData.isEmpty() || sourceFileTable.getSelectedRow() < 0) {
             deleteButton.setEnabled(false);
         } else {
             deleteButton.setEnabled(true);
         }
+
+        addButton1.setEnabled(true);
+        if (testData.isEmpty() || testFileTable.getSelectedRow() < 0) {
+            deleteButton1.setEnabled(false);
+        } else {
+            deleteButton1.setEnabled(true);
+        }
     }
 
     private void refresh() {
-        scrollPane.setViewportView(sourceFileTable = new SourceFileTable()); // FIXUP: how to refresh ??
+        scrollPane.setViewportView(sourceFileTable = new SourceFileTable(sourceData, getString("TABLE_COLUMN_SOURCE_TXT")));
         sourceFilesLabel.setLabelFor(sourceFileTable);
+        scrollPane1.setViewportView(testFileTable = new SourceFileTable(testData, getString("TABLE_COLUMN_TEST_TXT")));
+        sourceFilesLabel1.setLabelFor(testFileTable);
         validateSelection();
     }
 
     private final class SourceFileTable extends JTable {
 
-        public SourceFileTable() {
+        public SourceFileTable(Vector<FolderEntry> data, String columnTitle) {
             //setTableHeader(null); // Hides table headers
-            setModel(new MyTableModel());
+            setModel(new MyTableModel(data, columnTitle));
             // Left align table header
             ((DefaultTableCellRenderer) getTableHeader().getDefaultRenderer()).setHorizontalAlignment(SwingConstants.LEFT);
 
@@ -198,32 +184,20 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         public boolean getShowVerticalLines() {
             return false;
         }
-
-//        @Override
-//        public TableCellRenderer getCellRenderer(int row, int column) {
-//            return new MyTableCellRenderer();
-//        }
-
-//        @Override
-//        public TableCellEditor getCellEditor(int row, int col) {
-//            JCheckBox checkBox = new JCheckBox();
-//            return new DefaultCellEditor(checkBox);
-//        }
-
-//        @Override
-//        public void setValueAt(Object value, int row, int col) {
-//            if (col == 0) {
-//                FolderEntry fileEntry = data.elementAt(row);
-//                fileEntry.setAddSubfoldersSelected(!fileEntry.isAddSubfoldersSelected());
-//            }
-//        }
     }
 
     private final class MyTableModel extends DefaultTableModel {
+        Vector<FolderEntry> data;
+        String columnTitle;
+
+        public MyTableModel(Vector<FolderEntry> data, String columnTitle) {
+            this.data = data;
+            this.columnTitle = columnTitle;
+        }
 
         @Override
         public String getColumnName(int col) {
-            return " " + getString("TABLE_COLUMN_1_TXT"); // NOI18N
+            return " " + columnTitle; // NOI18N
         }
 
         @Override
@@ -233,11 +207,17 @@ public class SourceFilesPanel extends javax.swing.JPanel {
 
         @Override
         public int getRowCount() {
+            if (data == null) {
+                return 0;
+            }
             return data.size();
         }
 
         @Override
         public Object getValueAt(int row, int col) {
+            if (data == null) {
+                return null;
+            }
             return data.elementAt(row).getFolderName();
         }
 
@@ -247,21 +227,6 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         }
     }
 
-//    class MyTableCellRenderer extends DefaultTableCellRenderer {
-//
-//        @Override
-//        public Component getTableCellRendererComponent(JTable table, Object color, boolean isSelected, boolean hasFocus, int row, int col) {
-//            if (col == 0) {
-//                JCheckBox checkBox = new JCheckBox();
-//                checkBox.setBackground(Color.WHITE);
-//                checkBox.setSelected((data.elementAt(row)).isAddSubfoldersSelected());
-//                //checkBox.setText(((FileEntry)data.elementAt(row)).getFile().getPath());
-//                return checkBox;
-//            } else {
-//                return super.getTableCellRendererComponent(table, color, isSelected, hasFocus, row, col);
-//            }
-//        }
-//    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -282,6 +247,12 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         ignoreFoldersTextField = new javax.swing.JTextField();
         ignoreFoldersDefaultButton = new javax.swing.JButton();
         seeAlsoLabel = new javax.swing.JLabel();
+        sourceFilesLabel1 = new javax.swing.JLabel();
+        scrollPane1 = new javax.swing.JScrollPane();
+        list1 = new javax.swing.JList();
+        buttonPanel1 = new javax.swing.JPanel();
+        addButton1 = new javax.swing.JButton();
+        deleteButton1 = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -388,12 +359,68 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(ignoreFolderPanel, gridBagConstraints);
+
+        sourceFilesLabel1.setLabelFor(list);
+        sourceFilesLabel1.setText(bundle.getString("SourceFileFoldersLbl")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(sourceFilesLabel1, gridBagConstraints);
+
+        scrollPane1.setViewportView(list1);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(scrollPane1, gridBagConstraints);
+
+        buttonPanel1.setLayout(new java.awt.GridBagLayout());
+
+        addButton1.setText(bundle.getString("AddButtonTxt")); // NOI18N
+        addButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addButton1ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 0, 0);
+        buttonPanel1.add(addButton1, gridBagConstraints);
+
+        deleteButton1.setText(bundle.getString("DeleteButtonTxt")); // NOI18N
+        deleteButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteButton1ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        buttonPanel1.add(deleteButton1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        add(buttonPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
-        int index = sourceFileTable.getSelectedRow();
+    private void deleteFile(Vector<FolderEntry> data, SourceFileTable table) {
+        int index = table.getSelectedRow();
         if (index < 0 || index >= data.size()) {
             return;
         }
@@ -401,20 +428,24 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         refresh();
         if (data.size() > 0) {
             if (data.size() > index) {
-                sourceFileTable.getSelectionModel().setSelectionInterval(index, index);
+                table.getSelectionModel().setSelectionInterval(index, index);
             } else {
-                sourceFileTable.getSelectionModel().setSelectionInterval(index - 1, index - 1);
+                table.getSelectionModel().setSelectionInterval(index - 1, index - 1);
             }
         }
+    }
+
+    private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
+       deleteFile(sourceData, sourceFileTable);
     }//GEN-LAST:event_deleteButtonActionPerformed
 
-    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+    private void addFile(Vector<FolderEntry> data) {
         String seed = null;
         if (FileChooser.getCurrectChooserFile() != null) {
             seed = FileChooser.getCurrectChooserFile().getPath();
         }
         if (seed == null) {
-            if (wd != null && wd.length() > 0 && !IpeUtils.isPathAbsolute(wd)) {
+            if (wd != null && wd.length() > 0 && !CndPathUtilitities.isPathAbsolute(wd)) {
                 seed = baseDir + File.separator + wd;
             } else if (wd != null) {
                 seed = wd;
@@ -431,8 +462,12 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             // FIXUP: error message
             return;
         }
-        data.add(new FolderEntry(fileChooser.getSelectedFile(), IpeUtils.toAbsoluteOrRelativePath(baseDir, fileChooser.getSelectedFile().getPath())));
+        data.add(new FolderEntry(fileChooser.getSelectedFile(), CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, fileChooser.getSelectedFile().getPath())));
         refresh();
+    }
+
+    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+       addFile(sourceData);
     }//GEN-LAST:event_addButtonActionPerformed
 
     private void ignoreFoldersDefaultButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreFoldersDefaultButtonActionPerformed
@@ -440,18 +475,32 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         ignoreFoldersTextField.setText(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN);
 }//GEN-LAST:event_ignoreFoldersDefaultButtonActionPerformed
 
+    private void addButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButton1ActionPerformed
+        addFile(testData);
+    }//GEN-LAST:event_addButton1ActionPerformed
+
+    private void deleteButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButton1ActionPerformed
+        deleteFile(testData, testFileTable);
+    }//GEN-LAST:event_deleteButton1ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
+    private javax.swing.JButton addButton1;
     private javax.swing.JPanel buttonPanel;
+    private javax.swing.JPanel buttonPanel1;
     private javax.swing.JButton deleteButton;
+    private javax.swing.JButton deleteButton1;
     private javax.swing.JPanel ignoreFolderPanel;
     private javax.swing.JButton ignoreFoldersDefaultButton;
     private javax.swing.JLabel ignoreFoldersLabel;
     private javax.swing.JTextField ignoreFoldersTextField;
     private javax.swing.JList list;
+    private javax.swing.JList list1;
     private javax.swing.JScrollPane scrollPane;
+    private javax.swing.JScrollPane scrollPane1;
     private javax.swing.JLabel seeAlsoLabel;
     private javax.swing.JLabel sourceFilesLabel;
+    private javax.swing.JLabel sourceFilesLabel1;
     // End of variables declaration//GEN-END:variables
 
     private static String getString(String s) {

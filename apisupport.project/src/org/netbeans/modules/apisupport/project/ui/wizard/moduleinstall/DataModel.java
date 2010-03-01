@@ -45,9 +45,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.ProjectXMLManager;
-import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -81,12 +79,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
 
         boolean osgi = false;
         try {
-            ProjectXMLManager pxm = new ProjectXMLManager((NbModuleProject) getProject());
-            for (ModuleDependency d : pxm.getDirectDependencies()) {
-                if (d.getModuleEntry().getCodeNameBase().equals("org.netbeans.libs.osgi")) { // NOI18N
-                    osgi = true;
-                }
-            }
+            osgi = getProject().getLookup().lookup(NbModuleProvider.class).hasDependency("org.netbeans.libs.osgi"); // NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

@@ -3,7 +3,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -27,7 +27,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -105,6 +105,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="TreeUtilities.exotic">
+             <api name="general"/>
+             <summary>Added support for encoding/decoding exotic identifiers to TreeUtilities.</summary>
+             <version major="0" minor="56"/>
+             <date day="24" month="2" year="2010"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                Added support for encoding/decoding exotic identifiers to <code>TreeUtilities</code>.
+             </description>
+             <class package="org.netbeans.api.java.source" name="TreeUtilities"/>
+             <issue number="180842"/>
+        </change>
         <change id="GeneratorUtilities.copyComments">
              <api name="general"/>
              <summary>Added GeneratorUtilities.copyComments method.</summary>

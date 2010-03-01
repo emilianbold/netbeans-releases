@@ -57,7 +57,6 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
-import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.openide.filesystems.FileObject;
@@ -108,6 +107,18 @@ public abstract class WsitProvider {
         return false;
     }
 
+    public boolean isWsitRtOnClasspath() {
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if ((sgs != null) && (sgs.length > 0)) {
+            ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
+            FileObject rtFO = classPath.findResource("com/sun/xml/wss/impl/callback/SAMLCallback.class"); // NOI18N
+            if ((rtFO != null)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public FileObject getConfigFilesFolder(boolean client) {
         FileObject folder = null;
 
@@ -149,6 +160,10 @@ public abstract class WsitProvider {
                 //NOOP
             }
         }
+        return false;
+    }
+
+    public boolean addMetroRtLibrary() {
         return false;
     }
 

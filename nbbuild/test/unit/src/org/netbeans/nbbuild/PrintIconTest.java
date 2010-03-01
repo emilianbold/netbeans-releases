@@ -104,14 +104,14 @@ public class PrintIconTest extends NbTestCase {
             long hash = Long.parseLong(threeParts[0], 16);
             assertEquals("Hash code is ee2ab8d3:\n" + file, 0xee2ab8d3L, hash);
             assertEquals("Name is from img:\n" + file, img.getName(), threeParts[1]);
-            assertEquals("Full name is img:\n" + file, img.toURL().toExternalForm(), threeParts[2]);
+            assertEquals("Full name is img:\n" + file, img.toURI().toString(), threeParts[2]);
         }
         
         {
             long hash = Long.parseLong(threeParts[3], 16);
             assertEquals("Hash code is ee2ab8d3:\n" + file, 0xee2ab8d3L, hash);
             assertEquals("Name is from img:\n" + file, img3.getName(), threeParts[4]);
-            assertEquals("Full name is img:\n" + file, img3.toURL().toExternalForm(), threeParts[5]);
+            assertEquals("Full name is img:\n" + file, img3.toURI().toString(), threeParts[5]);
         }
         
     }
@@ -152,14 +152,14 @@ public class PrintIconTest extends NbTestCase {
             long hash = Long.parseLong(threeParts[0], 16);
             assertEquals("Hash code is ee2ab8d3:\n" + file, 0xee2ab8d3L, hash);
             assertEquals("Name is from img:\n" + file, img.getName(), threeParts[1]);
-            assertEquals("Full name is img:\n" + file, img.toURL().toExternalForm(), threeParts[2]);
+            assertEquals("Full name is img:\n" + file, img.toURI().toString(), threeParts[2]);
         }
         
         {
             long hash = Long.parseLong(threeParts[3], 16);
             assertEquals("Hash code is ee2ab8d3:\n" + file, 0xee2ab8d3L, hash);
             assertEquals("Name is from img:\n" + file, img3.getName(), threeParts[4]);
-            assertEquals("Full name is img:\n" + file, img3.toURL().toExternalForm(), threeParts[5]);
+            assertEquals("Full name is img:\n" + file, img3.toURI().toString(), threeParts[5]);
         }
         
     }
@@ -206,14 +206,14 @@ public class PrintIconTest extends NbTestCase {
         {
             prevHash = Long.parseLong(threeParts[0], 16);
             assertEquals("Name is from img:\n" + file, img.getName(), threeParts[1]);
-            assertEquals("Full name is img:\n" + file, img.toURL().toExternalForm(), threeParts[2]);
+            assertEquals("Full name is img:\n" + file, img.toURI().toString(), threeParts[2]);
         }
         
         {
             long hash = Long.parseLong(threeParts[3], 16);
             assertEquals("Hash code is the same:\n" + file, prevHash, hash);
             assertEquals("Name is from img:\n" + file, img3.getName(), threeParts[4]);
-            assertEquals("Full name is img:\n" + file, img3.toURL().toExternalForm(), threeParts[5]);
+            assertEquals("Full name is img:\n" + file, img3.toURI().toString(), threeParts[5]);
         }
         
     }
@@ -260,6 +260,6 @@ public class PrintIconTest extends NbTestCase {
         long hash = Long.parseLong(threeParts[0], 16);
         assertEquals("Hash code is 10ba4f25:\n" + file, 0x10ba4f25L, hash);
         assertEquals("Name is from img2:\n" + file, img2.getName(), threeParts[1]);
-        assertEquals("Full name is img2:\n" + file, img2.toURL().toExternalForm(), threeParts[2]);
+        assertEquals("Full name is img2:\n" + file, img2.toURI().toString(), threeParts[2]);
     }
 }

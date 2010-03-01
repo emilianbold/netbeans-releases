@@ -39,29 +39,14 @@
 
 package org.netbeans.modules.editor.indent.spi;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.Collection;
 import java.util.logging.Logger;
-import java.util.prefs.AbstractPreferences;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.editor.indent.ProxyPreferences;
-import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
+import org.openide.util.Lookup;
 
 /**
  * Provides access to formatting settings for a document or file. The formatting
@@ -118,9 +103,9 @@ public final class CodeStylePreferences {
      */
     public static CodeStylePreferences get(Document doc, String mimeType) {
         if (doc != null) {
-            return getPreferences(doc, mimeType);
+            return new CodeStylePreferences(doc, mimeType);
         } else {
-            return getPreferences(null, null);
+            return new CodeStylePreferences(null, null);
         }
     }
 
@@ -152,171 +137,95 @@ public final class CodeStylePreferences {
      */
     public static CodeStylePreferences get(FileObject file, String mimeType) {
         if (file != null) {
-            return getPreferences(file, mimeType); //NOI18N
+            return new CodeStylePreferences(file, mimeType); //NOI18N
         } else {
-            return getPreferences(null, null);
+            return new CodeStylePreferences(null, null);
         }
     }
 
     public Preferences getPreferences() {
-        synchronized (this) {
-            // This is here solely for the purpose of previewing changes in formatting settings
-            // in Tools-Options. This is NOT, repeat NOT, to be used by anybody else!
-            // The name of this property is also hardcoded in options.editor/.../IndentationPanel.java
-            Document doc = refDoc == null ? null : refDoc.get();
-            Object o = doc == null ? null : doc.getProperty("Tools-Options->Editor->Formatting->Preview - Preferences"); //NOI18N
-            if (o instanceof Preferences) {
-                return (Preferences) o;
-            } else {
-                Preferences prefs = useProject ? projectPrefs : globalPrefs;
-                // to support tests that don't use editor.mimelookup.impl
-                return prefs == null ? AbstractPreferences.systemRoot() : prefs;
-            }
-        }
-    }
-    
-    // ----------------------------------------------------------------------
-    // private implementation
-    // ----------------------------------------------------------------------
-    
-    private static final Logger LOG = Logger.getLogger(CodeStylePreferences.class.getName());
-    
-    private static final String NODE_CODE_STYLE = "CodeStyle"; //NOI18N
-    private static final String PROP_USED_PROFILE = "usedProfile"; // NOI18N
-    private static final String DEFAULT_PROFILE = "default"; // NOI18N
-    private static final String PROJECT_PROFILE = "project"; // NOI18N
+        // This is here solely for the purpose of previewing changes in formatting settings
+        // in Tools-Options. This is NOT, repeat NOT, to be used by anybody else!
+        // The name of this property is also hardcoded in options.editor/.../IndentationPanel.java
+        Document doc = docOrFile instanceof Document ? (Document) docOrFile : null;
+        Object o = doc == null ? null : doc.getProperty("Tools-Options->Editor->Formatting->Preview - Preferences"); //NOI18N
+        if (o instanceof Preferences) {
+            return (Preferences) o;
+        } else {
+            Preferences prefs = null;
+            Provider provider = null;
 
-    private static final Map<Object, Map<String, CodeStylePreferences>> cache = new WeakHashMap<Object, Map<String, CodeStylePreferences>>();
-    
-    private final String mimeType;
-    private final Reference<Document> refDoc;
-    private final String filePath;
-    
-    private final Preferences globalPrefs;
-    private Preferences projectPrefs;
-    private boolean useProject;
-
-    private final PreferenceChangeListener switchTrakcer = new PreferenceChangeListener() {
-        public void preferenceChange(PreferenceChangeEvent evt) {
-            if (evt.getKey() == null || PROP_USED_PROFILE.equals(evt.getKey())) {
-                synchronized (this) {
-                    useProject = PROJECT_PROFILE.equals(evt.getNewValue());
-                    LOG.fine("file '" + filePath + "' (" + mimeType + ") is using " + (useProject ? "project" : "global") + " Preferences"); //NOI18N
+            Collection<? extends Provider> providers = Lookup.getDefault().lookupAll(Provider.class);
+            for(Provider p : providers) {
+                if (doc != null) {
+                    prefs = p.forDocument(doc, mimeType);
+                } else {
+                    prefs = p.forFile((FileObject)docOrFile, mimeType);
+                }
+                if (prefs != null) {
+                    provider = p;
+                    break;
                 }
             }
+
+            if (prefs == null) {
+                provider = defaultProvider;
+                if (doc != null) {
+                    prefs = provider.forDocument(doc, mimeType);
+                } else {
+                    prefs = provider.forFile((FileObject)docOrFile, mimeType);
+                }
+            }
+
+            assert prefs != null : "provider=" + s2s(provider) + ", docOrFile=" + s2s(docOrFile) + ", mimeType='" + mimeType + "'"; //NOI18N
+            return prefs;
+        }
+    }
+
+    /**
+     * Code style preferences provider. This interface allows to implement your own
+     * code style preferences storage. Implementations ought to be registered in the
+     * default lookup (ie. through @ServiceProvider annotation).
+     *
+     * <p>Usual API clients do not have to be concerned about this. It was created
+     * in order to seprate the project-dependent implementation of code style preferences
+     * storage from the rest of the editor infrastructure.
+     * 
+     * @Since 1.18
+     */
+    public static interface Provider {
+        Preferences forFile(FileObject file, String mimeType);
+        Preferences forDocument(Document doc, String mimeType);
+    }
+
+    // ------------------------------------------------------------------------
+    // Private implementation
+    // ------------------------------------------------------------------------
+
+    private static final Logger LOG = Logger.getLogger(CodeStylePreferences.class.getName());
+
+    private final Object docOrFile;
+    private final String mimeType;
+
+    private CodeStylePreferences(Object docOrFile, String mimeType) {
+        this.docOrFile = docOrFile;
+        this.mimeType = mimeType;
+    }
+
+    private static final Provider defaultProvider = new Provider() {
+
+        @Override
+        public Preferences forFile(FileObject file, String mimeType) {
+            return MimeLookup.getLookup(mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType)).lookup(Preferences.class);
+        }
+
+        @Override
+        public Preferences forDocument(Document doc, String mimeType) {
+            return MimeLookup.getLookup(mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType)).lookup(Preferences.class);
         }
     };
-    
-    private static CodeStylePreferences getPreferences(final Object obj, final String mimeType) {
-//        return ProjectManager.mutex().readAccess(new Mutex.Action<CodeStylePreferences>() {
-//            public CodeStylePreferences run() {
-                synchronized (cache) {
-                    Map<String, CodeStylePreferences> csps = cache.get(obj);
-                    CodeStylePreferences csp = csps != null ? csps.get(mimeType) : null;
-                    if (csp == null) {
-                        Document doc;
-                        FileObject file;
-
-                        if (obj instanceof FileObject) {
-                            doc = null;
-                            file = (FileObject) obj;
-                        } else {
-                            doc = (Document) obj;
-                            file = findFileObject(doc);
-                        }
-
-                        csp = new CodeStylePreferences(
-                                mimeType,
-                                doc == null ? null : new CleaningWeakReference(doc),
-                                file);
-                        if (csps == null) {
-                            csps = new HashMap<String, CodeStylePreferences>();
-                            cache.put(obj, csps);
-                        }
-                        csps.put(mimeType, csp);
-                    }
-
-                    return csp;
-                }
-//            }
-//        });
-    }
-
-    private static final class CleaningWeakReference extends WeakReference<Document> implements Runnable {
-
-        public CleaningWeakReference(Document referent) {
-            super(referent, Utilities.activeReferenceQueue());
-        }
-
-        public void run() {
-            synchronized (cache) {
-                //expunge stale entries from the cache:
-                cache.size();
-            }
-        }
-        
-    }
-
-    private CodeStylePreferences(String mimeType, Reference<Document> refDoc, final FileObject file) {
-        this.mimeType = mimeType;
-        this.refDoc = refDoc;
-        this.filePath = file == null ? "no file" : file.getPath(); //NOI18N just for logging
-
-        this.globalPrefs = MimeLookup.getLookup(mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType)).lookup(Preferences.class);
-        this.projectPrefs = null;
-        this.useProject = false;
-
-        ProjectManager.mutex().postReadRequest(new Runnable() {
-            public void run() {
-                synchronized (CodeStylePreferences.this) {
-                    Preferences projectRoot = findProjectPreferences(file);
-                    if (projectRoot != null) {
-                        Preferences allLangCodeStyle = projectRoot.node(NODE_CODE_STYLE);
-                        Preferences p = allLangCodeStyle.node(PROJECT_PROFILE);
-
-                        // determine if we are using code style preferences from the project
-                        String usedProfile = allLangCodeStyle.get(PROP_USED_PROFILE, DEFAULT_PROFILE);
-                        useProject = PROJECT_PROFILE.equals(usedProfile);
-                        projectPrefs = CodeStylePreferences.this.mimeType == null ?
-                            p :
-                            new ProxyPreferences(projectRoot.node(CodeStylePreferences.this.mimeType).node(NODE_CODE_STYLE).node(PROJECT_PROFILE), p);
-
-                        // listen on changes
-                        allLangCodeStyle.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, switchTrakcer, allLangCodeStyle));
-                    } else {
-                        useProject = false;
-                        projectPrefs = null;
-                    }
-                }
-            }
-        });
-
-        LOG.fine("file '" + filePath + "' (" + mimeType + ") is using " + (useProject ? "project" : "global") + " Preferences; doc=" + s2s(refDoc == null ? null : refDoc.get())); //NOI18N
-    }
-    
-    private static final Preferences findProjectPreferences(FileObject file) {
-        if (file != null) {
-            Project p = FileOwnerQuery.getOwner(file);
-            if (p != null) {
-                return ProjectUtils.getPreferences(p, IndentUtils.class, true);
-            }
-        }
-        return null;
-    }
-
-    private static final FileObject findFileObject(Document doc) {
-        if (doc != null) {
-            Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
-            if (sdp instanceof DataObject) {
-                return ((DataObject) sdp).getPrimaryFile();
-            } else if (sdp instanceof FileObject) {
-                return (FileObject) sdp;
-            }
-        }
-        return null;
-    }
 
     private static String s2s(Object o) {
-        return o == null ? "null" : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o));
+        return o == null ? "null" : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
     }
 }

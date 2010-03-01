@@ -44,10 +44,12 @@ import java.awt.Dimension;
 import java.util.List;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 
@@ -57,14 +59,14 @@ import org.openide.util.NbBundle;
  */
 /*package-local*/ final class DuplicateCompilerSetPanel extends javax.swing.JPanel implements DocumentListener {
     private DialogDescriptor dialogDescriptor = null;
-    private CompilerSetManager csm;
+    private CompilerSetManagerImpl csm;
     
     /** Creates new form AddCompilerSetPanel */
     public DuplicateCompilerSetPanel(CompilerSetManager csm, CompilerSet cs) {
         initComponents();
-        this.csm = csm;
+        this.csm = (CompilerSetManagerImpl) csm;
         
-        List<CompilerFlavor> list = CompilerFlavor.getFlavors(csm.getPlatform());
+        List<CompilerFlavor> list = CompilerFlavorImpl.getFlavors(csm.getPlatform());
         for (CompilerFlavor cf : list) {
             cbFamily.addItem(cf);
         }
@@ -91,7 +93,7 @@ import org.openide.util.NbBundle;
     }
     
     private void updateDataFamily() {
-        CompilerSet.CompilerFlavor flavor = (CompilerSet.CompilerFlavor)cbFamily.getSelectedItem();
+        CompilerFlavor flavor = (CompilerFlavor)cbFamily.getSelectedItem();
         String suggestedName = csm.getUniqueCompilerSetName(flavor.toString());
         tfName.setText(suggestedName);
         updateDataName();
@@ -105,7 +107,7 @@ import org.openide.util.NbBundle;
         boolean valid = true;
         lbError.setText(""); // NOI18N
         
-        String compilerSetName = CompilerSetUtils.replaceOddCharacters(tfName.getText().trim(), '_');
+        String compilerSetName = ToolUtils.replaceOddCharacters(tfName.getText().trim(), '_');
         if (valid && compilerSetName.length() == 0 || compilerSetName.contains("|")) { // NOI18N
             valid = false;
             lbError.setText(getString("NAME_INVALID"));
@@ -144,12 +146,12 @@ import org.openide.util.NbBundle;
         return tfBaseDirectory.getText();
     }
     
-    public CompilerSet.CompilerFlavor getFamily() {
-        return (CompilerSet.CompilerFlavor)cbFamily.getSelectedItem();
+    public CompilerFlavor getFamily() {
+        return (CompilerFlavor)cbFamily.getSelectedItem();
     }
     
     public String getCompilerSetName() {
-        return CompilerSetUtils.replaceOddCharacters(tfName.getText().trim(), '_');
+        return ToolUtils.replaceOddCharacters(tfName.getText().trim(), '_');
     }
     
     /** This method is called from within the constructor to

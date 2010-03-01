@@ -54,6 +54,13 @@ public interface PersistentDataStorageFactory<T extends PersistentDataStorage> e
       */
      T openStorage(String uniqueKey);
 
+     /**
+      * Creates storage with the unique key <code>uniqueKey</code>
+      * @param uniqueKey unique key generated using <link>getUniqueKey(T)</link> method
+      * @return storage opened if exists, <code>null</code> it the storage doesn't exists or cannot be opened
+      */
+     T createStorage(String uniqueKey);
+
 
      /**
       * Opens storage with the unique key <code>uniqueKey</code>

@@ -63,6 +63,7 @@ class DefaultLayoutSupport extends AbstractLayoutSupport {
         this.layoutClass = layoutClass;
     }
 
+    @Override
     public Class getSupportedClass() {
         return layoutClass;
     }

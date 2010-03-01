@@ -56,15 +56,14 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
-import org.netbeans.modules.csl.core.DeleteToNextCamelCasePosition;
-import org.netbeans.modules.csl.core.DeleteToPreviousCamelCasePosition;
-import org.netbeans.modules.csl.core.GsfEditorKitFactory;
-import org.netbeans.modules.csl.core.NextCamelCasePosition;
-import org.netbeans.modules.csl.core.PreviousCamelCasePosition;
-import org.netbeans.modules.csl.core.SelectCodeElementAction;
-import org.netbeans.modules.csl.core.SelectNextCamelCasePosition;
-import org.netbeans.modules.csl.core.SelectPreviousCamelCasePosition;
-import org.netbeans.modules.csl.editor.InstantRenameAction;
+import org.netbeans.modules.csl.api.DeleteToNextCamelCasePosition;
+import org.netbeans.modules.csl.api.DeleteToPreviousCamelCasePosition;
+import org.netbeans.modules.csl.api.InstantRenameAction;
+import org.netbeans.modules.csl.api.NextCamelCasePosition;
+import org.netbeans.modules.csl.api.PreviousCamelCasePosition;
+import org.netbeans.modules.csl.api.SelectCodeElementAction;
+import org.netbeans.modules.csl.api.SelectNextCamelCasePosition;
+import org.netbeans.modules.csl.api.SelectPreviousCamelCasePosition;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.openide.util.Exceptions;
@@ -116,16 +115,25 @@ public class GspKit extends HtmlKit {
 //            new GspToggleCommentAction(),
             new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
             new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
-            new NextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, nextWordAction)),
-            new PreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, previousWordAction)),
-            new SelectNextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, selectionNextWordAction)),
-            new SelectPreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, selectionPreviousWordAction)),
-            new DeleteToNextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, removeNextWordAction)),
-            new DeleteToPreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, removePreviousWordAction)),
+            new NextCamelCasePosition(findAction(superActions, nextWordAction)),
+            new PreviousCamelCasePosition(findAction(superActions, previousWordAction)),
+            new SelectNextCamelCasePosition(findAction(superActions, selectionNextWordAction)),
+            new SelectPreviousCamelCasePosition(findAction(superActions, selectionPreviousWordAction)),
+            new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)),
+            new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)),
             new InstantRenameAction(),
          });
     }
 
+    private static Action findAction(Action [] actions, String name) {
+        for(Action a : actions) {
+            Object nameObj = a.getValue(Action.NAME);
+            if (nameObj instanceof String && name.equals(nameObj)) {
+                return a;
+            }
+        }
+        return null;
+    }
     private boolean handleDeletion(BaseDocument doc, int dotPos) {
         if (dotPos > 0) {
             try {

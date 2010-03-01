@@ -41,6 +41,9 @@
 
 package org.netbeans.api.java.source;
 
+import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.CompletionFailure;
 import com.sun.tools.javac.util.Log;
@@ -808,6 +811,16 @@ public final class JavaSource {
         @Override
         public @NonNull String generateReadableParameterName (@NonNull String typeName, @NonNull Set<String> used) {
             return SourceUtils.generateReadableParameterName(typeName, used);
+        }
+
+        @Override
+        public AnnotatedTypeTree makeAnnotatedType(TreeMaker make, List<? extends AnnotationTree> annotations, ExpressionTree type) {
+            return make.AnnotatedType(annotations, type);
+        }
+
+        @Override
+        public AnnotationTree makeTypeAnnotation(TreeMaker make, AnnotationTree t) {
+            return make.TypeAnnotation(t);
         }
     }                                                
 }

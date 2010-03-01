@@ -45,7 +45,7 @@ import java.io.*;
 import org.netbeans.modules.subversion.client.*;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.util.*;
-import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.openide.filesystems.FileUtil;
 import org.tigris.subversion.svnclientadapter.*;
 

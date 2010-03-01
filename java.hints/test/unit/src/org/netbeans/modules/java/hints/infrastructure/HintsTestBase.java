@@ -76,6 +76,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
@@ -229,7 +230,7 @@ public class HintsTestBase extends NbTestCase {
 
         doc = ec.openDocument();
         doc.putProperty(Language.class, JavaTokenId.language());
-        doc.putProperty("mimeType", "text/x-java");
+        doc.putProperty("mimeType", Utilities.JAVA_MIME_TYPE);
 
         //XXX: takes a long time
         //re-index, in order to find classes-living-elsewhere
@@ -358,7 +359,7 @@ public class HintsTestBase extends NbTestCase {
         
         Document doc = ec.openDocument();
         
-        List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(info, doc);
+        List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(info, doc, Utilities.JAVA_MIME_TYPE);
         List<Fix> fixes = new ArrayList<Fix>();
         
         for (ErrorDescription d : errors) {
@@ -380,7 +381,7 @@ public class HintsTestBase extends NbTestCase {
         
         Document doc = ec.openDocument();
         
-        List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(info, doc);
+        List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(info, doc, Utilities.JAVA_MIME_TYPE);
         List<Fix> fixes = new ArrayList<Fix>();
         
         for (ErrorDescription d : errors) {
@@ -420,7 +421,7 @@ public class HintsTestBase extends NbTestCase {
         try {
             Document doc = ec.openDocument();
             
-            List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(info, doc);
+            List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(info, doc, Utilities.JAVA_MIME_TYPE);
             List<Fix> fixes = new ArrayList<Fix>();
             
             for (ErrorDescription d : errors) {

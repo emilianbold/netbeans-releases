@@ -110,6 +110,7 @@ public class DefaultPicklistModel implements PicklistModel, Serializable {
      * increasing its size by one.
      * @param   elem   the component to be added.
      */
+    @Override
     public void addElement(PicklistElement elem) {
         addElement(elem, true);
     }
@@ -129,6 +130,7 @@ public class DefaultPicklistModel implements PicklistModel, Serializable {
      * increasing its size by one.
      * @param   elem   the component to be added.
      */
+    @Override
     public synchronized void addElement(PicklistElement elem, boolean check) {
         // Is this the only method that needs to synchronized??? FIXUP
         // first check if element already in the list
@@ -177,6 +179,7 @@ public class DefaultPicklistModel implements PicklistModel, Serializable {
      * @return  index of the specified element in the list if it exists
      * as determined by the <tt>equals</tt> method; <code>-1</code> otherwise.
      */
+    @Override
     public int contains(PicklistElement elem) {
         int foundAt = -1;
 
@@ -196,6 +199,7 @@ public class DefaultPicklistModel implements PicklistModel, Serializable {
      * @param index the requested index
      * @return the value at <code>index</code>
      */
+    @Override
     public PicklistElement getElementAt(int index) {
         if (index >= 0 && index < picklistSize) {
             return picklist[index];
@@ -208,6 +212,7 @@ public class DefaultPicklistModel implements PicklistModel, Serializable {
      * Returns all the elements in the list (possibly size 0 array)
      * @return all the elements in the list (possibly size 0 array).
      */
+    @Override
     public PicklistElement[] getElements() {
         PicklistElement[] ret = new PicklistElement[picklistSize];
         for (int i = 0; i < picklistSize; i++) {
@@ -216,6 +221,7 @@ public class DefaultPicklistModel implements PicklistModel, Serializable {
         return ret;
     }
 
+    @Override
     public String[] getElementsDisplayName() {
         PicklistElement[] elements = getElements();
         String[] elementsDisplayName = new String[getSize()];
@@ -229,14 +235,16 @@ public class DefaultPicklistModel implements PicklistModel, Serializable {
      * Returns the max length of the list, 0 being variable sized.
      * @return the max length of the list, 0 being variable sized
      */
+    @Override
     public int getMaxSize() {
         return maxSize;
     }
 
     /**
-     * Returns the top-most element in the list if not empty, othervise null.
+     * Returns the top-most element in the list if not empty, otherwise null.
      * @return the top-most element in the list
      */
+    @Override
     public PicklistElement getMostRecentUsedElement() {
         if (picklistSize > 0) {
             return picklist[0];
@@ -249,6 +257,7 @@ public class DefaultPicklistModel implements PicklistModel, Serializable {
      * Returns the length of the list.
      * @return the length of the list
      */
+    @Override
     public int getSize() {
         return picklistSize;
     }
@@ -256,6 +265,7 @@ public class DefaultPicklistModel implements PicklistModel, Serializable {
     /**
      * Removes all elements from this list and sets its size to zero.
      */
+    @Override
     public void removeAllElements() {
         picklistSize = 0;
 
@@ -268,8 +278,9 @@ public class DefaultPicklistModel implements PicklistModel, Serializable {
      * from this list.
      *
      * @param   elem   the element to be removed.
-     * @return  the element removed if found, null othervise.
+     * @return  the element removed if found, null otherwise.
      */
+    @Override
     public PicklistElement removeElement(PicklistElement elem) {
         return removeElementAt(contains(elem));
     }
@@ -285,8 +296,9 @@ public class DefaultPicklistModel implements PicklistModel, Serializable {
      * and less than the current size of the list. <p>
      *
      * @param      index   the index of the object to remove.
-     * @return  the element removed if index valid, null othervise.
+     * @return  the element removed if index valid, null otherwise.
      */
+    @Override
     public PicklistElement removeElementAt(int index) {
         PicklistElement toBeRemoved = null;
         if (index < 0 || index >= picklistSize) {
@@ -310,8 +322,9 @@ public class DefaultPicklistModel implements PicklistModel, Serializable {
      * specified.
      *
      * @param      index   the index of the object to remove.
-     * @return  the element replaced if index valid, null othervise.
+     * @return  the element replaced if index valid, null otherwise.
      */
+    @Override
     public PicklistElement replaceElementAt(PicklistElement elem, int index) {
         PicklistElement toBeReplaced = null;
         if (index < 0 || index >= picklistSize) {
@@ -331,6 +344,7 @@ public class DefaultPicklistModel implements PicklistModel, Serializable {
      * to the data model occurs.
      * @param l the <code>PicklistDataListener</code> to be added
      */
+    @Override
     public void addPicklistDataListener(PicklistDataListener l) {
         getListenerList().add(PicklistDataListener.class, l);
     }
@@ -340,6 +354,7 @@ public class DefaultPicklistModel implements PicklistModel, Serializable {
      * change to the data model occurs.
      * @param l the <code>PicklistDataListener</code> to be removed
      */
+    @Override
     public void removePicklistDataListener(PicklistDataListener l) {
         getListenerList().remove(PicklistDataListener.class, l);
     }
@@ -347,6 +362,7 @@ public class DefaultPicklistModel implements PicklistModel, Serializable {
     /**
      * Clones a picklist
      */
+    @Override
     public PicklistModel clonePicklist() {
         DefaultPicklistModel newpicklist = new DefaultPicklistModel(maxSize);
         for (int i = getSize() - 1; i >= 0; i--) {
@@ -358,6 +374,7 @@ public class DefaultPicklistModel implements PicklistModel, Serializable {
     /**
      * First removes all elements, then copies all elements from 'picklist'.
      */
+    @Override
     public void copyPicklist(PicklistModel picklist) {
         removeAllElements();
         for (int i = picklist.getSize() - 1; i >= 0; i--) {
@@ -368,6 +385,7 @@ public class DefaultPicklistModel implements PicklistModel, Serializable {
     /**
      * Dumps all list elements to std out (for debugging...)
      */
+    @Override
     public void dumpElements() {
         for (int i = 0; i < picklistSize; i++) {
             System.out.println("[" + i + "] " + picklist[i].displayName()); // NOI18N

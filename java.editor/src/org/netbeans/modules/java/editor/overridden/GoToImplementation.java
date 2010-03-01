@@ -108,7 +108,7 @@ public final class GoToImplementation extends BaseAction {
 
                     Map<ElementHandle<? extends Element>, List<ElementDescription>> overriding = new ComputeOverriders(new AtomicBoolean()).process(parameter, type, method, true);
 
-                    List<ElementDescription> overridingMethods = overriding.get(ElementHandle.create(el));
+                    List<ElementDescription> overridingMethods = overriding != null ? overriding.get(ElementHandle.create(el)) : null;
 
                     if (overridingMethods == null || overridingMethods.isEmpty()) {
                         String key = el.getKind() == ElementKind.METHOD ? "LBL_NoOverridingMethod" : "LBL_NoOverridingType";

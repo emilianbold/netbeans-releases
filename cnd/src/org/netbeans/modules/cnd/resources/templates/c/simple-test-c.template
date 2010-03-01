@@ -1,0 +1,30 @@
+/* 
+ * File:   %<%NAME%>%.%<%EXTENSION%>%
+ * Author: %<%USER%>%
+ *
+ * Created on %<%DATE%>%, %<%TIME%>%
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+
+/*
+ * Simple C Test
+ */
+int main(int argc, char** argv) {
+    printf("%s:%u: Running test : %<%NAME%>%\n", __FILE__, __LINE__);
+
+    printf("...\n");
+    printf("...\n");
+    printf("...\n");
+
+    int result = EXIT_SUCCESS;
+    if(result == EXIT_SUCCESS) {
+        printf("%s:%u: SUCCESS\n", __FILE__, __LINE__);
+    } else {
+        printf("%s:%u: FAILURE\n", __FILE__, __LINE__);
+    }
+
+    return (result);
+}
+

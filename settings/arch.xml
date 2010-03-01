@@ -75,7 +75,7 @@ Service type can be desribed as typed a named settings.
 </li><li>
 <api group="java" name="ServicesAPI" type="export" category="official" url="@org-openide-util@/org/openide/util/doc-files/api.html#service-lookup"/>
 </li><li>
-<api group="java" name="XmlSettingsPersistence" type="export" category="official" url="@org-netbeans-modules-settings@/org/netbeans/spi/settings/doc-files/api.html"/>
+<api group="java" name="XmlSettingsPersistence" type="export" category="official" url="@org-netbeans-modules-settings@/org/netbeans/spi/settings/package-summary.html"/>
 </li>
 </ul>
 </answer>
@@ -446,7 +446,7 @@ on changes and ensure , that all changes will be stored. Then from <code>Instanc
 is used  <code>Lookup</code> to find <code>InstanceCookie</code>. Then method <code>setInstance</code>
 is invoked on instance of <code>InstanceCookie</code>. This binds instance of setting to setting infrastructure.
 Which <code>Lookup</code> and then also which <code>InstanceCookie</code> is used depends again on cofiguration.
-<a href="@org-netbeans-modules-settings@/org/netbeans/spi/settings/doc-files/api.html">description of  configuration</a>.
+<a href="@org-netbeans-modules-settings@/org/netbeans/spi/settings/package-summary.html">description of  configuration</a>.
 </li>
 <li>
 Also org.openide.util.SharedClassObject.reset is called from org.netbeans.modules.settings.convertors.XMLSettingsSupport.SettingsRecognizer.
@@ -480,7 +480,7 @@ Also org.openide.util.SharedClassObject.reset is called from org.netbeans.module
 Neither java system nor  (<code>System.getProperty</code>) property. But attributes 
 attached to <code>FileObject</code> are used for configuration. This configuration is too complex
 and can't be separated from entity registration and so on.  So, here is 
- <a href="@org-netbeans-modules-settings@/org/netbeans/spi/settings/doc-files/api.html#use-own">
+ <a href="@org-netbeans-modules-settings@/org/netbeans/spi/settings/package-summary.html#use-own">
   description of  configuration</a>.
 </answer>
 
@@ -798,7 +798,7 @@ Provided layers:
 <p></p>
 Provided folderes: 
 <ul>
-<li><api name="RuntimeInstancesRegistry" group="layer" type="export" category="official" url="@org-netbeans-modules-settings@/org/netbeans/spi/settings/doc-files/api.html#use-memory">
+<li><api name="RuntimeInstancesRegistry" group="layer" type="export" category="official" url="@org-netbeans-modules-settings@/org/netbeans/spi/settings/package-summary.html#use-memory">
 <b>xml/memory</b>: Associates runtime instance with environment provider. </api><p></p></li>
 <li><api name="ServicesDisplayRegistry" group="layer" type="export" category="official" url="@org-openide-util@/org/openide/util/doc-files/api.html#lookup-ui">
 <b>UI/Services</b>: The root folder for displaying options in the deprecated Advanced dialog.</api><p></p></li>
@@ -844,7 +844,7 @@ infrastructure implemented in <samp>core.jar</samp>.
 -->
 <answer id="resources-read">
 Many times mentioned in this document. See 
-<a href="@org-netbeans-modules-settings@/org/netbeans/spi/settings/doc-files/api.html"> this document</a>.
+<a href="@org-netbeans-modules-settings@/org/netbeans/spi/settings/package-summary.html"> this document</a>.
 </answer>
 
 </api-answers>

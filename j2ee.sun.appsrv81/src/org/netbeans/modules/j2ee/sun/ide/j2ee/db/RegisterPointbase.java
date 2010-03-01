@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -75,6 +75,7 @@ import org.openide.util.NbBundle;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
 import org.netbeans.modules.derby.spi.support.DerbySupport;
+import org.netbeans.modules.glassfish.spi.ExecSupport;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
 import org.openide.filesystems.FileLock;

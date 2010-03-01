@@ -45,6 +45,7 @@ import java.net.URL;
 import java.util.regex.Pattern;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.DialogDescriptor;
 import org.openide.NotificationLineSupport;
@@ -64,6 +65,7 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
     /** Creates new customizer KenaiInstanceCustomizer */
     public KenaiInstanceCustomizer() {
         initComponents();
+        progress.setVisible(false);
         txtDisplayName.getDocument().addDocumentListener(this);
         txtUrl.getDocument().addDocumentListener(this);
     }
@@ -92,6 +94,10 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
         lblUrl = new javax.swing.JLabel();
         txtDisplayName = new javax.swing.JTextField();
         txtUrl = new javax.swing.JTextField();
+        progress = new javax.swing.JProgressBar();
+        proxy = new javax.swing.JButton();
+
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         lblName.setLabelFor(txtDisplayName);
         org.openide.awt.Mnemonics.setLocalizedText(lblName, org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.lblName.text")); // NOI18N
@@ -101,6 +107,17 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
 
         txtUrl.setText(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.txtUrl.text")); // NOI18N
 
+        progress.setIndeterminate(true);
+        progress.setString(org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.progress.string")); // NOI18N
+        progress.setStringPainted(true);
+
+        org.openide.awt.Mnemonics.setLocalizedText(proxy, org.openide.util.NbBundle.getMessage(KenaiInstanceCustomizer.class, "KenaiInstanceCustomizer.proxy.text")); // NOI18N
+        proxy.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                proxyActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -108,18 +125,24 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblName)
-                    .add(lblUrl))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(txtUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
-                    .add(txtDisplayName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(lblName)
+                            .add(lblUrl))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(txtUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
+                            .add(txtDisplayName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)))
+                    .add(layout.createSequentialGroup()
+                        .add(proxy)
+                        .add(18, 18, 18)
+                        .add(progress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(13, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblName)
                     .add(txtDisplayName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -127,14 +150,23 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(txtUrl, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(lblUrl))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(proxy)
+                    .add(progress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void proxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxyActionPerformed
+        OptionsDisplayer.getDefault().open("General"); // NOI18N
+    }//GEN-LAST:event_proxyActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel lblName;
     private javax.swing.JLabel lblUrl;
+    private javax.swing.JProgressBar progress;
+    private javax.swing.JButton proxy;
     private javax.swing.JTextField txtDisplayName;
     private javax.swing.JTextField txtUrl;
     // End of variables declaration//GEN-END:variables
@@ -161,14 +193,23 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
         }
     }
 
-    private void showError(String text) {
+    void showError(String text) {
+        stopProgress();
         ns.setInformationMessage(text);
         dd.setValid(false);
     }
 
-    private void clearError() {
+    void clearError() {
         ns.clearMessages();
         dd.setValid(true);
+    }
+
+    void startProgress() {
+        progress.setVisible(true);
+    }
+
+    void stopProgress() {
+        progress.setVisible(false);
     }
 
     private static Pattern urlPatten = Pattern.compile("https://([a-zA-Z0-9\\-\\.])+\\.(([a-zA-Z]{2,3})|(info)|(name)|(aero)|(coop)|(museum)|(jobs)|(mobi)|(travel))/?$");

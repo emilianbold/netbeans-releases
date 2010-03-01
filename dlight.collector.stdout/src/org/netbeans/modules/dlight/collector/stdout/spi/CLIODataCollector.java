@@ -364,7 +364,6 @@ public final class CLIODataCollector
 
                 @Override
                 public void processLine(String line) {
-                    System.err.println("redirect line processing...");
                     CLIODataCollector.this.processLine(line);
                 }
 

@@ -51,12 +51,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileXMLCodec;
 import org.netbeans.modules.cnd.makeproject.runprofiles.ui.EnvPanel;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
@@ -107,10 +106,12 @@ public class RunProfile implements ConfigurationAuxObject {
     public static final int CONSOLE_TYPE_DEFAULT = 0;
     public static final int CONSOLE_TYPE_EXTERNAL = 1;
     public static final int CONSOLE_TYPE_OUTPUT_WINDOW = 2;
+    public static final int CONSOLE_TYPE_INTERNAL = 3;
     private static final String[] consoleTypeNames = {
         getString("ConsoleType_Default"), // NOI18N
         getString("ConsoleType_External"), // NOI18N
         getString("ConsoleType_Output"), // NOI18N
+        getString("ConsoleType_Internal"), // NOI18N
     };
     private IntConfiguration consoleType;
     private IntConfiguration terminalType;
@@ -141,7 +142,8 @@ public class RunProfile implements ConfigurationAuxObject {
         initialize();
     }
 
-    public void initialize() {
+    @Override
+    public final void initialize() {
         //parent = null;
         environment = new Env();
         defaultProfile = false;
@@ -286,6 +288,7 @@ public class RunProfile implements ConfigurationAuxObject {
 
         Thread thread = new Thread(new Runnable() {
 
+            @Override
             public void run() {
                 StringTokenizer st = new StringTokenizer(path, ":"); // NOI18N
 
@@ -315,6 +318,7 @@ public class RunProfile implements ConfigurationAuxObject {
         return termOptions.get(getTerminalType().getName());
     }
 
+    @Override
     public boolean shared() {
         return false;
     }
@@ -326,6 +330,7 @@ public class RunProfile implements ConfigurationAuxObject {
      * and for storing the object in xml form and
      * parsing the xml code to restore the object.
      */
+    @Override
     public String getId() {
         return PROFILE_ID;
     }
@@ -354,7 +359,7 @@ public class RunProfile implements ConfigurationAuxObject {
         this.argsFlat = argsFlat;
         argsFlatValid = true;
         argsArrayValid = false;
-        if (pcs != null && !IpeUtils.sameString(oldArgsFlat, argsFlat)) {
+        if (pcs != null && !CndPathUtilitities.sameString(oldArgsFlat, argsFlat)) {
             pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgsFlat, argsFlat);
         }
         needSave = true;
@@ -365,7 +370,7 @@ public class RunProfile implements ConfigurationAuxObject {
         this.argsArray = argsArray;
         argsFlatValid = false;
         argsArrayValid = true;
-        if (pcs != null && !IpeUtils.sameStringArray(oldArgsArray, argsArray)) {
+        if (pcs != null && !CndPathUtilitities.sameStringArray(oldArgsArray, argsArray)) {
             pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgsArray, argsArray);
         }
         needSave = true;
@@ -382,7 +387,7 @@ public class RunProfile implements ConfigurationAuxObject {
         if (!argsFlatValid) {
             argsFlat = ""; // NOI18N
             for (int i = 0; i < argsArray.length; i++) {
-                argsFlat += IpeUtils.quoteIfNecessary(argsArray[i]);
+                argsFlat += CndPathUtilitities.quoteIfNecessary(argsArray[i]);
                 if (i < (argsArray.length - 1)) {
                     argsFlat += " "; // NOI18N
                 }
@@ -406,9 +411,7 @@ public class RunProfile implements ConfigurationAuxObject {
     public String[] getArgv(String ex) {
         String[] argsArrayShifted = new String[getArgsArray().length + 1];
         argsArrayShifted[0] = ex;
-        for (int i = 0; i < getArgsArray().length; i++) {
-            argsArrayShifted[i + 1] = getArgsArray()[i];
-        }
+        System.arraycopy(getArgsArray(), 0, argsArrayShifted, 1, getArgsArray().length);
         return argsArrayShifted;
     }
 
@@ -425,7 +428,7 @@ public class RunProfile implements ConfigurationAuxObject {
      * Base directory is what run directory is relative to if it is relative.
      */
     public void setBaseDir(String baseDir) {
-        assert baseDir != null && IpeUtils.isPathAbsolute(baseDir);
+        assert baseDir != null && CndPathUtilitities.isPathAbsolute(baseDir);
         this.baseDir = baseDir;
     }
 
@@ -468,7 +471,7 @@ public class RunProfile implements ConfigurationAuxObject {
         if (runDir2.length() == 0) {
             runDir2 = "."; // NOI18N
         }
-        if (IpeUtils.isPathAbsolute(runDir2)) {
+        if (CndPathUtilitities.isPathAbsolute(runDir2)) {
             runDirectory = runDir2;
         } else {
             runDirectory = getBaseDir() + "/" + runDir2; // NOI18N
@@ -497,7 +500,7 @@ public class RunProfile implements ConfigurationAuxObject {
         if (newRunDir == null || newRunDir.length() == 0) {
             newRunDir = "."; // NOI18N
         }
-        setRunDir(IpeUtils.toAbsoluteOrRelativePath(getBaseDir(), newRunDir));
+        setRunDir(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), newRunDir));
     }
 
     // Should Build ...
@@ -590,10 +593,12 @@ public class RunProfile implements ConfigurationAuxObject {
     // XML codec support
     // This stuff ends up in <projectdir>/nbproject/private/profiles.xml
     //
+    @Override
     public XMLDecoder getXMLDecoder() {
         return new RunProfileXMLCodec(this);
     }
 
+    @Override
     public XMLEncoder getXMLEncoder() {
         return new RunProfileXMLCodec(this);
     }
@@ -628,15 +633,18 @@ public class RunProfile implements ConfigurationAuxObject {
     }
      */
     // interface ProfileAuxObject
+    @Override
     public boolean hasChanged() {
         return needSave;
     }
 
     // interface ProfileAuxObject
+    @Override
     public void clearChanged() {
         needSave = false;
     }
 
+    @Override
     public void assign(ConfigurationAuxObject profileAuxObject) {
         if (!(profileAuxObject instanceof RunProfile)) {
             // FIXUP: exception ????
@@ -677,15 +685,15 @@ public class RunProfile implements ConfigurationAuxObject {
         return p;
     }
 
-    public Sheet getSheet(boolean isRemote) {
-        return createSheet(isRemote);
+    public Sheet getSheet(boolean disableConsoleTypeSelection) {
+        return createSheet(disableConsoleTypeSelection);
     }
 
     public Sheet getSheet() {
         return createSheet(false);
     }
 
-    private Sheet createSheet(boolean isRemote) {
+    private Sheet createSheet(boolean disableConsoleTypeSelection) {
         Sheet sheet = new Sheet();
 
         Sheet.Set set = new Sheet.Set();
@@ -702,13 +710,14 @@ public class RunProfile implements ConfigurationAuxObject {
         final IntNodeProp terminalTypeNP = new IntNodeProp(getTerminalType(), true, null,
                 getString("TerminalType_LBL"), getString("TerminalType_HINT")); // NOI18N
         set.put(terminalTypeNP);
-        if (isRemote) {
+        if (disableConsoleTypeSelection) {
             terminalTypeNP.setCanWrite(false);
             consoleTypeNP.setCanWrite(false);
         } else {
 
             consoleTypeNP.addPropertyChangeListener(new PropertyChangeListener() {
 
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     String value = (String) evt.getNewValue();
                     updateTerminalTypeState(terminalTypeNP, value);
@@ -762,10 +771,12 @@ public class RunProfile implements ConfigurationAuxObject {
             super("Arguments", String.class, getString("ArgumentsName"), getString("ArgumentsHint"), true, true); // NOI18N
         }
 
+        @Override
         public String getValue() {
             return getArgsFlat();
         }
 
+        @Override
         public void setValue(String v) {
             setArgs(v);
         }
@@ -777,13 +788,15 @@ public class RunProfile implements ConfigurationAuxObject {
             super("Run Directory", String.class, getString("RunDirectoryName"), getString("RunDirectoryHint"), true, true); // NOI18N
         }
 
+        @Override
         public String getValue() {
             return getRunDir();
         }
 
+        @Override
         public void setValue(String v) {
-            String path = IpeUtils.toAbsoluteOrRelativePath(getBaseDir(), v);
-            path = FilePathAdaptor.normalize(path);
+            String path = CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), v);
+            path = CndPathUtilitities.normalize(path);
             setRunDir(path);
         }
 
@@ -794,7 +807,7 @@ public class RunProfile implements ConfigurationAuxObject {
             if (runDir2.length() == 0) {
                 runDir2 = "."; // NOI18N
             }
-            if (IpeUtils.isPathAbsolute(runDir2)) {
+            if (CndPathUtilitities.isPathAbsolute(runDir2)) {
                 seed = runDir2;
             } else {
                 seed = getBaseDir() + File.separatorChar + runDir2;
@@ -842,6 +855,7 @@ public class RunProfile implements ConfigurationAuxObject {
             return new DirectoryChooserPanel(seed, this, propenv);
         }
 
+        @Override
         public void attachEnv(PropertyEnv propenv) {
             this.propenv = propenv;
         }
@@ -853,10 +867,12 @@ public class RunProfile implements ConfigurationAuxObject {
             super("Build First", Boolean.class, getString("BuildFirstName"), getString("BuildFirstHint"), true, true); // NOI18N
         }
 
+        @Override
         public Boolean getValue() {
             return Boolean.valueOf(getBuildFirst());
         }
 
+        @Override
         public void setValue(Boolean v) {
             setBuildFirst((v).booleanValue());
         }
@@ -868,10 +884,12 @@ public class RunProfile implements ConfigurationAuxObject {
             super("Environment", Env.class, getString("EnvironmentName"), getString("EnvironmentHint"), true, true); // NOI18N
         }
 
+        @Override
         public Env getValue() {
             return getEnvironment();
         }
 
+        @Override
         public void setValue(Env v) {
             getEnvironment().assign(v);
         }
@@ -918,6 +936,7 @@ public class RunProfile implements ConfigurationAuxObject {
             return true;
         }
 
+        @Override
         public void attachEnv(PropertyEnv propenv) {
             this.propenv = propenv;
         }

@@ -40,6 +40,7 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.Container;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -115,6 +116,7 @@ public class LoginPanel extends javax.swing.JPanel {
     }
 
     public void showError(KenaiException ex) {
+        kenaiCombo.setEnabled(true);
         progressBar.setVisible(false);
         String errorMessage = ex.getMessage();
         if (errorMessage==null || "".equals(errorMessage.trim())) {
@@ -138,6 +140,7 @@ public class LoginPanel extends javax.swing.JPanel {
         error.setVisible(false);
         progressBar.setVisible(true);
         progressBar.setIndeterminate(true);
+        kenaiCombo.setEnabled(false);
         setLoginButtonEnabled(false);
     }
 
@@ -145,6 +148,7 @@ public class LoginPanel extends javax.swing.JPanel {
         error.setVisible(false);
         progressBar.setVisible(false);
         setLoginButtonEnabled(true);
+        kenaiCombo.setEnabled(true);
     }
 
     private void setChkOnline() {
@@ -276,7 +280,7 @@ public class LoginPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(kenaiLabel)
                     .add(kenaiCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -344,15 +348,22 @@ public class LoginPanel extends javax.swing.JPanel {
             setUsername(credentials.getUsername(kenai));
             setPassword(credentials.getPassword(kenai));
         } else {
-            new AddInstanceAction().actionPerformed(evt);
-            this.kenai = ((Kenai) kenaiCombo.getSelectedItem());
-            forgotPassword.setAction(new URLDisplayerAction("", getForgetPasswordUrl()));
-            signUp.setAction(new URLDisplayerAction("", getRegisterUrl()));
+            final ActionEvent e = evt;
+            SwingUtilities.invokeLater(new Runnable() {
 
-            forgotPassword.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"));
-            signUp.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"));
+                @Override
+                public void run() {
+                    new AddInstanceAction().actionPerformed(e);
+                    LoginPanel.this.kenai = ((Kenai) kenaiCombo.getSelectedItem());
+                    forgotPassword.setAction(new URLDisplayerAction("", getForgetPasswordUrl()));
+                    signUp.setAction(new URLDisplayerAction("", getRegisterUrl()));
 
-            setChkOnline();
+                    forgotPassword.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"));
+                    signUp.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"));
+
+                    setChkOnline();
+                }
+            });
         }
     }//GEN-LAST:event_kenaiComboActionPerformed
 

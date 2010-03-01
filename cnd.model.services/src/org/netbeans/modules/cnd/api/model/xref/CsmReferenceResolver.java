@@ -107,7 +107,7 @@ public abstract class CsmReferenceResolver {
     }   
 
     public CsmReference findReference(Document doc, int offset) {
-        CsmFile file = CsmUtilities.getCsmFile(doc, false);
+        CsmFile file = CsmUtilities.getCsmFile(doc, false, false);
         if (file != null) {
             return findReference(file, offset);
         }

@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -203,6 +203,7 @@ is divided into following sections:
   </fail>
                 </xsl:if>
                 <available file="${{manifest.file}}" property="manifest.available"/>
+                <available file="${{application.splash}}" property="splashscreen.available"/>
                 <condition property="main.class.available">
                     <and>
                         <isset property="main.class"/>
@@ -231,25 +232,12 @@ is divided into following sections:
                         <isset property="do.mkdist"/>
                     </and>
                 </condition>
-                <condition property="manifest.available+mkdist.available">
+                <condition property="manifest.available+main.class+mkdist.available+splashscreen.available">
                     <and>
-                        <istrue value="${{manifest.available}}"/>
-                        <isset property="do.mkdist"/>
+                        <istrue value="${{manifest.available+main.class+mkdist.available}}"/>
+                        <istrue value="${{splashscreen.available}}"/>
                     </and>
                 </condition>
-                <condition property="manifest.available-mkdist.available">
-                    <or>
-                        <istrue value="${{manifest.available}}"/>
-                        <isset property="do.mkdist"/>
-                    </or>
-                </condition>
-                <condition property="manifest.available+main.class-mkdist.available">
-                    <or>
-                        <istrue value="${{manifest.available+main.class}}"/>
-                        <isset property="do.mkdist"/>
-                    </or>
-                </condition>
-
                 <xsl:call-template name="createRootAvailableTest">
                     <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
                     <xsl:with-param name="propName">have.tests</xsl:with-param>
@@ -305,9 +293,9 @@ is divided into following sections:
                 <xsl:if test="not(/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform)">
                     <property name="javac.fork" value="false"/>
                 </xsl:if>
-
+                <property name="jar.index" value="false"/>
             </target>
-            
+
             <target name="-post-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
@@ -350,7 +338,7 @@ is divided into following sections:
                 </macrodef>
             </target>
             
-            <target name="-init-macrodef-javac">
+            <target name="-init-macrodef-javac-with-processors" depends="-init-ap-cmdline-properties" if="ap.supported.internal">
                 <macrodef>
                     <xsl:attribute name="name">javac</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -369,6 +357,116 @@ is divided into following sections:
                     <attribute>
                         <xsl:attribute name="name">classpath</xsl:attribute>
                         <xsl:attribute name="default">${javac.classpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">processorpath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.processorpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">apgeneratedsrcdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.generated.sources.dir}/ap-source-output</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">debug</xsl:attribute>
+                        <xsl:attribute name="default">${javac.debug}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">sourcepath</xsl:attribute>
+                        <xsl:attribute name="default">${empty.dir}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">gensrcdir</xsl:attribute>
+                        <xsl:attribute name="default">${empty.dir}</xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <property name="empty.dir" location="${{build.dir}}/empty"/><!-- #157692 -->
+                        <mkdir dir="${{empty.dir}}"/>
+                        <mkdir dir="@{{apgeneratedsrcdir}}"/>
+                        <javac>
+                            <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
+                            <xsl:attribute name="sourcepath">@{sourcepath}</xsl:attribute>
+                            <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
+                            <xsl:attribute name="debug">@{debug}</xsl:attribute>
+                            <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
+                            <xsl:attribute name="encoding">${source.encoding}</xsl:attribute>
+                            <xsl:if test ="not(/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform/@explicit-source-supported ='false')">
+                                <xsl:attribute name="source">${javac.source}</xsl:attribute>
+                                <xsl:attribute name="target">${javac.target}</xsl:attribute>
+                            </xsl:if>
+                            <xsl:attribute name="includes">@{includes}</xsl:attribute>
+                            <xsl:attribute name="excludes">@{excludes}</xsl:attribute>
+                            <xsl:choose>
+                                <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
+                                    <xsl:attribute name="fork">yes</xsl:attribute>
+                                    <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
+                                    <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:attribute name="fork">${javac.fork}</xsl:attribute>
+                                    <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
+                                </xsl:otherwise>
+                            </xsl:choose>
+                            <xsl:attribute name="includeantruntime">false</xsl:attribute>
+                            <src>
+                                <dirset dir="@{{gensrcdir}}" erroronmissingdir="false">
+                                    <include name="*"/>
+                                </dirset>
+                            </src>
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                            <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                            <compilerarg line="${{javac.compilerargs}}"/>
+                            <compilerarg value="-processorpath" />
+                            <compilerarg path="@{{processorpath}}" />
+                            <compilerarg line="${{ap.processors.internal}}" />
+                            <compilerarg value="-s" />
+                            <compilerarg path="@{{apgeneratedsrcdir}}" />
+                            <compilerarg line="${{ap.proc.none.internal}}" />
+                            <customize/>
+                        </javac>
+                    </sequential>
+                </macrodef>
+            </target>
+            <target name="-init-macrodef-javac-without-processors" depends="-init-ap-cmdline-properties" unless="ap.supported.internal">
+                <macrodef>
+                    <xsl:attribute name="name">javac</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">srcdir</xsl:attribute>
+                        <xsl:attribute name="default">
+                            <xsl:call-template name="createPath">
+                                <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
+                            </xsl:call-template>
+                        </xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">destdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.classpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">processorpath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.processorpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">apgeneratedsrcdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.generated.sources.dir}/ap-source-output</xsl:attribute>
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">includes</xsl:attribute>
@@ -436,6 +534,8 @@ is divided into following sections:
                         </javac>
                     </sequential>
                 </macrodef>
+            </target>
+            <target name="-init-macrodef-javac" depends="-init-macrodef-javac-with-processors,-init-macrodef-javac-without-processors">
                 <macrodef> <!-- #36033, #85707 -->
                     <xsl:attribute name="name">depend</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -706,20 +806,77 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-            
+
+            <target name="-init-macrodef-copylibs">
+                <macrodef>
+                    <xsl:attribute name="name">copylibs</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <property location="${{build.classes.dir}}" name="build.classes.dir.resolved"/>
+                        <pathconvert property="run.classpath.without.build.classes.dir">
+                            <path path="${{run.classpath}}"/>
+                            <map from="${{build.classes.dir.resolved}}" to=""/>
+                        </pathconvert>
+                        <pathconvert pathsep=" " property="jar.classpath">
+                            <path path="${{run.classpath.without.build.classes.dir}}"/>
+                            <chainedmapper>
+                                <flattenmapper/>
+                                <globmapper from="*" to="lib/*"/>
+                            </chainedmapper>
+                        </pathconvert>
+                        <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${{libs.CopyLibs.classpath}}" name="copylibs"/>
+                        <copylibs compress="${{jar.compress}}" jarfile="${{dist.jar}}" manifest="${{manifest.file}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" index="${{jar.index}}">
+                            <fileset dir="${{build.classes.dir}}"/>
+                            <manifest>
+                                <attribute name="Class-Path" value="${{jar.classpath}}"/>
+                                <customize/>
+                            </manifest>
+                        </copylibs>
+                    </sequential>
+                </macrodef>
+            </target>
+
             <target name="-init-presetdef-jar">
                 <presetdef>
                     <xsl:attribute name="name">jar</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
-                    <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
+                    <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}" index="${{jar.index}}">
                         <j2seproject1:fileset dir="${{build.classes.dir}}"/>
                         <!-- XXX should have a property serving as the excludes list -->
                     </jar>
                 </presetdef>
             </target>
-            
+
+            <target name="-init-ap-cmdline-properties">
+                <property name="annotation.processing.enabled" value="true" />
+                <property name="annotation.processing.processors.list" value="" />
+                <property name="annotation.processing.run.all.processors" value="true" />
+                <property name="javac.processorpath" value="${{javac.classpath}}" />
+                <property name="javac.test.processorpath" value="${{javac.test.classpath}}"/>
+                <condition property="ap.supported.internal" value="true">
+                    <not>
+                        <matches string="${{javac.source}}" pattern="1\.[0-5](\..*)?" />
+                    </not>
+                </condition>
+            </target>
+            <target name="-init-ap-cmdline-supported" depends="-init-ap-cmdline-properties" if="ap.supported.internal">
+                <condition property="ap.processors.internal" value="-processor ${{annotation.processing.processors.list}}" else="">
+                    <isfalse value="${{annotation.processing.run.all.processors}}" />
+                </condition>
+                <condition property="ap.proc.none.internal" value="-proc:none" else="">
+                    <isfalse value="${{annotation.processing.enabled}}" />
+                </condition>
+            </target>
+            <target name="-init-ap-cmdline" depends="-init-ap-cmdline-properties,-init-ap-cmdline-supported">
+                <property name="ap.cmd.line.internal" value=""/>
+            </target>
+
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-java,-init-presetdef-jar</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-java,-init-presetdef-jar,-init-ap-cmdline</xsl:attribute>
             </target>
             
             <xsl:comment>
@@ -929,14 +1086,14 @@ is divided into following sections:
             
             <target name="-do-jar-without-manifest">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
-                <xsl:attribute name="unless">manifest.available-mkdist.available</xsl:attribute>
+                <xsl:attribute name="unless">manifest.available</xsl:attribute>
                 <j2seproject1:jar/>
             </target>
             
             <target name="-do-jar-with-manifest">
                 <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
                 <xsl:attribute name="if">manifest.available</xsl:attribute>
-                <xsl:attribute name="unless">manifest.available+main.class-mkdist.available</xsl:attribute>
+                <xsl:attribute name="unless">manifest.available+main.class</xsl:attribute>
                 <j2seproject1:jar manifest="${{manifest.file}}"/>
             </target>
             
@@ -961,97 +1118,52 @@ is divided into following sections:
                         <xsl:otherwise>java</xsl:otherwise>
                 </xsl:choose> -cp "${run.classpath.with.dist.jar}" ${main.class}</echo>
             </target>
-            
-            <target name="-do-jar-with-libraries">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
-                <xsl:attribute name="if">manifest.available+main.class+mkdist.available</xsl:attribute>
-                
-                <property name="build.classes.dir.resolved" location="${{build.classes.dir}}"/>
-                <pathconvert property="run.classpath.without.build.classes.dir">
-                    <path path="${{run.classpath}}"/>
-                    <map from="${{build.classes.dir.resolved}}" to=""/>
-                </pathconvert>        
-                <pathconvert property="jar.classpath" pathsep=" ">
-                    <path path="${{run.classpath.without.build.classes.dir}}"/>
-                    <chainedmapper>
-                        <flattenmapper/>
-                        <globmapper from="*" to="lib/*"/>
-                    </chainedmapper>
-                </pathconvert>        
-                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" name="copylibs" classpath="${{libs.CopyLibs.classpath}}"/>
-                <copylibs manifest="${{manifest.file}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" jarfile="${{dist.jar}}" compress="${{jar.compress}}">
-                    <fileset dir="${{build.classes.dir}}"/>
-                    <manifest>
+
+            <target name="-do-jar-with-libraries-and-splashscreen">
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-init-macrodef-copylibs</xsl:attribute>
+                <xsl:attribute name="if">manifest.available+main.class+mkdist.available+splashscreen.available</xsl:attribute>
+
+                <basename property="splashscreen.basename" file="${{application.splash}}"/>
+                <mkdir dir="${{build.classes.dir}}/META-INF"/>
+                <copy file="${{application.splash}}" todir="${{build.classes.dir}}/META-INF" failonerror="false"/>
+                <j2seproject3:copylibs>
+                    <customize>
                         <attribute name="Main-Class" value="${{main.class}}"/>
-                        <attribute name="Class-Path" value="${{jar.classpath}}"/>
-                    </manifest>
-                </copylibs>                                
+                        <attribute name="SplashScreen-Image" value="META-INF/${{splashscreen.basename}}"/>
+                    </customize>
+                </j2seproject3:copylibs>
                 <echo>To run this application from the command line without Ant, try:</echo>
                 <property name="dist.jar.resolved" location="${{dist.jar}}"/>
                 <echo><xsl:choose>
                         <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">${platform.java}</xsl:when>
                         <xsl:otherwise>java</xsl:otherwise>
-                </xsl:choose> -jar "${dist.jar.resolved}"</echo>                
+                </xsl:choose> -jar "${dist.jar.resolved}"</echo>
             </target>
 
-            <target name="-do-jar-with-libraries-without-mainclass">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
-                <xsl:attribute name="if">manifest.available+mkdist.available</xsl:attribute>
-                <xsl:attribute name="unless">main.class.available</xsl:attribute>
-                <property name="build.classes.dir.resolved" location="${{build.classes.dir}}"/>
-                <pathconvert property="run.classpath.without.build.classes.dir">
-                    <path path="${{run.classpath}}"/>
-                    <map from="${{build.classes.dir.resolved}}" to=""/>
-                </pathconvert>
-                <pathconvert property="jar.classpath" pathsep=" ">
-                    <path path="${{run.classpath.without.build.classes.dir}}"/>
-                    <chainedmapper>
-                        <flattenmapper/>
-                        <globmapper from="*" to="lib/*"/>
-                    </chainedmapper>
-                </pathconvert>
-                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" name="copylibs" classpath="${{libs.CopyLibs.classpath}}"/>
-                <copylibs manifest="${{manifest.file}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" jarfile="${{dist.jar}}" compress="${{jar.compress}}">
-                    <fileset dir="${{build.classes.dir}}"/>
-                    <manifest>
-                        <attribute name="Class-Path" value="${{jar.classpath}}"/>
-                    </manifest>
-                </copylibs>
+            <target name="-do-jar-with-libraries">
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-init-macrodef-copylibs</xsl:attribute>
+                <xsl:attribute name="if">manifest.available+main.class+mkdist.available</xsl:attribute>
+                <xsl:attribute name="unless">splashscreen.available</xsl:attribute>
+                <j2seproject3:copylibs>
+                    <customize>
+                        <attribute name="Main-Class" value="${{main.class}}"/>
+                    </customize>
+                </j2seproject3:copylibs>
+                <echo>To run this application from the command line without Ant, try:</echo>
+                <property name="dist.jar.resolved" location="${{dist.jar}}"/>
+                <echo><xsl:choose>
+                        <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">${platform.java}</xsl:when>
+                        <xsl:otherwise>java</xsl:otherwise>
+                </xsl:choose> -jar "${dist.jar.resolved}"</echo>
             </target>
-            
 
-
-            <target name="-do-jar-with-libraries-without-manifest">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar</xsl:attribute>
-                <xsl:attribute name="if">do.mkdist</xsl:attribute>
-                <xsl:attribute name="unless">manifest.available</xsl:attribute>
-                  <property name="build.classes.dir.resolved" location="${{build.classes.dir}}"/>
-                <pathconvert property="run.classpath.without.build.classes.dir">
-                    <path path="${{run.classpath}}"/>
-                    <map from="${{build.classes.dir.resolved}}" to=""/>
-                </pathconvert>
-                <pathconvert property="jar.classpath" pathsep=" ">
-                    <path path="${{run.classpath.without.build.classes.dir}}"/>
-                    <chainedmapper>
-                        <flattenmapper/>
-                        <globmapper from="*" to="lib/*"/>
-                    </chainedmapper>
-                </pathconvert>
-                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" name="copylibs" classpath="${{libs.CopyLibs.classpath}}"/>
-                <copylibs runtimeclasspath="${{run.classpath.without.build.classes.dir}}" jarfile="${{dist.jar}}" compress="${{jar.compress}}">
-                    <fileset dir="${{build.classes.dir}}"/>
-                    <manifest>
-                        <attribute name="Class-Path" value="${{jar.classpath}}"/>
-                    </manifest>
-                </copylibs>
-            </target>
             <target name="-post-jar">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
             
             <target name="jar">
-                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries,-do-jar-with-libraries-without-mainclass,-do-jar-with-libraries-without-manifest,-post-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries-and-splashscreen,-do-jar-with-libraries,-post-jar</xsl:attribute>
                 <xsl:attribute name="description">Build JAR.</xsl:attribute>
             </target>
             
@@ -1179,6 +1291,7 @@ is divided into following sections:
             
             <target name="-javadoc-build">
                 <xsl:attribute name="depends">init</xsl:attribute>
+                <xsl:attribute name="if">have.sources</xsl:attribute>
                 <mkdir dir="${{dist.javadoc.dir}}"/>
                 <!-- XXX do an up-to-date check first -->
                 <javadoc>
@@ -1281,6 +1394,8 @@ is divided into following sections:
                     <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
                     <xsl:attribute name="debug">true</xsl:attribute>
                     <xsl:attribute name="classpath">${javac.test.classpath}</xsl:attribute>
+                    <xsl:attribute name="processorpath">${javac.test.processorpath}</xsl:attribute>
+                    <xsl:attribute name="apgeneratedsrcdir">${build.test.classes.dir}</xsl:attribute>
                 </xsl:element>
                 <copy todir="${{build.test.classes.dir}}">
                     <xsl:call-template name="createFilesets">
@@ -1327,6 +1442,8 @@ is divided into following sections:
                     <xsl:attribute name="classpath">${javac.test.classpath}</xsl:attribute>
                     <xsl:attribute name="includes">${javac.includes}</xsl:attribute>
                     <xsl:attribute name="excludes"/>
+                    <xsl:attribute name="processorpath">${javac.test.processorpath}</xsl:attribute>
+                    <xsl:attribute name="apgeneratedsrcdir">${build.test.classes.dir}</xsl:attribute>
                 </xsl:element>
                 <copy todir="${{build.test.classes.dir}}">
                     <xsl:call-template name="createFilesets">

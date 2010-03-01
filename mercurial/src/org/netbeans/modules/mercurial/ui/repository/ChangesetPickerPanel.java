@@ -95,8 +95,14 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
         return roots;
     }
 
-    public String getSelectedRevision() {
+    /**
+     * Returns an array of two strings, where the one under index 0 is a revision number and the second under index 1 is a changeset string.
+     * However note that the changeset can be an empty string, when the revision is e.g. TIP
+     * @return
+     */
+    public String[] getSelectedRevision() {
         String revStr = (String) revisionsComboBox.getSelectedItem();
+        String changesetStr = new String();
         if(revStr != null){
             if (revStr.equals(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Revision_Default")) || // NOI18N
                 revStr.equals(NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Fetch_20_Revisions")) || // NOI18N
@@ -106,9 +112,10 @@ public class ChangesetPickerPanel extends javax.swing.JPanel {
                 revStr = HG_TIP;
             } else {
                 revStr = revStr.substring(0, revStr.indexOf(" ")); // NOI18N
+                changesetStr = messages == null ? "" : messages[revisionsComboBox.getSelectedIndex()].getCSetShortID(); //NOI18N
             }
         }
-        return revStr;
+        return new String[] { revStr, changesetStr };
     }
 
     protected String getRefreshLabel () {

@@ -53,7 +53,7 @@ import java.io.FileWriter;
  */
 public class CheckoutCommand extends FilesCommand {
     
-    public static enum Reserved { Reserved, Unreserved, Default };
+    public static enum Reserved { Reserved, Unreserved, UnreservedNonMaster, Default };
     
     private final String    message;
     private final boolean   preserveTime;
@@ -82,6 +82,9 @@ public class CheckoutCommand extends FilesCommand {
         arguments.add("-nquery");
         if (reserved != Reserved.Default) {
             arguments.add(reserved == Reserved.Reserved ? "-reserved" : "-unreserved");
+            if(reserved == Reserved.UnreservedNonMaster) {
+                arguments.add("-nmaster");
+            }
         }
         if (message == null) {
             arguments.add("-ncomment");

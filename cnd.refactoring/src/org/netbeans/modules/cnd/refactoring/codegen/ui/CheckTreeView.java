@@ -129,9 +129,10 @@ public class CheckTreeView extends BeanTreeView {
         }
     }
 
-    class CheckListener implements MouseListener, KeyListener {
+    private final class CheckListener implements MouseListener, KeyListener {
 
         // MouseListener -------------------------------------------------------
+        @Override
         public void mouseClicked(MouseEvent e) {
             if (!e.isPopupTrigger()) {
                 TreePath path = tree.getPathForLocation(e.getPoint().x, e.getPoint().y);
@@ -139,25 +140,32 @@ public class CheckTreeView extends BeanTreeView {
             }
         }
 
+        @Override
         public void keyTyped(KeyEvent e) {
         }
 
+        @Override
         public void keyReleased(KeyEvent e) {
         }
 
+        @Override
         public void mouseEntered(MouseEvent e) {
         }
 
+        @Override
         public void mouseExited(MouseEvent e) {
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
         }
 
         // Key Listener --------------------------------------------------------
+        @Override
         public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_SPACE) {
 

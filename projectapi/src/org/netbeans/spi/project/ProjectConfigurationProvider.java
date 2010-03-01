@@ -53,7 +53,7 @@ import java.util.Collection;
  *
  * @author Adam Sotona, Jesse Glick
  * @since org.netbeans.modules.projectapi/1 1.11
- * @see <a href="http://projects.netbeans.org/nonav/buildsys/configurations.html">Project Configurations design document</a>
+ * @see <a href="doc-files/configurations.html">Project Configurations design document</a>
  */
 public interface ProjectConfigurationProvider<C extends ProjectConfiguration> {
 

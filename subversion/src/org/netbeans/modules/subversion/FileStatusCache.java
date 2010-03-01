@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.subversion;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -599,7 +600,7 @@ public class FileStatusCache {
             fireFileStatusChanged(file, current, fi);    
         } else {
             // scan also children if there's no information about them yet (not yet explored folder)
-            if (fi.isDirectory() && !"false".equals(System.getProperty("org.netbeans.modules.subversion.FileStatusCache.recursiveScan", "true")) //NOI18N
+            if (fi.isDirectory() && "true".equals(System.getProperty("org.netbeans.modules.subversion.FileStatusCache.recursiveScan", "false")) //NOI18N
                     && (fi.getStatus() & (FileInformation.STATUS_NOTVERSIONED_NOTMANAGED | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) == 0 // do not scan notmanaged or ignored folders
                     && turbo.readEntry(file, FILE_STATUS_MAP) == null) {    // scan only those which have not yet been scanned, no information is available for them
                 refreshAsync(file.listFiles());
@@ -1226,7 +1227,7 @@ public class FileStatusCache {
          * @param mimeTypeFlag mime label is needed?
          * @return a cache item or a fake one if the original is null or invalid
          */
-        FileLabelInfo getLabelInfo(File file, boolean mimeTypeFlag) {
+        public FileLabelInfo getLabelInfo(File file, boolean mimeTypeFlag) {
             FileLabelInfo labelInfo;
             boolean refreshInfo = false;
             synchronized (fileLabels) {
@@ -1266,7 +1267,7 @@ public class FileStatusCache {
             synchronized (filesForLabelRefresh) {
                 filesForLabelRefresh.add(file);
             }
-            if (VERSIONING_ASYNC_ANNOTATOR) {
+            if (!EventQueue.isDispatchThread() || VERSIONING_ASYNC_ANNOTATOR) { // refresh does not block the AWT
                 labelInfoRefreshTask.run();
             } else {
                 labelInfoRefreshTask.schedule(200);
@@ -1331,8 +1332,8 @@ public class FileStatusCache {
                                     LABELS_CACHE_LOG.log(Level.WARNING, "LabelInfoRefreshTask: failed getting info and info for {0}", file.getAbsolutePath());
                                     LABELS_CACHE_LOG.log(Level.INFO, null, ex);
                                 }
-                                labels.put(file, FAKE_LABEL_INFO);
                             }
+                            labels.put(file, FAKE_LABEL_INFO);
                         }
                     }
                     synchronized (fileLabels) {
@@ -1390,7 +1391,7 @@ public class FileStatusCache {
         /**
          * File label cache item
          */
-        static class FileLabelInfo {
+        public static class FileLabelInfo {
 
             private final String revisionString;
             private final String binaryString;
@@ -1434,7 +1435,7 @@ public class FileStatusCache {
             /*
              * Returns a not null String, empty for not binary files
              */
-            String getBinaryString() {
+            public String getBinaryString() {
                 return binaryString != null ? binaryString : "";            //NOI18N
             }
 
@@ -1442,7 +1443,7 @@ public class FileStatusCache {
              * returns a not null String denoting a copy name
              * @return
              */
-            String getStickyString() {
+            public String getStickyString() {
                 return stickyString != null ? stickyString : "";            //NOI18N
             }
 

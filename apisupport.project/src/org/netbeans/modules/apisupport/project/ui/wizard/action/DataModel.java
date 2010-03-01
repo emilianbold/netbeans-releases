@@ -58,6 +58,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.NbBundle;
 
 /**
  * Data model used across the <em>New Action Wizard</em>.
@@ -546,6 +547,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     }
     
     static final class Position {
+
+        public static final Position PROTOTYPE = new Position(null, null, "One Thing", "Another Thing"); // NOI18N
         
         private String before;
         private String after;
@@ -577,6 +580,14 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         String getAfterName() {
             return afterName;
+        }
+
+        private static final String POSITION_HERE = NbBundle.getMessage(DataModel.class, "CTL_PositionHere");
+        private static final String POSITION_SEPARATOR = " - "; // NOI18N
+        public @Override String toString() {
+            String beforeText = beforeName == null ? "" : beforeName + POSITION_SEPARATOR;
+            String afterText = afterName == null ? "" : POSITION_SEPARATOR + afterName;
+            return beforeText + POSITION_HERE + afterText;
         }
     }
     

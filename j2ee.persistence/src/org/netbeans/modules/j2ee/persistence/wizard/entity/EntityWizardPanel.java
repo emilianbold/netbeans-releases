@@ -78,7 +78,7 @@ public class EntityWizardPanel extends javax.swing.JPanel {
         this.setProject(project);
         this.listener = changeListener;
         initComponents();
-        createPUCheckBox.setSelected(true);
+        createPUCheckbox.setSelected(true);
         
         primaryKeyTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -103,7 +103,7 @@ public class EntityWizardPanel extends javax.swing.JPanel {
     
 
     void setPersistenceUnitButtonVisibility(boolean visible) {
-        createPUCheckBox.setVisible(visible);
+        createPUCheckbox.setVisible(visible);
         //createPUCheckBox.setSelected(visible);
         updateWarning();
     }
@@ -111,7 +111,7 @@ public class EntityWizardPanel extends javax.swing.JPanel {
     private void updateWarning(){
         String warning=null;
         try {
-            if(createPUCheckBox.isVisible() && !createPU && !(ProviderUtil.persistenceExists(project) || !ProviderUtil.isValidServerInstanceOrNone(project))){
+            if(createPUCheckbox.isVisible() && !createPU && !(ProviderUtil.persistenceExists(project) || !ProviderUtil.isValidServerInstanceOrNone(project))){
                 warning = NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_NoPersistenceUnit");
             }
         } catch (InvalidPersistenceXmlException ex) {
@@ -137,7 +137,7 @@ public class EntityWizardPanel extends javax.swing.JPanel {
 //    }
 
     public boolean isCreatePU(){
-        return createPU;
+        return createPUCheckbox.isVisible() && createPU;
     }
 
     /** This method is called from within the constructor to
@@ -154,7 +154,7 @@ public class EntityWizardPanel extends javax.swing.JPanel {
         primaryKeyTextField = new javax.swing.JTextField();
         searchButton = new javax.swing.JButton();
         createPUWarningLabel = new ShyLabel();
-        createPUCheckBox = new javax.swing.JCheckBox();
+        createPUCheckbox = new javax.swing.JCheckBox();
 
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/persistence/wizard/entity/Bundle").getString("MN_PrimaryKeyType").charAt(0));
         jLabel1.setLabelFor(primaryKeyTextField);
@@ -171,10 +171,11 @@ public class EntityWizardPanel extends javax.swing.JPanel {
 
         createPUWarningLabel.setText(" ");
 
-        createPUCheckBox.setText(org.openide.util.NbBundle.getMessage(EntityWizardPanel.class, "LBL_CreatePersistenceUnit")); // NOI18N
-        createPUCheckBox.addItemListener(new java.awt.event.ItemListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(createPUCheckbox, org.openide.util.NbBundle.getMessage(EntityWizardPanel.class, "LBL_CreatePersistenceUnit")); // NOI18N
+        createPUCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        createPUCheckbox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                createPUCheckBoxItemStateChanged(evt);
+                createPUCheckboxItemStateChanged(evt);
             }
         });
 
@@ -190,7 +191,7 @@ public class EntityWizardPanel extends javax.swing.JPanel {
                 .add(searchButton))
             .add(createPUWarningLabel)
             .add(layout.createSequentialGroup()
-                .add(createPUCheckBox)
+                .add(createPUCheckbox)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -200,10 +201,10 @@ public class EntityWizardPanel extends javax.swing.JPanel {
                     .add(jLabel1)
                     .add(searchButton)
                     .add(primaryKeyTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 37, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 39, Short.MAX_VALUE)
                 .add(createPUWarningLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(createPUCheckBox))
+                .add(createPUCheckbox))
         );
 
         primaryKeyTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EntityWizardPanel.class, "LBL_PrimaryKeyClass")); // NOI18N
@@ -236,16 +237,16 @@ public class EntityWizardPanel extends javax.swing.JPanel {
         });
     }//GEN-LAST:event_searchButtonActionPerformed
     
-    private void createPUCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_createPUCheckBoxItemStateChanged
-        this.createPU = createPUCheckBox.isVisible() && createPUCheckBox.isSelected();
+    private void createPUCheckboxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_createPUCheckboxItemStateChanged
+        this.createPU = createPUCheckbox.isVisible() && createPUCheckbox.isSelected();
         updateWarning();
         listener.stateChanged(null);
-    }//GEN-LAST:event_createPUCheckBoxItemStateChanged
+    }//GEN-LAST:event_createPUCheckboxItemStateChanged
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup accessTypeGroup;
-    private javax.swing.JCheckBox createPUCheckBox;
+    private javax.swing.JCheckBox createPUCheckbox;
     private javax.swing.JLabel createPUWarningLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.ButtonGroup persistenceGroup;

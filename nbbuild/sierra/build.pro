@@ -43,7 +43,7 @@
     <property environment="env"/>
 
     <property name="netbeans.prox" value="false"/>
-    <property name="netbeans.type" value="java"/>
+    <property name="netbeans.type" value="javase"/>
 
     <!-- NetBeans latest nightly -->
     <!-- property name="netbeans.host" value="http://bits.netbeans.org"/ -->

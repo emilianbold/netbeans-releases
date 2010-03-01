@@ -56,6 +56,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
@@ -280,11 +281,13 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
             return;
         }
         File testDir = getTestDir();
-        err = Utils.validateTestSources(properties.getProject(), testDir.getAbsolutePath());
-        if (err != null) {
-            category.setErrorMessage(err);
-            category.setValid(false);
-            return;
+        if (testDir != null) {
+            err = Utils.validateTestSources(properties.getProject(), testDir.getAbsolutePath());
+            if (err != null) {
+                category.setErrorMessage(err);
+                category.setValid(false);
+                return;
+            }
         }
 
         File webRootDir = getWebRootDir();
@@ -324,12 +327,15 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         properties.setCopySrcTarget(copyTargetDir == null ? "" : copyTargetDir.getAbsolutePath()); // NOI18N
         // tests - relativize path
         File projectDirectory = FileUtil.toFile(properties.getProject().getProjectDirectory());
-        String testPath = PropertyUtils.relativizeFile(projectDirectory, testDir);
-        if (testPath == null) {
-            // path cannot be relativized => use absolute path (any VCS can be hardly use, of course)
-            testPath = testDir.getAbsolutePath();
+
+        if (testDir != null) {
+            String testPath = PropertyUtils.relativizeFile(projectDirectory, testDir);
+            if (testPath == null) {
+                // path cannot be relativized => use absolute path (any VCS can be hardly use, of course)
+                testPath = testDir.getAbsolutePath();
+            }
+            properties.setTestDir(testPath);
         }
-        properties.setTestDir(testPath);
         String webRoot = PropertyUtils.relativizeFile(srcDir, webRootDir);
         assert webRoot != null && !webRoot.startsWith("../") : "WebRoot must be underneath Sources";
         properties.setWebRoot(webRoot);
@@ -343,7 +349,11 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
     }
 
     private File getTestDir() {
-        return new File(testFolderTextField.getText()); // file already normalized
+        String tests = testFolderTextField.getText();
+        if (!StringUtils.hasText(tests)) {
+            return null;
+        }
+        return new File(tests); // file already normalized
     }
 
     private File getWebRootDir() {

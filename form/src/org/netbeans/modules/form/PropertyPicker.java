@@ -174,6 +174,7 @@ public class PropertyPicker extends javax.swing.JPanel {
 
             // sort the properties by name
             Arrays.sort(items, new Comparator<PropertyPickerItem>() {
+                @Override
                 public int compare(PropertyPickerItem o1, PropertyPickerItem o2) {
                     return o1.getPropertyName().compareTo(o2.getPropertyName());
                 }
@@ -191,12 +192,15 @@ public class PropertyPicker extends javax.swing.JPanel {
 
     private PropertyPickerItem createItem(final PropertyDescriptor desc) {
 	return new PropertyPickerItem() {
+            @Override
 	    public String getPropertyName() {
 		return desc.getName();
 	    }
+            @Override
 	    public String getReadMethodName() {
 		return desc.getReadMethod().getName();
 	    }
+            @Override
 	    public PropertyDescriptor getPropertyDescriptor() {
 		return desc;
 	    }
@@ -205,12 +209,15 @@ public class PropertyPicker extends javax.swing.JPanel {
 	    
     private PropertyPickerItem createItem(final String name) {
 	return new PropertyPickerItem() {
+            @Override
 	    public String getPropertyName() {
 		return FormJavaSource.extractPropertyName(name);
 	    }
+            @Override
 	    public String getReadMethodName() {
 		return FormUtils.getMethodName(name, NO_PARAMETERS);
 	    }
+            @Override
 	    public PropertyDescriptor getPropertyDescriptor() {
 		return null;
 	    }

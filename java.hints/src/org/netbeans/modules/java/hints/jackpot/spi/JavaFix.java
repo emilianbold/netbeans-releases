@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.java.hints.jackpot.spi;
 
+import com.sun.javadoc.Doc;
 import com.sun.javadoc.Tag;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -272,7 +273,11 @@ public abstract class JavaFix {
     private static java.util.regex.Pattern SPEC_VERSION = java.util.regex.Pattern.compile("[0-9]+(\\.[0-9]+)+");
     
     public static SpecificationVersion computeSpecVersion(CompilationInfo info, Element el) {
-        for (Tag since : info.getElementUtilities().javaDocFor(el).tags("@since")) {
+        Doc javaDoc = info.getElementUtilities().javaDocFor(el);
+
+        if (javaDoc == null) return null;
+
+        for (Tag since : javaDoc.tags("@since")) {
             String text = since.text();
 
             Matcher m = SPEC_VERSION.matcher(text);

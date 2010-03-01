@@ -42,18 +42,10 @@
 package org.netbeans.modules.groovy.gsp;
 
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.DeclarationFinder;
-import org.netbeans.modules.csl.api.Formatter;
-import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.api.InstantRenamer;
-import org.netbeans.modules.csl.api.KeystrokeHandler;
-import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -97,52 +89,6 @@ public class GspLanguage extends DefaultLanguageConfig {
     }
 
     @Override
-    public CodeCompletionHandler getCompletionHandler() {
-        return null;
-    }
-
-    @Override
-    public DeclarationFinder getDeclarationFinder() {
-        return null;
-    }
-
-    @Override
-    public boolean hasFormatter() {
-        return false;
-    }
-    
-    @Override
-    public Formatter getFormatter() {
-        return null;
-    }
-
-    @Override
-    public EmbeddingIndexerFactory getIndexerFactory() {
-        return null;
-    }
-
-
-    @Override
-    public InstantRenamer getInstantRenamer() {
-        return null;
-    }
-
-    @Override
-    public KeystrokeHandler getKeystrokeHandler() {
-        return null;
-    }
-
-    @Override
-    public boolean hasOccurrencesFinder() {
-        return false;
-    }
-
-    @Override
-    public OccurrencesFinder getOccurrencesFinder() {
-        return null;
-    }
-
-    @Override
     public Parser getParser() {
         return new GspParser();
     }
@@ -162,13 +108,4 @@ public class GspLanguage extends DefaultLanguageConfig {
         return new GspStructureScanner();
     }
 
-    @Override
-    public boolean hasHintsProvider() {
-        return false;
-    }
-
-    @Override
-    public HintsProvider getHintsProvider() {
-        return null;
-    }
 }

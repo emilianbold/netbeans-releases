@@ -75,7 +75,7 @@ public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeL
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         add(delegateSelector, gridBagConstraints);
-        delegateSelector.getExplorerManager().addPropertyChangeListener(this);
+        delegateSelector.getExplorerManager().addPropertyChangeListener(DelegatePanel.this);
         
         methodSelector = new ElementSelectorPanel(null, false, true);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -138,9 +138,11 @@ public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeL
         add(methodLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if ( ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()) ) {
             SwingUtilities.invokeLater(new Runnable() {                 
+                @Override
                 public void run() {
                     CsmField handle = getDelegateField();
                     methodSelector.setRootElement(handle == null ? null : DelegateMethodGenerator.getAvailableMethods(component, handle), false);

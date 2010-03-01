@@ -70,17 +70,13 @@ public class GuiRunLevel implements RunLevel {
     private static int count;
     
     public GuiRunLevel() {
-        Lookup lookup = Lookup.getDefault();
-        if (!(lookup instanceof MainLookup)) {
-            throw new ClassCastException("Wrong Lookup impl found: " + lookup);
-        }
         MainLookup.started();
         assert count++ == 0 : "Only one instance allowed"; // NOI18N
     }
     
     /** Initialization of the manager.
     */
-    public void run () {
+    public @Override void run() {
         // -----------------------------------------------------------------------------------------------------
         // 10. Loader pool loading
         try {
@@ -110,10 +106,12 @@ public class GuiRunLevel implements RunLevel {
         // -----------------------------------------------------------------------------------------------------
         // 8. Advance Policy
 
-        // set security manager
-        TopSecurityManager.install();
-        if (CLIOptions.isGui()) {
-        TopSecurityManager.makeSwingUseSpecialClipboard(Lookup.getDefault().lookup(org.openide.util.datatransfer.ExClipboard.class));
+        if (!Boolean.getBoolean("TopSecurityManager.disable")) {
+            // set security manager
+            TopSecurityManager.install();
+            if (CLIOptions.isGui()) {
+                TopSecurityManager.makeSwingUseSpecialClipboard(Lookup.getDefault().lookup(org.openide.util.datatransfer.ExClipboard.class));
+            }
         }
 
         // install java.net.Authenticator
@@ -140,7 +138,7 @@ public class GuiRunLevel implements RunLevel {
         // a TaskThreadGroup
         // such task never ends or, if killed, timer is over
         Timer timerInit = new Timer(0, new java.awt.event.ActionListener() {
-              public void actionPerformed(java.awt.event.ActionEvent ev) { }
+              public @Override void actionPerformed(java.awt.event.ActionEvent ev) { }
         });
         timerInit.setRepeats(false);
         timerInit.start();
@@ -162,7 +160,7 @@ public class GuiRunLevel implements RunLevel {
             windowSystem.init();
         }
         SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+            public @Override void run() {
                 StartLog.logProgress("Window system initialization");
                 if (System.getProperty("netbeans.warmup.skip") == null && System.getProperty("netbeans.close") == null) {
                     final Frame mainWindow = WindowManager.getDefault().getMainWindow();
@@ -196,10 +194,10 @@ public class GuiRunLevel implements RunLevel {
         // Waits for notification about processed paint event for main window
         // require modified java.awt.EventQueue to run succesfully
         Runnable r = new Runnable() {
-          public void run() {
+          public @Override void run() {
               try {
-                  Class clz = Class.forName("org.netbeans.performance.test.guitracker.LoggingRepaintManager"); // NOI18N
-                  Method m = clz.getMethod("measureStartup", new Class[] {}); // NOI18N
+                  Class<?> clz = Class.forName("org.netbeans.performance.test.guitracker.LoggingRepaintManager"); // NOI18N
+                  Method m = clz.getMethod("measureStartup"); // NOI18N
                   Object o = m.invoke(null);
                   endOfStartupMeasuring(o);
               } catch (ClassNotFoundException e) {
@@ -235,7 +233,9 @@ public class GuiRunLevel implements RunLevel {
                 // Useful for performance testing.
                 new WarmUpSupport().run(); // synchronous
             }
-            if(o!=null) StartLog.logMeasuredStartupTime(((Long)o).longValue());
+            if (o != null) {
+                StartLog.logMeasuredStartupTime((Long) o);
+            }
             org.openide.LifecycleManager.getDefault().exit();
         }
     }

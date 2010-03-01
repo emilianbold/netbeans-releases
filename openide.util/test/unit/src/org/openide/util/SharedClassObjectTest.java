@@ -54,6 +54,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.lookup.implspi.SharedClassObjectBridge;
 import org.openide.util.test.MockPropertyChangeListener;
 
 /** Test SharedClassObject singletons: esp. initialization semantics.
@@ -201,6 +202,15 @@ public class SharedClassObjectTest extends NbTestCase {
         MockServices.setServices(Instance.class);
         Instance i2 = Lookup.getDefault().lookup(Instance.class);
         assertSame("Only one instance is created", i1, i2);
+    }
+
+    public void testSharedClassObjectBridge() throws Exception {
+        assertEquals(Object.class, SharedClassObjectBridge.newInstance(Object.class).getClass());
+        Class<? extends SharedClassObject> c = makeClazz("SimpleSCO");
+        SharedClassObject o = SharedClassObjectBridge.newInstance(c);
+        assertNotNull(o);
+        assertEquals(c, o.getClass());
+        assertTrue(o == SharedClassObject.findObject(c, true));
     }
 
     public static final class Instance extends SharedClassObject {

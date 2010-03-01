@@ -48,6 +48,7 @@ made subject to such option by the copyright holder.
                 <folder name="ApiSupport">
                     <attr name="position" intvalue="700"/>
                     <file name="PaintAppProject.zip" url="PaintAppProject.zip">
+                        <attr name="position" intvalue="2000"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/paintapp/paint.png"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.paintapp.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.paintapp.PaintAppWizardIterator.createIterator"/>

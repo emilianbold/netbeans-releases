@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.util.List;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
+import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;

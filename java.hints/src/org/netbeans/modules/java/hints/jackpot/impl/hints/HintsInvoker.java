@@ -59,8 +59,10 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -95,8 +97,6 @@ import org.openide.util.Exceptions;
  * @author lahvac
  */
 public class HintsInvoker {
-
-    private static final Logger TIMER = Logger.getLogger("TIMER");
 
     private final Map<String, Long> timeLog = new HashMap<String, Long>();
 
@@ -151,7 +151,7 @@ public class HintsInvoker {
             } else {
                 if (m.kind == HintMetadata.Kind.HINT || m.kind == HintMetadata.Kind.HINT_NON_GUI) {
                     Preferences pref = RulesManager.getPreferences(m.id, HintsSettings.getCurrentProfileId());
-                    if (HintsSettings.getSeverity(m, pref) != HintSeverity.CURRENT_LINE_WARNING || from != (-1)) {
+                    if (HintsSettings.getSeverity(m, pref) != HintSeverity.CURRENT_LINE_WARNING) {
                         descs.addAll(e.getValue());
                     }
                 }
@@ -169,9 +169,13 @@ public class HintsInvoker {
 
         long elementBasedEnd = System.currentTimeMillis();
 
-        timeLog.put("Jackpot 3.0 Element Based Hints", elementBasedEnd - elementBasedStart);
+        timeLog.put("Computing Element Based Hints", elementBasedEnd - elementBasedStart);
 
-        return compute(info, startAt, kindHints, patternHints, new LinkedList<MessageImpl>());
+        List<ErrorDescription> errors = compute(info, startAt, kindHints, patternHints, new LinkedList<MessageImpl>());
+
+        dumpTimeSpentInHints();
+        
+        return errors;
     }
 
     public List<ErrorDescription> computeHints(CompilationInfo info,
@@ -211,6 +215,14 @@ public class HintsInvoker {
                                         Collection<? super MessageImpl> problems) {
         List<ErrorDescription> errors = new  LinkedList<ErrorDescription>();
 
+        long kindCount = 0;
+
+        for (Entry<Kind, List<HintDescription>> e : hints.entrySet()) {
+            kindCount += e.getValue().size();
+        }
+
+        timeLog.put("[C] Kind Based Hints", kindCount);
+
         if (!hints.isEmpty()) {
             long kindStart = System.currentTimeMillis();
 
@@ -218,27 +230,36 @@ public class HintsInvoker {
 
             long kindEnd = System.currentTimeMillis();
 
-            timeLog.put("Jackpot 3.0 Kind Based Hints", kindEnd - kindStart);
+            timeLog.put("Kind Based Hints", kindEnd - kindStart);
         }
+
+        timeLog.put("[C] Pattern Based Hints", (long) patternHints.size());
 
         long patternStart = System.currentTimeMillis();
 
         Map<String, List<PatternDescription>> patternTests = computePatternTests(patternHints);
 
-        long bulkStart = System.currentTimeMillis();
+        long bulkPatternStart = System.currentTimeMillis();
 
         BulkPattern bulkPattern = BulkSearch.getDefault().create(info, patternTests.keySet());
+
+        long bulkPatternEnd = System.currentTimeMillis();
+
+        timeLog.put("Bulk Pattern preparation", bulkPatternEnd - bulkPatternStart);
+
+        long bulkStart = System.currentTimeMillis();
+
         Map<String, Collection<TreePath>> occurringPatterns = BulkSearch.getDefault().match(info, startAt, bulkPattern, timeLog);
 
         long bulkEnd = System.currentTimeMillis();
 
-        timeLog.put("Jackpot 3.0 Bulk Search", bulkEnd - bulkStart);
+        timeLog.put("Bulk Search", bulkEnd - bulkStart);
 
-        errors.addAll(doComputeHints(info, occurringPatterns, patternTests, startAt, patternHints, problems));
+        errors.addAll(doComputeHints(info, occurringPatterns, patternTests, patternHints, problems));
 
         long patternEnd = System.currentTimeMillis();
 
-        timeLog.put("Jackpot 3.0 Pattern Based Hints", patternEnd - patternStart);
+        timeLog.put("Pattern Based Hints", patternEnd - patternStart);
 
         return errors;
     }
@@ -270,7 +291,7 @@ public class HintsInvoker {
 
             long kindEnd = System.currentTimeMillis();
 
-            timeLog.put("Jackpot 3.0 Kind Based Hints", kindEnd - kindStart);
+            timeLog.put("Kind Based Hints", kindEnd - kindStart);
         }
 
         if (!patternHints.isEmpty()) {
@@ -285,13 +306,13 @@ public class HintsInvoker {
 
             long bulkEnd = System.currentTimeMillis();
 
-            timeLog.put("Jackpot 3.0 Bulk Search", bulkEnd - bulkStart);
+            timeLog.put("Bulk Search", bulkEnd - bulkStart);
 
-            errors.addAll(doComputeHints(info, occurringPatterns, patternTests, path, patternHints, problems));
+            errors.addAll(doComputeHints(info, occurringPatterns, patternTests, patternHints, problems));
 
             long patternEnd = System.currentTimeMillis();
 
-            timeLog.put("Jackpot 3.0 Pattern Based Hints", patternEnd - patternStart);
+            timeLog.put("Pattern Based Hints", patternEnd - patternStart);
         }
 
         return errors;
@@ -320,31 +341,66 @@ public class HintsInvoker {
         }
 
         if (!patternHints.isEmpty()) {
-//            long patternStart = System.currentTimeMillis();
-//
-//            Map<String, List<PatternDescription>> patternTests = computePatternTests(patternHints);
-//
+            long patternStart = System.currentTimeMillis();
+
+            Map<String, List<PatternDescription>> patternTests = computePatternTests(patternHints);
+
+            //pretend that all the patterns occur on all treepaths from the current path
+            //up (probably faster than using BulkSearch over whole file)
+            //TODO: what about machint trees under the current path?
+            Set<TreePath> paths = new HashSet<TreePath>();
+
+            TreePath tp = workOn;
+
+            while (tp != null) {
+                paths.add(tp);
+                tp = tp.getParentPath();
+            }
+
+            Map<String, Collection<TreePath>> occurringPatterns = new HashMap<String, Collection<TreePath>>();
+
+            for (String p : patternTests.keySet()) {
+                occurringPatterns.put(p, paths);
+            }
+
 //            long bulkStart = System.currentTimeMillis();
 //
 //            BulkPattern bulkPattern = BulkSearch.getDefault().create(info, patternTests.keySet());
-//            Map<String, Collection<TreePath>> occurringPatterns = BulkSearch.getDefault().match(info, info.getCompilationUnit(), bulkPattern, timeLog);
+//            Map<String, Collection<TreePath>> occurringPatterns = BulkSearch.getDefault().match(info, new TreePath(info.getCompilationUnit()), bulkPattern, timeLog);
 //
 //            long bulkEnd = System.currentTimeMillis();
 //
-//            timeLog.put("Jackpot 3.0 Bulk Search", bulkEnd - bulkStart);
+//            Set<Tree> acceptedLeafs = new HashSet<Tree>();
 //
-//            errors.addAll(doComputeHints(info, occurringPatterns, patternTests, startAt, patternHints, problems));
+//            TreePath tp = workOn;
 //
-//            long patternEnd = System.currentTimeMillis();
+//            while (tp != null) {
+//                acceptedLeafs.add(tp.getLeaf());
+//                tp = tp.getParentPath();
+//            }
 //
-//            timeLog.put("Jackpot 3.0 Pattern Based Hints", patternEnd - patternStart);
+//            for (Entry<String, Collection<TreePath>> e : occurringPatterns.entrySet()) {
+//                for (Iterator<TreePath> it = e.getValue().iterator(); it.hasNext(); ) {
+//                    if (!acceptedLeafs.contains(it.next().getLeaf())) {
+//                        it.remove();
+//                    }
+//                }
+//            }
+//
+//            timeLog.put("Bulk Search", bulkEnd - bulkStart);
+
+            errors.addAll(doComputeHints(info, occurringPatterns, patternTests, patternHints, problems));
+
+            long patternEnd = System.currentTimeMillis();
+
+            timeLog.put("Pattern Based Hints", patternEnd - patternStart);
         }
 
         return errors;
     }
 
     public List<ErrorDescription> doComputeHints(CompilationInfo info, Map<String, Collection<TreePath>> occurringPatterns, Map<String, List<PatternDescription>> patterns, Map<PatternDescription, List<HintDescription>> patternHints) throws IllegalStateException {
-        return doComputeHints(info, occurringPatterns, patterns, new TreePath(info.getCompilationUnit()), patternHints, new LinkedList<MessageImpl>());
+        return doComputeHints(info, occurringPatterns, patterns, patternHints, new LinkedList<MessageImpl>());
     }
 
     public static Map<String, List<PatternDescription>> computePatternTests(Map<PatternDescription, List<HintDescription>> patternHints) {
@@ -360,7 +416,7 @@ public class HintsInvoker {
         return patternTests;
     }
 
-    private List<ErrorDescription> doComputeHints(CompilationInfo info, Map<String, Collection<TreePath>> occurringPatterns, Map<String, List<PatternDescription>> patterns, TreePath startAt, Map<PatternDescription, List<HintDescription>> patternHints, Collection<? super MessageImpl> problems) throws IllegalStateException {
+    private List<ErrorDescription> doComputeHints(CompilationInfo info, Map<String, Collection<TreePath>> occurringPatterns, Map<String, List<PatternDescription>> patterns, Map<PatternDescription, List<HintDescription>> patternHints, Collection<? super MessageImpl> problems) throws IllegalStateException {
         List<ErrorDescription> errors = new LinkedList<ErrorDescription>();
 
         for (Entry<String, Collection<TreePath>> occ : occurringPatterns.entrySet()) {
@@ -391,7 +447,7 @@ public class HintsInvoker {
                         if (!Collections.disjoint(suppressedWarnings, hm.suppressWarnings))
                             continue;
 
-                        Collection<? extends ErrorDescription> workerErrors = hd.getWorker().createErrors(c);
+                        Collection<? extends ErrorDescription> workerErrors = runHint(hd, c);
 
                         if (workerErrors != null) {
                             errors.addAll(workerErrors);
@@ -434,7 +490,11 @@ public class HintsInvoker {
 //        }
 //    }
 
-    private static final class ScannerImpl extends CancellableTreePathScanner<Void, List<ErrorDescription>> {
+    public Map<String, Long> getTimeLog() {
+        return timeLog;
+    }
+
+    private final class ScannerImpl extends CancellableTreePathScanner<Void, List<ErrorDescription>> {
 
         private final Stack<Set<String>> suppresWarnings = new Stack<Set<String>>();
         private final CompilationInfo info;
@@ -474,7 +534,7 @@ public class HintsInvoker {
                     }
 
                     HintContext c = new HintContext(info, hm, path, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap());
-                    Collection<? extends ErrorDescription> errors = hd.getWorker().createErrors(c);
+                    Collection<? extends ErrorDescription> errors = runHint(hd, c);
 
                     if (errors != null) {
                         d.addAll(errors);
@@ -600,4 +660,46 @@ public class HintsInvoker {
         return false;
     }
 
+    private Collection<? extends ErrorDescription> runHint(HintDescription hd, HintContext ctx) {
+        long start = System.nanoTime();
+
+        try {
+            return hd.getWorker().createErrors(ctx);
+        } finally {
+            long end = System.nanoTime();
+            reportSpentTime(hd.getMetadata().id, end - start);
+        }
+    }
+
+    private static final boolean logTimeSpentInHints = Boolean.getBoolean("java.HintsInvoker.time.in.hints");
+    private final Map<String, Long> hint2SpentTime = new HashMap<String, Long>();
+
+    private void reportSpentTime(String id, long nanoTime) {
+        if (!logTimeSpentInHints) return;
+        
+        Long prev = hint2SpentTime.get(id);
+
+        if (prev == null) {
+            prev = (long) 0;
+        }
+
+        hint2SpentTime.put(id, prev + nanoTime);
+    }
+
+    private void dumpTimeSpentInHints() {
+        if (!logTimeSpentInHints) return;
+
+        List<Entry<String, Long>> l = new ArrayList<Entry<String, Long>>(hint2SpentTime.entrySet());
+
+        Collections.sort(l, new Comparator<Entry<String, Long>>() {
+            @Override
+            public int compare(Entry<String, Long> o1, Entry<String, Long> o2) {
+                return (int) Math.signum(o1.getValue() - o2.getValue());
+            }
+        });
+
+        for (Entry<String, Long> e : l) {
+            System.err.println(e.getKey() + "=" + String.format("%3.2f", e.getValue() / 1000000.0));
+        }
+    }
 }

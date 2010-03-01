@@ -46,7 +46,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.text.TextAction;
-import org.netbeans.modules.csl.core.UiUtils;
+import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpClass;

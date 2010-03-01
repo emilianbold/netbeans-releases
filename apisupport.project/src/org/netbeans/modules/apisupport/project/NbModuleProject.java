@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -98,6 +98,7 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.queries.AccessibilityQueryImpl;
+import org.netbeans.modules.apisupport.project.queries.AnnotationProcessingQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.UnitTestForSourceQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.AntArtifactProviderImpl;
@@ -113,9 +114,11 @@ import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.ui.ModuleActions;
 import org.netbeans.modules.apisupport.project.ui.ModuleLogicalView;
 import org.netbeans.modules.apisupport.project.ui.ModuleOperations;
+import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
@@ -134,17 +137,23 @@ import org.openide.util.lookup.InstanceContent;
  * @author Jesse Glick
  */
 @AntBasedProjectRegistration(
-    type=NbModuleProjectType.TYPE,
-    iconResource="org/netbeans/modules/apisupport/project/resources/module.png", // NOI18N
-    sharedName=NbModuleProjectType.NAME_SHARED,
-    sharedNamespace= NbModuleProjectType.NAMESPACE_SHARED,
-    privateName=NbModuleProjectType.NAME_PRIVATE,
-    privateNamespace= NbModuleProjectType.NAMESPACE_PRIVATE
+    type=NbModuleProject.TYPE,
+    iconResource=NbModuleProject.NB_PROJECT_ICON_PATH,
+    sharedName=NbModuleProject.NAME_SHARED,
+    sharedNamespace= NbModuleProject.NAMESPACE_SHARED,
+    privateName="data", // NOI18N
+    privateNamespace= "http://www.netbeans.org/ns/nb-module-project-private/1" // NOI18N
 )
 public final class NbModuleProject implements Project {
     
+    static final String TYPE = "org.netbeans.modules.apisupport.project"; // NOI18N
+    static final String NAME_SHARED = "data"; // NOI18N
+    public static final String NAMESPACE_SHARED = "http://www.netbeans.org/ns/nb-module-project/3"; // NOI18N
+    public static final String NAMESPACE_SHARED_2 = "http://www.netbeans.org/ns/nb-module-project/2"; // NOI18N
     public static final String NB_PROJECT_ICON_PATH =
             "org/netbeans/modules/apisupport/project/resources/module.png"; // NOI18N
+    public static final String NB_PROJECT_OSGI_ICON_PATH =
+            "org/netbeans/modules/apisupport/project/resources/bundle.png"; // NOI18N
     
     private static final Icon NB_PROJECT_ICON = ImageUtilities.loadImageIcon(NB_PROJECT_ICON_PATH, false);
     
@@ -212,7 +221,7 @@ public final class NbModuleProject implements Project {
                     .displayName(NbBundle.getMessage(NbModuleProject.class, "LBL_javahelp_packages")).add();
         }
         for (Map.Entry<FileObject,Element> entry : getExtraCompilationUnits().entrySet()) {
-            Element pkgrootEl = Util.findElement(entry.getValue(), "package-root", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+            Element pkgrootEl = Util.findElement(entry.getValue(), "package-root", NbModuleProject.NAMESPACE_SHARED); // NOI18N
             String pkgrootS = Util.findText(pkgrootEl);
             sourcesHelper.sourceRoot(pkgrootS).type(JavaProjectConstants.SOURCES_TYPE_JAVA)
                     .displayName(/* XXX should schema incl. display name? */entry.getKey().getNameExt()).add();
@@ -289,8 +298,9 @@ public final class NbModuleProject implements Project {
         ic.add(LookupProviderSupport.createSourcesMerger());
         ic.add(UILookupMergerSupport.createPrivilegedTemplatesMerger());
         ic.add(UILookupMergerSupport.createRecommendedTemplatesMerger());
-        ic.add(new TemplateAttributesProvider(getHelper(), getModuleType() == NbModuleType.NETBEANS_ORG));
+        ic.add(new TemplateAttributesProvider(this, getHelper(), getModuleType() == NbModuleType.NETBEANS_ORG));
         ic.add(new FileEncodingQueryImpl());
+        ic.add(new AnnotationProcessingQueryImpl());
 
         if (getModuleType() == NbModuleType.SUITE_COMPONENT) {
             ic.add(new SuiteProviderImpl());
@@ -312,11 +322,11 @@ public final class NbModuleProject implements Project {
     /**
      * Get the minimum harness version required to work with this module.
      */
-    public int getMinimumHarnessVersion() {
-        if (helper.createAuxiliaryConfiguration().getConfigurationFragment(NbModuleProjectType.NAME_SHARED, NbModuleProjectType.NAMESPACE_SHARED_2, true) != null) {
-            return NbPlatform.HARNESS_VERSION_50;
+    public HarnessVersion getMinimumHarnessVersion() {
+        if (helper.createAuxiliaryConfiguration().getConfigurationFragment(NbModuleProject.NAME_SHARED, NbModuleProject.NAMESPACE_SHARED_2, true) != null) {
+            return HarnessVersion.V50;
         } else {
-            return NbPlatform.HARNESS_VERSION_55u1;
+            return HarnessVersion.V55u1;
         }
     }
 
@@ -328,9 +338,9 @@ public final class NbModuleProject implements Project {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Element>() {
             public Element run() {
                 AuxiliaryConfiguration ac = helper.createAuxiliaryConfiguration();
-                Element data = ac.getConfigurationFragment(NbModuleProjectType.NAME_SHARED, NbModuleProjectType.NAMESPACE_SHARED_2, true);
+                Element data = ac.getConfigurationFragment(NbModuleProject.NAME_SHARED, NbModuleProject.NAMESPACE_SHARED_2, true);
                 if (data != null) {
-                    return Util.translateXML(data, NbModuleProjectType.NAMESPACE_SHARED);
+                    return Util.translateXML(data, NbModuleProject.NAMESPACE_SHARED);
                 } else {
                     return helper.getPrimaryConfigurationData(true);
                 }
@@ -346,8 +356,8 @@ public final class NbModuleProject implements Project {
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
             public Void run() {
                 AuxiliaryConfiguration ac = helper.createAuxiliaryConfiguration();
-                if (ac.getConfigurationFragment(NbModuleProjectType.NAME_SHARED, NbModuleProjectType.NAMESPACE_SHARED_2, true) != null) {
-                    ac.putConfigurationFragment(Util.translateXML(data, NbModuleProjectType.NAMESPACE_SHARED_2), true);
+                if (ac.getConfigurationFragment(NbModuleProject.NAME_SHARED, NbModuleProject.NAMESPACE_SHARED_2, true) != null) {
+                    ac.putConfigurationFragment(Util.translateXML(data, NbModuleProject.NAMESPACE_SHARED_2), true);
                 } else {
                     helper.putPrimaryConfigurationData(data, true);
                 }
@@ -363,9 +373,9 @@ public final class NbModuleProject implements Project {
 
     private NbModuleProvider.NbModuleType getModuleType() {
         Element data = getPrimaryConfigurationData();
-        if (Util.findElement(data, "suite-component", NbModuleProjectType.NAMESPACE_SHARED) != null) { // NOI18N
+        if (Util.findElement(data, "suite-component", NbModuleProject.NAMESPACE_SHARED) != null) { // NOI18N
             return NbModuleProvider.SUITE_COMPONENT;
-        } else if (Util.findElement(data, "standalone", NbModuleProjectType.NAMESPACE_SHARED) != null) { // NOI18N
+        } else if (Util.findElement(data, "standalone", NbModuleProject.NAMESPACE_SHARED) != null) { // NOI18N
             return NbModuleProvider.STANDALONE;
         } else {
             return NbModuleProvider.NETBEANS_ORG;
@@ -396,8 +406,11 @@ public final class NbModuleProject implements Project {
             return directoryCache.get(prop);
         } else {
             String v = evaluator().getProperty(prop);
-            if (v == null)
-                throw new NullPointerException("Property ${" + prop + "} returned null, probably undefined.");
+            if (v == null) {
+                Logger.getLogger(NbModuleProject.class.getName()).log(Level.WARNING,
+                        "#150612: property {0} was undefined in {1}", new Object[] {prop, this});
+                return null;
+            }
             FileObject f = helper.resolveFileObject(v);
             directoryCache.put(prop, f);
             return f;
@@ -458,7 +471,7 @@ public final class NbModuleProject implements Project {
 
     public String getCodeNameBase() {
         Element config = getPrimaryConfigurationData();
-        Element cnb = Util.findElement(config, "code-name-base", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        Element cnb = Util.findElement(config, "code-name-base", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         if (cnb != null) {
             return Util.findText(cnb);
         } else {
@@ -610,10 +623,10 @@ public final class NbModuleProject implements Project {
             return true;
         }
         Element config = getPrimaryConfigurationData();
-        Element pubPkgs = Util.findElement(config, "public-packages", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        Element pubPkgs = Util.findElement(config, "public-packages", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         if (pubPkgs == null) {
             // Try <friend-packages> too.
-            pubPkgs = Util.findElement(config, "friend-packages", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+            pubPkgs = Util.findElement(config, "friend-packages", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         }
         return pubPkgs != null && !Util.findSubElements(pubPkgs).isEmpty();
     }
@@ -644,7 +657,7 @@ public final class NbModuleProject implements Project {
             extraCompilationUnits = new HashMap<FileObject,Element>();
             for (Element ecu : Util.findSubElements(getPrimaryConfigurationData())) {
                 if (ecu.getLocalName().equals("extra-compilation-unit")) { // NOI18N
-                    Element pkgrootEl = Util.findElement(ecu, "package-root", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+                    Element pkgrootEl = Util.findElement(ecu, "package-root", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                     String pkgrootS = Util.findText(pkgrootEl);
                     String pkgrootEval = evaluator().evaluate(pkgrootS);
                     FileObject pkgroot = getHelper().resolveFileObject(pkgrootEval);
@@ -848,7 +861,7 @@ public final class NbModuleProject implements Project {
     
     public void refreshBuildScripts(boolean checkForProjectXmlModified, NbPlatform customPlatform) throws IOException {
         String buildImplPath =
-                    customPlatform.getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65
+                    customPlatform.getHarnessVersion().compareTo(HarnessVersion.V65) <= 0
                     || eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
                     ? "build-impl-65.xsl" : "build-impl.xsl";    // NOI18N
         genFilesHelper.refreshBuildScript(
@@ -947,7 +960,21 @@ public final class NbModuleProject implements Project {
         public File getModuleJarLocation() {
             return NbModuleProject.this.getModuleJarLocation();
         }
-        
+
+        public @Override boolean hasDependency(String codeNameBase) throws IOException {
+            ProjectXMLManager pxm = new ProjectXMLManager(NbModuleProject.this);
+            for (ModuleDependency d : pxm.getDirectDependencies()) {
+                if (d.getModuleEntry().getCodeNameBase().equals(codeNameBase)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public boolean prepareContext() throws IllegalStateException {
+            return true;
+        }
     }
     
     private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates, RecommendedTemplates {

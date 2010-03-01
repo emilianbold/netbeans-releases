@@ -46,13 +46,8 @@ import java.util.Map;
 import javax.swing.ComboBoxModel;
 import javax.swing.KeyStroke;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.apisupport.project.ui.UIUtil.LayerItemPresenter;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 
 /**
  * @author Martin Krauskopf
@@ -95,7 +90,8 @@ public class UIUtilTest extends LayerTestBase {
     private void assertKeyLogicalString(String expected, String swingKeyStroke) {
         assertEquals(swingKeyStroke + " corresponding to " + expected, expected, UIUtil.keyToLogicalString(KeyStroke.getKeyStroke(swingKeyStroke)));
     }
-    
+
+    /* XXX rewrite to not rely on nb.org:
     public void testLayerItemPresenterCompareTo() throws Exception {
         TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
@@ -113,5 +109,6 @@ public class UIUtilTest extends LayerTestBase {
         assertTrue("'Library Wrapper Module Project < 'Module Project'", libraryLIP.compareTo(moduleLIP) < 0);
         assertTrue("'Library Wrapper Module Project < 'Module Suite Project'", libraryLIP.compareTo(suiteLIP) < 0);
     }
+     */
     
 }

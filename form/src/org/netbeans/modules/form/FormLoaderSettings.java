@@ -590,7 +590,7 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     }
     
     private static String fromArray(String[] items) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < items.length; i++) {
             sb.append(items[i]);
             if (i < items.length-1) {
@@ -622,6 +622,7 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
         return FormUtils.getBundleString("CTL_FormSettings"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.configuring"); // NOI18N
     } 

@@ -40,8 +40,6 @@
 package org.netbeans.modules.php.symfony;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
@@ -58,15 +56,9 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
+    public static final String FILE_CONFIG = "config/ProjectConfiguration.class.php"; // NOI18N
+
     private static final SymfonyPhpFrameworkProvider INSTANCE = new SymfonyPhpFrameworkProvider();
-    private static final List<String> SYMFONY_FILES = Arrays.asList(
-            "apps",      // NOI18N
-            "cache",     // NOI18N
-            "config",    // NOI18N
-            "data",      // NOI18N
-            "test",      // NOI18N
-            "web",       // NOI18N
-            "symfony");  // NOI18N
 
     public static SymfonyPhpFrameworkProvider getInstance() {
         return INSTANCE;
@@ -76,15 +68,37 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
         super(NbBundle.getMessage(SymfonyPhpFrameworkProvider.class, "LBL_FrameworkName"), NbBundle.getMessage(SymfonyPhpFrameworkProvider.class, "LBL_FrameworkDescription"));
     }
 
-    @Override
-    public boolean isInPhpModule(PhpModule phpModule) {
+    /**
+     * Try to locate (find) a <code>relativePath</code> in source directory.
+     * Currently, it searches source dir and its subdirs (if <code>subdirs</code> equals {@code true}).
+     * @return {@link FileObject} or {@code null} if not found
+     */
+    public static FileObject locate(PhpModule phpModule, String relativePath, boolean subdirs) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
-        for (String file : SYMFONY_FILES) {
-            if (sourceDirectory.getFileObject(file) == null) {
-                return false;
+
+        FileObject fileObject = sourceDirectory.getFileObject(relativePath);
+        if (fileObject != null || !subdirs) {
+            return fileObject;
+        }
+        for (FileObject child : sourceDirectory.getChildren()) {
+            fileObject = child.getFileObject(relativePath);
+            if (fileObject != null) {
+                return fileObject;
             }
         }
-        return true;
+        return null;
+    }
+
+    @Override
+    public boolean isInPhpModule(PhpModule phpModule) {
+        // #170775
+        // first search "symfony", then "config/ProjectConfiguration.class.php"
+        FileObject symfony = locate(phpModule, SymfonyScript.SCRIPT_NAME, false);
+        if (symfony != null && symfony.isData()) {
+            return true;
+        }
+        FileObject config = locate(phpModule, FILE_CONFIG, true);
+        return config != null && config.isData();
     }
 
     @Override
@@ -99,13 +113,12 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public PhpModuleProperties getPhpModuleProperties(PhpModule phpModule) {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
         PhpModuleProperties properties = new PhpModuleProperties();
-        FileObject web = sourceDirectory.getFileObject("web"); // NOI18N
+        FileObject web = locate(phpModule, "web", true); // NOI18N
         if (web != null) {
             properties = properties.setWebRoot(web);
         }
-        FileObject testUnit = sourceDirectory.getFileObject("test/unit"); // NOI18N
+        FileObject testUnit = locate(phpModule, "test/unit", true); // NOI18N
         if (testUnit != null) {
             properties = properties.setTests(testUnit);
         }

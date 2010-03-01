@@ -75,6 +75,11 @@ public class CppLexerPerformanceTestCase extends NbTestCase {
     @Override
     protected void tearDown() throws java.lang.Exception {
     }
+
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
     
     private static final int PREPARE_COUNT = 10;
 

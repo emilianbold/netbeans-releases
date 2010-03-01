@@ -110,6 +110,20 @@ is the proper place.
     <changes>
 
         <change>
+            <api name="extexecution_api"/>
+            <summary>New API method to avoid reset of custom IO</summary>
+            <version major="1" minor="20"/>
+            <date day="17" month="2" year="2010"/>
+            <author login="phejl"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible"/>
+            <description>
+                Added configuration method to ExecutionDescriptor to make
+                reset of IO optional for custom IO.
+            </description>
+            <class package="org.netbeans.api.extexecution" name="ExecutionDescriptor"/>
+            <issue number="180459"/>
+        </change>
+        <change>
             <api name="extexecution_spi_destroy"/>
             <summary>New SPI for improved external process termination</summary>
             <version major="1" minor="16"/>
@@ -124,7 +138,6 @@ is the proper place.
             <class package="org.netbeans.spi.extexecution.destroy" name="ProcessDestroyPerformer"/>
             <issue number="138116"/>
         </change>
-
         <change>
             <api name="extexecution_api"/>
             <summary>Configurable charset for process streams</summary>

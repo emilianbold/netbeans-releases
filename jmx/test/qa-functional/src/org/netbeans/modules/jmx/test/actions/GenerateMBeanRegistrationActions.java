@@ -140,7 +140,7 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         // Check menu item
         EditorOperator eo = new EditorOperator(SIMPLE_3);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled(jmio));
     }
     
     public void test2() {
@@ -160,7 +160,7 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         eo.select("//TODO Add your MBean registration code here\n");
 //        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -215,7 +215,7 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         eo.select("//TODO Add your MBean registration code here\n");
 //        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -260,7 +260,7 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         eo.select("//TODO Add your MBean registration code here\n");
 //        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -333,7 +333,7 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         eo.select("//TODO Add your MBean registration code here\n");
 //        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -384,7 +384,7 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         eo.select("//TODO Add your MBean registration code here\n");
 //        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -437,7 +437,7 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         eo.select("//TODO Add your MBean registration code here\n");
 //        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -488,7 +488,7 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         eo.select("//TODO Add your MBean registration code here\n");
 //        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);

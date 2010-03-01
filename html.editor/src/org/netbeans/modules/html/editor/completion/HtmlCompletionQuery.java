@@ -55,6 +55,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -125,6 +126,7 @@ public class HtmlCompletionQuery extends UserTask {
         if(doc != null) {
             final AtomicReference<CompletionResult> result = new AtomicReference<CompletionResult>();
             doc.render(new Runnable() {
+                @Override
                 public void run() {
                     int documentItemOffset = snapshot.getOriginalOffset(embeddedOffset);
                     TokenSequence ts = Utils.getJoinedHtmlSequence(doc, documentItemOffset - 1);
@@ -298,6 +300,9 @@ public class HtmlCompletionQuery extends UserTask {
             if (queryHtmlContent) {
                 Collection<DTD.Element> openTags = AstNodeUtils.getPossibleOpenTagElements(root, astOffset);
                 result.addAll(translateTags(offset - 1, openTags, dtd.getElementList(null)));
+                if(HtmlPreferences.completionOffersEndTagAfterLt()) {
+                    result.addAll(getPossibleEndTags(node, offset, ""));
+                }
             }
 
             //extensions
@@ -389,10 +394,6 @@ public class HtmlCompletionQuery extends UserTask {
             }
 
             if (node.type() == AstNode.NodeType.OPEN_TAG) {
-                DTD.Element tag = node.getDTDElement();
-                if (tag == null) {
-                    return null; // unknown tag
-                    }
 
                 ts.move(item.offset(hi));
                 ts.moveNext();
@@ -409,7 +410,8 @@ public class HtmlCompletionQuery extends UserTask {
                     argName = argName.toLowerCase(Locale.ENGLISH);
                 }
 
-                DTD.Attribute arg = tag.getAttribute(argName);
+                DTD.Element tag = node.getDTDElement();
+                DTD.Attribute arg = tag == null ? null : tag.getAttribute(argName);
 
                 result = new ArrayList<CompletionItem>();
 

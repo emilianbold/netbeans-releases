@@ -41,6 +41,7 @@
 
 package org.netbeans.performance.languages;
 
+
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
@@ -58,10 +59,11 @@ public class ScriptingMeasureDialogsTest {
         System.setProperty("suitename", ScriptingMeasureDialogsTest.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness Scripting Dialogs suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingProjectsPropertiesDialogTest.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+        .addTest(ScriptingProjectsPropertiesDialogTest.class)
         .addTest(RailsGeneratorDialogTest.class)
         .addTest(RubyGemsDialogTest.class)
-        .enableModules(".*").clusters("websvccommon[0-9]|php[0-9]|ruby[0-9]|webcommon[0-9]|gsf[0-9]|enterprise[0-9]").reuseUserDir(true)));
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
                 
         return suite;
     }

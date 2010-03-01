@@ -43,6 +43,7 @@ package org.openide.awt;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -951,6 +952,19 @@ public class HtmlBrowser extends JPanel {
         }
 
         public void showURL(URL u) {
+            if (Desktop.isDesktopSupported()) {
+                Desktop d = Desktop.getDesktop();
+                if (d.isSupported(Desktop.Action.BROWSE)) {
+                    try {
+                        d.browse(u.toURI());
+                        return;
+                    } catch (Exception x) {
+                        Logger.getLogger(HtmlBrowser.class.getName()).log(Level.INFO, "Showing: " + u, x);
+                    }
+                }
+            }
+
+            // Fallback implementation:
             HtmlBrowser browser = new HtmlBrowser();
             browser.setURL(u);
 

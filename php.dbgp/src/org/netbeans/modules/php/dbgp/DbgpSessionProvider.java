@@ -40,12 +40,7 @@
  */
 package org.netbeans.modules.php.dbgp;
 
-import java.util.HashSet;
-import java.util.Set;
 
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Session;
-import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.SessionProvider;
 
@@ -55,6 +50,7 @@ import org.netbeans.spi.debugger.SessionProvider;
  *
  */
 public class DbgpSessionProvider extends SessionProvider {
+    private ContextProvider myContextProvider;
     
     public DbgpSessionProvider( ContextProvider contextProvider ) {
         myContextProvider = contextProvider;
@@ -101,49 +97,5 @@ public class DbgpSessionProvider extends SessionProvider {
     
     private ContextProvider getContextProvider() {
         return myContextProvider;
-    }
-    
-    private static String findUnique( String sessionName ) {
-        DebuggerManager manager = DebuggerManager.getDebuggerManager();
-        Session[] sessions = manager.getSessions();
-
-        // 1) finds all already used indexes and puts them to HashSet
-        Set<Integer> set = new HashSet<Integer>();
-
-        for (int i = 1; i < sessions.length+1; i++) {
-            String name = sessions[i-1].getName();
-
-            if (!name.startsWith(sessionName)) {
-                continue;
-            }
-            if (name.equals(sessionName)) {
-                set.add(new Integer(0));
-                continue;
-            }
-
-            try {
-                int t = Integer.parseInt(name.substring(sessionName.length()));
-                set.add( t );
-            }
-            catch( NumberFormatException e) {
-                // just skip
-            }
-        }
-
-        // 2) finds first unused index in m
-        int i;
-        for (i = 1; i < set.size()+1; i++) {
-            if (!set.contains(i )) {
-                break;
-            }
-        }
-
-        if (i > 0) {
-            sessionName = sessionName + i;
-        }
-
-        return sessionName;
-    }
-
-    private ContextProvider myContextProvider;
+    }       
 }

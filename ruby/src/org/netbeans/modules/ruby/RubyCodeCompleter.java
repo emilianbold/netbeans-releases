@@ -110,6 +110,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
+import static org.netbeans.modules.ruby.RubyUtils.*;
+
 /**
  * Code completion handler for Ruby.
  * 
@@ -1540,13 +1542,14 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             inheritedMethods.addAll(actionView);
         }
 
-        if (RubyUtils.isRhtmlFile(fileObject) || isMarkaby) {
+        if (isRhtmlFile(fileObject) || isMarkaby) {
             // Hack - include controller and helper files as well
             FileObject f = fileObject.getParent();
+            // name of the controller w/o the "controller" suffix
             String controllerName = null;
             // XXX Will this work for .mab files? Where do they go?
             while (f != null && !f.getName().equals("views")) { // todo - make sure grandparent is app
-                String n = RubyUtils.underlinedNameToCamel(f.getName());
+                String n = underlinedNameToCamel(f.getName());
                 if (controllerName == null) {
                     controllerName = n;
                 } else {
@@ -1554,13 +1557,27 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 }
                 f = f.getParent();
             }
-            Set<IndexedMethod> helper = index.getInheritedMethods(controllerName+"Helper", prefix, kind); // NOI18N
-            inheritedMethods.addAll(helper);
+
+//           // add in all methods from the associated helper and inherited helpers. this will
+            // add also ApplicationHelper, which is global
+            Set<String> helperNames = new HashSet<String>();
+            helperNames.add(helperName(controllerName));
+            for (IndexedClass superClass : index.getSuperClasses(controllerName(controllerName))) {
+                if ("ActionController::Base".equals(superClass.getFqn())) { //NOI18N
+                    break;
+                }
+                helperNames.add(helperName(superClass.getFqn()));
+            }
+            for (String helper : helperNames) {
+                inheritedMethods.addAll(index.getInheritedMethods(helper, prefix, kind));
+            }
+
+            index.getSuperClasses(controllerName);
             // TODO - pull in the fields (NOT THE METHODS) from the controller
             //Set<IndexedMethod> controller = index.getInheritedMethods(controllerName+"Controller", prefix, kind);
             //inheritedMethods.addAll(controller);
         }
-    }       
+    }
 
     private void addActionViewFields(Set<IndexedField> inheritedFields, FileObject fileObject, RubyIndex index, String prefix, 
             QuerySupport.Kind kind) { 
@@ -2169,8 +2186,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         
         List<String> comments = getComments(info, element);
         if (comments == null) {
-            if (element.getName().startsWith("find_by_") ||
-                element.getName().startsWith("find_all_by_")) {
+            if (FindersHelper.isFinderMethod(element.getName(), false)) {
                 return new RDocFormatter().getSignature(element) + NbBundle.getMessage(RubyCodeCompleter.class, "DynamicMethod");
             }
             String html = new RDocFormatter().getSignature(element) + "\n<hr>\n<i>" + NbBundle.getMessage(RubyCodeCompleter.class, "NoCommentFound") +"</i>";

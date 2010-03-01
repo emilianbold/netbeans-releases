@@ -4,6 +4,6 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/maven/apisupport/Bundle.p
 OpenIDE-Module-Layer: org/netbeans/modules/maven/apisupport/layer.xml
 OpenIDE-Module-Public-Packages: -
 AutoUpdate-Show-In-Client: false
-OpenIDE-Module-Specification-Version: 1.6
+OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Provides: org.netbeans.modules.maven.apisupport
 

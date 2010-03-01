@@ -707,12 +707,14 @@ public class FormModel
     //  probably implemented here - in FormModel - but seperately.]
     class UndoRedoManager extends UndoRedo.Manager {
         private Mutex.ExceptionAction<Object> runUndo = new Mutex.ExceptionAction<Object>() {
+            @Override
             public Object run() throws Exception {
                 superUndo();
                 return null;
             }
         };
         private Mutex.ExceptionAction<Object> runRedo = new Mutex.ExceptionAction<Object>() {
+            @Override
             public Object run() throws Exception {
                 superRedo();
                 return null;
@@ -1202,6 +1204,7 @@ public class FormModel
         if (eventList == null) {
             eventList = new ArrayList<FormModelEvent>();
             java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     firePendingEvents();
                 }
@@ -1280,7 +1283,7 @@ public class FormModel
     void fireEvents(FormModelEvent ... events) {
         java.util.List targets;
         synchronized(this) {
-            if (listeners == null || listeners.size() == 0) {
+            if (listeners == null || listeners.isEmpty()) {
                 return;
             }
             targets = (ArrayList) listeners.clone();
@@ -1320,6 +1323,7 @@ public class FormModel
     // ModelContainer innerclass
 
     final class ModelContainer implements ComponentContainer {
+        @Override
         public RADComponent[] getSubBeans() {
             int n = otherComponents.size();
             if (topRADComponent != null)
@@ -1331,6 +1335,7 @@ public class FormModel
             return comps;
         }
 
+        @Override
         public void initSubComponents(RADComponent[] initComponents) {
             otherComponents.clear();
             for (int i = 0; i < initComponents.length; i++)
@@ -1338,6 +1343,7 @@ public class FormModel
                     otherComponents.add(initComponents[i]);
         }
 
+        @Override
         public void reorderSubComponents(int[] perm) {
             RADComponent[] components = new RADComponent[otherComponents.size()];
             for (int i=0; i < perm.length; i++)
@@ -1347,16 +1353,19 @@ public class FormModel
             otherComponents.addAll(Arrays.asList(components));
         }
 
+        @Override
         public void add(RADComponent comp) {
             comp.setParentComponent(null);
             otherComponents.add(comp);
         }
 
+        @Override
         public void remove(RADComponent comp) {
             if (otherComponents.remove(comp))
                 comp.setParentComponent(null);
         }
 
+        @Override
         public int getIndexOf(RADComponent comp) {
             int index = otherComponents.indexOf(comp);
             if (index < 0 && comp == topRADComponent)

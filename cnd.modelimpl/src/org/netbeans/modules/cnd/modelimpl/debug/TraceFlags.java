@@ -67,6 +67,7 @@ public class TraceFlags {
     public static final boolean DUMP_AST = Boolean.getBoolean("parser.collect.ast"); // NOI18N
     public static final boolean DUMP_PROJECT_ON_OPEN = DebugUtils.getBoolean("cnd.dump.project.on.open", false); // NOI18N
 
+    public static final String TRACE_FILE_NAME = System.getProperty("cnd.modelimpl.trace.file");
 
     /** 
      * swithces off parsing function bodies
@@ -148,6 +149,9 @@ public class TraceFlags {
     public static final boolean TRACE_PC_STATE_COMPARISION = DebugUtils.getBoolean("cnd.pp.condition.comparision.trace", false); // NOI18N
 
     public static final int REPARSE_DELAY = DebugUtils.getInt("cnd.reparse.delay", 1001); // NOI18N
+
+    // experimental expression evaluator for template instantiations
+    public static boolean EXPRESSION_EVALUATOR = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator", false); // NOI18N
 
     public static final List<String> logMacros;
     static {

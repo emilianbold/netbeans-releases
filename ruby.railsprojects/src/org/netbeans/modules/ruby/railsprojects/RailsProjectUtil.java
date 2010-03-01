@@ -58,7 +58,6 @@ import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Parameters;
 
 /**
  * Miscellaneous utilities for the Rails project module.
@@ -69,6 +68,43 @@ public class RailsProjectUtil {
     
     private RailsProjectUtil () {}
 
+    /**
+     * Gets the contents of the given file as text.
+     * 
+     * @param toRead
+     * @return the contents; an empty string if anything went wrong.
+     */
+    static String asText(File toRead) {
+
+        BufferedReader fr = null;
+        try {
+            fr = new BufferedReader(new FileReader(toRead));
+            StringBuilder sb = new StringBuilder();
+            while (true) {
+                String line = fr.readLine();
+                if (line == null) {
+                    break;
+                }
+                sb.append(line);
+                sb.append("\n"); // NOI18N
+            }
+            
+            return sb.toString();
+
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        } finally {
+            try {
+                if (fr != null) {
+                    fr.close();
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        return "";
+    }
     /** Get the version string out of a ruby version.rb file */
     public static String getVersionString(File versionFile) {
         try {
@@ -266,7 +302,7 @@ public class RailsProjectUtil {
             if (splitted.length == 2) {
                 return new RailsVersion(Integer.parseInt(splitted[0]),
                         Integer.parseInt(splitted[1]));
-            } else if (splitted.length == 3) {
+            } else if (splitted.length >= 3) {
                 return new RailsVersion(Integer.parseInt(splitted[0]),
                         Integer.parseInt(splitted[1]),
                         Integer.parseInt(splitted[2]));

@@ -43,7 +43,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.JButton;
@@ -316,6 +318,31 @@ public class JiraUtils {
             }
         }
         return seconds;
+    }
+
+    public static String dateByMillis(String text, boolean includeTime) {
+        if (text.trim().length() > 0) {
+            try {
+                long millis = Long.parseLong(text);
+                DateFormat format = includeTime ? DateFormat.getDateTimeInstance() : DateFormat.getDateInstance();
+                return format.format(new Date(millis));
+            } catch (NumberFormatException nfex) {
+                nfex.printStackTrace();
+            }
+        }
+        return ""; // NOI18N
+    }
+
+    public static Date dateByMillis(String text) {
+        if (text.trim().length() > 0) {
+            try {
+                long millis = Long.parseLong(text);
+                return new Date(millis);
+            } catch (NumberFormatException nfex) {
+                nfex.printStackTrace();
+            }
+        }
+        return null;
     }
 
 }

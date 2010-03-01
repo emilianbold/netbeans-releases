@@ -237,13 +237,13 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
                 getString("ADDITIONAL_LIBRARIES_TXT")); // NOI18N
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-            Vector<String> newList = panel.getListData();
+            List<String> newList = panel.getListData();
             StringBuilder includes = new StringBuilder();
             for (int i = 0; i < newList.size(); i++) {
                 if (i > 0) {
                     includes.append(';'); // NOI18N
                 }
-                includes.append(newList.elementAt(i));
+                includes.append(newList.get(i));
             }
             librariesTextField.setSelectedItem(includes.toString());
         }

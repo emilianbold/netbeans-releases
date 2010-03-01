@@ -138,7 +138,7 @@ public class JavaHintsPositionRefresher implements PositionRefresher {
             }
 
             //ErrorHints
-            final List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(controller, doc, position);
+            final List<ErrorDescription> errors = new ErrorHintsProvider().computeErrors(controller, doc, position, org.netbeans.modules.java.hints.errors.Utilities.JAVA_MIME_TYPE);
             for (ErrorDescription ed : errors) {
                 LazyFixList fixes = ed.getFixes();
                 if (fixes instanceof CreatorBasedLazyFixList) { //compute fixes, since they're lazy computed

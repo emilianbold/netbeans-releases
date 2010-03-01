@@ -69,7 +69,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -93,7 +92,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
-import javax.tools.JavaFileObject.Kind;
 import javax.tools.StandardLocation;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ElementHandle;
@@ -332,17 +330,17 @@ public class SourceAnalyser {
             this.virtual = tuple.virtual;
             this.storeIndex = tuple.index;
             this.siblingUrl = virtual ? tuple.indexable.getURL() : sibling.toUri().toURL();
-            this.sourceName = this.manager.inferBinaryName(StandardLocation.SOURCE_PATH, sibling);            
+            this.sourceName = inferBinaryName(manager, sibling);
             this.topLevels = null;
-            this.newTypes = newTypes;            
+            this.newTypes = newTypes;
         }
-                
+
         protected UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu, JavaFileManager manager, javax.tools.JavaFileObject sibling, List<? super Pair<String,String>> topLevels) throws MalformedURLException {
             assert jt != null;
             assert cu != null;
             assert manager != null;
             assert sibling != null;
-            
+
             this.activeClass = new Stack<Pair<String,String>> ();
             this.imports = new HashSet<String> ();
             this.staticImports = new HashSet<String>();
@@ -358,21 +356,21 @@ public class SourceAnalyser {
             this.signatureFiles = false;
             this.manager = manager;
             this.siblingUrl = sibling.toUri().toURL();
-            this.sourceName = this.manager.inferBinaryName(StandardLocation.SOURCE_PATH, sibling);
+            this.sourceName = inferBinaryName(manager, sibling);
             this.topLevels = topLevels;
             this.newTypes = null;
             this.virtual = false;
             this.storeIndex = true;
         }
-        
+
         final Types getTypes() {
             return types;
         }
-        
+
         final TransTypes getTransTypes () {
             return trans;
         }
-        
+
         public @Override Void scan(Tree node, Map<Pair<String,String>, Data> p) {
             if (node == null) {
                 return null;
@@ -752,8 +750,29 @@ public class SourceAnalyser {
             }
             return super.visitVariable(node, p);
         }
-                
-        
+
+        private String inferBinaryName(final JavaFileManager jfm, final javax.tools.JavaFileObject jfo) {
+            String result = jfm.inferBinaryName(StandardLocation.SOURCE_PATH, jfo);
+            if (result == null) {
+                try {
+                    final FileObject fo = URLMapper.findFileObject(jfo.toUri().toURL());
+                    if (fo != null) {
+                        final ClassPath scp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                        if (scp != null) {
+                            final FileObject owner = scp.findOwnerRoot(fo);
+                            if (owner != null) {
+                                result=scp.getResourceName(fo, '.', false); //NOI18N
+                            }
+                        }
+                    }
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+            }
+            return result;
+        }
+
+
         private void addUsage (final Pair<String,String>owner, final String className, final Map<Pair<String,String>,Data> map, final ClassIndexImpl.UsageType type) {
             assert className != null;
             assert map != null;

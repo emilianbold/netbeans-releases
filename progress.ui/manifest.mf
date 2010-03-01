@@ -4,5 +4,5 @@ OpenIDE-Module-Layer: org/netbeans/modules/progress/ui/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/progress/ui/Bundle.properties
 OpenIDE-Module-Provides: org.netbeans.modules.progress.spi.ProgressUIWorkerProvider, org.netbeans.modules.progress.spi.RunOffEDTProvider
 AutoUpdate-Essential-Module: true
-OpenIDE-Module-Specification-Version: 1.8
+OpenIDE-Module-Specification-Version: 1.11
 

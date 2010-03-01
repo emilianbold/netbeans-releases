@@ -376,8 +376,12 @@ public final class FolderObj extends BaseFileObj {
                 if (newChild != null) {
                     if (newChild.isValid()) {
                         newChild.setValid(false);
-                        if (fire) {
-                            newChild.fireFileDeletedEvent(expected);
+                        if (newChild instanceof FolderObj) {
+                            ((FolderObj)newChild).refreshImpl(expected, fire);
+                        } else {
+                            if (fire) {
+                                newChild.fireFileDeletedEvent(expected);
+                            }
                         }
                     }
                 } else {

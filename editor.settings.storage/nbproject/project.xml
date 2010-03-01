@@ -158,6 +158,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.dlight.annotationsupport</friend>
                 <friend>org.netbeans.modules.editor.codetemplates</friend>
                 <friend>org.netbeans.modules.editor.deprecated.pre61settings</friend>
+                <friend>org.netbeans.modules.editor.indent.project</friend>
                 <friend>org.netbeans.modules.editor.macros</friend>
                 <friend>org.netbeans.modules.gsf</friend>
                 <friend>org.netbeans.modules.jvi</friend>

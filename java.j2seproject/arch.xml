@@ -681,7 +681,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="exec-property">
   <p>
-   <api type="export" group="property" name="j2seproject.transparentUpdate" category="private">
+   <api type="export" group="systemproperty" name="j2seproject.transparentUpdate" category="private">
     If the property is set to <code>true</code> the project updates metadata of <code>project.xml</code> from
     the namespace <code>http://www.netbeans.org/ns/j2se-project/1</code> to
     <code>http://www.netbeans.org/ns/j2se-project/2</code> without explicit user confirmation.

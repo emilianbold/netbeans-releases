@@ -80,7 +80,7 @@ public class JavaLexer implements Lexer<JavaTokenId> {
         assert (info.state() == null); // never set to non-null value in state()
         
         Integer ver = (Integer)info.getAttributeValue("version");
-        this.version = (ver != null) ? ver.intValue() : 5; // Use Java 1.5 by default
+        this.version = (ver != null) ? ver.intValue() : 7; // TODO: Java 1.7 used by default
     }
     
     public Object state() {
@@ -90,19 +90,26 @@ public class JavaLexer implements Lexer<JavaTokenId> {
     public Token<JavaTokenId> nextToken() {
         while(true) {
             int c = input.read();
+            JavaTokenId lookupId = null;
             switch (c) {
+                case '#':
+                    if (this.version < 7 || input.read() != '"') {
+                        return token(JavaTokenId.ERROR);
+                    }
+                    lookupId = JavaTokenId.IDENTIFIER;
                 case '"': // string literal
+                    if (lookupId == null) lookupId = JavaTokenId.STRING_LITERAL;
                     while (true)
                         switch (input.read()) {
                             case '"': // NOI18N
-                                return token(JavaTokenId.STRING_LITERAL);
+                                return token(lookupId);
                             case '\\':
                                 input.read();
                                 break;
                             case '\r': input.consumeNewline();
                             case '\n':
                             case EOF:
-                                return tokenFactory.createToken(JavaTokenId.STRING_LITERAL,
+                                return tokenFactory.createToken(lookupId, //XXX: \n handling for exotic identifiers?
                                         input.readLength(), PartType.START);
                         }
 

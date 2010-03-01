@@ -164,6 +164,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         return PREFERRED_ID;
     }
 
+    @Override
     public void setContent(String toolName, JComponent viewComponent) {
         if (currentToolName != null && currentToolName.equals(toolName) && this.viewComponent == viewComponent){//INCORRECT! should update if different component itself
             return;//DO NOTHING
@@ -198,23 +199,27 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
         repaint();
     }
 
+    @Override
     public void addVisualizer(String toolID,String toolName, Visualizer<?> view) {
         setContent(toolName, view.getComponent());
         view.refresh();
 
     }
 
+    @Override
     public void showup() {
         open();
         requestActive();
     }
 
+    @Override
     public void removeVisualizer(final Visualizer<?> v) {
         if (EventQueue.isDispatchThread()){
             closePerformanceMonitor(v);
         }else{
             SwingUtilities.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     closePerformanceMonitor(v);
                 }
@@ -223,6 +228,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
     }
 
     @Override
+    @Deprecated
     public void requestFocus() {
         if (viewComponent != null){
             viewComponent.requestFocus();
@@ -233,6 +239,7 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 
 
 
+    @Override
     public void addContent(String toolName, JComponent viewComponent) {
         if (currentToolName == null || !currentToolName.equals(toolName) || this.viewComponent != viewComponent) {
             this.currentToolName = toolName;
@@ -249,20 +256,23 @@ public final class VisualizerTopComponentTopComponent extends TopComponent imple
 
     }
 
+    @Override
     public void activeSessionChanged(DLightSession oldSession, DLightSession newSession) {
         this.session = newSession;
         toolbarArea.update(session);
     }
 
+    @Override
     public void sessionAdded(DLightSession newSession) {
     //    throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void sessionRemoved(DLightSession removedSession) {
       //  throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    static final class ResolvableHelper implements Serializable {
+    private static final class ResolvableHelper implements Serializable {
 
         private static final long serialVersionUID = 1L;
 

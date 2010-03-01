@@ -55,7 +55,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Utilities;
 
@@ -73,7 +72,7 @@ import org.openide.util.Utilities;
  */
 public class ModelSource implements SourceFileProperties {
     private static final boolean TRACE_AMBIGUOUS = Boolean.getBoolean("cnd.modeldiscovery.trace.ambiguous"); // NOI18N
-    private static Logger logger = Logger.getLogger("org.netbeans.modules.cnd.modeldiscovery.provider.SourceFileProperties"); // NOI18N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.modeldiscovery.provider.SourceFileProperties"); // NOI18N
     {
         if (TRACE_AMBIGUOUS){logger.setLevel(Level.ALL);}
     }
@@ -105,10 +104,12 @@ public class ModelSource implements SourceFileProperties {
         return includedFiles;
     }
 
+    @Override
     public String getCompilePath() {
         return new File( getItemPath()).getParentFile().getAbsolutePath();
     }
     
+    @Override
     public String getItemPath() {
         if (itemPath == null) {
             itemPath = item.getAbsPath();
@@ -144,16 +145,17 @@ public class ModelSource implements SourceFileProperties {
         return path;
     }
     
+    @Override
     public String getItemName() {
         return item.getFile().getName();
     }
     
+    @Override
     public List<String> getUserInludePaths() {
         if (userIncludePaths == null) {
-            List includePaths = item.getUserIncludePaths();
+            List<String> includePaths = item.getUserIncludePaths();
             Set<String> res = new LinkedHashSet<String>();
-            for(Object o : includePaths){
-                String path = (String)o;
+            for(String path : includePaths){
                 path = getRelativepath(path);
                 res.add(path);
             }
@@ -167,8 +169,8 @@ public class ModelSource implements SourceFileProperties {
         if (Utilities.isWindows()) {
             path = path.replace('/', File.separatorChar);
         }
-        path = IpeUtils.toRelativePath(getCompilePath(), path);
-        path = FilePathAdaptor.normalize(path);
+        path = CndPathUtilitities.toRelativePath(getCompilePath(), path);
+        path = CndPathUtilitities.normalize(path);
         return path;
     }
     
@@ -186,10 +188,10 @@ public class ModelSource implements SourceFileProperties {
                     if (!file.getProject().isArtificial()) {
                         Item aItem = projectSearchBase.get(fullPath);
                         if (aItem != null) {
-                            resolved = file.getProject().findFile(aItem);
+                            resolved = file.getProject().findFile(aItem, false);
                         }
                     } else {
-                        resolved = file.getProject().findFile(fullPath);
+                        resolved = file.getProject().findFile(fullPath, false);
                     }
                     path = getRelativepath(path);
                     res.add(path);
@@ -209,7 +211,7 @@ public class ModelSource implements SourceFileProperties {
                                     }
                                 }
                                 for(String p : pc.getMacros()){
-                                    int i = p.indexOf("="); // NOI18N
+                                    int i = p.indexOf('='); // NOI18N
                                     String macro;
                                     String value = null;
                                     if (i > 0){
@@ -241,10 +243,10 @@ public class ModelSource implements SourceFileProperties {
                         String path = guessPath(include);
                         if (path != null && !resolvedPath.startsWith(path)){
                             if (TRACE_AMBIGUOUS) {
-                                logger.fine("Directive resolved in project on path: "+path+" instead "+resolvedPath); // NOI18N
+                                logger.log(Level.FINE, "Directive resolved in project on path: {0} instead {1}", new Object[]{path, resolvedPath}); // NOI18N
                             }
                             String fullPath = CndFileUtils.normalizeAbsolutePath(path+File.separatorChar+include.getIncludeName());
-                            resolved = file.getProject().findFile(fullPath);
+                            resolved = file.getProject().findFile(fullPath, false);
                             path = getRelativepath(path);
                             res.add(path);
                             reResolve = true;
@@ -290,9 +292,9 @@ public class ModelSource implements SourceFileProperties {
                 if (result.get(j).endsWith(name)){
                     if (pos >= 0) {
                         if (TRACE_AMBIGUOUS) {
-                            logger.fine("Ambiguous name for item: "+getItemPath()); // NOI18N
-                            logger.fine("  name1: "+result.get(pos)); // NOI18N
-                            logger.fine("  name2: "+result.get(j)); // NOI18N
+                            logger.log(Level.FINE, "Ambiguous name for item: {0}", getItemPath()); // NOI18N
+                            logger.log(Level.FINE, "  name1: {0}", result.get(pos)); // NOI18N
+                            logger.log(Level.FINE, "  name2: {0}", result.get(j)); // NOI18N
                         }
                     } else {
                         pos = j;
@@ -306,22 +308,24 @@ public class ModelSource implements SourceFileProperties {
             }
         }
         if (TRACE_AMBIGUOUS) {
-            logger.fine("Unresolved name for item: "+getItemPath()); // NOI18N
-            logger.fine("  from: "+include.getContainingFile().getAbsolutePath()); // NOI18N
-            logger.fine("  name: "+include.getIncludeName()); // NOI18N
+            logger.log(Level.FINE, "Unresolved name for item: {0}", getItemPath()); // NOI18N
+            logger.log(Level.FINE, "  from: {0}", include.getContainingFile().getAbsolutePath()); // NOI18N
+            logger.log(Level.FINE, "  name: {0}", include.getIncludeName()); // NOI18N
             if (result != null && result.size()>0){
                 for(int j = 0; j < result.size(); j++){
-                    logger.fine("  candidate: "+result.get(j)); // NOI18N
+                    logger.log(Level.FINE, "  candidate: {0}", result.get(j)); // NOI18N
                 }
             }
         }
         return null;
     }
     
+    @Override
     public List<String> getSystemInludePaths() {
         return item.getSystemIncludePaths();
     }
     
+    @Override
     public Map<String, String> getUserMacros() {
         if (userMacros == null){
             userMacros = new HashMap<String,String>();
@@ -338,10 +342,12 @@ public class ModelSource implements SourceFileProperties {
         return userMacros;
     }
     
+    @Override
     public Map<String, String> getSystemMacros() {
         return null;
     }
     
+    @Override
     public ItemProperties.LanguageKind getLanguageKind() {
         if (item.getLanguage() == Language.C){
             return LanguageKind.C;

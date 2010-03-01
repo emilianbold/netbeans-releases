@@ -41,6 +41,16 @@ package org.openide.filesystems.annotations;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ElementVisitor;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.junit.NbTestCase;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -161,6 +171,30 @@ public class LayerBuilderTest extends NbTestCase {
                 "<file name='x'/>" +
                 "<attr name='a' stringvalue='v'/>" +
                 "</folder></filesystem>", dump());
+    }
+
+    public void testOriginatingElementComments() throws Exception {
+        b = new LayerBuilder(doc, new Element() {
+            public @Override ElementKind getKind() {
+                return ElementKind.OTHER;
+            }
+            public @Override String toString() {
+                return "originating.Type";
+            }
+            public @Override TypeMirror asType() {return null;}
+            public @Override List<? extends AnnotationMirror> getAnnotationMirrors() {return null;}
+            public @Override <A extends Annotation> A getAnnotation(Class<A> annotationType) {return null;}
+            public @Override Set<Modifier> getModifiers() {return null;}
+            public @Override Name getSimpleName() {return null;}
+            public @Override Element getEnclosingElement() {return null;}
+            public @Override List<? extends Element> getEnclosedElements() {return null;}
+            public @Override <R, P> R accept(ElementVisitor<R, P> v, P p) {return null;}
+        }, null);
+        b.folder("f").write();
+        assertEquals("<filesystem><folder name='f'><!--originating.Type--></folder></filesystem>", dump());
+        // #180154: do not repeat after an incremental build
+        b.folder("f").write();
+        assertEquals("<filesystem><folder name='f'><!--originating.Type--></folder></filesystem>", dump());
     }
 
 }

@@ -72,15 +72,14 @@ import org.netbeans.api.project.Project;
 import javax.swing.*;
 import java.util.*;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.text.MessageFormat;
 import java.io.File;
 import java.awt.*;
-import java.lang.reflect.Field;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.diff.PatchAction;
+import org.netbeans.modules.versioning.system.cvss.options.AnnotationColorProvider;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -90,31 +89,6 @@ import org.openide.util.ImageUtilities;
  * @author Maros Sandor
  */
 public class Annotator {
-
-    private static MessageFormat uptodateFormat = getFormat("uptodateFormat");  // NOI18N
-    private static MessageFormat newLocallyFormat = getFormat("newLocallyFormat");  // NOI18N
-    private static MessageFormat addedLocallyFormat = getFormat("addedLocallyFormat"); // NOI18N
-    private static MessageFormat modifiedLocallyFormat = getFormat("modifiedLocallyFormat"); // NOI18N
-    private static MessageFormat removedLocallyFormat = getFormat("removedLocallyFormat"); // NOI18N
-    private static MessageFormat deletedLocallyFormat = getFormat("deletedLocallyFormat"); // NOI18N
-    private static MessageFormat newInRepositoryFormat = getFormat("newInRepositoryFormat"); // NOI18N
-    private static MessageFormat modifiedInRepositoryFormat = getFormat("modifiedInRepositoryFormat"); // NOI18N
-    private static MessageFormat removedInRepositoryFormat = getFormat("removedInRepositoryFormat"); // NOI18N
-    private static MessageFormat conflictFormat = getFormat("conflictFormat"); // NOI18N
-    private static MessageFormat mergeableFormat = getFormat("mergeableFormat"); // NOI18N
-    private static MessageFormat excludedFormat = getFormat("excludedFormat"); // NOI18N
-
-    private static MessageFormat newLocallyTooltipFormat = getFormat("newLocallyTooltipFormat");  // NOI18N
-    private static MessageFormat addedLocallyTooltipFormat = getFormat("addedLocallyTooltipFormat"); // NOI18N
-    private static MessageFormat modifiedLocallyTooltipFormat = getFormat("modifiedLocallyTooltipFormat"); // NOI18N
-    private static MessageFormat removedLocallyTooltipFormat = getFormat("removedLocallyTooltipFormat"); // NOI18N
-    private static MessageFormat deletedLocallyTooltipFormat = getFormat("deletedLocallyTooltipFormat"); // NOI18N
-    private static MessageFormat newInRepositoryTooltipFormat = getFormat("newInRepositoryTooltipFormat"); // NOI18N
-    private static MessageFormat modifiedInRepositoryTooltipFormat = getFormat("modifiedInRepositoryTooltipFormat"); // NOI18N
-    private static MessageFormat removedInRepositoryTooltipFormat = getFormat("removedInRepositoryTooltipFormat"); // NOI18N
-    private static MessageFormat conflictTooltipFormat = getFormat("conflictTooltipFormat"); // NOI18N
-    private static MessageFormat mergeableTooltipFormat = getFormat("mergeableTooltipFormat"); // NOI18N
-    private static MessageFormat excludedTooltipFormat = getFormat("excludedTooltipFormat"); // NOI18N
 
     private static String badgeModified = "org/netbeans/modules/versioning/system/cvss/resources/icons/modified-badge.png";
     private static String badgeConflicts = "org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png";
@@ -140,43 +114,8 @@ public class Annotator {
 
     Annotator(CvsVersioningSystem cvs) {
         cache = cvs.getStatusCache();
-        initDefaults();
     }
 
-    private void initDefaults() {
-        Field [] fields = Annotator.class.getDeclaredFields();
-        for (int i = 0; i < fields.length; i++) {
-            String name = fields[i].getName();
-            if (name.endsWith("Format")) {  // NOI18N
-                initDefaultColor(name.substring(0, name.length() - 6)); 
-            }
-        }
-    }
-
-    private void initDefaultColor(String name) {
-        String color = System.getProperty("cvs.color." + name);  // NOI18N
-        if (color == null) return;
-        setAnnotationColor(name, color);
-    }
-
-    /**
-     * Changes annotation color of files.
-     * 
-     * @param name name of the color to change. Can be one of:
-     * newLocally, addedLocally, modifiedLocally, removedLocally, deletedLocally, newInRepository, modifiedInRepository, 
-     * removedInRepository, conflict, mergeable, excluded.
-     * @param colorString new color in the format: 4455AA (RGB hexadecimal)
-     */ 
-    private void setAnnotationColor(String name, String colorString) {
-        try {
-            Field field = Annotator.class.getDeclaredField(name + "Format");  // NOI18N
-            MessageFormat format = new MessageFormat("<font color=\"" + colorString + "\">{0}</font><font color=\"#999999\">{1}</font>");  // NOI18N
-            field.set(null, format);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid color name");  // NOI18N
-        }
-    }
-    
     /**
      * Adds rendering attributes to an arbitrary String based on a CVS status. The name is usually a file or folder
      * display name and status is usually its CVS status as reported by FileStatusCache. 
@@ -208,29 +147,29 @@ public class Annotator {
         case FileInformation.STATUS_NOTVERSIONED_NOTMANAGED:
             return name;
         case FileInformation.STATUS_VERSIONED_UPTODATE:
-            return uptodateFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY:
-            return modifiedLocallyFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().MODIFIED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY: 
-            return newLocallyFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().NEW_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
-            return removedLocallyFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().REMOVED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
-            return deletedLocallyFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().DELETED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_NEWINREPOSITORY:
-            return newInRepositoryFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().NEW_IN_REPOSITORY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY:
-            return modifiedInRepositoryFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().MODIFIED_IN_REPOSITORY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY:
-            return removedInRepositoryFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().REMOVED_IN_REPOSITORY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_ADDEDLOCALLY:
-            return addedLocallyFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().ADDED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_MERGE:
-            return mergeableFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().MERGEABLE_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_VERSIONED_CONFLICT:
-            return conflictFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().CONFLICT_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_NOTVERSIONED_EXCLUDED:
-            return excludedFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { name, textAnnotation });
         default:
             throw new IllegalArgumentException("Unknown status: " + status); // NOI18N
         }
@@ -313,9 +252,9 @@ public class Annotator {
         case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY: 
         case FileInformation.STATUS_VERSIONED_ADDEDLOCALLY:
         case FileInformation.STATUS_VERSIONED_UPTODATE:
-            return uptodateFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
         case FileInformation.STATUS_NOTVERSIONED_EXCLUDED:
-            return excludedFormat.format(new Object [] { name, textAnnotation });
+            return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { name, textAnnotation });
         default:
             throw new IllegalArgumentException("Unknown status: " + status); // NOI18N
         }
@@ -526,37 +465,37 @@ public class Annotator {
                 statusText = null;
                 break;
             case FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY:
-                statusText = modifiedLocallyTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().MODIFIED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
-                statusText = newLocallyTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().NEW_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
-                statusText = removedLocallyTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().REMOVED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
-                statusText = deletedLocallyTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().DELETED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_VERSIONED_NEWINREPOSITORY:
-                statusText = newInRepositoryTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().NEW_IN_REPOSITORY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY:
-                statusText = modifiedInRepositoryTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().MODIFIED_IN_REPOSITORY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY:
-                statusText = removedInRepositoryTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().REMOVED_IN_REPOSITORY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_VERSIONED_ADDEDLOCALLY:
-                statusText = addedLocallyTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().ADDED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_VERSIONED_MERGE:
-                statusText = mergeableTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().MERGEABLE_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_VERSIONED_CONFLICT:
-                statusText = conflictTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().CONFLICT_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             case FileInformation.STATUS_NOTVERSIONED_EXCLUDED:
-                statusText = excludedTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+                statusText = getAnnotationProvider().EXCLUDED_FILE_TOOLTIP.getFormat().format(new Object [] { mostImportantInfo.getStatusText() });
                 break;
             default:
                 throw new IllegalArgumentException("Unknown status: " + status); // NOI18N
@@ -634,4 +573,7 @@ public class Annotator {
         }
     }
 
+    private AnnotationColorProvider getAnnotationProvider() {
+        return AnnotationColorProvider.getInstance();
+    }
 }

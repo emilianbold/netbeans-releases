@@ -54,8 +54,10 @@ import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
@@ -245,6 +247,7 @@ public class WLDeploymentManager implements DeploymentManager {
         return wlDeployer.undeploy(targetModuleID);
     }
 
+    @Override
     public ProgressObject stop(TargetModuleID[] targetModuleID) throws IllegalStateException {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
@@ -253,6 +256,7 @@ public class WLDeploymentManager implements DeploymentManager {
         return wlDeployer.stop(targetModuleID);
     }
 
+    @Override
     public ProgressObject start(TargetModuleID[] targetModuleID) throws IllegalStateException {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
@@ -261,15 +265,17 @@ public class WLDeploymentManager implements DeploymentManager {
         return wlDeployer.start(targetModuleID);
     }
 
+    @Override
     public TargetModuleID[] getAvailableModules(final ModuleType moduleType, final Target[] target) throws TargetException, IllegalStateException {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
         try {
             return executeAction(new Action<TargetModuleID[]>() {
+                @Override
                 public TargetModuleID[] execute(DeploymentManager manager) throws ExecutionException {
                     try {
-                        return manager.getAvailableModules(moduleType, target);
+                        return manager.getAvailableModules(moduleType, translateTargets(manager, target));
                     } catch (TargetException ex) {
                         throw new ExecutionException(ex);
                     }
@@ -284,15 +290,17 @@ public class WLDeploymentManager implements DeploymentManager {
         }
     }
 
+    @Override
     public TargetModuleID[] getNonRunningModules(final ModuleType moduleType, final Target[] target) throws TargetException, IllegalStateException {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
         try {
             return executeAction(new Action<TargetModuleID[]>() {
+                @Override
                 public TargetModuleID[] execute(DeploymentManager manager) throws ExecutionException {
                     try {
-                        return manager.getNonRunningModules(moduleType, target);
+                        return manager.getNonRunningModules(moduleType, translateTargets(manager, target));
                     } catch (TargetException ex) {
                         throw new ExecutionException(ex);
                     }
@@ -307,15 +315,17 @@ public class WLDeploymentManager implements DeploymentManager {
         }
     }
 
+    @Override
     public TargetModuleID[] getRunningModules(final ModuleType moduleType, final Target[] target) throws TargetException, IllegalStateException {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
         try {
             return executeAction(new Action<TargetModuleID[]>() {
+                @Override
                 public TargetModuleID[] execute(DeploymentManager manager) throws ExecutionException {
                     try {
-                        return manager.getRunningModules(moduleType, target);
+                        return manager.getRunningModules(moduleType, translateTargets(manager, target));
                     } catch (TargetException ex) {
                         throw new ExecutionException(ex);
                     }
@@ -330,6 +340,7 @@ public class WLDeploymentManager implements DeploymentManager {
         }
     }
 
+    @Override
     public Target[] getTargets() throws IllegalStateException {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
@@ -346,6 +357,7 @@ public class WLDeploymentManager implements DeploymentManager {
         }
     }
 
+    @Override
     public void release() {
         disconnected = true;
     }
@@ -386,6 +398,27 @@ public class WLDeploymentManager implements DeploymentManager {
 
     public Locale[] getSupportedLocales() {
         throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
+    }
+
+    // TODO if possible (due to workflow of j2eeserver) reuse deployment manager
+    // instead of this
+    private static Target[] translateTargets(DeploymentManager manager, Target[] originalTargets) {
+        Target[] targets = manager.getTargets();
+        // WL does not implement equals however implements hashCode
+        // it consider two Target instances coming from different
+        // deployment managers different
+
+        // perhaps we could share DeploymentManager somehow
+        List<Target> deployTargets = new ArrayList<Target>(originalTargets.length);
+        for (Target t : targets) {
+            for (Target t2 : originalTargets) {
+                if (t.hashCode() == t2.hashCode()
+                        && t.getName().equals(t2.getName())) {
+                    deployTargets.add(t);
+                }
+            }
+        }
+        return deployTargets.toArray(new Target[deployTargets.size()]);
     }
 
     private static interface Action<T> {

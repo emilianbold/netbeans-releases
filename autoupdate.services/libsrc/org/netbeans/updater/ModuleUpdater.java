@@ -291,6 +291,7 @@ public final class ModuleUpdater extends Thread {
     }
 
 
+
     /** Unpack the distribution files into update directory */
 
     private void unpack ()  {
@@ -356,11 +357,11 @@ public final class ModuleUpdater extends Thread {
 
                 try {
                     jarFile = new JarFile (nbm);
-                    Enumeration entries = jarFile.entries();
+                    Enumeration<JarEntry> entries = jarFile.entries();
                     List <String> executableFiles = readExecutableFilesList(jarFile);
                     List <File> filesToChmod = new ArrayList <File> ();
                     while( entries.hasMoreElements() ) {
-                        JarEntry entry = (JarEntry) entries.nextElement();
+                        JarEntry entry = entries.nextElement();
                         checkStop();
                         if ( entry.getName().startsWith( UPDATE_NETBEANS_DIR ) ) {
                             if (! entry.isDirectory ()) {
@@ -370,11 +371,6 @@ public final class ModuleUpdater extends Thread {
                                 }
                                 String pathTo = entry.getName ().substring (UPDATE_NETBEANS_DIR.length () + 1);
                                 // path without netbeans prefix
-                                if ( mu.isL10n() )
-                                    version.addL10NFileWithCrc( pathTo, Long.toString( entry.getCrc() ), mu.getSpecification_version());
-                                else
-                                    version.addFileWithCrc( pathTo, Long.toString( entry.getCrc() ) );
-
                                 File destFile = new File (cluster, entry.getName ().substring (UPDATE_NETBEANS_DIR.length()));
                                 if ( destFile.exists() ) {
                                     File bckFile = new File( getBackupDirectory (cluster), entry.getName() );
@@ -387,10 +383,27 @@ public final class ModuleUpdater extends Thread {
                                 } else {
                                     destFile.getParentFile ().mkdirs ();
                                 }
+                                
                                 bytesRead = copyStreams( jarFile.getInputStream( entry ), new FileOutputStream( destFile ), bytesRead );
                                 if(executableFiles.contains(pathTo)) {
                                     filesToChmod.add(destFile);
                                 }
+                                long crc = entry.getCrc();
+                                if(pathTo.endsWith(".jar.pack.gz") &&
+                                        jarFile.getEntry(entry.getName().substring(0, entry.getName().lastIndexOf(".pack.gz")))==null) {
+                                     //check if file.jar.pack.gz does not exit for file.jar - then unpack current .pack.gz file
+                                    File unpacked = new File(destFile.getParentFile(), destFile.getName().substring(0, destFile.getName().lastIndexOf(".pack.gz")));
+                                    unpack200(destFile, unpacked);
+                                    destFile.delete();
+                                    pathTo = pathTo.substring(0, pathTo.length() - ".pack.gz".length());
+                                    crc = UpdateTracking.getFileCRC(unpacked);
+                                }
+                                if ( mu.isL10n() ) {
+                                    version.addL10NFileWithCrc( pathTo, Long.toString(crc), mu.getSpecification_version());
+                                } else {
+                                    version.addFileWithCrc( pathTo, Long.toString(crc));
+                                }
+                                
                                 UpdaterFrame.setProgressValue( bytesRead );
                             }
                         } else if ( entry.getName().startsWith( UPDATE_MAIN_DIR )&&
@@ -466,6 +479,28 @@ public final class ModuleUpdater extends Thread {
             }
             t.deleteUnusedFiles ();            
         }
+    }
+    
+    private boolean unpack200(File src, File dest) {
+        String unpack200Executable = new File(System.getProperty("java.home"),
+                "bin/unpack200" + (isWindows() ? ".exe" : "")).getAbsolutePath();
+        ProcessBuilder pb = new ProcessBuilder(unpack200Executable, src.getAbsolutePath(), dest.getAbsolutePath());
+        pb.directory(src.getParentFile());
+        int result = 1;
+        try {
+            //maybe reuse start() method here?
+            Process process = pb.start();
+            //TODO: Need to think of unpack200/lvprcsrv.exe issues
+            //https://netbeans.org/bugzilla/show_bug.cgi?id=117334
+            //https://netbeans.org/bugzilla/show_bug.cgi?id=119861
+            result = process.waitFor();
+            process.destroy();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return result == 0;
     }
 
     private List<String> readExecutableFilesList(JarFile jarFile) {

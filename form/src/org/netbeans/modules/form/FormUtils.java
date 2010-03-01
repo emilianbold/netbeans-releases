@@ -271,6 +271,8 @@ public class FormUtils
                 "model", PROP_PREFERRED,
                 "border", PROP_PREFERRED,
                 "selectionMode", PROP_PREFERRED },
+        { "javax.swing.JList", CLASS_AND_SWING_SUBCLASSES,
+                  "listData", PROP_HIDDEN },
         { "javax.swing.JComboBox", CLASS_AND_SUBCLASSES,
                 "model", PROP_PREFERRED },
         { "javax.swing.JComboBox", CLASS_EXACTLY,
@@ -339,6 +341,9 @@ public class FormUtils
                 "selected", PROP_HIDDEN },
         { "javax.swing.JSpinner", CLASS_AND_SUBCLASSES,
                 "model", PROP_PREFERRED },
+        { "javax.swing.JSpinner", CLASS_AND_SWING_SUBCLASSES,
+                "foreground", PROP_HIDDEN,
+                "background", PROP_HIDDEN },
         { "java.applet.Applet", CLASS_AND_SUBCLASSES,
                 "appletContext", PROP_HIDDEN,
                 "codeBase", PROP_HIDDEN,
@@ -1300,6 +1305,7 @@ public class FormUtils
                 deviationMap = new HashMap<String, DefaultValueDeviation>();
                 deviationMap.put("background", // NOI18N
                     new DefaultValueDeviation(values) {
+                        @Override
                         Object getValue(Object beanInstance) {
                             return ((javax.swing.JTextField)beanInstance).isEditable() ?
                                    this.values[0] : this.values[1];
@@ -1336,7 +1342,7 @@ public class FormUtils
     }
     
     public static String getMethodName(String name, Class[] params) {        
-	StringBuffer sb = new StringBuffer(name);
+	StringBuilder sb = new StringBuilder(name);
         if ((params == null) ||(params.length == 0)) {
             sb.append("()"); // NOI18N
         } else {
@@ -1353,6 +1359,7 @@ public class FormUtils
 
     static void sortProperties(Node.Property[] properties) {
         Arrays.sort(properties, new Comparator<Node.Property>() {
+            @Override
             public int compare(Node.Property o1, Node.Property o2) {
                 String n1 = o1.getDisplayName();
                 String n2 = o2.getDisplayName();

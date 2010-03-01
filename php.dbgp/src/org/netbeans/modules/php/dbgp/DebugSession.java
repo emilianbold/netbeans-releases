@@ -67,96 +67,148 @@ import org.netbeans.modules.php.dbgp.packets.DbgpCommand;
 import org.netbeans.modules.php.dbgp.packets.DbgpMessage;
 import org.netbeans.modules.php.dbgp.packets.DbgpResponse;
 import org.netbeans.modules.php.dbgp.packets.InitMessage;
+import org.netbeans.modules.php.dbgp.packets.Reason;
+import org.netbeans.modules.php.dbgp.packets.StackGetCommand;
 import org.netbeans.modules.php.dbgp.packets.Status;
+import org.netbeans.modules.php.dbgp.packets.StopCommand;
+import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * @author ads
- *
+ * @author Radek Matous
  */
 public class DebugSession extends SingleThread {
+
     private static final int SLEEP_TIME = 100;
-    private DebuggerOptions options;
-    private BackendLauncher backendLauncher;
-    private AtomicReference<Status> status;
+    private final DebuggerOptions options;
+    private final BackendLauncher backendLauncher;
+    private final AtomicReference<Status> status;
     private Session session;
     private Socket sessionSocket;
-    private AtomicBoolean isStopped;
-    private Thread mySessionThread;
-    private final List<DbgpCommand> myCommands;
-    private AtomicReference<SessionId> mySessionId;
-    private AtomicReference<DebuggerEngine> myEngine;
-    private static final AtomicInteger myTransactionId = new AtomicInteger(0);
+    private final AtomicBoolean detachRequest;
+    private final AtomicBoolean stopRequest;
+    private Thread sessionThread;
+    private final List<DbgpCommand> commands;
+    private AtomicReference<SessionId> sessionId;
+    private AtomicReference<DebuggerEngine> engine;
+    private static final AtomicInteger transactionId = new AtomicInteger(0);
     private IDESessionBridge myBridge;
     private AtomicReference<String> myFileName;
-
+    //private final ProgressHandle h;
 
     DebugSession(DebuggerOptions options, BackendLauncher backendLauncher) {
-        myCommands = new LinkedList<DbgpCommand>();
-        init(null);
-        this.options = options;
+        commands = new LinkedList<DbgpCommand>();
+        this.detachRequest = new AtomicBoolean(false);
+        this.stopRequest = new AtomicBoolean(false);
+        this.sessionId = new AtomicReference<SessionId>();
         this.backendLauncher = backendLauncher;
         this.status = new AtomicReference<Status>();
+        this.options = options;
     }
 
+    public void startProcessing(Socket socket) {
+        synchronized (getSync()) {
+            Status stat = getStatus();
+            if (stat != null && (stat.isRunning() || stat.isBreak())) {
+                try {
+                    socket.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            } else {
+                if (stat != null) {
+                    waitFinished();
+                }
+                this.sessionSocket = socket;
+                invokeLater();
+            }
+        }
+    }
     /* (non-Javadoc)
      * @see java.lang.Runnable#run()
      */
+    @Override
     public void run() {
-        setSessionThread(Thread.currentThread());
-        boolean moreCommands = false;
-        synchronized (myCommands) {
-            moreCommands = myCommands.size() > 0;
-        }
-        while (continueDebugging()) {
-            try {
-                sendCommands();
-                receiveData();
-                sleepTillNewCommand();
-            } catch (IOException e) {
-                log(e);
+        preprocess();
+        try {
+            while (!detachRequest.get()) {
+                try {
+                    sendCommands();
+                    receiveData();
+                    sleepTillNewCommand();
+                } catch (SocketException exc) {
+                    log(exc);
+                } catch (IOException e) {
+                    log(e);
+                } catch (Throwable e) {
+                    log(e, Level.SEVERE);
+                }
             }
+        } finally {
+            postprocess();
         }
-        setSessionThread(null);
+    }
+    private void preprocess() {
+        detachRequest.set(false);
+        stopRequest.set(false);
+        commands.clear();
+        sessionId.set(null);
+        myBridge = new IDESessionBridge();
+        myFileName = new AtomicReference<String>();
+        engine = new AtomicReference<DebuggerEngine>();
+        setSessionThread(Thread.currentThread());
+    }
+
+    private void postprocess() {
         try {
             getSocket().close();
         } catch (IOException e) {
             log(e);
         } finally {
+            setSessionThread(null);
             IDESessionBridge bridge = getBridge();
             if (bridge != null) {
-                bridge.setSuspended(false);
-                bridge.hideAnnotations();
-                BreakpointModel breakpointModel = bridge.getBreakpointModel();
-                if (breakpointModel != null) {
-                    breakpointModel.setCurrentStack(null, this);
-                }
-                CallStackModel callStackModel = bridge.getCallStackModel();
-                if (callStackModel != null) {
-                    callStackModel.clearModel();
-                }
-                ThreadsModel threadsModel = bridge.getThreadsModel();
-                if (threadsModel != null) {
-                    threadsModel.update();
-                }
-                VariablesModel variablesModel = bridge.getVariablesModel();
-                if (variablesModel != null) {
-                    variablesModel.clearModel();
-                }
-                WatchesModel watchesModel = bridge.getWatchesModel();
-                if (watchesModel != null) {
-                    watchesModel.clearModel();
-                }
+                bridge.destroy();
             }
-            SessionManager.getInstance().remove(this);
         }
     }
 
-    private boolean continueDebugging() {
-        return !Thread.interrupted() && !isStopped.get() && sessionSocket != null && !sessionSocket.isClosed();
+    public void initConnection(InitMessage message) {
+        setSessionFile(message.getFileUri());
+        DebuggerEngine[] engines =
+                DebuggerManager.getDebuggerManager().getDebuggerEngines();
+        for (DebuggerEngine nextEngine : engines) {
+            SessionId id = (SessionId) nextEngine.lookupFirst(null, SessionId.class);
+            if (id != null && id.getId().equals(message.getSessionId())) {
+                sessionId.set(id);
+                id.initialize(message.getFileUri(), options.getPathMapping());
+                engine.set(nextEngine);
+            }
+        }
+        assert engine.get() != null;
+        IDESessionBridge bridge = getBridge();
+        if (bridge != null) {
+            bridge.init();
+        }
+    }
+
+    private void sendCommands() throws IOException {
+        List<DbgpCommand> list;
+        synchronized (commands) {
+            list = new ArrayList<DbgpCommand>(commands);
+            commands.clear();
+        }
+        for (DbgpCommand command : list) {
+            if (!detachRequest.get()) {
+                command.send(getSocket().getOutputStream());
+                if (command.wantAcknowledgment()) {
+                    receiveData(command);
+                }
+            }
+        }
     }
 
     public void sendCommandLater(DbgpCommand command) {
@@ -179,194 +231,21 @@ public class DebugSession extends SingleThread {
     }
 
     public DbgpResponse sendSynchronCommand(DbgpCommand command) {
-        Thread sessionThread = getSessionThread();
-        if (sessionThread == null) return null;
-        Thread currentThread = Thread.currentThread();
-        if (sessionThread != currentThread) {
-            assert sessionThread != null;
-            printing146558(currentThread);
-        }
-        try {
-            command.send(getSocket().getOutputStream());
-            if (command.wantAcknowledgment()) {
-                DbgpMessage message = receiveData(command);
-                if (message instanceof DbgpResponse) {
-                    return (DbgpResponse) message;
-                }
-            }
-        } catch (IOException e) {
-            log(e);
-        }
-        return null;
-    }
-
-    private void printing146558(Thread currentThread) {
-        Level level = Level.FINE;
-        assert (level = Level.WARNING) != null;
-        IllegalStateException illegalStateException = new IllegalStateException(
-                "Method incorrect usage. It should be called in handler thread only. " + //NOI18N
-                "Called from thread: " + currentThread.getName() // NOI18N
-                );
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        try {
-            illegalStateException.printStackTrace(new PrintStream(bos));
-            Logger.getLogger(DebugSession.class.getName()).log(level,
-                    bos.toString());
-        } finally {
+        DbgpResponse retval = null;
+        if (canSendSynchronCommand()) {
             try {
-                bos.close();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-
-    public String getTransactionId() {
-        return myTransactionId.getAndIncrement() + "";
-    }
-
-    public void start(Socket socket) {
-        synchronized(getSync()) {
-            Status stat = getStatus();
-            if (stat != null && (stat.isRunning() || stat.isBreak())) {
-                try {
-                    socket.close();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            } else {
-                if (stat != null) {
-                    waitFinished();
-                }
-                init(socket);
-                invokeLater();
-            }
-        }
-    }
-
-    public void cancel() {
-        if (backendLauncher != null) {
-            backendLauncher.stop();
-        }
-        isStopped.set(true);
-    }
-
-    public void setId(InitMessage message) {
-        setSessionFile(message.getFileUri());
-        String sessionId = message.getSessionId();
-        DebuggerEngine[] engines =
-                DebuggerManager.getDebuggerManager().getDebuggerEngines();
-        for (DebuggerEngine engine : engines) {
-            SessionId id = (SessionId) engine.lookupFirst(null, SessionId.class);
-            if (id != null && id.getId().equals(sessionId)) {
-                mySessionId.set(id);
-                id.initialize(message.getFileUri(), options.getPathMapping());
-                myEngine.set(engine);
-            }
-        }
-        assert myEngine.get() != null;
-        IDESessionBridge bridge = getBridge();
-        if (bridge != null) {
-            bridge.hideAnnotations();
-            bridge.setSuspended(false);
-            ThreadsModel threadsModel = bridge.getThreadsModel();
-            if (threadsModel != null) {
-                threadsModel.update();
-            }
-        }
-    }
-
-    public SessionId getSessionId() {
-        return mySessionId.get();
-    }
-
-    public IDESessionBridge getBridge() {
-        return myBridge;
-    }
-
-    public String getFileName() {
-        return myFileName.get();
-    }
-
-    private void init(Socket socket) {
-        this.sessionSocket = socket;
-        isStopped = new AtomicBoolean(false);
-        myCommands.clear();
-        mySessionId = new AtomicReference<SessionId>();
-        myBridge = new IDESessionBridge();
-        myFileName = new AtomicReference<String>();
-        myEngine = new AtomicReference<DebuggerEngine>();
-    }
-
-    private void setSessionFile(String fileName) {
-        myFileName.set(fileName);
-    }
-
-    private void sleepTillNewCommand() {
-        try {
-            // Wake up every 100 milliseconds and see if the debuggee has something to say.
-            // The IDE side can interrupt the sleep to send new packets to the
-            // debugger.
-            Thread.sleep(SLEEP_TIME);
-        } catch (InterruptedException ie) {
-            // OK, run the look again.
-        }
-    }
-
-    private synchronized void setSessionThread(Thread thread) {
-        mySessionThread = thread;
-    }
-
-    private void sendCommands() throws IOException {
-        List<DbgpCommand> list;
-        synchronized (myCommands) {
-            list = new ArrayList<DbgpCommand>(myCommands);
-            myCommands.clear();
-        }
-        for (DbgpCommand command : list) {
-            //if (continueDebugging()) {
-                // #146724
-                try {
-                    command.send(getSocket().getOutputStream());
-                    if (/*continueDebugging() && */command.wantAcknowledgment()) {
-                        receiveData(command);
+                command.send(getSocket().getOutputStream());
+                if (command.wantAcknowledgment()) {
+                    DbgpMessage message = receiveData(command);
+                    if (message instanceof DbgpResponse) {
+                        retval = (DbgpResponse) message;
                     }
-                } catch (SocketException exc) {
-                    Logger.getLogger(DebugSession.class.getName()).log(Level.INFO, null, exc);
-                    Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-                    SessionId sessionId = getSessionId();
-                    for (Session sessionInLoop : sessions) {
-                        SessionId id = (SessionId) sessionInLoop.lookupFirst(null, SessionId.class);
-                        if (id != null && id.getId().equals(sessionId.getId())) {
-                            SessionManager.getInstance().stop(sessionInLoop);
-                        }
-                    }
-
-                    warnUserInCaseOfSocketException();
                 }
-            //}
+            } catch (IOException e) {
+                log(e);
+            }
         }
-    }
-
-    private void warnUserInCaseOfSocketException() {
-        NotifyDescriptor descriptor = new NotifyDescriptor(
-                NbBundle.getMessage(DebugSession.class, "MSG_SocketError"),
-                NbBundle.getMessage(DebugSession.class, "MSG_SocketErrorTitle"),
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.ERROR_MESSAGE,
-                new Object[] {NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION);
-        DialogDisplayer.getDefault().notifyLater(descriptor);
-    }
-
-    private void addCommand(DbgpCommand command) {
-        synchronized (myCommands) {
-            myCommands.add(command);
-        }
-    }
-
-    private synchronized Thread getSessionThread() {
-        return mySessionThread;
+        return retval;
     }
 
     private void receiveData() throws IOException {
@@ -374,6 +253,9 @@ public class DebugSession extends SingleThread {
     }
 
     private DbgpMessage receiveData(DbgpCommand command) throws IOException {
+        if (command != null && command.getCommand().equals(StopCommand.COMMAND)) {
+            detachRequest.set(true);
+        }
         if (command != null || getSocket().getInputStream().available() > 0) {
             DbgpMessage message = DbgpMessage.create(
                     getSocket().getInputStream());
@@ -410,13 +292,174 @@ public class DebugSession extends SingleThread {
         }
     }
 
+    private boolean canSendSynchronCommand() {
+        Thread sessionThread = getSessionThread();
+        if (sessionThread == null) {
+            return false;
+        }
+        if (sessionThread != Thread.currentThread()) {
+            assert sessionThread != null;
+            printing146558(Thread.currentThread());
+        }
+        return true;
+    }
+
+    private void printing146558(Thread currentThread) {
+        Level level = Level.FINE;
+        assert (level = Level.WARNING) != null;
+        IllegalStateException illegalStateException = new IllegalStateException(
+                "Method incorrect usage. It should be called in handler thread only. " + //NOI18N
+                "Called from thread: " + currentThread.getName() // NOI18N
+                );
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            illegalStateException.printStackTrace(new PrintStream(bos));
+            Logger.getLogger(DebugSession.class.getName()).log(level,
+                    bos.toString());
+        } finally {
+            try {
+                bos.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    @Override
+    public boolean cancel() {
+        return true;
+    }
+
+    public void processStatus(Status status, Reason reason, DbgpCommand command) {
+        setStatus(status);
+        if (status.isBreak() && reason.isOK()) {
+            processBreakStatus();
+        } else if (status.isStopping()) {
+            processStoppingStatus();
+        } else if (status.isStopped()/* && reason.isOK()*/) {
+            processStoppedStatus();
+        }
+    }
+
+    public void stopSession() {
+        sendStopCommand();
+        stop();
+    }
+
+    private void stop() {
+        if (!stopRequest.get()) {
+            stopRequest.set(true);
+            stopEngines();
+            stopBackend();
+        }
+    }
+
+    private void processBreakStatus() {
+        sendCommandLater(new StackGetCommand(getTransactionId()));
+        IDESessionBridge bridge = getBridge();
+        if (bridge != null) {
+            bridge.setSuspended(true);
+            ThreadsModel threadsModel = bridge.getThreadsModel();
+            if (threadsModel != null) {
+                threadsModel.updateSession(this);
+            }
+        }
+    }
+
+    private void processStoppingStatus() {
+        sendStopCommand();
+    }
+
+    private void processStoppedStatus() {
+        if (getOptions().isDebugForFirstPageOnly()) {
+            stop();
+        }
+    }
+
+    private void sendStopCommand() {
+        Thread currentThread = Thread.currentThread();
+        final StopCommand stopCommand = new StopCommand(getTransactionId());
+        if (currentThread == getSessionThread()) {
+            sendSynchronCommand(stopCommand);
+        } else {
+            sendCommandLater(stopCommand);
+        }
+    }
+
+    private void stopEngines() {
+        SessionManager.stopEngines(session);
+    }
+
+    public String getTransactionId() {
+        return transactionId.getAndIncrement() + "";
+    }
+
+    public SessionId getSessionId() {
+        return sessionId.get();
+    }
+
+    public IDESessionBridge getBridge() {
+        return myBridge;
+    }
+
+    public String getFileName() {
+        return myFileName.get();
+    }
+
+    private void setSessionFile(String fileName) {
+        myFileName.set(fileName);
+    }
+
+    private void sleepTillNewCommand() {
+        try {
+            // Wake up every 100 milliseconds and see if the debuggee has something to say.
+            // The IDE side can interrupt the sleep to send new packets to the
+            // debugger.
+            Thread.sleep(SLEEP_TIME);
+        } catch (InterruptedException ie) {
+            // OK, run the look again.
+        }
+    }
+
+    private synchronized void setSessionThread(Thread thread) {
+        sessionThread = thread;
+    }
+
+    private void warnUserInCaseOfSocketException() {
+        NotifyDescriptor descriptor = new NotifyDescriptor(
+                NbBundle.getMessage(DebugSession.class, "MSG_SocketError"),
+                NbBundle.getMessage(DebugSession.class, "MSG_SocketErrorTitle"),
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.ERROR_MESSAGE,
+                new Object[]{NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notifyLater(descriptor);
+    }
+
+    private void addCommand(DbgpCommand command) {
+        synchronized (commands) {
+            commands.add(command);
+        }
+    }
+
+    private synchronized Thread getSessionThread() {
+        return sessionThread;
+    }
+
     private Socket getSocket() {
         return sessionSocket;
     }
 
     private void log(IOException e) {
+        log(e, Level.SEVERE);
+    }
+    private void log(Throwable e, Level level) {
         Logger.getLogger(DebugSession.class.getName()).log(
-                Level.SEVERE, null, e);
+                level, null, e);
+    }
+    private void log(SocketException e) {
+        log(e, Level.INFO);
+        warnUserInCaseOfSocketException();
     }
 
     public DebuggerOptions getOptions() {
@@ -426,6 +469,12 @@ public class DebugSession extends SingleThread {
     void startBackend() {
         if (backendLauncher != null) {
             backendLauncher.launch();
+        }
+    }
+
+    void stopBackend() {
+        if (backendLauncher != null) {
+            backendLauncher.stop();
         }
     }
 
@@ -441,7 +490,7 @@ public class DebugSession extends SingleThread {
      */
     public void setStatus(Status status) {
         assert status != null;
-        if ( status == Status.BREAK) {
+        if (status == Status.BREAK) {
             assert getSession() != null;
             DebuggerManager.getDebuggerManager().setCurrentSession(getSession());
         }
@@ -468,20 +517,55 @@ public class DebugSession extends SingleThread {
      * cooperation with IDE UI. 
      */
     public class IDESessionBridge extends AbstractIDEBridge {
-
         /* (non-Javadoc)
          * @see org.netbeans.modules.php.dbgp.models.AbstractIDEBridge#getEngine()
          */
+
         @Override
         protected DebuggerEngine getEngine() {
-            return myEngine.get();
+            return engine.get();
         }
 
         /* (non-Javadoc)
          * @see org.netbeans.modules.php.dbgp.models.AbstractIDEBridge#getDebugSession()
          */
+        @Override
         protected DebugSession getDebugSession() {
             return DebugSession.this;
+        }
+
+        private void init() {
+            hideAnnotations();
+            setSuspended(false);
+            ThreadsModel threadsModel = getThreadsModel();
+            if (threadsModel != null) {
+                threadsModel.update();
+            }
+        }
+
+        private void destroy() {
+            setSuspended(false);
+            hideAnnotations();
+            BreakpointModel breakpointModel = getBreakpointModel();
+            if (breakpointModel != null) {
+                breakpointModel.setCurrentStack(null, DebugSession.this);
+            }
+            CallStackModel callStackModel = getCallStackModel();
+            if (callStackModel != null) {
+                callStackModel.clearModel();
+            }
+            ThreadsModel threadsModel = getThreadsModel();
+            if (threadsModel != null) {
+                threadsModel.update();
+            }
+            VariablesModel variablesModel = getVariablesModel();
+            if (variablesModel != null) {
+                variablesModel.clearModel();
+            }
+            WatchesModel watchesModel = getWatchesModel();
+            if (watchesModel != null) {
+                watchesModel.clearModel();
+            }
         }
     }
 }

@@ -359,7 +359,7 @@ public class PullAction extends ContextAction {
             }
 
             if (!bNoChanges) {
-                PushAction.notifyUpdatedFiles(root, list);
+                HgUtils.notifyUpdatedFiles(root, list);
                 HgUtils.forceStatusRefresh(root);
             }
             

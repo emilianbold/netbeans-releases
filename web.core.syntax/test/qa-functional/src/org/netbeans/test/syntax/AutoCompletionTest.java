@@ -73,7 +73,7 @@ public class AutoCompletionTest extends CompletionTest {
     
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
-        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
+        addServerTests(Server.GLASSFISH_V3, conf, new String[0]);//register server
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
     }
@@ -81,7 +81,6 @@ public class AutoCompletionTest extends CompletionTest {
     public static final class SuiteCreator extends NbTestSuite {
 
         public SuiteCreator() {
-            super();
             File datadir = new AutoCompletionTest(null, null).getDataDir();
             File projectsDir = new File(datadir, "AutoCompletionTestProjects");
             FileObjectFilter filter = new FileObjectFilter() {

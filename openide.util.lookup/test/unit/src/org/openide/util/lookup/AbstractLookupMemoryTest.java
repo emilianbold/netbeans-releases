@@ -144,7 +144,7 @@ public class AbstractLookupMemoryTest extends NbTestCase {
     }
 
     /** Simple pair with no data */
-    private static class EmptyPair extends AbstractLookup.Pair {
+    static class EmptyPair extends AbstractLookup.Pair {
         protected boolean creatorOf(Object obj) { return false; }
         public String getDisplayName() { return ""; }
         public String getId() { return ""; }

@@ -44,19 +44,18 @@ made subject to such option by the copyright holder.
 
 <fontscolors>
 
-    <fontcolor name="line_comment" default="comment"/>
+    <fontcolor name="comment" default="comment"/>
     <fontcolor name="tab" default="whitespace"/>
     <fontcolor name="whitespace" default="whitespace"/>
-    <fontcolor name="identifier" default="identifier"/>
+    <fontcolor name="bare" default="identifier"/>
     <fontcolor name="keyword" default="keyword"/>
-    <fontcolor name="rule_operator" default="operator"/>
-    <fontcolor name="macro_operator" default="operator"/>
+    <fontcolor name="separator" default="operator"/>
     <fontcolor name="macro" default="field">
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="special_target" default="operator">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor name="string_literal" default="string"/>
+    <fontcolor name="shell" default="identifier"/>
 
 </fontscolors>

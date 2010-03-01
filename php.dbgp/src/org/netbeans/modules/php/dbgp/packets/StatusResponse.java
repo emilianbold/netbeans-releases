@@ -40,23 +40,15 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.DebugSession.IDESessionBridge;
-import org.netbeans.modules.php.dbgp.SessionProgress;
-import org.netbeans.modules.php.dbgp.models.ThreadsModel;
 import org.w3c.dom.Node;
 
-
 /**
- * @author ads
+ * @author Radek Matous
  *
  */
 public class StatusResponse extends DbgpResponse {
-
-    private static final String REASON = "reason";        
-    
+    private static final String REASON = "reason";            
     private static final String STATUS = "status";
     
     StatusResponse( Node node ) {
@@ -82,45 +74,6 @@ public class StatusResponse extends DbgpResponse {
         Reason reason = getReason();
         assert status != null;
         assert reason != null;
-        dbgSession.setStatus(status);
-        if (status.isBreak() &&  reason.isOK()) {
-            StackGetCommand getCommand = new StackGetCommand(dbgSession.getTransactionId());
-            dbgSession.sendCommandLater(getCommand);
-            IDESessionBridge bridge = dbgSession.getBridge();
-            if (bridge != null) {
-                bridge.setSuspended( true );
-                updateThreadsModel(bridge, dbgSession);
-            }
-        } else if ((status.isStopping() || status.isStopped()) && reason.isOK()) {
-            StopCommand stopCommand = new StopCommand( dbgSession.getTransactionId() );
-            dbgSession.sendCommandLater(stopCommand);
-            dbgSession.cancel();
-            if (dbgSession.getOptions().isDebugForFirstPageOnly()) {
-                SessionProgress sp = SessionProgress.forSessionId(dbgSession.getSessionId());
-                if (sp != null) {
-                    sp.cancel();
-                    return;
-                }
-            }
-            setNextSessionAsCurrent();
-        }
-    }
-
-    //written with js debugger in mind (although probably would be  better to handle it in js code)
-    private void setNextSessionAsCurrent() {
-        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-        for (Session session : sessions) {
-            if (session.lookupFirst(null, DebugSession.class) == null) {
-                DebuggerManager.getDebuggerManager().setCurrentSession(session);
-                break;
-            }
-        }
-    }
-
-    private static void updateThreadsModel(IDESessionBridge bridge, DebugSession dbgSession) {
-        ThreadsModel threadsModel = bridge.getThreadsModel();
-        if (threadsModel != null) {
-            threadsModel.updateSession(dbgSession);
-        }
+        dbgSession.processStatus(status, reason, command);
     }
 }

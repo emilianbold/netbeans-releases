@@ -40,8 +40,10 @@ package org.netbeans.modules.web.jsf.editor.index;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -67,7 +69,11 @@ public class JsfIndex {
     /** Creates a new instance of JsfIndex */
     private JsfIndex(WebModule wm) {
         sourceRoots = (ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.SOURCE).getRoots());
-        binaryRoots = (ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.EXECUTE).getRoots());
+        //#179930 - merge compile and execute classpath, remove once #180183 resolved
+        Collection<FileObject> roots = new HashSet<FileObject>();
+        roots.addAll(Arrays.asList(ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE).getRoots()));
+        roots.addAll(Arrays.asList(ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.EXECUTE).getRoots()));
+        binaryRoots = roots.toArray(new FileObject[]{});
     }
 
     private QuerySupport createEmbeddingIndex() throws IOException {

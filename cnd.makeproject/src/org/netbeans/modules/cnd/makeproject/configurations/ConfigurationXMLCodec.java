@@ -47,9 +47,8 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
 import java.util.List;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -73,11 +72,12 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
@@ -215,7 +215,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     displayName = name;
                 }
                 boolean projectFiles = atts.getValue(PROJECT_FILES_ATTR).equals(TRUE_VALUE);
-                currentFolder = currentFolder.addNewFolder(name, displayName, projectFiles);
+                String kindAttr = atts.getValue(KIND_ATTR);
+                currentFolder = currentFolder.addNewFolder(name, displayName, projectFiles, kindAttr);
                 currentFolderStack.push(currentFolder);
                 if (!projectFiles) {
                     projectDescriptor.setExternalFileItems(currentFolder);
@@ -228,11 +229,14 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             } else {
                 String name = getString(atts.getValue(NAME_ATTR));
                 String root = getString(atts.getValue(ROOT_ATTR));
-                currentFolder = currentFolder.addNewFolder(name, name, true);
+                String kindAttr = atts.getValue(KIND_ATTR);
+                currentFolder = currentFolder.addNewFolder(name, name, true, kindAttr);
                 currentFolder.setRoot(root);
                 currentFolderStack.push(currentFolder);
             }
         } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
+            currentList = new ArrayList<String>();
+        } else if (element.equals(TEST_ROOT_LIST_ELEMENT)) {
             currentList = new ArrayList<String>();
         } else if (element.equals(ItemXMLCodec.ITEM_ELEMENT)) {
             String path = atts.getValue(ItemXMLCodec.PATH_ATTR);
@@ -247,7 +251,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     String excluded = atts.getValue(ItemXMLCodec.EXCLUDED_ATTR);
                     int tool = new Integer(atts.getValue(ItemXMLCodec.TOOL_ATTR)).intValue();
                     itemConfiguration.getExcluded().setValue(excluded.equals(TRUE_VALUE));
-                    itemConfiguration.setTool(tool);
+                    itemConfiguration.setTool(PredefinedToolKind.getTool(tool));
                 }
             } else {
                 System.err.println("Not found item: " + path);
@@ -506,7 +510,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentItemConfiguration.getExcluded().setValue(currentText.equals(TRUE_VALUE));
         } else if (element.equals(ItemXMLCodec.ITEM_TOOL_ELEMENT) || element.equals(ItemXMLCodec.TOOL_ELEMENT)) {
             int tool = new Integer(currentText).intValue();
-            currentItemConfiguration.setTool(tool);
+            currentItemConfiguration.setTool(PredefinedToolKind.getTool(tool));
         } else if (element.equals(CONFORMANCE_LEVEL_ELEMENT)) { // FIXUP: <= 21
         } else if (element.equals(COMPATIBILITY_MODE_ELEMENT)) { // FIXUP: <= 21
         } else if (element.equals(LIBRARY_LEVEL_ELEMENT)) {
@@ -571,6 +575,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             while (iter.hasNext()) {
                 String sf = iter.next();
                 projectDescriptor.addSourceRootRaw(sf);
+            }
+            currentList = null;
+        } else if (element.equals(TEST_ROOT_LIST_ELEMENT)) {
+            Iterator<String> iter = currentList.iterator();
+            while (iter.hasNext()) {
+                String sf = iter.next();
+                projectDescriptor.addTestRootRaw(sf);
             }
             currentList = null;
         } else if (element.equals(DIRECTORY_PATH_ELEMENT) || element.equals(PATH_ELEMENT)) {
@@ -827,7 +838,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private String adjustOffset(String path) {
         if (relativeOffset != null && path.startsWith("..")) // NOI18N
         {
-            path = IpeUtils.trimDotDot(relativeOffset + path);
+            path = CndPathUtilitities.trimDotDot(relativeOffset + path);
         }
         return path;
     }
@@ -839,7 +850,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         if (descriptorVersion < 46) {
             host = HostInfoUtils.LOCALHOST;
         } else {
-            host = CompilerSetManager.getDefaultDevelopmentHost();
+            host = CppUtils.getDefaultDevelopmentHost();
         }
         MakeConfiguration makeConfiguration = new MakeConfiguration(FileUtil.toFile(projectDirectory).getPath(), getString(value), confType, host);
         return makeConfiguration;

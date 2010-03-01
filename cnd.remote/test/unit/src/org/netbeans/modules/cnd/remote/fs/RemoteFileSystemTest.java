@@ -189,8 +189,8 @@ public class RemoteFileSystemTest extends RemoteTestBase {
             if (i == 0) {
                 firstTime = time;
             } else if (time > 0) {
-                assertTrue("Getting input stream for "+ getFileName(execEnv, absPath) + " took to long (" + time + ") ms",
-                        time < firstTime / 10);
+                assertTrue("Getting input stream for "+ getFileName(execEnv, absPath) + " took too long (" + time + ") ms",
+                        time < firstTime / 8);
             }
         }
     }

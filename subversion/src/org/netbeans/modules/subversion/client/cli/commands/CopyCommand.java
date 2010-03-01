@@ -121,18 +121,18 @@ public class CopyCommand extends SvnCommand {
         switch(type) {
             case url2url: 
                 arguments.add(fromUrl);
-                arguments.add(toUrl);        
+                arguments.addNonExistent(toUrl);
                 if(rev != null) arguments.add(rev);                
                 break;
             case url2file:     
                 arguments.add(fromUrl);
-                arguments.add(toFile);        
+                arguments.add(toFile.getAbsolutePath());
                 if(rev != null) arguments.add(rev);                
                 setCommandWorkingDirectory(toFile);                
                 break;
             case file2url:                     
                 arguments.add(fromFile);        
-                arguments.add(toUrl);
+                arguments.addNonExistent(toUrl);
                 setCommandWorkingDirectory(fromFile);                
                 break;
             default :    

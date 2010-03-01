@@ -49,7 +49,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
@@ -126,12 +126,12 @@ public class CMakeAction extends AbstractExecutorRunAction {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         // Build directory
-        String buildDir = getBuildDirectory(node,Tool.CMakeTool);
+        String buildDir = getBuildDirectory(node,PredefinedToolKind.CMakeTool);
         // Executable
-        String executable = getCommand(node, project, Tool.CMakeTool, "cmake"); // NOI18N
+        String executable = getCommand(node, project, PredefinedToolKind.CMakeTool, "cmake"); // NOI18N
         // Arguments
         //String arguments = proFile.getName();
-        String[] arguments =  getArguments(node, Tool.CMakeTool); // NOI18N
+        String[] arguments =  getArguments(node, PredefinedToolKind.CMakeTool); // NOI18N
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
         if (buildDir == null) {

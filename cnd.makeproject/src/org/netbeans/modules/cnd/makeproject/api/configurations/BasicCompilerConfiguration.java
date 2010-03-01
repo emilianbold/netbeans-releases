@@ -40,17 +40,17 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public abstract class BasicCompilerConfiguration {
+public abstract class BasicCompilerConfiguration implements AllOptionsProvider, ConfigurationBase {
 
     private String baseDir;
     private BasicCompilerConfiguration master;
@@ -129,6 +129,7 @@ public abstract class BasicCompilerConfiguration {
         getTool().setMaster(compilerConfiguration.getTool());
     }
 
+    @Override
     public boolean getModified() {
         return developmentMode.getModified() ||
                 mpLevel.getModified() ||
@@ -150,7 +151,7 @@ public abstract class BasicCompilerConfiguration {
     }
 
     // To be overridden
-    public String getOptions(BasicCompiler compiler) {
+    public String getOptions(AbstractCompiler compiler) {
         return "OVERRIDE"; // NOI18N
     }
 
@@ -249,7 +250,7 @@ public abstract class BasicCompilerConfiguration {
             suffix = ".pch"; // NOI18N
             ItemConfiguration itemConf = item.getItemConfiguration(conf);
             if (conf.getCompilerSet().getCompilerSet() != null) {
-                BasicCompiler compiler = (BasicCompiler) conf.getCompilerSet().getCompilerSet().getTool(itemConf.getTool());
+                AbstractCompiler compiler = (AbstractCompiler) conf.getCompilerSet().getCompilerSet().getTool(itemConf.getTool());
                 if (compiler != null) {
                     suffix = compiler.getDescriptor().getPrecompiledHeaderSuffix();
                     append = compiler.getDescriptor().getPrecompiledHeaderSuffixAppend();
@@ -270,23 +271,23 @@ public abstract class BasicCompilerConfiguration {
             dirName = MakeConfiguration.OBJECTDIR_MACRO;
         }
 
-        if (IpeUtils.isPathAbsolute(fileName)) {
+        if (CndPathUtilitities.isPathAbsolute(fileName)) {
             String absPath = fileName;
             if (absPath.charAt(0) != '/') {
                 absPath = '/' + absPath;
             }
             absPath = dirName + '/' + MakeConfiguration.EXT_FOLDER + absPath; // UNIX path
-            absPath = IpeUtils.replaceOddCharacters(absPath, '_');
+            absPath = CndPathUtilitities.replaceOddCharacters(absPath, '_');
             return absPath;
         } else if (filePath.startsWith("..")) { // NOI18N
-//            String absPath = IpeUtils.toAbsolutePath(getBaseDir(), fileName);
+//            String absPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), fileName);
 //            absPath = FilePathAdaptor.normalize(absPath);
-//            absPath = IpeUtils.replaceOddCharacters(absPath, '_');
+//            absPath = CndPathUtilitities.replaceOddCharacters(absPath, '_');
 //            if (absPath.charAt(0) != '/') {
 //                absPath = '/' + absPath;
 //            }
             String ofilePath = fileName.replace("..", "_DOTDOT"); // NOI18N
-            ofilePath = IpeUtils.replaceOddCharacters(ofilePath, '_');
+            ofilePath = CndPathUtilitities.replaceOddCharacters(ofilePath, '_');
             return dirName + '/' + MakeConfiguration.EXT_FOLDER + '/' + ofilePath; // UNIX path
         } else {
             return dirName + '/' + fileName; // UNIX path
@@ -294,7 +295,7 @@ public abstract class BasicCompilerConfiguration {
     }
 
     // Assigning & Cloning
-    public void assign(BasicCompilerConfiguration conf) {
+    protected void assign(BasicCompilerConfiguration conf) {
         setBaseDir(conf.getBaseDir());
         getDevelopmentMode().assign(conf.getDevelopmentMode());
         getWarningLevel().assign(conf.getWarningLevel());
@@ -306,19 +307,8 @@ public abstract class BasicCompilerConfiguration {
         getCommandLineConfiguration().assign(conf.getCommandLineConfiguration());
     }
 
-//    public Object clone() {
-//	BasicCompilerConfiguration clone = new BasicCompilerConfiguration(getBaseDir(), getMaster());
-//	clone.setDevelopmentMode((IntConfiguration)getDevelopmentMode().clone());
-//	clone.setWarningLevel((IntConfiguration)getWarningLevel().clone());
-//	clone.setSixtyfourBits((IntConfiguration)getSixtyfourBits().clone());
-//	clone.setStrip((BooleanConfiguration)getStrip().clone());
-//	clone.setAdditionalDependencies((StringConfiguration)getAdditionalDependencies().clone());
-//	clone.setTool((StringConfiguration)getTool().clone());
-//	clone.setCommandLineConfiguration((OptionsConfiguration)getCommandLineConfiguration().clone());
-//	return clone;
-//    }
     // Sheets
-    public Sheet.Set getBasicSet() {
+    protected Sheet.Set getBasicSet() {
         Sheet.Set set = new Sheet.Set();
         set.setName("BasicOptions"); // NOI18N
         set.setDisplayName(getString("BasicOptionsTxt"));
@@ -330,7 +320,7 @@ public abstract class BasicCompilerConfiguration {
         return set;
     }
 
-    public Sheet.Set getInputSet() {
+    protected Sheet.Set getInputSet() {
         Sheet.Set set = new Sheet.Set();
         set.setName("Input"); // NOI18N
         set.setDisplayName(getString("InputTxt"));

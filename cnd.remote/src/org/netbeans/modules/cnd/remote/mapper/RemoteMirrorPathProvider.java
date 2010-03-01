@@ -40,11 +40,12 @@
 package org.netbeans.modules.cnd.remote.mapper;
 
 import java.text.ParseException;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.spi.remote.setup.MirrorPathProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.openide.util.Exceptions;
@@ -62,7 +63,7 @@ public class RemoteMirrorPathProvider implements MirrorPathProvider {
 
     @Override
     public String getLocalMirror(ExecutionEnvironment executionEnvironment) {
-        return CCCCompiler.getIncludeFilePrefix(executionEnvironment);
+        return CndUtils.getIncludeFilePrefix(EnvUtils.toHostID(executionEnvironment));
     }
 
     @Override

@@ -70,6 +70,7 @@ import com.sun.source.util.TreePath;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -125,8 +126,8 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
     /**
      * @return errors for whole file
      */
-    List<ErrorDescription> computeErrors(CompilationInfo info, Document doc) throws IOException {
-        return computeErrors(info, doc, null);
+    List<ErrorDescription> computeErrors(CompilationInfo info, Document doc, String mimeType) throws IOException {
+        return computeErrors(info, doc, null, mimeType);
     }
     
     /**
@@ -134,13 +135,15 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
      * @return errors for line specified by forPosition
      * @throws IOException
      */
-    List<ErrorDescription> computeErrors(CompilationInfo info, Document doc, Integer forPosition) throws IOException {
+    List<ErrorDescription> computeErrors(CompilationInfo info, Document doc, Integer forPosition, String mimeType) throws IOException {
         List<Diagnostic> errors = info.getDiagnostics();
         List<ErrorDescription> descs = new ArrayList<ErrorDescription>();
         
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
             ERR.log(ErrorManager.INFORMATIONAL, "errors = " + errors );
-        
+
+        boolean isJava = org.netbeans.modules.java.hints.errors.Utilities.JAVA_MIME_TYPE.equals(mimeType);
+
         Map<Class, Data> data = new HashMap<Class, Data>();
 
         for (Diagnostic d : errors) {
@@ -150,7 +153,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
                 ERR.log(ErrorManager.INFORMATIONAL, "d = " + d );
             
-            Map<String, List<ErrorRule>> code2Rules = RulesManager.getInstance().getErrors();
+            Map<String, List<ErrorRule>> code2Rules = RulesManager.getInstance().getErrors(mimeType);
             
             List<ErrorRule> rules = code2Rules.get(d.getCode());
             
@@ -163,8 +166,6 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
 
             if (rules != null) {
                 int pos = (int)getPrefferedPosition(info, d);
-                
-                pos = info.getPositionConverter().getOriginalPosition(pos);
                 
                 ehm = new CreatorBasedLazyFixList(info.getFileObject(), d.getCode(), pos, rules, data);
             } else {
@@ -200,8 +201,14 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         
         if (isCanceled())
             return null;
-        
-        LazyHintComputationFactory.getAndClearToCompute(info.getFileObject());
+
+        if (isJava) {
+            LazyHintComputationFactory.getAndClearToCompute(info.getFileObject());
+        } else {
+            for (ErrorDescription d : descs) {
+                d.getFixes().getFixes();
+            }
+        }
         
         return descs;
     }
@@ -494,11 +501,13 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             Logger.getLogger(ErrorHintsProvider.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");
             return ;
         }
+
+        String mimeType = result.getSnapshot().getSource().getMimeType();
         
         long start = System.currentTimeMillis();
 
         try {
-            List<ErrorDescription> errors = computeErrors(info, doc);
+            List<ErrorDescription> errors = computeErrors(info, doc, mimeType);
 
             if (errors == null) //meaning: cancelled
                 return ;

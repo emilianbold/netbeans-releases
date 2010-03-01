@@ -661,4 +661,11 @@ public class ProxyClassLoader extends ClassLoader {
         }
     }
 
+    final ClassLoader firstParent() {
+        if (parents == null || parents.length == 0) {
+            return null;
+        }
+        return parents[0];
+    }
+
 }

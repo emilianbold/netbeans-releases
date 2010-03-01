@@ -613,6 +613,15 @@ public final class LayerBuilder {
                 file = (org.w3c.dom.Element) e.appendChild(doc.createElement("file"));
             }
             file.setAttribute("name", piece);
+            NodeList oldComments = file.getChildNodes();
+            for (int i = 0; i < oldComments.getLength();) {
+                Node node = oldComments.item(i);
+                if (node.getNodeType() == Node.COMMENT_NODE) {
+                    file.removeChild(node);
+                } else {
+                    i++;
+                }
+            }
             if (originatingElement != null) {
                 // Embed comment in generated-layer.xml for easy navigation back to the annotation.
                 String name;

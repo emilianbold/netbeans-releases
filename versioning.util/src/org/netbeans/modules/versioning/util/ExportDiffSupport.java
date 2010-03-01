@@ -195,14 +195,14 @@ public abstract class ExportDiffSupport {
                         return true; 
                     }
                 };
-                final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ExportDiffSupport.class, "CTL_Attaching"), c);
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(getMessage("CTL_Attaching"), c);
                 handle.start();
                 t[0] = Utils.createTask(new Runnable() {
                     public void run() {
                         try {
                             File toFile;
                             try {
-                                toFile = File.createTempFile("vcs-diff", ".patch");
+                                toFile = createTempFile();
                             } catch (IOException ex) {
                                 // XXX
                                 return;
@@ -220,6 +220,40 @@ public abstract class ExportDiffSupport {
         }
     }
 
+    protected File createTempFile () throws IOException {
+        return File.createTempFile("vcs-diff", ".patch"); // NOI18N
+    }
+
+    protected String getMessage (String resourceName) {
+        return NbBundle.getMessage(ExportDiffSupport.class, resourceName);
+    }
+
+    protected javax.swing.filechooser.FileFilter getFileFilter () {
+        return new javax.swing.filechooser.FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.getName().endsWith("diff") || f.getName().endsWith("patch") || f.isDirectory();  // NOI18N
+            }
+            @Override
+            public String getDescription() {
+                return NbBundle.getMessage(ExportDiffSupport.class, "BK3002");
+            }
+        };
+    }
+
+    protected File getTargetFile (File target) {
+        String name = target.getName();
+        boolean requiredExt = false;
+        requiredExt |= name.endsWith(".diff");  // NOI18N
+        requiredExt |= name.endsWith(".dif");   // NOI18N
+        requiredExt |= name.endsWith(".patch"); // NOI18N
+        if (requiredExt == false) {
+            File parent = target.getParentFile();
+            target = new File(parent, name + ".patch"); // NOI18N
+        }
+        return target;
+    }
+
     /**
      * Synchronously writtes the changes to the given file
      * @param file
@@ -229,7 +263,7 @@ public abstract class ExportDiffSupport {
     private void onChooseFile(File currentDir) {
         final JFileChooser chooser = createFileChooser(currentDir);
 
-        DialogDescriptor chooseFileDescriptor = new DialogDescriptor(chooser, NbBundle.getMessage(ExportDiffSupport.class, "CTL_Export_Title"));
+        DialogDescriptor chooseFileDescriptor = new DialogDescriptor(chooser, getMessage("CTL_Export_Title"));
         chooseFileDescriptor.setOptions(new Object[0]);
         dialog = DialogDisplayer.getDefault().createDialog(chooseFileDescriptor);
         dialog.setVisible(true);
@@ -246,14 +280,7 @@ public abstract class ExportDiffSupport {
 
         }
         chooser.setCurrentDirectory(curentDir); // NOI18N
-        chooser.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
-            public boolean accept(File f) {
-                return f.getName().endsWith("diff") || f.getName().endsWith("patch") || f.isDirectory();  // NOI18N
-            }
-            public String getDescription() {
-                return NbBundle.getMessage(ExportDiffSupport.class, "BK3002");
-            }
-        });
+        chooser.addChoosableFileFilter(getFileFilter());
 
         chooser.setDialogType(JFileChooser.SAVE_DIALOG);
         chooser.setApproveButtonMnemonic(NbBundle.getMessage(ExportDiffSupport.class, "MNE_Export_ExportAction").charAt(0));
@@ -262,16 +289,7 @@ public abstract class ExportDiffSupport {
                 String state = e.getActionCommand();
                 if (state.equals(JFileChooser.APPROVE_SELECTION)) {
                     File destination = chooser.getSelectedFile();
-                    String name = destination.getName();
-                    boolean requiredExt = false;
-                    requiredExt |= name.endsWith(".diff");  // NOI18N
-                    requiredExt |= name.endsWith(".dif");   // NOI18N
-                    requiredExt |= name.endsWith(".patch"); // NOI18N
-                    if (requiredExt == false) {
-                        File parent = destination.getParentFile();
-                        destination = new File(parent, name + ".patch"); // NOI18N
-                    }
-
+                    destination = getTargetFile(destination);
                     if (destination.exists()) {
                         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(ExportDiffSupport.class, "BK3005", destination.getAbsolutePath()));
                         nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);

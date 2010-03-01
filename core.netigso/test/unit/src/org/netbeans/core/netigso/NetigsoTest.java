@@ -58,9 +58,6 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jaroslav Tulach
  */
 public class NetigsoTest extends NetigsoHid {
-    static {
-        NetigsoModuleFactory.start();
-    }
 
     public NetigsoTest(String name) {
         super(name);
@@ -68,7 +65,7 @@ public class NetigsoTest extends NetigsoHid {
 
     public static Test suite() {
         Test t = null;
-//        t = new NetigsoTest("testOSGiCanRequireBundleOnNetBeans");
+//        t = new NetigsoTest("testFactoryCreatesOurModulesWithDeps");
         if (t == null) {
             t = new NbTestSuite(NetigsoTest.class);
         }

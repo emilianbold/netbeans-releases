@@ -353,10 +353,9 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         assertTrue(new File(newProject, "nbproject").isDirectory());
         assertTrue(new File(newProject, "src").isDirectory());
         assertTrue(new File(newProject, "lib").isDirectory());
-        assertFalse(new File(newProject, "proj2").exists());
-        
-        assertTrue(new File(oldProjectFile, "proj2").exists());
-        assertTrue(new File(new File(oldProjectFile, "proj2"), "nbproject").exists());
+        // We now try to just move the project directory as is:
+        assertTrue(new File(newProject, "proj2").isDirectory());
+        assertFalse(new File(oldProjectFile, "proj2").exists());
     }
     
     public void testMoveWithInnerProjectComplex() throws Exception {
@@ -380,10 +379,8 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         assertTrue(new File(newProject, "nbproject").isDirectory());
         assertTrue(new File(newProject, "src").isDirectory());
         assertTrue(new File(newProject, "lib").isDirectory());
-        assertFalse(new File(new File(newProject, "lib"), "proj2").exists());
-
-        assertTrue(new File(new File(oldProjectFile, "lib"), "proj2").exists());
-        assertTrue(new File(new File(new File(oldProjectFile, "lib"), "proj2"), "nbproject").exists());
+        assertTrue(new File(new File(newProject, "lib"), "proj2").isDirectory());
+        assertFalse(new File(new File(oldProjectFile, "lib"), "proj2").exists());
     }
     
     public void testMainProjectFlagMovedForMainProject() throws Exception {

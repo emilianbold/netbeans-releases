@@ -38,81 +38,118 @@
  */
 package org.netbeans.modules.progress.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dialog;
+import java.awt.EventQueue;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.progress.ProgressRunnable;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider;
+import org.netbeans.modules.progress.spi.RunOffEDTProvider.Progress;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 
 /**
  * Default RunOffEDTProvider implementation for ProgressUtils.runOffEventDispatchThread() methods
  * @author Jan Lahoda, Tomas Holy
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.progress.spi.RunOffEDTProvider.class, position = 100)
-public class RunOffEDTImpl implements RunOffEDTProvider {
+@ServiceProvider(service=RunOffEDTProvider.class, position = 100)
+public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
 
     private static final RequestProcessor WORKER = new RequestProcessor(ProgressUtils.class.getName());
-    private static final Map<Class<? extends Runnable>, Integer> OPERATIONS = new WeakHashMap<Class<? extends Runnable>, Integer>();
-    private static final int CLEAR_TIME = 100;
+    private static final Map<String, Long> CUMULATIVE_SPENT_TIME = new HashMap<String, Long>();
+    private static final Map<String, Long> MAXIMAL_SPENT_TIME = new HashMap<String, Long>();
+    private static final Map<String, Integer> INVOCATION_COUNT = new HashMap<String, Integer>();
     private static final int CANCEL_TIME = 1000;
     private static final int WARNING_TIME = Integer.getInteger("org.netbeans.modules.progress.ui.WARNING_TIME", 10000);
     private static final Logger LOG = Logger.getLogger(RunOffEDTImpl.class.getName());
 
-    public void runOffEventDispatchThread(final Runnable operation, final String operationDescr, final AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorTime, int dlgTime) {
-        Parameters.notNull("operation", operation);
-        Parameters.notNull("cancelOperation", cancelOperation);
+    private final boolean assertionsOn;
+
+    @Override
+    public void runOffEventDispatchThread(final Runnable operation, final String operationDescr,
+            final AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorTime, int dlgTime) {
+        Parameters.notNull("operation", operation); //NOI18N
+        Parameters.notNull("cancelOperation", cancelOperation); //NOI18N
         if (!SwingUtilities.isEventDispatchThread()) {
             operation.run();
             return;
         }
         long startTime = System.currentTimeMillis();
         runOffEventDispatchThreadImpl(operation, operationDescr, cancelOperation, waitForCanceled, waitCursorTime, dlgTime);
-        int elapsed = (int) (System.currentTimeMillis() - startTime);
+        long elapsed = System.currentTimeMillis() - startTime;
 
-        boolean ea = false;
-        assert ea = true;
-        if (ea) {
-            Class<? extends Runnable> clazz = operation.getClass();
-            synchronized (OPERATIONS) {
-                if (elapsed < CLEAR_TIME) {
-                    OPERATIONS.remove(clazz);
-                } else {
-                    Integer prevElapsed = OPERATIONS.get(operation.getClass());
-                    if (prevElapsed != null && elapsed + prevElapsed > WARNING_TIME) {
-                        LOG.log(Level.WARNING, "Operation is too slow", new Exception(clazz + " is too slow"));
-                    }
-                    OPERATIONS.put(clazz, elapsed);
-                }
+        if (assertionsOn) {
+            String clazz = operation.getClass().getName();
+            Long cumulative = CUMULATIVE_SPENT_TIME.get(clazz);
+            if (cumulative == null) {
+                cumulative = 0L;
+            }
+            cumulative += elapsed;
+            CUMULATIVE_SPENT_TIME.put(clazz, cumulative);
+            Long maximal = MAXIMAL_SPENT_TIME.get(clazz);
+            if (maximal == null) {
+                maximal = 0L;
+            }
+            if (elapsed > maximal) {
+                maximal = elapsed;
+                MAXIMAL_SPENT_TIME.put(clazz, maximal);
+            }
+            Integer count = INVOCATION_COUNT.get(clazz);
+            if (count == null) {
+                count = 0;
+            }
+            count++;
+            INVOCATION_COUNT.put(clazz, count);
+
+            if (elapsed > WARNING_TIME) {
+                LOG.log(Level.WARNING, "Lengthy operation: {0}:{1}:{2}:{3}:{4}", new Object[] {
+                    clazz, cumulative, count, maximal, String.format("%3.2f", ((double) cumulative) / count)});
             }
         }
     }
 
-    private void runOffEventDispatchThreadImpl(final Runnable operation, final String operationDescr, final AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorTime, int dlgTime) {
+    private void runOffEventDispatchThreadImpl(final Runnable operation, final String operationDescr,
+            final AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorTime, int dlgTime) {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Dialog> d = new AtomicReference<Dialog>();
 
         WORKER.post(new Runnable() {
 
-            public void run() {
+            public @Override void run() {
                 if (cancelOperation.get()) {
                     return;
                 }
@@ -121,7 +158,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider {
 
                 SwingUtilities.invokeLater(new Runnable() {
 
-                    public void run() {
+                    public @Override void run() {
                         Dialog dd = d.get();
                         if (dd != null) {
                             dd.setVisible(false);
@@ -143,12 +180,12 @@ public class RunOffEDTImpl implements RunOffEDTProvider {
             return;
         }
 
-        String title = NbBundle.getMessage(RunOffEDTImpl.class, "RunOffAWT.TITLE_Operation");
-        String cancelButton = NbBundle.getMessage(RunOffEDTImpl.class, "RunOffAWT.BTN_Cancel");
+        String title = NbBundle.getMessage(RunOffEDTImpl.class, "RunOffAWT.TITLE_Operation"); //NOI18N
+        String cancelButton = NbBundle.getMessage(RunOffEDTImpl.class, "RunOffAWT.BTN_Cancel"); //NOI18N
 
-        DialogDescriptor nd = new DialogDescriptor(operationDescr, title, true, new Object[]{cancelButton}, cancelButton, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
+        DialogDescriptor nd = new DialogDescriptor(operationDescr, title, true, new Object[]{cancelButton},
+                cancelButton, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
+            public @Override void actionPerformed(ActionEvent e) {
                 cancelOperation.set(true);
                 d.get().setVisible(false);
             }
@@ -162,7 +199,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider {
         if (waitForCanceled) {
             try {
                 if (!latch.await(CANCEL_TIME, TimeUnit.MILLISECONDS)) {
-                    throw new IllegalStateException("Canceled operation did not finish in time.");
+                    throw new IllegalStateException("Canceled operation did not finish in time."); //NOI18N
                 }
             } catch (InterruptedException ex) {
                 LOG.log(Level.FINE, null, ex);
@@ -189,5 +226,177 @@ public class RunOffEDTImpl implements RunOffEDTProvider {
             glassPane.setVisible(false);
             glassPane.setCursor(original);
         }
+    }
+
+    public RunOffEDTImpl() {
+        boolean ea = false;
+        assert ea = true;
+        assertionsOn = ea;
+    }
+
+    @Override
+    public <T> Future<T> showProgressDialogAndRunLater (ProgressRunnable<T> operation, ProgressHandle handle, boolean includeDetailLabel) {
+       AbstractWindowRunner<T> wr = new ProgressBackgroundRunner<T>(operation, handle, includeDetailLabel, operation instanceof Cancellable);
+       Future<T> result = wr.start();
+       assert EventQueue.isDispatchThread() == (result != null);
+       if (result == null) {
+           try {
+               result = wr.waitForStart();
+           } catch (InterruptedException ex) {
+               LOG.log(Level.FINE, "Interrupted/cancelled during start {0}", operation); //NOI18N
+               LOG.log(Level.FINER, "Interrupted/cancelled during start", ex); //NOI18N
+               return null;
+           }
+       }
+       return result;
+    }
+
+    @Override
+    public <T> T showProgressDialogAndRun(ProgressRunnable<T> toRun, String displayName, boolean includeDetailLabel) {
+        try {
+            return showProgressDialogAndRunLater(toRun, toRun instanceof Cancellable ?
+                ProgressHandleFactory.createHandle(displayName, (Cancellable) toRun) :
+                ProgressHandleFactory.createHandle(displayName), includeDetailLabel).get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            LOG.log(Level.FINER, "Cancelled " + toRun, ex); //NOI18N
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    @Override
+    public void showProgressDialogAndRun(Runnable toRun, ProgressHandle handle, boolean includeDetailLabel) {
+       boolean showCancelButton = toRun instanceof Cancellable;
+       AbstractWindowRunner<Void> wr = new ProgressBackgroundRunner<Void>(toRun, handle, includeDetailLabel, showCancelButton);
+       wr.start();
+        try {
+            try {
+                wr.waitForStart().get();
+            } catch (CancellationException ex) {
+                LOG.log(Level.FINER, "Cancelled " + toRun, ex); //NOI18N
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    static class CancellableFutureTask<T> extends FutureTask<T> implements Cancellable {
+        volatile Task task;
+        private final Callable<T> c;
+        CancellableFutureTask(Callable<T> c) {
+            super(c);
+            this.c = c;
+        }
+
+        @Override
+        public boolean cancel() {
+            return cancel(true);
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            boolean result = c instanceof Cancellable ? ((Cancellable) c).cancel() : false;
+            result &= super.cancel(mayInterruptIfRunning) & task.cancel();
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + "[" + c + "]"; //NOI18N
+        }
+    }
+
+    static final class TranslucentMask extends JComponent { //pkg private for tests
+        private static final String PROGRESS_WINDOW_MASK_COLOR = "progress.windowMaskColor"; //NOI18N
+        TranslucentMask() {
+            setVisible(false); //so we will trigger a property change
+        }
+
+        @Override
+        public boolean isOpaque() {
+            return false;
+        }
+
+        @Override
+        public void paint (Graphics g) {
+            Graphics2D g2d = (Graphics2D) g;
+            Color translu = UIManager.getColor(PROGRESS_WINDOW_MASK_COLOR);
+            if (translu == null) {
+                translu = new Color (180, 180, 180, 148);
+            }
+            g2d.setColor(translu);
+            g2d.fillRect (0, 0, getWidth(), getHeight());
+        }
+    }
+
+    private static final class ProgressBackgroundRunner<T> extends AbstractWindowRunner<T> implements Cancellable {
+        private final ProgressRunnable<T> toRun;
+        ProgressBackgroundRunner(ProgressRunnable<T> toRun, String displayName, boolean includeDetail, boolean showCancel) {
+            super (showCancel ?
+                ProgressHandleFactory.createHandle(displayName, (Cancellable) toRun) :
+                ProgressHandleFactory.createHandle(displayName), includeDetail, showCancel);
+            this.toRun = toRun;
+        }
+
+        ProgressBackgroundRunner(ProgressRunnable<T> toRun, ProgressHandle handle, boolean includeDetail, boolean showCancel) {
+            super (handle, includeDetail, showCancel);
+            this.toRun = toRun;
+        }
+
+        ProgressBackgroundRunner(Runnable toRun, ProgressHandle handle, boolean includeDetail, boolean showCancel) {
+            this (showCancel ? new CancellableRunnablePR<T>(toRun) : 
+                new RunnablePR<T>(toRun), handle, includeDetail, showCancel);
+        }
+
+        @Override
+        protected T runBackground() {
+            handle.start();
+            handle.switchToIndeterminate();
+            T result;
+            try {
+                result = toRun.run(handle);
+            } finally {
+                handle.finish();
+            }
+            return result;
+        }
+
+        @Override
+        public boolean cancel() {
+            if (toRun instanceof Cancellable) {
+                return ((Cancellable) toRun).cancel();
+            }
+            return false;
+        }
+
+        private static class RunnablePR<T> implements ProgressRunnable<T> {
+            protected final Runnable toRun;
+            RunnablePR(Runnable toRun) {
+                this.toRun = toRun;
+            }
+
+            @Override
+            public T run(ProgressHandle handle) {
+                toRun.run();
+                return null;
+            }
+        }
+
+        private static final class CancellableRunnablePR<T> extends RunnablePR<T> implements Cancellable {
+            CancellableRunnablePR(Runnable toRun) {
+                super (toRun);
+            }
+
+            @Override
+            public boolean cancel() {
+                return ((Cancellable) toRun).cancel();
+            }
+        }
+
     }
 }

@@ -49,7 +49,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JRadioButton;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 
 /**
  * Create the basic compiler flags panel in the Makefile wizard.
@@ -299,7 +299,7 @@ public class BasicFlagsPanel extends MakefileWizardPanel {
 	    moduleSupportTB.setEnabled(false);
 	}
 
-	IpeUtils.requestFocus(develBuildRB);
+	CndUIUtilities.requestFocus(develBuildRB);
 	super.addNotify();
     }
 

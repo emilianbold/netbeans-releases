@@ -61,13 +61,14 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 
@@ -89,7 +90,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
     @Before @Override
     public void setUp() throws Exception {
         super.setUp();
-        List<CompilerSet> sets = CompilerSetManager.getDefault().getCompilerSets();
+        List<CompilerSet> sets = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets();
         for (CompilerSet set : sets) {
             if (set.getName().equals("SunStudio")) {
                 SunStudioSet = set;
@@ -223,6 +224,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         final AtomicReference<IOException> exRef = new AtomicReference<IOException>();
         final AtomicReference<Set<DataObject>> setRef = new AtomicReference<Set<DataObject>>();
         SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
             public void run() {
                 MakeSampleProjectIterator projectCreator = new MakeSampleProjectIterator();
                 TemplateWizard wiz = new TemplateWizard();
@@ -257,7 +259,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         final CountDownLatch done = new CountDownLatch(1);
         final AtomicInteger build_rc = new AtomicInteger(-1);
 
-        CompilerSetManager.getDefault().setDefault(set);
+        CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
         MakeOptions.setDefaultMakeOptions(makeOptions);
 
         File workDir = getWorkDir();//new File("/tmp");
@@ -285,8 +287,9 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         final String failureLine = "BUILD FAILED";
 
         IOProvider iop = IOProvider.getDefault();
-        assert iop instanceof CndTestIOProvider;
+        assert iop instanceof CndTestIOProvider : "found " + iop.getClass();
         ((CndTestIOProvider) iop).addListener(new CndTestIOProvider.Listener() {
+            @Override
             public void linePrinted(String line) {
                 if(line != null) {
                     if (line.startsWith(successLine)) {

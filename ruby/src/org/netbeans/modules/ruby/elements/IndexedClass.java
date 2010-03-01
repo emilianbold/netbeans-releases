@@ -45,6 +45,7 @@ import java.util.Set;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.netbeans.modules.ruby.RubyType;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -87,6 +88,11 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
         return in;
     }
 
+    @Override
+    public RubyType getType() {
+        // type is not relevant here; the type of the class/module is the class itself
+        return RubyType.unknown();
+    }
     // XXX Is this necessary?
     public String getSignature() {
         return fqn;

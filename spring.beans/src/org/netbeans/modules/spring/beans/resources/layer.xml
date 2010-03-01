@@ -149,6 +149,9 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="Editors">
+        <file name="org-netbeans-modules-spring-beans-index-SpringBinaryIndexer$Factory.instance">
+            <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory"/>
+        </file>
         <folder name="text">
             <folder name="x-springconfig+xml">
                 <folder name="HyperlinkProviders">

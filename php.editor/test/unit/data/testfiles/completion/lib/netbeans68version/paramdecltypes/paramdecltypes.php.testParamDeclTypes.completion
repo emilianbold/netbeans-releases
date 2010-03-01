@@ -39,7 +39,11 @@ KEYWORD    continue                                   null
 KEYWORD    die                                        null
 KEYWORD    echo                                       null
 KEYWORD    empty                                      null
+KEYWORD    endfor                                     null
+KEYWORD    endforeach                                 null
 KEYWORD    endif                                      null
+KEYWORD    endswitch                                  null
+KEYWORD    endwhile                                   null
 KEYWORD    eval                                       null
 KEYWORD    exit                                       null
 KEYWORD    extends                                    null

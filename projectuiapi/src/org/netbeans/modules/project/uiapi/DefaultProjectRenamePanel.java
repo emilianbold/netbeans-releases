@@ -110,7 +110,6 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         alsoRenameFolder = new javax.swing.JCheckBox();
         jLabel3 = new javax.swing.JLabel();
         errorMessage = new javax.swing.JLabel();
-        jTextArea1 = new javax.swing.JTextArea();
         progress = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         progressImpl = new javax.swing.JPanel();
@@ -192,23 +191,6 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(errorMessage, gridBagConstraints);
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setEditable(false);
-        jTextArea1.setForeground(UIManager.getColor("nb.errorForeground"));
-        jTextArea1.setLineWrap(true);
-        jTextArea1.setRows(5);
-        jTextArea1.setText(org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "VCSWarningMessage")); // NOI18N
-        jTextArea1.setWrapStyleWord(true);
-        jTextArea1.setOpaque(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
-        add(jTextArea1, gridBagConstraints);
-
         progress.setLayout(new java.awt.CardLayout());
         progress.add(jPanel4, "not-progress");
 
@@ -260,7 +242,6 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JPanel progress;
     private javax.swing.JPanel progressImpl;
     private javax.swing.JTextField projectFolder;

@@ -49,6 +49,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -288,7 +289,7 @@ public class SelectModePanel extends javax.swing.JPanel {
                     messageKind = cannotWriteFolder;
                     return false;
                 }
-                File nbFile = new File(path+"/nbproject/project.xml"); // NOI18N
+                File nbFile = new File(new File(path, MakeConfiguration.NBPROJECT_FOLDER), MakeConfiguration.PROJECT_XML); // NOI18N
                 if (nbFile.exists()) {
                     messageKind = alreadyNbPoject;
                     return false;

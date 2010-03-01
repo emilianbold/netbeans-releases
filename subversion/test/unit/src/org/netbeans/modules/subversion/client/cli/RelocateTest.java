@@ -40,7 +40,7 @@
 package org.netbeans.modules.subversion.client.cli;
 
 import java.io.File;
-import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 

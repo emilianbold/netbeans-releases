@@ -632,6 +632,14 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         return rubybin;
     }
 
+    /**
+     * Try to find a path to the <tt>toFind</tt> executable in the "Ruby
+     * specific" manner.
+     *
+     * @param toFind executable to be find, e.g. rails, rake, rdoc, irb ...
+     * @return path to the found executable; might be <tt>null</tt> if not
+     *         found.
+     */
     public String findExecutable(final String toFind) {
         return findExecutable(toFind, true);
     }

@@ -41,9 +41,15 @@
 
 package org.netbeans.modules.apisupport.project.queries;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider.NbModuleType;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
@@ -54,20 +60,35 @@ import org.openide.loaders.DataObject;
  * Specifies license header for module and suite projects.
  */
 public class TemplateAttributesProvider implements CreateFromTemplateAttributesProvider {
-
+    private final NbModuleProject project;
     private final AntProjectHelper helper;
-    private final boolean netBeansOrg;
+    private final boolean netbeansOrg;
 
-    public TemplateAttributesProvider(AntProjectHelper helper, boolean netBeansOrg) {
+    public TemplateAttributesProvider(NbModuleProject p, AntProjectHelper helper, boolean netbeansOrg) {
+        this.project = p;
         this.helper = helper;
-        this.netBeansOrg = netBeansOrg;
+        this.netbeansOrg = netbeansOrg;
     }
 
+    @Override
     public Map<String,?> attributesFor(DataObject template, DataFolder target, String name) {
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String license = props.getProperty("project.license"); // NOI18N
-        if (license == null && netBeansOrg) {
+
+        if (license == null && netbeansOrg) {
             license = "cddl-netbeans-sun"; // NOI18N
+        }
+        if (license == null && project != null) {
+            SuiteProject sp;
+            try {
+                sp = SuiteUtils.findSuite(project);
+                if (sp != null) {
+                    TemplateAttributesProvider tap = sp.getLookup().lookup(TemplateAttributesProvider.class);
+                    return tap.attributesFor(template, target, name);
+                }
+            } catch (IOException ex) {
+                // OK, ignore
+            }
         }
         Map<String, String> values = new HashMap<String, String>();
         if (license != null) {

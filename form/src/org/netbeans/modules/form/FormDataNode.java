@@ -78,6 +78,7 @@ public class FormDataNode extends FilterNode {
     public Action getPreferredAction() {
         // issue 56351
         return new javax.swing.AbstractAction() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 FormEditorSupport supp = getCookie(FormEditorSupport.class);
                 supp.openFormEditor(false);

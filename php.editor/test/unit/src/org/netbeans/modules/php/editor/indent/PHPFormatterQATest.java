@@ -38,10 +38,14 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.prefs.Preferences;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
@@ -192,7 +196,8 @@ public class PHPFormatterQATest extends PHPTestBase {
      * @throws Exception
      */
     public void test124273_175247_regression() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/regressions/124273_175247.php");
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/regressions/124273_175247.php", options);
     }
 
     /**
@@ -233,7 +238,8 @@ public class PHPFormatterQATest extends PHPTestBase {
      * @throws Exception
      */
     public void test174873_173906_stablePartial() throws Exception {
-        reformatFileContents("testfiles/formatting/qa/issues/stable_partialTests/174873_173906.php");
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_partialTests/174873_173906.php", options);
     }
 
     public void test174873_173906_1_stablePartial() throws Exception {
@@ -268,6 +274,54 @@ public class PHPFormatterQATest extends PHPTestBase {
         //assertNotNull("getFormatter must be implemented", formatter);
 
         setupDocumentIndentation(doc, preferences);
+        format(doc, formatter, formatStart, formatEnd, false);
+
+        String after = doc.getText(0, doc.getLength());
+        assertDescriptionMatches(file, after, false, ".formatted");
+    }
+
+    protected void reformatFileContents(String file, Map<String, Object> options) throws Exception {
+        FileObject fo = getTestFile(file);
+        assertNotNull(fo);
+        BaseDocument doc = getDocument(fo);
+        assertNotNull(doc);
+        String fullTxt = doc.getText(0, doc.getLength());
+        int formatStart = 0;
+        int formatEnd = doc.getLength();
+        int startMarkPos = fullTxt.indexOf(FORMAT_START_MARK);
+
+        if (startMarkPos >= 0){
+            formatStart = startMarkPos + FORMAT_START_MARK.length();
+            formatEnd = fullTxt.indexOf(FORMAT_END_MARK);
+
+            if (formatEnd == -1){
+                throw new IllegalStateException();
+            }
+        }
+
+        IndentPrefs preferences = new IndentPrefs(4, 4);
+        Formatter formatter = getFormatter(preferences);
+        //assertNotNull("getFormatter must be implemented", formatter);
+
+        setupDocumentIndentation(doc, preferences);
+
+        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        for (String option : options.keySet()) {
+            Object value = options.get(option);
+            if (value instanceof Integer) {
+                prefs.putInt(option, ((Integer)value).intValue());
+            }
+            else if (value instanceof String) {
+                prefs.put(option, (String)value);
+            }
+            else if (value instanceof Boolean) {
+                prefs.put(option, ((Boolean)value).toString());
+            }
+	    else if (value instanceof CodeStyle.BracePlacement) {
+		prefs.put(option, ((CodeStyle.BracePlacement)value).name());
+	    }
+        }
+
         format(doc, formatter, formatStart, formatEnd, false);
 
         String after = doc.getText(0, doc.getLength());

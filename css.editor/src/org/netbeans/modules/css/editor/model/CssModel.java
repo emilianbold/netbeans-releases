@@ -43,10 +43,12 @@ package org.netbeans.modules.css.editor.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.css.gsf.CssLanguage;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CssParserConstants;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
@@ -60,8 +62,8 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -77,6 +79,7 @@ public final class CssModel {
     private final List<CssRule> rules = new ArrayList<CssRule>(10);
     private final Collection<String> imported_files = new ArrayList<String>();
     private Snapshot snapshot;
+    private FileObject fileObject;
 
     public static CssModel create(CssParserResult result) {
         return new CssModel(result.getSnapshot(), result.root());
@@ -84,6 +87,7 @@ public final class CssModel {
 
     private CssModel(Snapshot snapshot, SimpleNode root) {
         this.snapshot = snapshot;
+        this.fileObject = snapshot.getSource().getFileObject();
         //check for null which may happen if the source is severely broken
         //if it happens, the model contains just empty list of rules
         if (root != null) {
@@ -119,33 +123,35 @@ public final class CssModel {
     }
 
     public Collection<CssModel> getImportedFileModels() {
-        final Collection<CssModel> models = new ArrayList<CssModel>();
-        for (FileObject importedFile : getImportedFiles()) {
-            if (importedFile.isValid() && importedFile.getMIMEType().equals(Css.CSS_MIME_TYPE)) {
+        Collection<CssModel> models = new HashSet<CssModel>();
+        processModels(models, this);
+        return models;
+    }
+
+    private void processModels(final Collection<CssModel> models, CssModel model) {
+        for (FileObject importedFile : model.getImportedFiles()) {
+            final AtomicReference<CssModel> ref = new AtomicReference<CssModel>();
+            if (importedFile.isValid() && importedFile.getMIMEType().equals(CssLanguage.CSS_MIME_TYPE)) {
                 try {
                     Source source = Source.create(importedFile);
                     ParserManager.parse(Collections.singleton(source), new UserTask() {
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
                             CssParserResult result = (CssParserResult) resultIterator.getParserResult();
-                            models.add(CssModel.create(result));
+                            ref.set(CssModel.create(result));
                         }
                     });
                 } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
+            CssModel created = ref.get();
+            if(created != null) {
+                if(models.add(created)) {
+                    processModels(models, created);
+                }
+            }
         }
-        return models;
-    }
-
-    public Collection<CssModel> getImportedFileModelsRecursively() {
-        Collection<CssModel> allModels = new ArrayList<CssModel>();
-        for(CssModel model : getImportedFileModels()) {
-            allModels.add(model);
-            allModels.addAll(model.getImportedFileModelsRecursively());
-        }
-        return allModels;
     }
 
     /** Finds a rule on the given offset.
@@ -225,7 +231,7 @@ public final class CssModel {
                     } else if (node.kind() == CssParserTreeConstants.JJTIMPORTRULE) {
                         Token importedFile = SimpleNodeUtil.getNodeToken(node, CssParserConstants.STRING);
                         if (importedFile != null) {
-                            imported_files.add(SimpleNodeUtil.unquotedValue(importedFile.image));
+                            imported_files.add(WebUtils.unquotedValue(importedFile.image));
                         }
 
                     }
@@ -245,4 +251,27 @@ public final class CssModel {
 
         }
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CssModel other = (CssModel) obj;
+        if (this.fileObject != other.fileObject && (this.fileObject == null || !this.fileObject.equals(other.fileObject))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 61 * hash + (this.fileObject != null ? this.fileObject.hashCode() : 0);
+        return hash;
+    }
+
 }

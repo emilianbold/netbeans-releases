@@ -321,22 +321,27 @@ public class CreationDescriptor {
             constructorPropNames = propNames;
         }
 
+        @Override
         public final int getParameterCount() {
             return constructorPropNames.length; //constructorParamTypes.length;
         }
 
+        @Override
         public final Class[] getParameterTypes() {
             return constructor.getParameterTypes(); //constructorParamTypes;
         }
 
+        @Override
         public final Class[] getExceptionTypes() {
             return constructor.getExceptionTypes();
         }
 
+        @Override
         public final String[] getPropertyNames() {
             return constructorPropNames;
         }
 
+        @Override
         public Object createInstance(FormProperty[] props)
             throws InstantiationException, IllegalAccessException,
                    IllegalArgumentException, InvocationTargetException
@@ -361,6 +366,7 @@ public class CreationDescriptor {
             return constructor.newInstance(paramValues);
         }
 
+        @Override
         public Object createInstance(Object[] paramValues)
             throws InstantiationException, IllegalAccessException,
                    IllegalArgumentException, InvocationTargetException
@@ -368,8 +374,9 @@ public class CreationDescriptor {
             return constructor.newInstance(paramValues);
         }        
         
+        @Override
         public String getJavaCreationCode(FormProperty[] props, Class expressionType, String genericTypes) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             buf.append("new "); // NOI18N
             buf.append(theClass.getCanonicalName());
             if (genericTypes != null) {
@@ -392,6 +399,7 @@ public class CreationDescriptor {
             return buf.toString();
         }
 
+        @Override
         public CodeExpressionOrigin getCodeOrigin(CodeExpression[] params) {
             return CodeStructure.createOrigin(constructor, params);
         }
@@ -429,22 +437,27 @@ public class CreationDescriptor {
         }
     
             
+        @Override
         public final int getParameterCount() {
             return propertyNames.length; 
         }
 
+        @Override
         public final Class[] getParameterTypes() {
             return method.getParameterTypes(); 
         }
 
+        @Override
         public final Class[] getExceptionTypes() {
             return method.getExceptionTypes();
         }
 
+        @Override
         public final String[] getPropertyNames() {
             return propertyNames;
         }
 
+        @Override
         public Object createInstance(FormProperty[] props)
             throws InstantiationException, IllegalAccessException,
                    IllegalArgumentException, InvocationTargetException
@@ -471,6 +484,7 @@ public class CreationDescriptor {
             return ret;
         }
 
+        @Override
         public Object createInstance(Object[] paramValues)
             throws InstantiationException, IllegalAccessException,
                    IllegalArgumentException, InvocationTargetException
@@ -483,8 +497,9 @@ public class CreationDescriptor {
             return ret;
         }
         
+        @Override
         public String getJavaCreationCode(FormProperty[] props, Class expressionType, String genericTypes) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             if (expressionType == null) expressionType = describedClass;
             if (!expressionType.isAssignableFrom(method.getReturnType())) { // Issue 71220
                 buf.append('(').append(expressionType.getName()).append(')');
@@ -513,6 +528,7 @@ public class CreationDescriptor {
             return buf.toString();
         }
 
+        @Override
         public CodeExpressionOrigin getCodeOrigin(CodeExpression[] params) {
             // nobody cares ...
             return null; 

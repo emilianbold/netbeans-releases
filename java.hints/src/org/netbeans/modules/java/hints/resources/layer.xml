@@ -3,7 +3,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -27,7 +27,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -86,6 +86,15 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="UI">
+        <folder name="ToolActions">
+            <folder name="Java">
+                <file name="org-netbeans-modules-java-hints-analyzer-AnalyzeFolder.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-java-hints-analyzer-AnalyzeFolder.instance"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
@@ -140,6 +149,7 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-java-hints-infrastructure-ErrorHintsFactory.instance"/>
                 <file name="org-netbeans-modules-java-hints-infrastructure-JavaHintsPositionRefresher.instance"/>
                 <file name="org-netbeans-modules-java-hints-introduce-IntroduceHint$HLFImpl.instance"/>
+                <file name="org-netbeans-modules-java-hints-infrastructure-EmbeddedLazyHintComputation$FactoryImpl.instance"/>
             </folder>
         </folder>
     </folder>
@@ -157,6 +167,11 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-java-hints-errors-RemoveUselessCast.instance"/>
                 <file name="org-netbeans-modules-java-hints-errors-SuppressWarningsFixer.instance"/>
                 <file name="org-netbeans-modules-java-hints-errors-NotInitializedVariable.instance"/>                
+                <folder name="text">
+                    <folder name="x-jsp">
+                        <file name="org-netbeans-modules-java-hints-errors-ImportClass.instance"/>
+                    </folder>
+                </folder>
             </folder>
                 
             <folder name="hints">
@@ -171,16 +186,6 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-java-hints-HideField.instance"/>
                     <file name="org-netbeans-modules-java-hints-HideFieldByVar.instance"/>
                     <file name="org-netbeans-modules-java-hints-StaticAccess.instance"/>
-                    <file name="org-netbeans-modules-java-hints-EqualsHint-getArrayEquals.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EqualsHint.getArrayEquals"/>
-                    </file>
-                    <file name="org-netbeans-modules-java-hints-EqualsHint-getIncompatibleEquals.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EqualsHint.getIncompatibleEquals"/>
-                    </file>
-                    <file name="org-netbeans-modules-java-hints-EqualsHint-getDelegate.instance">
-                        <attr name="nonGUI" boolvalue="true"/>
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EqualsHint.getDelegate"/>
-                    </file>
                     <file name="org-netbeans-modules-java-hints-EqualsMethodHint.instance"/>
                     <file name="org-netbeans-modules-java-hints-SyncOnNonFinal.instance"/>
                     <file name="org-netbeans-modules-java-hints-CollectionRemove.instance"/>
@@ -359,11 +364,19 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
                 </folder>
 
+                <folder name="assignment_issues">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
+
                 <folder name="bitwise_operations">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
                 </folder>
 
                 <folder name="code_maturity">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
+
+                <folder name="bugs">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
                 </folder>
             </folder>

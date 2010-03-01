@@ -77,7 +77,7 @@ public class ElementNode extends AbstractNode {
     private ElementNode(Description description, boolean sortChildren) {
         super(description.subs == null ? Children.LEAF : new ElementChilren(description.subs, sortChildren), Lookups.singleton(description));
         this.description = description;
-        description.node = this;
+        description.node = ElementNode.this;
         setDisplayName(description.name);
     }
 
@@ -136,6 +136,7 @@ public class ElementNode extends AbstractNode {
             setKeys(descriptions);
         }
 
+        @Override
         protected Node[] createNodes(Description key) {
             return new Node[]{new ElementNode(key, true)};
         }
@@ -447,6 +448,7 @@ public class ElementNode extends AbstractNode {
 //        }
         private static class DescriptionComparator implements Comparator<Description> {
 
+            @Override
             public int compare(Description d1, Description d2) {
 
                 if (k2i(d1.elementHandle.getKind()) != k2i(d2.elementHandle.getKind())) {

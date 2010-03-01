@@ -568,7 +568,7 @@ Nothing.
 -->
  <answer id="exec-property">
   <p>
-   <api type="export" group="property" name="org.netbeans.modules.editor.errorstripe.AnnotationView" category="private" >
+   <api type="export" group="systemproperty" name="org.netbeans.modules.editor.errorstripe.AnnotationView" category="private" >
     This property sets the logging level. See org.openide.ErrorManager.getInstance for more details.
    </api>
   </p>

@@ -57,7 +57,9 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import org.netbeans.modules.mercurial.util.HgSearchHistorySupport;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
+import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -254,6 +256,8 @@ public class MercurialInterceptor extends VCSInterceptor {
                     cache.refresh(file);
                 }
             };
+        } else if (SearchHistorySupport.PROVIDED_EXTENSIONS_SEARCH_HISTORY.equals(attrName)){
+            return new HgSearchHistorySupport(file);
         } else {
             return super.getAttribute(file, attrName);
         }
@@ -311,6 +315,15 @@ public class MercurialInterceptor extends VCSInterceptor {
         }
         File hgFolder = HgUtils.getHgFolderForRoot(repository);
         hgFolderEventsHandler.refreshHgFolderTimestamp(hgFolder, hgFolder.lastModified());
+    }
+
+    /**
+     * Returns a set of known repository roots (those visible or open in IDE)
+     * @param repositoryRoot
+     * @return
+     */
+    Set<File> getSeenRoots (File repositoryRoot) {
+        return hgFolderEventsHandler.getSeenRoots(repositoryRoot);
     }
 
     private class RefreshTask implements Runnable {

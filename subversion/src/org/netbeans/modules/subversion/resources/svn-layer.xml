@@ -113,6 +113,9 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-subversion-ui-cleanup-CleanupAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.cleanup.CleanupAction"/>
             </file>
+            <file name="org-netbeans-modules-subversion-ui-properties-VersioningInfoAction.instance">
+                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.ui.properties.VersioningInfoAction"/>
+             </file>
         </folder>
     </folder>
     <folder name="Menu"> 
@@ -232,8 +235,11 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-ignore-IgnoreAction.instance"/>
                 </file>
                 <file name="SvnPropertiesAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-properties-SvnPropertiesAction.instance"/>                    
-                </file>                 
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-properties-SvnPropertiesAction.instance"/>
+                </file>
+                <file name="VersioningInfoAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-properties-VersioningInfoAction.instance"/>
+                </file>
             </folder>
         </folder>
     </folder>

@@ -84,12 +84,6 @@ made subject to such option by the copyright holder.
                 <include name="ant-misc-*.zip"/>
             </fileset>
         </unzip>
-        <chmod perm="ugo+x">
-            <fileset dir="${cluster}/ant/bin">
-                <exclude name="*.cmd"/>
-                <exclude name="*.bat"/>
-            </fileset>
-        </chmod>
     </target>
 
     <target name="test-build" depends="jar-bridge,projectized-common.test-build"/>
@@ -113,7 +107,7 @@ made subject to such option by the copyright holder.
             <fileset dir="${cluster}">
                 <include name="ant/lib/*.jar"/>
             </fileset>
-            <mapper type="glob" from="ant${file.separator}lib${file.separator}*.jar" to="apache-*-1.7.1.jar"/>
+            <mapper type="glob" from="ant${file.separator}lib${file.separator}*.jar" to="apache-*-1.8.0.jar"/>
         </copy>
         <copy file="${cluster}/ant/nblib/bridge.jar" tofile="${dir}/org-apache-tools-ant-module-bridge.jar"/>
         <!-- XXX ought to only do this in case jnlp.sign.jars=true -->
@@ -210,17 +204,19 @@ made subject to such option by the copyright holder.
     - arch.xml
     - external/build.xml
     and rename external/ant-*-license.txt (and update the version numbers mentioned in it)
-    and hg rm the old .zip files and hg add the new ones
+    and fix external/binaries-list
     (last two steps also in ${ant-docs}/external)
+5a. Rebuild junit/external/Ant-*-binary-patch-72080.jar if not yet applied upstream.
 6.  Run: ant -f ${ant-docs}/build.xml preview-javahelp
     You can ignore links to api/org/apache/... which will be broken, as well as a few other things.
-    But for real problems in the HTML, commit fixes to ${ant-docs}/manual/ in the ant.apache.org SVN trunk.
+    But for real problems in the HTML, commit fixes to docs/manual/ in the ant.apache.org SVN trunk.
     Sanity-check the helpset and adjust ${ant-docs}/antsrc/MakeManual.java as needed.
 7.  Increase spec versions in nbproject/project.properties and ${ant-docs}/manifest.mf.
 8.  Test everything, including at least:
     ant -f ${here}/build.xml -Dtest-unit-sys-prop.ignore.random.failures=true clean netbeans test-unit
     ant -f ${ant-docs}/build.xml clean netbeans
     ant -f ${here}/../java.project/build.xml -Dtest-unit-sys-prop.ignore.random.failures=true clean test-unit
+    ant -f ${here}/../java.j2seproject/build.xml -Dtest-unit-sys-prop.ignore.random.failures=true clean test-unit
     ant -f ${here}/../build.xml commit-validation
 9.  Submit a patch for https://svn.apache.org/repos/asf/ant/core/trunk/xdocs/external.xml
     mentioning that the bundled version in NB is now ${release.version}.

@@ -126,36 +126,40 @@ public class YamlParser extends Parser {
         return result;
     }
 
-    // for test package private
-    YamlParserResult parse(String source, Snapshot snapshot) {
-        // TODO
+    // package private for unit tests
+    static String replacePhpFragments(String source) {
         // this is a hack. The right solution would be to create a toplevel language, which
         // will have embeded yaml and php.
         // This code replaces php fragments with space, because jruby parser fails
         // on this.
         int startReplace = source.indexOf("<?");
+        if (startReplace == -1) {
+            return source;
+        }
+
+        StringBuilder result = new StringBuilder(source);
+
         while (startReplace > -1) {
-            int endReplace = source.indexOf("?>", startReplace);
+            int endReplace = result.indexOf("?>", startReplace);
             if (endReplace > -1) {
                 endReplace = endReplace + 1;
-                String replaceString = "";
-                for (int i = 0; i < source.length(); i++) {
-                    if (startReplace <= i && i <= endReplace) {
-                        replaceString = replaceString + ' ';
-                    }
-                    else {
-                        replaceString = replaceString + source.charAt(i);
-                    }
+                StringBuilder spaces = new StringBuilder(endReplace - startReplace);
+                for (int i = 0; i <= endReplace - startReplace; i++) {
+                    spaces.append(' ');
                 }
-                source = replaceString;
-                startReplace = source.indexOf("<?", endReplace);
-            }
-            else {
+                result.replace(startReplace, endReplace + 1, spaces.toString());
+                startReplace = result.indexOf("<?", endReplace);
+            } else {
                 startReplace = -1;
             }
         }
+        return result.toString();
+    }
+    // for test package private
+    YamlParserResult parse(String source, Snapshot snapshot) {
+        
+        source = replacePhpFragments(source);
 
-        // end of the hack
         try {
             if (isTooLarge(source)) {
                 return resultForTooLargeFile(snapshot);

@@ -92,6 +92,17 @@ made subject to such option by the copyright holder.
             </file>
             </folder>
     </folder>
+
+  <folder name="UI">
+      <folder name="ToolActions">
+          <folder name="Files">
+              <file name="org-netbeans-modules-favorites-Add.shadow">
+                  <attr name="position" intvalue="300"/>
+                  <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-Add.instance"/>
+              </file>
+          </folder>
+      </folder>
+  </folder>
     
     <!-- default workspaces, frames and their layout defined by core-->
     <folder name="Windows2">

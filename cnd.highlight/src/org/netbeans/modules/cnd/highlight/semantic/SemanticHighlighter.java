@@ -167,7 +167,7 @@ public final class SemanticHighlighter extends HighlighterBase {
         boolean macroExpansionView = (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null);
         PositionsBag newBag = new PositionsBag(doc);
         newBag.clear();
-        final CsmFile csmFile = CsmUtilities.getCsmFile(doc, false);
+        final CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
         long start = System.currentTimeMillis();
         if (csmFile != null && csmFile.isParsed()) {
             if (LOG.isLoggable(Level.FINER)) {

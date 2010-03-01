@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,7 +48,7 @@ import org.netbeans.editor.BaseDocument;
  * @author Samaresh (samaresh.panda@sun.com)
  */
 public class XMLLexerFormatterTest extends AbstractTestCase {
-    
+
     public XMLLexerFormatterTest(String testName) {
         super(testName);
     }
@@ -61,9 +61,12 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         suite.addTest(new XMLLexerFormatterTest("testFormatPerformance"));
         suite.addTest(new XMLLexerFormatterTest("testFormatSubsection1"));
         suite.addTest(new XMLLexerFormatterTest("testFormatSubsection2"));
+        suite.addTest(new XMLLexerFormatterTest("testFormat_PreserveWhitespace"));
+        suite.addTest(new XMLLexerFormatterTest("testFormat_WithNestedPreserveWhitespace"));
+        suite.addTest(new XMLLexerFormatterTest("testFormatSubsection_PreserveWhitespace"));
         return suite;
     }
-    
+
     /**
      * Formats an input document and then compares the formatted doc
      * with a document that represents expected outcome.
@@ -74,32 +77,31 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
         BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output.xml");        
-        assert(compare(formattedDoc, outputDoc));
+        BaseDocument outputDoc = getDocument("indent/output.xml");
+        assert (compare(formattedDoc, outputDoc));
     }
-    
+
     public void testFormatSubsection() throws Exception {
         BaseDocument inputDoc = getDocument("indent/input_sub.xml");
         //format a subsection of the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
         BaseDocument formattedDoc = formatter.doReformat(inputDoc, 72, 97);
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output_sub.xml");        
-        assert(compare(formattedDoc, outputDoc));
+        BaseDocument outputDoc = getDocument("indent/output_sub.xml");
+        assert (compare(formattedDoc, outputDoc));
     }
-    
-    //for bug 139160
+
+    // #139160
     public void testFormatForTab() throws Exception {
         BaseDocument inputDoc = getDocument("indent/input2.xsd");
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
         BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output2.xsd");        
-        assert(compare(formattedDoc, outputDoc));
+        BaseDocument outputDoc = getDocument("indent/output2.xsd");
+        assert (compare(formattedDoc, outputDoc));
     }
-    
-      
+
     public void testFormatPerformance() throws Exception {
         BaseDocument inputDoc = getDocument("indent/1998stats.xml");
         //format the inputDoc
@@ -107,8 +109,8 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         long t1 = System.currentTimeMillis();
         formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         long t2 = System.currentTimeMillis();
-        System.out.println("Time taken to format NFL XML in ms:: " + (t2-t1) );
-        
+        System.out.println("Time taken to format NFL XML in ms:: " + (t2 - t1));
+
         //try OTA Schema
         inputDoc = getDocument("indent/1998stats.xml");
         //format the inputDoc
@@ -116,25 +118,60 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         t1 = System.currentTimeMillis();
         formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         t2 = System.currentTimeMillis();
-        System.out.println("Time taken to format OTA Schema in ms:: " + (t2-t1) );
+        System.out.println("Time taken to format OTA Schema in ms:: " + (t2 - t1));
     }
+
     public void testFormatSubsection1() throws Exception {
         BaseDocument inputDoc = getDocument("indent/input_sub1.xml");
         //format a subsection of the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 39, 68);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 46, 74);
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output_sub1.xml");        
-        assert(compare(formattedDoc, outputDoc));
+        BaseDocument outputDoc = getDocument("indent/output_sub1.xml");
+        assert (compare(formattedDoc, outputDoc));
     }
-    
+
     public void testFormatSubsection2() throws Exception {
         BaseDocument inputDoc = getDocument("indent/input_sub2.xml");
         //format a subsection of the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 68, 83);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 51, 80);
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("indent/output_sub2.xml");        
-        assert(compare(formattedDoc, outputDoc));
+        BaseDocument outputDoc = getDocument("indent/output_sub2.xml");
+        assert (compare(formattedDoc, outputDoc));
+    }
+
+    // #170343
+    public void testFormat_PreserveWhitespace() throws Exception {
+        BaseDocument inputDoc = getDocument("indent/input_preserve.xml");
+        //format the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("indent/output_preserve.xml");
+        assert (compare(formattedDoc, outputDoc));
+    }
+
+    // #170343
+    public void testFormat_WithNestedPreserveWhitespace() throws Exception {
+        BaseDocument inputDoc = getDocument("indent/input_withpreserve.xml");
+        //format the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("indent/output_withpreserve.xml");
+        assert (compare(formattedDoc, outputDoc));
+    }
+
+    // #170343
+    public void testFormatSubsection_PreserveWhitespace() throws Exception {
+        BaseDocument inputDoc = getDocument("indent/input_preserve.xml");
+        //format the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        System.out.println("SECTION:" + inputDoc.getText(91, 87));
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 91, 91 + 87);
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("indent/output_preserve.xml");
+        assert (compare(formattedDoc, outputDoc));
     }
 }

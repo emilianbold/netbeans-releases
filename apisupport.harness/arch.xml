@@ -544,7 +544,7 @@ made subject to such option by the copyright holder.
  <answer id="exec-property">
   <p>
    
-    <api type="export" group="property" name="netbeans.user" category="devel">
+    <api type="export" group="systemproperty" name="netbeans.user" category="devel">
         During runtime the JNLP launcher enhances the behaviour of the <code>netbeans.user</code>
         property as defined in the NetBeans core. In addition to standard
         content provided from core, 
@@ -555,7 +555,7 @@ made subject to such option by the copyright holder.
   
   <p>
    
-    <api type="export" group="property" name="netbeans.jnlp.fixPolicy" category="devel">
+    <api type="export" group="systemproperty" name="netbeans.jnlp.fixPolicy" category="devel">
         During runtime the JNLP launcher checks whether value <code>true</code> is assigned
         to this system property. If it is "true" a special security policy is applied
         for all the code base - it is granting all permissions to all code bases.

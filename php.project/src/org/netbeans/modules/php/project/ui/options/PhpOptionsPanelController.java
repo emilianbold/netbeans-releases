@@ -79,6 +79,7 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
         phpOptionsPanel.setDebuggerPort(getPhpOptions().getDebuggerPort());
         phpOptionsPanel.setDebuggerSessionId(getPhpOptions().getDebuggerSessionId());
         phpOptionsPanel.setDebuggerStoppedAtTheFirstLine(getPhpOptions().isDebuggerStoppedAtTheFirstLine());
+        phpOptionsPanel.setDebuggerWatchesAndEval(getPhpOptions().isDebuggerWatchesAndEval());
 
         changed = false;
     }
@@ -93,6 +94,7 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
         getPhpOptions().setDebuggerPort(phpOptionsPanel.getDebuggerPort());
         getPhpOptions().setDebuggerSessionId(phpOptionsPanel.getDebuggerSessionId());
         getPhpOptions().setDebuggerStoppedAtTheFirstLine(phpOptionsPanel.isDebuggerStoppedAtTheFirstLine());
+        getPhpOptions().setDebuggerWatchesAndEval(phpOptionsPanel.isDebuggerWatchesAndEval());
 
         getPhpOptions().setPhpGlobalIncludePath(phpOptionsPanel.getPhpGlobalIncludePath());
 

@@ -49,8 +49,10 @@ import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.customerdb.JavaDBSupport;
 import org.openide.util.LookupEvent;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -62,7 +64,7 @@ import org.openide.awt.UndoRedo;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
-import org.openide.util.Utilities;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -91,14 +93,17 @@ public final class EditorTopComponent extends TopComponent implements LookupList
 
         jTextField1.getDocument().addDocumentListener(new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent arg0) {
                 fire(true);
             }
 
+            @Override
             public void removeUpdate(DocumentEvent arg0) {
                 fire(true);
             }
 
+            @Override
             public void changedUpdate(DocumentEvent arg0) {
                 fire(true);
             }
@@ -106,14 +111,17 @@ public final class EditorTopComponent extends TopComponent implements LookupList
 
         jTextField2.getDocument().addDocumentListener(new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent arg0) {
                 fire(true);
             }
 
+            @Override
             public void removeUpdate(DocumentEvent arg0) {
                 fire(true);
             }
 
+            @Override
             public void changedUpdate(DocumentEvent arg0) {
                 fire(true);
             }
@@ -132,11 +140,29 @@ public final class EditorTopComponent extends TopComponent implements LookupList
 
     @Override
     public void componentOpened() {
-        //result = Utilities.actionsGlobalContext().lookupResult(Customer.class);
-        TopComponent tc = WindowManager.getDefault().findTopComponent("CustomerTopComponent");
-        result = tc.getLookup().lookupResult(Customer.class);
-        result.addLookupListener(this);
-        resultChanged(new LookupEvent(result));
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                readCustomer();
+            }
+        });
+    }
+
+    private void readCustomer() {
+        JavaDBSupport.ensureStartedDB();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                TopComponent tc = WindowManager.getDefault().findTopComponent("CustomerTopComponent");
+                if (tc == null) {
+                    // XXX: message box?
+                    return ;
+                }
+                result = tc.getLookup().lookupResult(Customer.class);
+                result.addLookupListener(EditorTopComponent.this);
+                resultChanged(new LookupEvent(result));
+            }
+        });
     }
 
     @Override

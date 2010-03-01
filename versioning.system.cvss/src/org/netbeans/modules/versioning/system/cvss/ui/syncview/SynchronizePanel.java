@@ -196,6 +196,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         cvs.getStatusCache().addVersioningListener(this);
         cvs.addVersioningListener(this);
         explorerManager.addPropertyChangeListener(this);
+        cvs.addVersioningListener(syncTable);
         reScheduleRefresh(0);   // the view does not listen for changes when it is not visible         
     }
 
@@ -203,6 +204,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         CvsModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);        
         cvs.getStatusCache().removeVersioningListener(this);
         cvs.removeVersioningListener(this);
+        cvs.addVersioningListener(syncTable);
         explorerManager.removePropertyChangeListener(this);
         super.removeNotify();
     }

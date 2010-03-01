@@ -228,7 +228,7 @@ public class Tiny {
         @TriggerPattern("new $coll<$param>($params$)")
     })
     public static ErrorDescription enumSet(HintContext ctx) {
-        return enumHint(ctx, "java.util.Set", "ERR_Tiny_enumSet");
+        return enumHint(ctx, "java.util.Set", null, "ERR_Tiny_enumSet");
     }
 
     @Hint(category="performance", suppressWarnings="MapReplaceableByEnumMap")
@@ -236,10 +236,10 @@ public class Tiny {
         @TriggerPattern("new $coll<$param, $to>($params$)")
     })
     public static ErrorDescription enumMap(HintContext ctx) {
-        return enumHint(ctx, "java.util.Map", "ERR_Tiny_enumMap");
+        return enumHint(ctx, "java.util.Map", "java.util.EnumMap", "ERR_Tiny_enumMap");
     }
 
-    private static ErrorDescription enumHint(HintContext ctx, String baseName, String key) {
+    private static ErrorDescription enumHint(HintContext ctx, String baseName, String targetTypeName, String key) {
         Element type = ctx.getInfo().getTrees().getElement(ctx.getVariables().get("$param"));
 
         if (type == null || type.getKind() != ElementKind.ENUM) {
@@ -262,6 +262,18 @@ public class Tiny {
 
         if (!t.isSubtype(t.erasure(coll.asType()), t.erasure(base.asType()))) {
             return null;
+        }
+
+        if (targetTypeName != null) {
+            TypeElement target = ctx.getInfo().getElements().getTypeElement(targetTypeName);
+
+            if (target == null) {
+                return null;
+            }
+
+            if (t.isSubtype(t.erasure(coll.asType()), t.erasure(target.asType()))) {
+                return null;
+            }
         }
 
         String displayName = NbBundle.getMessage(Tiny.class, key);

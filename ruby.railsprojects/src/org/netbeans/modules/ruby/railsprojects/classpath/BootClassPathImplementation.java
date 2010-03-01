@@ -62,7 +62,6 @@ import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.platform.RubyPreferences;
 import org.netbeans.modules.ruby.platform.Util;
-import org.netbeans.modules.ruby.platform.gems.Gem;
 import org.netbeans.modules.ruby.platform.gems.GemFilesParser;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.platform.gems.Gems;
@@ -87,7 +86,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     // Flag for controlling last-minute workaround for issue #120231
     private static final boolean INCLUDE_NONLIBPLUGINS = Boolean.getBoolean("ruby.include_nonlib_plugins");
 
-    private File projectDirectory;
+    private final File projectDirectory;
     private final RailsProject project;
     private final PropertyEvaluator evaluator;
     private List<PathResourceImplementation> resourcesCache;
@@ -95,8 +94,9 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private final RequiredGems requiredGems;
     private final boolean forTests;
     private final GemFilter gemFilter;
-    private RubyPlatform platform;
+    private final RubyPlatformProvider platformProvider;
 
+    private RubyPlatform platform;
 
     public BootClassPathImplementation(RailsProject project, File projectDirectory, PropertyEvaluator evaluator, boolean forTests) {
         this.project = project;
@@ -109,7 +109,14 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         RequiredGems[] reqs = RequiredGems.lookup(project);
         this.requiredGems = forTests ? reqs[1] : reqs[0];
         this.gemFilter = new GemFilter(evaluator);
-        this.platform = new RubyPlatformProvider(evaluator).getPlatform();
+        this.platformProvider = new RubyPlatformProvider(evaluator);
+    }
+
+    private synchronized RubyPlatform getPlatform() {
+        if (platform == null) {
+            platform = platformProvider.getPlatform();
+        }
+        return platform;
     }
 
     @Override
@@ -124,20 +131,19 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 Exceptions.printStackTrace(ex);
             }
 
-//            RubyPlatform platform = new RubyPlatformProvider(evaluator).getPlatform();
-            if (platform == null) {
+            if (getPlatform() == null) {
                 LOGGER.severe("Cannot resolve platform for project: " + projectDirectory);
                 return Collections.emptyList();
             }
             
-            if (!platform.hasRubyGemsInstalled()) {
+            if (!getPlatform().hasRubyGemsInstalled()) {
                 LOGGER.fine("Not RubyGems installed, returning empty result");
                 return Collections.emptyList();
             }
             
             // the rest of code depend on RubyGems to be installed
             
-            GemManager gemManager = platform.getGemManager();
+            GemManager gemManager = getPlatform().getGemManager();
             assert gemManager != null : "not null when RubyGems are installed";
             
             boolean useVendorGemsOnly = useVendorGemsOnly();
@@ -276,14 +282,17 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         return gemUrls;
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         this.support.addPropertyChangeListener (listener);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         this.support.removePropertyChangeListener (listener);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if ((evt.getSource() == RubyInstallation.getInstance() && evt.getPropertyName().equals("roots"))
                 || evt.getSource() == RubyPreferences.getInstance() && evt.getPropertyName().equals(RubyPreferences.VENDOR_GEMS_PROPERTY)) {

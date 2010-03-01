@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -64,6 +65,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponent
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -275,7 +277,7 @@ public final class SuiteProperties extends ModuleProperties {
                 }
                 ep.setProperty(ENABLED_CLUSTERS_PROPERTY, separated);
                 setProperty(ENABLED_CLUSTERS_PROPERTY, (String) null);
-                if (plaf == null || plaf.getHarnessVersion() < NbPlatform.HARNESS_VERSION_50u1) {
+                if (plaf == null || plaf.getHarnessVersion().compareTo(HarnessVersion.V50u1) < 0) {
                     // Compatibility.
                     SortedSet<String> disabledClusters = new TreeSet<String>();
                     Set<ModuleEntry> modules = activePlatform.getModules();
@@ -316,7 +318,7 @@ public final class SuiteProperties extends ModuleProperties {
         super.storeProperties();
     }
     private static String representationOfCluster(String physicalName, NbPlatform platform) { // #73706
-        if (platform != null && platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_65) {
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V65) >= 0) {
             return SingleModuleProperties.clusterBaseName(physicalName);
         } else {
             return physicalName;
@@ -383,7 +385,7 @@ public final class SuiteProperties extends ModuleProperties {
         return moduleListModel;
     }
     
-    public BasicBrandingModel getBrandingModel() {
+    public @NonNull BasicBrandingModel getBrandingModel() {
         return brandingModel;
     }
 

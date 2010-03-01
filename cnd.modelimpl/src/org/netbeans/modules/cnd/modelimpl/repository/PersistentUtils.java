@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TypeBasedSpecializationParameterIm
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyTryCatchStatementImpl;
+import org.netbeans.modules.cnd.modelimpl.fsm.DummyParametersListImpl;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 
@@ -123,6 +124,9 @@ public class PersistentUtils {
                     handler = FUN_KR_PARAM_LIST_IMPL;
                 }
             }
+            if (params instanceof DummyParametersListImpl) {
+                handler = DUMMY_PARAMS_LIST_IMPL;
+            }
             output.writeInt(handler);
             ((ParameterListImpl<?, ?>)params).write(output);
         }
@@ -143,6 +147,9 @@ public class PersistentUtils {
                 break;
             case FUN_KR_PARAM_LIST_IMPL:
                 paramList = new FunctionParameterListImpl.FunctionKnRParameterListImpl(input);
+                break;
+            case DUMMY_PARAMS_LIST_IMPL:
+                paramList = new DummyParametersListImpl(input);
                 break;
             default:
                 assert false : "unexpected param list implementation " + handler;
@@ -687,9 +694,10 @@ public class PersistentUtils {
     private static final int PARAM_LIST_IMPL = COMPOUND_STATEMENT_IMPL + 1;
     private static final int FUN_PARAM_LIST_IMPL = PARAM_LIST_IMPL + 1;
     private static final int FUN_KR_PARAM_LIST_IMPL = FUN_PARAM_LIST_IMPL + 1;
+    private static final int DUMMY_PARAMS_LIST_IMPL = FUN_KR_PARAM_LIST_IMPL + 1;
 
     // tempalte descriptor
-    private static final int TEMPLATE_DESCRIPTOR_IMPL = FUN_KR_PARAM_LIST_IMPL + 1;
+    private static final int TEMPLATE_DESCRIPTOR_IMPL = DUMMY_PARAMS_LIST_IMPL + 1;
     // specialization descriptor
     private static final int SPECIALIZATION_DESCRIPTOR_IMPL = TEMPLATE_DESCRIPTOR_IMPL + 1;
     // specialization parameters

@@ -55,7 +55,9 @@ import org.netbeans.modules.php.project.connections.TransferInfo;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -113,7 +115,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    protected Callable<Boolean> createCopyHandlerInternal(final FileObject source) {
+    protected Callable<Boolean> createCopyHandlerInternal(final FileObject source, FileEvent fileEvent) {
         LOGGER.log(Level.FINE, "Creating COPY handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
@@ -133,7 +135,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    protected Callable<Boolean> createRenameHandlerInternal(final FileObject source, final String oldName) {
+    protected Callable<Boolean> createRenameHandlerInternal(final FileObject source, final String oldName, FileRenameEvent fileRenameEvent) {
         LOGGER.log(Level.FINE, "Creating RENAME handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
@@ -153,7 +155,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    protected Callable<Boolean> createDeleteHandlerInternal(final FileObject source) {
+    protected Callable<Boolean> createDeleteHandlerInternal(final FileObject source, FileEvent fileEvent) {
         LOGGER.log(Level.FINE, "Creating DELETE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
@@ -321,5 +323,10 @@ final class RemoteOperationFactory extends FileOperationFactory {
             }
         }
         return success;
+    }
+
+    @Override
+    protected boolean isValid(FileEvent fileEvent) {
+        return !fileEvent.firedFrom(RemoteClient.DOWNLOAD_ATOMIC_ACTION);
     }
 }

@@ -50,23 +50,20 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
-import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
-import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public class RunDialogPanel extends javax.swing.JPanel {
+public final class RunDialogPanel extends javax.swing.JPanel {
     private DocumentListener modifiedValidateDocumentListener = null;
     private Project[] projectChoices = null;
     private boolean executableReadOnly = true;
@@ -105,7 +102,7 @@ public class RunDialogPanel extends javax.swing.JPanel {
         initAccessibility();
     }
     
-    protected  void initialize(String exePath, boolean executableReadOnly) {
+    private void initialize(String exePath, boolean executableReadOnly) {
         initComponents();
         errorLabel.setForeground(javax.swing.UIManager.getColor("nb.errorForeground")); // NOI18N
         this.executableReadOnly = executableReadOnly;
@@ -383,11 +380,11 @@ public class RunDialogPanel extends javax.swing.JPanel {
         
         FileFilter[] filter;
         if (Utilities.isWindows()){
-            filter = new FileFilter[] {PeExecutableFileFilter.getInstance()};
+            filter = new FileFilter[] {FileFilterFactory.getPeExecutableFileFilter()};
         } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-            filter = new FileFilter[] {MacOSXExecutableFileFilter.getInstance()};
+            filter = new FileFilter[] {FileFilterFactory.getMacOSXExecutableFileFilter()};
         } else {
-            filter = new FileFilter[] {ElfExecutableFileFilter.getInstance()};
+            filter = new FileFilter[] {FileFilterFactory.getElfExecutableFileFilter()};
         }
         // Show the file chooser
         FileChooser fileChooser = new FileChooser(
@@ -562,13 +559,13 @@ public class RunDialogPanel extends javax.swing.JPanel {
                 MakeConfiguration conf = new MakeConfiguration(baseDir, "Default", MakeConfiguration.TYPE_MAKEFILE);  // NOI18N
                 // Working dir
                 String wd = new File(getExecutablePath()).getParentFile().getPath();
-                wd = IpeUtils.toRelativePath(baseDir, wd);
-                wd = FilePathAdaptor.normalize(wd);
+                wd = CndPathUtilitities.toRelativePath(baseDir, wd);
+                wd = CndPathUtilitities.normalize(wd);
                 conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(wd);
                 // Executable
                 String exe = getExecutablePath();
-                exe = IpeUtils.toRelativePath(baseDir, exe);
-                exe = FilePathAdaptor.normalize(exe);
+                exe = CndPathUtilitities.toRelativePath(baseDir, exe);
+                exe = CndPathUtilitities.normalize(exe);
                 conf.getMakefileConfiguration().getOutput().setValue(exe);
                 
                 updateRunProfile(baseDir, conf.getProfile());
@@ -587,8 +584,8 @@ public class RunDialogPanel extends javax.swing.JPanel {
         runProfile.setArgs(argumentTextField.getText());
         // Working dir
         String wd = runDirectoryTextField.getText();
-        wd = IpeUtils.toRelativePath(baseDir, wd);
-        wd = FilePathAdaptor.normalize(wd);
+        wd = CndPathUtilitities.toRelativePath(baseDir, wd);
+        wd = CndPathUtilitities.normalize(wd);
         runProfile.setRunDirectory(wd);
         // Environment
         Env env = runProfile.getEnvironment();

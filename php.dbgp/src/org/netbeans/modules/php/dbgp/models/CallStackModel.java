@@ -303,7 +303,7 @@ public class CallStackModel extends ViewModelSupport
     }
     
     private DebugSession getSession() {
-        return SessionManager.getInstance().getCurrentSession(
+        return SessionManager.getInstance().getSession(
                 getSessionId() );
     }
     

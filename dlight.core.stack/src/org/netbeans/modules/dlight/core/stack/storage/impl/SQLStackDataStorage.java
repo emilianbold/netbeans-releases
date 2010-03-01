@@ -98,7 +98,7 @@ import org.openide.util.Lookup;
  *
  * @author Alexey Vladykin
  */
-public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, ThreadDumpProvider, PersistentDataStorage {
+public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, ThreadDumpProvider {
 
     private SQLDataStorage sqlStorage;
     private final List<DataTableMetadata> tableMetadatas;
@@ -117,6 +117,12 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         executor.start();
         this.stmtCache = new ConcurrentHashMap<String, PreparedStatement>();
     }
+
+    @Override
+    public void syncAddData(String tableName, List<DataRow> data) {
+        addData(tableName, data);
+    }
+
 
     public final void attachTo(ServiceInfoDataStorage serviceInfoStorage) {
         this.serviceInfoDataStorage = serviceInfoStorage;

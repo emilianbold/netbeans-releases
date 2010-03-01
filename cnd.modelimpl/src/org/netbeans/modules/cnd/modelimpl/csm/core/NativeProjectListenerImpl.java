@@ -193,6 +193,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                             switch(item.getLanguage()){
                                 case C:
                                 case CPP:
+                                case FORTRAN:
                                     list.add(item);
                                     break;
                                 default:

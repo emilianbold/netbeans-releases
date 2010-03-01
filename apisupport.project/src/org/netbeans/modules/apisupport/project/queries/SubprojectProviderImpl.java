@@ -56,7 +56,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
@@ -92,17 +91,17 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
         }
         Element data = project.getPrimaryConfigurationData();
         Element moduleDependencies = Util.findElement(data,
-            "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+            "module-dependencies", NbModuleProject.NAMESPACE_SHARED); // NOI18N
         assert moduleDependencies != null : "Malformed metadata in " + project;
         for (Element dep : Util.findSubElements(moduleDependencies)) {
             /* Probably better to open runtime deps too. TBD.
             if (Util.findElement(dep, "build-prerequisite", // NOI18N
-                    NbModuleProjectType.NAMESPACE_SHARED) == null) {
+                    NbModuleProject.NAMESPACE_SHARED) == null) {
                 continue;
             }
              */
             Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
-                NbModuleProjectType.NAMESPACE_SHARED);
+                NbModuleProject.NAMESPACE_SHARED);
             String cnb = Util.findText(cnbEl);
             ModuleEntry module = ml.getEntry(cnb);
             if (module == null) {
@@ -135,7 +134,7 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
             if (!cpext.getTagName().equals("class-path-extension")) { // NOI18N
                 continue;
             }
-            Element binorig = Util.findElement(cpext, "binary-origin", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+            Element binorig = Util.findElement(cpext, "binary-origin", NbModuleProject.NAMESPACE_SHARED); // NOI18N
             if (binorig == null) {
                 continue;
             }

@@ -64,6 +64,12 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
      * A Runnable to refresh the file given in {@link #getAttribute()}.
      */
     private static final String ATTRIBUTE_REFRESH = "ProvidedExtensions.Refresh";
+
+    /**
+     * A o.n.m.versioning.util.SearchHistorySupport instance
+     */
+    private static final String ATTRIBUTE_SEARCH_HISTORY = "ProvidedExtensions.SearchHistorySupport";
+
     /**
      * Determines if a file is versioned or not
      */
@@ -112,7 +118,8 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     @Override
     public Object getAttribute(File file, String attrName) {
         if(ATTRIBUTE_REMOTE_LOCATION.equals(attrName) ||           
-           ATTRIBUTE_REFRESH.equals(attrName))
+           ATTRIBUTE_REFRESH.equals(attrName) ||
+           ATTRIBUTE_SEARCH_HISTORY.equals(attrName))
         {
             return getInterceptor(file, file.isDirectory(), "getAttribute").getAttribute(attrName); // NOI18N
         } else if (ATTRIBUTE_VCS_MANAGED.equals(attrName)) {

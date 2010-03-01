@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -61,10 +62,10 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.mercurial.hooks.spi.HgHook;
-import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
+import org.netbeans.modules.versioning.hooks.HgHook;
+import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
-import org.netbeans.modules.versioning.util.HyperlinkProvider;
+import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Utilities;
@@ -85,7 +86,7 @@ public class Mercurial {
     public static final String MERCURIAL_OUTPUT_TAB_TITLE = org.openide.util.NbBundle.getMessage(Mercurial.class, "CTL_Mercurial_DisplayName"); // NOI18N
     public static final String CHANGESET_STR = "changeset:"; // NOI18N
 
-    static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; // NOI18N
+    public static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; // NOI18N
     static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged"; // NOI18N
     public static final String PROP_CHANGESET_CHANGED = "changesetChanged"; // NOI18N
 
@@ -132,7 +133,7 @@ public class Mercurial {
      */
     private boolean gotVersion;
 
-    private Result<? extends HyperlinkProvider> hpResult;
+    private Result<? extends VCSHyperlinkProvider> hpResult;
 
     private Mercurial() {
         mvcs = org.openide.util.Lookup.getDefault().lookup(MercurialVCS.class);
@@ -180,7 +181,7 @@ public class Mercurial {
         RequestProcessor rp = getRequestProcessor();
         Runnable init = new Runnable() {
             public void run() {
-                HgKenaiSupport.getInstance().registerVCSNoficationListener();
+                HgKenaiAccessor.getInstance().registerVCSNoficationListener();
                 synchronized(this) {
                     checkVersionIntern();
                 }
@@ -286,6 +287,15 @@ public class Mercurial {
      */
     public void refreshWorkingCopyTimestamp(File repository) {
         getMercurialInterceptor().refreshHgFolderTimestamp(repository);
+    }
+
+    /**
+     * Returns a set of known repository roots (those visible or open in IDE)
+     * @param repositoryRoot
+     * @return
+     */
+    public Set<File> getSeenRoots (File repositoryRoot) {
+        return getMercurialInterceptor().getSeenRoots(repositoryRoot);
     }
 
    /**
@@ -522,15 +532,15 @@ public class Mercurial {
      *
      * @return registered hyperlink providers
      */
-    public List<HyperlinkProvider> getHyperlinkProviders() {
+    public List<VCSHyperlinkProvider> getHyperlinkProviders() {
         if (hpResult == null) {
-            hpResult = (Result<? extends HyperlinkProvider>) Lookup.getDefault().lookupResult(HyperlinkProvider.class);
+            hpResult = (Result<? extends VCSHyperlinkProvider>) Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
         }
         if (hpResult == null) {
             return Collections.EMPTY_LIST;
         }
-        Collection<? extends HyperlinkProvider> providersCol = hpResult.allInstances();
-        List<HyperlinkProvider> providersList = new ArrayList<HyperlinkProvider>(providersCol.size());
+        Collection<? extends VCSHyperlinkProvider> providersCol = hpResult.allInstances();
+        List<VCSHyperlinkProvider> providersList = new ArrayList<VCSHyperlinkProvider>(providersCol.size());
         providersList.addAll(providersCol);
         return Collections.unmodifiableList(providersList);
     }

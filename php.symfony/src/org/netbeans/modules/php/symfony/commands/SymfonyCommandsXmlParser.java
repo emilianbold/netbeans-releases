@@ -112,7 +112,10 @@ public final class SymfonyCommandsXmlParser extends DefaultHandler {
         if ("description".equals(qName)) {
             if (content == Content.DESCRIPTION) {
                 assert currentCommand != null;
-                assert currentDescription != null;
+                // #179717
+                if (currentDescription == null) {
+                    currentDescription = ""; // NOI18N
+                }
 
                 commands.add(new SymfonyCommandVO(currentCommand.trim(), currentDescription.trim()));
                 currentCommand = null;

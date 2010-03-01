@@ -1359,10 +1359,32 @@ class J2SEActionProvider implements ActionProvider {
             return MainClassStatus.UNSET;
         }
         if (sourcesRoots.length > 0) {
-            ClassPath bootPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.BOOT);        //Single compilation unit
-            assert bootPath != null : assertPath (sourcesRoots[0], ClassPath.BOOT);
-            ClassPath compilePath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.EXECUTE);
-            assert compilePath != null : assertPath (sourcesRoots[0], ClassPath.BOOT);
+            ClassPath bootPath = null, compilePath = null;
+            try {
+                bootPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.BOOT);        //Single compilation unit
+                assert bootPath != null : assertPath (sourcesRoots[0], sourcesRoots, ClassPath.BOOT);
+            } catch (AssertionError e) {
+                //Log the assertion when -ea
+                Exceptions.printStackTrace(e);
+            }
+            try {
+                compilePath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.EXECUTE);
+                assert compilePath != null : assertPath (sourcesRoots[0], sourcesRoots, ClassPath.EXECUTE);
+            } catch (AssertionError e) {
+                //Log the assertion when -ea
+                Exceptions.printStackTrace(e);
+            }
+            //todo: The J2SEActionProvider does not require the sourceRoots, it can take the classpath
+            //from ClassPathProvider everytime. But the assertions above are important, it seems that
+            //the SimpleFileOwnerQueryImplementation is broken in some cases. When assertions are enabled
+            //log the data.
+            if (bootPath == null) {
+                bootPath = project.getClassPathProvider().getProjectSourcesClassPath(ClassPath.BOOT);
+            }
+            if (compilePath == null) {
+                compilePath = project.getClassPathProvider().getProjectSourcesClassPath(ClassPath.EXECUTE);
+            }
+
             ClassPath sourcePath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.EXECUTE);
             if (J2SEProjectUtil.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
                 return MainClassStatus.SET_AND_VALID;
@@ -1381,9 +1403,10 @@ class J2SEActionProvider implements ActionProvider {
         }
         return MainClassStatus.SET_BUT_INVALID;
     }
-    
-    private static String assertPath (
+
+    private String assertPath (
         FileObject          fileObject,
+        FileObject[]          expectedRoots,
         String              pathType
     ) {
         StringBuilder sb = new StringBuilder ();
@@ -1394,6 +1417,15 @@ class J2SEActionProvider implements ActionProvider {
         sb.append ("\nClassPathProviders: ");                                                                           //NOI18N
         for (ClassPathProvider impl  : Lookup.getDefault ().lookupResult (ClassPathProvider.class).allInstances ())
             sb.append ("\n  ").append (impl);                                                                           //NOI18N
+        sb.append ("\nProject SourceGroups:");                                                                          //NOI18N
+        final SourceGroup[] sgs =  ProjectUtils.getSources(this.project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (SourceGroup sg : sgs) {
+            sb.append("\n  ").append(FileUtil.getFileDisplayName(sg.getRootFolder()));                                  //NOI18N
+        }
+        sb.append ("\nProject Source Roots:");                                                                          //NOI18N
+        for (FileObject expectedRoot : expectedRoots) {
+            sb.append("\n  ").append(FileUtil.getFileDisplayName(expectedRoot));                                        //NOI18N
+        }
         return sb.toString ();
     }
 

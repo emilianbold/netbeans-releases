@@ -126,6 +126,7 @@ static int open_socket() {
  * -1 if an error occurred, or
  * non-negative integer in the case of success
  */
+__attribute__ ((visibility ("hidden")))
 int get_socket(int create) {
     // SOCKET_UNINITIALIZED means unitialized
     // SOCKET_ERROR means that we failed to open a socket
@@ -155,6 +156,7 @@ int get_socket(int create) {
     return _sd;
 }
 
+__attribute__ ((visibility ("hidden")))
 void release_socket() {
     if (_sd != SOCKET_ERROR && _sd != SOCKET_UNINITIALIZED) {
         trace("closing socket _sd=%d &_sd=%X\n", _sd, &_sd);

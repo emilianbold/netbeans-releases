@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,6 +48,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.glassfish.common.CommandRunner;
@@ -92,9 +94,27 @@ public class Hk2ItemNode extends AbstractNode {
         if(decorator.isRefreshable()) {
             getCookieSet().add(new RefreshModulesCookie() {
                 public void refresh() {
+                    refresh(null, null);
+                }
+
+                public void refresh(String expected, String unexpected) {
                     Children children = getChildren();
                     if(children instanceof Refreshable) {
                         ((Refreshable) children).updateKeys();
+                        boolean foundExpected = expected == null ? true : false;
+                        boolean foundUnexpected = false;
+                        for (Node node : children.getNodes()) {
+                            if (!foundExpected && node.getDisplayName().equals(expected))
+                                foundExpected = true;
+                            if (!foundUnexpected && node.getDisplayName().equals(unexpected))
+                                foundUnexpected = true;
+                        }
+                        if (!foundExpected) {
+                            Logger.getLogger("glassfish").log(Level.WARNING, null, new IllegalStateException("did not find a child node, named "+expected));
+                        }
+                        if (foundUnexpected) {
+                            Logger.getLogger("glassfish").log(Level.WARNING, null, new IllegalStateException("found unexpected child node, named "+unexpected));
+                        }
                     }
                 }
             });

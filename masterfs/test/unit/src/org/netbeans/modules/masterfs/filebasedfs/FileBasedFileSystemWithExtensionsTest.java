@@ -41,7 +41,11 @@
 
 package org.netbeans.modules.masterfs.filebasedfs;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import junit.framework.Test;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensionsTest;
 
 /**
@@ -52,11 +56,23 @@ public class FileBasedFileSystemWithExtensionsTest extends FileBasedFileSystemTe
     public FileBasedFileSystemWithExtensionsTest(Test test) {
         super(test);
         ProvidedExtensionsTest.ProvidedExtensionsImpl.setImplsMoveRetVal(true);
-        ProvidedExtensionsTest.ProvidedExtensionsImpl.setImplsRenameRetVal(true);        
-        ProvidedExtensionsTest.ProvidedExtensionsImpl.setImplsDeleteRetVal(true);                
+        ProvidedExtensionsTest.ProvidedExtensionsImpl.setImplsRenameRetVal(true);
+        ProvidedExtensionsTest.ProvidedExtensionsImpl.setImplsDeleteRetVal(true);
+    }
+
+    @Override
+    protected void setServices(Class<?>... services) {
+        List<Class<?>> arr = new ArrayList<Class<?>>();
+        arr.addAll(Arrays.asList(services));
+        arr.add(FileBasedURLMapper.class);
+        arr.add(ProvidedExtensionsTest.ProvidedExtensionsImpl.class);
+        arr.add(ProvidedExtensionsTest.AnnotationProviderImpl.class);
+        MockServices.setServices(arr.toArray(new Class<?>[0]));
     }
 
     public static Test suite() {
-        return new FileBasedFileSystemWithExtensionsTest(FileBasedFileSystemTest.suite());
+        return new FileBasedFileSystemWithExtensionsTest(
+            FileBasedFileSystemTest.suite(true)
+        );
     }
 }

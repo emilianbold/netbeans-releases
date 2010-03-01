@@ -779,10 +779,12 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     // -----------
     // API for layout delegates (LayoutSupportContext implementation)
 
+    @Override
     public CodeStructure getCodeStructure() {
         return codeStructure;
     }
 
+    @Override
     public CodeExpression getContainerCodeExpression() {
         if (containerCodeExpression == null) {
             containerCodeExpression = metaContainer.getCodeExpression();
@@ -791,6 +793,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         return containerCodeExpression;
     }
 
+    @Override
     public CodeExpression getContainerDelegateCodeExpression() {
         if (containerDelegateCodeExpression == null) {
             containerDelegateCodeExpression =
@@ -833,11 +836,13 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     }
 
     // return container instance of meta container
+    @Override
     public Container getPrimaryContainer() {
         return (Container) metaContainer.getBeanInstance();
     }
 
     // return container delegate of container instance of meta container
+    @Override
     public Container getPrimaryContainerDelegate() {
         Container defCont = (Container) metaContainer.getBeanInstance();
         if (primaryContainerDelegate == null || primaryContainer != defCont) {
@@ -849,10 +854,12 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     }
 
     // return component instance of meta component
+    @Override
     public Component getPrimaryComponent(int index) {
         return (Component) metaContainer.getSubComponent(index).getBeanInstance();
     }
 
+    @Override
     public void updatePrimaryContainer() {
         Container cont = getPrimaryContainer();
         Container contDel = getPrimaryContainerDelegate();
@@ -872,6 +879,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         }
     }
 
+    @Override
     public void containerLayoutChanged(PropertyChangeEvent ev)
         throws PropertyVetoException
     {
@@ -896,6 +904,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         }
     }
 
+    @Override
     public void componentLayoutChanged(int index, PropertyChangeEvent ev)
         throws PropertyVetoException
     {
@@ -948,6 +957,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     private class LayoutListener implements VetoableChangeListener,
                                             PropertyChangeListener
     {
+        @Override
         public void vetoableChange(PropertyChangeEvent ev)
             throws PropertyVetoException
         {
@@ -966,6 +976,7 @@ public final class LayoutSupportManager implements LayoutSupportContext {
             }
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent ev) {
             Object source = ev.getSource();
             if (source instanceof FormProperty

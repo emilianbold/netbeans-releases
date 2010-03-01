@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
+import org.netbeans.modules.cnd.modelimpl.parser.FortranParserEx;
 
 import java.io.*;
 import java.lang.ref.Reference;
@@ -80,6 +81,7 @@ import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc.ChangedSegment;
@@ -116,6 +118,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         SOURCE_FILE,
         SOURCE_C_FILE,
         SOURCE_CPP_FILE,
+        SOURCE_FORTRAN_FILE,
         HEADER_FILE,
     };
     public static final int UNDEFINED_FILE = 0;
@@ -128,7 +131,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public static void incParseCount() {
         parseCount.incrementAndGet();
     }
-    
+
     public static int getParseCount() {
         return (int) (parseCount.get() & 0xFFFFFFFFL);
     }
@@ -143,7 +146,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * so there are a lot of sync issues on this way.
      *
      * Previously, null value was used instead; using null is much less clear an visible
-     * 
+     *
      * So, putting DUMMY_STATE into the queue
      *
      * 1) does not harm states that are in queue or will be put there (see ParserQueue code)
@@ -170,11 +173,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return false;
         }
     };
-    // only one of project/projectUID must be used (based on USE_UID_TO_CONTAINER)  
+    // only one of project/projectUID must be used (based on USE_UID_TO_CONTAINER)
     private Object projectRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmProject> projectUID;
-    /** 
-     * It's a map since we need to eliminate duplications 
+    /**
+     * It's a map since we need to eliminate duplications
      */
     private final TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> declarations;
     private WeakReference<Map<CsmDeclaration.Kind,SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>>> sortedDeclarations;
@@ -217,13 +220,15 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private static final class StateLock {}
     private final Object stateLock = new StateLock();
     private final List<CsmUID<FunctionImplEx>> fakeRegistrationPairs = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
+    private FileSnapshot fileSnapshot;
+    private final Object snapShotLock = new Object();
 
     private long lastParsed = Long.MIN_VALUE;
     /** Cache the hash code */
     private int hash = 0; // Default to 0
-    /** 
-     * Stores the UIDs of the static functions declarations (not definitions) 
-     * This is necessary for finding definitions/declarations 
+    /**
+     * Stores the UIDs of the static functions declarations (not definitions)
+     * This is necessary for finding definitions/declarations
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
     private final Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs;
@@ -255,14 +260,14 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         setBuffer(fileBuffer);
         this.projectUID = UIDCsmConverter.projectToUID(project);
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
-            new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
+            new Exception("cpu.cc file@" + System.identityHashCode(FileImpl.this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
         this.projectRef = new WeakReference<ProjectBase>(project); // Suppress Warnings
         this.fileType = fileType;
         if (nativeFileItem != null) {
             project.putNativeFileItem(getUID(), nativeFileItem);
         }
-        Notificator.instance().registerNewFile(this);
+        Notificator.instance().registerNewFile(FileImpl.this);
     }
 
     /** For test purposes only */
@@ -315,6 +320,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             case SOURCE_CPP_FILE:
             case SOURCE_C_FILE:
             case SOURCE_FILE:
+            case SOURCE_FORTRAN_FILE:
                 return true;
         }
         return false;
@@ -325,7 +331,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     /*package local*/ void setSourceFile() {
-        if (!(fileType == FileType.SOURCE_C_FILE || fileType == FileType.SOURCE_CPP_FILE)) {
+        if (!(fileType == FileType.SOURCE_C_FILE || fileType == FileType.SOURCE_CPP_FILE || fileType == FileType.SOURCE_FORTRAN_FILE)) {
             fileType = FileType.SOURCE_FILE;
         }
     }
@@ -340,7 +346,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             fileType = FileType.HEADER_FILE;
         }
     }
-    
+
     // TODO: consider using macro map and __cplusplus here instead of just checking file name
     public APTLanguageFilter getLanguageFilter(APTPreprocHandler.State ppState) {
         FileImpl startFile = ppState == null ? null : ProjectBase.getStartFile(ppState);
@@ -352,6 +358,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 lang = APTLanguageSupport.GNU_CPP;
             } else if (fileType == FileType.SOURCE_C_FILE) {
                 lang = APTLanguageSupport.GNU_C;
+            } else if (fileType == FileType.SOURCE_FORTRAN_FILE) {
+                lang = APTLanguageSupport.FORTRAN;
             } else {
                 lang = APTLanguageSupport.GNU_CPP;
                 String name = getName().toString();
@@ -407,7 +415,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         return null;
     }
-    
+
 //    private Collection<APTPreprocHandler.State> getPreprocStates() {
 //        ProjectBase project = getProjectImpl(true);
 //        return (project == null) ? Collections.<APTPreprocHandler.State>emptyList() : project.getPreprocStates(this);
@@ -452,7 +460,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     // ONLY FOR PARSER THREAD USAGE
     // Parser Queue ensures that the same file can be parsed at the same time
-    // only by one thread. 
+    // only by one thread.
     /*package*/ void ensureParsed(Collection<APTPreprocHandler> handlers) {
         boolean wasDummy = false;
         if (handlers == DUMMY_HANDLERS) {
@@ -651,15 +659,6 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return errorCount;
     }
 
-    /** 
-     * sometimes called externally
-     * by some (cached) project implementations, etc
-     */
-    private void render(AST tree) {
-        new AstRenderer(this).render(tree);
-        incParseCount();
-    }
-
     private APTFile getFullAPT() {
         APTFile aptFull = null;
         ChangedSegment changedSegment = null;
@@ -675,10 +674,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         return aptFull;
     }
-    
+
     private void _reparse(APTPreprocHandler preprocHandler, APTFile aptFull) {
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------ reparsing " + fileBuffer.getFile().getName()); // NOI18N
+        }
+        synchronized(snapShotLock) {
+            fileSnapshot = new FileSnapshot(this);
         }
         _clearIncludes();
         _clearMacros();
@@ -686,14 +688,25 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (reportParse || logState || TraceFlags.DEBUG) {
             logParse("ReParsing", preprocHandler); //NOI18N
         }
-        AST ast = doParse(preprocHandler, aptFull);
-        if (ast != null) {
+        Parsing parsing = doParse(preprocHandler, aptFull);
+        if (parsing != null) {
             if (isValid()) {
                 disposeAll(false);
-                render(ast);
+                parsing.stageTwo(this);
             }
         } else {
             //System.err.println("null ast for file " + getAbsolutePath());
+        }
+        fileSnapshot = null;
+    }
+
+    CsmFile getSnapshot(){
+        synchronized(snapShotLock) {
+            FileSnapshot res = fileSnapshot;
+            if (res != null) {
+                return res;
+            }
+            return new FileSnapshot(this);
         }
     }
 
@@ -813,19 +826,22 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (reportParse || logState || TraceFlags.DEBUG) {
             logParse("Parsing", preprocHandler); //NOI18N
         }
-        AST ast = doParse(preprocHandler, aptFull);
+        Parsing parsing = doParse(preprocHandler, aptFull);
         if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) {
             sw.stopAndReport("Parsing of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
         }
-        if (ast != null) {
+        if (parsing != null) {
             Diagnostic.StopWatch sw2 = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
             if (isValid()) {   // FIXUP: use a special lock here
-                render(ast);
+                parsing.stageTwo(this);
                 if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) {
                     sw2.stopAndReport("Rendering of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
                 }
             }
-            return ast;
+            Object ast = parsing.getAST();
+            if(ast instanceof AST) {
+                return (AST)ast;
+            }
         }
         return null;
     }
@@ -972,7 +988,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             APTFileCacheManager.setAPTCacheEntry(getAbsolutePath(), preprocHandler, entry, cleanOthers);
         }
     }
-    
+
     public ReadOnlyTokenBuffer getErrors(final Collection<RecognitionException> result) {
         CPPParserEx.ErrorDelegate delegate = new CPPParserEx.ErrorDelegate() {
 
@@ -1018,7 +1034,104 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return null;
     }
 
-    private AST doParse(APTPreprocHandler preprocHandler, APTFile aptFull) {
+    private interface Parsing {
+        void stageOne(TokenStream ts);
+        void stageTwo(FileImpl file);
+
+        Object getAST();
+        int getErrorCount();
+    }
+
+    private static class CppParsing implements Parsing {
+
+        private File file;
+        private int flags;
+        private CPPParserEx parser;
+
+        public CppParsing(File file, int flags) {
+            this.file = file;
+            this.flags = flags;
+        }
+
+        @Override
+        public void stageOne(TokenStream ts) {
+            parser = CPPParserEx.getInstance(file.getName(), ts, flags);
+            try {
+                parser.translation_unit();
+            } catch (Error ex) {
+                System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
+                throw ex;
+            }
+        }
+
+        @Override
+        public void stageTwo(FileImpl file) {
+            AST ast = parser.getAST();
+            if(ast != null) {
+                new AstRenderer(file).render(ast);
+                incParseCount();
+            }
+        }
+
+        @Override
+        public Object getAST() {
+            return parser.getAST();
+        }
+
+        @Override
+        public int getErrorCount() {
+            return parser.getErrorCount();
+        }
+    }
+
+    private static class FortranParsing implements Parsing {
+
+        private File file;
+        private FortranParserEx parser;
+        private FortranParserEx.program_return ret;
+
+        public FortranParsing(File file) {
+            this.file = file;
+        }
+
+        @Override
+        public void stageOne(TokenStream ts) {
+//                FortranParserEx.MyTokenStream ts2 = new FortranParserEx.MyTokenStream(new org.netbeans.modules.cnd.antlr.TokenBuffer(filteredTokenStream));
+//                while(ts2.LA(1) != -1) {
+//                    System.out.println(ts2.LT(1).getText() + " " + ts2.LT(1).getType());
+//                    ts2.consume();
+//                }
+//                System.out.println(ts2.LT(1).getText());
+            parser = new FortranParserEx(ts);
+            try {
+                ret = parser.program();
+//                CommonTree tree = (CommonTree) ret.getTree();
+//                System.out.println(tree);
+//                System.out.println(tree.getChildren());
+            } catch (org.antlr.runtime.RecognitionException ex) {
+                System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
+            }
+        }
+
+        @Override
+        public void stageTwo(FileImpl file) {
+            new DataRenderer(file).render(parser.parsedObjects);
+            incParseCount();
+        }
+
+        @Override
+        public Object getAST() {
+            return ret.getTree();
+        }
+
+        @Override
+        public int getErrorCount() {
+            return parser.getNumberOfSyntaxErrors();
+        }
+    }
+
+
+    private Parsing doParse(APTPreprocHandler preprocHandler, APTFile aptFull) {
 
         if (reportErrors) {
             if (!ParserThreadManager.instance().isParserThread() && !ParserThreadManager.instance().isStandalone()) {
@@ -1048,7 +1161,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 //                }
 //            }
 //        }
-        AST ast = null;
+        Parsing parsing = null;
         if (aptFull != null) {
             // use full APT for generating token stream
             if (TraceFlags.TRACE_CACHE) {
@@ -1072,37 +1185,52 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(ppState));
             }
 
-            CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
+            TokenStream filteredTokenStream = walker.getFilteredTokenStream(getLanguageFilter(ppState));
+
+            long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
+
+            if(fileType == FileType.SOURCE_FORTRAN_FILE) {
+                //System.out.println("Prasing fortran file " + getName());
+                parsing = new FortranParsing(fileBuffer.getFile());
+            } else {
+                //System.out.println("Prasing cpp file " + getName());
+                parsing = new CppParsing(fileBuffer.getFile(), flags);
+            }
+
+            parsing.stageOne(filteredTokenStream);
+
             FilePreprocessorConditionState pcState = pcBuilder.build();
             if (false) {
                 setAPTCacheEntry(preprocHandler, aptCacheEntry, false);
             }
             startProject.setParsedPCState(this, ppState, pcState);
-            long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
-            try {
-                parser.translation_unit();
-            } catch (Error ex) {
-                System.err.println(ex.getClass().getName() + " at parsing file " + fileBuffer.getFile().getAbsolutePath()); // NOI18N
-                throw ex;
-            }
 
             if (emptyAstStatictics) {
                 time = System.currentTimeMillis() - time;
-                System.err.println("PARSED FILE " + getAbsolutePath() + (AstUtil.isEmpty(parser.getAST(), true) ? " EMPTY" : "") + ' ' + time + " ms");
+                final Object ast = parsing.getAST();
+                if(ast instanceof AST) {
+                    System.err.println("PARSED FILE " + getAbsolutePath() + (AstUtil.isEmpty((AST)ast, true) ? " EMPTY" : "") + ' ' + time + " ms");
+                } else {
+                    System.err.print("ast is not instance of AST");
+                }
             }
             if (TraceFlags.DUMP_AST) {
                 System.err.println("\n");
                 System.err.print("AST: ");
                 System.err.print(getAbsolutePath());
                 System.err.print(' ');
-                AstUtil.toStream(parser.getAST(), System.err);
+                final Object ast = parsing.getAST();
+                if(ast instanceof AST) {
+                    AstUtil.toStream((AST)ast, System.err);
+                } else {
+                    System.err.print("ast is not instance of AST");
+                }
                 System.err.println("\n");
 
             }
-            errorCount = parser.getErrorCount();
-            ast = parser.getAST();
+            errorCount = parsing.getErrorCount();
             if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
-                ast = null;
+                parsing = null;
                 if (TraceFlags.TRACE_CACHE) {
                     System.err.println("CACHE: not save cache for file modified during parsing" + getAbsolutePath());
                 }
@@ -1120,7 +1248,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             aHook.parsingFinished(this, preprocHandler);
         }
 //        parseCount++;
-        return ast;
+        return parsing;
     }
 
     public List<CsmReference> getLastMacroUsages() {
@@ -1286,7 +1414,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 //            declarationsLock.readLock().unlock();
 //        }
     }
-    
+
     @Override
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
         Collection<CsmOffsetableDeclaration> decls;
@@ -1337,7 +1465,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 map = sortedDeclarations.get();
             }
             if (map == null) {
-                map = new HashMap<CsmDeclaration.Kind, SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>>();
+                map = new EnumMap<CsmDeclaration.Kind, SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>>(CsmDeclaration.Kind.class);
                 for(CsmUID<CsmOffsetableDeclaration> anUid : declarations.values()){
                     CsmDeclaration.Kind kind = UIDUtilities.getKind(anUid);
                     SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>> val = map.get(kind);
@@ -1528,10 +1656,12 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
         }
         if (CsmKindUtilities.isFunctionDeclaration(decl)) {
-            FunctionImpl fi = (FunctionImpl) decl;
-            if (!NamespaceImpl.isNamespaceScope(fi)) {
-                fi.setScope(this);
-                addStaticFunctionDeclaration(uidDecl);
+            if (decl instanceof FunctionImpl) {
+                FunctionImpl fi = (FunctionImpl) decl;
+                if (!NamespaceImpl.isNamespaceScope(fi)) {
+                    fi.setScope(this);
+                    addStaticFunctionDeclaration(uidDecl);
+                }
             }
         }
     }
@@ -1556,9 +1686,9 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
-    /** 
-     * Gets the list of the static functions declarations (not definitions) 
-     * This is necessary for finding definitions/declarations 
+    /**
+     * Gets the list of the static functions declarations (not definitions)
+     * This is necessary for finding definitions/declarations
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
     public Collection<CsmFunction> getStaticFunctionDeclarations() {
@@ -1768,8 +1898,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         return wereFakes;
     }
-    
-    public 
+
+    public
     @Override
     String toString() {
         return "FileImpl @" + hashCode() + ":" + super.hashCode() + ' ' + getAbsolutePath() + " prj:" + System.identityHashCode(this.projectUID) + this.projectUID; // NOI18N
@@ -1867,7 +1997,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
-            new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
+            new Exception("cpu.cc file@" + System.identityHashCode(FileImpl.this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
         // not null UID
         assert this.projectUID != null;
@@ -1895,7 +2025,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         UIDObjectFactory.getDefaultFactory().readUIDCollection(staticVariableUIDs, input, collSize);
     }
 
-    public 
+    public
     @Override
     int hashCode() {
         if (hash == 0) {   // we don't need sync here - at worst, we'll calculate the same value twice
@@ -1905,7 +2035,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return hash;
     }
 
-    public 
+    public
     @Override
     boolean equals(Object obj) {
         if (obj == null || !(obj instanceof FileImpl)) {
@@ -2163,6 +2293,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public static boolean traceFile(CharSequence file) {
-        return true; // file.toString().endsWith("newfile.h") || file.toString().endsWith("shared.h"); // NOI18N
+        if (TraceFlags.TRACE_FILE_NAME != null) {
+            if (TraceFlags.TRACE_FILE_NAME.length() == 0) {
+                // trace all files
+                return true;
+            }
+            return file.toString().endsWith(TraceFlags.TRACE_FILE_NAME);
+        }
+        return false;
     }
 }

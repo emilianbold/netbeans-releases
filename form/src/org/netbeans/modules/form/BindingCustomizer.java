@@ -293,6 +293,7 @@ public class BindingCustomizer extends JPanel {
                 null
             );
             tabbedPane.addChangeListener(new ChangeListener() {
+                @Override
                 public void stateChanged(ChangeEvent e) {
                     dd.setHelpCtx(new HelpCtx((tabbedPane.getSelectedIndex() == 1) ?
                         "gui.binding-customizer.advanced" : "gui.binding-customizer.basic")); // NOI18N
@@ -354,6 +355,7 @@ public class BindingCustomizer extends JPanel {
     private void initButtons(ResourceBundle bundle) {
         okButton = new JButton(bundle.getString("MSG_BindingCustomizer_OK")); // NOI18N
         okButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent ev) {
                 if (getBindingFromUI()) {
                     oldNullValue = null;
@@ -1062,10 +1064,12 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                     null);
             final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
             new Thread(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         final RADComponent data = task.get();
                         EventQueue.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 if (data != null) {
                                     // refresh source components combo
@@ -1193,6 +1197,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
      * Comparator of <code>RADComponent</code>s.
      */
     private static class RADComponentComparator implements Comparator<RADComponent> {
+        @Override
         public int compare(RADComponent o1, RADComponent o2) {
             String name1 = o1.getName();
             String name2 = o2.getName();
@@ -1375,6 +1380,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
            this.treeModel = treeModel;
        }
        
+        @Override
         public String pathToString(TreePath path) {
             StringBuilder sb = new StringBuilder();
             Object[] items = path.getPath();
@@ -1388,6 +1394,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
             return "null".equals(value) ? "null" : BindingDesignSupport.elWrap(sb.toString()); // NOI18N
         }
         
+        @Override
         public TreePath stringToPath(String value) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode)treeModel.getRoot();
             if (BindingDesignSupport.isSimpleExpression(value)) {

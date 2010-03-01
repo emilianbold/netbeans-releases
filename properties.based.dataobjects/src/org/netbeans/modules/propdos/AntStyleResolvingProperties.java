@@ -154,12 +154,11 @@ public class AntStyleResolvingProperties extends ObservableProperties {
     @Override
     public void store(OutputStream out, String comments) throws IOException {
         if (PropertiesBasedDataObject.LOGGER.isLoggable(Level.FINE)) {
-            PropertiesBasedDataObject.LOGGER.log(Level.FINE, "Writing a " + //NOI18N
-                    getClass().getName() + " to disk"); //NOI18N
+            PropertiesBasedDataObject.LOGGER.log(Level.FINE, "Writing a {0} to disk",  //NOI18N
+                    getClass().getName());
         }
         if (PropertiesBasedDataObject.LOGGER.isLoggable(Level.FINEST)) {
-            PropertiesBasedDataObject.LOGGER.log(Level.FINEST, "DATA:" + //NOI18N
-                    this);
+            PropertiesBasedDataObject.LOGGER.log(Level.FINEST, "DATA:{0}", this); //NOI18N
         }
         EditableProperties props = new EditableProperties(true);
         for (Map.Entry<Object,Object> e : entrySet()) {

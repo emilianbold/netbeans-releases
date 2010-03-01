@@ -40,8 +40,7 @@
 package org.netbeans.modules.cnd.makeproject.spi.configurations;
 
 import java.util.List;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.makeproject.api.configurations.AllOptionsProvider;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 
 /**
@@ -53,6 +52,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
  * @author Alexander Simon
  */
 public interface UserOptionsProvider {
-    List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, BasicCompiler compiler, MakeConfiguration makeConfiguration);
-    List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, BasicCompiler compiler, MakeConfiguration makeConfiguration);
+    List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
+    List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
 }

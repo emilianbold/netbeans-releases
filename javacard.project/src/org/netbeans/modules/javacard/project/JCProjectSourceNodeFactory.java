@@ -62,12 +62,14 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
-import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.Action;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.javacard.project.deps.ui.DependenciesNode;
 import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.spi.actions.Single;
@@ -106,7 +108,13 @@ public class JCProjectSourceNodeFactory implements NodeFactory {
         }
     }
 
-    private static class JCNodeList implements NodeList<JCKey>, ChangeListener {
+    static enum ProjectNodeKinds {
+        IMPORTANT_FILES,
+        SCRIPTS_OR_WEB_PAGES,
+        LIBRARIES,
+    }
+
+    private static class JCNodeList implements NodeList<Object>, ChangeListener {
 
         private JCProject project;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -115,23 +123,23 @@ public class JCProjectSourceNodeFactory implements NodeFactory {
             project = proj;
         }
 
-        public List<JCKey> keys() {
+        public List<Object> keys() {
             if (this.project.getProjectDirectory() == null || !this.project.getProjectDirectory().isValid()) {
-                return Collections.<JCKey>emptyList();
+                return Collections.<Object>emptyList();
             }
             Sources sources = getSources();
             SourceGroup[] groups = sources.getSourceGroups(
                     JavaProjectConstants.SOURCES_TYPE_JAVA);
 
-            List<JCKey> result = new ArrayList<JCKey>(groups.length);
+            List<Object> result = new ArrayList<Object>(groups.length);
             for (int i = 0; i < groups.length; i++) {
                 result.add(new SourceGroupKey(groups[i]));
             }
             if (!project.kind().isLibrary()) {
-                result.add(new ScriptsWebPagesKey());
+                result.add(ProjectNodeKinds.SCRIPTS_OR_WEB_PAGES);
             }
-            result.add(new ImportantFilesKey());
-            result.add(new LibrariesKey());
+            result.add(ProjectNodeKinds.IMPORTANT_FILES);
+            result.add(ProjectNodeKinds.LIBRARIES);
             return result;
         }
 
@@ -143,7 +151,7 @@ public class JCProjectSourceNodeFactory implements NodeFactory {
             changeSupport.removeChangeListener(l);
         }
 
-        public Node node(JCKey key) {
+        public Node node(Object key) {
             if (key instanceof SourceGroupKey) {
                 SourceGroupKey sgKey = (SourceGroupKey) key;
                 try {
@@ -151,17 +159,23 @@ public class JCProjectSourceNodeFactory implements NodeFactory {
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-            } else if (key instanceof ImportantFilesKey) {
-                return new ImportantFilesNode(project);
-            } else if (key instanceof LibrariesKey) {
-//                return new LibrariesNode(project);
-                return new DependenciesNode(project);
-            } else if (key instanceof ScriptsWebPagesKey) {
-                try {
-                    return new ScriptsNode(project.getProjectDirectory().getFileObject(
-                            project.kind().isApplet() ? "scripts" : "html"), project); //NOI18N
-                } catch (DataObjectNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
+            } else if (key instanceof ProjectNodeKinds) {
+                switch ((ProjectNodeKinds) key) {
+                    case IMPORTANT_FILES :
+                        return new ImportantFilesNode(project);
+                    case LIBRARIES :
+                        return new DependenciesNode(project);
+                    case SCRIPTS_OR_WEB_PAGES :
+                        try {
+                            return new ScriptsNode(project.getProjectDirectory().getFileObject(
+                                    project.kind().isApplet() ? "scripts" : "html"), project); //NOI18N
+                        } catch (DataObjectNotFoundException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        break;
+                    default :
+                        throw new AssertionError(key + ""); //NOI18N
+
                 }
             }
             throw new AssertionError(key.getClass());
@@ -176,8 +190,6 @@ public class JCProjectSourceNodeFactory implements NodeFactory {
         }
 
         public void stateChanged(ChangeEvent e) {
-            // setKeys(getKeys());
-            // The caller holds ProjectManager.mutex() read lock
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
@@ -189,18 +201,6 @@ public class JCProjectSourceNodeFactory implements NodeFactory {
         private Sources getSources() {
             return ProjectUtils.getSources(project);
         }
-    }
-
-    private static interface JCKey {
-    }
-
-    private static class ImportantFilesKey implements JCKey {
-    }
-
-    private static class LibrariesKey implements JCKey {
-    }
-
-    private static class ScriptsWebPagesKey implements JCKey {
     }
 
     private static class ScriptsNode extends FilterNode {
@@ -313,7 +313,7 @@ public class JCProjectSourceNodeFactory implements NodeFactory {
         }
     }
 
-    private static class SourceGroupKey implements JCKey {
+    private static class SourceGroupKey {
 
         public final SourceGroup group;
         public final FileObject fileObject;

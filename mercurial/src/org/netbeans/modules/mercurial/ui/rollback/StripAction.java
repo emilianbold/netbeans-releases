@@ -135,6 +135,7 @@ public class StripAction extends ContextAction {
                                     NbBundle.getMessage(StripAction.class,
                                     "MSG_MULTI_HEADS_STRIP"));     // NOI18N                       
                         }else{
+                            HgUtils.notifyUpdatedFiles(root, list);
                             if (HgCommand.hasHistory(root)) {
                                 FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
                                 // XXX containsFileOfStatus would be better

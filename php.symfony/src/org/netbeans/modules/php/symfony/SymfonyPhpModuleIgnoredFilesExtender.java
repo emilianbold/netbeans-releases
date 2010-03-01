@@ -44,19 +44,28 @@ import java.util.Collections;
 import java.util.Set;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
  * @author Tomas Mysik
  */
 public class SymfonyPhpModuleIgnoredFilesExtender extends PhpModuleIgnoredFilesExtender {
-    // currently, only "cache" directory directly underneath source directory
+    private static final String DIR_CACHE = "cache"; // NOI18N
+
+    // currently, only "cache" directory
     private final File cache;
 
     public SymfonyPhpModuleIgnoredFilesExtender(PhpModule phpModule) {
         assert phpModule != null;
 
-        cache = new File(FileUtil.toFile(phpModule.getSourceDirectory()), "cache"); // NOI18N
+        FileObject cacheFO = SymfonyPhpFrameworkProvider.locate(phpModule, DIR_CACHE, true);
+        if (cacheFO != null && cacheFO.isFolder()) {
+            cache = FileUtil.toFile(cacheFO);
+        } else {
+            // cache not found, simply pretend that it's under sources
+            cache = new File(FileUtil.toFile(phpModule.getSourceDirectory()), DIR_CACHE);
+        }
     }
 
     @Override

@@ -40,18 +40,29 @@
 package org.netbeans.modules.java.hints.encapsulation;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
@@ -59,6 +70,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.java.hints.errors.Utilities;
@@ -84,6 +96,7 @@ public class FieldEncapsulation {
 
     private static final Logger LOG = Logger.getLogger(FieldEncapsulation.class.getName());
     private static final String ACTION_PATH = "Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-EncapsulateFieldAction.instance";   //NOI18N
+    private static final String KW_THIS = "this";
 
     @Hint(category="encapsulation", suppressWarnings={"ProtectedField"}, enabled=false) //NOI18N
     @TriggerTreeKind(Kind.VARIABLE)
@@ -112,6 +125,43 @@ public class FieldEncapsulation {
             "PackageVisibleField"); //NOI18N
     }
 
+    @Hint(category="encapsulation", suppressWarnings={"AccessingNonPublicFieldOfAnotherObject"}, enabled=false) //NOI18N
+    @TriggerTreeKind(Kind.MEMBER_SELECT)
+    public static ErrorDescription privateField(final HintContext ctx) {
+        assert ctx != null;
+        final TreePath tp = ctx.getPath();
+        final Element selectElement = ctx.getInfo().getTrees().getElement(tp);
+        if (selectElement == null ||
+            selectElement.getKind()!= ElementKind.FIELD ||
+            !((VariableElement)selectElement).getModifiers().contains(Modifier.PRIVATE)||
+            ((VariableElement)selectElement).getModifiers().contains(Modifier.STATIC)) {
+            return null;
+        }
+        final ExpressionTree subSelect = ((MemberSelectTree)tp.getLeaf()).getExpression();
+        if ((subSelect.getKind() == Tree.Kind.IDENTIFIER && KW_THIS.contentEquals(((IdentifierTree)subSelect).getName())) ||
+            (subSelect.getKind() == Tree.Kind.MEMBER_SELECT && KW_THIS.contentEquals(((MemberSelectTree)subSelect).getIdentifier()))){
+            return null;
+        }
+        final TypeElement selectOwner = getEnclosingClass(tp, ctx.getInfo().getTrees());
+        if (selectOwner == null ||
+            SourceUtils.getOutermostEnclosingTypeElement(selectElement) != SourceUtils.getOutermostEnclosingTypeElement(selectOwner)) {
+            return null;
+        }
+        SourceUtils.getOutermostEnclosingTypeElement(selectElement);
+        return ErrorDescriptionFactory.forName(ctx, tp,
+                NbBundle.getMessage(FieldEncapsulation.class, "TXT_OtherPrivateField"),
+                FixFactory.createSuppressWarningsFix(ctx.getInfo(), tp, "AccessingNonPublicFieldOfAnotherObject")); //NOI18N
+    }
+
+    private static TypeElement getEnclosingClass (TreePath path, final Trees trees) {
+        while (path != null && path.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT) {
+            if (path.getLeaf().getKind() == Tree.Kind.CLASS) {
+                return (TypeElement) trees.getElement(path);
+            }
+            path = path.getParentPath();
+        }
+        return null;
+    }
 
     private static ErrorDescription create (final HintContext ctx,
                                             final Modifier visibility,

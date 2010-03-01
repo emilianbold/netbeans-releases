@@ -51,11 +51,13 @@ import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 import org.netbeans.modules.ruby.RubyIndexer;
 import org.netbeans.modules.ruby.RubyStructureAnalyzer;
 import org.netbeans.modules.ruby.RubyUtils;
 
 @LanguageRegistration(mimeType="application/x-httpd-eruby", useCustomEditorKit=true) //NOI18N
+@PathRecognizerRegistration(mimeTypes="application/x-httpd-eruby", sourcePathIds=RubyLanguage.SOURCE, libraryPathIds=RubyLanguage.BOOT, binaryLibraryPathIds={}) //NOI18N
 public class RhtmlLanguage extends DefaultLanguageConfig {
     
     public RhtmlLanguage() {

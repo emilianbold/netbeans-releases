@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.modules.toplinkessentialslibrary</code-name-base>
+            <suite-component/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.derbyclientlibrary</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
+            <public-packages>
+                <package>javax.persistence</package>
+                <package>javax.persistence.spi</package>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/toplink/toplink-essentials.jar</runtime-relative-path>
+                <binary-origin>${toplink-essentials.jar}</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/toplink/toplink-essentials-agent.jar</runtime-relative-path>
+                <binary-origin>${toplink-essentials-agent.jar}</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

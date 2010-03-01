@@ -171,6 +171,15 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-junit-CreateTestAction.instance"/>
         </folder>
     </folder>
+    <folder name="UI">
+        <folder name="ToolActions">
+            <folder name="Java">
+                <file name="org-netbeans-modules-junit-CreateTestAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
     
     <!-- shortcuts -->
     <folder name="Shortcuts">

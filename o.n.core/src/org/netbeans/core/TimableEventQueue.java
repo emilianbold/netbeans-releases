@@ -55,10 +55,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.netbeans.core.startup.Main;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -92,6 +92,7 @@ implements Runnable {
     private volatile ActionListener stoppable;
     private volatile boolean isWaitCursor;
     static volatile Thread eq;
+    private final Frame mainWindow = WindowManager.getDefault().getMainWindow();
 
     public TimableEventQueue() {
         TIMEOUT = RP.create(this);
@@ -108,7 +109,10 @@ implements Runnable {
         try {
             Mutex.EVENT.writeAccess (new Mutex.Action<Void>() {
                 public Void run() {
-                    Thread.currentThread().setContextClassLoader(Main.getModuleSystem().getManager().getClassLoader());
+                    ClassLoader scl = Lookup.getDefault().lookup(ClassLoader.class);
+                    if (scl != null) {
+                        Thread.currentThread().setContextClassLoader(scl);
+                    }
                     Toolkit.getDefaultToolkit().getSystemEventQueue().push(new TimableEventQueue());
                     LOG.fine("Initialization done");
                     return null;
@@ -173,7 +177,7 @@ implements Runnable {
 
     private void tick(String name) {
         start = System.currentTimeMillis();
-        if (start >= ignoreTill && WindowManager.getDefault().getMainWindow().isShowing()) {
+        if (start >= ignoreTill && mainWindow.isShowing()) {
             LOG.log(Level.FINEST, "tick, schedule a timer for {0}", name);
             TIMEOUT.schedule(QUANTUM);
         }

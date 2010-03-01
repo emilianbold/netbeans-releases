@@ -105,7 +105,7 @@ cause it to fail.
         
         <!-- Docs to link to: -->
         <property name="javadoc.web.root" value="http://root/"/>
-        <property name="javadoc.docs.jdk" value="http://java.sun.com/j2se/1.5.0/docs/api"/>
+        <property name="javadoc.docs.jdk" value="http://java.sun.com/javase/6/docs/api"/>
         &properties;
         <!-- add more here as needed... -->
         <property name="javadoc.css.dir" location="."/>

@@ -403,8 +403,8 @@ public final class TreePathHandle {
                 debug.append("\n");
 
                 try {
-                    debug.append("mine: id=" + System.identityHashCode(mine) + ", valid=" + mine.isValid() + ", url=");
-                    debug.append(mine.getURL().toExternalForm());
+                    debug.append("mine: id=").append(mine).append(", url=")
+                    .append(mine.getURL().toExternalForm());
                 } catch (FileStateInvalidException ex) {
                     debug.append(ex.getMessage());
                 }
@@ -412,8 +412,8 @@ public final class TreePathHandle {
                 debug.append("\n");
                 
                 try {
-                    debug.append("remote: id=" + System.identityHashCode(remote) + ", valid=" + remote.isValid() + ", url=");
-                    debug.append(remote.getURL().toExternalForm());
+                    debug.append("remote: id=").append(remote).append(", url=")
+                    .append(remote.getURL().toExternalForm());
                 } catch (FileStateInvalidException ex) {
                     debug.append(ex.getMessage());
                 }

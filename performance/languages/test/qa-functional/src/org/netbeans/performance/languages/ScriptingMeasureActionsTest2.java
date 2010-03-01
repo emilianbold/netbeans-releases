@@ -41,6 +41,7 @@
 
 package org.netbeans.performance.languages;
 
+
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
@@ -58,7 +59,9 @@ public class ScriptingMeasureActionsTest2 {
         System.setProperty("suitename", ScriptingMeasureActionsTest2.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness Scripting Actions suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenScriptingFilesTest.class)
+
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+                .addTest(OpenScriptingFilesTest.class)
                 .addTest(TypingInScriptingEditorTest.class)
                 .addTest(ScriptingCodeCompletionInEditorTest.class)
                 .addTest(PageUpPageDownScriptingEditorTest.class)
@@ -66,7 +69,7 @@ public class ScriptingMeasureActionsTest2 {
                 .addTest(CreatePHPProjectTest.class)
                 .addTest(CreatePHPSampleProjectTest.class)     
 //      TB fixed          .addTest(CreateRubyProjectTest.class)
-                .enableModules(".*").clusters("websvccommon[0-9]|php[0-9]|ruby[0-9]|webcommon[0-9]|enterprise[0-9]").reuseUserDir(true)));
+                .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;        
     }

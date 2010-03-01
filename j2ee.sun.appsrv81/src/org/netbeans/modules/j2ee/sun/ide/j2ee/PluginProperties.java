@@ -1,8 +1,7 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-// </editor-fold>
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
@@ -50,8 +48,10 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.logging.Level;
+import org.netbeans.api.keyring.Keyring;
 
 import org.netbeans.modules.glassfish.eecommon.api.RegisterDatabase;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.Asenv;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
@@ -576,7 +576,8 @@ public class PluginProperties  {
                             }
                             instanceFO.setAttribute(InstanceProperties.URL_ATTR, dmUrl);
                             instanceFO.setAttribute(InstanceProperties.USERNAME_ATTR, username);
-                            instanceFO.setAttribute(InstanceProperties.PASSWORD_ATTR, password);
+                            instanceFO.setAttribute(InstanceProperties.PASSWORD_ATTR, GlassfishModule.PASSWORD_CONVERTED_FLAG);
+                            Keyring.save(dmUrl,password.toCharArray(), " a GlassFish/SJSAS password");
                             instanceFO.setAttribute(InstanceProperties.DISPLAY_NAME_ATTR, displayName);
                             instanceFO.setAttribute("DOMAIN", domainsList[i].getName()); // NOI18N
                             //  The LOCATION is the domains directory, not the install root now...

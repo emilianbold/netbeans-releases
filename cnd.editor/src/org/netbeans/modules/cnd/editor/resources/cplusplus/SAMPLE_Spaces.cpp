@@ -1,11 +1,11 @@
 class ClassA {
 public:
-int number;
+int            number;
 private:
-String text;
+String         text;
 static float[] floats;
 protected:
-double[] doubles;
+double[]       doubles;
 
 ClassA() : number(1), text("A") {
 };

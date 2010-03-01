@@ -77,13 +77,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.test.TestFileUtils;
 
 /**
  *
  * @author Tomas Zezula
  */
 public class ClassIndexTest extends NbTestCase {
-    
+
     private static FileObject srcRoot;
     private static FileObject srcRoot2;
     private static FileObject binRoot;
@@ -101,9 +102,7 @@ public class ClassIndexTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-//        clearWorkDir();
-        clearAllButCaches ();        
-        
+        clearWorkDir();
         File cache = new File(getWorkDir(), "cache");       //NOI18N
         cache.mkdirs();
         IndexUtil.setCacheFolder(cache);
@@ -130,25 +129,12 @@ public class ClassIndexTest extends NbTestCase {
         bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
         MockServices.setServices(ClassPathProviderImpl.class, SFBQ.class);
     }
-    
-    //where
-    private void clearAllButCaches () throws IOException {
-        File f = new File (getWorkDir(),"src/foo");         //NOI18N
-        File[] c = f.listFiles();
-        if (c != null) {
-            for (File x : c) {
-                x.delete();
-            }
-        }
-        f.delete();
-    }
-    
 
     @Override
     protected void tearDown() throws Exception {
         MockServices.setServices();
-    }        
-    
+    }
+
     public void testEvents () throws Exception {
         GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[] {bootPath});
         GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] {compilePath});
@@ -159,7 +145,7 @@ public class ClassIndexTest extends NbTestCase {
         index.getPackageNames("org", true, EnumSet.of(ClassIndex.SearchScope.SOURCE));
         final CIL testListener = new CIL ();
         index.addClassIndexListener(testListener);
-        
+
         Set<EventType> et = EnumSet.of(EventType.TYPES_ADDED);
         testListener.setExpectedEvents (et);
         createFile ("foo/A.java", "package foo;\n public class A {}");

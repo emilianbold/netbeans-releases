@@ -1,8 +1,5 @@
 #!/bin/sh
 
-ANT_OPTS='-Xmx512m -XX:MaxPermSize=128m'
-export ANT_OPTS
-
 # XXX awaiting Forest support:
 if [ -d contrib/.hg ] ; then
     hg -R contrib up -C .

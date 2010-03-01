@@ -85,7 +85,7 @@ import javax.swing.text.StyledDocument;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.bugtracking.util.TextUtils;
@@ -93,7 +93,6 @@ import org.netbeans.modules.bugtracking.util.WebUrlHyperlinkSupport;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
@@ -260,9 +259,7 @@ public class CommentsPanel extends JPanel {
             int index = author.indexOf('@');
             String userName = (index == -1) ? author : author.substring(0,index);
             String host = ((KenaiRepository) issue.getRepository()).getHost();
-            KenaiUserUI ku = new KenaiUserUI(userName + "@" + host);
-            ku.setMessage(KenaiUtil.getChatLink(issue));
-            stateLabel = ku.createUserWidget();
+            stateLabel = KenaiUtil.createUserWidget(userName, host, KenaiUtil.getChatLink(issue));
             stateLabel.setText(null);
         }
         LinkButton replyButton = new LinkButton(bundle.getString("Comments.replyButton.text")); // NOI18N

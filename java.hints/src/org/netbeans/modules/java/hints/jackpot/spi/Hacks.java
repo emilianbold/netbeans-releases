@@ -114,8 +114,11 @@ public class Hacks {
         Log.instance(context).nerrors = 0;
 
         JavaFileObject jfo = FileObjects.memoryFileObject("$$", "$", new File("/tmp/t.java").toURI(), System.currentTimeMillis(), clazz.toString());
+        boolean oldSkipAPs = jti.skipAnnotationProcessing;
 
         try {
+            jti.skipAnnotationProcessing = true;
+
             Iterable<? extends CompilationUnitTree> parsed = jti.parse(jfo);
             CompilationUnitTree cut = parsed.iterator().next();
 
@@ -125,6 +128,8 @@ public class Hacks {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return null;
+        } finally {
+            jti.skipAnnotationProcessing = oldSkipAPs;
         }
     }
 

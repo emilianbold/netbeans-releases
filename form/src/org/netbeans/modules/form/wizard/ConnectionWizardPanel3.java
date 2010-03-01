@@ -88,6 +88,7 @@ class ConnectionWizardPanel3 implements org.openide.WizardDescriptor.Panel {
     // ---------
     // WizardDescriptor.Panel implementation
 
+    @Override
     public java.awt.Component getComponent() {
         if (uiPanel == null) {
             uiPanel = new ConnectionPanel3(this);
@@ -97,26 +98,32 @@ class ConnectionWizardPanel3 implements org.openide.WizardDescriptor.Panel {
         return uiPanel;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelp() {
         return new org.openide.util.HelpCtx("gui.connecting.code"); // NOI18N
     }
 
+    @Override
     public boolean isValid() {
         return uiPanel != null ? uiPanel.isFilled() : false;
     }
 
+    @Override
     public void readSettings(java.lang.Object settings) {
     }
 
+    @Override
     public void storeSettings(java.lang.Object settings) {
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         if (listenerList == null)
             listenerList = new EventListenerList();
         listenerList.add(ChangeListener.class, listener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         if (listenerList != null)
             listenerList.remove(ChangeListener.class, listener);

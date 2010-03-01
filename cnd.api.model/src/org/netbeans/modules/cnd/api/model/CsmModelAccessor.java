@@ -79,7 +79,7 @@ public final class CsmModelAccessor {
             return null;
         }
 
-        public CsmFile findFile(CharSequence absPath) {
+        public CsmFile findFile(CharSequence absPath, boolean snapShot) {
             return null;
         }
 

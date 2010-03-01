@@ -777,7 +777,7 @@ public class TomcatManager implements DeploymentManager {
                 passwd = tp.getPassword();
                 if ("ide_manager".equals(passwd)) { // NOI18N
                     // change the default password that comes from the bundled Tomcat module
-                    passwd = TomcatInstallUtil.generatePassword(8);
+                    passwd = Utils.generatePassword(8);
                     tp.setPassword(passwd);
                 }
             }

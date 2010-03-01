@@ -238,12 +238,34 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #Build all FU the NBMs
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dcluster.config=full -Dbase.nbm.target.dir=${DIST}/uc -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=source,lines
+#ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dcluster.config=full -Dbase.nbm.target.dir=${DIST}/uc -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=source,lines
+#ERROR_CODE=$?
+
+#create_test_result "build.NBMs" "Build NBMs" $ERROR_CODE
+#if [ $ERROR_CODE != 0 ]; then
+#    echo "ERROR: $ERROR_CODE - Can't build NBMs"
+#    exit $ERROR_CODE;
+#fi
+
+#cd nbbuild
+#Build catalog for FU NBMs
+#ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml
+#ERROR_CODE=$?
+
+#create_test_result "build.FU.catalog" "Build catalog FU modules" $ERROR_CODE
+#if [ $ERROR_CODE != 0 ]; then
+#    echo "ERROR: $ERROR_CODE - Can't build catalog FU for NBMs"
+#    exit $ERROR_CODE;
+#fi
+#cd ..
+
+#Build all NBMs for stable UC - IDE + UC-only
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dcluster.config=stableuc -Dbase.nbm.target.dir=${DIST}/uc -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=source,lines
 ERROR_CODE=$?
 
-create_test_result "build.NBMs" "Build NBMs" $ERROR_CODE
+create_test_result "build.NBMs" "Build all NBMs" $ERROR_CODE
 if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Can't build NBMs"
+    echo "ERROR: $ERROR_CODE - Can't build all stable UC NBMs"
 #    exit $ERROR_CODE;
 fi
 
@@ -257,57 +279,25 @@ if [ $ERROR_CODE != 0 ]; then
 #    exit $ERROR_CODE;
 fi
 
-#Build l10n kit for FU modules
+#Build l10n kit for all modules
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml l10n-kit -Dnbms.location=${DIST}/uc -Dl10n.kit=${DIST}/zip/ide-l10n-$BUILDNUMBER.zip
 ERROR_CODE=$?
 
-create_test_result "build.FU.l10n" "Build l10n kit for FU modules" $ERROR_CODE
+create_test_result "build.modules.l10n" "Build l10n kit for all modules" $ERROR_CODE
 if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Can't build l10n kits for FU modules"
+    echo "ERROR: $ERROR_CODE - Can't build l10n kits for all modules"
 #    exit $ERROR_CODE;
 fi
 
 cd nbbuild
-#Build catalog for FU NBMs
+Build catalog for all NBMs
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml
-ERROR_CODE=$?
-
-create_test_result "build.FU.catalog" "Build catalog FU modules" $ERROR_CODE
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Can't build catalog FU for NBMs"
-#    exit $ERROR_CODE;
-fi
-cd ..
-
-#Build all NBMs for stable UC
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dcluster.config=stableuc -Dbase.nbm.target.dir=${DIST}/uc2 -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=source,lines
-ERROR_CODE=$?
-
-create_test_result "build.NBMs.stableUC" "Build all NBMs for stable UC" $ERROR_CODE
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Can't build stable UC NBMs"
-#    exit $ERROR_CODE;
-fi
-
-#Build l10n kit for Stable UC modules
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml l10n-kit -Dnbms.location=${DIST}/uc2 -Dl10n.kit=${DIST}/zip/stable-UC-l10n-$BUILDNUMBER.zip
-ERROR_CODE=$?
-
-create_test_result "build.stableuc.l10n" "Build l10n kit for Stable UC modules" $ERROR_CODE
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Can't build l10n kits for stable UC modules"
-#    exit $ERROR_CODE;
-fi
-
-cd nbbuild
-#Build catalog for stable UC NBMs
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc2 -Dcatalog.file=${DIST}/uc2/catalog.xml
 ERROR_CODE=$?
 
 create_test_result "build.stableuc.catalog" "Build catalog stableUC modules" $ERROR_CODE
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build stable UC catalog for NBMs"
-#    exit $ERROR_CODE;
+    exit $ERROR_CODE;
 fi
 cd ..
 
@@ -348,14 +338,14 @@ if [ $ML_BUILD == 1 ]; then
 #        exit $ERROR_CODE;
     fi
 
-    ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml -Dlocales=$LOCALES -Ddist.dir=$NB_ALL/nbbuild/netbeans-ml -Dnbms.dir=${DIST}/uc2 -Dnbms.dist.dir=${DIST}/ml/uc2 -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS build
+#    ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml -Dlocales=$LOCALES -Ddist.dir=$NB_ALL/nbbuild/netbeans-ml -Dnbms.dir=${DIST}/uc2 -Dnbms.dist.dir=${DIST}/ml/uc2 -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS build
 
-    create_test_result "build.ML.stableuc" "Build ML Stable UC modules" $ERROR_CODE
-    ERROR_CODE=$?
-    if [ $ERROR_CODE != 0 ]; then
-        echo "ERROR: $ERROR_CODE - Can't build ML Stable UC modules"
+#    create_test_result "build.ML.stableuc" "Build ML Stable UC modules" $ERROR_CODE
+#    ERROR_CODE=$?
+#    if [ $ERROR_CODE != 0 ]; then
+#        echo "ERROR: $ERROR_CODE - Can't build ML Stable UC modules"
 #        exit $ERROR_CODE;
-    fi
+#    fi
 
     if [ ! -z $UC_NBMS_DIR ]; then
        for UC_CLUSTER in $UC_EXTRA_CLUSTERS; do
@@ -375,14 +365,14 @@ if [ $ML_BUILD == 1 ]; then
     fi
 
     #Build catalog for ML stable UC NBMs
-    create_test_result "build.ML.stableuc.catalog" "Build ML Stable UC catalog" $ERROR_CODE
-    ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uml/uc2 -Dcatalog.file=${DIST}/ml/uc2/catalog.xml
-    ERROR_CODE=$?
+#    create_test_result "build.ML.stableuc.catalog" "Build ML Stable UC catalog" $ERROR_CODE
+#    ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uml/uc2 -Dcatalog.file=${DIST}/ml/uc2/catalog.xml
+#    ERROR_CODE=$?
 
-    if [ $ERROR_CODE != 0 ]; then
-        echo "ERROR: $ERROR_CODE - Can't build stable UC catalog for ML NBMs"
+#    if [ $ERROR_CODE != 0 ]; then
+#        echo "ERROR: $ERROR_CODE - Can't build stable UC catalog for ML NBMs"
     #    exit $ERROR_CODE;
-    fi
+#    fi
 
     cp -r $NB_ALL/nbbuild/netbeans/* $NB_ALL/nbbuild/netbeans-ml/
 

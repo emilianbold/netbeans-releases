@@ -117,6 +117,16 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
+    <folder name="UI">
+        <folder name="ToolActions">
+            <folder name="Java">
+                <file name="org-netbeans-modules-form-actions-InstallToPaletteAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Form/org-netbeans-modules-form-actions-InstallToPaletteAction.instance"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
     <folder name="Menu">
         <folder name="Window">
             <folder name="Navigator">

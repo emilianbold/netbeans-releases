@@ -79,7 +79,7 @@ import org.netbeans.modules.mercurial.FileStatus;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
-import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
+import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
@@ -223,12 +223,15 @@ public class HgCommand {
     private static final String HG_PULL_CMD = "pull"; // NOI18N
     private static final String HG_UPDATE_CMD = "-u"; // NOI18N
     private static final String HG_PUSH_CMD = "push"; // NOI18N
+    private static final String HG_BUNDLE_CMD = "bundle"; // NOI18N
     private static final String HG_UNBUNDLE_CMD = "unbundle"; // NOI18N
     private static final String HG_ROLLBACK_CMD = "rollback"; // NOI18N
     private static final String HG_BACKOUT_CMD = "backout"; // NOI18N
     private static final String HG_BACKOUT_MERGE_CMD = "--merge"; // NOI18N
     private static final String HG_BACKOUT_COMMIT_MSG_CMD = "-m"; // NOI18N
     private static final String HG_REV_CMD = "-r"; // NOI18N
+    private static final String HG_BASE_CMD = "--base"; // NOI18N
+    private static final String HG_OPTION_GIT = "--git"; //NOI18N
 
     private static final String HG_STRIP_CMD = "strip"; // NOI18N
     private static final String HG_STRIP_EXT_CMD = "extensions.mq="; // NOI18N
@@ -287,6 +290,8 @@ public class HgCommand {
     private static final String HG_ABORT_BACKOUT_MERGE_CSET_ERR = "abort: cannot back out a merge changeset without --parent"; // NOI18N"
     private static final String HG_COMMIT_AFTER_MERGE_ERR = "abort: cannot partially commit a merge (do not specify files or patterns)"; // NOI18N"
     private static final String HG_ADDING = "adding";                   //NOI18N
+    private static final String HG_WARNING_PERFORMANCE_FILES_OVER = ": files over"; //NOI18N
+    private static final String HG_WARNING_PERFORMANCE_CAUSE_PROBLEMS = "cause memory and performance problems"; //NOI18N
 
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
@@ -363,10 +368,11 @@ public class HgCommand {
 
     private static final HashSet<String> REPOSITORY_NOMODIFICATION_COMMANDS;
     static {
-        REPOSITORY_NOMODIFICATION_COMMANDS = new HashSet<String>(8);
+        REPOSITORY_NOMODIFICATION_COMMANDS = new HashSet<String>(14);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_ANNOTATE_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_CAT_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_EXPORT_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_BUNDLE_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_INCOMING_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_LOG_CMD);
         REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_OUTGOING_CMD);
@@ -540,6 +546,7 @@ public class HgCommand {
         if(!doBackup){
             command.add(HG_STRIP_NOBACKUP_CMD);
         }
+        command.add(HG_VERBOSE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         if (revision != null){
@@ -1733,7 +1740,7 @@ public class HgCommand {
         boolean retry = true;
         // acquire credentials for kenai
         PasswordAuthentication credentials = null;
-        HgKenaiSupport supp = HgKenaiSupport.getInstance();
+        HgKenaiAccessor supp = HgKenaiAccessor.getInstance();
         String rawUrl = repository.toUrlStringWithoutUserInfo();
         if (supp.isKenai(rawUrl) && supp.isLoggedIntoKenai(rawUrl)) {
             credentials = supp.getPasswordAuthentication(rawUrl, false);
@@ -1962,9 +1969,11 @@ public class HgCommand {
             List<String> command = new LinkedList<String>(basicCommand);
             command.addAll(attributes);
             List<String> list = exec(command);
-            if (!list.isEmpty() && !isErrorAlreadyTracked(list.get(0))
-                     && !isAddingLine(list.get(0))) {
-                handleError(command, list, list.get(0), logger);
+            if (!list.isEmpty() && !isErrorAlreadyTracked(list.get(0)) && !isAddingLine(list.get(0))) {
+                if (getFilesWithPerformanceWarning(list).isEmpty()) {
+                    // XXX we could notify the user about the performance warning and abort the command
+                    handleError(command, list, list.get(0), logger);
+                }
             }
         }
     }
@@ -2355,6 +2364,7 @@ public class HgCommand {
         command.add(getHgCommand());
         command.add(HG_EXPORT_CMD);
         command.add(HG_VERBOSE_CMD);
+        command.add(HG_OPTION_GIT);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(HG_FLAG_OUTPUT_CMD);
@@ -2365,6 +2375,52 @@ public class HgCommand {
         if (!list.isEmpty() &&
              isErrorAbort(list.get(list.size() -1))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_EXPORT_FAILED"), logger);
+        }
+        return list;
+    }
+
+    /**
+     * Exports a changeset bundle for the given revision range to the given output file
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @param revBase the base revision
+     * @param revTo the revision up to which to export, can be null
+     * @param outputFile the output file
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static List<String> doBundle (File repository, String revBase, String revTo, File outputFile, OutputLogger logger) throws HgException {
+        // Ensure that parent directory of target exists, creating if necessary
+        File parentTarget = outputFile.getParentFile();
+        try {
+            if (!parentTarget.mkdirs()) {
+                if (!parentTarget.isDirectory()) {
+                    Mercurial.LOG.log(Level.WARNING, "File.mkdirs() failed for : {0}", parentTarget.getAbsolutePath()); // NOI18N
+                    throw (new HgException (NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_TO_CREATE_PARENT_DIR"))); // NOI18N
+                }
+            }
+        } catch (SecurityException e) {
+            Mercurial.LOG.log(Level.WARNING, "File.mkdir() for : {0} threw SecurityException {1}", new Object[]{parentTarget.getAbsolutePath(), e.getMessage()}); // NOI18N
+            throw (new HgException (NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_TO_CREATE_PARENT_DIR"))); // NOI18N
+        }
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_BUNDLE_CMD);
+        command.add(HG_VERBOSE_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_BASE_CMD);
+        command.add(revBase);
+        if (revTo != null) {
+            command.add(HG_REV_CMD);
+            command.add(revTo);
+        }
+        command.add(outputFile.getAbsolutePath());
+
+        List<String> list = exec(command);
+        if (!list.isEmpty() &&
+             isErrorAbort(list.get(list.size() -1))) {
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_BUNDLE_FAILED"), logger);
         }
         return list;
     }
@@ -2404,6 +2460,7 @@ public class HgCommand {
         command.add(revStr);
         command.add(HG_LOG_TEMPLATE_EXPORT_FILE_CMD);
         command.add(HG_LOG_PATCH_CMD);
+        command.add(HG_OPTION_GIT);
         command.add(file.getAbsolutePath());
 
         List<String> list = exec(command);
@@ -3007,7 +3064,7 @@ public class HgCommand {
                                 HgUtils.replaceHttpPassword(cmdOutput)));
         }
 
-        if (cmdOutput != null && (isErrorPossibleProxyIssue(cmdOutput.get(0)) || isErrorPossibleProxyIssue(cmdOutput.get(cmdOutput.size() - 1)))) {
+        if (cmdOutput != null && !cmdOutput.isEmpty() && (isErrorPossibleProxyIssue(cmdOutput.get(0)) || isErrorPossibleProxyIssue(cmdOutput.get(cmdOutput.size() - 1)))) {
             boolean bConfirmSetProxy;
             bConfirmSetProxy = HgUtils.confirmDialog(HgCommand.class, "MSG_POSSIBLE_PROXY_ISSUE_TITLE", "MSG_POSSIBLE_PROXY_ISSUE_QUERY"); // NOI18N
             if(bConfirmSetProxy){
@@ -3026,7 +3083,7 @@ public class HgCommand {
         PasswordAuthentication credentials = null;
         String msg = cmdOutput.get(cmdOutput.size() - 1).toLowerCase();
         if (isAuthMsg(msg)) {
-            HgKenaiSupport support = HgKenaiSupport.getInstance();
+            HgKenaiAccessor support = HgKenaiAccessor.getInstance();
             if(support.isKenai(url) && showKenaiLoginDialog) {
                 // try to login
                 credentials = handleKenaiAuthorisation(support, url);
@@ -3037,7 +3094,7 @@ public class HgCommand {
         return credentials;
     }
 
-    private static PasswordAuthentication handleKenaiAuthorisation(HgKenaiSupport support, String url) {
+    private static PasswordAuthentication handleKenaiAuthorisation(HgKenaiAccessor support, String url) {
         PasswordAuthentication pa = support.getPasswordAuthentication(url, true);
         return pa;
     }
@@ -3198,6 +3255,17 @@ public class HgCommand {
     
     private static boolean isAddingLine (String msg) {
         return msg.toLowerCase().indexOf(HG_ADDING) > -1;
+    }
+
+    private static List<String> getFilesWithPerformanceWarning (List<String> list) {
+        List<String> fileList = new LinkedList<String>();
+        for (String line : list) {
+            int pos;
+            if ((pos = line.indexOf(HG_WARNING_PERFORMANCE_FILES_OVER)) > 0 && line.contains(HG_WARNING_PERFORMANCE_CAUSE_PROBLEMS)) {
+                fileList.add(line.substring(0, pos));
+            }
+        }
+        return fileList;
     }
 
     public static void createConflictFile(String path) {
@@ -3505,7 +3573,7 @@ public class HgCommand {
             boolean retry = true;
             boolean showLoginWindow = true;
             credentials = null;
-            HgKenaiSupport supp = HgKenaiSupport.getInstance();
+            HgKenaiAccessor supp = HgKenaiAccessor.getInstance();
             String rawUrl = remoteUrl.toUrlStringWithoutUserInfo();
             acquireCredentialsFirst |= supp.isLoggedIntoKenai(rawUrl);
             if (supp.isKenai(rawUrl)) {

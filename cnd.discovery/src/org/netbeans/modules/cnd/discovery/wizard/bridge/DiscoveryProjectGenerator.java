@@ -52,7 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
@@ -157,19 +157,19 @@ public class DiscoveryProjectGenerator {
             added = projectBridge.createFolder(folder, name);
             //if (!folder.isDiskFolder()) {
             //    String additionalPath = used.getFolder();
-            //    added.setRoot(IpeUtils.toRelativePath(folder.getConfigurationDescriptor().getBaseDir(), additionalPath));
+            //    added.setRoot(CndPathUtilitities.toRelativePath(folder.getConfigurationDescriptor().getBaseDir(), additionalPath));
             //    projectBridge.addSourceRoot(additionalPath);
             //}
             folder.addFolder(added, true);
         } else {
             if (added.isDiskFolder()) {
                 String additionalPath = used.getFolder();
-                String folderPath = IpeUtils.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), added.getRootPath());
+                String folderPath = CndPathUtilitities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), added.getRootPath());
                 Folder logicalCandidate = null;
                 if (!additionalPath.equals(folderPath)) {
                     for (Folder candidate : folder.getFolders()) {
                         if (candidate.isDiskFolder()) {
-                            folderPath = IpeUtils.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), candidate.getRootPath());
+                            folderPath = CndPathUtilitities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), candidate.getRootPath());
                             if (additionalPath.equals(folderPath)) {
                                 added = candidate;
                                 break;
@@ -182,7 +182,7 @@ public class DiscoveryProjectGenerator {
                 if (!additionalPath.equals(folderPath)) {
                     if (logicalCandidate == null) {
                         added = projectBridge.createFolder(folder, name);
-                        //added.setRoot(IpeUtils.toRelativePath(folder.getConfigurationDescriptor().getBaseDir(), additionalPath));
+                        //added.setRoot(CndPathUtilitities.toRelativePath(folder.getConfigurationDescriptor().getBaseDir(), additionalPath));
                         //projectBridge.addSourceRoot(additionalPath);
                         folder.addFolder(added, true);
                     } else {

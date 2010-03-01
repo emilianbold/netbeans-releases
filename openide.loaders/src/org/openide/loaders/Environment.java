@@ -41,7 +41,6 @@
 
 package org.openide.loaders;
 
-import java.util.Iterator;
 import javax.naming.Context;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -53,7 +52,7 @@ import org.openide.util.Lookup;
  */
 public final class Environment extends Object {
     /** Result of query for all instances of Environment.Provider */
-    private static Lookup.Result result;
+    private static Lookup.Result<Provider> result;
 
     /** Constructor
      */
@@ -88,15 +87,14 @@ public final class Environment extends Object {
     }
     
     /** Finds a JNDI context for a given data object.
-     * This method is probably unused and useless.
      * @param obj the data object
      * @return the JNDI context for this data object
      * @since 3.13
+     * @deprecated This method is probably unused and useless.
      */
-    public static javax.naming.Context findSettingsContext(DataObject obj) {
-        Iterator it = getProviders().allInstances().iterator();
-        while (it.hasNext()) {
-            Environment.Provider ep = (Environment.Provider) it.next();
+    @Deprecated
+    public static Context findSettingsContext(DataObject obj) {
+        for (Provider ep : getProviders().allInstances()) {
             Lookup lookup = ep.getEnvironment(obj);
             if (lookup != null) {
                 Context ctx = lookup.lookup(Context.class);
@@ -125,10 +123,8 @@ public final class Environment extends Object {
             }
             }
         */
-        
-        Iterator it = getProviders().allInstances().iterator();
-        while (it.hasNext ()) {
-            Environment.Provider ep = (Environment.Provider)it.next ();
+
+        for (Provider ep : getProviders().allInstances()) {
             Lookup lookup = ep.getEnvironment (obj);
             if (lookup != null) {
                 return lookup;
@@ -139,7 +135,7 @@ public final class Environment extends Object {
         return null;
     }
     
-    static Lookup.Result getProviders() {
+    static Lookup.Result<Provider> getProviders() {
         if (result == null) {
             result = Lookup.getDefault().lookupResult(Environment.Provider.class);
         }

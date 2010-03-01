@@ -22,7 +22,7 @@ ServletConfig getServletConfig ()
 <%--CC
 <b|
 body
-<body>
+<body
 --%>
 
 <%-- Java completion for HttpSession object methods --%>

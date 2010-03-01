@@ -251,45 +251,14 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         super.loadFromStreamToKit(doc, stream, kit);
     }
 
+
     @Override
-    public void open() {
-        //the call to updateFileEncoding() method can potentially take long
-        //time if the JspParser is used to determine the page encoding.
-        //There is a FastOpenInfoParser implementation which should quickly
-        //find the encoding in most cases, but under some circumstances the
-        //heavyweight jsp parser is started and asked for the page encoding.
-        //in such case the AWT thread may be blocked for a long time, so
-        //I am moving the call to the parser to another thread and once the
-        //parser finishes the open method on the editor suppor will be called
-        //again in AWT.
-        open(true);
+    protected boolean asynchronousOpen() {
+        return true;
     }
 
-    private void open(final boolean inBackgroundThread) {
-        Runnable task = new Runnable() {
-
-            public void run() {
-                //analyze the page, can be time consuming task
-                ((JspDataObject) getDataObject()).updateFileEncoding(false);
-
-                if (inBackgroundThread) {
-                    //ensure the document is opened in AWT
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        public void run() {
-                            open(false);
-                        }
-                    });
-                }
-            }
-        };
-
-        if (inBackgroundThread) {
-            RequestProcessor.getDefault().post(task);
-            return; //do not open the document now, we need the encoding first
-        } else {
-            task.run(); //this time we will get the cached page parsing result quickly, can be done in AWT
-        }
+    @Override
+    public void open() {
 
         encoding = ((JspDataObject) getDataObject()).getFileEncoding(); //use encoding from fileobject
 

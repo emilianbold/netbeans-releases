@@ -68,24 +68,25 @@ public abstract class AbstractFileBuffer implements FileBuffer {
         this.absPath = FilePathCache.getManager().getString(absPath);
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
     }
 
+    @Override
     public CharSequence getAbsolutePath() {
         return absPath;
     }
 
+    @Override
     public File getFile() {
         return new File(absPath.toString());
     }
     
-    public abstract int getLength();
-    public abstract String getText(int start, int end) throws IOException;
-    public abstract String getText() throws IOException;
-    
+    @Override
     public final Reader getReader() throws IOException {
         if (encoding == null) {
             File file = getFile();
@@ -103,8 +104,6 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     }
     
     public abstract InputStream getInputStream() throws IOException;
-    public abstract boolean isFileBased();
-    public abstract long lastModified();
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent

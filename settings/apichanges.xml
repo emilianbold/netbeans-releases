@@ -115,7 +115,7 @@ is the proper place.
         <description>
             Semantics of <code>readProperties</code> method has been extended
             to allow the method to return an object. Read
-            <a href="@TOP@/org/netbeans/spi/settings/doc-files/api.html#xmlprops">more</a>.
+            <a href="@TOP@/org/netbeans/spi/settings/package-summary.html#xmlprops">more</a>.
         </description>
         <issue number="155962"/>
     </change>

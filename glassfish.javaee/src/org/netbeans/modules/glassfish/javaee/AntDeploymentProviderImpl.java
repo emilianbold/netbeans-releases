@@ -1,8 +1,7 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-//</editor-fold>
 
 package org.netbeans.modules.glassfish.javaee;
 
@@ -67,6 +65,7 @@ class AntDeploymentProviderImpl implements AntDeploymentProvider {
         props = computeProps(commonSupport);
     }
 
+    @Override
     public void writeDeploymentScript(OutputStream os, Object moduleType) throws IOException {
         InputStream is = AntDeploymentProviderImpl.class.getResourceAsStream("ant-deploy.xml"); // NOI18N            
         try {
@@ -76,6 +75,7 @@ class AntDeploymentProviderImpl implements AntDeploymentProvider {
         }
     }
 
+    @Override
     public File getDeploymentPropertiesFile() {
         if (!propFile.exists()) {
             // generate the deployment properties file only if it does not exist
@@ -109,8 +109,7 @@ class AntDeploymentProviderImpl implements AntDeploymentProvider {
         String domainDir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
         String domain = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
         String user = commonSupport.getInstanceProperties().get(GlassfishModule.USERNAME_ATTR);
-        String pw = commonSupport.getInstanceProperties().get(GlassfishModule.PASSWORD_ATTR);
-        String name = "gfv3" + (url+domainDir+domain+user+pw).hashCode() + "";  // NOI18N
+        String name = "gfv3" + (url+domainDir+domain+user).hashCode() + "";  // NOI18N
         return new File(System.getProperty("netbeans.user"), name + ".properties"); // NOI18N
     }
 
@@ -121,8 +120,10 @@ class AntDeploymentProviderImpl implements AntDeploymentProvider {
         String webUrl = "http://" + commonSupport.getInstanceProperties().get(GlassfishModule.HOSTNAME_ATTR) + 
                 ":" + commonSupport.getInstanceProperties().get(GlassfishModule.HTTPPORT_ATTR);
         retVal.setProperty("gfv3.url", webUrl);                // NOI18N
+        webUrl = "http://" + commonSupport.getInstanceProperties().get(GlassfishModule.HOSTNAME_ATTR) +
+                ":" + commonSupport.getInstanceProperties().get(GlassfishModule.ADMINPORT_ATTR);
+        retVal.setProperty("gfv3.admin.url", webUrl);                // NOI18N
         retVal.setProperty("gfv3.username", commonSupport.getInstanceProperties().get(GlassfishModule.USERNAME_ATTR));
-        retVal.setProperty("gfv3.password",commonSupport.getInstanceProperties().get(GlassfishModule.PASSWORD_ATTR));
         retVal.setProperty("gfv3.host",commonSupport.getInstanceProperties().get(GlassfishModule.HOSTNAME_ATTR));
         retVal.setProperty("gfv3.port",commonSupport.getInstanceProperties().get(GlassfishModule.ADMINPORT_ATTR));
         return retVal;

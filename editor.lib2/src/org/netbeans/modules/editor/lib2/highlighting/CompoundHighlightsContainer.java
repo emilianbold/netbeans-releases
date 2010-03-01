@@ -78,6 +78,8 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
     private OffsetsBag cache;
     private boolean cacheObsolete;
     private CacheBoundaries cacheBoundaries;
+
+    private final boolean assertions;
     
     public CompoundHighlightsContainer() {
         this(null, null);
@@ -85,6 +87,9 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
     
     public CompoundHighlightsContainer(Document doc, HighlightsContainer[] layers) {
         setLayers(doc, layers);
+        boolean a = false;
+        assert a = true;
+        this.assertions = a;
     }
     
     /**
@@ -106,13 +111,16 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
      * @return The <code>Highlight</code>s in the area between <code>startOffset</code>
      * and <code>endOffset</code>.
      */
-    public HighlightsSequence getHighlights(int startOffset, int endOffset) {
-        assert 0 <= startOffset : "offsets must be greater than or equal to zero"; //NOI18N
+    public @Override HighlightsSequence getHighlights(int startOffset, int endOffset) {
+        assert 0 <= startOffset : "startOffset must be greater than or equal to zero"; //NOI18N
+        assert 0 <= endOffset : "endOffset must be greater than or equal to zero"; //NOI18N
         assert startOffset <= endOffset : "startOffset must be less than or equal to endOffset; " + //NOI18N
             "startOffset = " + startOffset + " endOffset = " + endOffset; //NOI18N
         
         synchronized (LOCK) {
-            if (doc == null || layers == null || layers.length == 0 || startOffset == endOffset) {
+            if (doc == null || layers == null || layers.length == 0 || 
+                startOffset < 0 || endOffset < 0 || startOffset >= endOffset || startOffset > doc.getLength()
+            ) {
                 return HighlightsSequence.EMPTY;
             }
 
@@ -156,6 +164,22 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             }
             
             if (update != null) {
+                // check the update boundaries in order to prevent errors such as #172884
+                for (int i = 0; i < update.length / 2; i++) {
+                    if (update[2 * i] > doc.getLength()) {
+                        if (assertions && LOG.isLoggable(Level.WARNING)) {
+                            String msg = "Inconsistent cache update boundaries:" //NOI18N
+                                        + " startOffset=" + startOffset + ", endOffset=" + endOffset //NOI18N
+                                        + ", lowest=" + lowest + ", highest=" + highest //NOI18N
+                                        + ", doc.length=" + doc.getLength() //NOI18N
+                                        + ", update[]=" + update; //NOI18N
+                            LOG.log(Level.WARNING, null, new Throwable(msg));
+                        }
+                        update = new int [] { 0, Integer.MAX_VALUE };
+                        break;
+                    }
+                }
+
                 for (int i = 0; i < update.length / 2; i++) {
                     if (update[2 * i + 1] >= doc.getLength()) {
                         update[2 * i + 1] = Integer.MAX_VALUE;
@@ -245,7 +269,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
 
         if (docForEvents != null) {
             docForEvents.render(new Runnable() {
-                public void run() {
+                public @Override void run() {
                     fireHighlightsChange(0, Integer.MAX_VALUE);
                 }
             });
@@ -265,7 +289,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
 
         synchronized (LOCK) {
             // XXX: Perhaps we could do something more efficient.
-            LOG.fine("Cache obsoleted by changes in " + layer);
+            LOG.log(Level.FINE, "Cache obsoleted by changes in ", layer);
             cacheObsolete = true;
             increaseVersion();
             
@@ -275,7 +299,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         // Fire an event
         if (docForEvents != null) {
             docForEvents.render(new Runnable() {
-                public void run() {
+                public @Override void run() {
                     fireHighlightsChange(changeStartOffset, changeEndOffset);
                 }
             });
@@ -299,7 +323,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
 
                 bag.addAllHighlights(new HighlightsSequence() {
                     int start = -1, end = -1;
-                    public boolean moveNext() {
+                    public @Override boolean moveNext() {
                         boolean hasNext = seq.moveNext();
                         //XXX: the problem here is if the sequence we are wrapping is sorted by startOffset.
                         // In practice I think it is, but I cannot afford to make that assumption now.
@@ -357,15 +381,15 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
                         return hasNext;
                     }
 
-                    public int getStartOffset() {
+                    public @Override int getStartOffset() {
                         return start;
                     }
 
-                    public int getEndOffset() {
+                    public @Override int getEndOffset() {
                         return end;
                     }
 
-                    public AttributeSet getAttributes() {
+                    public @Override AttributeSet getAttributes() {
                         return seq.getAttributes();
                     }
                 });
@@ -418,7 +442,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
     private static String dumpLayerHighlights(HighlightsContainer layer, int startOffset, int endOffset) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("Highlights in " + layer + ": {\n"); //NOI18N
+        sb.append("Highlights in ").append(layer).append(": {\n"); //NOI18N
         
         for(HighlightsSequence seq = layer.getHighlights(startOffset, endOffset); seq.moveNext(); ) {
             sb.append("  "); //NOI18N
@@ -426,7 +450,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             sb.append("\n"); //NOI18N
         }
         
-        sb.append("} End of Highlights in " + layer); //NOI18N
+        sb.append("} End of Highlights in ").append(layer); //NOI18N
         sb.append("\n"); //NOI18N
         
         return sb.toString();
@@ -451,7 +475,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             ref = new WeakReference<CompoundHighlightsContainer>(container);
         }
         
-        public void highlightChanged(HighlightsChangeEvent event) {
+        public @Override void highlightChanged(HighlightsChangeEvent event) {
             CompoundHighlightsContainer container = ref.get();
             if (container != null) {
                 container.layerChanged(
@@ -476,7 +500,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             this.seq = seq;
         }
         
-        public boolean moveNext() {
+        public @Override boolean moveNext() {
             synchronized (CompoundHighlightsContainer.this.LOCK) {
                 if (checkVersion()) {
                     if (seq.moveNext()) {
@@ -491,21 +515,21 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             }
         }
 
-        public int getStartOffset() {
+        public @Override int getStartOffset() {
             synchronized (CompoundHighlightsContainer.this.LOCK) {
                 assert startOffset != -1 : "Sequence not initialized, call moveNext() first."; //NOI18N
                 return startOffset;
             }
         }
 
-        public int getEndOffset() {
+        public @Override int getEndOffset() {
             synchronized (CompoundHighlightsContainer.this.LOCK) {
                 assert endOffset != -1 : "Sequence not initialized, call moveNext() first."; //NOI18N
                 return endOffset;
             }
         }
 
-        public AttributeSet getAttributes() {
+        public @Override AttributeSet getAttributes() {
             synchronized (CompoundHighlightsContainer.this.LOCK) {
                 assert attibutes != null : "Sequence not initialized, call moveNext() first."; //NOI18N
                 return attibutes;
@@ -532,7 +556,8 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
 
         public int getLowerBoundary() {
             if (boundaries.size() == 2) {
-                return boundaries.get(0).getOffset();
+                OffsetGapList.Offset lower = boundaries.get(0);
+                return lower.getOffset() >= doc.getLength() ? -1 : lower.getOffset();
             } else {
                 return -1;
             }
@@ -553,15 +578,15 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
             boundaries.add(new OffsetGapList.Offset(Math.min(higherOffset, doc.getLength() + 1)));
         }
 
-        public void insertUpdate(DocumentEvent e) {
+        public @Override void insertUpdate(DocumentEvent e) {
             boundaries.defaultInsertUpdate(e.getOffset(), e.getLength());
         }
 
-        public void removeUpdate(DocumentEvent e) {
+        public @Override void removeUpdate(DocumentEvent e) {
             boundaries.defaultRemoveUpdate(e.getOffset(), e.getLength());
         }
 
-        public void changedUpdate(DocumentEvent e) {
+        public @Override void changedUpdate(DocumentEvent e) {
             // ignored
         }
 

@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 
 /**
  * Contains actions which may vary in different versions of gdb

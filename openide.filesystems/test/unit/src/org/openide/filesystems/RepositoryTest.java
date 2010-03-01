@@ -92,6 +92,7 @@ public class RepositoryTest extends NbTestCase {
             }
         });
         FileObject r = FileUtil.getConfigRoot();
+        assertTrue(r.isValid());
         assertEquals(3, r.getChildren().length);  // org.openide.filesystems.resources.layer.xml, test-layer-1.xml, test-layer-2.xml
         assertNotNull(r.getFileObject("foo"));
         assertNotNull(r.getFileObject("bar"));

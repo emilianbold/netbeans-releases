@@ -70,7 +70,9 @@ public abstract class IssueNode extends AbstractNode {
      * Recetn Changes property id
      */
     public static final String LABEL_RECENT_CHANGES = "issue.recent_changes";         // NOI18N
-    
+
+    public static final String LABEL_NAME_SUMMARY          = "issue.summary";     // NOI18N
+
     private Issue issue;
 
     private String htmlDisplayName;
@@ -134,7 +136,8 @@ public abstract class IssueNode extends AbstractNode {
         for (Property<?> property : properties) {
             ps.put(property);
         }
-        
+        ps.put(new RecentChangesProperty());
+        ps.put(new SeenProperty());
         sheet.put(ps);
         setSheet(sheet);    
     }
@@ -205,7 +208,29 @@ public abstract class IssueNode extends AbstractNode {
             return toString().compareTo(o.toString());
         }
     }
-    
+
+    // XXX the same for id
+    // XXX CTL_Issue_Summary_Title also defined in bugzilla nad jira!!!
+    public class SummaryProperty extends IssueProperty<String> {
+        public SummaryProperty() {
+            super(LABEL_NAME_SUMMARY,
+                  String.class,
+                  NbBundle.getMessage(IssueNode.class, "CTL_Issue_Summary_Title"), // NOI18N
+                  NbBundle.getMessage(IssueNode.class, "CTL_Issue_Summary_Desc")); // NOI18N
+        }
+        @Override
+        public String getValue() {
+            return getIssue().getSummary();
+        }
+        @Override
+        public int compareTo(IssueProperty p) {
+            if(p == null) return 1;
+            String s1 = getIssue().getSummary();
+            String s2 = p.getIssue().getSummary();
+            return s1.compareTo(s2);
+        }
+    }
+
     /**
      * Represens the Seen value in a IssueNode
      */

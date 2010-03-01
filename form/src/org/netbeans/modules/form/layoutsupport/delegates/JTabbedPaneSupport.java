@@ -68,6 +68,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
     /** Gets the supported layout manager class - JTabbedPane.
      * @return the class supported by this delegate
      */
+    @Override
     public Class getSupportedClass() {
         return JTabbedPane.class;
     }
@@ -457,6 +458,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
 
         // -----------
 
+        @Override
         public Node.Property[] getProperties() {
             if (properties == null) {
                 properties = new FormProperty[] {
@@ -465,10 +467,12 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
                                  getBundle().getString("PROP_tabTitle"), // NOI18N
                                  getBundle().getString("HINT_tabTitle")) { // NOI18N
 
+                        @Override
                         public Object getTargetValue() {
                             return title;
                         }
 
+                        @Override
                         public void setTargetValue(Object value) {
                             title = (String)value;
                         }
@@ -494,10 +498,12 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
                                  getBundle().getString("PROP_tabIcon"), // NOI18N
                                  getBundle().getString("HINT_tabIcon")) { // NOI18N
 
+                        @Override
                         public Object getTargetValue() {
                             return icon;
                         }
 
+                        @Override
                         public void setTargetValue(Object value) {
                             icon = (Icon)value;
                         }
@@ -525,10 +531,12 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
                                  getBundle().getString("PROP_tabToolTip"), // NOI18N
                                  getBundle().getString("HINT_tabToolTip")) { // NOI18N
 
+                        @Override
                         public Object getTargetValue() {
                             return toolTip;
                         }
 
+                        @Override
                         public void setTargetValue(Object value) {
                             toolTip = (String)value;
                         }
@@ -566,10 +574,12 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
             return properties;
         }
 
+        @Override
         public Object getConstraintsObject() {
             return title;
         }
 
+        @Override
         public LayoutConstraints cloneConstraints() {
             LayoutConstraints constr = new TabConstraints(title);
             org.netbeans.modules.form.FormUtils.copyProperties(

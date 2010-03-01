@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -353,5 +353,11 @@ public interface GlassfishModule {
      * @param listener listener to remove.
      */
     public void removeChangeListener(ChangeListener listener);
-    
+
+    public static final String PASSWORD_CONVERTED_FLAG =
+            "this really long string is used to identify a password that has been stored in the Keyring";
+    /**
+     * get the password for this server
+     */
+    public String getPassword();
 }

@@ -64,7 +64,9 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
 
-                <file name="org-netbeans-modules-languages-yaml-EmbeddedSectionsHighlighting$Factory.instance"/>
+                <file name="org-netbeans-modules-languages-yaml-EmbeddedSectionsHighlighting$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
 
                 <folder name="FontsColors">
                     <folder name="NetBeans">

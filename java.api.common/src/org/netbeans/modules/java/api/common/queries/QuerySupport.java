@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,12 +34,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.api.common.queries;
 
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
+import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
@@ -281,5 +283,21 @@ public final class QuerySupport {
                 "build.classes.dir", "build.test.classes.dir"); // NOI18N
     }
     
-    
+    /**Create a new query to provide annotation processing configuration data.
+     * 
+     * @param helper project's AntProjectHelper
+     * @param evaluator project's evaluator
+     * @param annotationProcessingEnabledProperty property whose value says whether the annotation processing is enabled for the given project at all
+     * @param annotationProcessingEnabledInEditorProperty property whose value says whether the annotation processing should be enabled
+     *                                                    in the editor (will be returned from {@link Result#annotationProcessingEnabled())}
+     * @param runAllAnnotationProcessorsProperty when true, {@link Result#annotationProcessorsToRun()} will return null
+     * @param annotationProcessorsProperty should contain comma separated list of annotation processors to run (will be returned from  {@link Result#annotationProcessorsToRun()})
+     * @param sourceOutputProperty directory to which the annotation processors generate source files (will be returned from  {@link Result#sourceOutputProperty()})
+     * @return a {@link AnnotationProcessingQueryImplementation} to provide annotation processing configuration data for this project.
+     * @since org.netbeans.modules.java.api.common/0 1.14
+     */
+    public static AnnotationProcessingQueryImplementation createAnnotationProcessingQuery(AntProjectHelper helper, PropertyEvaluator evaluator,
+            String annotationProcessingEnabledProperty, String annotationProcessingEnabledInEditorProperty, String runAllAnnotationProcessorsProperty, String annotationProcessorsProperty, String sourceOutputProperty) {
+        return new AnnotationProcessingQueryImpl(helper, evaluator, annotationProcessingEnabledProperty, annotationProcessingEnabledInEditorProperty, runAllAnnotationProcessorsProperty, annotationProcessorsProperty, sourceOutputProperty);
+    }
 }

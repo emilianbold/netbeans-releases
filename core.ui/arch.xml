@@ -1031,7 +1031,7 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="resources-preferences">
-    <api type="import" group="property"  name="nb.show.statistics.ui" category="private">
+    <api type="import" group="systemproperty"  name="nb.show.statistics.ui" category="private">
         System property "nb.show.statistics.ui" controls if UI for Usage statistics is displayed in General panel.
         If this property is non null (for IDE) UI is shown. This property contains key of preference used
         to save status - true if usage statistics are collected and uploaded, false if not.

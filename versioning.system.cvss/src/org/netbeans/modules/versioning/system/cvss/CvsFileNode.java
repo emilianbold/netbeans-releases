@@ -56,6 +56,7 @@ import java.util.ArrayList;
 public class CvsFileNode {
 
     private final File file;
+    private Boolean fileFlag;
 
     public CvsFileNode(File file) {
         this.file = FileUtil.normalizeFile(file);
@@ -97,5 +98,11 @@ public class CvsFileNode {
         return list.toArray(new Object[list.size()]);
     }
 
+    public boolean isFile () {
+        if (fileFlag == null) {
+            fileFlag = file.isFile();
+        }
+        return fileFlag;
+    }
 
 }

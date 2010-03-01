@@ -192,6 +192,10 @@ public final class CodeStyle {
                          EditorOptions.sharpAtStartLineDefault);
     }
 
+    public boolean spaceKeepExtra(){
+        return getOption(EditorOptions.spaceKeepExtra,
+                         EditorOptions.spaceKeepExtraDefault);
+    }
     // indents ------------------------------------------------
     public boolean spaceBeforeMethodDeclParen() {
         return getOption(EditorOptions.spaceBeforeMethodDeclParen,

@@ -88,7 +88,7 @@ public class PropertySetResponse extends DbgpResponse {
         }
         else {
             DebugSession currentSession = SessionManager.getInstance()
-                    .getCurrentSession(session.getSessionId());
+                    .getSession(session.getSessionId());
             if (currentSession == session) {
                 StackGetResponse.updateWatchView(session);
             }

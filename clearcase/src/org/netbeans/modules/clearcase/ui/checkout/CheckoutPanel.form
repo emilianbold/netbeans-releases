@@ -25,12 +25,16 @@
                       <EmptySpace pref="315" max="32767" attributes="0"/>
                       <Component id="bRecentMessages" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jScrollPane1" alignment="0" pref="461" max="32767" attributes="0"/>
-                  <Component id="cbReserved" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="jScrollPane1" alignment="0" pref="469" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="cbReserved" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="cbNonMaster" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
-                  </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
@@ -43,7 +47,10 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jScrollPane1" pref="127" max="32767" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="cbReserved" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="cbReserved" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbNonMaster" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="cbRecursive" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -104,9 +111,6 @@
         </Property>
         <Property name="borderPainted" type="boolean" value="false"/>
         <Property name="iconTextGap" type="int" value="0"/>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 2, 0, 2]"/>
-        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bRecentMessagesActionPerformed"/>
@@ -124,6 +128,19 @@
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
       </AuxValues>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="cbNonMaster">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/clearcase/ui/checkout/Bundle.properties" key="CheckoutPanel.cbNonMaster.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/clearcase/ui/checkout/Bundle.properties" key="CheckoutPanel.cbNonMaster.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cbNonMasterActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

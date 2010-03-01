@@ -56,7 +56,7 @@ public class SymfonyCommandsXmlParserTest extends NbTestCase {
         super(name);
     }
 
-    public void testParseLogWithMoreSuites() throws Exception {
+    public void testParseCommands() throws Exception {
         Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "symfony-commands.xml")));
 
         List<SymfonyCommandVO> commands = new ArrayList<SymfonyCommandVO>();
@@ -74,6 +74,32 @@ public class SymfonyCommandsXmlParserTest extends NbTestCase {
         assertEquals("Generates Doctrine model, SQL, initializes database, load data and run all tests", command.getDescription());
 
         command = commands.get(61);
+        assertEquals("test:unit", command.getCommand());
+        assertEquals("Launches unit tests", command.getDescription());
+    }
+
+    public void testParseCommandsIssue179717() throws Exception {
+        Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "symfony-commands-issue179717.xml")));
+
+        List<SymfonyCommandVO> commands = new ArrayList<SymfonyCommandVO>();
+        SymfonyCommandsXmlParser.parse(reader, commands);
+
+        assertFalse(commands.isEmpty());
+        assertSame(82, commands.size());
+
+        SymfonyCommandVO command = commands.get(0);
+        assertEquals("help", command.getCommand());
+        assertEquals("Displays help for a task", command.getDescription());
+
+        command = commands.get(9);
+        assertEquals("apostrophe:repair-tree", command.getCommand());
+        assertEquals("", command.getDescription());
+
+        command = commands.get(10);
+        assertEquals("apostrophe:ssh", command.getCommand());
+        assertEquals("Opens an interactive ssh connection to the specified server using the username, port and hostname in properties.ini", command.getDescription());
+
+        command = commands.get(81);
         assertEquals("test:unit", command.getCommand());
         assertEquals("Launches unit tests", command.getDescription());
     }

@@ -78,6 +78,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
@@ -90,6 +93,8 @@ import org.netbeans.modules.versioning.util.CollectionUtils;
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -99,7 +104,7 @@ import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
  *
  * @author Maros Sandor
  */
-class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, VersioningListener, DiffSetupSource, PropertyChangeListener {
+public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, VersioningListener, DiffSetupSource, PropertyChangeListener, PreferenceChangeListener {
     
     /**
      * Array of DIFF setups that we show in the DIFF view. Contents of this array is changed if
@@ -182,7 +187,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
      * Construct diff component showing just one file.
      * It hides All, Local, Remote toggles and file chooser combo.
      */
-    public MultiDiffPanel(File file, String rev1, String rev2) {
+    public MultiDiffPanel(File file, String rev1, String rev2, boolean forceNonEditable) {
         assert EventQueue.isDispatchThread();
         context = null;
         diffedFile = file;
@@ -196,7 +201,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         replaceVerticalSplitPane(diffViewPanel);
 
         // mimics refreshSetups()
-        setSetups(new Setup(file, rev1, rev2));
+        setSetups(new Setup(file, rev1, rev2, forceNonEditable));
         setDiffIndex(0, 0);
         dpt = new DiffPrepareTask(setups);
         prepareTask = RequestProcessor.getDefault().post(dpt);
@@ -275,13 +280,20 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             return true;
         }
 
-        EditorCookie[] editorCookiesCopy = copyArray(editorCookies);
-        DiffUtils.cleanThoseUnmodified(editorCookiesCopy);
-        DiffUtils.cleanThoseWithEditorPaneOpen(editorCookiesCopy);
-        SaveCookie[] saveCookies = getSaveCookies(setups, editorCookiesCopy);
+        SaveCookie[] saveCookies = getSaveCookies(true);
 
         return (saveCookies.length == 0)
                || SaveBeforeClosingDiffConfirmation.allSaved(saveCookies);
+    }
+
+    public SaveCookie[] getSaveCookies (boolean ommitOpened) {
+        EditorCookie[] editorCookiesCopy = copyArray(editorCookies);
+        DiffUtils.cleanThoseUnmodified(editorCookiesCopy);
+        if (ommitOpened) {
+            DiffUtils.cleanThoseWithEditorPaneOpen(editorCookiesCopy);
+        }
+        SaveCookie[] saveCookies = getSaveCookies(setups, editorCookiesCopy);
+        return saveCookies;
     }
 
     private static SaveCookie[] getSaveCookies(Setup[] setups,
@@ -364,6 +376,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             localToggle.setVisible(false);
             remoteToggle.setVisible(false);
             allToggle.setVisible(false);
+            refreshButton.setVisible(false);
         }
     }
 
@@ -415,6 +428,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         super.addNotify();
         if (refreshTask != null) {
             Subversion.getInstance().getStatusCache().addVersioningListener(this);
+            SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         }
         JComponent parent = (JComponent) getParent();
         parent.getActionMap().put("jumpNext", nextAction);  // NOI18N
@@ -448,6 +462,9 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     @Override
     public void removeNotify() {
         Subversion.getInstance().getStatusCache().removeVersioningListener(this);
+        if (refreshTask != null) {
+            SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+        }
         super.removeNotify();
     }
     
@@ -487,6 +504,10 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             File baseFile = setups[currentModelIndex].getBaseFile();
             if (baseFile != null) {
                 fileObj = FileUtil.toFileObject(baseFile);
+            }
+            TopComponent tc = (TopComponent) getClientProperty(TopComponent.class);
+            if (tc != null) {
+                tc.setActivatedNodes(new Node[] {setups[currentModelIndex].getNode()});
             }
             EditorCookie editorCookie = editorCookies[currentModelIndex];
             if (editorCookie instanceof EditorCookie.Observable) {
@@ -597,7 +618,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
 
         if ((saveCookies.length == 0)
                 || SaveBeforeCommitConfirmation.allSaved(saveCookies)) {
-            CommitAction.commit(contextName, context);
+            CommitAction.commit(contextName, context, false);
         }
     }
 
@@ -776,7 +797,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                 File file = files[i];
                 if (!file.isDirectory()) {
                     Setup setup = new Setup(file, null, currentType);
-                    setup.setNode(new DiffNode(setup, displayStatus));
+                    setup.setNode(new DiffNode(setup, new SvnFileNode(file), displayStatus));
                     newSetups.add(setup);
                 }
                 addPropertiesSetups(file, newSetups, displayStatus);
@@ -788,7 +809,14 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             return newSetups.toArray(new Setup[newSetups.size()]);
         }
     }
-    
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getKey().startsWith(SvnModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
+            repaint();
+        }
+    }
+
     private void addPropertiesSetups(File base, List<Setup> newSetups, int displayStatus) {
         if (currentType == Setup.DIFFTYPE_REMOTE) return;
 
@@ -812,7 +840,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                 }
                 if (propertiesDiffer) {
                     Setup setup = new Setup(base, key, currentType);
-                    setup.setNode(new DiffNode(setup, displayStatus));
+                    setup.setNode(new DiffNode(setup, new SvnFileNode(base), displayStatus));
                     newSetups.add(setup);
                 }
             }

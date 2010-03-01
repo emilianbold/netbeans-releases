@@ -50,24 +50,22 @@ import org.netbeans.modules.editor.NbEditorDocument;
  * @author Tor Norbye
  */
 public class GsfDocument extends NbEditorDocument {
-    private Language language;
+
+    private GsfLanguage language = null;
     
-    public GsfDocument(Language language) {
-        super(language.getMimeType());
-        if (language.getGsfLanguage() != null) {
-            putProperty(org.netbeans.api.lexer.Language.class, language.getGsfLanguage().getLexerLanguage());
-        }
-        
-        this.language = language;
+    public GsfDocument(String mimeType) {
+        super(mimeType);
     }
 
     @Override
     public boolean isIdentifierPart(char ch) {
-        GsfLanguage gsfLanguage = language.getGsfLanguage();
-        if (gsfLanguage != null) {
-            return gsfLanguage.isIdentifierChar(ch);
+        if (language == null) {
+            Language l = LanguageRegistry.getInstance().getLanguageByMimeType((String) getProperty("mimeType")); //NOI18N
+            if (l != null) {
+                language = l.getGsfLanguage();
+            }
         }
-        
-        return super.isIdentifierPart(ch);
+
+        return language != null ? language.isIdentifierChar(ch) : super.isIdentifierPart(ch);
     }
 }

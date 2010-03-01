@@ -43,6 +43,7 @@ package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.net.MalformedURLException;
@@ -404,6 +405,9 @@ public class ProjectUtilities {
         }
         
         private static void invoke( WaitCursor wc ) {
+            if (GraphicsEnvironment.isHeadless()) {
+                return;
+            }
             if ( SwingUtilities.isEventDispatchThread() ) {
                 wc.run();
             }

@@ -100,11 +100,13 @@ public class RenameProjectPanel extends javax.swing.JPanel {
         txtFolder.setText(folder);
         //load values..
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 MavenProject prj = project.getOriginalMavenProject();
                 final String dn = prj.getName();
                 final String artId = prj.getArtifactId();
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         txtArtifactId.setText(artId);
                         txtDisplayName.setText(dn);
@@ -276,6 +278,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
         final String newDname = txtDisplayName.getText().trim();
         final String newFolder = txtFolder.getText().trim();
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 List<ModelOperation<POMModel>> opers = new ArrayList<ModelOperation<POMModel>>();
                 if (artId) {
@@ -313,6 +316,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
         ArtIdOperation(String art) {
             artifactId = art;
         }
+        @Override
         public void performOperation(POMModel model) {
             model.getProject().setArtifactId(artifactId);
         }
@@ -323,6 +327,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
         DNameOperation(String nm) {
             name = nm;
         }
+        @Override
         public void performOperation(POMModel model) {
             model.getProject().setName(name);
         }
@@ -336,6 +341,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
             if (par != null) {
                 FileObject pomFO = par.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                    @Override
                     public void performOperation(POMModel model) {
                         List<String> modules = model.getProject().getModules();
                         if (modules != null && modules.contains(oldName)) {
@@ -516,24 +522,15 @@ public class RenameProjectPanel extends javax.swing.JPanel {
     }
 
     private static void close(final Project prj) {
-        Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
-            public Void run() {
-		LifecycleManager.getDefault().saveAll();
-                OpenProjects.getDefault().close(new Project[] {prj});
-                return null;
-            }
-        });
+        LifecycleManager.getDefault().saveAll();
+        OpenProjects.getDefault().close(new Project[] {prj});
     }
 
     private static void open(final Project prj, final boolean setAsMain) {
-        Mutex.EVENT.readAccess(new Runnable() {
-            public void run() {
-                OpenProjects.getDefault().open(new Project[] {prj}, false);
-                if (setAsMain) {
-                    OpenProjects.getDefault().setMainProject(prj);
-                }
-            }
-        });
+        OpenProjects.getDefault().open(new Project[] {prj}, false);
+        if (setAsMain) {
+            OpenProjects.getDefault().setMainProject(prj);
+        }
     }
 
     private class OptionalValidator implements Validator<String> {
@@ -545,6 +542,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
             delegate = validator;
         }
         
+        @Override
         public boolean validate(Problems problems, String compName, String model) {
             if (checkbox.isSelected()) {
                 return delegate.validate(problems, compName, model);
@@ -561,6 +559,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
             this.parent = parent;
 }
 
+        @Override
         public boolean validate(Problems problems, String compName, String model) {
             File newDir = new File(parent, model);
             if (newDir.exists()) {

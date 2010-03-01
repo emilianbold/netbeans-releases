@@ -83,15 +83,10 @@ public final class SessionProgress implements Cancellable {
 	h = ProgressHandleFactory.createHandle(displayName, this);	
     }
 
+    @Override
     public boolean cancel() {
         finish();
-        SessionId id = (SessionId) session.lookupFirst(null, SessionId.class);
-        assert id != null;
-        DebugSession debugSession = (id != null) ? SessionManager.getInstance().getCurrentSession(id) : null;
-        if (debugSession != null) {
-            debugSession.cancel();
-        }
-        SessionManager.getInstance().stop(session);
+        SessionManager.getInstance().stopSession(session);
         return true;
     }
     

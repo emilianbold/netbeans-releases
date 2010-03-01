@@ -142,9 +142,11 @@ public class RADComponentRenameRefactoringSupport {
             return super.visitIdentifier(tree, v);
         }
 
+        @Override
         public void cancel() {
         }
         
+        @Override
         public void run(CompilationController parameter) throws IOException {
             this.info = parameter;
             parameter.toPhase(Phase.RESOLVED);
@@ -202,6 +204,7 @@ public class RADComponentRenameRefactoringSupport {
 
         // rename the private variable occurrences in user code out of guarded blocks
         doc.runAtomic(new Runnable() {
+            @Override
             public void run() {
                 int positionDiff = 0;
                 int len = oldName.length();

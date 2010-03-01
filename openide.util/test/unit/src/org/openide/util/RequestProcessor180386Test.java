@@ -1,0 +1,1174 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ */
+package org.openide.util;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import junit.framework.Test;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
+
+/**
+ *
+ * @author Tim Boudreau
+ */
+public class RequestProcessor180386Test extends NbTestCase {
+
+    public RequestProcessor180386Test(java.lang.String testName) {
+        super(testName);
+    }
+
+    public static Test suite() {
+        Test t = null;
+        if (t == null) {
+            t = new NbTestSuite(RequestProcessor180386Test.class);
+        }
+        return t;
+    }
+
+    public void testSubmit() throws Exception {
+        class C implements Callable<String> {
+
+            volatile boolean hasRun;
+
+            @Override
+            public String call() throws Exception {
+                String result = "Hello";
+                hasRun = true;
+                return result;
+            }
+        }
+        C c = new C();
+        Future<String> f = RequestProcessor.getDefault().submit(c);
+        assertEquals("Hello", f.get());
+        assertTrue(c.hasRun);
+
+        class R implements Runnable {
+
+            volatile boolean hasRun;
+
+            @Override
+            public void run() {
+                hasRun = true;
+            }
+        }
+        R r = new R();
+        f = RequestProcessor.getDefault().submit(r, "Goodbye");
+        assertEquals("Goodbye", f.get());
+        assertTrue(r.hasRun);
+    }
+
+    public void testSomeTasksNotRunIfShutDown() throws Exception {
+        final Object lock = new Object();
+        int count = 10;
+        final CountDownLatch waitAllLaunched = new CountDownLatch(count);
+        final CountDownLatch waitOneFinished = new CountDownLatch(1);
+        RequestProcessor rp = new RequestProcessor("TestRP", count * 2);
+        class R implements Runnable {
+
+            volatile boolean hasStarted;
+            volatile boolean hasFinished;
+
+            @Override
+            public void run() {
+                hasStarted = true;
+                waitAllLaunched.countDown();
+                synchronized (lock) {
+                    try {
+                        lock.wait();
+                        if (Thread.interrupted()) {
+                            return;
+                        }
+                    } catch (InterruptedException ex) {
+                        return;
+                    } finally {
+                        waitOneFinished.countDown();
+                    }
+                    hasFinished = true;
+                }
+            }
+        }
+        Set<Future<String>> s = new HashSet<Future<String>>();
+        Set<R> rs = new HashSet<R>();
+        for (int i = 0; i < count; i++) {
+            String currName = "Runnable " + i;
+            R r = new R();
+            rs.add(r);
+            s.add(rp.submit(r, currName));
+        }
+        waitAllLaunched.await();
+        synchronized (lock) {
+            //Notify just one thread
+            lock.notify();
+        }
+        waitOneFinished.await();
+        List<Runnable> notRun = rp.shutdownNow();
+        synchronized (lock) {
+            lock.notifyAll();
+        }
+        boolean allFinished = true;
+        int finishedCount = 0;
+        for (R r : rs) {
+            assertTrue(r.hasStarted);
+            allFinished &= r.hasFinished;
+            if (r.hasFinished) {
+                finishedCount++;
+            }
+        }
+        assertFalse("All tasks should not have completed", allFinished);
+        assertTrue("At least one task shall complete", finishedCount >= 1);
+        assertFalse(notRun.isEmpty());
+        assertTrue(rp.isShutdown());
+        //Technically not provable due to "spurious wakeups"
+        //        assertEquals (1, finishedCount);
+
+        try {
+            RequestProcessor.getDefault().shutdown();
+            fail("Should not be able to shutdown() default RP");
+        } catch (Exception e) {
+        }
+        try {
+            RequestProcessor.getDefault().shutdownNow();
+            fail("Should not be able to shutdownNow() default RP");
+        } catch (Exception e) {
+        }
+        for (Runnable nr : notRun) {
+            assertTrue ("Shutdown is not returning submitted runnables - got a "
+                    + nr.getClass().getName() + " instead of " +
+                    R.class.getName(), nr.getClass() == R.class);
+        }
+    }
+
+    public void testAwaitTermination() throws Exception {
+        int count = 20;
+        final Object lock = new Object();
+        final CountDownLatch waitAllLaunched = new CountDownLatch(count);
+        final CountDownLatch waitAll = new CountDownLatch(count);
+        final RequestProcessor rp = new RequestProcessor("TestRP", count);
+        class R implements Runnable {
+
+            volatile boolean hasStarted;
+            volatile boolean hasFinished;
+
+            @Override
+            public void run() {
+                hasStarted = true;
+                waitAllLaunched.countDown();
+                synchronized (lock) {
+                    try {
+                        lock.wait();
+                        if (Thread.interrupted()) {
+                            return;
+                        }
+                    } catch (InterruptedException ex) {
+                        return;
+                    } finally {
+                        hasFinished = true;
+                        waitAll.countDown();
+                    }
+                }
+            }
+        }
+        Set<Future<String>> s = new HashSet<Future<String>>();
+        Set<R> rs = new HashSet<R>();
+        for (int i = 0; i < count; i++) {
+            String currName = "Runnable " + i;
+            R r = new R();
+            rs.add(r);
+            s.add(rp.submit(r, currName));
+        }
+        waitAllLaunched.await();
+        synchronized (lock) {
+            //Notify just one thread
+            lock.notifyAll();
+        }
+        rp.shutdown();
+        boolean awaitTermination = rp.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        assertTrue(awaitTermination);
+        assertTrue(rp.isShutdown());
+        assertTrue(rp.isTerminated());
+    }
+
+    @RandomlyFails
+    public void testAwaitTerminationWaitsForNewlyAddedThreads() throws Exception {
+        final RequestProcessor rp = new RequestProcessor("testAwaitTerminationWaitsForNewlyAddedThreads", 50, false);
+        int count = 30;
+        final CountDownLatch waitLock = new CountDownLatch(1);
+        class R implements Runnable {
+            boolean done;
+            @Override
+            public void run() {
+                try {
+                    waitLock.await();
+                } catch (InterruptedException ex) {
+                    done = true;
+                } finally {
+                    done = true;
+                }
+            }
+        }
+        Set<R> rs = new HashSet<R>();
+        for (int i= 0; i < count; i++) {
+            R r = new R();
+            rs.add(r);
+            rp.submit(r);
+        }
+        final CountDownLatch shutdownBegun = new CountDownLatch(1);
+        Runnable shutdowner = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(1000);
+                    rp.shutdown();
+                    shutdownBegun.countDown();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        waitLock.countDown();
+        new Thread(shutdowner).start();
+        assertTrue(rp.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS));
+        Thread.sleep (600);
+        assertTrue (rp.isTerminated());
+    }
+
+    @RandomlyFails // NB-Core-Build #4116
+    public void testInvokeAll() throws Exception {
+        int count = 20;
+        final CountDownLatch waitAll = new CountDownLatch(count);
+        final RequestProcessor rp = new RequestProcessor("TestRP", count);
+        try {
+            class C implements Callable<String> {
+
+                private final String result;
+                volatile boolean ran;
+
+                C(String result) {
+                    this.result = result;
+                }
+
+                @Override
+                public String call() throws Exception {
+                    ran = true;
+                    waitAll.countDown();
+                    return result;
+                }
+            }
+            List<C> callables = new ArrayList<C>(count);
+            List<Future<String>> fs;
+            Set<String> names = new HashSet<String>(count);
+            for (int i = 0; i < count; i++) {
+                String name = "R" + i;
+                names.add(name);
+                C c = new C(name);
+                callables.add(c);
+            }
+            fs = rp.invokeAll(callables);
+
+            assertNotNull(fs);
+            waitAll.await();
+            assertEquals(0, waitAll.getCount());
+            for (Future<String> f : fs) {
+                assertTrue (f.isDone());
+            }
+            for (C c : callables) {
+                assertTrue (c.ran);
+            }
+            Set<String> s = new HashSet<String>(count);
+            for (Future<String> f : fs) {
+                s.add(f.get());
+            }
+            assertEquals(names, s);
+        } finally {
+            rp.stop();
+        }
+    }
+
+    public void testInvokeAllWithTimeout() throws Exception {
+        int count = 20;
+        final CountDownLatch blocker = new CountDownLatch(1);
+        final RequestProcessor rp = new RequestProcessor("TestRP", count);
+        try {
+            class C implements Callable<String> {
+                volatile boolean iAmSpecial;
+
+                private final String result;
+                volatile boolean ran;
+
+                C(String result) {
+                    this.result = result;
+                }
+
+                @Override
+                public String call() throws Exception {
+                    //Only one will be allowed to run, the rest
+                    //will be cancelled
+                    if (!iAmSpecial) {
+                        blocker.await();
+                    }
+                    ran = true;
+                    return result;
+                }
+            }
+            List<C> callables = new ArrayList<C>(count);
+            C special = new C("Special");
+            special.iAmSpecial = true;
+            callables.add(special);
+            List<Future<String>> fs;
+            Set<String> names = new HashSet<String>(count);
+            for (int i = 0; i < count; i++) {
+                String name = "R" + i;
+                names.add(name);
+                C c = new C(name);
+                callables.add(c);
+            }
+            fs = rp.invokeAll(callables, 1000, TimeUnit.MILLISECONDS);
+            assertNotNull(fs);
+            for (Future<String> f : fs) {
+                assertTrue (f.isDone());
+            }
+            for (C c : callables) {
+                if (c == special) {
+                    assertTrue (c.ran);
+                } else {
+                    assertFalse(c.ran);
+                }
+            }
+        } finally {
+            rp.stop();
+        }
+    }
+
+    public void testInvokeAllSingleThread() throws Exception {
+        int count = 20;
+        final CountDownLatch waitAll = new CountDownLatch(count);
+        final RequestProcessor rp = new RequestProcessor("TestRP", 1);
+        class C implements Callable<String> {
+
+            private final String result;
+
+            C(String result) {
+                this.result = result;
+            }
+
+            @Override
+            public String call() throws Exception {
+                waitAll.countDown();
+                return result;
+            }
+        }
+        List<C> l = new ArrayList<C>(count);
+        List<Future<String>> fs;
+        Set<String> names = new HashSet<String>(count);
+        for (int i = 0; i < count; i++) {
+            String name = "R" + i;
+            names.add(name);
+            C c = new C(name);
+            l.add(c);
+        }
+        fs = rp.invokeAll(l);
+        assertNotNull(fs);
+        Set<String> s = new HashSet<String>(count);
+        for (Future<String> f : fs) {
+            s.add(f.get());
+        }
+        assertEquals(names, s);
+    }
+
+    public void testInvokeAny() throws Exception {
+        int count = 20;
+        final RequestProcessor rp = new RequestProcessor("TestRP", count + 1);
+        class C implements Callable<String> {
+
+            private final String result;
+
+            C(String result) {
+                this.result = result;
+            }
+
+            @Override
+            public String call() throws Exception {
+                if (Thread.interrupted()) {
+                    return null;
+                }
+                return result;
+            }
+        }
+        List<C> l = new ArrayList<C>(count);
+        Set<String> names = new HashSet<String>(count);
+        for (int i = 0; i < count; i++) {
+            String name = "R" + i;
+            names.add(name);
+            C c = new C(name);
+            l.add(c);
+        }
+        String res = rp.invokeAny(l);
+        assertNotNull(res);
+        assertTrue(res.startsWith("R"));
+    }
+
+    public void testInvokeAnySingleThread() throws Exception {
+        int count = 1000;
+        final RequestProcessor rp = new RequestProcessor("TestRP", 20);
+        final CountDownLatch latch = new CountDownLatch(count);
+        class C implements Callable<String> {
+
+            volatile boolean hasRun;
+            private final String result;
+
+            C(String result) {
+                this.result = result;
+            }
+
+            @Override
+            public String call() throws Exception {
+                latch.countDown();
+                if (!"R17".equals(result)) {
+                    try {
+                        //Block all but one thread until threads have entered
+                        latch.await();
+                    } catch (InterruptedException ie) {
+                    }
+                }
+                Thread.yield();
+                hasRun = true;
+                return result;
+            }
+        }
+        List<C> l = new ArrayList<C>(count);
+        Set<String> names = new HashSet<String>(count);
+        for (int i = 0; i < count; i++) {
+            String name = "R" + i;
+            names.add(name);
+            C c = new C(name);
+            l.add(c);
+        }
+        String res = rp.invokeAny(l);
+        assertNotNull(res);
+        assertTrue(res.startsWith("R"));
+        int runCount = 0;
+        for (C c : l) {
+            if (c.hasRun) {
+                runCount++;
+            }
+        }
+        assertTrue("Not all " + count + " threads should have completed, but " + runCount + " did.", runCount < count);
+    }
+
+    public void testInvokeAnyWithTimeout() throws Exception {
+        int count = 20;
+        final RequestProcessor rp = new RequestProcessor("TestRP", count + 1);
+        final CountDownLatch latch = new CountDownLatch(1);
+        class C implements Callable<String> {
+
+            volatile boolean hasRun;
+            private final String result;
+
+            C(String result) {
+                this.result = result;
+            }
+
+            @Override
+            public String call() throws Exception {
+                latch.await();
+                if (Thread.interrupted()) {
+                    return null;
+                }
+                hasRun = true;
+                return result;
+            }
+        }
+        List<C> l = new ArrayList<C>(count);
+        Set<String> names = new HashSet<String>(count);
+        for (int i = 0; i < count; i++) {
+            String name = "R" + i;
+            names.add(name);
+            C c = new C(name);
+            l.add(c);
+        }
+        //All threads are waiting on latch;  we should time out
+        String res = rp.invokeAny(l, 400, TimeUnit.MILLISECONDS);
+        assertNull(res);
+        for (C c : l) {
+            assertFalse(c.hasRun);
+        }
+    }
+
+    public void testCancellation() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(1);
+        class C implements Callable<String> {
+
+            volatile boolean hasRun;
+            volatile boolean interrupted;
+
+            @Override
+            public String call() throws Exception {
+                try {
+                    latch.await();
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                    return null;
+                }
+                if (Thread.interrupted()) {
+                    interrupted = true;
+                    return null;
+                }
+                hasRun = true;
+                return "Hello";
+            }
+        }
+        C c = new C();
+        Future<String> f = RequestProcessor.getDefault().submit(c);
+        f.cancel(true);
+        latch.countDown();
+        String s = null;
+        try {
+            s = f.get();
+            fail("CancellationException should have been thrown");
+        } catch (CancellationException e) {
+        }
+        assertNull(s);
+        assertTrue(c.interrupted || !c.hasRun);
+        assertFalse(c.hasRun);
+    }
+
+    public void testCancellablesGetCancelInvokedWithCallable() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch exit = new CountDownLatch(1);
+        class C implements Callable<String>, Cancellable {
+
+            volatile boolean hasRun;
+            volatile boolean interrupted;
+            volatile boolean cancelled;
+
+            @Override
+            public String call() throws Exception {
+                try {
+                    try {
+                        latch.await();
+                    } catch (InterruptedException e) {
+                        interrupted = true;
+                        return null;
+                    }
+                    if (Thread.interrupted()) {
+                        interrupted = true;
+                        return null;
+                    }
+                    if (cancelled) {
+                        return null;
+                    }
+                    hasRun = true;
+                    return "Hello";
+                } finally {
+                    exit.countDown();
+                }
+            }
+
+            @Override
+            public boolean cancel() {
+                cancelled = true;
+                exit.countDown();
+                return true;
+            }
+        }
+        C c = new C();
+        Future<String> f = RequestProcessor.getDefault().submit(c);
+        f.cancel(true);
+        assertTrue (c.cancelled);
+        latch.countDown();
+        exit.await();
+        String s = null;
+        try {
+            s = f.get();
+            fail ("Should have gotten cancellation exception");
+        } catch (CancellationException e) {
+
+        }
+    }
+
+    public void testCancellablesGetCancelInvokedWithRunnable() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch exit = new CountDownLatch(1);
+        class C implements Runnable, Cancellable {
+
+            volatile boolean hasRun;
+            volatile boolean interrupted;
+            volatile boolean cancelled;
+
+            @Override
+            public void run() {
+                try {
+                    try {
+                        latch.await();
+                    } catch (InterruptedException e) {
+                        interrupted = true;
+                        return;
+                    }
+                    if (Thread.interrupted()) {
+                        interrupted = true;
+                        return;
+                    }
+                    if (cancelled) {
+                        return;
+                    }
+                    hasRun = true;
+                } finally {
+                    exit.countDown();
+                }
+            }
+
+            @Override
+            public boolean cancel() {
+                cancelled = true;
+                exit.countDown();
+                return true;
+            }
+        }
+        C c = new C();
+        Future<?> f = RequestProcessor.getDefault().submit(c);
+        f.cancel(true);
+        assertTrue (c.cancelled);
+        latch.countDown();
+        exit.await();
+        try {
+            f.get();
+            fail ("Should have gotten cancellation exception");
+        } catch (CancellationException e) {
+
+        }
+        assertFalse (c.hasRun);
+    }
+
+    public void testCancellablesThatSayTheyCantBeCancelledAreNotCancelledViaFutureDotCancel() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch exit = new CountDownLatch(1);
+        class C implements Runnable, Cancellable {
+
+            volatile boolean hasRun;
+            volatile boolean interrupted;
+            volatile boolean cancelCalled;
+
+            @Override
+            public void run() {
+                try {
+                    try {
+                        latch.await();
+                    } catch (InterruptedException e) {
+                        interrupted = true;
+                        throw new AssertionError(e);
+                    }
+                    if (Thread.interrupted()) {
+                        interrupted = true;
+                        throw new AssertionError("Thread should not have been interrupted");
+                    }
+                    hasRun = true;
+                } finally {
+                    exit.countDown();
+                }
+            }
+
+            @Override
+            public boolean cancel() {
+                cancelCalled = true;
+                return false;
+            }
+        }
+        C c = new C();
+        Future<?> f = RequestProcessor.getDefault().submit(c);
+        f.cancel(true);
+        assertFalse (f.isCancelled());
+        assertTrue (c.cancelCalled);
+        latch.countDown();
+        exit.await();
+        f.get();
+        assertFalse (f.isCancelled());
+        assertTrue (c.hasRun);
+    }
+
+    public void testInvokeAllCancellation() throws Exception {
+        int count = 20;
+        final CountDownLatch waitAll = new CountDownLatch(count);
+        final RequestProcessor rp = new RequestProcessor("TestRP", count);
+        class C implements Callable<String>, Cancellable {
+
+            private final String result;
+            volatile boolean cancelCalled;
+
+            C(String result) {
+                this.result = result;
+            }
+
+            @Override
+            public String call() throws Exception {
+                waitAll.countDown();
+                return cancelCalled ? null : result;
+            }
+
+            @Override
+            public boolean cancel() {
+                cancelCalled = true;
+                return false;
+            }
+        }
+        List<C> l = new ArrayList<C>(count);
+        List<Future<String>> fs;
+        Set<String> names = new HashSet<String>(count);
+        for (int i = 0; i < count; i++) {
+            String name = "R" + i;
+            names.add(name);
+            C c = new C(name);
+            l.add(c);
+        }
+        fs = rp.invokeAll(l);
+        assertNotNull(fs);
+        Set<String> s = new HashSet<String>(count);
+        for (Future<String> f : fs) {
+            s.add(f.get());
+        }
+        assertEquals(names, s);
+    }
+
+    public void testCannotScheduleLongerThanIntegerMaxValue() throws Exception {
+        Runnable r = new Runnable() {
+
+            @Override
+            public void run() {
+                fail ("Should not have been run");
+            }
+        };
+        try {
+            Future<?> f = RequestProcessor.getDefault().schedule(r, Long.MAX_VALUE, TimeUnit.DAYS);
+            f.cancel(true);
+        } catch (Exception e) {}
+    }
+
+    public void testCannotScheduleNegativeDelay() throws Exception {
+        Runnable r = new Runnable() {
+
+            @Override
+            public void run() {
+                fail ("Should not have been run");
+            }
+        };
+        try {
+            RequestProcessor.getDefault().schedule(r, -1L, TimeUnit.MILLISECONDS);
+            fail ("Negative value accepetd");
+        } catch (Exception e) {}
+        try {
+            RequestProcessor.getDefault().scheduleAtFixedRate(r, -1L, 22L, TimeUnit.MILLISECONDS);
+            fail ("Negative value accepetd");
+        } catch (Exception e) {}
+        try {
+            RequestProcessor.getDefault().scheduleAtFixedRate(r, 200, -22L, TimeUnit.MILLISECONDS);
+            fail ("Negative value accepetd");
+        } catch (Exception e) {}
+        try {
+            RequestProcessor.getDefault().scheduleWithFixedDelay(r, -1L, 22L, TimeUnit.MILLISECONDS);
+            fail ("Negative value accepetd");
+        } catch (Exception e) {}
+        try {
+            RequestProcessor.getDefault().scheduleWithFixedDelay(r, 1L, -22L, TimeUnit.MILLISECONDS);
+            fail ("Negative value accepetd");
+        } catch (Exception e) {}
+    }
+
+    public void testTaskCanRescheduleItself() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(2);
+        class R implements Runnable {
+            volatile RequestProcessor.Task task;
+            volatile int runCount;
+            @Override
+            public void run() {
+                runCount++;
+                if (runCount == 1) {
+                    task.schedule(0);
+                }
+                latch.countDown();
+            }
+        }
+        R r = new R();
+        RequestProcessor.Task t = RequestProcessor.getDefault().create(r);
+        r.task = t;
+        t.schedule(0);
+        latch.await ();
+        assertEquals (r.runCount, 2);
+    }
+
+    public void testScheduleRepeatingSanityFixedRate() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(5);
+        class C implements Runnable {
+            volatile int runCount;
+            @Override
+            public void run() {
+                runCount++;
+                latch.countDown();
+            }
+        }
+        C c = new C();
+        RequestProcessor.getDefault().scheduleWithFixedDelay(c, 0, 20, TimeUnit.MILLISECONDS);
+//        latch.await(5000, TimeUnit.MILLISECONDS);
+        latch.await();
+        assertEquals (5, c.runCount);
+    }
+
+    public void testScheduleRepeatingSanityFixedDelay() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(5);
+        class C implements Runnable {
+            volatile int runCount;
+            @Override
+            public void run() {
+                runCount++;
+                latch.countDown();
+            }
+        }
+        C c = new C();
+        RequestProcessor.getDefault().scheduleAtFixedRate(c, 0, 20, TimeUnit.MILLISECONDS);
+        latch.await(2000, TimeUnit.MILLISECONDS);
+
+        assertEquals (5, c.runCount);
+    }
+
+    public void testScheduleOneShot() throws Exception {
+        RequestProcessor rp = new RequestProcessor ("testScheduleOneShot", 5, true, true);
+        try {
+            class C implements Callable<String> {
+                volatile long start = System.currentTimeMillis();
+                private volatile long end;
+
+                @Override
+                public String call() throws Exception {
+                    synchronized(this) {
+                        end = System.currentTimeMillis();
+                    }
+                    return "Hello";
+                }
+
+                synchronized long elapsed() {
+                    return end - start;
+                }
+            }
+            C c = new C();
+            int delay = 5000;
+            //Use a 20 second timeout to have a reasonable chance of accuracy
+            ScheduledFuture<String> f = rp.schedule(c, delay, TimeUnit.MILLISECONDS);
+            assertEquals (5000, f.getDelay(TimeUnit.MILLISECONDS));
+            assertNotNull(f.get());
+            //Allow 4 seconds fudge-factor
+            assertTrue (c.elapsed() > 4600);
+            assertTrue (f.isDone());
+        } finally {
+            rp.stop();
+        }
+    }
+
+    public void testScheduleRepeatingIntervalsAreRoughlyCorrect() throws Exception {
+        int runCount = 5;
+        final CountDownLatch latch = new CountDownLatch(runCount);
+        final List<Long> intervals = Collections.synchronizedList(new ArrayList<Long> (runCount));
+//        long initialDelay = 30000;
+//        long period = 20000;
+//        long fudgeFactor = 4000;
+        long initialDelay = 3000;
+        long period = 2000;
+        long fudgeFactor = 400;
+        long expectedInitialDelay = initialDelay - fudgeFactor;
+        long expectedPeriod = period - fudgeFactor;
+        class C implements Runnable {
+            volatile long start = System.currentTimeMillis();
+            private int runCount;
+            @Override
+            public void run() {
+                runCount++;
+                try {
+                    synchronized(this) {
+                        long end = System.currentTimeMillis();
+                        intervals.add (end - start);
+                        start = end;
+                    }
+                } finally {
+                    latch.countDown();
+                }
+            }
+        }
+        C c = new C();
+        RequestProcessor rp = new RequestProcessor ("testScheduleRepeating", 5, true);
+        try {
+            Future<?> f = rp.scheduleWithFixedDelay(c, initialDelay, period, TimeUnit.MILLISECONDS);
+    //        latch.await(initialDelay + fudgeFactor + ((runCount - 1) * (period + fudgeFactor)), TimeUnit.MILLISECONDS); //XXX
+            latch.await();
+            f.cancel(true);
+            for (int i= 0; i < Math.min(runCount, intervals.size()); i++) {
+                long expect = i == 0 ? expectedInitialDelay : expectedPeriod;
+                assertTrue ("Expected at least " + expect + " milliseconds before run " + i + " but was " + intervals.get(i), intervals.get(i) >= expect);
+            }
+            //Ensure we have really exited
+            try {
+                f.get();
+                fail ("CancellationException should have been thrown");
+            } catch (CancellationException e) {}
+            assertTrue(f.isCancelled());
+            assertTrue(f.isDone());
+        } finally {
+            rp.stop();
+        }
+    }
+
+    public void testScheduleFixedRateAreRoughlyCorrect() throws Exception {
+        int runCount = 5;
+        final CountDownLatch latch = new CountDownLatch(runCount);
+        final List<Long> intervals = Collections.synchronizedList(new ArrayList<Long> (runCount));
+//        long initialDelay = 30000;
+//        long period = 20000;
+//        long fudgeFactor = 4000;
+        long initialDelay = 3000;
+        long period = 2000;
+        long fudgeFactor = 400;
+        long expectedInitialDelay = initialDelay - fudgeFactor;
+        long expectedPeriod = period - fudgeFactor;
+        class C implements Runnable {
+            volatile long start = System.currentTimeMillis();
+            private int runCount;
+            @Override
+            public void run() {
+                runCount++;
+                try {
+                    synchronized(this) {
+                        long end = System.currentTimeMillis();
+                        intervals.add (end - start);
+                        start = end;
+                    }
+                } finally {
+                    latch.countDown();
+                }
+            }
+        }
+        C c = new C();
+        RequestProcessor rp = new RequestProcessor ("testScheduleFixedRateAreRoughlyCorrect", 5, true);
+        try {
+            Future<?> f = rp.scheduleAtFixedRate(c, initialDelay, period, TimeUnit.MILLISECONDS);
+            latch.await();
+            f.cancel(true);
+            for (int i= 0; i < Math.min(runCount, intervals.size()); i++) {
+                long expect = i == 0 ? expectedInitialDelay : expectedPeriod;
+                assertTrue ("Expected at least " + expect + " milliseconds before run " + i + " but was " + intervals.get(i), intervals.get(i) >= expect);
+            }
+            //Ensure we have really exited
+            try {
+                f.get();
+                fail ("CancellationException should have been thrown");
+            } catch (CancellationException e) {}
+            assertTrue(f.isCancelled());
+            assertTrue(f.isDone());
+        } finally {
+            rp.stop();
+        }
+    }
+
+    public void testScheduleFixedRateOnMultiThreadPoolDoesNotCauseConcurrentExecution() throws Exception {
+        final AtomicInteger val = new AtomicInteger(0);
+        final CountDownLatch latch = new CountDownLatch(10);
+        class C implements Runnable {
+            boolean failed;
+            @Override
+            public void run() {
+                try {
+                    int now = val.incrementAndGet();
+                    if (now > 1) {
+                        failed = true;
+                        fail (now + " threads simultaneously in run()");
+                    }
+                    try {
+                        //Intentionally sleep *longer* than the interval
+                        //between executions.  We *want* to pile up all of the
+                        //RP threads entering run() - synchronization should
+                        //serialize them.  This test is to prove that this
+                        //method will never be called concurrently from two threads
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+
+                    }
+                } finally {
+                    val.decrementAndGet();
+                    latch.countDown();
+                }
+            }
+        }
+        C c = new C();
+        long initialDelay = 2000;
+        long period = 10;
+        RequestProcessor rp = new RequestProcessor("testScheduleFixedRateOnMultiThreadPoolDoesNotCauseConcurrentExecution", 10, true);
+        rp.scheduleAtFixedRate(c, initialDelay, period, TimeUnit.MILLISECONDS);
+        latch.await();
+        assertFalse(c.failed);
+        rp.stop();
+    }
+
+    @RandomlyFails
+    public void testScheduleFixedRateWithShorterIntervalThanRunMethodTimeAreNotDelayed() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(10);
+        final List<Long> intervals = new CopyOnWriteArrayList<Long>();
+        class C implements Runnable {
+            long start = Long.MIN_VALUE;
+
+            @Override
+            public void run() {
+                long end = System.currentTimeMillis();
+                if (start != Long.MIN_VALUE) {
+                    intervals.add(end - start);
+                }
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    
+                }
+                start = System.currentTimeMillis();
+                latch.countDown();
+            }
+        }
+        C c = new C();
+        long initialDelay = 100;
+        long period = 100;
+        RequestProcessor rp = new RequestProcessor("testScheduleFixedRateWithShorterIntervalThanRunMethodTimeAreNotDelayed", 10, true);
+        ScheduledFuture<?> f = rp.scheduleAtFixedRate(c, initialDelay, period, TimeUnit.MILLISECONDS);
+        latch.await();
+        f.cancel(true);
+        rp.stop();
+        int max = intervals.size();
+        for (int i= 0; i < max; i++) {
+            long iv = intervals.get(i);
+            assertFalse ("Interval " + i + " should have been at least less than requested interval * 1.5 with fixed rate" + iv, iv > 150);
+        }
+    }
+
+    public void testCancelFutureInterruptsThreadEvenIfRequestProcessorForbidsIt() throws Exception {
+        RequestProcessor rp = new RequestProcessor ("X", 3, false, true);
+        final CountDownLatch releaseForRun = new CountDownLatch(1);
+        final CountDownLatch enterLatch = new CountDownLatch(1);
+        final CountDownLatch exitLatch = new CountDownLatch(1);
+        class R implements Runnable {
+            volatile boolean interrupted;
+            @Override
+            public void run() {
+                enterLatch.countDown();
+                try {
+                    releaseForRun.await();
+                } catch (InterruptedException ex) {
+                    interrupted = true;
+                }
+                interrupted |= Thread.interrupted();
+                exitLatch.countDown();
+            }
+        }
+        R r = new R();
+        Future<?> f = rp.submit(r);
+        enterLatch.await();
+        f.cancel(true);
+        assertTrue (f.isCancelled());
+        exitLatch.await();
+        assertTrue (r.interrupted);
+    }
+
+    public void testCancelDoesNotInterruptIfNotPassedToFutureDotCancel() throws Exception {
+        RequestProcessor rp = new RequestProcessor ("X", 3, false, true);
+        final CountDownLatch releaseForRun = new CountDownLatch(1);
+        final CountDownLatch enterLatch = new CountDownLatch(1);
+        final CountDownLatch exitLatch = new CountDownLatch(1);
+        class R implements Runnable {
+            volatile boolean interrupted;
+            @Override
+            public void run() {
+                enterLatch.countDown();
+                try {
+                    releaseForRun.await();
+                } catch (InterruptedException ex) {
+                    interrupted = true;
+                }
+                interrupted |= Thread.interrupted();
+                exitLatch.countDown();
+            }
+        }
+        R r = new R();
+        Future<?> f = rp.submit(r);
+        enterLatch.await();
+        f.cancel(false);
+        assertTrue (f.isCancelled());
+        assertFalse (r.interrupted);
+    }
+
+    public void testCancelDoesInterruptIfRequestProcessorSpecifiesItEvenIfFalsePassedToFutureDotCancel() throws Exception {
+        RequestProcessor rp = new RequestProcessor ("X", 3, true, true);
+        final CountDownLatch releaseForRun = new CountDownLatch(1);
+        final CountDownLatch enterLatch = new CountDownLatch(1);
+        final CountDownLatch exitLatch = new CountDownLatch(1);
+        class R implements Runnable {
+            volatile boolean interrupted;
+            @Override
+            public void run() {
+                enterLatch.countDown();
+                try {
+                    releaseForRun.await();
+                } catch (InterruptedException ex) {
+                    interrupted = true;
+                }
+                interrupted |= Thread.interrupted();
+                exitLatch.countDown();
+            }
+        }
+        R r = new R();
+        Future<?> f = rp.submit(r);
+        enterLatch.await();
+        f.cancel(false);
+        assertTrue (f.isCancelled());
+        exitLatch.await();
+        assertTrue (r.interrupted);
+    }
+}

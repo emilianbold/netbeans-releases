@@ -3,6 +3,6 @@ OpenIDE-Module: org.netbeans.modules.javascript.editing/1
 OpenIDE-Module-Install: org/netbeans/modules/javascript/editing/Installer.class
 OpenIDE-Module-Layer: org/netbeans/modules/javascript/editing/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javascript/editing/Bundle.properties
-OpenIDE-Module-Specification-Version: 0.93
+OpenIDE-Module-Specification-Version: 0.94
 AutoUpdate-Show-In-Client: false
 

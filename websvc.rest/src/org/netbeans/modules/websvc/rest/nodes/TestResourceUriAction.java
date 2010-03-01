@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.support.LogUtils;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -186,9 +187,17 @@ public class TestResourceUriAction extends NodeAction  {
             }
         }
 
+        String applicationPath = "resources"; //NOI18N
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        if (restSupport != null) {
+            try {
+                applicationPath = restSupport.getApplicationPath();
+            } catch (IOException ex) {}
+        }
+
         return "http://" + hostName + ":" + portNumber + "/" + //NOI18N
                 (contextRoot != null && !contextRoot.equals("") ? contextRoot : "") + //NOI18N
-                "/resources" + uri; //NOI18N
+                "/"+applicationPath + uri; //NOI18N
     }
 
     @Override

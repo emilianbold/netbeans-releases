@@ -84,6 +84,8 @@ public class APTLanguageSupportImpl {
             filter = new APTGnuCFilter();
         } else if (lang.equalsIgnoreCase(APTLanguageSupport.GNU_CPP)) {
             filter = new APTGnuCppFilter();
+        } else if (lang.equalsIgnoreCase(APTLanguageSupport.FORTRAN)) {
+            filter = new APTFortranFilter();
         } else {
             APTUtils.LOG.warning("unsupported language " + lang); // NOI18N
         }

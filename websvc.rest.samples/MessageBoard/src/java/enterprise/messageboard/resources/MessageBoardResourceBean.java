@@ -34,7 +34,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package enterprise.messageboard.resources;
 
 import enterprise.messageboard.entities.Message;
@@ -44,11 +43,13 @@ import java.net.URISyntaxException;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -56,10 +57,13 @@ import javax.ws.rs.core.UriInfo;
 @Stateless
 public class MessageBoardResourceBean {
 
-    @Context private UriInfo ui;
-    @EJB MessageHolderSingletonBean singleton;
+    @Context
+    private UriInfo ui;
+    @EJB
+    MessageHolderSingletonBean singleton;
 
     @GET
+    @Produces({"application/xml", "text/html"})
     public List<Message> getMessages() {
         return singleton.getMessages();
     }
@@ -73,13 +77,25 @@ public class MessageBoardResourceBean {
         return Response.created(msgURI).build();
     }
 
+    @POST
+    @Consumes("application/xml")
+    public Response addMessage(Message msg) throws URISyntaxException {
+        Message m = singleton.addMessage(msg.getMessage());
+
+        URI msgURI = ui.getRequestUriBuilder().path(Integer.toString(m.getUniqueId())).build();
+
+        return Response.created(msgURI).build();
+    }
+
     @Path("{msgNum}")
     @GET
+    @Produces({"application/xml", "text/html"})
     public Message getMessage(@PathParam("msgNum") int msgNum) throws NotFoundException {
         Message m = singleton.getMessage(msgNum);
 
-        if(m == null)
+        if (m == null) {
             throw new NotFoundException();
+        }
 
         return m;
 
@@ -90,12 +106,8 @@ public class MessageBoardResourceBean {
     public void deleteMessage(@PathParam("msgNum") int msgNum) throws NotFoundException {
         boolean deleted = singleton.deleteMessage(msgNum);
 
-        if(!deleted)
+        if (!deleted) {
             throw new NotFoundException();
+        }
     }
 }
-
-
-
-
-

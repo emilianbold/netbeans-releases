@@ -56,7 +56,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.Signal;
@@ -96,7 +96,7 @@ public class GdbProxy {
      * @throws IOException Pass this on to the caller
      */
     public GdbProxy(GdbDebugger debugger, String debuggerCommand, String[] debuggerEnvironment,
-            String workingDirectory, String termpath, String cspath) throws IOException {
+            String workingDirectory, String tty, String cspath) throws IOException {
         this.debugger = debugger;
 
         ArrayList<String> dc = new ArrayList<String>();
@@ -108,7 +108,7 @@ public class GdbProxy {
         dc.add("--silent"); // NOI18N
         dc.add("--interpreter=mi"); // NOI18N
         gdbLogger = new GdbLogger(debugger, this);
-        engine = new GdbProxyEngine(debugger, this, dc, debuggerEnvironment, workingDirectory, termpath, cspath);
+        engine = new GdbProxyEngine(debugger, this, dc, debuggerEnvironment, workingDirectory, tty, cspath);
     }
 
     public GdbProxyEngine getProxyEngine() {

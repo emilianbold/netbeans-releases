@@ -24,6 +24,22 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.lib.terminalemulator</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.11</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.terminal</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.libs.jna</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -57,6 +73,14 @@
                     <run-dependency>
                         <release-version>2</release-version>
                         <specification-version>1.13</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.keyring</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -161,6 +185,7 @@
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.remote</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
+                <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common</friend>
                 <friend>org.netbeans.modules.cnd.debugger.commonMC</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
@@ -185,16 +210,20 @@
                 <friend>org.netbeans.modules.dlight.msa</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.procfs</friend>
+                <friend>org.netbeans.modules.dlight.remote</friend>
                 <friend>org.netbeans.modules.dlight.spi</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.tools</friend>
                 <friend>org.netbeans.modules.dlight.util</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
-                <friend>org.netbeans.modules.dlight.remote</friend>
-                <package>org.netbeans.modules.cnd.api.execution</package>
+                <friend>org.netbeans.nativeexecution.terminal</friend>
                 <package>org.netbeans.modules.nativeexecution.api</package>
+                <package>org.netbeans.modules.nativeexecution.api.execution</package>
+                <package>org.netbeans.modules.nativeexecution.api.pty</package>
                 <package>org.netbeans.modules.nativeexecution.api.util</package>
                 <package>org.netbeans.modules.nativeexecution.spi</package>
+                <package>org.netbeans.modules.nativeexecution.spi.pty</package>
+                <package>org.netbeans.modules.nativeexecution.spi.support.pty</package>
             </friend-packages>
         </data>
     </configuration>

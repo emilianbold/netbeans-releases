@@ -212,6 +212,7 @@ public final class ClassSource {
         public File getJar() {
             return jar;
         }
+        @Override
         public List<URL> getClasspath() {
             try {
                 return Collections.singletonList(translateURL(jar.toURI().toURL()));
@@ -220,6 +221,7 @@ public final class ClassSource {
                 return Collections.emptyList();
             }
         }
+        @Override
         public Boolean addToProjectClassPath(FileObject projectArtifact, String classPathType) throws IOException, UnsupportedOperationException {
             URL u = jar.toURI().toURL();
             FileObject jarFile = FileUtil.toFileObject(jar);
@@ -231,12 +233,15 @@ public final class ClassSource {
             }
             return Boolean.valueOf(ProjectClassPathModifier.addRoots(new URL[] {u}, projectArtifact, classPathType));
         }
+        @Override
         public String getDisplayName() {
             return NbBundle.getMessage(ClassSource.class, "FMT_JarSource", jar.getAbsolutePath());
         }
+        @Override
         public String getPicklingType() {
             return TYPE_JAR;
         }
+        @Override
         public String getPicklingName() {
             return jar.getAbsolutePath();
         }
@@ -252,19 +257,24 @@ public final class ClassSource {
         public Library getLibrary() {
             return lib;
         }
+        @Override
         public List<URL> getClasspath() {
             // No need to translate to jar protocol; Library.getContent should have done this already.
             return lib.getContent("classpath"); // NOI18N
         }
+        @Override
         public Boolean addToProjectClassPath(FileObject projectArtifact, String classPathType) throws IOException, UnsupportedOperationException {
             return  Boolean.valueOf(ProjectClassPathModifier.addLibraries(new Library[] {lib}, projectArtifact, classPathType));
         }
+        @Override
         public String getDisplayName() {
             return NbBundle.getMessage(ClassSource.class, "FMT_LibrarySource", lib.getDisplayName());
         }
+        @Override
         public String getPicklingType() {
             return TYPE_LIBRARY;
         }
+        @Override
         public String getPicklingName() {
             // For backward compatibility with old *.palette_item files, treat bare names as global libraries.
             // Project libraries are given as e.g. "file:/some/where/libs/index.properties#mylib"
@@ -287,6 +297,7 @@ public final class ClassSource {
         public AntArtifact getArtifact() {
             return artifact;
         }
+        @Override
         public List<URL> getClasspath() {
             List<URL> cp = new ArrayList<URL>();
             for (URI loc : artifact.getArtifactLocations()) {
@@ -298,20 +309,24 @@ public final class ClassSource {
             }
             return cp;
         }
+        @Override
         public Boolean addToProjectClassPath(FileObject projectArtifact, String classPathType) throws IOException, UnsupportedOperationException {
             if (artifact.getProject() != FileOwnerQuery.getOwner(projectArtifact)) {
                 return Boolean.valueOf(ProjectClassPathModifier.addAntArtifacts(new AntArtifact[] {artifact}, artifact.getArtifactLocations(), projectArtifact, classPathType));
             }
             return Boolean.FALSE;
         }
+        @Override
         public String getDisplayName() {
             Project p = artifact.getProject();
             return NbBundle.getMessage(ClassSource.class, "FMT_ProjectSource",
                     p != null ? FileUtil.getFileDisplayName(p.getProjectDirectory()) : artifact.getScriptLocation().getAbsolutePath());
         }
+        @Override
         public String getPicklingType() {
             return TYPE_PROJECT;
         }
+        @Override
         public String getPicklingName() {
             if (artifact.getArtifactLocations().length > 0) {
                 return new File(artifact.getScriptLocation().toURI().resolve(artifact.getArtifactLocations()[0]).normalize()).getAbsolutePath();

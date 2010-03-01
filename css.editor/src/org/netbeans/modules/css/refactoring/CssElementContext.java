@@ -39,6 +39,7 @@
 package org.netbeans.modules.css.refactoring;
 
 import java.util.Collection;
+import javax.swing.text.Document;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.SimpleNode;
@@ -91,7 +92,6 @@ public abstract class CssElementContext {
     public static class File extends AbstractFileContext {
 
 	private Collection<CssParserResult> results;
-	private FileObject fileObject; //store this separately even if all the parser results refers to it
 
 	public File(FileObject fileObject, Collection<CssParserResult> result) {
 	    super(fileObject);
@@ -132,6 +132,10 @@ public abstract class CssElementContext {
 	    return SimpleNodeUtil.findDescendant(root, astOffset);
 	}
 
+        public Document getDocument() {
+            return result.getSnapshot().getSource().getDocument(false);
+        }
+
 	public CssParserResult getParserResult() {
 	    return result;
 	}
@@ -157,6 +161,10 @@ public abstract class CssElementContext {
 	    return element;
 	}
 
+        public SimpleNode getSimpleSelectorElement() {
+            return  SimpleNodeUtil.getAncestorByType(getElement(), CssParserTreeConstants.JJTSIMPLESELECTOR);
+        }
+
 	@Override
 	public String getElementName() {
 	    return getElement().image();
@@ -164,7 +172,9 @@ public abstract class CssElementContext {
 
 	@Override
 	public boolean isRefactoringAllowed() {
-	    return null != SimpleNodeUtil.getAncestorByType(getElement(), CssParserTreeConstants.JJTSIMPLESELECTOR);
+            //class, id or element selector
+            //hex color
+	    return null != getSimpleSelectorElement() || getElement().kind() == CssParserTreeConstants.JJTHEXCOLOR;
 	}
     }
 }

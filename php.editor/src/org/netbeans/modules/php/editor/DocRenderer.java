@@ -254,7 +254,7 @@ class DocRenderer {
                 switch (tag.getKind()) {
                     case PARAM:
                         PHPDocParamTagData tagData = new PHPDocParamTagData(tag.getValue());
-                        String pline = String.format("<tr><td valign=\"top\" %s>%s</td><td valign=\"top\" %s><b>%s</b></td><td valign=\"top\" %s>%s</td></tr>\n", //NOI18N
+                        String pline = String.format("<tr><td valign=\"top\" %s><nobr>%s</nobr></td><td valign=\"top\" %s><nobr><b>%s</b></nobr></td><td valign=\"top\" %s>%s</td></tr>\n", //NOI18N
                                 TD_STYLE, tagData.type, TD_STYLE, tagData.name, TD_STYLE, tagData.description);
 
                         params.append(pline);

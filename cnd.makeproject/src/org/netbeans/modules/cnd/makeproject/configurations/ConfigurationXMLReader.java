@@ -171,7 +171,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
         // Ensure all item configurations have been created (default are not stored in V >= 57)
         Item[] projectItems = configurationDescriptor.getProjectItems();
-        for (Configuration configuration : configurationDescriptor.getConfs().getConfigurtions()) {
+        for (Configuration configuration : configurationDescriptor.getConfs().getConfigurations()) {
             for (Item item : projectItems) {
                 if (item.getItemConfiguration(configuration) == null) {
                     configuration.addAuxObject(new ItemConfiguration(configuration, item));

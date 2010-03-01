@@ -60,8 +60,6 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/activation.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/api/jaxb-api.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/api/jsr173_api.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxb/jaxb-impl.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxb/jaxb-xjc.jar!/</resource>
     </volume>  
      <volume>
         <type>javadoc</type>

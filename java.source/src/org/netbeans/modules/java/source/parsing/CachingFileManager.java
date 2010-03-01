@@ -59,7 +59,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
 import org.netbeans.modules.java.source.util.Iterators;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
@@ -69,32 +68,45 @@ import org.openide.util.WeakListeners;
  * @author Petr Hrebejk
  */
 public class CachingFileManager implements JavaFileManager, PropertyChangeListener {
-    
+
     protected final CachingArchiveProvider provider;
     protected final JavaFileFilterImplementation filter;
     protected final ClassPath cp;
     protected final boolean cacheFile;
     protected final boolean ignoreExcludes;
-    
+    private final boolean allowOutput;
+
     private static final Logger LOG = Logger.getLogger(CachingFileManager.class.getName());
-    
-    
+
+
     public CachingFileManager( CachingArchiveProvider provider, final ClassPath cp, boolean cacheFile, boolean ignoreExcludes) {
-        this (provider, cp, null, cacheFile, ignoreExcludes);
+        this (provider, cp, null, false, cacheFile, ignoreExcludes);
     }
-    
+
     /** Creates a new instance of CachingFileManager */
     public CachingFileManager( CachingArchiveProvider provider, final ClassPath cp, final JavaFileFilterImplementation filter, boolean cacheFile, boolean ignoreExcludes) {
+        this (provider, cp, filter, true, cacheFile, ignoreExcludes);
+    }
+
+    private CachingFileManager(final CachingArchiveProvider provider,
+            final ClassPath cp,
+            final JavaFileFilterImplementation filter,
+            boolean allowOutput,
+            boolean cacheFile,
+            boolean ignoreExcludes) {
+        assert provider != null;
+        assert cp != null;
         this.provider = provider;
         this.cp = cp;
         if (CacheClassPath.KEEP_JARS) {
             cp.addPropertyChangeListener(WeakListeners.propertyChange(this, cp));
         }
-        this.cacheFile = cacheFile;
         this.filter = filter;
+        this.allowOutput = allowOutput;
+        this.cacheFile = cacheFile;
         this.ignoreExcludes = ignoreExcludes;
     }
-    
+
     // FileManager implementation ----------------------------------------------
     
     // XXX omit files not of given kind
@@ -138,27 +150,11 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
         }
         return Iterators.chained(idxs);
     }
-       
-    public javax.tools.FileObject getFileForInput( Location l, String pkgName, String relativeName ) {        
-        
-        for( ClassPath.Entry root : this.cp.entries()) {
-            try {
-                Archive  archive = provider.getArchive (root.getURL(), cacheFile);
-                if (archive != null) {
-                    Iterable<JavaFileObject> files = archive.getFiles(FileObjects.convertPackage2Folder(pkgName), ignoreExcludes?null:root, null, filter);
-                    for (JavaFileObject e : files) {
-                        if (relativeName.equals(e.getName())) {
-                            return e;
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-        return null;
+
+    public javax.tools.FileObject getFileForInput( Location l, String pkgName, String relativeName ) {
+        return findFile(pkgName, relativeName);
     }
-    
+
     public JavaFileObject getJavaFileForInput (Location l, String className, JavaFileObject.Kind kind) {
         String[] namePair = FileObjects.getParentRelativePathAndName(className);
         if (namePair == null) {
@@ -183,12 +179,23 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
         return null;
     }
 
-        
+
     public javax.tools.FileObject getFileForOutput( Location l, String pkgName, String relativeName, javax.tools.FileObject sibling ) 
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
-        throw new UnsupportedOperationException ();
+        if (!allowOutput) {
+            throw new UnsupportedOperationException("Output is unsupported.");  //NOI18N
+        }
+        javax.tools.JavaFileObject file = findFile (pkgName, relativeName);
+        if (file == null) {
+            final List<ClassPath.Entry> entries = this.cp.entries();
+            if (!entries.isEmpty()) {
+                final String resourceName = FileObjects.getRelativePath(FileObjects.convertPackage2Folder(pkgName), relativeName);
+                file = provider.getArchive(entries.get(0).getURL(), cacheFile).create(resourceName, filter);
+            }
+        }
+        return file;    //todo: wrap to make read only
     }
-    
+
     public JavaFileObject getJavaFileForOutput( Location l, String className, JavaFileObject.Kind kind, javax.tools.FileObject sibling ) 
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
         throw new UnsupportedOperationException ();
@@ -227,7 +234,7 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
             sb.append(base.getNameWithoutExtension());
             return sb.toString();
         }
-        else if (javaFileObject instanceof FileObjects.InferableJavaFileObject) {
+        else if (javaFileObject instanceof InferableJavaFileObject) {
             return ((SourceFileObject)javaFileObject).inferBinaryName();
         }
         return null;
@@ -255,5 +262,32 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
         if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
             provider.clear();
         }
+    }
+
+    private javax.tools.JavaFileObject findFile(final String pkgName, String relativeName) {
+        assert pkgName != null;
+        assert relativeName != null;
+        String folderName = FileObjects.convertPackage2Folder(pkgName);
+        if (relativeName.indexOf('/') != -1) {  //NOI18N
+            final String[] fbn = FileObjects.getFolderAndBaseName(relativeName, '/');   //NOI18N
+            folderName = FileObjects.getRelativePath(folderName,fbn[0]);
+            relativeName = fbn[1];
+        }
+        for( ClassPath.Entry root : this.cp.entries()) {
+            try {
+                Archive  archive = provider.getArchive (root.getURL(), cacheFile);
+                if (archive != null) {
+                    Iterable<JavaFileObject> files = archive.getFiles(folderName, ignoreExcludes?null:root, null, filter);
+                    for (JavaFileObject e : files) {
+                        if (relativeName.equals(e.getName())) {
+                            return e;
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        return null;
     }
 }

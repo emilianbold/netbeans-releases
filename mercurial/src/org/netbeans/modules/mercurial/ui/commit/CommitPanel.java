@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.mercurial.ui.commit;
 
+import javax.swing.event.ChangeEvent;
+import org.netbeans.modules.mercurial.HgFileNode;
+import org.netbeans.modules.versioning.util.TemplateSelector;
 import java.awt.Component;
 import java.awt.Container;
 import javax.swing.Box;
@@ -51,6 +54,7 @@ import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.StringSelector;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
+import org.openide.cookies.SaveCookie;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -64,9 +68,12 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -78,11 +85,16 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicTreeUI;
-import org.netbeans.modules.mercurial.hooks.spi.HgHook;
-import org.netbeans.modules.mercurial.hooks.spi.HgHookContext;
+import org.netbeans.modules.versioning.hooks.HgHook;
+import org.netbeans.modules.versioning.hooks.HgHookContext;
+import org.netbeans.modules.mercurial.ui.diff.MultiDiffPanel;
+import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.versioning.util.AutoResizingPanel;
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import static java.awt.Component.BOTTOM_ALIGNMENT;
 import static java.awt.Component.CENTER_ALIGNMENT;
@@ -99,8 +111,9 @@ import static org.jdesktop.layout.LayoutStyle.RELATED;
  * @author  pk97937
  * @author  Marian Petras
  */
-public class CommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener {
+public class CommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
 
+    private final AutoResizingPanel basePanel = new AutoResizingPanel();
     static final Object EVENT_SETTINGS_CHANGED = new Object();
     private static final boolean DEFAULT_DISPLAY_FILES = true;
     private static final boolean DEFAULT_DISPLAY_HOOKS = false;
@@ -117,11 +130,14 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private final JScrollPane jScrollPane1 = new JScrollPane();
     private final JTextArea messageTextArea = new JTextArea();
     private final JLabel recentLink = new JLabel();
+    private final JLabel templateLink = new JLabel();
     private Icon expandedIcon, collapsedIcon;
     
     private CommitTable commitTable;
     private Collection<HgHook> hooks = Collections.emptyList();
     private HgHookContext hookContext;
+    private JTabbedPane tabbedPane;
+    private HashMap<File, MultiDiffPanel> displayedDiffs = new HashMap<File, MultiDiffPanel>();
 
     /** Creates new form CommitPanel */
     public CommitPanel() {
@@ -145,11 +161,13 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
 
-        final List<String> messages = Utils.getStringList(HgModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (messages.size() > 0) {
-                    messageTextArea.setText(messages.get(0));
+                TemplateSelector ts = new TemplateSelector(HgModuleConfig.getDefault().getPreferences());
+                if(ts.isAutofill()) {
+                    messageTextArea.setText(ts.getTemplate());
+                } else {
+                    messageTextArea.setText(HgModuleConfig.getDefault().getLastCommitMessage());
                 }
                 messageTextArea.selectAll();
             }
@@ -286,7 +304,14 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             messageTextArea.replaceSelection(message);
         }
     }
-    
+
+    private void onTemplate() {
+        TemplateSelector ts = new TemplateSelector(HgModuleConfig.getDefault().getPreferences());
+        if(ts.show()) {
+            messageTextArea.setText(ts.getTemplate());
+        }
+    }
+
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(HgModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             Runnable inAWT = new Runnable() {
@@ -320,6 +345,9 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         recentLink.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/recent_messages.png"))); // NOI18N
         recentLink.setToolTipText(getMessage("CTL_CommitForm_RecentMessages")); // NOI18N
 
+        templateLink.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/load_template.png"))); // NOI18N
+        templateLink.setToolTipText(getMessage("CTL_CommitForm_LoadTemplate")); // NOI18N
+
         messageTextArea.setColumns(60);    //this determines the preferred width of the whole dialog
         messageTextArea.setLineWrap(true);
         messageTextArea.setRows(4);
@@ -342,8 +370,11 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         topPanel.add(jLabel1);
         topPanel.add(Box.createHorizontalGlue());
         topPanel.add(recentLink);
+        topPanel.add(makeHorizontalStrut(recentLink, templateLink, RELATED));
+        topPanel.add(templateLink);
         jLabel1.setAlignmentY(BOTTOM_ALIGNMENT);
         recentLink.setAlignmentY(BOTTOM_ALIGNMENT);
+        templateLink.setAlignmentY(BOTTOM_ALIGNMENT);
 
         JPanel bottomPanel = new VerticallyNonResizingPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, X_AXIS));
@@ -353,20 +384,22 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         jLabel2.setAlignmentY(CENTER_ALIGNMENT);
         progressPanel.setAlignmentY(CENTER_ALIGNMENT);
 
+        basePanel.setLayout(new BoxLayout(basePanel, Y_AXIS));
+        basePanel.add(topPanel);
+        basePanel.add(makeVerticalStrut(jLabel1, jScrollPane1, RELATED));
+        basePanel.add(jScrollPane1);
+        basePanel.add(makeVerticalStrut(jScrollPane1, filesSectionButton, RELATED));
+        basePanel.add(filesSectionButton);
+        basePanel.add(makeVerticalStrut(filesSectionButton, filesSectionPanel2, RELATED));
+        basePanel.add(filesSectionPanel2);
+        basePanel.add(makeVerticalStrut(filesSectionPanel2, hooksSectionButton, RELATED));
+        basePanel.add(hooksSectionButton);
+        basePanel.add(makeVerticalStrut(hooksSectionButton, hookSectionPanel, RELATED));
+        basePanel.add(hookSectionPanel);
+        basePanel.add(makeVerticalStrut(hookSectionPanel, jLabel2, RELATED));
+        basePanel.add(bottomPanel);
         setLayout(new BoxLayout(this, Y_AXIS));
-        add(topPanel);
-        add(makeVerticalStrut(jLabel1, jScrollPane1, RELATED));
-        add(jScrollPane1);
-        add(makeVerticalStrut(jScrollPane1, filesSectionButton, RELATED));
-        add(filesSectionButton);
-        add(makeVerticalStrut(filesSectionButton, filesSectionPanel2, RELATED));
-        add(filesSectionPanel2);
-        add(makeVerticalStrut(filesSectionPanel2, hooksSectionButton, RELATED));
-        add(hooksSectionButton);
-        add(makeVerticalStrut(hooksSectionButton, hookSectionPanel, RELATED));
-        add(hookSectionPanel);
-        add(makeVerticalStrut(hookSectionPanel, jLabel2, RELATED));
-        add(bottomPanel);
+        add(basePanel);
         topPanel.setAlignmentX(LEFT_ALIGNMENT);
         jScrollPane1.setAlignmentX(LEFT_ALIGNMENT);
         filesSectionButton.setAlignmentX(LEFT_ALIGNMENT);
@@ -375,7 +408,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         hookSectionPanel.setAlignmentX(LEFT_ALIGNMENT);
         bottomPanel.setAlignmentX(LEFT_ALIGNMENT);
 
-        setBorder(createEmptyBorder(26,                       //top
+        basePanel.setBorder(createEmptyBorder(26,                       //top
                                     getContainerGap(WEST),    //left
                                     0,                        //bottom
                                     15));                     //right
@@ -392,6 +425,13 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
                 onBrowseRecentMessages();
             }
         });
+        templateLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        templateLink.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                onTemplate();
+            }
+        });
     }
 
     private Component makeVerticalStrut(JComponent compA,
@@ -404,6 +444,18 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
                             SOUTH,
                             this);
         return Box.createVerticalStrut(height);
+    }
+
+    private Component makeHorizontalStrut(JComponent compA,
+                                          JComponent compB,
+                                          int relatedUnrelated) {
+        int width = LayoutStyle.getSharedInstance().getPreferredGap(
+                            compA,
+                            compB,
+                            relatedUnrelated,
+                            WEST,
+                            this);
+        return Box.createHorizontalStrut(width);
     }
 
     private Component makeFlexibleHorizontalStrut(int minWidth,
@@ -431,6 +483,71 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 
     public void removeVersioningListener(VersioningListener listener) {
         listenerSupport.removeListener(listener);
-    }    
+    }
 
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        if (e.getSource() == tabbedPane && tabbedPane.getSelectedComponent() == basePanel) {
+            commitTable.setModifiedFiles(new HashSet<File>(getModifiedFiles().keySet()));
+        }
+    }
+
+    void openDiff (HgFileNode[] nodes) {
+        for (HgFileNode node : nodes) {
+            if (tabbedPane == null) {
+                initializeTabs();
+            }
+            File file = node.getFile();
+            MultiDiffPanel panel = displayedDiffs.get(file);
+            if (panel == null) {
+                panel = new MultiDiffPanel(file, Setup.REVISION_BASE, Setup.REVISION_CURRENT, false); // switch the last parameter to true if editable diff works poorly
+                displayedDiffs.put(file, panel);
+                tabbedPane.addTab(file.getName(), panel);
+            }
+            tabbedPane.setSelectedComponent(panel);
+        }
+        revalidate();
+        repaint();
+    }
+
+    /**
+     * Returns save cookies available for files in the commit table
+     * @return
+     */
+    SaveCookie[] getSaveCookies() {
+        return getModifiedFiles().values().toArray(new SaveCookie[0]);
+    }
+
+    /**
+     * Returns true if trying to commit from the commit tab or the user confirmed his action
+     * @return
+     */
+    boolean canCommit() {
+        boolean result = true;
+        if (tabbedPane != null && tabbedPane.getSelectedComponent() != basePanel) {
+            NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(CommitPanel.class, "MSG_CommitDialog_CommitFromDiff"), //NOI18N
+                    NbBundle.getMessage(CommitPanel.class, "LBL_CommitDialog_CommitFromDiff"), //NOI18N
+                    NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.OK_OPTION);
+            result = NotifyDescriptor.YES_OPTION == DialogDisplayer.getDefault().notify(nd);
+        }
+        return result;
+    }
+
+    private void initializeTabs () {
+         tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+         tabbedPane.addTab(NbBundle.getMessage(CommitPanel.class, "CTL_CommitDialog_Tab_Commit"), basePanel); //NOI18N
+         add(tabbedPane);
+         tabbedPane.addChangeListener(this);
+    }
+
+    private HashMap<File, SaveCookie> getModifiedFiles () {
+        HashMap<File, SaveCookie> modifiedFiles = new HashMap<File, SaveCookie>();
+        for (Map.Entry<File, MultiDiffPanel> e : displayedDiffs.entrySet()) {
+            SaveCookie[] cookies = e.getValue().getSaveCookies(false);
+            if (cookies.length > 0) {
+                modifiedFiles.put(e.getKey(), cookies[0]);
+            }
+        }
+        return modifiedFiles;
+    }
 }

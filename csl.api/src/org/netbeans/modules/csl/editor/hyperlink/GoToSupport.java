@@ -64,11 +64,12 @@ import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.core.GsfHtmlFormatter;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
-import org.netbeans.modules.csl.core.UiUtils;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -124,6 +125,12 @@ public class GoToSupport {
         if (js == null) {
             return null;
         }
+
+        final Language language = identifyActiveFindersLanguage(doc, offset);
+        //I tend to put assert language != null, sincen the perform() method
+        //should be only called when identifyActiveFindersLanguage() before
+        //returned non-null value. But probably can become false?!?!?!
+
         final String[] result = new String[] { null };
         final DeclarationLocation[] location = new DeclarationLocation[] { null };
 
@@ -131,7 +138,14 @@ public class GoToSupport {
             ParserManager.parse(Collections.singleton(js), new UserTask() {
                 public void run(ResultIterator controller) throws Exception {
                     if(cancel.get()) return ;
-                    Parser.Result embeddedResult = controller.getParserResult(offset);
+
+                    //find the proper parser result
+                    ResultIterator ri = getResultIterator(controller, language.getMimeType());
+                    if(ri == null) {
+                        return ;
+                    }
+
+                    Parser.Result embeddedResult = ri.getParserResult();
                     if (!(embeddedResult instanceof ParserResult)) {
                         return;
                     }
@@ -146,9 +160,6 @@ public class GoToSupport {
                     if (finder == null) {
                         return;
                     }
-
-                    // Isn't this a waste of time? Unused
-                    getIdentifierSpan(doc, offset);
 
                     location[0] = finder.findDeclaration(info, offset);
 
@@ -214,6 +225,29 @@ public class GoToSupport {
         }
         
         return result[0];
+    }
+
+    /** finds first ResultIterator of the given mimetype
+     *
+     * @todo refactor this to some CSL's api utility class. It's a copy of
+     * WebUtils class in web.common module. The location there is not so much fitting though...
+     */
+    private static ResultIterator getResultIterator(ResultIterator ri, String mimetype) {
+        if (ri.getSnapshot().getMimeType().equals(mimetype)) {
+            return ri;
+        }
+        for (Embedding e : ri.getEmbeddings()) {
+            ResultIterator eri = ri.getResultIterator(e);
+            if (e.getMimeType().equals(mimetype)) {
+                return eri;
+            } else {
+                ResultIterator eeri = getResultIterator(eri, mimetype);
+                if (eeri != null) {
+                    return eeri;
+                }
+            }
+        }
+        return null;
     }
 
     private static void openLocation(DeclarationLocation location) {
@@ -289,11 +323,21 @@ public class GoToSupport {
         return DataLoadersBridge.getDefault().getFileObject(doc);
     }
 
-    public int[] getHyperlinkSpan(Document doc, int offset) {
-        return getIdentifierSpan(doc, offset);
+    public static int[] getIdentifierSpan(Document doc, int offset) {
+        Language lang = identifyActiveFindersLanguage(doc, offset);
+        if(lang == null) {
+            return null;
+        }
+
+        DeclarationFinder finder = lang.getDeclarationFinder();
+        assert finder != null;
+        OffsetRange range = finder.getReferenceSpan(doc, offset);
+        assert range != null && range != OffsetRange.NONE;
+
+        return new int[]{range.getStart(), range.getEnd()};
     }
 
-    public static int[] getIdentifierSpan(Document doc, int offset) {
+    private static Language identifyActiveFindersLanguage(Document doc, int offset) {
         FileObject fo = getFileObject(doc);
 
         if (fo == null) {
@@ -301,29 +345,24 @@ public class GoToSupport {
             return null;
         }
 
-        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages((BaseDocument) doc,offset);
-        Language language = null;
+        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages((BaseDocument) doc, offset);
+        //according to the lexical embedding iterate over the
+        //languages from the leaf to the root and try to find
+        //their declrations finders. If there is and indicates
+        //it is interested in the given offset return its result
+        //otherwise continue to the root.
         for (Language l : list) {
-            if (l.getDeclarationFinder() != null) {
-                language = l;
-                break;
+            DeclarationFinder finder = l.getDeclarationFinder();
+            if (finder != null) {
+                OffsetRange range = finder.getReferenceSpan(doc, offset);
+                if (range == null) {
+                    throw new NullPointerException(finder + " violates its contract; should not return null from getReferenceSpan."); //NOI18N
+                } else if (range != OffsetRange.NONE) {
+                    return l;
+                }
             }
         }
 
-        if (language == null) {
-            return null;
-        }
-
-        DeclarationFinder finder = language.getDeclarationFinder();
-        assert finder != null;
-
-        OffsetRange range = finder.getReferenceSpan(doc, offset);
-        if (range == null) {
-            throw new NullPointerException(finder + " violates its contract; should not return null from getReferenceSpan."); //NOI18N
-        } else if (range != OffsetRange.NONE) {
-            return new int[] { range.getStart(), range.getEnd() };
-        }
-        
         return null;
     }
 }

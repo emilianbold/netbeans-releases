@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.versioning.system.cvss;
 
+import java.awt.Color;
 import java.util.regex.Pattern;
 import java.util.*;
 import java.util.prefs.Preferences;
@@ -74,6 +75,7 @@ public class CvsModuleConfig {
     
     private static final CvsModuleConfig INSTANCE = new CvsModuleConfig();
     public static final String PREFIX_KEYRING_KEY = "versioning.cvs."; //NOI18N
+    private static final String LAST_COMMIT_MESSAGE = "lastCommitMessage"; //NOI18N
 
     public static CvsModuleConfig getDefault() {
         return INSTANCE;
@@ -194,6 +196,23 @@ public class CvsModuleConfig {
         storeRootsMap();
     }
     
+    public Color getColor(String colorName, Color defaultColor) {
+         int colorRGB = getPreferences().getInt(colorName, defaultColor.getRGB());
+         return new Color(colorRGB);
+    }
+
+    public void setColor(String colorName, Color value) {
+         getPreferences().putInt(colorName, value.getRGB());
+    }
+
+    public String getLastCommitMessage() {
+        return getPreferences().get(LAST_COMMIT_MESSAGE, ""); //NOI18N
+    }
+
+    public void setLastCommitMessage(String message) {
+        getPreferences().put(LAST_COMMIT_MESSAGE, message);
+    }
+
     private Map<String, RootSettings> getRootsMap() {
         if (rootsMap == null) {
             rootsMap = loadRootsMap();

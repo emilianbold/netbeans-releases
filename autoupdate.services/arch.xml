@@ -877,7 +877,7 @@ action.performAction();
     </question>
     -->
     <answer id="exec-property">
-        <api name="plugin.manager.detail.view.selected" group="property" category="private" type="export">
+        <api name="plugin.manager.detail.view.selected" group="systemproperty" category="private" type="export">
             <p>
                 Setting this property affects the associated module autoupdate.ui.
                 Setting it to <code>true</code> results in the detailed view (all visible plugins) been selected

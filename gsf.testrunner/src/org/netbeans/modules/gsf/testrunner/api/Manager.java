@@ -405,7 +405,8 @@ public final class Manager {
                 SwingUtilities.invokeAndWait(r);
             }
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            // The thread can be interrupted by pressing the Stop button.
+            // Do nothing. #167514
         } catch (InvocationTargetException ex) {
             Exceptions.printStackTrace(ex);
         }

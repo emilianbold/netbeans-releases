@@ -406,6 +406,12 @@ public class CreateElementTest extends HintsTestBase {
                 )));
     }
 
+    public void test180111() throws Exception {
+        performTestAnalysisTest("org.netbeans.test.java.hints.Bug180111", 163, new HashSet<String>(Arrays.asList(
+                "CreateMethodFix:create()void:org.netbeans.test.java.hints.Bug180111"
+        )));
+    }
+
     protected void performTestAnalysisTest(String className, int offset, Set<String> golden) throws Exception {
         prepareTest(className);
 

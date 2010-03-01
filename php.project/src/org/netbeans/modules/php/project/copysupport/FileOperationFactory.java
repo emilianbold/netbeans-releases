@@ -52,7 +52,9 @@ import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -83,36 +85,49 @@ abstract class FileOperationFactory {
         return createInitHandlerInternal(source);
     }
 
-    final Callable<Boolean> createCopyHandler(FileObject source) {
+    final Callable<Boolean> createCopyHandler(FileObject source, FileEvent fileEvent) {
         if (isInvalid()) {
             getLogger().log(Level.FINE, "No CREATE handler, File Operation Factory invalid for project {0}", project.getName());
             return null;
         }
-        return createCopyHandlerInternal(source);
+        if (!isValid(fileEvent)) {
+            getLogger().log(Level.FINE, "No CREATE handler, File Event invalid for project {0}", project.getName());
+            return null;
+        }
+        return createCopyHandlerInternal(source, fileEvent);
     }
 
-    final Callable<Boolean> createRenameHandler(FileObject source, String oldName) {
+    final Callable<Boolean> createRenameHandler(FileObject source, String oldName, FileRenameEvent fileRenameEvent) {
         if (isInvalid()) {
             getLogger().log(Level.FINE, "No RENAME handler, File Operation Factory invalid for project {0}", project.getName());
             return null;
         }
-        return createRenameHandlerInternal(source, oldName);
+        if (!isValid(fileRenameEvent)) {
+            getLogger().log(Level.FINE, "No RENAME handler, File Event invalid for project {0}", project.getName());
+            return null;
+        }
+        return createRenameHandlerInternal(source, oldName, fileRenameEvent);
     }
 
-    final Callable<Boolean> createDeleteHandler(FileObject source) {
+    final Callable<Boolean> createDeleteHandler(FileObject source, FileEvent fileEvent) {
         if (isInvalid()) {
             getLogger().log(Level.FINE, "No DELETE handler, File Operation Factory invalid for project {0}", project.getName());
             return null;
         }
-        return createDeleteHandlerInternal(source);
+        if (!isValid(fileEvent)) {
+            getLogger().log(Level.FINE, "No DELETE handler, File Event invalid for project {0}", project.getName());
+            return null;
+        }
+        return createDeleteHandlerInternal(source, fileEvent);
     }
 
     abstract Logger getLogger();
     protected abstract boolean isEnabled();
+    protected abstract boolean isValid(FileEvent fileEvent);
     protected abstract Callable<Boolean> createInitHandlerInternal(FileObject source);
-    protected abstract Callable<Boolean> createCopyHandlerInternal(FileObject source);
-    protected abstract Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName);
-    protected abstract Callable<Boolean> createDeleteHandlerInternal(FileObject source);
+    protected abstract Callable<Boolean> createCopyHandlerInternal(FileObject source, FileEvent fileEvent);
+    protected abstract Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName, FileRenameEvent fileRenameEvent);
+    protected abstract Callable<Boolean> createDeleteHandlerInternal(FileObject source, FileEvent fileEvent);
 
     final void reset() {
         factoryError = false;

@@ -141,7 +141,8 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                     fo = copyToCacheDir(fo);
                 }
             } else {
-                if (hasCached && cachedFile.lastModified().after(project.getProjectDirectory().getFileObject("pom.xml").lastModified())) {
+                FileObject pom = project.getProjectDirectory().getFileObject("pom.xml");
+                if (hasCached && pom != null && cachedFile.lastModified().after(pom.lastModified())) {
                     //sort of simplistic
                     return cache;
                 } else {

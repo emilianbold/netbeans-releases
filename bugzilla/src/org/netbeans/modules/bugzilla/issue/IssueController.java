@@ -109,8 +109,8 @@ public class IssueController extends BugtrackingController {
     public void applyChanges() {
     }
 
-    void refreshViewData() {
-        // PENDING
+    void refreshViewData(boolean force) {
+        issuePanel.reloadFormInAWT(force);
     }
 
 }

@@ -73,6 +73,7 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
     // ----------
     // WizardDescriptor.Panel implementation
 
+    @Override
     public java.awt.Component getComponent() {
         if (librarySelectorComponent == null) {
             librarySelector = LibraryChooser.createPanel(null, null);
@@ -85,6 +86,7 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
                                               new Integer(0));
 
             librarySelector.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     cs.fireChange();
                 }
@@ -94,20 +96,24 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
         return librarySelectorComponent;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelp() {
         // PENDING
         return new org.openide.util.HelpCtx("beans.adding"); // NOI18N
     }
 
+    @Override
     public boolean isValid() {
         return librarySelector != null
                && !librarySelector.getSelectedLibraries().isEmpty();
     }
 
+    @Override
     public void readSettings(AddToPaletteWizard settings) {
 //        wizard = settings;
     }
 
+    @Override
     public void storeSettings(AddToPaletteWizard settings) {
         if (librarySelector != null) { // create the UI component for the wizard step
             List<ClassSource.LibraryEntry> entries = new ArrayList<ClassSource.LibraryEntry>();
@@ -118,10 +124,12 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
         }
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         cs.addChangeListener(listener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         cs.removeChangeListener(listener);
     }

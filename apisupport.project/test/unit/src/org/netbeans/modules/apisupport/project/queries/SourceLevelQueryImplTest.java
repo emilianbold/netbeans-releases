@@ -59,7 +59,7 @@ public class SourceLevelQueryImplTest extends TestBase {
         String path = "junit/src/org/netbeans/modules/junit/JUnitSettings.java";
         FileObject f = nbRoot().getFileObject(path);
         assertNotNull("found " + path, f);
-        assertEquals("1.5 used for an average module", "1.5", SourceLevelQuery.getSourceLevel(f));
+        assertEquals("1.6 used for an average module", "1.6", SourceLevelQuery.getSourceLevel(f));
     }
     
 }

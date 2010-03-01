@@ -44,12 +44,15 @@
  */
 package org.netbeans.modules.kenai.collab.chat;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.kenai.api.KenaiManager;
+import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 
 /**
  *
@@ -63,6 +66,8 @@ public class FilterRenderer extends javax.swing.JPanel implements ListCellRender
         setOpaque(true);
         groupLabel.setOpaque(true);
         groupLabel.setFont(groupLabel.getFont().deriveFont(Font.BOLD));
+        kenaiName.setOpaque(true);
+        setBorder(new EmptyBorder(1,1,1,1));
     }
 
     /** This method is called from within the constructor to
@@ -73,13 +78,22 @@ public class FilterRenderer extends javax.swing.JPanel implements ListCellRender
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         groupLabel = new javax.swing.JLabel();
+        kenaiName = new javax.swing.JLabel();
 
-        setLayout(new java.awt.GridLayout(1, 0));
+        setLayout(new java.awt.GridBagLayout());
 
         groupLabel.setOpaque(true);
-        add(groupLabel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        add(groupLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        add(kenaiName, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     public Component getListCellRendererComponent(
@@ -89,22 +103,40 @@ public class FilterRenderer extends javax.swing.JPanel implements ListCellRender
             boolean isSelected,
             boolean cellHasFocus) {
         if (value!=null) {
-        groupLabel.setText(value.toString());
-        FilterItem item = (FilterItem) value;
-        groupLabel.setBorder(new EmptyBorder(0,item.getIcon()==null?19:0,0,0));
-        groupLabel.setIcon(item.getIcon());
+            groupLabel.setText(value.toString());
+            FilterItem item = (FilterItem) value;
+            groupLabel.setBorder(new EmptyBorder(0, item.getIcon() == null ? 22 : 3, 0, 0));
+            groupLabel.setIcon(item.getIcon());
+            if (KenaiManager.getDefault().getKenais().size() > 1) {
+                if (item.getKenaiProject()!=null)  {
+                    kenaiName.setText(item.getKenaiProject().getKenai().getName());
+                } else {
+                    kenaiName.setText("");
+                }
+            } else {
+                kenaiName.setText("");
+            }
         }
         groupLabel.setOpaque(isSelected);
+
         if (isSelected) {
-            groupLabel.setBackground(UIManager.getColor("ComboBox.selectionBackground")); // NOI18N
-            groupLabel.setForeground(UIManager.getColor("ComboBox.selectionForeground")); // NOI18N
+            groupLabel.setBackground(list.getSelectionBackground()); // NOI18N
+            groupLabel.setForeground(list.getSelectionForeground()); // NOI18N
+            this.setBackground(list.getSelectionBackground());
+            kenaiName.setBackground(list.getSelectionBackground());
+            kenaiName.setForeground(list.getSelectionForeground());
         } else {
-            groupLabel.setBackground(UIManager.getColor("ComboBox.background")); // NOI18N
-            groupLabel.setForeground(UIManager.getColor("ComboBox.foreground")); // NOI18N
+            groupLabel.setBackground(ColorManager.getDefault().getDefaultBackground()); // NOI18N
+            groupLabel.setForeground(list.getForeground()); // NOI18N
+            this.setBackground(ColorManager.getDefault().getDefaultBackground());
+            kenaiName.setBackground(ColorManager.getDefault().getDefaultBackground());
+            kenaiName.setForeground(Color.gray);
         }
+        this.setPreferredSize(new Dimension(10, getPreferredSize().height));
         return this;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel groupLabel;
+    private javax.swing.JLabel kenaiName;
     // End of variables declaration//GEN-END:variables
 }

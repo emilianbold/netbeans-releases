@@ -101,7 +101,8 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
         InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
         DefaultOperationMonitor downloadOperationMonitor = new DefaultOperationMonitor("LBL_Downloading"); // NOI18N
         RemoteClient remoteClient = getRemoteClient(remoteLog, downloadOperationMonitor);
-        download(remoteClient, remoteLog, downloadOperationMonitor, getProject(), true, sources, selectedFiles);
+        String projectName = getProject().getName();
+        download(remoteClient, remoteLog, downloadOperationMonitor, projectName, true, sources, selectedFiles, null, getProject());
     }
 
     public String getDisplayName() {
@@ -111,11 +112,6 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
     public static void download(RemoteClient remoteClient, InputOutput remoteLog, DefaultOperationMonitor operationMonitor, String projectName,
             FileObject sources, Set<TransferFile> forDownload) {
         download(remoteClient, remoteLog, operationMonitor, projectName, false, sources, null, forDownload, null);
-    }
-
-    public static void download(RemoteClient remoteClient, InputOutput remoteLog, DefaultOperationMonitor operationMonitor, PhpProject project,
-            boolean showDownloadDialog, FileObject sources, FileObject... filesToDownload) {
-        download(remoteClient, remoteLog, operationMonitor, project.getName(), showDownloadDialog, sources, filesToDownload, null, project);
     }
 
     private static void download(RemoteClient remoteClient, InputOutput remoteLog, DefaultOperationMonitor operationMonitor, String projectName,

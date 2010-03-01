@@ -61,6 +61,7 @@ implements ServiceListener, InstanceContent.Convertor<ServiceReference, Object> 
         f.getBundleContext().addServiceListener(this);
     }
 
+    @Override
     public void serviceChanged(ServiceEvent ev) {
         final ServiceReference ref = ev.getServiceReference();
         if (ev.getType() == ServiceEvent.REGISTERED) {
@@ -71,26 +72,30 @@ implements ServiceListener, InstanceContent.Convertor<ServiceReference, Object> 
         }
     }
 
+    @Override
     public Object convert(ServiceReference obj) {
         return obj.getBundle().getBundleContext().getService(obj);
     }
 
+    @Override
     public Class<? extends Object> type(ServiceReference obj) {
         String[] arr = (String[])obj.getProperty(Constants.OBJECTCLASS);
         if (arr.length > 0) {
             try {
                 return (Class<?>)obj.getBundle().loadClass(arr[0]);
             } catch (ClassNotFoundException ex) {
-                NetigsoModule.LOG.log(Level.INFO, "Cannot load service class", arr[0]); // NOI18N
+                Netigso.LOG.log(Level.INFO, "Cannot load service class", arr[0]); // NOI18N
             }
         }
         return Object.class;
     }
 
+    @Override
     public String id(ServiceReference obj) {
         return (String) obj.getProperty(Constants.SERVICE_ID);
     }
 
+    @Override
     public String displayName(ServiceReference obj) {
         return (String) obj.getProperty(Constants.SERVICE_DESCRIPTION);
     }

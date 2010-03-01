@@ -75,7 +75,7 @@ public final class ApplicationManagedResourceTransactionInJ2SE extends EntityMan
         body += getInvocationCode(em);
         
         ModifiersTree methodModifiers = getTreeMaker().Modifiers(
-                Collections.<Modifier>singleton(Modifier.PUBLIC),
+                getGenerationOptions().getModifiers(),
                 Collections.<AnnotationTree>emptyList()
                 );
         

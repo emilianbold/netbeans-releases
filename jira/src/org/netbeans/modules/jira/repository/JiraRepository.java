@@ -510,7 +510,7 @@ public class JiraRepository extends Repository {
             public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
                 final JiraClient client = Jira.getInstance().getClient(getTaskRepository());
                 configuration = createConfiguration(client);
-                if(!client.getCache().hasDetails()) {
+                if(forceRefresh || !client.getCache().hasDetails()) {
                     Jira.getInstance().getRepositoryConnector().updateRepositoryConfiguration(getTaskRepository(), new NullProgressMonitor());
                 }
             }

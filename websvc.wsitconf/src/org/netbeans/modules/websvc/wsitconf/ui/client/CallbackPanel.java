@@ -166,6 +166,8 @@ public class CallbackPanel extends SectionInnerPanel {
         
         samlHandlerField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         samlHandlerLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        iterationLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        iterationField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         devDefaultsChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         cbTimestampLbl.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         cbTimestampField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -181,6 +183,7 @@ public class CallbackPanel extends SectionInnerPanel {
         addImmediateModifier(credTypeCombo);
         addImmediateModifier(devDefaultsChBox);
         addImmediateModifier(cbTimestampField);
+        addImmediateModifier(iterationField);
         
         sync();
     }
@@ -219,6 +222,13 @@ public class CallbackPanel extends SectionInnerPanel {
             cbTimestampField.setText(tsTimeout);
         } 
         
+        String iterations = ProprietarySecurityPolicyModelHelper.getHandlerIterations(binding);
+        if (iterations == null) { // no setup exists yet - set the default
+            iterationField.setText(ProprietarySecurityPolicyModelHelper.DEFAULT_ITERATIONS);
+        } else {
+            iterationField.setText(iterations);
+        }
+
         enableDisable();
 
         inSync = false;
@@ -277,6 +287,15 @@ public class CallbackPanel extends SectionInnerPanel {
             }
             ProprietarySecurityPolicyModelHelper.setCallbackHandler(binding, CallbackHandler.SAML_CBHANDLER, classname, null, true);
             return;
+        }
+
+        if (source.equals(iterationField)) {
+            String iterations = (String) iterationField.getValue();
+            if ((iterations == null) || iterations.length() == 0) {
+                ProprietarySecurityPolicyModelHelper.setHandlerIterations(binding, null, true);
+            } else {
+                ProprietarySecurityPolicyModelHelper.setHandlerIterations(binding, iterations, true);
+            }
         }
 
         if (source.equals(cbTimestampField)) {
@@ -389,6 +408,8 @@ public class CallbackPanel extends SectionInnerPanel {
             cbTimestampField.setEnabled(!defaults);
             cbTimestampLbl.setEnabled(!defaults);
             
+            iterationField.setEnabled(!defaults);
+            iterationLabel.setEnabled(!defaults);
         } else {
             credPanel.setEnabled(false);
             Component[] comps = credPanel.getComponents();
@@ -497,17 +518,21 @@ public class CallbackPanel extends SectionInnerPanel {
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, credPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                .add(cbTimestampLbl)
                                 .add(samlHandlerLabel)
-                                .add(cbTimestampLbl))
+                                .add(iterationLabel))
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(layout.createSequentialGroup()
-                                    .add(samlHandlerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 209, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(samlBrowseButton))
-                                .add(cbTimestampField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 533, Short.MAX_VALUE))
+                                .add(iterationField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(layout.createSequentialGroup()
+                                        .add(samlHandlerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 209, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(samlBrowseButton))
+                                    .add(cbTimestampField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -534,14 +559,18 @@ public class CallbackPanel extends SectionInnerPanel {
                 .add(credPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(samlHandlerLabel)
                     .add(samlBrowseButton)
-                    .add(samlHandlerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(samlHandlerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(samlHandlerLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(cbTimestampLbl)
-                    .add(cbTimestampField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(cbTimestampField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(cbTimestampLbl))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(iterationLabel)
+                    .add(iterationField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
 
         layout.linkSize(new java.awt.Component[] {kerberosCfgButton, keyStoreButton, trustStoreButton, validatorCfgButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -582,6 +611,8 @@ public class CallbackPanel extends SectionInnerPanel {
         cbTimestampField = new javax.swing.JFormattedTextField();
         kerberosCfgButton = new javax.swing.JButton();
         validatorCfgButton = new javax.swing.JButton();
+        iterationLabel = new javax.swing.JLabel();
+        iterationField = new javax.swing.JFormattedTextField();
 
         addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -658,6 +689,15 @@ public class CallbackPanel extends SectionInnerPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(iterationLabel, "Key Obtention Iterations:");
+
+        iterationField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0"))));
+        iterationField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                iterationFieldActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -686,17 +726,21 @@ public class CallbackPanel extends SectionInnerPanel {
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, credPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                .add(cbTimestampLbl)
                                 .add(samlHandlerLabel)
-                                .add(cbTimestampLbl))
+                                .add(iterationLabel))
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(layout.createSequentialGroup()
-                                    .add(samlHandlerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 209, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(samlBrowseButton))
-                                .add(cbTimestampField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 533, Short.MAX_VALUE))
+                                .add(iterationField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(layout.createSequentialGroup()
+                                        .add(samlHandlerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 209, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(samlBrowseButton))
+                                    .add(cbTimestampField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -723,14 +767,18 @@ public class CallbackPanel extends SectionInnerPanel {
                 .add(credPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(samlHandlerLabel)
                     .add(samlBrowseButton)
-                    .add(samlHandlerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(samlHandlerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(samlHandlerLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(cbTimestampLbl)
-                    .add(cbTimestampField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(cbTimestampField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(cbTimestampLbl))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(iterationLabel)
+                    .add(iterationField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
 
         layout.linkSize(new java.awt.Component[] {kerberosCfgButton, keyStoreButton, trustStoreButton, validatorCfgButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -822,6 +870,10 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
             panel.storeState();
         }
 }//GEN-LAST:event_validatorCfgButtonActionPerformed
+
+    private void iterationFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_iterationFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_iterationFieldActionPerformed
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JFormattedTextField cbTimestampField;
@@ -830,6 +882,8 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     private javax.swing.JComboBox credTypeCombo;
     private javax.swing.JLabel credTypeLabel;
     private javax.swing.JCheckBox devDefaultsChBox;
+    private javax.swing.JFormattedTextField iterationField;
+    private javax.swing.JLabel iterationLabel;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JButton kerberosCfgButton;
     private javax.swing.JButton keyStoreButton;

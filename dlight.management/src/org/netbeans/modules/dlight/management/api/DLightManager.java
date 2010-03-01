@@ -237,6 +237,11 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         return sessions;
     }
 
+    public Collection<DataStorage> getStorageByKey(String storageUniqueKey){
+        return DataStorageManager.getInstance().getStorages(storageUniqueKey);        
+
+    }
+
     public DataProvider createDataProvider(String storageUniqueKey, DataModelScheme dataModelScheme, DataTableMetadata dataMetadata) {
         // Get a list of all provider factories that can create providers
         // for required dataModelScheme.

@@ -103,6 +103,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
     
+        <change id="ap-query">
+            <api name="java-api-common"/>
+            <summary>Support for AnnotationProcessingQuery</summary>
+            <version major="1" minor="14"/>
+            <date day="26" month="1" year="2010"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Adding support for AnnotationProcessingQuery, and related API changes.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathProviderImpl"/>
+            <class package="org.netbeans.modules.java.api.common.project" name="ProjectProperties"/>
+            <class package="org.netbeans.modules.java.api.common.project.ui.customizer" name="EditMediator"/>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+            <issue number="179749"/>
+        </change>
+
         <change id="endorsed-classpath">
             <api name="java-api-common"/>
             <summary>Add support for endorsed libraries</summary>

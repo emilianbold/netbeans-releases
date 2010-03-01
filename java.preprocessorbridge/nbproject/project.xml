@@ -35,6 +35,7 @@
                 <friend>org.netbeans.modules.debugger.jpda.projects</friend>
                 <friend>org.netbeans.modules.groovy.editor</friend>
                 <friend>org.netbeans.modules.java.editor</friend>
+                <friend>org.netbeans.modules.java.hints</friend>
                 <friend>org.netbeans.modules.java.source</friend>
                 <friend>org.netbeans.modules.java.sourceui</friend>
                 <friend>org.netbeans.modules.javafx.source</friend>

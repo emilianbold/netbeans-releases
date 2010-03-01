@@ -78,6 +78,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Utility class to create ModelSource (environment) for the
@@ -201,50 +202,51 @@ public class Utilities {
     public static ModelSource createModelSource(FileObject thisFileObj) {
         assert thisFileObj != null : "Null file object.";
 
-        boolean editable = true;
-        DataObject dobj = null;
-        try {
-            dobj = DataObject.find(thisFileObj);
-        } catch (DataObjectNotFoundException ex) {
-            //does this ever happen?
-        }
-        InstanceContent ic = new InstanceContent();
-        Lookup lookup = new AbstractLookup(ic);
-        if (dobj != null) {
-            ic.add(dobj);
-        }
-        ic.add(thisFileObj);
-        File fl = FileUtil.toFile(thisFileObj);
-        if (fl != null) {
-            ic.add(fl);
-        } else {
-            editable = false;
-            if (FileUtil.getArchiveFile(thisFileObj) == null && thisFileObj.canWrite()) {
-                Logger.getLogger(Utilities.class.getName()).warning("Creating a non-editable ModelSource for '" + thisFileObj.getPath() + "'. As these models get cached, one gets errors down the road eventually."); //NOI18N
-            }
-        }
+        final FileObject fobj = thisFileObj;
 
-        ModelSource ms = new ModelSource(lookup, editable);
-        final CatalogModel catalogModel;
+        DataObject tempdobj;
         try {
-            catalogModel = CatalogModelFactory.getDefault().getCatalogModel(ms);
-            assert catalogModel != null;
-            if (catalogModel != null) {
-                ic.add(catalogModel);
+            tempdobj = DataObject.find(fobj);
+        } catch (DataObjectNotFoundException ex) {
+            tempdobj = null;
+        }
+        final DataObject dobj = tempdobj;
+
+        final File fl = FileUtil.toFile(fobj);
+        boolean editable = (fl != null);
+
+        Lookup proxyLookup = Lookups.proxy(new Lookup.Provider() {
+            @Override
+            public Lookup getLookup() {
+                Document document = null;
+                try {
+                    document = _getDocument(dobj);
+                    if (document != null) {
+                        return Lookups.fixed(new Object[] {
+                            fobj,
+                            dobj,
+                            fl,
+                            document
+                        });
+                    } else {
+                        return Lookups.fixed(new Object[] {
+                            fobj,
+                            dobj,
+                            fl
+                        });
+                    }
+                } catch (IOException ioe) {
+                    logger.log(Level.SEVERE, ioe.getMessage());
+                    return Lookups.fixed(new Object[] {
+                        fobj,
+                        dobj,
+                        fl
+                    });
+                }
             }
-        } catch (CatalogModelException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        Document document = null;
-        try {
-            document = _getDocument(dobj);
-        } catch (IOException ioe) {
-            logger.log(Level.SEVERE, ioe.getMessage());
-        }
-        if (document != null) {
-            ic.add(document);
-        }
-        return ms;
+        });
+
+        return new ModelSource(proxyLookup, editable);
     }
 
     /**

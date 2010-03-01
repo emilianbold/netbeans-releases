@@ -43,6 +43,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.netbeans.modules.java.hints.jackpot.spi.CustomizerProvider;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Kind;
 import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 
 /**
@@ -55,7 +57,8 @@ public @interface Hint {
     public String id() default "";
     public String category();
     public boolean enabled() default true;
-//    public HintSeverity severity() default HintSeverity.WARNING;
+    public HintSeverity severity() default HintSeverity.WARNING;
     public String[] suppressWarnings() default {};
-    public Class<?> customizerProvider() default Void.class;
+    public Class<? extends CustomizerProvider> customizerProvider() default CustomizerProvider.class;
+    public Kind hintKind() default Kind.HINT;
 }

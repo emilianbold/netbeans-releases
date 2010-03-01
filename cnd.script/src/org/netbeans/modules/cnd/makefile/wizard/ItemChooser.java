@@ -61,7 +61,8 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import org.netbeans.modules.cnd.makefile.utils.IpeFileSystemView;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 
 /**
  *  Superclass for a MakefileWizard panel consisting of a directory textfield
@@ -259,7 +260,7 @@ public class ItemChooser extends MakefileWizardPanel
 		int returnVal = fc.showDialog(ItemChooser.this, null);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 		    String path = fc.getSelectedFile().getAbsolutePath();
-		    dirText.setText(IpeUtils.getRelativePath(cwd, path));
+		    dirText.setText(CndPathUtilitities.getRelativePath(cwd, path));
 		}
 	    }
 	});
@@ -332,7 +333,7 @@ public class ItemChooser extends MakefileWizardPanel
     public void addNotify () {
 	super.addNotify();
 	dirText.selectAll();
-	IpeUtils.requestFocus(dirText);
+	CndUIUtilities.requestFocus(dirText);
 	validateDirectory();
     }
 

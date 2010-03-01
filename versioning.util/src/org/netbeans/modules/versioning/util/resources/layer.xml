@@ -92,4 +92,16 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+
+    <folder name="org-netbeans-modules-options-editor">
+        <folder name="OptionsDialogCategories">
+            <folder name="FontsColors">
+                <file name="AnnotationColorsPanel.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.options.colors.spi.FontsColorsController"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.versioning.util.options.AnnotationColorsPanel"/>
+                    <attr name="position" intvalue="500"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

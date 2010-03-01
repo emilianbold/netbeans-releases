@@ -118,4 +118,38 @@ public class YamlParserTest extends YamlTestBase {
 
         assertNotNull("Parser result must be nonnull", parser.getResult(null));
     }
+
+    public void testReplacePhpFragments() {
+        assertEquals("", YamlParser.replacePhpFragments(""));
+        assertEquals("foo bar", YamlParser.replacePhpFragments("foo bar"));
+        assertEquals("?>", YamlParser.replacePhpFragments("?>"));
+        assertEquals("<?", YamlParser.replacePhpFragments("<?"));
+        assertEquals("foo ?>", YamlParser.replacePhpFragments("foo ?>"));
+        assertEquals("<? bar", YamlParser.replacePhpFragments("<? bar"));
+
+        assertEquals("    ", YamlParser.replacePhpFragments("<??>"));
+        assertEquals("foo:    ", YamlParser.replacePhpFragments("foo:<??>"));
+        assertEquals("foo:                   ", YamlParser.replacePhpFragments("foo:<? here goes php ?>"));
+        assertEquals("foo           baz", YamlParser.replacePhpFragments("foo <? bar ?> baz"));
+
+        assertEquals("        ", YamlParser.replacePhpFragments("<??><??>"));
+        assertEquals("foo:    bar:       qux", YamlParser.replacePhpFragments("foo:<??>bar:<?baz?>qux"));
+    }
+
+    public void testReplacePhpFragmentsPerformance() {
+        StringBuilder source = new StringBuilder();
+        // generate a big file with some php in it
+        for (int i = 0; i < 50000; i++) {
+            source.append("something\n");
+            if (i % 100 == 0) {
+                source.append("<? php here ?>");
+            }
+        }
+        long start = System.currentTimeMillis();
+        YamlParser.replacePhpFragments(source.toString());
+        long time = System.currentTimeMillis() - start;
+        // takes about 30 ms on my laptop, so I suppose 300 ms should
+        // be enough pretty much on any machine
+        assertTrue("Slow replacing of php fragments: " + time + " ms" , time < 300);
+    }
 }

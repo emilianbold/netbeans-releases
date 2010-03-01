@@ -71,8 +71,8 @@ public class ImportCommand extends SvnCommand {
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {                     
         arguments.add("import");
-        arguments.add(file);
-        arguments.add(url);
+        arguments.add(file.getAbsolutePath());
+        arguments.addNonExistent(url);
         if(!recursive) {
             arguments.add("-N");
         }

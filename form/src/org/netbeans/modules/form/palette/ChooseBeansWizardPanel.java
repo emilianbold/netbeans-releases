@@ -79,8 +79,9 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
     // ----------
     // WizardDescriptor.Panel implementation
 
+    @Override
     public Component getComponent() {
-        if ((markedBeans == null) && ((allBeans == null) || (allBeans.size() == 0))) {
+        if ((markedBeans == null) && ((allBeans == null) || (allBeans.isEmpty()))) {
             // No beans found
             String messageKey;
             if (sourceType == ClassSource.JarEntry.class)
@@ -119,15 +120,18 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
         return beanSelector;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelp() {
         // PENDING
         return new org.openide.util.HelpCtx("beans.adding"); // NOI18N
     }
 
+    @Override
     public boolean isValid() {
         return beanSelector != null && beanSelector.getSelectedBeans().size() > 0;
     }
 
+    @Override
     public void readSettings(AddToPaletteWizard wizard) {
         sourceType = wizard.getSourceType();
         List<? extends ClassSource.Entry> jarFiles = wizard.getJARFiles();
@@ -152,6 +156,7 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
             beanSelector.setBeans(markedBeans, allBeans);
     }
 
+    @Override
     public void storeSettings(AddToPaletteWizard settings) {
         if (beanSelector != null) {
             List<BeanInstaller.ItemInfo> itemList = beanSelector.getSelectedBeans();
@@ -162,10 +167,12 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
         }
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         cs.addChangeListener(listener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         cs.removeChangeListener(listener);
     }
@@ -258,7 +265,9 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
 
         void setDisplayedBeans(final List<BeanInstaller.ItemInfo> beans) {
             list.setModel(new AbstractListModel() {
+                @Override
                 public int getSize() { return beans.size(); }
+                @Override
                 public Object getElementAt(int i) { return beans.get(i); }
             });
         }
@@ -287,6 +296,7 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
             setBorder(noFocusBorder);
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list,
                                                       Object value,
                                                       int index,
@@ -319,10 +329,12 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
 
     class Listener implements ListSelectionListener, ActionListener {
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             cs.fireChange();
         }
 
+        @Override
         public void actionPerformed(ActionEvent ev) {
             if ("SHOW MARKED".equals(ev.getActionCommand())) { // NOI18N
                 beanSelector.setDisplayedBeans(markedBeans);

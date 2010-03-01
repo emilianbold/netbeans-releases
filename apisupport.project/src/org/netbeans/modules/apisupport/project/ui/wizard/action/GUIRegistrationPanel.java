@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
-import java.awt.Component;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -54,15 +53,12 @@ import javax.swing.DefaultListModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.plaf.UIResource;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
@@ -91,10 +87,6 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     private static final String ACTIONS_DIR = "Actions"; // NOI18N
     
     private FileSystem sfs;
-    
-    private final ListCellRenderer POSITION_RENDERER = new PositionRenderer();
-    private static final String POSITION_HERE = getMessage("CTL_PositionHere");
-    private static final String POSITION_SEPARATOR = " - "; // NOI18N
     
     private DataModel data;
     
@@ -224,6 +216,9 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         
         editorContext.setEnabled(!alwaysEnabled);
         setGroupEnabled(editorGroup, editorContext.isSelected());
+
+        alwaysEnabledPanel.setVisible(alwaysEnabled);
+        contextSensitivePanel.setVisible(!alwaysEnabled);
     }
     
     /** Package private for unit tests only. */
@@ -419,7 +414,6 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         categoryTxt = new javax.swing.JLabel();
         category = new javax.swing.JComboBox();
@@ -428,7 +422,6 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         menu = new javax.swing.JComboBox();
         menuPositionTxt = new javax.swing.JLabel();
         menuPosition = new javax.swing.JComboBox();
-        menuSeparatorPanel = new javax.swing.JPanel();
         menuSeparatorBefore = new javax.swing.JCheckBox();
         menuSeparatorAfter = new javax.swing.JCheckBox();
         globalToolbarButton = new javax.swing.JCheckBox();
@@ -436,13 +429,14 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         toolbar = new javax.swing.JComboBox();
         toolbarPositionTxt = new javax.swing.JLabel();
         toolbarPosition = new javax.swing.JComboBox();
+        alwaysEnabledPanel = new javax.swing.JPanel();
         globalKeyboardShortcut = new javax.swing.JCheckBox();
         keyStrokeTxt = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         shortcutsList = new JList(new DefaultListModel());
         keyStrokeChange = new javax.swing.JButton();
         keyStrokeRemove = new javax.swing.JButton();
-        filler = new javax.swing.JLabel();
+        contextSensitivePanel = new javax.swing.JPanel();
         fileTypeContext = new javax.swing.JCheckBox();
         ftContentTypeTxt = new javax.swing.JLabel();
         ftContentType = new javax.swing.JComboBox();
@@ -460,25 +454,10 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         edSeparatorBefore = new javax.swing.JCheckBox();
         edSeparatorAfter = new javax.swing.JCheckBox();
 
-        setLayout(new java.awt.GridBagLayout());
-
         categoryTxt.setLabelFor(category);
         org.openide.awt.Mnemonics.setLocalizedText(categoryTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_Category")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        add(categoryTxt, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        add(category, gridBagConstraints);
-        category.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_Category")); // NOI18N
+
+        category.setPrototypeDisplayValue("Window | Debug");
 
         org.openide.awt.Mnemonics.setLocalizedText(globalMenuItem, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_GlobalMenuItem")); // NOI18N
         globalMenuItem.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -487,73 +466,21 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                 globalMenuItemActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 0, 3, 0);
-        add(globalMenuItem, gridBagConstraints);
-        globalMenuItem.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_globalMenuItem")); // NOI18N
 
         menuTxt.setLabelFor(menu);
         org.openide.awt.Mnemonics.setLocalizedText(menuTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_Menu")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
-        add(menuTxt, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 12, 3, 0);
-        add(menu, gridBagConstraints);
-        menu.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_menu")); // NOI18N
+
+        menu.setPrototypeDisplayValue("Profile | Advanced");
 
         menuPositionTxt.setLabelFor(menuPosition);
         org.openide.awt.Mnemonics.setLocalizedText(menuPositionTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_Position")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
-        add(menuPositionTxt, gridBagConstraints);
 
-        menuPosition.setRenderer(POSITION_RENDERER);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 12, 3, 0);
-        add(menuPosition, gridBagConstraints);
-        menuPosition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_menuPosition")); // NOI18N
-
-        menuSeparatorPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+        menuPosition.setPrototypeDisplayValue(DataModel.Position.PROTOTYPE);
 
         org.openide.awt.Mnemonics.setLocalizedText(menuSeparatorBefore, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_SeparatorBefore")); // NOI18N
-        menuSeparatorPanel.add(menuSeparatorBefore);
-        menuSeparatorBefore.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_menuSeparatorBefore")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(menuSeparatorAfter, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_SeparatorAfter")); // NOI18N
         menuSeparatorAfter.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 6, 0, 0));
-        menuSeparatorPanel.add(menuSeparatorAfter);
-        menuSeparatorAfter.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_menuSeparatorAfter")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 18, 0, 0);
-        add(menuSeparatorPanel, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(globalToolbarButton, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_GlobalToolbarButton")); // NOI18N
         globalToolbarButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -562,54 +489,16 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                 globalToolbarButtonActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 0, 3, 0);
-        add(globalToolbarButton, gridBagConstraints);
-        globalToolbarButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_globalToolbarButton")); // NOI18N
 
         toolbarTxt.setLabelFor(toolbar);
         org.openide.awt.Mnemonics.setLocalizedText(toolbarTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_Toolbar")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
-        add(toolbarTxt, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 12, 3, 0);
-        add(toolbar, gridBagConstraints);
-        toolbar.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_toolbar")); // NOI18N
+
+        toolbar.setPrototypeDisplayValue("Quick Search");
 
         toolbarPositionTxt.setLabelFor(toolbarPosition);
         org.openide.awt.Mnemonics.setLocalizedText(toolbarPositionTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_Position")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
-        add(toolbarPositionTxt, gridBagConstraints);
 
-        toolbarPosition.setRenderer(POSITION_RENDERER);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 12, 3, 0);
-        add(toolbarPosition, gridBagConstraints);
-        toolbarPosition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_toolbarPosition")); // NOI18N
+        toolbarPosition.setPrototypeDisplayValue(DataModel.Position.PROTOTYPE);
 
         org.openide.awt.Mnemonics.setLocalizedText(globalKeyboardShortcut, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_GlobalKeyboardShortcut")); // NOI18N
         globalKeyboardShortcut.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -618,24 +507,9 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                 globalKeyboardShortcutActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 0, 3, 0);
-        add(globalKeyboardShortcut, gridBagConstraints);
-        globalKeyboardShortcut.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_globalKeyboardShortcut")); // NOI18N
 
         keyStrokeTxt.setLabelFor(menuPosition);
         org.openide.awt.Mnemonics.setLocalizedText(keyStrokeTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_KeyStroke")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
-        add(keyStrokeTxt, gridBagConstraints);
-        keyStrokeTxt.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_keyStrokeDef")); // NOI18N
 
         shortcutsList.setVisibleRowCount(3);
         shortcutsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
@@ -646,31 +520,12 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         jScrollPane1.setViewportView(shortcutsList);
         shortcutsList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_keyStrokeList")); // NOI18N
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 12, 3, 0);
-        add(jScrollPane1, gridBagConstraints);
-
         org.openide.awt.Mnemonics.setLocalizedText(keyStrokeChange, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "CTL_Change")); // NOI18N
         keyStrokeChange.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 keyStrokeChangeActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 12, 3, 0);
-        add(keyStrokeChange, gridBagConstraints);
-        keyStrokeChange.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_keyStrokeChange")); // NOI18N
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/action/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(keyStrokeRemove, bundle.getString("CTL_Remove")); // NOI18N
@@ -679,24 +534,42 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                 keyStrokeRemoveActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 12, 3, 0);
-        add(keyStrokeRemove, gridBagConstraints);
-        keyStrokeRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_keyStrokeRemove")); // NOI18N
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 19;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(filler, gridBagConstraints);
+        javax.swing.GroupLayout alwaysEnabledPanelLayout = new javax.swing.GroupLayout(alwaysEnabledPanel);
+        alwaysEnabledPanel.setLayout(alwaysEnabledPanelLayout);
+        alwaysEnabledPanelLayout.setHorizontalGroup(
+            alwaysEnabledPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(globalKeyboardShortcut)
+            .addGroup(alwaysEnabledPanelLayout.createSequentialGroup()
+                .addComponent(keyStrokeTxt)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(alwaysEnabledPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(keyStrokeRemove, javax.swing.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE)
+                    .addComponent(keyStrokeChange, javax.swing.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        alwaysEnabledPanelLayout.setVerticalGroup(
+            alwaysEnabledPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(alwaysEnabledPanelLayout.createSequentialGroup()
+                .addComponent(globalKeyboardShortcut)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(alwaysEnabledPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(keyStrokeTxt)
+                    .addGroup(alwaysEnabledPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, alwaysEnabledPanelLayout.createSequentialGroup()
+                            .addComponent(keyStrokeChange)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(keyStrokeRemove))
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        globalKeyboardShortcut.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_globalKeyboardShortcut")); // NOI18N
+        keyStrokeTxt.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_keyStrokeDef")); // NOI18N
+        keyStrokeChange.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_keyStrokeChange")); // NOI18N
+        keyStrokeRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_keyStrokeRemove")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(fileTypeContext, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_FileTypeContextMenuItem")); // NOI18N
         fileTypeContext.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -705,54 +578,16 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                 fileTypeContextActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 0, 3, 0);
-        add(fileTypeContext, gridBagConstraints);
-        fileTypeContext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_FileTypeContext")); // NOI18N
 
         ftContentTypeTxt.setLabelFor(ftContentType);
         org.openide.awt.Mnemonics.setLocalizedText(ftContentTypeTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_ContentType")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 12;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
-        add(ftContentTypeTxt, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 12;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 12, 3, 0);
-        add(ftContentType, gridBagConstraints);
-        ftContentType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_ftContentType")); // NOI18N
+
+        ftContentType.setPrototypeDisplayValue("text/xhtml+xml");
 
         ftPositionTxt.setLabelFor(ftPosition);
         org.openide.awt.Mnemonics.setLocalizedText(ftPositionTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_Position")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 13;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
-        add(ftPositionTxt, gridBagConstraints);
 
-        ftPosition.setRenderer(POSITION_RENDERER);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 13;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 12, 3, 0);
-        add(ftPosition, gridBagConstraints);
-        ftPosition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_ftPosition")); // NOI18N
+        ftPosition.setPrototypeDisplayValue(DataModel.Position.PROTOTYPE);
 
         ftSeparatorPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
@@ -765,14 +600,6 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         ftSeparatorPanel.add(ftSeparatorAfter);
         ftSeparatorAfter.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_ftSeparatorAfter")); // NOI18N
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 14;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 18, 0, 0);
-        add(ftSeparatorPanel, gridBagConstraints);
-
         org.openide.awt.Mnemonics.setLocalizedText(editorContext, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_EditorContextMenuItem")); // NOI18N
         editorContext.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         editorContext.addActionListener(new java.awt.event.ActionListener() {
@@ -780,54 +607,16 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                 editorContextActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 15;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 0, 3, 0);
-        add(editorContext, gridBagConstraints);
-        editorContext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_EditorContext")); // NOI18N
 
         edContentTypeTxt.setLabelFor(edContentType);
         org.openide.awt.Mnemonics.setLocalizedText(edContentTypeTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_ContentType")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 16;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
-        add(edContentTypeTxt, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 16;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 12, 3, 0);
-        add(edContentType, gridBagConstraints);
-        edContentType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_edContentType")); // NOI18N
+
+        edContentType.setPrototypeDisplayValue("text/xhtml+xml");
 
         edPositionTxt.setLabelFor(edPosition);
         org.openide.awt.Mnemonics.setLocalizedText(edPositionTxt, org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_Position")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 17;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 0);
-        add(edPositionTxt, gridBagConstraints);
 
-        edPosition.setRenderer(POSITION_RENDERER);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 17;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 12, 3, 0);
-        add(edPosition, gridBagConstraints);
-        edPosition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_edPosition")); // NOI18N
+        edPosition.setPrototypeDisplayValue(DataModel.Position.PROTOTYPE);
 
         edSeparatorPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
@@ -840,13 +629,179 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         edSeparatorPanel.add(edSeparatorAfter);
         edSeparatorAfter.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_edSeparatorAfter")); // NOI18N
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 18;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 18, 0, 0);
-        add(edSeparatorPanel, gridBagConstraints);
+        javax.swing.GroupLayout contextSensitivePanelLayout = new javax.swing.GroupLayout(contextSensitivePanel);
+        contextSensitivePanel.setLayout(contextSensitivePanelLayout);
+        contextSensitivePanelLayout.setHorizontalGroup(
+            contextSensitivePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(contextSensitivePanelLayout.createSequentialGroup()
+                .addGroup(contextSensitivePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(contextSensitivePanelLayout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(ftPositionTxt)
+                        .addGap(49, 49, 49)
+                        .addComponent(ftPosition, 0, 351, Short.MAX_VALUE))
+                    .addGroup(contextSensitivePanelLayout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(ftSeparatorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(editorContext)
+                    .addGroup(contextSensitivePanelLayout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(edContentTypeTxt)
+                        .addGap(12, 12, 12)
+                        .addComponent(edContentType, 0, 351, Short.MAX_VALUE))
+                    .addGroup(contextSensitivePanelLayout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(edPositionTxt)
+                        .addGap(49, 49, 49)
+                        .addComponent(edPosition, 0, 351, Short.MAX_VALUE))
+                    .addGroup(contextSensitivePanelLayout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(edSeparatorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(fileTypeContext)
+                    .addGroup(contextSensitivePanelLayout.createSequentialGroup()
+                        .addGap(17, 17, 17)
+                        .addComponent(ftContentTypeTxt)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ftContentType, 0, 351, Short.MAX_VALUE)
+                        .addGap(1, 1, 1)))
+                .addContainerGap())
+        );
+        contextSensitivePanelLayout.setVerticalGroup(
+            contextSensitivePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(contextSensitivePanelLayout.createSequentialGroup()
+                .addComponent(fileTypeContext)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(contextSensitivePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ftContentTypeTxt)
+                    .addComponent(ftContentType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(6, 6, 6)
+                .addGroup(contextSensitivePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(contextSensitivePanelLayout.createSequentialGroup()
+                        .addGap(4, 4, 4)
+                        .addComponent(ftPositionTxt))
+                    .addComponent(ftPosition, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(6, 6, 6)
+                .addComponent(ftSeparatorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(editorContext)
+                .addGap(6, 6, 6)
+                .addGroup(contextSensitivePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(contextSensitivePanelLayout.createSequentialGroup()
+                        .addGap(4, 4, 4)
+                        .addComponent(edContentTypeTxt))
+                    .addComponent(edContentType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(6, 6, 6)
+                .addGroup(contextSensitivePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(contextSensitivePanelLayout.createSequentialGroup()
+                        .addGap(4, 4, 4)
+                        .addComponent(edPositionTxt))
+                    .addComponent(edPosition, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(6, 6, 6)
+                .addComponent(edSeparatorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        fileTypeContext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_FileTypeContext")); // NOI18N
+        ftContentType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_ftContentType")); // NOI18N
+        ftPosition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_ftPosition")); // NOI18N
+        editorContext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_EditorContext")); // NOI18N
+        edContentType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_edContentType")); // NOI18N
+        edPosition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_edPosition")); // NOI18N
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(categoryTxt)
+                        .addGap(12, 12, 12)
+                        .addComponent(category, 0, 411, Short.MAX_VALUE))
+                    .addComponent(globalMenuItem)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(menuSeparatorBefore)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(menuSeparatorAfter))
+                    .addComponent(globalToolbarButton)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(toolbarTxt)
+                        .addGap(16, 16, 16)
+                        .addComponent(toolbar, 0, 418, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(toolbarPositionTxt)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(toolbarPosition, 0, 418, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(menuTxt)
+                            .addComponent(menuPositionTxt))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(menu, 0, 418, Short.MAX_VALUE)
+                            .addComponent(menuPosition, 0, 418, Short.MAX_VALUE)))
+                    .addComponent(alwaysEnabledPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 493, Short.MAX_VALUE)
+                    .addComponent(contextSensitivePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(6, 6, 6)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(4, 4, 4)
+                        .addComponent(categoryTxt))
+                    .addComponent(category, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(globalMenuItem)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(menuTxt))
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(menu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(6, 6, 6)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(menuPosition, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(menuPositionTxt))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(menuSeparatorBefore)
+                    .addComponent(menuSeparatorAfter))
+                .addGap(18, 18, 18)
+                .addComponent(globalToolbarButton)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(toolbarTxt))
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(toolbar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(toolbarPositionTxt))
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(toolbarPosition, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(alwaysEnabledPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(contextSensitivePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(36, Short.MAX_VALUE))
+        );
+
+        category.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_Category")); // NOI18N
+        globalMenuItem.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_globalMenuItem")); // NOI18N
+        menu.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_menu")); // NOI18N
+        menuPosition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_menuPosition")); // NOI18N
+        menuSeparatorBefore.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_menuSeparatorBefore")); // NOI18N
+        menuSeparatorAfter.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_menuSeparatorAfter")); // NOI18N
+        globalToolbarButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_globalToolbarButton")); // NOI18N
+        toolbar.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_toolbar")); // NOI18N
+        toolbarPosition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_CTL_toolbarPosition")); // NOI18N
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GUIRegistrationPanel.class, "ACS_GuiRegistrationPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -913,8 +868,10 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel alwaysEnabledPanel;
     private javax.swing.JComboBox category;
     private javax.swing.JLabel categoryTxt;
+    private javax.swing.JPanel contextSensitivePanel;
     private javax.swing.JComboBox edContentType;
     private javax.swing.JLabel edContentTypeTxt;
     private javax.swing.JComboBox edPosition;
@@ -924,7 +881,6 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     private javax.swing.JPanel edSeparatorPanel;
     javax.swing.JCheckBox editorContext;
     javax.swing.JCheckBox fileTypeContext;
-    private javax.swing.JLabel filler;
     private javax.swing.JComboBox ftContentType;
     private javax.swing.JLabel ftContentTypeTxt;
     private javax.swing.JComboBox ftPosition;
@@ -944,7 +900,6 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     private javax.swing.JLabel menuPositionTxt;
     private javax.swing.JCheckBox menuSeparatorAfter;
     private javax.swing.JCheckBox menuSeparatorBefore;
-    private javax.swing.JPanel menuSeparatorPanel;
     private javax.swing.JLabel menuTxt;
     private javax.swing.JList shortcutsList;
     private javax.swing.JComboBox toolbar;
@@ -997,50 +952,6 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                 getFolders(f, folders);
             }
         }
-    }
-    
-    private static class PositionRenderer extends JLabel implements ListCellRenderer, UIResource {
-        
-        public PositionRenderer () {
-            setOpaque(true);
-        }
-        
-        public Component getListCellRendererComponent(
-                JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            // #93658: GTK needs name to render cell renderer "natively"
-            setName("ComboBox.listRenderer"); // NOI18N
-            
-            String text;
-            if (value == null || value == CustomizerComponentFactory.WAIT_VALUE) {
-                text = CustomizerComponentFactory.WAIT_VALUE;
-            } else if (value == CustomizerComponentFactory.EMPTY_VALUE) {
-                text = CustomizerComponentFactory.EMPTY_VALUE;
-            } else {
-                Position pos = (Position) value;
-                String before = pos.getBeforeName() == null ? "" : pos.getBeforeName() + POSITION_SEPARATOR;
-                String after = pos.getAfterName() == null ? "" : POSITION_SEPARATOR + pos.getAfterName();
-                text = before + POSITION_HERE + after;
-            }
-            setText(text);
-            
-            if ( isSelected ) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());             
-            }
-            else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-            
-            return this;
-        }
-        
-        // #93658: GTK needs name to render cell renderer "natively"
-        public String getName() {
-            String name = super.getName();
-            return name == null ? "ComboBox.renderer" : name;  // NOI18N
-        }
-        
     }
     
     private class PML implements PopupMenuListener {

@@ -231,6 +231,13 @@ public class NodeFactorySupport {
             }
             return cnt;
         }
+
+        public @Override Node findChild(String name) {
+            if (name != null) {
+                getNodes(true);
+            }
+            return super.findChild(name);
+        }
         
         protected @Override void removeNotify() {
             super.removeNotify();

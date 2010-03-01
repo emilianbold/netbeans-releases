@@ -71,6 +71,11 @@ public class DtraceParserTest extends NbTestCase {
         super(name);
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     @Test
     public void testTwoColumns() throws IOException {
         DataTableMetadata metadata = new DataTableMetadata(

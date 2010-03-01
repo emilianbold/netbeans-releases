@@ -127,7 +127,6 @@ public class JsfSupport {
         this.wm = wm;
 
         this.classpath = classPath;
-        
         //create classpath support
         this.tldLibrariesCache = new TldLibrariesCache(this);
         this.faceletsDescriptorsCache = new FaceletsLibraryDescriptorCache(this);

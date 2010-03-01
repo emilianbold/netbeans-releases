@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.subversion;
 
-import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
+import org.netbeans.modules.subversion.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.client.*;
@@ -61,7 +61,7 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
-import org.netbeans.modules.versioning.util.HyperlinkProvider;
+import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
@@ -78,7 +78,7 @@ public class Subversion {
      * Fired when textual annotations and badges have changed. The NEW value is Set<File> of files that changed or NULL
      * if all annotaions changed.
      */
-    static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged";
+    public static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged";
 
     static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged";
 
@@ -117,7 +117,7 @@ public class Subversion {
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion");
 
-    private Result<? extends HyperlinkProvider> hpResult; 
+    private Result<? extends VCSHyperlinkProvider> hpResult;
 
     public static synchronized Subversion getInstance() {
         if (instance == null) {
@@ -148,7 +148,7 @@ public class Subversion {
     private void asyncInit() {
         getRequestProcessor().post(new Runnable() {
             public void run() {
-                SvnKenaiSupport.getInstance().registerVCSNoficationListener();
+                SvnKenaiAccessor.getInstance().registerVCSNoficationListener();
             }
         }, 500);
     }
@@ -224,7 +224,7 @@ public class Subversion {
         String username = ""; // NOI18N
         char[] password = null;
 
-        SvnKenaiSupport kenaiSupport = SvnKenaiSupport.getInstance();
+        SvnKenaiAccessor kenaiSupport = SvnKenaiAccessor.getInstance();
         if(kenaiSupport.isKenai(repositoryUrl.toString())) {
             PasswordAuthentication pa = kenaiSupport.getPasswordAuthentication(repositoryUrl.toString(), false);
             if(pa != null) {
@@ -517,11 +517,11 @@ public class Subversion {
         support.firePropertyChange(PROP_BASE_FILE_CHANGED, null, s);
     }
 
-    void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
-    void removePropertyChangeListener(PropertyChangeListener listener) {
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
 
@@ -579,15 +579,15 @@ public class Subversion {
      *
      * @return registered hyperlink providers
      */
-    public List<HyperlinkProvider> getHyperlinkProviders() {
+    public List<VCSHyperlinkProvider> getHyperlinkProviders() {
         if (hpResult == null) {
-            hpResult = (Result<? extends HyperlinkProvider>) Lookup.getDefault().lookupResult(HyperlinkProvider.class);
+            hpResult = (Result<? extends VCSHyperlinkProvider>) Lookup.getDefault().lookupResult(VCSHyperlinkProvider.class);
         }
         if (hpResult == null) {
             return Collections.EMPTY_LIST;
         }
-        Collection<? extends HyperlinkProvider> providersCol = hpResult.allInstances();
-        List<HyperlinkProvider> providersList = new ArrayList<HyperlinkProvider>(providersCol.size());
+        Collection<? extends VCSHyperlinkProvider> providersCol = hpResult.allInstances();
+        List<VCSHyperlinkProvider> providersList = new ArrayList<VCSHyperlinkProvider>(providersCol.size());
         providersList.addAll(providersCol);
         return Collections.unmodifiableList(providersList);
     }    

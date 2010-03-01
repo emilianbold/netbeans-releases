@@ -63,6 +63,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.lookup.implspi.SharedClassObjectBridge;
 
 /** Shared object that allows different instances of the same class
 * to share common data.
@@ -72,6 +73,19 @@ import java.util.logging.Logger;
 * @author Ian Formanek, Jaroslav Tulach
 */
 public abstract class SharedClassObject extends Object implements Externalizable {
+
+    static {
+        SharedClassObjectBridge.setInstance(new SharedClassObjectBridge() {
+            protected @Override <T> T findObject(Class<T> c) throws InstantiationException, IllegalAccessException {
+                if (SharedClassObject.class.isAssignableFrom(c)) {
+                    return c.cast(SharedClassObject.findObject(c.asSubclass(SharedClassObject.class), true));
+                } else {
+                    return null;
+                }
+            }
+        });
+    }
+
     /** serialVersionUID */
     private static final long serialVersionUID = 4527891234589143259L;
 

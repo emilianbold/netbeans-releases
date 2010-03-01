@@ -56,15 +56,22 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableColumnModel;
 import java.awt.Component;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.*;
+import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.versioning.util.SortedTable;
+import org.openide.awt.Mnemonics;
 
 /**
  * View that displays nodes in the Synchronize view. 
  * 
  * @author Maros Sandor
  */
-class CommitTable implements AncestorListener, TableModelListener {
+class CommitTable implements AncestorListener, TableModelListener, MouseListener {
 
     private CommitTableModel    tableModel;
     private JTable              table;
@@ -80,7 +87,8 @@ class CommitTable implements AncestorListener, TableModelListener {
         table = new SortedTable(sorter);
         table.getTableHeader().setReorderingAllowed(false);
         table.setDefaultRenderer(String.class, new CommitStringsCellRenderer());
-        table.setDefaultEditor(CommitOptions.class, new CommitOptionsCellEditor());
+        table.setDefaultRenderer(Boolean.class, new CheckboxCellRenderer());
+        table.setDefaultEditor(Boolean.class, new CheckboxCellEditor());
         table.getTableHeader().setReorderingAllowed(true);
         int height = new JLabel("FONTSIZE").getPreferredSize().height * 6 / 5;  // NOI18N
         table.setRowHeight(height);
@@ -88,6 +96,16 @@ class CommitTable implements AncestorListener, TableModelListener {
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         label.setLabelFor(table);
         table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitTable.class, "ACSD_CommitTable"));  // NOI18N
+        table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitTable.class, "ACSD_CommitTable")); // NOI18N
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); // NOI18N
+        table.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() { // NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(table));
+            }
+        });
+        table.addMouseListener(this);
     }
 
     public void ancestorAdded(AncestorEvent event) {
@@ -102,12 +120,15 @@ class CommitTable implements AncestorListener, TableModelListener {
         TableColumnModel columnModel = table.getColumnModel();
         if (columns == null || columnModel == null) return; // unsure when this methed will be called (component realization) 
         if (columnModel.getColumnCount() != columns.length) return; 
-        if (columns.length == 4) {
+        if (columns.length == 5) {
             for (int i = 0; i < columns.length; i++) {
                 String col = columns[i];
                 sorter.setColumnComparator(i, null);
                 sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
-                if (col.equals(CommitSettings.COLUMN_NAME_NAME)) {
+                if (col.equals(CommitSettings.COLUMN_NAME_COMMIT)) {
+                    columnModel.getColumn(i).setMinWidth(new JCheckBox().getMinimumSize().width);
+                    columnModel.getColumn(i).setPreferredWidth(new JCheckBox().getPreferredSize().width);
+                } else if (col.equals(CommitSettings.COLUMN_NAME_NAME)) {
                     sorter.setColumnComparator(i, new FileNameComparator());
                     columnModel.getColumn(i).setPreferredWidth(width * 30 / 100);
                 } else if (col.equals(CommitSettings.COLUMN_NAME_STATUS)) {
@@ -120,12 +141,15 @@ class CommitTable implements AncestorListener, TableModelListener {
                     columnModel.getColumn(i).setPreferredWidth(width * 40 / 100);
                 }
             }
-        } else if (columns.length == 5) {
+        } else if (columns.length == 6) {
             for (int i = 0; i < columns.length; i++) {
                 String col = columns[i];
                 sorter.setColumnComparator(i, null);
                 sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
-                if (col.equals(CommitSettings.COLUMN_NAME_NAME)) {
+                if (col.equals(CommitSettings.COLUMN_NAME_COMMIT)) {
+                    columnModel.getColumn(i).setMinWidth(new JCheckBox().getMinimumSize().width);
+                    columnModel.getColumn(i).setPreferredWidth(new JCheckBox().getPreferredSize().width);
+                } else if (col.equals(CommitSettings.COLUMN_NAME_NAME)) {
                     sorter.setColumnComparator(i, new FileNameComparator());
                     columnModel.getColumn(i).setPreferredWidth(width * 25 / 100);
                 } else if (col.equals(CommitSettings.COLUMN_NAME_STICKY)) {
@@ -183,48 +207,163 @@ class CommitTable implements AncestorListener, TableModelListener {
         table.repaint();
     }
     
-    private class CommitOptionsCellEditor extends DefaultCellEditor {
-        
-        private final Object[] addOptions = new Object [] {
-                CommitOptions.ADD_TEXT,
-                CommitOptions.ADD_BINARY,
-                CommitOptions.EXCLUDE
-            };
-        private final Object[] commitOptions = new Object [] {
-                CommitOptions.COMMIT,
-                CommitOptions.EXCLUDE
-            };
-
-        private final Object[] removeOptions = new Object [] {
-                CommitOptions.COMMIT_REMOVE,
-                CommitOptions.EXCLUDE
-            };
-
-        public CommitOptionsCellEditor() {
-            super(new JComboBox());
-        }
-
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            int fileStatus = tableModel.getCommitFile(sorter.modelIndex(row)).getNode().getInformation().getStatus();
-            JComboBox combo = (JComboBox) editorComponent;
-            if (fileStatus == FileInformation.STATUS_VERSIONED_DELETEDLOCALLY || fileStatus == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
-                combo.setModel(new DefaultComboBoxModel(removeOptions));
-            } else if ((fileStatus & FileInformation.STATUS_IN_REPOSITORY) == 0 && fileStatus != FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
-                combo.setModel(new DefaultComboBoxModel(addOptions));
-            } else {
-                combo.setModel(new DefaultComboBoxModel(commitOptions));
+    private void showPopup (final MouseEvent e) {
+        int row = table.rowAtPoint(e.getPoint());
+        int col = table.columnAtPoint(e.getPoint());
+        if (row != -1) {
+            boolean makeRowSelected = true;
+            int [] selectedrows = table.getSelectedRows();
+            for (int i = 0; i < selectedrows.length; i++) {
+                if (row == selectedrows[i]) {
+                    makeRowSelected = false;
+                    break;
+                }
             }
-            return super.getTableCellEditorComponent(table, value, isSelected, row, column);
+            if (makeRowSelected) {
+                table.getSelectionModel().setSelectionInterval(row, row);
+            }
+        }
+        if (col != -1) {
+            boolean makeColSelected = true;
+            int [] selectedcols = table.getSelectedColumns();
+            for (int i = 0; i < selectedcols.length; i++) {
+                if (col == selectedcols[i]) {
+                    makeColSelected = false;
+                    break;
+                }
+            }
+            if (makeColSelected) {
+                table.getColumnModel().getSelectionModel().setSelectionInterval(col, col);
+            }
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                // invoke later so the selection on the table will be set first
+                JPopupMenu menu = getPopup();
+                menu.show(table, e.getX(), e.getY());
+            }
+        });
+    }
+
+    private void showPopup (Point p) {
+        JPopupMenu menu = getPopup();
+        menu.show(table, p.x, p.y);
+    }
+
+    private JPopupMenu getPopup() {
+
+        JPopupMenu menu = new JPopupMenu();
+        JMenuItem item;
+        boolean onlyIncluded = true;
+        boolean addAllowed = true;
+        for (int rowIndex : table.getSelectedRows()) {
+            int row = sorter.modelIndex(rowIndex);
+            CvsFileNode node = tableModel.getNode(row);
+            if (CommitOptions.EXCLUDE.equals(tableModel.getOptions(row))) {
+                onlyIncluded = false;
+            }
+            if (!node.isFile() || (node.getInformation().getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) == 0) {
+                addAllowed = false;
+            }
+        }
+        final boolean include = !onlyIncluded;
+        item = menu.add(new PopupAction(NbBundle.getMessage(CommitTable.class, include ? "CTL_CommitTable_IncludeAction" : "CTL_CommitTable_ExcludeAction")) { // NOI18N
+            @Override
+            public void performAction (ActionEvent e) {
+                int[] rows = getRows();
+                tableModel.setIncluded(rows, include);
+            }
+        });
+        Mnemonics.setLocalizedText(item, item.getText());
+        item = menu.add(new PopupAction(NbBundle.getMessage(CommitTable.class, "CTL_CommitTable_AddTextAction")) { // NOI18N
+            @Override
+            public void performAction (ActionEvent e) {
+                int[] rows = getRows();
+                tableModel.setAdded(rows, CommitOptions.ADD_TEXT);
+            }
+        });
+        Mnemonics.setLocalizedText(item, item.getText());
+        item.setEnabled(addAllowed);
+        item = menu.add(new PopupAction(NbBundle.getMessage(CommitTable.class, "CTL_CommitTable_AddBinaryAction")) { // NOI18N
+            @Override
+            public void performAction (ActionEvent e) {
+                int[] rows = getRows();
+                tableModel.setAdded(rows, CommitOptions.ADD_BINARY);
+            }
+        });
+        Mnemonics.setLocalizedText(item, item.getText());
+        item.setEnabled(addAllowed);
+        return menu;
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            showPopup(e);
         }
     }
 
-    private static class CommitStringsCellRenderer extends DefaultTableCellRenderer {
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            showPopup(e);
+        }
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        // not interested
+    }
+
+    /**
+     * This action keeps selection of rows in the table
+     */
+    private abstract class PopupAction extends AbstractAction {
+
+        private int[] rows;
+
+        public PopupAction (String name) {
+            super(name);
+        }
+
+        @Override
+        public final void actionPerformed(ActionEvent e) {
+            rows = table.getSelectedRows();
+            int rowCount = table.getRowCount();
+            for (int i = 0; i < rows.length; ++i) {
+                rows[i] = sorter.modelIndex(rows[i]);
+            }
+            performAction(e);
+            if (rowCount == table.getRowCount()) {
+                for (int i = 0; i < rows.length; ++i) {
+                    table.getSelectionModel().addSelectionInterval(sorter.viewIndex(rows[i]), sorter.viewIndex(rows[i]));
+                }
+            }
+        }
+
+        protected int[] getRows () {
+            return rows;
+        }
+
+        protected abstract void performAction (ActionEvent e);
+    }
+
+    private class CommitStringsCellRenderer extends DefaultTableCellRenderer {
 
         private FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             int col = table.convertColumnIndexToModel(column);
-            if (col == 0) {
+            if (CommitSettings.COLUMN_NAME_NAME.equals(columns[col])) {
                 TableSorter sorter = (TableSorter) table.getModel();
                 CommitTableModel model = (CommitTableModel) sorter.getTableModel();
                 CommitSettings.CommitFile commitFile = model.getCommitFile(sorter.modelIndex(row));
@@ -236,7 +375,7 @@ class CommitTable implements AncestorListener, TableModelListener {
                     value = "<html><s>" + value + "</s></html>"; // NOI18N
                 }
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            } else if (col == 3) {
+            } else if (CommitSettings.COLUMN_NAME_PATH.equals(columns[col])) {
                 return pathRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else {
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -244,6 +383,36 @@ class CommitTable implements AncestorListener, TableModelListener {
         }
     }
     
+    private static class CheckboxCellRenderer extends JCheckBox implements TableCellRenderer {
+
+        public CheckboxCellRenderer() {
+            setToolTipText(NbBundle.getMessage(CommitTable.class, "CTL_CommitTable_Column_Description")); //NOI18N
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            setSelected(value == null ? false : (Boolean) value);
+            setBackground(hasFocus || isSelected ? table.getSelectionBackground() : table.getBackground());
+            setHorizontalAlignment(SwingConstants.LEFT);
+            return this;
+        }
+    }
+
+    private static class CheckboxCellEditor extends DefaultCellEditor {
+
+        public CheckboxCellEditor() {
+            super(new JCheckBox());
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            JCheckBox checkbox = (JCheckBox) editorComponent;
+            checkbox.setSelected(value == null ? false : (Boolean) value);
+            checkbox.setHorizontalAlignment(SwingConstants.LEFT);
+            return super.getTableCellEditorComponent(table, value, isSelected, row, column);
+        }
+    }
+
     private class StatusComparator extends Utils.ByImportanceComparator {
         public int compare(Object o1, Object o2) {
             Integer row1 = (Integer) o1;

@@ -76,6 +76,15 @@ public final class RubyTestMethodNode extends TestMethodNode {
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
     private FutureTask<String> stackTraceLocationHolder;
 
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                EXECUTOR.shutdown();
+            }
+        });
+    }
+
     public RubyTestMethodNode(Testcase testcase, Project project) {
         super(testcase, project, Lookups.singleton(new Locator() {
 

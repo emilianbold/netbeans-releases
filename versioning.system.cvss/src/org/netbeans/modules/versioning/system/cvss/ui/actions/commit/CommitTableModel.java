@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.commit;
 
+import java.io.File;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
@@ -51,7 +52,6 @@ import org.netbeans.lib.cvsclient.command.KeywordSubstitutionOptions;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
-import java.io.File;
 
 /**
  * Table model for the Commit dialog table.
@@ -66,6 +66,9 @@ class CommitTableModel extends AbstractTableModel {
     private final Map<String, String[]> columnLabels = new HashMap<String, String[]>(5);
     {
         ResourceBundle loc = NbBundle.getBundle(CommitTableModel.class);
+        columnLabels.put(CommitSettings.COLUMN_NAME_COMMIT, new String [] {
+                                          loc.getString("CTL_CommitTable_Column_Commit"),  // NOI18N
+                                          loc.getString("CTL_CommitTable_Column_Description")}); // NOI18N
         columnLabels.put(CommitSettings.COLUMN_NAME_NAME, new String [] {
                                           loc.getString("CTL_CommitTable_Column_File"), 
                                           loc.getString("CTL_CommitTable_Column_File")});
@@ -127,20 +130,25 @@ class CommitTableModel extends AbstractTableModel {
 
     public Class getColumnClass(int columnIndex) {
         String col = columns[columnIndex];
-        if (col.equals(CommitSettings.COLUMN_NAME_ACTION)) {
+        if (col.equals(CommitSettings.COLUMN_NAME_COMMIT)) {
+            return Boolean.class;
+        } else if (col.equals(CommitSettings.COLUMN_NAME_ACTION)) {
             return CommitOptions.class;
+        } else {
+            return String.class;
         }
-        return String.class;
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         String col = columns[columnIndex];
-        return col.equals(CommitSettings.COLUMN_NAME_ACTION);
+        return col.equals(CommitSettings.COLUMN_NAME_COMMIT);
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
         String col = columns[columnIndex];
-        if (col.equals(CommitSettings.COLUMN_NAME_NAME)) {
+        if (col.equals(CommitSettings.COLUMN_NAME_COMMIT)) {
+            return commitOptions[rowIndex] != CommitOptions.EXCLUDE;
+        } else if (col.equals(CommitSettings.COLUMN_NAME_NAME)) {
             return nodes[rowIndex].getName();
         } else if (col.equals(CommitSettings.COLUMN_NAME_STICKY)) {
             String sticky = Utils.getSticky(nodes[rowIndex].getFile());
@@ -159,10 +167,12 @@ class CommitTableModel extends AbstractTableModel {
         String col = columns[columnIndex];
         if (col.equals(CommitSettings.COLUMN_NAME_ACTION)) {
             commitOptions[rowIndex] = (CommitOptions) aValue;
-            fireTableCellUpdated(rowIndex, columnIndex);
+        } else if (col.equals(CommitSettings.COLUMN_NAME_COMMIT)) {
+            commitOptions[rowIndex] = ((Boolean) aValue) ? getCommitOptions(rowIndex) : CommitOptions.EXCLUDE;
         } else {
             throw new IllegalArgumentException("Column index out of range: " + columnIndex); // NOI18N
         }
+        fireTableRowsUpdated(rowIndex, rowIndex);
     }
 
     private void createCommitOptions() {
@@ -173,17 +183,7 @@ class CommitTableModel extends AbstractTableModel {
             if (CvsModuleConfig.getDefault().isExcludedFromCommit(node.getFile())) {
                 commitOptions[i] = CommitOptions.EXCLUDE;
             } else {
-                switch (node.getInformation().getStatus()) {
-                case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
-                    commitOptions[i] = excludeNew ? CommitOptions.EXCLUDE : getDefaultCommitOptions(node.getFile());
-                    break;
-                case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
-                case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
-                    commitOptions[i] = CommitOptions.COMMIT_REMOVE;
-                    break;
-                default:
-                    commitOptions[i] = CommitOptions.COMMIT;
-                }
+                commitOptions[i] = getCommitOptions(node, excludeNew);
             }
         }
     }
@@ -191,9 +191,54 @@ class CommitTableModel extends AbstractTableModel {
     CommitSettings.CommitFile getCommitFile(int row) {
         return new CommitSettings.CommitFile(nodes[row], commitOptions[row]);
     }
+
+    CvsFileNode getNode(int row) {
+        return nodes[row];
+    }
+
+    CommitOptions getOptions(int row) {
+        return commitOptions[row];
+    }
     
     private CommitOptions getDefaultCommitOptions(File file) {
         KeywordSubstitutionOptions options = CvsVersioningSystem.getInstance().getDefaultKeywordSubstitution(file);
         return options == KeywordSubstitutionOptions.BINARY ? CommitOptions.ADD_BINARY : CommitOptions.ADD_TEXT;  
+    }
+
+    void setIncluded (int[] rows, boolean include) {
+        for (int rowIndex : rows) {
+            if (!include || CommitOptions.EXCLUDE.equals(commitOptions[rowIndex])) {
+                commitOptions[rowIndex] = include ? getCommitOptions(rowIndex) : CommitOptions.EXCLUDE;
+            }
+        }
+        fireTableRowsUpdated(0, getRowCount() - 1);
+    }
+
+    void setAdded (int[] rows, CommitOptions addOption) {
+        for (int rowIndex : rows) {
+            commitOptions[rowIndex] = addOption;
+        }
+        fireTableRowsUpdated(0, getRowCount() - 1);
+    }
+
+    private CommitOptions getCommitOptions (int rowIndex) {
+        CvsFileNode node = nodes[rowIndex];
+        return getCommitOptions(node, false);
+    }
+
+    private CommitOptions getCommitOptions (CvsFileNode node, boolean excludeNew) {
+        CommitOptions options;
+        switch (node.getInformation().getStatus()) {
+            case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
+                options = excludeNew ? CommitOptions.EXCLUDE : getDefaultCommitOptions(node.getFile());
+                break;
+            case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
+            case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
+                options = CommitOptions.COMMIT_REMOVE;
+                break;
+            default:
+                options = CommitOptions.COMMIT;
+        }
+        return options;
     }
 }

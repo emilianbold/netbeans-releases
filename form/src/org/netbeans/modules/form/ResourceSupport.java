@@ -110,6 +110,7 @@ public class ResourceSupport {
     private static final int VALID_RESOURCE_VALUE = 4;
 
     static final FormProperty.Filter COPIED_PROPERTY_FILTER = new FormProperty.Filter() {
+        @Override
         public boolean accept(FormProperty property) {
             // don't copy name property
             return property.isChanged() && !isAutoNamedProperty(property);
@@ -1166,6 +1167,7 @@ public class ResourceSupport {
     // listener on FormModel - reacts on component additions/removals
 
     private class ModelListener implements FormModelListener {
+        @Override
         public void formChanged(FormModelEvent[] events) {
             if (events == null) {
                 return;
@@ -1639,6 +1641,7 @@ public class ResourceSupport {
             FormUtils.getBundleString("PROP_AUTO_SET_COMPONENT_NAME"), // NOI18N
             FormUtils.getBundleString("HINT_AUTO_SET_COMPONENT_NAME")) // NOI18N
         {
+            @Override
             public void setValue(Boolean value) {
                 Boolean oldValue = getValue();
                 if (!oldValue.equals(value)) {
@@ -1654,6 +1657,7 @@ public class ResourceSupport {
                 }
             }
 
+            @Override
             public Boolean getValue() {
                 return Boolean.valueOf(formModel.getSettings().getAutoSetComponentName());
             }
@@ -1668,6 +1672,7 @@ public class ResourceSupport {
                 FormUtils.getBundleString("PROP_AUTO_RESOURCE"), // NOI18N
                 FormUtils.getBundleString("HINT_AUTO_RESOURCE_LOCAL")) // NOI18N
             {
+                @Override
                 public void setValue(Integer value) {
                     int oldMode = getAutoMode();
                     if (value == null || value.equals(oldMode)) {
@@ -1699,6 +1704,7 @@ public class ResourceSupport {
                         .firePropertyChangeHelper(PROP_AUTO_RESOURCING, oldMode, newMode);
                 }
 
+                @Override
                 public Integer getValue() {
                     return getAutoMode();
                 }
@@ -1720,6 +1726,7 @@ public class ResourceSupport {
                 FormUtils.getBundleString("PROP_AUTO_I18N"), // NOI18N
                 FormUtils.getBundleString("HINT_AUTO_I18N")) // NOI18N
             {
+                @Override
                 public void setValue(Boolean value) {
                     boolean oldAutoI18n = getAutoMode() == AUTO_I18N;
                     Boolean oldValue = Boolean.valueOf(oldAutoI18n);
@@ -1744,6 +1751,7 @@ public class ResourceSupport {
                     }
                 }
 
+                @Override
                 public Boolean getValue() {
                     return getAutoMode() == AUTO_I18N;
                 }
@@ -1756,6 +1764,7 @@ public class ResourceSupport {
             FormUtils.getBundleString("PROP_FORM_BUNDLE"), // NOI18N
             FormUtils.getBundleString("HINT_FORM_BUNDLE")) // NOI18N
         {
+            @Override
             public void setValue(String value) {
                 String oldValue = getI18nBundleName();
                 if ((oldValue == null && value != null) || !oldValue.equals(value)) {
@@ -1771,6 +1780,7 @@ public class ResourceSupport {
                             .firePropertyChangeHelper(PROP_FORM_BUNDLE, oldValue, value);
                 }
             }
+            @Override
             public String getValue() {
                 return getI18nBundleName();
             }
@@ -1787,6 +1797,7 @@ public class ResourceSupport {
             FormUtils.getBundleString("PROP_DESIGN_LOCALE"), // NOI18N
             FormUtils.getBundleString("HINT_DESIGN_LOCALE")) // NOI18N
         {
+            @Override
             public void setValue(String value) {
                 // this property is not persistent (not stored in .form file)
                 String oldValue = designLocale;
@@ -1796,6 +1807,7 @@ public class ResourceSupport {
                         .firePropertyChangeHelper(PROP_DESIGN_LOCALE, oldValue, value);
             }
 
+            @Override
             public String getValue() {
                 return designLocale;
             }

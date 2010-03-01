@@ -56,6 +56,8 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -133,7 +135,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                     operation = OPERATIONS_QUEUE.poll();
                 }
             }
-        });
+        }, true);
     }
 
     public void projectOpened() {
@@ -229,9 +231,25 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         }
     }
 
-    public void waitFinished() {
-        COPY_TASK.schedule(0);
-        COPY_TASK.waitFinished();
+    /**
+     * @return {@code true} if copying finished or user wants to continue
+     */
+    public boolean waitFinished() {
+        try {
+            if (!proxyOperationFactory.isEnabled()) {
+                return true;
+            }
+            if (COPY_TASK.waitFinished(200)) {
+                return true;
+            }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return true;
+        }
+        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(CopySupport.class, "MSG_CopySupportRunning"),
+                NotifyDescriptor.YES_NO_OPTION);
+        return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION;
     }
 
     @Override
@@ -241,7 +259,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             return;
         }
         LOGGER.log(Level.FINE, "Processing event FOLDER CREATED for project {0}", project.getName());
-        prepareOperation(proxyOperationFactory.createCopyHandler(source));
+        prepareOperation(proxyOperationFactory.createCopyHandler(source, fe));
     }
 
     @Override
@@ -251,7 +269,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             return;
         }
         LOGGER.log(Level.FINE, "Processing event DATA CREATED for project {0}", project.getName());
-        prepareOperation(proxyOperationFactory.createCopyHandler(source));
+        prepareOperation(proxyOperationFactory.createCopyHandler(source, fe));
     }
 
     @Override
@@ -261,7 +279,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             return;
         }
         LOGGER.log(Level.FINE, "Processing event FILE CHANGED for project {0}", project.getName());
-        prepareOperation(proxyOperationFactory.createCopyHandler(source));
+        prepareOperation(proxyOperationFactory.createCopyHandler(source, fe));
     }
 
     @Override
@@ -271,7 +289,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             return;
         }
         LOGGER.log(Level.FINE, "Processing event FILE DELETED for project {0}", project.getName());
-        prepareOperation(proxyOperationFactory.createDeleteHandler(source));
+        prepareOperation(proxyOperationFactory.createDeleteHandler(source, fe));
     }
 
     @Override
@@ -286,7 +304,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         if (StringUtils.hasText(ext)) {
             originalName += "." + ext; // NOI18N
         }
-        prepareOperation(proxyOperationFactory.createRenameHandler(source, originalName));
+        prepareOperation(proxyOperationFactory.createRenameHandler(source, originalName, fe));
     }
 
     public void propertyChange(final PropertyChangeEvent propertyChangeEvent) {
@@ -356,18 +374,18 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         }
 
         @Override
-        protected Callable<Boolean> createCopyHandlerInternal(FileObject source) {
-            return createHandler(localFactory.createCopyHandler(source), remoteFactory.createCopyHandler(source));
+        protected Callable<Boolean> createCopyHandlerInternal(FileObject source, FileEvent fileEvent) {
+            return createHandler(localFactory.createCopyHandler(source, fileEvent), remoteFactory.createCopyHandler(source, fileEvent));
         }
 
         @Override
-        protected Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName) {
-            return createHandler(localFactory.createRenameHandler(source, oldName), remoteFactory.createRenameHandler(source, oldName));
+        protected Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName, FileRenameEvent fileRenameEvent) {
+            return createHandler(localFactory.createRenameHandler(source, oldName, fileRenameEvent), remoteFactory.createRenameHandler(source, oldName, fileRenameEvent));
         }
 
         @Override
-        protected Callable<Boolean> createDeleteHandlerInternal(FileObject source) {
-            return createHandler(localFactory.createDeleteHandler(source), remoteFactory.createDeleteHandler(source));
+        protected Callable<Boolean> createDeleteHandlerInternal(FileObject source, FileEvent fileEvent) {
+            return createHandler(localFactory.createDeleteHandler(source, fileEvent), remoteFactory.createDeleteHandler(source, fileEvent));
         }
 
         private Callable<Boolean> createHandler(Callable<Boolean> localHandler, Callable<Boolean> remoteHandler) {
@@ -376,6 +394,11 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                 return null;
             }
             return new ProxyHandler(localHandler, remoteHandler);
+        }
+
+        @Override
+        protected boolean isValid(FileEvent fileEvent) {
+            return true;
         }
 
         private final class ProxyHandler implements Callable<Boolean> {

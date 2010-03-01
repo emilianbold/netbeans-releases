@@ -66,7 +66,7 @@ final class DatabasePropertiesIndexer {
     private final String classFqn;
     private final Set<IndexedMethod> methods;
 
-    public DatabasePropertiesIndexer(RubyIndex index, String prefix, QuerySupport.Kind kind, String classFqn, Set<IndexedMethod> methods) {
+    private DatabasePropertiesIndexer(RubyIndex index, String prefix, QuerySupport.Kind kind, String classFqn, Set<IndexedMethod> methods) {
         this.index = index;
         this.prefix = prefix;
         this.kind = kind;

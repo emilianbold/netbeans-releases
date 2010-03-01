@@ -63,14 +63,12 @@ import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
@@ -87,9 +85,7 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
-import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.kenai.ui.treelist.TreeListUI;
 import org.openide.awt.Mnemonics;
@@ -130,36 +126,37 @@ public class KenaiSearchPanel extends JPanel {
 
     private KenaiProjectsListModel listModel;
 
-    private static Kenai kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
+    private static Kenai kenai;
 
     /** Creates new form KenaiProjectsListPanel */
-    public KenaiSearchPanel(PanelType type, boolean multiSel) {
+    public KenaiSearchPanel(PanelType type, boolean multiSel, Kenai k) {
 
         panelType = type;
         multiSelection = multiSel;
+        boolean clear = false;
+        if (kenai!= k) {
+            kenai = k;
+            clear = true;
+        }
+        projectURLPattern = Pattern.compile(kenai.getUrl().toString().replaceFirst("^https://", "http://") + "/projects/([^/]*)/?.*");
         initComponents();
 
+        if (clear) {
+            clearRecentAndFeatured();
+        }
         searchTextField.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (SearchField.SEARCH.equals(e.getActionCommand())) {
                     invokeSearch();
                 } else {
                     kenai = ((Kenai) searchTextField.getSelectedKenai());
-                    kenaiFeaturedProjectsList=null;
-                    kenaiRecentProjectsList=null;
-                    kenaiFeaturedProjectsListWithRepos=null;
-                    kenaiRecentProjectsListWithRepos=null;
-                    if (panelType == PanelType.OPEN) {
-                        setOpenPanels();
-                    } else {
-                        setBrowsePanels();
-                    }
+                    clearRecentAndFeatured();
                 }
             }
+
         });
-
-
 
         kenaiProjectsList.setUI(new TreeListUI());
 
@@ -217,6 +214,18 @@ public class KenaiSearchPanel extends JPanel {
 //                kenaiRecentProjectsList=null;
 //            }
 //        });
+    }
+    
+    private void clearRecentAndFeatured() {
+        kenaiFeaturedProjectsList = null;
+        kenaiRecentProjectsList = null;
+        kenaiFeaturedProjectsListWithRepos = null;
+        kenaiRecentProjectsListWithRepos = null;
+        if (panelType == PanelType.OPEN) {
+            setOpenPanels();
+        } else {
+            setBrowsePanels();
+        }
     }
 
     private void setOpenPanels() {
@@ -585,9 +594,9 @@ public class KenaiSearchPanel extends JPanel {
             return new KenaiProjectsListRenderer(list, value, index, isSelected, cellHasFocus);
         }
     }
-
+    
     // added to support search by the projects root url...
-    private Pattern projectURLPattern = Pattern.compile(kenai.getUrl().toString().replaceFirst("^https://", "http://") + "/projects/([^/]*)/?.*");
+    private Pattern projectURLPattern;
     private static final int projectURLGroup = 1;
 
     private void invokeSearch() {

@@ -163,7 +163,7 @@ public class HintsInvokerTest extends TreeRuleTestBase {
                             "         assert true : \"\";\n" +
                             "     }\n" +
                             "}\n",
-                            "4:9-4:26:verifier:HINT");
+                            "4:9-4:15:verifier:HINT");
     }
 
     public void testPatternStatementAndSingleStatementBlockAreSame() throws Exception {
@@ -177,7 +177,7 @@ public class HintsInvokerTest extends TreeRuleTestBase {
                             "         }\n" +
                             "     }\n" +
                             "}\n",
-                            "4:9-6:10:verifier:HINT");
+                            "4:9-4:11:verifier:HINT");
     }
 
     public void testPatternFalseOccurrence() throws Exception {
@@ -203,7 +203,7 @@ public class HintsInvokerTest extends TreeRuleTestBase {
                        "             System.err.println(2);\n" +
                        "     }\n" +
                        "}\n",
-                       "4:9-7:35:verifier:HINT",
+                       "4:9-4:11:verifier:HINT",
                        "FixImpl",
                        ("package test;\n" +
                        "\n" +
@@ -229,7 +229,7 @@ public class HintsInvokerTest extends TreeRuleTestBase {
                        "             return 2;\n" +
                        "     }\n" +
                        "}\n",
-                       "4:9-7:22:verifier:HINT",
+                       "4:9-4:11:verifier:HINT",
                        "FixImpl",
                        ("package test;\n" +
                        "\n" +
@@ -335,7 +335,7 @@ public class HintsInvokerTest extends TreeRuleTestBase {
                        "             System.err.println();\n" +
                        "     }\n" +
                        "}\n",
-                       "3:35-4:34:verifier:HINT",
+                       "3:35-3:37:verifier:HINT",
                        "FixImpl",
                        ("package test;\n" +
                        "\n" +

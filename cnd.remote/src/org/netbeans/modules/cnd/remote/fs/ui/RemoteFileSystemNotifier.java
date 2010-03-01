@@ -45,8 +45,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CancellationException;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
@@ -115,22 +114,13 @@ public class RemoteFileSystemNotifier {
         }
     }
 
-    public static String getDisplayName(ExecutionEnvironment execEnv) {
-        ServerRecord rec = ServerList.get(execEnv);
-        if (rec == null) {
-            return execEnv.getDisplayName();
-        } else {
-            return rec.getDisplayName();
-        }
-    }
-
     private void show() {
         ActionListener onClickAction = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 showConnectDialog();
             }
         };
-        String envString = getDisplayName(env);
+        String envString = RemoteUtil.getDisplayName(env);
         notification = NotificationDisplayer.getDefault().notify(
                 NbBundle.getMessage(RemoteFileSystemNotifier.class, "RemoteFileSystemNotifier.TITLE", envString),
                 ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/fs/ui/error.gif", false), // NOI18N
@@ -142,7 +132,7 @@ public class RemoteFileSystemNotifier {
     private void showConnectDialog() {
         final NotifierPanel panel = new NotifierPanel(env);
         panel.setPendingFiles(callback.getPendingFiles());
-        String envString = getDisplayName(env);
+        String envString = RemoteUtil.getDisplayName(env);
         String caption = NbBundle.getMessage(RemoteFileSystemNotifier.class, "RemoteFileSystemNotifier.TITLE", envString);
         DialogDescriptor dd = new DialogDescriptor(panel, caption, true,
                 new Object[]{DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION},

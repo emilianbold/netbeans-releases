@@ -63,6 +63,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,6 +77,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.AbstractElementVisitor6;
@@ -185,6 +187,7 @@ public class GoToSupport {
                     int exactOffset = controller.getPositionConverter().getJavaSourcePosition(span[0] + 1);
                     
                     Element el = null;
+                    TypeMirror classType = null;
                     boolean insideImportStmt = false;
                     TreePath path = controller.getTreeUtilities().pathFor(exactOffset);
                     
@@ -209,6 +212,7 @@ public class GoToSupport {
                                     && ((ParameterizedTypeTree) parentLeaf).getType() == path.getLeaf()) {
                                     if (!isError(controller.getTrees().getElement(parent.getParentPath()))) {
                                         path = parent.getParentPath();
+                                        classType = controller.getTrees().getTypeMirror(path);
                                     }
                                 }
                             }
@@ -281,10 +285,16 @@ public class GoToSupport {
                             result[0] = null;
                         return;
                     }
-                    
+
+                    TypeMirror parentTypeForAnonymous = null;
+
                     if (controller.getElementUtilities().isSynthetic(el) && el.getKind() == ElementKind.CONSTRUCTOR) {
                         //check for annonymous innerclasses:
-                        el = handlePossibleAnonymousInnerClass(controller, el);
+                        TypeMirror[] classTypeRef = new TypeMirror[] {classType };
+
+                        el = handlePossibleAnonymousInnerClass(controller, el, classTypeRef);
+
+                        classType = parentTypeForAnonymous = classTypeRef[0];
                     }
                     
                     if (isError(el)) {
@@ -304,9 +314,15 @@ public class GoToSupport {
                     }
                     
                     if (tooltip) {
-                        DisplayNameElementVisitor v = new DisplayNameElementVisitor();
-                        
-                        v.visit(el, true);
+                        DisplayNameElementVisitor v = new DisplayNameElementVisitor(controller);
+
+                        if (el.getKind() == ElementKind.CONSTRUCTOR && classType != null && classType.getKind() == TypeKind.DECLARED) {
+                            v.printExecutable(((ExecutableElement) el), (DeclaredType) classType, tooltip);
+                        } else if (el.getKind() == ElementKind.INTERFACE && parentTypeForAnonymous != null && parentTypeForAnonymous.getKind() == TypeKind.DECLARED) {
+                            v.printType(((TypeElement) el), (DeclaredType) classType, tooltip);
+                        } else  {
+                            v.visit(el, true);
+                        }
                         
                         result[0] = "<html><body>" + v.result.toString();
                     } else if (javadoc) {
@@ -426,9 +442,12 @@ public class GoToSupport {
         return new int [] {ts.offset(), ts.offset() + t.length()};
     }
     
-    private static Element handlePossibleAnonymousInnerClass(CompilationInfo info, final Element el) {
+    private static Element handlePossibleAnonymousInnerClass(CompilationInfo info, final Element el, TypeMirror[] classTypeRef) {
         Element encl = el.getEnclosingElement();
         Element doubleEncl = encl != null ? encl.getEnclosingElement() : null;
+        TypeMirror classType = classTypeRef[0];
+
+        classTypeRef[0] = null;
         
         if (   doubleEncl != null
             && !doubleEncl.getKind().isClass()
@@ -442,6 +461,25 @@ public class GoToSupport {
                 NewClassTree nct = (NewClassTree) enclTreePath.getParentPath().getLeaf();
                 
                 if (nct.getClassBody() != null) {
+                    List<? extends TypeMirror> sup = classType != null && classType.getKind() == TypeKind.DECLARED
+                            ? info.getTypes().directSupertypes(classType) : Collections.<TypeMirror>emptyList();
+                    TypeElement jlObject = info.getElements().getTypeElement("java.lang.Object");
+
+                    if (jlObject != null) {
+                        TypeMirror jlObjectType = jlObject.asType();
+                        TypeMirror parent = null;
+
+                        for(TypeMirror tm : sup) {
+                            if (info.getTypes().isSameType(tm, jlObjectType)) {
+                                continue;
+                            }
+                            assert parent == null;
+                            parent = tm;
+                        }
+
+                        classTypeRef[0] = parent;
+                    }
+                    
                     Element parentElement = info.getTrees().getElement(new TreePath(enclTreePath, nct.getIdentifier()));
                     
                     if (parentElement == null || parentElement.getKind().isInterface()) {
@@ -612,6 +650,12 @@ public class GoToSupport {
     }
     
     private static final class DisplayNameElementVisitor extends AbstractElementVisitor6<Void, Boolean> {
+
+        private final CompilationInfo info;
+
+        public DisplayNameElementVisitor(CompilationInfo info) {
+            this.info = info;
+        }
         
         private StringBuffer result        = new StringBuffer();
         
@@ -638,6 +682,10 @@ public class GoToSupport {
         }
 
         public Void visitType(TypeElement e, Boolean highlightName) {
+            return printType(e, null, highlightName);
+        }
+        
+        Void printType(TypeElement e, DeclaredType dt, Boolean highlightName) {
             modifier(e.getModifiers());
             switch (e.getKind()) {
                 case CLASS:
@@ -665,6 +713,9 @@ public class GoToSupport {
                 result.append(e.getQualifiedName());
             }
             
+            if (dt != null)
+                dumpRealTypeArguments(dt.getTypeArguments());
+
             return null;
         }
 
@@ -701,6 +752,10 @@ public class GoToSupport {
         }
 
         public Void visitExecutable(ExecutableElement e, Boolean highlightName) {
+            return printExecutable(e, null, highlightName);
+        }
+
+        Void printExecutable(ExecutableElement e, DeclaredType dt, Boolean highlightName) {
             switch (e.getKind()) {
                 case CONSTRUCTOR:
                     modifier(e.getModifiers());
@@ -709,7 +764,12 @@ public class GoToSupport {
                     boldStartCheck(highlightName);
                     result.append(e.getEnclosingElement().getSimpleName());
                     boldStopCheck(highlightName);
-                    dumpArguments(e.getParameters());
+                    if (dt != null) {
+                        dumpRealTypeArguments(dt.getTypeArguments());
+                        dumpArguments(e.getParameters(), ((ExecutableType) info.getTypes().asMemberOf(dt, e)).getParameterTypes());
+                    } else {
+                        dumpArguments(e.getParameters(), null);
+                    }
                     dumpThrows(e.getThrownTypes());
                     break;
                 case METHOD:
@@ -720,7 +780,7 @@ public class GoToSupport {
                     boldStartCheck(highlightName);
                     result.append(e.getSimpleName());
                     boldStopCheck(highlightName);
-                    dumpArguments(e.getParameters());
+                    dumpArguments(e.getParameters(), null);
                     dumpThrows(e.getThrownTypes());
                     break;
                 case INSTANCE_INIT:
@@ -773,18 +833,47 @@ public class GoToSupport {
             result.append("&gt;");
         }
 
-        private void dumpArguments(List<? extends VariableElement> list) {
+        private void dumpRealTypeArguments(List<? extends TypeMirror> list) {
+            if (list.isEmpty())
+                return ;
+
+            boolean addSpace = false;
+
+            result.append("&lt;");
+
+            for (TypeMirror t : list) {
+                if (addSpace) {
+                    result.append(", ");
+                }
+
+                result.append(getTypeName(t, true));
+
+                addSpace = true;
+            }
+
+            result.append("&gt;");
+        }
+
+        private void dumpArguments(List<? extends VariableElement> list, List<? extends TypeMirror> types) {
             boolean addSpace = false;
             
             result.append('(');
-            
-            for (VariableElement e : list) {
+
+            Iterator<? extends VariableElement> listIt = list.iterator();
+            Iterator<? extends TypeMirror> typesIt = types != null ? types.iterator() : null;
+
+            while (listIt.hasNext()) {
                 if (addSpace) {
                     result.append(", ");
                 }
                 
-                visit(e, false);
-                
+                VariableElement ve = listIt.next();
+                TypeMirror      type = typesIt != null ? typesIt.next() : ve.asType();
+
+                result.append(getTypeName(type, true));
+                result.append(" ");
+                result.append(ve.getSimpleName());
+
                 addSpace = true;
             }
                 

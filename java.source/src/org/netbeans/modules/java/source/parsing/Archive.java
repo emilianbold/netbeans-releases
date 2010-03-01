@@ -52,7 +52,6 @@ import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementa
  * @author Petr Hrebejk
  */
 public interface Archive {
-       
     // New implementation Archive Interface ------------------------------------
 
 
@@ -64,8 +63,14 @@ public interface Archive {
      *  @return the listend files
      */
     public Iterable<JavaFileObject> getFiles( String folderName, ClassPath.Entry entry, Set<JavaFileObject.Kind> kinds, JavaFileFilterImplementation filter) throws IOException;    
-    
-    
+
+    /*
+     * Returns a new {@link JavaFileObject} for given path.
+     * May throw an UnsupportedOperationException if the operation is not supported (eg. zip archive).
+     * @param relativePath path from the root, separated by '/' character (resource name)
+     * @return the {@link JavaFileObject}
+     */
+    public JavaFileObject create (final String relativeName, JavaFileFilterImplementation filter) throws UnsupportedOperationException;
     /**
      * Cleans cached data
      */

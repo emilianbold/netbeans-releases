@@ -56,11 +56,13 @@ import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.railsprojects.ui.RailsLogicalViewProvider;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsCompositePanelProvider;
+import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyConfigurationProvider;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.TemplateAttributesProviderImpl;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
-import org.netbeans.modules.ruby.rubyproject.queries.RubyProjectEncodingQueryImpl;
+import org.netbeans.modules.ruby.rubyproject.spi.PropertiesProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
@@ -136,7 +138,15 @@ public class RailsProject extends RubyBaseProject {
             new RailsServerManager(this),
             new RailsFileLocator(null, this),
             new RubyCoverageProvider(this),
-            new RubyPlatformProvider(evaluator())
+            new RubyPlatformProvider(evaluator()),
+            new PropertiesProvider() {
+
+                @Override
+                public SharedRubyProjectProperties getProperties() {
+                    return new RailsProjectProperties(RailsProject.this, updateHelper, evaluator(), refHelper, genFilesHelper);
+                }
+        }
+
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-ruby-railsprojects/Lookup"); //NOI18N
     }

@@ -53,15 +53,15 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
@@ -152,7 +152,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         
         String[] shellCommandAndArgs = bes.getShellCommandAndArgs(fileObject); // from inside shell file or properties
         String shellCommand = shellCommandAndArgs[0];
-        String shellFilePath = IpeUtils.toRelativePath(buildDir, shellFile.getPath()); // Absolute path to shell file
+        String shellFilePath = CndPathUtilitities.toRelativePath(buildDir, shellFile.getPath()); // Absolute path to shell file
         if (shellFilePath.equals(shellFile.getName())) {
             shellFilePath = "."+File.separatorChar+shellFilePath; //NOI18N
         }
@@ -254,7 +254,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         if (set != null) {
             list.add(set);
         }
-        CompilerSetManager csm = CompilerSetManager.getDefault(execEnv);
+        CompilerSetManager csm = CompilerSetManager.get(execEnv);
         if (csm != null) {
             set = csm.getDefaultCompilerSet();
             if (set != null && !list.contains(set)) {
