@@ -191,7 +191,7 @@ public class PythonIndexer implements Indexer {
     }
 
     public String getIndexVersion() {
-        return "0.121"; // NOI18N
+        return "0.123"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -287,7 +287,12 @@ public class PythonIndexer implements Indexer {
             if (root == null) {
                 return documents;
             }
-            assert root instanceof Module;
+            if (!(root instanceof Module)) {
+                // Unexpected... http://netbeans.org/bugzilla/show_bug.cgi?id=165756
+                // Maybe some kind of top level error node?
+                System.err.println("WARNING - top level AST node type was " + root + " of type " + root.getClass().getName());
+                return documents;
+            }
             symbolTable = result.getSymbolTable();
             ScopeInfo scopeInfo = symbolTable.getScopeInfo(root);
             for (Map.Entry<String, SymInfo> entry : scopeInfo.tbl.entrySet()) {
@@ -1180,30 +1185,32 @@ public class PythonIndexer implements Indexer {
             }
         }
 
-        if (namesFound.size() > 0) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("FOUND for ");
-            sb.append(clz);
-            sb.append(" in ");
-            sb.append(module);
-            sb.append(": ");
-            appendList(sb, namesFound);
-            System.err.println(sb.toString());
-        }
+        if (PREINDEXING) {
+            if (namesFound.size() > 0) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("FOUND for ");
+                sb.append(clz);
+                sb.append(" in ");
+                sb.append(module);
+                sb.append(": ");
+                appendList(sb, namesFound);
+                System.err.println(sb.toString());
+            }
 
-        if (noneFound && search) {
-            System.err.println("ERROR: NONE of the passed in names for " + clz + " were found!");
-        }
+            if (noneFound && search) {
+                System.err.println("ERROR: NONE of the passed in names for " + clz + " were found!");
+            }
 
-        if (namesMissing.size() > 0) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("WARNING: Missing these names from ");
-            sb.append(module);
-            sb.append(" for use by class ");
-            sb.append(clz);
-            sb.append(" : ");
-            appendList(sb, namesMissing);
-            System.err.println(sb.toString());
+            if (namesMissing.size() > 0) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("WARNING: Missing these names from ");
+                sb.append(module);
+                sb.append(" for use by class ");
+                sb.append(clz);
+                sb.append(" : ");
+                appendList(sb, namesMissing);
+                System.err.println(sb.toString());
+            }
         }
     }
 
@@ -1276,7 +1283,7 @@ public class PythonIndexer implements Indexer {
             String s = fo.getURL().toExternalForm() + "!"; // NOI18N
             URL u = new URL("jar:" + s); // NOI18N
             FileObject root = URLMapper.findFileObject(u);
-            String rootUrl = u.toExternalForm();
+            String rootUrl = PythonIndex.getPreindexUrl(u.toExternalForm());
             indexScriptDocRecursively(factory, documents, root, rootUrl);
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
