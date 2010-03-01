@@ -443,7 +443,7 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (targetName.equals(BUILD_STEP)) {
             return onBuildStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.BUILD);
         } else if (targetName.equals(BUILD_TESTS_STEP)) {
-            return onBuildStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.TEST);
+            return onBuildStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.BUILD_TESTS);
         } else if (targetName.equals(BUILD_PACKAGE_STEP)) {
             return onBuildPackageStep(actionEvents, conf, ProjectActionEvent.PredefinedType.BUILD);
         } else if (targetName.equals(CLEAN_STEP)) {
@@ -484,31 +484,22 @@ public final class MakeActionProvider implements ActionProvider {
         validated.set(true);
 
         if (actionEvent == ProjectActionEvent.PredefinedType.TEST) {
-            Folder root = projectDescriptor.getLogicalFolders();
-            Folder testRootFolder = null;
-            for (Folder folder : root.getFolders()) {
-                if (folder.isTestRootFolder()) {
-                    testRootFolder = folder;
-                    break;
-                }
+            if (conf.isCompileConfiguration() && !validateProject(conf)) {
+                return true;
             }
-            if (testRootFolder != null) {
-                for (Folder folder : testRootFolder.getAllTests()) {
-                    Item[] items = folder.getAllItemsAsArray();
-                    for (int k = 0; k < items.length; k++) {
-                        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-                        String file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[k].getPath()));
-                        String target = file.replaceFirst("\\..*", ""); // NOI18N
-                        target = MakeConfiguration.BUILD_FOLDER + '/' + "${CND_CONF}" + '/' + "${CND_PLATFORM}" + "/" + "tests" + "/" + target; // NOI18N
-
-                        String path = conf.getMakefileConfiguration().getMakeConfiguration().getBaseDir() + "/" + conf.getMakefileConfiguration().getMakeConfiguration().expandMacros(target); // NOI18N
-                        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
-                        actionEvents.add(projectActionEvent);
-                        RunDialogPanel.addElementToExecutablePicklist(path);
-
-                    }
-                }
+            MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+            String buildCommand;
+            buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " test", ""); // NOI18N
+            String args = "";
+            int index = buildCommand.indexOf(' ');
+            if (index > 0) {
+                args = buildCommand.substring(index + 1);
+                buildCommand = buildCommand.substring(0, index);
             }
+            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform());
+            profile.setArgs(args);
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
+            actionEvents.add(projectActionEvent);
         } else if (conf.isMakefileConfiguration()) {
             String path;
             if (actionEvent == ProjectActionEvent.PredefinedType.RUN) {
@@ -686,7 +677,7 @@ public final class MakeActionProvider implements ActionProvider {
         }
         MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
         String buildCommand;
-        if(actionEvent == ProjectActionEvent.PredefinedType.TEST) {
+        if(actionEvent == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf) + " build-tests", ""); // NOI18N
         } else {
             buildCommand = makeArtifact.getBuildCommand(getMakeCommand(pd, conf), ""); // NOI18N
