@@ -5,5 +5,4 @@
             <equals arg1="cdc-hi" arg2="${{platform.type}}" casesensitive="false"/>
         </condition>
     </target>
-    <target name="cdc-hi-init" depends="cdc-hi-pre-init" if="cdc-hi-platform.trigger">
-    </target>
+    <target name="cdc-hi-init" depends="cdc-hi-pre-init" if="cdc-hi-platform.trigger"/>

@@ -60,6 +60,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 
 /** Implementation of the file object for multi file system.
@@ -75,6 +77,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
     /** default path separator */
     private static final char PATH_SEP = '/';
+    private static final String WEIGHT_ATTRIBUTE = "weight"; // NOI18N
     private static final FileSystem.AtomicAction markAtomicAction = new FileSystem.AtomicAction() {
             public void run() {
             }
@@ -168,9 +171,11 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
         Set now = (delegates == null) ? Collections.EMPTY_SET : delegates;
         Set<FileObject> del = new HashSet<FileObject>(arr.length * 2);
+        Number maxWeight = 0;
         FileObject led = null;
 
         String name = getPath();
+        FileSystem writable = mfs.writableLayer(name);
 
         for (int i = 0; i < arr.length; i++) {
             if (arr[i] != null) {
@@ -184,8 +189,12 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                         fo.addFileChangeListener(weakL);
                     }
 
-                    if ((led == null) && fo.isValid()) {
-                        led = fo;
+                    if (fo.isValid()) {
+                        Number weight = weightOf(fo, writable);
+                        if (led == null || weight.doubleValue() > maxWeight.doubleValue()) {
+                            led = fo;
+                            maxWeight = weight;
+                        }
                     }
                 }
             }
@@ -297,6 +306,10 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     private FileObject findLeader(FileSystem[] fs, String path) {
         MultiFileSystem mfs = getMultiFileSystem();
 
+        Number maxWeight = 0;
+        FileObject _leader = null;
+        FileSystem writable = mfs.writableLayer(path);
+        
         for (FileSystem f : fs) {
             if (f == null) {
                 continue;
@@ -304,11 +317,36 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
             FileObject fo = mfs.findResourceOn(f, path);
 
             if (fo != null) {
-                return fo;
+                Number weight = weightOf(fo, writable);
+                if (_leader == null || weight.doubleValue() > maxWeight.doubleValue()) {
+                    _leader = fo;
+                    maxWeight = weight;
+                }
             }
         }
 
-        return null;
+        return _leader;
+    }
+
+    private static Number weightOf(FileObject f, FileSystem writable) {
+        try {
+            if (f.getFileSystem() == writable) {
+                return Double.MAX_VALUE;
+            }
+        } catch (FileStateInvalidException x) {/* ignore */}
+        Object weight = f.getAttribute(WEIGHT_ATTRIBUTE);
+        if (weight instanceof Number) {
+            return (Number) weight;
+        } else if (weight == null) {
+            return 0;
+        } else {
+            try {
+                Logger.getLogger(MultiFileObject.class.getName()).log(
+                        Level.WARNING, "File {0} in {1} has nonnumeric weight {2} of type {3}",
+                        new Object[] {f.getPath(), f.getFileSystem(), weight, weight.getClass().getName()});
+            } catch (FileStateInvalidException x) {/* ignore */}
+            return 0;
+        }
     }
 
     /** Getter for the right file system */
@@ -774,6 +812,10 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
         FileSystem[] systems = getMultiFileSystem().getDelegates();
 
+        Number maxWeight = 0;
+        Object attr = null;
+        FileSystem writable = getMultiFileSystem().writableLayer(path);
+
         //        boolean isLoaderAttr = /* DataObject.EA_ASSIGNED_LOADER */ "NetBeansAttrAssignedLoader".equals (attrName); // NOI18N                
         for (int i = 0; i < systems.length; i++) {
             if (systems[i] == null) {
@@ -793,7 +835,11 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 Object o = getAttribute(fo, attrName, fo.getPath()); // Performance tricks:                
 
                 if (o != null) {
-                    return devoidify(o);
+                    Number weight = weightOf(fo, writable);
+                    if (attr == null || weight.doubleValue() > maxWeight.doubleValue()) {
+                        attr = o;
+                        maxWeight = weight;
+                    }
                 }
             }
 
@@ -807,12 +853,16 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 Object o = getAttribute(fo, prefixattr, ""); // NOI18N
 
                 if (o != null) {
-                    return devoidify(o);
+                    Number weight = weightOf(fo, writable);
+                    if (attr == null || weight.doubleValue() > maxWeight.doubleValue()) {
+                        attr = o;
+                        maxWeight = weight;
+                    }
                 }
             }
         }
 
-        return null;
+        return devoidify(attr);
     }
 
     private static boolean sameFullName(FileObject f1, FileObject f2) {
