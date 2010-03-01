@@ -1,0 +1,3 @@
+org.netbeans.modules.debugger.jpda.ui.models.EvaluatorTreeModelFilter
+org.netbeans.modules.debugger.jpda.ui.models.VariablesTreeModelFilter
+org.netbeans.modules.debugger.jpda.ui.models.VariablesTreeModelFilterSI

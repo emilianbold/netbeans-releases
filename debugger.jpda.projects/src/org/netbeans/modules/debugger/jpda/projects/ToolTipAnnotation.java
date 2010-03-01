@@ -44,6 +44,10 @@ package org.netbeans.modules.debugger.jpda.projects;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,7 +55,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.ElementKind;
+import javax.swing.BoxLayout;
 import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -75,6 +82,8 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.editor.PopupManager;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -134,10 +143,11 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             rp = RequestProcessor.getDefault();
         }
         rp.post (this);
-        return null;
+        return "";
     }
 
     public void run () {
+        ObjectVariable tooltipVariable = null;
         if (lp == null || ec == null) return ;
         StyledDocument doc;
         try {
@@ -145,11 +155,11 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         } catch (IOException ex) {
             return ;
         }                    
-        JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor ();
+        final JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor ();
         if (ep == null) return ;
         int offset;
         boolean[] isMethodPtr = new boolean[] { false };
-        String expression = getIdentifier (
+        final String expression = getIdentifier (
             doc, 
             ep,
             offset = NbDocument.findLineOffset (
@@ -189,7 +199,8 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             }
             if (v == null) return ; // Something went wrong...
             String type = v.getType ();
-            if (v instanceof ObjectVariable)
+            if (v instanceof ObjectVariable) {
+                tooltipVariable = (ObjectVariable) v;
                 try {
                     String toString = null;
                     try {
@@ -216,12 +227,13 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                             "(" + type + ") ") +
                         v.getValue ();
                 }
-            else
+            } else {
                 toolTipText = expression + " = " + 
                     (type.length () == 0 ? 
                         "" : 
                         "(" + type + ") ") +
                     v.getValue ();
+            }
         } catch (InvalidExpressionException e) {
             String typeName = resolveTypeName(offset, doc);
             if (typeName != null) {
@@ -230,7 +242,27 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 toolTipText = expression + " = >" + e.getMessage () + "<";
             }
         }
-        firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
+
+        if (false && tooltipVariable != null) {
+            ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTipText);
+            final ObjectVariable var = tooltipVariable;
+            final MouseEvent lastMouseEvent = Utilities.getEditorUI(ep).getToolTipSupport().getLastMouseEvent();
+            //panel.add(et);
+            et.addExpansionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    final JPanel panel = new JPanel();
+                    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+                    panel.setBorder(new LineBorder(Color.black, 1));
+                    panel.add(ToolTipView.getToolTipView(expression, var));
+                    Utilities.getEditorUI(ep).getToolTipSupport().mouseMoved(lastMouseEvent);
+                    Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(panel);
+                }
+            });
+            Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(et, PopupManager.ScrollBarBounds, PopupManager.AbovePreferred);
+        } else {
+            firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
+        }
     }
 
     public String getAnnotationType () {
