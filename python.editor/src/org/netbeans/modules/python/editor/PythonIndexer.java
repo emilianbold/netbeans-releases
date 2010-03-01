@@ -287,7 +287,12 @@ public class PythonIndexer implements Indexer {
             if (root == null) {
                 return documents;
             }
-            assert root instanceof Module;
+            if (!(root instanceof Module)) {
+                // Unexpected... http://netbeans.org/bugzilla/show_bug.cgi?id=165756
+                // Maybe some kind of top level error node?
+                System.err.println("WARNING - top level AST node type was " + root + " of type " + root.getClass().getName());
+                return documents;
+            }
             symbolTable = result.getSymbolTable();
             ScopeInfo scopeInfo = symbolTable.getScopeInfo(root);
             for (Map.Entry<String, SymInfo> entry : scopeInfo.tbl.entrySet()) {
