@@ -48,6 +48,7 @@ import java.util.List;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * Notifies about thread started and dead events.
@@ -138,7 +139,7 @@ public class ThreadBreakpoint extends JPDABreakpoint {
 
             @Override
             public String getType() {
-                return "Thread";
+                return NbBundle.getMessage(ThreadBreakpoint.class, "ThreadBrkp_Type");
             }
 
             @Override

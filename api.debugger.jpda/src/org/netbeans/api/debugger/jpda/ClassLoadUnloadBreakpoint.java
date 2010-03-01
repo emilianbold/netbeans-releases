@@ -51,6 +51,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -224,7 +225,7 @@ public class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
 
             @Override
             public String getType() {
-                return "Class Load/Unload";
+                return NbBundle.getMessage(ClassLoadUnloadBreakpoint.class, "ClassBrkp_Type");
             }
 
             @Override

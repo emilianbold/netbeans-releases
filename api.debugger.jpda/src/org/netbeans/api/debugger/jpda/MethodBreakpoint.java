@@ -55,6 +55,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * Notifies about method entry events.
@@ -383,7 +384,7 @@ public class MethodBreakpoint extends JPDABreakpoint {
 
             @Override
             public String getType() {
-                return "Method";
+                return NbBundle.getMessage(MethodBreakpoint.class, "MethodBrkp_Type");
             }
 
             @Override

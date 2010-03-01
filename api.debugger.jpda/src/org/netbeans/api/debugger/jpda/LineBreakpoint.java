@@ -67,6 +67,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 
@@ -575,7 +576,7 @@ public class LineBreakpoint extends JPDABreakpoint {
 
             @Override
             public String getType() {
-                return "Line";
+                return NbBundle.getMessage(LineBreakpoint.class, "LineBrkp_Type");
             }
 
             @Override
