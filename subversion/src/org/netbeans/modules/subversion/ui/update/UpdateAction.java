@@ -171,6 +171,7 @@ public class UpdateAction extends ContextAction {
             // we have to explicitly force the refresh for the relevant context - see bellow in updateRoots
             client.removeNotifyListener(Subversion.getInstance().getRefreshHandler());
             client.addNotifyListener(listener);
+            client.addNotifyListener(progress);
             progress.setCancellableDelegate(client);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
@@ -188,6 +189,7 @@ public class UpdateAction extends ContextAction {
                 updateRoots(flatFiles, progress, client, false);
             } finally {
                 client.removeNotifyListener(l);
+                client.removeNotifyListener(progress);
             }
             if (l.causedConflict) {
                 SwingUtilities.invokeLater(new Runnable() {

@@ -541,6 +541,7 @@ public class CommitAction extends ContextAction {
     public static void performCommit(SvnClient client, String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, boolean rootUpdate, Collection<SvnHook> hooks) {
         try {
             support.setCancellableDelegate(client);
+            client.addNotifyListener(support);
             support.setDisplayName(org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
 
             List<SvnFileNode> addCandidates = new ArrayList<SvnFileNode>();
@@ -701,6 +702,8 @@ public class CommitAction extends ContextAction {
 
         } catch (SVNClientException ex) {
             support.annotate(ex);
+        } finally {
+            client.removeNotifyListener(support);
         }
     }
 
