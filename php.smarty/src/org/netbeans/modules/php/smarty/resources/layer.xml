@@ -25,6 +25,10 @@
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-html-editor-completion-HtmlCompletionProvider.instance"/>
+                </folder>
+                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
             </folder>
         </folder>
     </folder>
@@ -48,6 +52,21 @@
             <file name="tpl-mime-resolver.xml" url="tpl-mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.smarty.editor.resources.Bundle"/>
                 <attr name="position" intvalue="269"/>
+            </file>
+        </folder>
+    </folder>
+
+    <!-- Templates registrations -->
+    <folder name="Templates">
+        <folder name="Scripting">
+            <file name="SMARTY Template" url="nbresloc:/org/netbeans/modules/php/smarty/resources/TplTemplate.tmpl">
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="PHP"/>
+                <attr name="position" intvalue="450"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/smarty/resources/TplDescription.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/smarty/resources/tpl-icon.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.smarty.resources.Bundle"/>
             </file>
         </folder>
     </folder>

@@ -60,7 +60,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public enum TplTopTokenId implements TokenId {
 
-    T_HTML (null, null),
+    T_HTML (null, "html"),
     T_SMARTY (null, "smarty"),
     T_SMARTY_CLOSE_DELIMITER (null, "smarty_delimiter"),
     T_SMARTY_OPEN_DELIMITER (null, "smarty_delimiter");
