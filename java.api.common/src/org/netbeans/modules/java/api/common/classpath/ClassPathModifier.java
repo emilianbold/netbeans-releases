@@ -46,6 +46,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -113,6 +114,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
             ClassPath.COMPILE,
             ClassPath.EXECUTE,
             ClassPathSupport.ENDORSED,
+            JavaClassPathConstants.PROCESSOR_PATH,
         };
     }
 
