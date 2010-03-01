@@ -232,7 +232,7 @@ public class WebUtils {
             StringBuilder b = new StringBuilder();
             FileObject parent = source.getParent();
             while(parent != target.getParent()) {
-                b.append("../");
+                b.append("../"); //NOI18N
                 parent = parent.getParent();
             }
             b.append(target.getNameExt());
