@@ -358,7 +358,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         if (Utilities.isWindows()) {
             path = path.replace('/', File.separatorChar);
         }
-        Vector<String> vector = new Vector<String>();
+        List<String> vector = new ArrayList<String>();
         vector.add(path);
         {
             Preferences prefs = NbPreferences.forModule(SelectProviderPanel.class);
@@ -376,7 +376,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
                 }
             }
         }
-        DefaultComboBoxModel rootModel = new DefaultComboBoxModel(vector);
+        DefaultComboBoxModel rootModel = new DefaultComboBoxModel(vector.toArray());
         rootFolder.setModel(rootModel);
         StringBuilder buf = new StringBuilder();
         for(int i = 0; i < 35; i++) {
@@ -424,7 +424,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         wizardDescriptor.setProvider(provider.getProvider());
         wizardDescriptor.setRootFolder(getRootText());
         {
-            Vector<String> vector = new Vector<String>();
+            List<String> vector = new ArrayList<String>();
             vector.add(getRootText());
             for(int i = 0; i < rootFolder.getModel().getSize(); i++){
                 String s = rootFolder.getModel().getElementAt(i).toString();

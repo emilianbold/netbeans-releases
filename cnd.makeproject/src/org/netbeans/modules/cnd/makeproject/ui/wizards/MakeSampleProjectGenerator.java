@@ -51,11 +51,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -100,7 +101,7 @@ public class MakeSampleProjectGenerator {
             File mainProjectLocation = new File(projectLocation.getPath(), mainProject);
             File[] subProjectLocations = null;
             if (subProjects != null) {
-                Vector<File> subProjectsFiles = new Vector<File>();
+                List<File> subProjectsFiles = new ArrayList<File>();
                 StringTokenizer st = new StringTokenizer(subProjects, ","); // NOI18N
                 while (st.hasMoreTokens()) {
                     subProjectsFiles.add(new File(projectLocation.getPath() + File.separator + st.nextToken()));
@@ -245,7 +246,7 @@ public class MakeSampleProjectGenerator {
         return Collections.singleton(DataObject.find(prjLoc));
     }
     
-    private static void addToSet(Vector<DataObject> set, File projectFile) throws IOException {
+    private static void addToSet(List<DataObject> set, File projectFile) throws IOException {
         try {
             FileObject prjLoc = null;
             prjLoc = FileUtil.toFileObject(projectFile);
@@ -260,7 +261,7 @@ public class MakeSampleProjectGenerator {
     }
     
     public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, File projectLocation, File mainProjectLocation, File[] subProjectLocations, String name) throws IOException {
-        Vector<DataObject> set = new Vector<DataObject>();
+        List<DataObject> set = new ArrayList<DataObject>();
         unzip(inputStream, projectLocation);
         addToSet(set, mainProjectLocation);
         if (subProjectLocations != null) {
