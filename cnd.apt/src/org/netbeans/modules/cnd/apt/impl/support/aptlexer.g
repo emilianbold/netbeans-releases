@@ -515,10 +515,12 @@ tokens {
     }
 
     // overriden to avoid class loading
+    @Override
     public void setTokenObjectClass(String cl) {
     }
 
     // Used instead of setTokenObjectClass method to avoid reflection usage
+    @Override
     protected APTToken createToken(int type) {
         return APTUtils.createAPTToken(type);
     }
@@ -528,6 +530,7 @@ tokens {
         APTUtils.setTokenText((APTToken)_token, buf, start, count);
     }
 
+    @Override
     public void traceIn(String rname) {
         traceDepth ++;
         traceIndent();
@@ -688,12 +691,8 @@ tokens {
             if (!(t==Token.EOF_TYPE || t==END_PREPROC_DIRECTIVE)){
                 return null;
             }
-        } 
-        APTToken k = (APTToken)super.makeToken(t);
-        k.setOffset(tokenStartOffset);
-        k.setEndOffset(offset);
-        k.setEndColumn(inputState.getColumn());
-        k.setEndLine(inputState.getLine());
+        }
+        APTToken k = APTUtils.createAPTToken(t, tokenStartOffset, offset, getTokenStartColumn(), getTokenStartLine(), inputState.getColumn(), inputState.getLine());
         // it should be impossible to have preprocessor directive 
         // after valid token. preprocessor directive valid only
         // at start of line @see newline()

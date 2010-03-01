@@ -48,6 +48,7 @@ import java.util.List;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * Notifies about thread started and dead events.
@@ -123,8 +124,8 @@ public class ThreadBreakpoint extends JPDABreakpoint {
 
     private static final class ThreadBreakpointImpl extends ThreadBreakpoint implements PropertyChangeListener {
 
-        //@Override
-        public Object /*public GroupProperties*/ getGroupProperties() {
+        @Override
+        public GroupProperties getGroupProperties() {
             return new ThreadGroupProperties();
         }
 
@@ -134,28 +135,34 @@ public class ThreadBreakpoint extends JPDABreakpoint {
         }
 
 
-        private final class ThreadGroupProperties {//extends GroupProperties {
+        private final class ThreadGroupProperties extends GroupProperties {
 
+            @Override
             public String getType() {
-                return "Thread";
+                return NbBundle.getMessage(ThreadBreakpoint.class, "ThreadBrkp_Type");
             }
 
+            @Override
             public String getLanguage() {
                 return "Java";
             }
 
+            @Override
             public FileObject[] getFiles() {
                 return null;
             }
 
+            @Override
             public Project[] getProjects() {
                 return null;
             }
 
+            @Override
             public DebuggerEngine[] getEngines() {
                 return ThreadBreakpointImpl.this.getEngines();
             }
 
+            @Override
             public boolean isHidden() {
                 return ThreadBreakpointImpl.this.isHidden();
             }
