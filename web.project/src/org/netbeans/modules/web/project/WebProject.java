@@ -167,6 +167,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
+import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
@@ -465,17 +466,7 @@ public final class WebProject implements Project, AntProjectListener {
     
     private PropertyEvaluator createEvaluator() {
         // XXX might need to add a custom evaluator to handle active platform substitutions... TBD
-        PropertyEvaluator baseEval2 = PropertyUtils.sequentialPropertyEvaluator(
-                helper.getStockPropertyPreprovider(),
-                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
-        return PropertyUtils.sequentialPropertyEvaluator(
-                helper.getStockPropertyPreprovider(),
-                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
-                helper.getProjectLibrariesPropertyProvider(),
-                PropertyUtils.userPropertiesProvider(baseEval2,
-                    "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
-                helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH),
-                UPDATE_PROPERTIES);
+         return helper.getStandardPropertyEvaluator();
     }
 
     private static final PropertyProvider UPDATE_PROPERTIES;
@@ -2165,4 +2156,37 @@ public final class WebProject implements Project, AntProjectListener {
     }
     
 
+    private static final class ConfigPropertyProvider extends FilterPropertyProvider implements PropertyChangeListener {
+        private final PropertyEvaluator baseEval;
+        private final String prefix;
+        private final AntProjectHelper helper;
+        public ConfigPropertyProvider(PropertyEvaluator baseEval, String prefix, AntProjectHelper helper) {
+            super(computeDelegate(baseEval, prefix, helper));
+            this.baseEval = baseEval;
+            this.prefix = prefix;
+            this.helper = helper;
+            baseEval.addPropertyChangeListener(this);
+        }
+        public void propertyChange(PropertyChangeEvent ev) {
+            if (PROP_CONFIG.equals(ev.getPropertyName())) {
+                setDelegate(computeDelegate(baseEval, prefix, helper));
+            }
+        }
+        private static PropertyProvider computeDelegate(PropertyEvaluator baseEval, String prefix, AntProjectHelper helper) {
+            String config = baseEval.getProperty(PROP_CONFIG);
+            if (config != null) {
+                return helper.getPropertyProvider(prefix + "/" + config + ".properties"); // NOI18N
+            } else {
+                return PropertyUtils.fixedPropertyProvider(Collections.<String,String>emptyMap());
+            }
+        }
+    }
+    /**
+     * Ant property name for active config.
+     */
+    public static final String PROP_CONFIG = "config"; // NOI18N
+    /**
+     * Ant property file which specified active config.
+     */
+    public static final String CONFIG_PROPS_PATH = "nbproject/private/config.properties"; // NOI18N
 }
