@@ -50,7 +50,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.prefs.Preferences;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -221,7 +220,7 @@ public class ProviderControl {
     }
 
     private void initComboBox(String root){
-        Vector<String> vector = new Vector<String>();
+        List<String> vector = new ArrayList<String>();
         vector.add(root);
         Preferences prefs = NbPreferences.forModule(ProviderControl.class);
         String old = prefs.get(propertyKey, ""); // NOI18N
@@ -237,7 +236,7 @@ public class ProviderControl {
                 }
             }
         }
-        DefaultComboBoxModel rootModel = new DefaultComboBoxModel(vector);
+        DefaultComboBoxModel rootModel = new DefaultComboBoxModel(vector.toArray());
         field.setModel(rootModel);
     }
     

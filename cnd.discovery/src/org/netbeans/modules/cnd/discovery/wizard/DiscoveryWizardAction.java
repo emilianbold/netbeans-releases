@@ -49,12 +49,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -159,7 +156,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         if (pdp != null && pdp.gotDescriptor()){
             MakeConfigurationDescriptor make = pdp.getConfigurationDescriptor();
             Folder folder = make.getLogicalFolders();
-            Vector sources = folder.getFolders();
+            List<Folder> sources = folder.getFolders();
             List<String> roots = make.getAbsoluteSourceRoots();
             if (roots.size() > 0){
                 return roots.get(0);
@@ -169,7 +166,7 @@ public final class DiscoveryWizardAction extends NodeAction {
                 Folder sub = (Folder)o;
                 if (sub.isProjectFiles()) {
                     if (MakeConfigurationDescriptor.SOURCE_FILES_FOLDER.equals(sub.getName())) {
-                        Vector v = sub.getFolders();
+                        List<Folder> v = sub.getFolders();
                         for (Object e : v){
                             Folder s = (Folder)e;
                             if (s.isProjectFiles()) {
@@ -301,6 +298,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         }
     }
     
+    @Override
     public String getName() {
         return getString("ACTION_TITLE_TXT");
     }
@@ -310,6 +308,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         return null;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
