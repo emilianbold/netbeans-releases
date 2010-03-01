@@ -39,11 +39,15 @@
 
 package org.netbeans.core.osgi;
 
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.TreeSet;
+import javax.swing.JOptionPane;
+import javax.swing.plaf.basic.BasicOptionPaneUI;
 import org.netbeans.junit.NbTestCase;
+import org.openide.modules.ModuleInstall;
 
 public class ActivatorTest extends NbTestCase {
 
@@ -57,56 +61,64 @@ public class ActivatorTest extends NbTestCase {
     }
 
     public void testModuleInstall() throws Exception {
-        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
-                "public class Install extends org.openide.modules.ModuleInstall {",
-                "public @Override void restored() {System.setProperty(\"my.bundle.ran\", \"true\");}",
-                "}").manifest(
+        new OSGiProcess(getWorkDir()).newModule().clazz(ModuleInstallInstall.class).manifest(
                 "OpenIDE-Module: custom",
-                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Install: " + ModuleInstallInstall.class.getName(),
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().run();
         assertTrue(Boolean.getBoolean("my.bundle.ran"));
     }
+    public static class ModuleInstallInstall extends ModuleInstall {
+        public @Override void restored() {
+            System.setProperty("my.bundle.ran", "true");
+        }
+    }
 
     public void testModuleInstallBackwards() throws Exception {
-        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
-                "public class Install extends org.openide.modules.ModuleInstall {",
-                "public @Override void restored() {System.setProperty(\"my.bundle.ran.again\", \"true\");}",
-                "}").manifest(
+        new OSGiProcess(getWorkDir()).newModule().clazz(ModuleInstallBackwardsInstall.class).manifest(
                 "OpenIDE-Module: custom",
-                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Install: " + ModuleInstallBackwardsInstall.class.getName(),
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().backwards().run();
         assertTrue(Boolean.getBoolean("my.bundle.ran.again"));
     }
+    public static class ModuleInstallBackwardsInstall extends ModuleInstall {
+        public @Override void restored() {
+            System.setProperty("my.bundle.ran.again", "true");
+        }
+    }
 
     public void testURLStreamHandler() throws Exception {
-        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
-                "public class Install extends org.openide.modules.ModuleInstall {",
-                "public @Override void restored() {try {",
-                "System.setProperty(\"my.url.length\", ",
-                "Integer.toString(new java.net.URL(\"nbres:/custom/stuff\").openConnection().getContentLength()));",
-                "} catch (Exception x) {x.printStackTrace();}",
-                "}",
-                "}").sourceFile("custom/stuff", "some text").manifest(
+        new OSGiProcess(getWorkDir()).newModule().clazz(URLStreamHandlerInstall.class).sourceFile("custom/stuff", "some text").manifest(
                 "OpenIDE-Module: custom",
-                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Install: " + URLStreamHandlerInstall.class.getName(),
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().
                 backwards(). // XXX will not pass otherwise
                 run();
         assertEquals("10", System.getProperty("my.url.length"));
     }
+    public static class URLStreamHandlerInstall extends ModuleInstall {
+        public @Override void restored() {
+            try {
+                System.setProperty("my.url.length",
+                        Integer.toString(new URL("nbres:/custom/stuff").openConnection().getContentLength()));
+            } catch (Exception x) {
+                x.printStackTrace();
+            }
+        }
+    }
 
     public void testJREPackageImport() throws Exception {
-        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
-                "public class Install extends org.openide.modules.ModuleInstall {",
-                "public @Override void restored() {",
-                "new javax.swing.JOptionPane().setUI(new javax.swing.plaf.basic.BasicOptionPaneUI());",
-                "System.setProperty(\"my.bundle.worked\", \"true\");",
-                "}",
-                "}").manifest(
+        new OSGiProcess(getWorkDir()).newModule().clazz(JREPackageImportInstall.class).manifest(
                 "OpenIDE-Module: custom",
-                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Install: " + JREPackageImportInstall.class.getName(),
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().run();
         assertTrue(Boolean.getBoolean("my.bundle.worked"));
+    }
+    public static class JREPackageImportInstall extends ModuleInstall {
+        public @Override void restored() {
+            // javax.swing.plaf.OptionPaneUI mentioned in method signature:
+            new JOptionPane().setUI(new BasicOptionPaneUI());
+            System.setProperty("my.bundle.worked", "true");
+        }
     }
 
     public void testProvidesRequiresNeedsParsing() throws Exception {

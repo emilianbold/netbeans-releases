@@ -39,7 +39,11 @@
 
 package org.netbeans.core.osgi;
 
+import java.io.File;
+import java.net.URL;
 import org.netbeans.junit.NbTestCase;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.ModuleInstall;
 
 public class OSGiInstalledFileLocatorTest extends NbTestCase {
 
@@ -52,26 +56,13 @@ public class OSGiInstalledFileLocatorTest extends NbTestCase {
         clearWorkDir();
     }
 
-    public void testInstalledFileLocator() throws Exception {
-        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
-                "public class Install extends org.openide.modules.ModuleInstall {",
-                "public @Override void restored() {try {",
-                "System.setProperty(\"my.file.count\", ",
-                "Integer.toString(org.openide.modules.InstalledFileLocator.getDefault().locate(" +
-                "\"some\", null, false).list().length));",
-                "System.setProperty(\"my.file.length\", ",
-                "Long.toString(new java.io.File(org.openide.modules.InstalledFileLocator.getDefault().locate(" +
-                "\"some/stuff\", null, false).getParentFile(), \"otherstuff\").length()));",
-                "System.setProperty(\"my.url.length\", ",
-                "Integer.toString(new java.net.URL(\"nbinst://custom/some/stuff\").openConnection().getContentLength()));",
-                "} catch (Exception x) {x.printStackTrace();}",
-                "}",
-                "}").
+    public void testLocate() throws Exception {
+        new OSGiProcess(getWorkDir()).newModule().clazz(LocateInstall.class).
                 sourceFile("OSGI-INF/files/some/stuff", "some text").
                 sourceFile("OSGI-INF/files/some/otherstuff", "hello").
                 manifest(
                 "OpenIDE-Module: custom",
-                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Install: " + LocateInstall.class.getName(),
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().
                 module("org.netbeans.modules.masterfs").
                 backwards(). // XXX will not pass otherwise
@@ -79,6 +70,20 @@ public class OSGiInstalledFileLocatorTest extends NbTestCase {
         assertEquals("2", System.getProperty("my.file.count"));
         assertEquals("6", System.getProperty("my.file.length"));
         assertEquals("10", System.getProperty("my.url.length"));
+    }
+    public static class LocateInstall extends ModuleInstall {
+        public @Override void restored() {
+            try {
+                System.setProperty("my.file.count",
+                        Integer.toString(InstalledFileLocator.getDefault().locate("some", null, false).list().length));
+                System.setProperty("my.file.length",
+                        Long.toString(new File(InstalledFileLocator.getDefault().locate("some/stuff", null, false).getParentFile(), "otherstuff").length()));
+                System.setProperty("my.url.length",
+                        Integer.toString(new URL("nbinst://custom/some/stuff").openConnection().getContentLength()));
+            } catch (Exception x) {
+                x.printStackTrace();
+            }
+        }
     }
 
 }

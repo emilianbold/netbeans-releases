@@ -40,6 +40,9 @@
 package org.netbeans.core.osgi;
 
 import org.netbeans.junit.NbTestCase;
+import org.openide.modules.ModuleInfo;
+import org.openide.modules.ModuleInstall;
+import org.openide.util.Lookup;
 
 public class OSGiMainLookupTest extends NbTestCase {
 
@@ -53,43 +56,48 @@ public class OSGiMainLookupTest extends NbTestCase {
     }
 
     public void testModuleInfo() throws Exception {
-        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
-                "public class Install extends org.openide.modules.ModuleInstall {",
-                "public @Override void restored() {System.setProperty(\"number.of.modules\",",
-                "String.valueOf(org.openide.util.Lookup.getDefault().lookupAll(org.openide.modules.ModuleInfo.class).size()));}",
-                "}").manifest(
+        new OSGiProcess(getWorkDir()).newModule().clazz(ModuleInfoInstall.class).manifest(
                 "OpenIDE-Module: custom",
-                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Install: " + ModuleInfoInstall.class.getName(),
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.util.lookup").done().run();
         String numberOfModules = System.getProperty("number.of.modules");
         assertNotNull(numberOfModules);
         assertTrue(numberOfModules, Integer.parseInt(numberOfModules) > 2);
     }
+    public static class ModuleInfoInstall extends ModuleInstall {
+        public @Override void restored() {
+            System.setProperty("number.of.modules", String.valueOf(Lookup.getDefault().lookupAll(ModuleInfo.class).size()));
+        }
+    }
 
     public void testServicesFolder() throws Exception {
         new OSGiProcess(getWorkDir()).newModule().
-                sourceFile("custom/Interface.java", "package custom; public interface Interface {String result();}").
-                sourceFile("custom/Install.java", "package custom;",
-                "public class Install extends org.openide.modules.ModuleInstall {",
-                "public @Override void restored() {System.setProperty(\"custom.service.result\", ",
-                "org.openide.util.Lookup.getDefault().lookup(Interface.class).result());}",
-                "}").
-                sourceFile("custom/Service.java", "package custom; public class Service implements Interface {",
-                "public String result() {return \"ok\";}",
-                "}").
+                clazz(Interface.class).clazz(Service.class).clazz(ServicesFolderInstall.class).
                 sourceFile("custom/layer.xml", "<filesystem>",
                 "<folder name='Services'>",
-                "<file name='custom-Service.instance'><attr name='instanceOf' stringvalue='custom.Interface'/></file>",
+                "<file name='svc.instance'><attr name='instanceClass' stringvalue='" + Service.class.getName() + "'/>" +
+                "<attr name='instanceOf' stringvalue='" + Interface.class.getName() + "'/></file>",
                 "</folder>",
                 "</filesystem>").manifest(
                 "OpenIDE-Module: custom",
-                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Install: " + ServicesFolderInstall.class.getName(),
                 "OpenIDE-Module-Layer: custom/layer.xml",
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.util.lookup, org.netbeans.core/2").done().
                 module("org.netbeans.core").
                 module("org.netbeans.modules.editor.mimelookup.impl"). // indirect dep of editor.mimelookup, from openide.loaders
                 run();
         assertEquals("ok", System.getProperty("custom.service.result"));
+    }
+    public interface Interface {
+        String result();
+    }
+    public static class Service implements Interface {
+        public @Override String result() {return "ok";}
+    }
+    public static class ServicesFolderInstall extends ModuleInstall {
+        public @Override void restored() {
+            System.setProperty("custom.service.result", Lookup.getDefault().lookup(Interface.class).result());
+        }
     }
 
 }
