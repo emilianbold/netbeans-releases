@@ -45,7 +45,7 @@ import org.netbeans.modules.cnd.antlr.Token;
 import java.io.Serializable;
 
 /**
- * inteface for APT tokens
+ * interface for APT tokens
  * @author Vladimir Voskresensky
  */
 public interface APTToken extends Token, Serializable {    
@@ -61,6 +61,7 @@ public interface APTToken extends Token, Serializable {
     public int getEndLine();
     public void setEndLine(int l);
     
+    @Override
     public String getText();
     public CharSequence getTextID();
     public void setTextID(CharSequence id);

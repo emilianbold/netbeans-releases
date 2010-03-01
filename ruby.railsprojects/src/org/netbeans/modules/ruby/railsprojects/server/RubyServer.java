@@ -40,6 +40,8 @@ package org.netbeans.modules.ruby.railsprojects.server;
 
 import java.util.List;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.ruby.railsprojects.RailsProject;
+import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil.RailsVersion;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 
 /**
@@ -68,12 +70,12 @@ public interface RubyServer extends RubyInstance {
     public String getLocation();
     
     /**
-     * Gets the startup param for forcing an instance of this server 
+     * Gets the startup params for forcing an instance of this server
      * to started.
      * 
-     * @return the startup param.
+     * @return the startup params.
      */
-    String getStartupParam();
+    List<String> getStartupParams(RailsVersion version);
 
     /**
      * Prefix option for invoking server script if required.
@@ -84,10 +86,10 @@ public interface RubyServer extends RubyInstance {
 
     /**
      * Gets the path to the startup script of this server.
-     * 
+     * @param project the project this server belongs to.
      * @return the path to the startup script.
      */
-    String getServerPath();
+    String getServerPath(RailsVersion version);
 
     /**
      * Checks whether the given <code>outputLine</code> represented a startup

@@ -42,7 +42,10 @@ package org.netbeans.modules.fcb.win;
 
 import facebook.socialnetworkingservice.facebookresponse.User;
 import java.awt.EventQueue;
+import java.io.IOException;
 import org.netbeans.saas.facebook.FacebookSocialNetworkingService;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -76,6 +79,9 @@ public class LoginPanel extends javax.swing.JPanel {
             }
         });
 
+        jProgressBar1.setString(org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.jProgressBar1.string")); // NOI18N
+        jProgressBar1.setStringPainted(true);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -84,7 +90,7 @@ public class LoginPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE))
+                        .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(99, 99, 99)
                         .addComponent(jButton1)))
@@ -95,7 +101,7 @@ public class LoginPanel extends javax.swing.JPanel {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jButton1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 45, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 42, Short.MAX_VALUE)
                 .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -118,15 +124,27 @@ public class LoginPanel extends javax.swing.JPanel {
                 if (EventQueue.isDispatchThread()) {
                     finish();
                 } else {
-                    u = FacebookSocialNetworkingService.getUserInfo();
+                    jProgressBar1.setString("Signing in...");
+                    try {
+                        u = FacebookSocialNetworkingService.getUserInfo();
+                    } catch (Exception ioe) {
+                        if (!(ioe instanceof IOException)) {
+                            throw new RuntimeException(ioe);
+                        }
+                    }
                     EventQueue.invokeLater(this);
                 }
             }
 
             void finish() {
                 jProgressBar1.setVisible(false);
-                assert u != null : "user is null :-(";
-                FcbTopComponent.setUser(u);
+                if (u != null) {
+                    FcbTopComponent.setUser(u);
+                } else {
+                    final NotifyDescriptor nd = new NotifyDescriptor.Message("Try again...",
+                            NotifyDescriptor.INFORMATION_MESSAGE);
+                    DialogDisplayer.getDefault().notify(nd);
+                }
             }
         }
         new X().init();
