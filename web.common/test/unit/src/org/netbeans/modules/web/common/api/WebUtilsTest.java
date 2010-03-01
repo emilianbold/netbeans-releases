@@ -135,13 +135,6 @@ public class WebUtilsTest extends CslTestBase {
         assertNotNull(resolved);
         assertEquals(one, resolved.target());
         assertEquals("../../one.txt", resolved.optimizedLinkPath());
-
-        //path optimalization
-        resolved = WebUtils.resolveToReference(fourth, "../../folder/../../one.txt");
-        assertNotNull(resolved);
-        assertEquals(one, resolved.target());
-        assertEquals("../../one.txt", resolved.optimizedLinkPath());
-
     }
 
 }
