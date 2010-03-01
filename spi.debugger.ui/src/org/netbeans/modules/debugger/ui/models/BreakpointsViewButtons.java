@@ -131,7 +131,7 @@ public class BreakpointsViewButtons {
                 boolean groupableBreakpoints = false;
                 Breakpoint[] brkps = DebuggerManager.getDebuggerManager().getBreakpoints();
                 for (Breakpoint b : brkps) {
-                    if (BreakpointGroup.GroupProperties.getFrom(b) != null) {
+                    if (b.getGroupProperties() != null) {
                         groupableBreakpoints = true;
                         break;
                     }
@@ -148,7 +148,7 @@ public class BreakpointsViewButtons {
                     DebuggerManager.getDebuggerManager().addDebuggerListener(new DebuggerManagerAdapter() {
                         @Override
                         public void breakpointAdded(Breakpoint breakpoint) {
-                            if (!gb[0] && BreakpointGroup.GroupProperties.getFrom(breakpoint) != null) {
+                            if (!gb[0] && breakpoint.getGroupProperties() != null) {
                                 gb[0] = true;
                                 SwingUtilities.invokeLater(new Runnable() {
                                     @Override

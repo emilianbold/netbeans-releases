@@ -41,18 +41,33 @@
 
 package org.netbeans.mobility.antext;
 
-import org.apache.tools.ant.taskdefs.Property;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.BuildException;
 
 /**
- * This target is the extension of standard Property task except it overides the
- * property (properties) if already defined.
+ * This target sets the property value or overides it
+ * when already defined.
  *
  * @author Adam Sotona
  */
-public class OverridePropertyTask extends Property {
+public class OverridePropertyTask extends Task {
 
-    protected void addProperty(String n, String v) {
-        getProject().setProperty(n, v);
+    private String name;
+    private String value;
+
+    public void setName(String name) {
+      this.name = name;
     }
-    
+
+    public void setValue(String value) {
+      this.value = value;
+    }
+
+    public void execute() {
+      if (name == null || value == null) throw new BuildException("You must specify name and value attribute.", getLocation());
+      log("Overriding property: " + name + " with value: " + value, Project.MSG_VERBOSE);
+      getProject().setProperty(name, value);
+    }
+
 }

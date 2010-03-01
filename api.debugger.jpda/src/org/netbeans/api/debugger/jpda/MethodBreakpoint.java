@@ -55,6 +55,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * Notifies about method entry events.
@@ -359,8 +360,8 @@ public class MethodBreakpoint extends JPDABreakpoint {
     private static final class MethodBreakpointImpl extends MethodBreakpoint implements ChangeListener,
                                                                                         PropertyChangeListener {
         
-        //@Override
-        public Object /*GroupProperties*/ getGroupProperties() {
+        @Override
+        public GroupProperties getGroupProperties() {
             return new MethodGroupProperties();
         }
 
@@ -379,16 +380,19 @@ public class MethodBreakpoint extends JPDABreakpoint {
         }
 
         
-        private final class MethodGroupProperties { //extends GroupProperties {
+        private final class MethodGroupProperties extends GroupProperties {
 
+            @Override
             public String getType() {
-                return "Method";
+                return NbBundle.getMessage(MethodBreakpoint.class, "MethodBrkp_Type");
             }
 
+            @Override
             public String getLanguage() {
                 return "Java";
             }
 
+            @Override
             public FileObject[] getFiles() {
                 String[] filters = getClassFilters();
                 String[] exfilters = getClassExclusionFilters();
@@ -402,6 +406,7 @@ public class MethodBreakpoint extends JPDABreakpoint {
                 return files.toArray(new FileObject[] {});
             }
 
+            @Override
             public Project[] getProjects() {
                 FileObject[] files = getFiles();
                 List<Project> projects = new ArrayList<Project>();
@@ -423,10 +428,12 @@ public class MethodBreakpoint extends JPDABreakpoint {
                 return projects.toArray(new Project[] {});
             }
 
+            @Override
             public DebuggerEngine[] getEngines() {
                 return MethodBreakpointImpl.this.getEngines();
             }
 
+            @Override
             public boolean isHidden() {
                 return MethodBreakpointImpl.this.isHidden();
             }

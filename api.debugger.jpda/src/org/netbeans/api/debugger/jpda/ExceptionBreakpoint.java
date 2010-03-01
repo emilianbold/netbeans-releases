@@ -50,6 +50,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -243,8 +244,8 @@ public class ExceptionBreakpoint extends JPDABreakpoint {
 
     private static final class ExceptionBreakpointImpl extends ExceptionBreakpoint implements PropertyChangeListener {
 
-        //@Override
-        public Object /*public GroupProperties*/ getGroupProperties() {
+        @Override
+        public GroupProperties getGroupProperties() {
             return new ExceptionGroupProperties();
         }
 
@@ -253,16 +254,19 @@ public class ExceptionBreakpoint extends JPDABreakpoint {
             enginePropertyChange(evt);
         }
 
-        private final class ExceptionGroupProperties { //extends GroupProperties {
+        private final class ExceptionGroupProperties extends GroupProperties {
 
+            @Override
             public String getType() {
-                return "Exception";
+                return NbBundle.getMessage(ExceptionBreakpoint.class, "ExceptionBrkp_Type");
             }
 
+            @Override
             public String getLanguage() {
                 return "Java";
             }
 
+            @Override
             public FileObject[] getFiles() {
                 String[] filters = getClassFilters();
                 String[] exfilters = getClassExclusionFilters();
@@ -276,6 +280,7 @@ public class ExceptionBreakpoint extends JPDABreakpoint {
                 return files.toArray(new FileObject[] {});
             }
 
+            @Override
             public Project[] getProjects() {
                 FileObject[] files = getFiles();
                 List<Project> projects = new ArrayList<Project>();
@@ -297,10 +302,12 @@ public class ExceptionBreakpoint extends JPDABreakpoint {
                 return projects.toArray(new Project[] {});
             }
 
+            @Override
             public DebuggerEngine[] getEngines() {
                 return ExceptionBreakpointImpl.this.getEngines();
             }
 
+            @Override
             public boolean isHidden() {
                 return ExceptionBreakpointImpl.this.isHidden();
             }
