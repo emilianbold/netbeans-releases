@@ -167,7 +167,7 @@ public abstract class CssElementContext {
 
 	@Override
 	public String getElementName() {
-	    return getElement().image();
+	    return getElement().image().trim();
 	}
 
 	@Override
