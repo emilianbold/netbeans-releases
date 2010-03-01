@@ -77,6 +77,7 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
 import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
+import org.netbeans.modules.versioning.util.TableSorter;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.Utils;
@@ -99,6 +100,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 public class CommitAction extends ContextAction {
 
     static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage";
+    private static final String PANEL_PREFIX = "commit"; //NOI18N
 
     @Override
     protected String getBaseName(Node[] nodes) {
@@ -165,7 +167,11 @@ public class CommitAction extends ContextAction {
         File file = ctx.getRootFiles()[0];
         panel.setHooks(hooks, new SvnHookContext(new File[] { file }, null, null));
 
-        final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] { CommitTableModel.COLUMN_NAME_PATH });
+        Map<String, Integer> sortingStatus = SvnModuleConfig.getDefault().getSortingStatus(PANEL_PREFIX);
+        if (sortingStatus == null) {
+            sortingStatus = Collections.singletonMap(CommitTableModel.COLUMN_NAME_PATH, TableSorter.ASCENDING);
+        }
+        final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, sortingStatus);
         panel.setCommitTable(data);
         data.setCommitPanel(panel);
         final JButton commitButton = new JButton();
@@ -187,6 +193,7 @@ public class CommitAction extends ContextAction {
         if (!message.isEmpty()) {
             SvnModuleConfig.getDefault().setLastCommitMessage(message);
         }
+        SvnModuleConfig.getDefault().setSortingStatus(PANEL_PREFIX, data.getSortingState());
         if (startCommit) {
             // if OK setup sequence of add, remove and commit calls
             startCommitTask(panel, data, ctx, hooks);
