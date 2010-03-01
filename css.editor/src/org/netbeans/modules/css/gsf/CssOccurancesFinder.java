@@ -102,7 +102,9 @@ public class CssOccurancesFinder extends OccurrencesFinder {
             return ;
         }
         final SimpleNode currentNode = SimpleNodeUtil.findDescendant(root, astOffset);
-        assert currentNode != null;
+        if(currentNode == null) {
+            return ; //the node may be null at the very end of the document
+        }
 
         //process only some intersting nodes
         switch(currentNode.kind()) {
