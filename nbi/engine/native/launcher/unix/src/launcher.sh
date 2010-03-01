@@ -1238,11 +1238,11 @@ verifyJavaHome() {
 		comp=0
 
 		if [ -n "$javaVersion" ] && [ -n "$javaVmVersion" ] && [ -n "$vendor" ] && [ -n "$osname" ] && [ -n "$osarch" ] ; then
-		    debug "... seems to be java indeded"
-		    subs=`echo "$javaVmVersion" | sed "s/${javaVersion}//;s/${javaVmVersion}//"`
-		    if [ -n "$subs" ] ; then
-		        javaVersion=`echo "$javaVmVersion" | sed "s/.*${javaVersion}/${javaVersion}/"`
-		    fi
+		    debug "... seems to be java indeed"
+		    javaVersionEsc=`escapeBackslash "$javaVersion"`
+                    javaVmVersionEsc=`escapeBackslash "$javaVersionEsc"`
+                    javaVersion=`awk 'END { idx = index(b,a); if(idx!=0) { print substr(b,idx,length(b)) } else { print a } }' a="$javaVersionEsc" b="$javaVmVersionEsc" < /dev/null`
+
 		    #remove build number
 		    javaVersion=`echo "$javaVersion" | sed 's/-.*$//;s/\ .*//'`
 		    verifyResult=$VERIFY_UNCOMPATIBLE
