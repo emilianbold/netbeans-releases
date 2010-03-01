@@ -53,8 +53,8 @@ public class APTBaseToken implements APTToken {
     // most tokens will want line and text information
     protected int line;
     protected CharSequence text = null;
-    protected int col;
-    protected int type;
+    protected short col;
+    protected short type;
     private int offset;
     /**
      * Creates a new instance of APTBaseToken
@@ -88,68 +88,86 @@ public class APTBaseToken implements APTToken {
         this.setText(text);
     }
     
+    @Override
     public final int getType() {
         return type;
     }
 
+    @Override
     public final void setType(int t) {
-        type = t;
+        assert t < Short.MAX_VALUE;
+        type = (short) t;
     }
 
+    @Override
     public String getFilename() {
         return null;
     }
 
+    @Override
     public void setFilename(String name) {
     }
     
+    @Override
     public final int getOffset() {
         return offset;
     }
 
+    @Override
     public final void setOffset(int o) {
         this.offset = o;
     }
 
+    @Override
     public int getEndOffset() {
         return getOffset() + getTextID().length();
     }
 
+    @Override
     public void setEndOffset(int end) {
         // do nothing
     }
 
+    @Override
     public final CharSequence getTextID() {
         return this.text;
     }
 
+    @Override
     public final void setTextID(CharSequence textID) {
         this.text = TextCache.getManager().getString(textID);
     }
 
+    @Override
     public final String getText() {
         return text.toString();
     }
 
+    @Override
     public final void setText(String t) {
         text = TextCache.getManager().getString(t);
     }
 
+    @Override
     public final int getLine() {
         return line;
     }
 
+    @Override
     public final void setLine(int l) {
         line = l;
     }
 
     /** Return token's start column */
+    @Override
     public final int getColumn() {
         return col;
     }
 
+    @Override
     public final void setColumn(int c) {
-        col = c;
+        assert c < Short.MAX_VALUE;
+        col = (short) c;
     }
 
     @Override
@@ -157,18 +175,22 @@ public class APTBaseToken implements APTToken {
         return "[\"" + getTextID() + "\",<" + getType() + ">,line=" + getLine() + ",col=" + getColumn() + "]" + ",offset="+getOffset()+",file="+getFilename(); // NOI18N
     }
 
+    @Override
     public int getEndColumn() {
         return getColumn() + getTextID().length();
     }
 
+    @Override
     public void setEndColumn(int c) {
         // do nothing
     }
 
+    @Override
     public int getEndLine() {
         return getLine();
     }
 
+    @Override
     public void setEndLine(int l) {
         // do nothing
     }
