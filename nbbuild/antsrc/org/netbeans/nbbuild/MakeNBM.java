@@ -772,11 +772,11 @@ public class MakeNBM extends Task {
                         infoStream.close ();
                     }
                 } catch (IOException e) {
-                    throw new BuildException("exception when creating Info/executables.list", e, getLocation());
+                    throw new BuildException("exception when creating Info/executable.list", e, getLocation());
                 }
                 executablesFile.deleteOnExit();
                 executablesList.setFile(executablesFile);
-                executablesList.setFullpath("Info/executables.list");
+                executablesList.setFullpath("Info/executable.list");
                 jar.addZipfileset(executablesList);
             }
         }
