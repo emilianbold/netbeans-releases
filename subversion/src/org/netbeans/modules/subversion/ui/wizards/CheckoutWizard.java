@@ -194,5 +194,8 @@ public final class CheckoutWizard implements ChangeListener {
     public boolean isAtWorkingDirLevel() {
         return checkoutStep.isAtWorkingDirLevel();
     }
+    public boolean isExport() {
+        return checkoutStep.isExport();
+    }
 }
 
