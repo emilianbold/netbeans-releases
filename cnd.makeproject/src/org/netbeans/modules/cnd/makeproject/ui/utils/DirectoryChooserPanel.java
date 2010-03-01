@@ -44,7 +44,6 @@ import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
-import java.util.Vector;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFileChooser;

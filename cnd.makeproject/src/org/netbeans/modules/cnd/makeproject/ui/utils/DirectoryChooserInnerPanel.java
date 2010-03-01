@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.makeproject.ui.utils;
 
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import java.util.List;
-import java.util.Vector;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;

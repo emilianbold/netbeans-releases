@@ -41,12 +41,9 @@
 
 package org.netbeans.modules.cnd.makeproject.ui;
 
-import java.util.List;
-import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -74,11 +71,13 @@ public final class PropertiesFolderAction extends NodeAction {
             Node n = activatedNodes[i];
             Folder folder = (Folder)n.getValue("Folder"); // NOI18N
             Project project = (Project)n.getValue("Project"); // NOI18N
-            if (project == null)
-                return; // FIXUP
+            if (project == null) {
+                return;  // FIXUP
+            }
             MakeCustomizerProvider cp = project.getLookup().lookup( MakeCustomizerProvider.class );
-            if (cp == null)
-                return; // FIXUP
+            if (cp == null) {
+                return;  // FIXUP
+            }
             cp.showCustomizer(folder);
         }
     }

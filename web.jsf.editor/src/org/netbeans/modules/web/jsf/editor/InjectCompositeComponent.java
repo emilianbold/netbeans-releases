@@ -150,7 +150,8 @@ public class InjectCompositeComponent {
 	TemplateWizard templateWizard = new TemplateWizard();
 	templateWizard.putProperty("project", project); //NOI18N
 	templateWizard.putProperty("selectedText", selectedText); //NOI18N
-	templateWizard.setTitle("Insert Composite Component"); //NOI18N
+	templateWizard.setTitle(NbBundle.getMessage(InjectCompositeComponent.class, "MSG_InsertCompositeComponent")); //NOI18N
+        templateWizard.putProperty("fromEditor", true); //NOI18N
 	DataFolder templatesFolder = templateWizard.getTemplatesFolder();
 	FileObject template = templatesFolder.getPrimaryFile().getFileObject(TEMPLATES_FOLDER + "/" + TEMPLATE_NAME);   //NOI18N
 	DataObject templateDO;
