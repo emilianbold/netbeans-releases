@@ -42,7 +42,6 @@ package org.netbeans.core.osgi;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +97,7 @@ class OSGiRepository extends Repository {
             Object _3 = FileStatusListener.class;
         }
 
-        private final Map<URL,FileSystem> fss = new HashMap<URL,FileSystem>();
+        private final Map<String,FileSystem> fss = new HashMap<String,FileSystem>();
         private final FileSystem userdir;
 
         LayerFS() {
@@ -125,7 +124,7 @@ class OSGiRepository extends Repository {
         private synchronized void addLayers(URL... resources) {
             for (URL resource : resources) {
                 try {
-                    fss.put(resource, new XMLFileSystem(resource));
+                    fss.put(resource.toString(), new XMLFileSystem(resource));
                 } catch (SAXException x) {
                     LOG.log(Level.WARNING, "Could not parse layer: " + resource, x);
                 }
@@ -134,7 +133,9 @@ class OSGiRepository extends Repository {
         }
 
         private synchronized void removeLayers(URL... resources) {
-            fss.keySet().removeAll(Arrays.asList(resources));
+            for (URL resource : resources) {
+                fss.remove(resource.toString());
+            }
             reset();
         }
 
