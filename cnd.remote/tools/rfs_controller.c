@@ -421,7 +421,7 @@ static int init_files() {
                 add_file_data(path, new_state);
             } else {
                 char real_path [PATH_MAX];
-                if (realpath(path, real_path)) {
+                if (normalize_path(path, real_path, sizeof real_path)) {
                     add_file_data(real_path, new_state);
                 } else {
                     report_unresolved_path(path);
