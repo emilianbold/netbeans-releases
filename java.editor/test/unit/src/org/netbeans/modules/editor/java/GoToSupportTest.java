@@ -63,6 +63,7 @@ import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.GoToSupport.UiUtilsCaller;
+import org.netbeans.modules.java.source.TreeLoader;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -86,6 +87,7 @@ public class GoToSupportTest extends NbTestCase {
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
         org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
+        TreeLoader.DISABLE_ARTIFICAL_PARAMETER_NAMES = true;
     }
     
     public void testGoToMethod() throws Exception {
@@ -483,22 +485,37 @@ public class GoToSupportTest extends NbTestCase {
     public void testGoToSynteticConstructorInDifferentClass() throws Exception {
         final boolean[] wasCalled = new boolean[1];
 
-        performTest("package test; public class Test {public void test() {new Auxiliary();}}", 62, new OrigUiUtilsCaller() {
-            public void open(FileObject fo, int pos) {
+        performTest("package test; public class Test {public void test() {new Auxiliary();}}", 62, new UiUtilsCaller() {
+            public boolean open(FileObject fo, int pos) {
+                fail("Should not be called.");
+                return true;
+            }
+            public void beep(boolean goToSource, boolean goToJavadoc) {
                 fail("Should not be called.");
             }
-            public void beep() {
+            public boolean open(ClasspathInfo info, final ElementHandle<?> el) {
+                try {
+                    JavaSource.create(info).runUserActionTask(new Task<CompilationController>() {
+                        public void run(CompilationController parameter) throws Exception {
+                            Element e = el.resolve(parameter);
+
+                            //jlahoda: originally, GtS jumped directly to the owning class for synthetic constructors
+                            //due to a performance improvement (not parsing the target class from source if the target class
+                            //is not the current class), the jump is always performed to the specific element (constructor):
+                            assertEquals(ElementKind.CONSTRUCTOR, e.getKind());
+                            assertEquals("test.Auxiliary", ((TypeElement) e.getEnclosingElement()).getQualifiedName().toString());
+                            wasCalled[0] = true;
+                        }
+                    }, true);
+                } catch (IOException ex) {
+                    throw new IllegalStateException(ex);
+                }
+                return true;
+            }
+            public void warnCannotOpen(String displayName) {
                 fail("Should not be called.");
             }
-            public void open(ClasspathInfo info, Element el) {
-                //jlahoda: originally, GtS jumped directly to the owning class for synthetic constructors
-                //due to a performance improvement (not parsing the target class from source if the target class
-                //is not the current class), the jump is always performed to the specific element (constructor):
-                assertEquals(ElementKind.CONSTRUCTOR, el.getKind());
-                assertEquals("test.Auxiliary", ((TypeElement) el.getEnclosingElement()).getQualifiedName().toString());
-                wasCalled[0] = true;
-            }
-        }, false);
+        }, false, true);
 
         assertTrue(wasCalled[0]);
     }
@@ -1003,7 +1020,7 @@ public class GoToSupportTest extends NbTestCase {
         int offset = code.indexOf('|');
         code = code.replaceAll(Pattern.quote("|"), "");
         assertNotSame(-1, offset);
-        String golden = "<html><body>public  <b>LinkedList</b>&lt;java.lang.String&gt;(java.util.Collection<? extends java.lang.String> arg0)";
+        String golden = "<html><body>public  <b>LinkedList</b>&lt;java.lang.String&gt;(java.util.Collection&lt;? extends java.lang.String&gt; arg0)";
 
         String tooltip = performTest(code, offset, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {
@@ -1052,6 +1069,10 @@ public class GoToSupportTest extends NbTestCase {
     }
     
     private String performTest(String sourceCode, final int offset, final UiUtilsCaller validator, boolean tooltip) throws Exception {
+        return performTest(sourceCode, offset, validator, tooltip, false);
+    }
+
+    private String performTest(String sourceCode, final int offset, final UiUtilsCaller validator, boolean tooltip, boolean doCompileRecursively) throws Exception {
         GoToSupport.CALLER = validator;
         
         clearWorkDir();
@@ -1070,7 +1091,10 @@ public class GoToSupportTest extends NbTestCase {
         TestUtilities.copyStringToFile(auxiliarySource, "package test; public class Auxiliary {}"); //test go to "syntetic" constructor
         
         SourceUtilsTestUtil.prepareTest(sourceDir, buildDir, cacheDir, new FileObject[0]);
-        SourceUtilsTestUtil.compileRecursively(sourceDir);
+
+        if (doCompileRecursively) {
+            SourceUtilsTestUtil.compileRecursively(sourceDir);
+        }
         
         DataObject od = DataObject.find(source);
         EditorCookie ec = od.getCookie(EditorCookie.class);
