@@ -40,12 +40,13 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.ui;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LogicalViewNodeProviders {
 
     private static LogicalViewNodeProviders instance = null;
-    private Vector<LogicalViewNodeProvider> providers = null;
+    private List<LogicalViewNodeProvider> providers = null;
 
     public static LogicalViewNodeProviders getInstance() {
         if (instance == null) {
@@ -54,15 +55,15 @@ public class LogicalViewNodeProviders {
         return instance;
     }
 
-    public Vector<LogicalViewNodeProvider> getProviders() {
+    public List<LogicalViewNodeProvider> getProviders() {
         if (providers == null) {
-            providers = new Vector<LogicalViewNodeProvider>();
+            providers = new ArrayList<LogicalViewNodeProvider>();
         }
         return providers;
     }
 
     public LogicalViewNodeProvider[] getProvidersAsArray() {
-        Vector<LogicalViewNodeProvider> cn = getProviders();
+        List<LogicalViewNodeProvider> cn = getProviders();
         return cn.toArray(new LogicalViewNodeProvider[cn.size()]);
     }
 
