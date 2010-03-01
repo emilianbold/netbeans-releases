@@ -46,7 +46,9 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
@@ -150,7 +152,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 LogManager.log("... integrate " + getProduct().getDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + ideLocation);
                 /////////////////////////////////////////////////////////////////////////////
                 // Reference: http://wiki.netbeans.org/wiki/view/TomcatAutoRegistration
-                registerTomcat(ideLocation, location);
+                if(!registerTomcat(ideLocation, location)) {
+                    continue;
+                }
                 
                 // if the IDE was installed in the same session as the
                 // appserver, we should add its "product id" to the IDE
@@ -171,24 +175,44 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
 
     private boolean isTomcatRegistred(File nbLocation) throws IOException {
-        String path = NetBeansUtils.getJvmOption(nbLocation, JVM_OPTION_AUTOREGISTER_HOME_NAME);
-        return !(path == null || !FileUtils.exists(new File(path)) || FileUtils.isEmpty(new File(path)));
+        return new File (nbLocation, "nb/config/J2EE/InstalledServers/tomcat_autoregistered_instance").exists();
     }
     
-    private void registerTomcat(File nbLocation, File tomcatLocation) throws IOException {
-        NetBeansUtils.setJvmOption(
-                nbLocation,
-                JVM_OPTION_AUTOREGISTER_HOME_NAME,
-                tomcatLocation.getAbsolutePath(),
-                true);
-        NetBeansUtils.setJvmOption(
-                nbLocation,
-                JVM_OPTION_AUTOREGISTER_TOKEN_NAME,
-                Long.toString(System.currentTimeMillis()),
-                false);
+    private boolean registerTomcat(File nbLocation, File tomcatLocation) throws IOException {
+        File javaExe = JavaUtils.getExecutable(new File(System.getProperty("java.home")));
+        String [] cp = {
+            "platform/core/core.jar",
+            "platform/lib/boot.jar",
+            "platform/lib/org-openide-modules.jar",
+            "platform/core/org-openide-filesystems.jar",
+            "platform/lib/org-openide-util.jar",
+            "platform/lib/org-openide-util-lookup.jar",
+            "enterprise/modules/org-netbeans-modules-j2eeapis.jar",
+            "enterprise/modules/org-netbeans-modules-j2eeserver.jar",
+            "enterprise/modules/org-netbeans-modules-tomcat5.jar"
+        };
+        for(String c : cp) {
+            File f = new File(nbLocation, c);
+            if(!FileUtils.exists(f)) {
+                LogManager.log("... cannot find jar required for Tomcat integration: " + f);
+                return false;
+            }
+        }
+        String mainClass = "org.netbeans.modules.tomcat5.registration.AutomaticRegistration";
+        List <String> commands = new ArrayList <String> ();
+        File nbCluster = new File(nbLocation, "nb");
+        commands.add(javaExe.getAbsolutePath());
+        commands.add("-cp");
+        commands.add(StringUtils.asString(cp, File.pathSeparator));
+        commands.add(mainClass);
+        commands.add(nbCluster.getAbsolutePath());
+        commands.add(tomcatLocation.getAbsolutePath());
+        
+        return SystemUtils.executeCommand(nbLocation, commands.toArray(new String[]{})).getErrorCode() == 0;
     }
     
-    private void removeTomcatIntegration(File nbLocation, File tomcatLocation) throws IOException {
+    private void removeTomcatIntegration(File nbLocation, File tomcatLocation) throws IOException {        
+        /*
         final String value = NetBeansUtils.getJvmOption(
                 nbLocation,
                 JVM_OPTION_AUTOREGISTER_HOME_NAME);
@@ -202,7 +226,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             NetBeansUtils.removeJvmOption(
                     nbLocation,
                     JVM_OPTION_AUTOREGISTER_TOKEN_NAME);
-        }
+        }*/
+        FileUtils.deleteFile(new File (nbLocation, "nb/config/J2EE/InstalledServers/tomcat_autoregistered_instance"));
+        FileUtils.deleteFile(new File (nbLocation, "nb/config/J2EE/InstalledServers/.nbattrs"));
     }
 
     public void uninstall(
@@ -265,13 +291,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String WIZARD_COMPONENTS_URI =
             "resource:" + // NOI18N
             "org/netbeans/installer/products/tomcat/wizard.xml"; // NOI18N
-    
-    public static final String JVM_OPTION_AUTOREGISTER_TOKEN_NAME =
-            "-Dorg.netbeans.modules.tomcat.autoregister.token"; // NOI18N
-    
-    public static final String JVM_OPTION_AUTOREGISTER_HOME_NAME =
-            "-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome"; // NOI18N
-    
     public static final String PRODUCT_ID =
             "TOMCAT"; // NOI18N
 }

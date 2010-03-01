@@ -53,11 +53,11 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
     private final static String[] constText = new String[APTTokenTypes.LAST_LEXER_FAKE_RULE];
     private final static CharSequence[] constTextID = new CharSequence[APTTokenTypes.LAST_LEXER_FAKE_RULE];
     
-    protected int type = INVALID_TYPE;
+    protected short type = INVALID_TYPE;
+    protected short column;
     protected int offset;
     //protected int endOffset;
     protected int line;
-    protected int column;
     /**
      * Creates a new instance of APTConstTextToken
      */
@@ -201,7 +201,8 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
 
     @Override
     public void setType(int t) {
-        type = t;
+        assert t < Short.MAX_VALUE;
+        type = (short) t;
     }
 
     @Override
@@ -216,6 +217,7 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
 
     @Override
     public void setColumn(int c) {
-        column = c;
+        assert c < Short.MAX_VALUE;
+        column = (short) c;
     }
 }

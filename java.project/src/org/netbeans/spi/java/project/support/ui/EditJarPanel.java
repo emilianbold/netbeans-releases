@@ -155,20 +155,25 @@ class EditJarPanel extends javax.swing.JPanel {
         } else {
             root = JavadocAndSourceRootDetection.findSourceRoot(fo);
         }
-        if (root != null && !fo.equals(root)) {
-            if (archiveFile) {
-                val += "!/"; //NOI18N
-            }
-            val += (val.replace('\\', '/').endsWith("/") ? "" : File.separator); // NOI18N
-            String relPath = FileUtil.getRelativePath(fo, root);
-            assert relPath != null : "fo="+fo+" root="+root; // NOI18N
-            if (relPath.length() > 0) {
-                relPath += "/"; // NOI18N
-                if (!archiveFile) {
-                    relPath = relPath.replace('/', File.separatorChar); //NOI18N
+        if (root != null) {
+           if (FileUtil.isParentOf(fo, root)) {
+                if (archiveFile) {
+                    val += "!/"; //NOI18N
                 }
-                val += relPath;
-            }
+                val += (val.replace('\\', '/').endsWith("/") ? "" : File.separator); // NOI18N
+                String relPath = FileUtil.getRelativePath(fo, root);
+                assert relPath != null : "fo="+fo+" root="+root; // NOI18N
+                if (relPath.length() > 0) {
+                    relPath += "/"; // NOI18N
+                    if (!archiveFile) {
+                        relPath = relPath.replace('/', File.separatorChar); //NOI18N
+                    }
+                    val += relPath;
+                }
+           } else if (FileUtil.isParentOf(root,fo)) {
+               final File rootFile = FileUtil.toFile(root);
+               return rootFile != null ? addVariableMarkup(rootFile.getAbsolutePath()) : val;
+           }
         }
         return val;
     }

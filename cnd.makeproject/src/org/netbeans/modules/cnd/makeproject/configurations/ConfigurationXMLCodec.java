@@ -484,7 +484,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP: < version 5
             //((MakeConfigurationDescriptor)projectDescriptor).setExternalFileItems(currentList);
         } else if (element.equals(LOGICAL_FOLDER_ELEMENT) || element.equals(DISK_FOLDER_ELEMENT)) {
-            currentFolderStack.pop();
+            Folder processedFolder = currentFolderStack.pop();
+            processedFolder.pack();
             if (currentFolderStack.size() > 0) {
                 currentFolder = currentFolderStack.peek();
             } else {
