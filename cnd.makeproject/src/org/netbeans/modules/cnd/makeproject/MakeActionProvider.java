@@ -504,16 +504,16 @@ public final class MakeActionProvider implements ActionProvider {
             String path;
             if (actionEvent == ProjectActionEvent.PredefinedType.RUN) {
                 path = conf.getMakefileConfiguration().getOutput().getValue();
-                if (path.length() > 0 && !IpeUtils.isPathAbsolute(path)) {
+                if (path.length() > 0 && !CndPathUtilitities.isPathAbsolute(path)) {
                     // make path relative to run working directory
                     // path here should always be in unix style, see issue 149404
                     path = conf.getMakefileConfiguration().getAbsOutput();
-                    path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
+                    path = CndPathUtilitities.toRelativePath(conf.getProfile().getRunDirectory(), path);
                 }
             } else {
                 // Always absolute
                 path = conf.getMakefileConfiguration().getAbsOutput();
-                path = IpeUtils.normalize(path);
+                path = CndPathUtilitities.normalize(path);
             }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
             actionEvents.add(projectActionEvent);
