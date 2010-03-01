@@ -49,8 +49,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JList;
@@ -267,7 +270,34 @@ public class QuickSearchPopup extends javax.swing.JPanel
     }
 
     private void populateModel(final String criteria, boolean fullList, final boolean addSearchItem) {
-        ArrayList<PopupItem> modelList = new ArrayList<PopupItem>();
+        List<PopupItem> modelList = new ArrayList<PopupItem>();
+
+        List<Issue> recentIssues = new ArrayList<Issue>(BugtrackingUtil.getRecentIssues(repository));
+        Map<Integer, PopupItem> items = new TreeMap<Integer, PopupItem>();
+
+        int unsortedIdx = recentIssues.size();
+        for (PopupItem popupItem : currentHitlist) {
+            if(popupItem instanceof IssueItem) {
+                IssueItem issueItem = (IssueItem) popupItem;
+                Issue issue = issueItem.getIssue();
+                int idx = -1;
+                for (int i = 0; i < recentIssues.size(); i++) {
+                    if(recentIssues.get(i).getID().equals(issue.getID())) {
+                        idx = i;
+                        break;
+                    }
+                }
+                if(idx > -1) {
+                    items.put(idx, issueItem);
+                } else {
+                    items.put(unsortedIdx++, issueItem);
+                }
+            } else {
+                items.put(unsortedIdx++, popupItem);
+            }
+        }
+        currentHitlist = new LinkedList<PopupItem>(items.values());
+
         for (PopupItem item : currentHitlist) {
             modelList.add(item);
             if(modelList.size() > 4 && !fullList) {
