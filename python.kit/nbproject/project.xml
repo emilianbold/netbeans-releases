@@ -46,7 +46,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.python.editor</code-name-base>
                     <run-dependency>
-                        <specification-version>1.5</specification-version>
+                        <specification-version>1.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
