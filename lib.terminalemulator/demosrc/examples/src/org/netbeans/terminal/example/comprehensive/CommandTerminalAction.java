@@ -6,6 +6,7 @@ package org.netbeans.terminal.example.comprehensive;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.SwingUtilities;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -14,6 +15,7 @@ import org.openide.windows.IOContainer;
 
 
 import org.netbeans.terminal.example.TerminalIOProviderSupport;
+import org.openide.util.RequestProcessor;
 
 public final class CommandTerminalAction implements ActionListener {
 
@@ -47,72 +49,48 @@ public final class CommandTerminalAction implements ActionListener {
 	}
 
 
-	String cmd = terminalPanel.getCommand();
+	final String cmd = terminalPanel.getCommand();
         if (cmd == null || cmd.trim().equals(""))
             return;
 
-
 	final TerminalIOProviderSupport support = new TerminalIOProviderSupport();
+	final boolean restartable = terminalPanel.isRestartable();
+	final IOContainer container;
+	final IOProvider iop;
 
-	boolean restartable = true;
+	switch (terminalPanel.getContainerProvider()) {
+	    case TERM:
+		container = TerminalIOProviderSupport.getIOContainer();
+		break;
+	    case DEFAULT:
+	    default:
+		container = null;
+		break;
+	}
 
-	TerminalPanel.Provider provider = terminalPanel.getProvider();
-	TerminalPanel.TC tc = terminalPanel.getTC();
-	if (tc == TerminalPanel.TC.DEDICATED) {
-	    /* OLD
-	    if (false) {
-		TerminalProvider terminalProvider = TerminalProvider.getDefault();
-		String name = "command";
-		String preferredID = "CommandTopComponent";
-		Terminal terminal = terminalProvider.createTerminal(name, preferredID);
-		Program program = new Command(cmd);
-		boolean restartable = true;
-		terminal.startProgram(program, restartable);
-	    } else
-	    */
-	    {
-		IOContainer container = TerminalIOProviderSupport.getIOContainer();
-		IOProvider iop = TerminalIOProviderSupport.getIOProvider();
+	switch (terminalPanel.getIOProvider()) {
+	    case TERM:
+		iop = TerminalIOProviderSupport.getIOProvider();
+		break;
+	    case DEFAULT:
+	    default:
+		iop = IOProvider.getDefault();
+		break;
+	}
+
+	final Runnable runnable = new Runnable() {
+	    public void run() {
 		support.executeCommand(iop, container, cmd, restartable);
 	    }
+	};
 
-	} else {
-	    switch (provider) {
-		case TERM:
-		    {
-		    IOProvider iop = TerminalIOProviderSupport.getIOProvider();
-		    support.executeCommand(iop, null, cmd, restartable);
-		    }
-		    break;
-		case DEFAULT:
-		    {
-		    IOProvider iop = IOProvider.getDefault();
-		    support.executeCommand(iop, null, cmd, restartable);
-		    }
-		    break;
-
-		case DIRECT:
-		    /* OLD
-		    {
-		    TerminalProvider terminalProvider = TerminalProvider.getDefault();
-
-		    Terminal terminal = terminalProvider.createTerminal("command: " + cmd);
-
-		    // need to be dtterm to demonstrate hyperlinks
-		    terminal.term().setEmulation("dtterm");
-		    terminal.setHyperlinkListener(new HyperlinkListener() {
-			public void action(String clientData) {
-			    JOptionPane.showMessageDialog(null, clientData);
-			}
-		    });
-
-		    Program program = new Command(cmd);
-		    terminal.startProgram(program, restartable);
-		    }
-		     */
-
-		    break;
-	    }
+	switch (terminalPanel.getThread()) {
+	    case EDT:
+		SwingUtilities.invokeLater(runnable);
+		break;
+	    case RP:
+		RequestProcessor.getDefault().execute(runnable);
+		break;
 	}
     }
 }
