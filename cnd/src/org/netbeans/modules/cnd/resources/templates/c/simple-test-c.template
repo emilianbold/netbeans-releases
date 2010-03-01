@@ -12,9 +12,10 @@
  * Simple C Test Suite
  */
 
-
 void test1() {
     printf("%<%NAME%>% test 1\n");
+
+    //printf("%%TEST_FAILED%% time=0 testname=test1 (%<%NAME%>%) message=error message location= \n");
 }
 
 int main(int argc, char** argv) {
