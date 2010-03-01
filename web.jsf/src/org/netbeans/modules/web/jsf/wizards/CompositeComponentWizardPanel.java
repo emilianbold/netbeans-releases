@@ -94,6 +94,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
     }
 
     //we need to run it in AWT thread because of the editor initialization
+    @Override
     public Component getComponent() {
 	if (SwingUtilities.isEventDispatchThread()) {
 	    return _getComponent();
@@ -101,6 +102,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 	    final AtomicReference<Component> ref = new AtomicReference<Component>();
 	    try {
 		SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
 		    public void run() {
 			ref.set(_getComponent());
 		    }
@@ -126,6 +128,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 	return component;
     }
 
+    @Override
     public HelpCtx getHelp() {
 	// Show no Help button for this panel:
 	return HelpCtx.DEFAULT_HELP;
@@ -133,6 +136,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 	// return new HelpCtx(SampleWizardPanel1.class);
     }
 
+    @Override
     public boolean isValid() {
 
     	String errorMessage = null;
@@ -204,10 +208,12 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 	return errorMessage == null;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
 	changeSupport.addChangeListener(l);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
 	changeSupport.removeChangeListener(l);
     }
@@ -216,6 +222,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
     // settings object will be the WizardDescriptor, so you can use
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
+    @Override
     public void readSettings(Object settings) {
 	if (settings instanceof TemplateWizard) {
 	    this.wizard = (TemplateWizard) settings;
@@ -246,27 +253,28 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 	}
     }
 
+    @Override
     public void storeSettings(Object settings) {
 	if (settings instanceof TemplateWizard) {
-	    TemplateWizard wizard = (TemplateWizard) settings;
+	    TemplateWizard wiz = (TemplateWizard) settings;
 
-	    if (WizardDescriptor.PREVIOUS_OPTION.equals(wizard.getValue())) {
+	    if (WizardDescriptor.PREVIOUS_OPTION.equals(wiz.getValue())) {
 		return;
 	    }
-	    if (!wizard.getValue().equals(WizardDescriptor.CANCEL_OPTION) && isValid()) {
+	    if (!wiz.getValue().equals(WizardDescriptor.CANCEL_OPTION) && isValid()) {
 
-		FileObject template = Templates.getTemplate(wizard);
+		FileObject template = Templates.getTemplate(wiz);
 
 		String name = component.getTargetName();
 		if (name.indexOf('/') > 0) { // NOI18N
 		    name = name.substring(name.lastIndexOf('/') + 1);
 		}
 
-		Templates.setTargetFolder(wizard, getTargetFolderFromGUI());
-		Templates.setTargetName(wizard, name);
+		Templates.setTargetFolder(wiz, getTargetFolderFromGUI());
+		Templates.setTargetName(wiz, name);
 	    }
-	    wizard.putProperty("NewFileWizard_Title", null); // NOI18N
-	    wizard.putProperty("selectedPrefix", component.getPrefix()); //NOI18N
+	    wiz.putProperty("NewFileWizard_Title", null); // NOI18N
+	    wiz.putProperty("selectedPrefix", component.getPrefix()); //NOI18N
 	}
     }
 
@@ -300,6 +308,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 	return targetFolder;
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
 	changeSupport.fireChange();
     }

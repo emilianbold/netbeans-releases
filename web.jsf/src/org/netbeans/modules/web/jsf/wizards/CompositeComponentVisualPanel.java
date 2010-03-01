@@ -124,12 +124,15 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
         documentNameTextField.getDocument().addDocumentListener( this );
         folderTextField.getDocument().addDocumentListener( this );
 	prefixTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
 	    public void insertUpdate(DocumentEvent e) {
 		prefixTextFieldModified();
 	    }
+            @Override
 	    public void removeUpdate(DocumentEvent e) {
 		prefixTextFieldModified();
 	    }
+            @Override
 	    public void changedUpdate(DocumentEvent e) {
 		prefixTextFieldModified();
 	    }
@@ -504,6 +507,7 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
 
     // ActionListener implementation -------------------------------------------
     
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent e) {
         if ( browseButton == e.getSource() ) {
             FileObject fo=null;
@@ -574,14 +578,17 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
 
     // DocumentListener implementation -----------------------------------------
     
+    @Override
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
         updateCreatedFolder();
     }
     
+    @Override
     public void insertUpdate(javax.swing.event.DocumentEvent e) {
         updateCreatedFolder();
     }
     
+    @Override
     public void removeUpdate(javax.swing.event.DocumentEvent e) {
         updateCreatedFolder();
     }
@@ -607,6 +614,7 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
             setOpaque( true );
         }
 
+        @Override
         public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus ) {
             if (value instanceof SourceGroup) {
                 SourceGroup group = (SourceGroup)value;
@@ -616,13 +624,8 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
                     setText( groupDisplayName );
                 }
                 else {
-                    setText( MessageFormat.format( "{1} - {0}",
+                    setText( MessageFormat.format( "{1} - {0}", //NOI18N
                         new Object[] { groupDisplayName, projectDisplayName, group.getRootFolder().getName() } ) );
-                    /*
-                    setText( MessageFormat.format(
-                        NbBundle.getMessage( SimpleTargetChooserPanelGUI.class, "FMT_TargetChooser_GroupProjectNameBadge" ), // NOI18N
-                        new Object[] { groupDisplayName, projectDisplayName } ) );
-                    */
                 }
 
                 setIcon( group.getIcon( false ) );
