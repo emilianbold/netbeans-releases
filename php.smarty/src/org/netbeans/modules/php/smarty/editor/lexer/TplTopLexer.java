@@ -87,6 +87,8 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
     private enum State {
         INIT,
         OUTER,
+        OPEN_DELIMITER,
+        CLOSE_DELIMITER,
         IN_SMARTY
     }
 
@@ -103,24 +105,47 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         public TplTopTokenId nextToken() {
             int c = input.read();
             CharSequence text;
+            int textLength;
             if (c == LexerInput.EOF) {
                 return null;
             }
             while (c != LexerInput.EOF) {
                 char cc = (char) c;
                 text = input.readText();
+                textLength = text.length();
                 switch (state) {
                     case INIT:
                     case OUTER:
                         if (cc == '{') {
-                            state = State.IN_SMARTY;
-                            return TplTopTokenId.T_SMARTY_OPEN_DELIMITER;
+                            state = State.OPEN_DELIMITER;
+                            if (textLength > 1) {
+                                input.backup(1);
+                                return TplTopTokenId.T_HTML;
+                            }
+                            else {
+                                input.backup(1);
+                            }
                         }
                         break;
+                    case OPEN_DELIMITER:
+                        state = State.IN_SMARTY;
+                        return TplTopTokenId.T_SMARTY_OPEN_DELIMITER;
+                    case CLOSE_DELIMITER:
+                        state = State.OUTER;
+                        return TplTopTokenId.T_SMARTY_CLOSE_DELIMITER;
                     case IN_SMARTY:
                         if (cc == '}') {
-                            state = State.OUTER;
-                            return TplTopTokenId.T_SMARTY_CLOSE_DELIMITER;
+                            if (textLength == 1) {
+                                state = State.OUTER;
+                                return TplTopTokenId.T_SMARTY_CLOSE_DELIMITER;
+                            }
+                            else {
+                                state = State.CLOSE_DELIMITER;
+                                input.backup(1);
+                                if (input.readLength() != 0) {
+                                    return TplTopTokenId.T_SMARTY;
+                                }
+                            }
                         }
                         break;
                 }
@@ -128,8 +153,12 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
             }
 
             switch (state) {
-//                case IN_SMARTY:
-//                    return TplTopTokenId.T_FUSE;
+                case IN_SMARTY:
+                    return TplTopTokenId.T_SMARTY;
+                case OPEN_DELIMITER:
+                    return TplTopTokenId.T_SMARTY_OPEN_DELIMITER;
+                case CLOSE_DELIMITER:
+                    return TplTopTokenId.T_SMARTY_CLOSE_DELIMITER;
                 default:
                     return TplTopTokenId.T_HTML;
             }

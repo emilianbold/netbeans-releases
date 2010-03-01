@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+<fontscolors>
+    <fontcolor name="smarty_delimiter" foreColor="bf0101">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="include" foreColor="218429">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="keyword" foreColor="D60000">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="template_var" foreColor="844D18" >
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="string" foreColor="FF9C4A" />
+    <fontcolor name="literal" default="keyword" />
+    <fontcolor name="include_string" default="include">
+        <font style="bold"/>
+    </fontcolor>
+</fontscolors>

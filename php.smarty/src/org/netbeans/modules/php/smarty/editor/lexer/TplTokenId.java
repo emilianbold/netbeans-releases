@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,10 +37,6 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.smarty.editor.lexer;
@@ -43,94 +45,105 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
+ * Token ids of SMARTY template language
  *
  * @author Martin Fousek
  */
-public enum TplTopTokenId implements TokenId {
+public enum TplTokenId implements TokenId {
 
-    T_HTML (null, "smartytop"),
-    T_SMARTY (null, "smarty"),
-    T_SMARTY_CLOSE_DELIMITER (null, "smarty_delimiter"),
-    T_SMARTY_OPEN_DELIMITER (null, "smarty_delimiter");
+    PHP_TAG(null, "php_tag"),
+    ERROR(null, "error"),
+    IDENTIFIER(null, "identifier"),
+    TEMPLATE_VAR(null, "template_var"),
+    DB_LOOP("db_loop", "keyword"),
+    LOOP("loop", "keyword"),
+    ELSE("else", "keyword"),
+    ITERATOR("iterator", "keyword"),
+    IF("if", "keyword"),
+    WHILE("while", "keyword"),
+    DB_LOOP_END("/db_loop", "keyword"),
+    LOOP_END("/loop", "keyword"),
+    ITERATOR_END("/iterator", "keyword"),
+    IF_END("/if", "keyword"),
+    WHILE_END("/while", "keyword"),
+    INCLUDE("include", "include"),
+    WHITESPACE(null, "whitespace");
 
     private final String fixedText;
+
     private final String primaryCategory;
 
-    TplTopTokenId(String fixedText, String primaryCategory) {
+    TplTokenId(String fixedText, String primaryCategory) {
         this.fixedText = fixedText;
         this.primaryCategory = primaryCategory;
     }
-    
+
+    /**
+     * Return fixed text.
+     * @return fixed text of command
+     */
     public String fixedText() {
         return fixedText;
     }
-    
+
+    /**
+     * Return category of command.
+     * @return category of command
+     */
     public String primaryCategory() {
         return primaryCategory;
     }
 
-    private enum State {
-        OUTER,
-        IN_SMARTY
-    }
-    
-    private static final Language<TplTopTokenId> language =
-            new LanguageHierarchy<TplTopTokenId>() {
+    private static final Language<TplTokenId> language = new LanguageHierarchy<TplTokenId>() {
 
-                @Override
-                protected Collection<TplTopTokenId> createTokenIds() {
-                    return EnumSet.allOf(TplTopTokenId.class);
-                }
+        @Override
+        protected String mimeType() {
+            return "text/x-tpl-inner";
+        }
 
-                @Override
-                protected Map<String, Collection<TplTopTokenId>> createTokenCategories() {
-                    Map<String, Collection<TplTopTokenId>> cats = new HashMap<String, Collection<TplTopTokenId>>();
-                    return cats;
-                }
+        @Override
+        protected Collection<TplTokenId> createTokenIds() {
+            return EnumSet.allOf(TplTokenId.class);
+        }
+        
+        @Override
+        protected Map<String,Collection<TplTokenId>> createTokenCategories() {
+            Map<String,Collection<TplTokenId>> cats = new HashMap<String,Collection<TplTokenId>>();
+            return cats;
+        }
 
-                @Override
-                protected Lexer<TplTopTokenId> createLexer(LexerRestartInfo<TplTopTokenId> info) {
-                    return TplTopLexer.create(info);
-                }
+        @Override
+        protected Lexer<TplTokenId> createLexer(LexerRestartInfo<TplTokenId> info) {
+            return new TplLexer(info);
+        }
 
-                @Override
-                protected String mimeType() {
-                    return "text/x-tpl";
-                }
-                
-                @Override
-                protected LanguageEmbedding<?> embedding(Token<TplTopTokenId> token,
-                    LanguagePath languagePath, InputAttributes inputAttributes) {
-                    TplTopTokenId id = token.id();
-                    if (id == T_HTML) {
-                        return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
-                    } 
-                    else if (id == T_SMARTY) {
-                        return LanguageEmbedding.create(TplTokenId.language(), 0, 0, false);
-                    }
+        @Override
+        protected LanguageEmbedding<?> embedding(
+        Token<TplTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+            if (token.id() == PHP_TAG)
+                return LanguageEmbedding.create(PHPTokenId.languageInPHP(), 0, 0, true);
 
-                    return null; // No embedding
-                }
-                
-            }.language();
+            return null; // No embedding
+        }
+    }.language();
 
-            /**
-             * Is returning top level language.
-             * @return top level Language
-             */
-            public static Language<TplTopTokenId> language() {
+    /**
+     * Return new language for TplTokenId.
+     * @return language
+     */
+    public static Language<TplTokenId> language() {
         return language;
     }
 
