@@ -99,7 +99,6 @@ public class OSGiRepositoryTest extends NbTestCase {
                 "}",
                 "}").done().
                 module("org.netbeans.modules.settings").
-                module("org.netbeans.modules.editor.mimelookup.impl"). // indirect dep of editor.mimelookup, from openide.loaders
                 run();
         String settings = System.getProperty("my.settings");
         assertNotNull(settings);

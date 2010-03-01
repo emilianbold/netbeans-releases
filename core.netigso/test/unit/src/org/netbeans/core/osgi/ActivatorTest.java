@@ -197,7 +197,6 @@ public class ActivatorTest extends NbTestCase {
                 "OpenIDE-Module-Install: custom.Install",
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.netbeans.modules.javahelp/1").done().
                 module("org.netbeans.modules.javahelp").
-                module("org.netbeans.modules.editor.mimelookup.impl"). // indirect dep of editor.mimelookup, from openide.loaders
                 run();
         assertTrue(Boolean.getBoolean("used.javahelp"));
     }

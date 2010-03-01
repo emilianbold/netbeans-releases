@@ -84,7 +84,6 @@ public class OSGiMainLookupTest extends NbTestCase {
                 "OpenIDE-Module-Layer: custom/layer.xml",
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.util.lookup, org.netbeans.core/2").done().
                 module("org.netbeans.core").
-                module("org.netbeans.modules.editor.mimelookup.impl"). // indirect dep of editor.mimelookup, from openide.loaders
                 run();
         assertEquals("ok", System.getProperty("custom.service.result"));
     }
