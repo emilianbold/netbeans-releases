@@ -39,10 +39,17 @@
 
 package org.netbeans.modules.css.gsf;
 
+import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.css.gsf.api.CssParserResult;
+import org.netbeans.modules.css.parser.CssParserTreeConstants;
+import org.netbeans.modules.css.parser.NodeVisitor;
+import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.css.parser.SimpleNodeUtil;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -53,22 +60,88 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
  */
 public class CssOccurancesFinder extends OccurrencesFinder {
 
+    private int caretDocumentPosition;
+    private boolean cancelled;
+    private Map<OffsetRange, ColoringAttributes> occurances = new HashMap<OffsetRange, ColoringAttributes>();
+
+    @Override
     public void setCaretPosition(int position) {
+        caretDocumentPosition = position;
         
+        //TODO Add an optimalization which caches the occurances for some
+        //document range - typically a token start-end.
+        occurances.clear();
     }
 
+    @Override
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {
-        return null;
+        return occurances;
     }
 
+    @Override
     public void cancel() {
-        //ignore
+        cancelled = true;
     }
 
 
     @Override
     public void run(Result result, SchedulerEvent event) {
-        //do nothing
+        if(cancelled) {
+            return ;
+        }
+
+        final Snapshot snapshot = result.getSnapshot();
+        int astOffset = snapshot.getEmbeddedOffset(caretDocumentPosition);
+        if(astOffset == -1) {
+            return ;
+        }
+
+        SimpleNode root = ((CssParserResult)result).root();
+        if(root == null) {
+            //broken source
+            return ;
+        }
+        final SimpleNode currentNode = SimpleNodeUtil.findDescendant(root, astOffset);
+        assert currentNode != null;
+
+        //process only some intersting nodes
+        switch(currentNode.kind()) {
+            case CssParserTreeConstants.JJTHASH:
+            case CssParserTreeConstants.JJT_CLASS:
+            case CssParserTreeConstants.JJTELEMENTNAME:
+            case CssParserTreeConstants.JJTHEXCOLOR:
+                break;
+            default:
+                return ;
+        }
+
+        SimpleNodeUtil.visitChildren(root, new NodeVisitor() {
+
+            @Override
+            public void visit(SimpleNode node) {
+                if(currentNode.kind() == node.kind() && currentNode.image().equals(node.image())) {
+                    //something to highlight
+                    int docFrom = snapshot.getOriginalOffset(node.startOffset());
+
+                    //virtual class or id handling - the class and id elements inside
+                    //html tag's CLASS or ID attribute has the dot or hash prefix just virtual
+                    //so if we want to highlight such occurances we need to increment the
+                    //start offset by one
+                    if(docFrom == -1 && (node.kind() == CssParserTreeConstants.JJT_CLASS || node.kind() == CssParserTreeConstants.JJTHASH )) {
+                        docFrom = snapshot.getOriginalOffset(node.startOffset() + 1); //lets try +1 offset
+                    }
+
+                    int docTo = snapshot.getOriginalOffset(node.endOffset());
+
+                    if(docFrom == -1 || docTo == -1) {
+                        return ; //something is virtual
+                    }
+
+                    occurances.put(new OffsetRange(docFrom, docTo), ColoringAttributes.MARK_OCCURRENCES);
+                }
+            }
+        });
+
     }
 
     @Override
