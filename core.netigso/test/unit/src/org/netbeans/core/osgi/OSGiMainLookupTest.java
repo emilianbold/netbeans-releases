@@ -1,0 +1,95 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.core.osgi;
+
+import org.netbeans.junit.NbTestCase;
+
+public class OSGiMainLookupTest extends NbTestCase {
+
+    public OSGiMainLookupTest(String n) {
+        super(n);
+    }
+
+    protected @Override void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
+    }
+
+    public void testModuleInfo() throws Exception {
+        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
+                "public class Install extends org.openide.modules.ModuleInstall {",
+                "public @Override void restored() {System.setProperty(\"number.of.modules\",",
+                "String.valueOf(org.openide.util.Lookup.getDefault().lookupAll(org.openide.modules.ModuleInfo.class).size()));}",
+                "}").manifest(
+                "OpenIDE-Module: custom",
+                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.util.lookup").done().run();
+        String numberOfModules = System.getProperty("number.of.modules");
+        assertNotNull(numberOfModules);
+        assertTrue(numberOfModules, Integer.parseInt(numberOfModules) > 2);
+    }
+
+    public void testServicesFolder() throws Exception {
+        new OSGiProcess(getWorkDir()).newModule().
+                sourceFile("custom/Interface.java", "package custom; public interface Interface {String result();}").
+                sourceFile("custom/Install.java", "package custom;",
+                "public class Install extends org.openide.modules.ModuleInstall {",
+                "public @Override void restored() {System.setProperty(\"custom.service.result\", ",
+                "org.openide.util.Lookup.getDefault().lookup(Interface.class).result());}",
+                "}").
+                sourceFile("custom/Service.java", "package custom; public class Service implements Interface {",
+                "public String result() {return \"ok\";}",
+                "}").
+                sourceFile("custom/layer.xml", "<filesystem>",
+                "<folder name='Services'>",
+                "<file name='custom-Service.instance'><attr name='instanceOf' stringvalue='custom.Interface'/></file>",
+                "</folder>",
+                "</filesystem>").manifest(
+                "OpenIDE-Module: custom",
+                "OpenIDE-Module-Install: custom.Install",
+                "OpenIDE-Module-Layer: custom/layer.xml",
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.util.lookup, org.netbeans.core/2").done().
+                module("org.netbeans.core").
+                module("org.netbeans.modules.editor.mimelookup.impl"). // indirect dep of editor.mimelookup, from openide.loaders
+                run();
+        assertEquals("ok", System.getProperty("custom.service.result"));
+    }
+
+}

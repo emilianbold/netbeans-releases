@@ -44,7 +44,6 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.TreeSet;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 
 public class ActivatorTest extends NbTestCase {
 
@@ -79,21 +78,6 @@ public class ActivatorTest extends NbTestCase {
         assertTrue(Boolean.getBoolean("my.bundle.ran.again"));
     }
 
-    public void testLayers() throws Exception {
-        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
-                "public class Install extends org.openide.modules.ModuleInstall {",
-                "public @Override void restored() {System.setProperty(\"my.file\", ",
-                "org.openide.filesystems.FileUtil.getConfigFile(\"whatever\").getPath());}",
-                "}").sourceFile("custom/layer.xml", "<filesystem>",
-                "<file name='whatever'/>",
-                "</filesystem>").manifest(
-                "OpenIDE-Module: custom",
-                "OpenIDE-Module-Install: custom.Install",
-                "OpenIDE-Module-Layer: custom/layer.xml",
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.filesystems").done().run();
-        assertEquals("whatever", System.getProperty("my.file"));
-    }
-
     public void testURLStreamHandler() throws Exception {
         new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
                 "public class Install extends org.openide.modules.ModuleInstall {",
@@ -111,38 +95,6 @@ public class ActivatorTest extends NbTestCase {
         assertEquals("10", System.getProperty("my.url.length"));
     }
 
-    @RandomlyFails // sometimes in NB-Core-Build:
-    // FNFE: Invalid settings.providerPath=xml/lookups/NetBeans/DTD_XML_beans_1_0.instance under SFS/xml/memory/ for class custom.Install$Bean
-    public void testSettings() throws Exception {
-        new OSGiProcess(getWorkDir()).newModule().manifest(
-                "OpenIDE-Module: custom",
-                "OpenIDE-Module-Install: custom.Install",
-                "OpenIDE-Module-Module-Dependencies: org.netbeans.modules.settings/1, org.openide.loaders, " +
-                "org.openide.filesystems, org.openide.modules, org.openide.util").
-                sourceFile("custom/Install.java", "package custom;",
-                "public class Install extends org.openide.modules.ModuleInstall {",
-                "public @Override void restored() {",
-                "Bean b = new Bean(); b.setP(\"hello\");",
-                "try {",
-                "org.openide.loaders.InstanceDataObject.create(org.openide.loaders.DataFolder.findFolder(",
-                "org.openide.filesystems.FileUtil.getConfigRoot().createFolder(\"d\")), \"x\", b, null);",
-                "System.setProperty(\"my.settings\", org.openide.filesystems.FileUtil.getConfigFile(\"d/x.settings\").asText());",
-                "} catch (Exception x) {x.printStackTrace();}",
-                "}",
-                "@org.netbeans.api.settings.ConvertAsJavaBean public static class Bean {",
-                "private String p; public String getP() {return p;} public void setP(String p2) {p = p2;}",
-                "public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {}",
-                "public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {}",
-                "}",
-                "}").done().
-                module("org.netbeans.modules.settings").
-                module("org.netbeans.modules.editor.mimelookup.impl"). // indirect dep of editor.mimelookup, from openide.loaders
-                run();
-        String settings = System.getProperty("my.settings");
-        assertNotNull(settings);
-        assertTrue(settings, settings.contains("<string>hello</string>"));
-    }
-
     public void testJREPackageImport() throws Exception {
         new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
                 "public class Install extends org.openide.modules.ModuleInstall {",
@@ -155,20 +107,6 @@ public class ActivatorTest extends NbTestCase {
                 "OpenIDE-Module-Install: custom.Install",
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().run();
         assertTrue(Boolean.getBoolean("my.bundle.worked"));
-    }
-
-    public void testModuleInfo() throws Exception {
-        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
-                "public class Install extends org.openide.modules.ModuleInstall {",
-                "public @Override void restored() {System.setProperty(\"number.of.modules\",",
-                "String.valueOf(org.openide.util.Lookup.getDefault().lookupAll(org.openide.modules.ModuleInfo.class).size()));}",
-                "}").manifest(
-                "OpenIDE-Module: custom",
-                "OpenIDE-Module-Install: custom.Install",
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.util.lookup").done().run();
-        String numberOfModules = System.getProperty("number.of.modules");
-        assertNotNull(numberOfModules);
-        assertTrue(numberOfModules, Integer.parseInt(numberOfModules) > 2);
     }
 
     public void testProvidesRequiresNeedsParsing() throws Exception {
@@ -266,61 +204,6 @@ public class ActivatorTest extends NbTestCase {
                 "OpenIDE-Module-Install: custom.Install",
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules, painter").done().run();
         assertTrue(Boolean.getBoolean("com.sun.available"));
-    }
-
-    public void testServicesFolder() throws Exception {
-        new OSGiProcess(getWorkDir()).newModule().
-                sourceFile("custom/Interface.java", "package custom; public interface Interface {String result();}").
-                sourceFile("custom/Install.java", "package custom;",
-                "public class Install extends org.openide.modules.ModuleInstall {",
-                "public @Override void restored() {System.setProperty(\"custom.service.result\", ",
-                "org.openide.util.Lookup.getDefault().lookup(Interface.class).result());}",
-                "}").
-                sourceFile("custom/Service.java", "package custom; public class Service implements Interface {",
-                "public String result() {return \"ok\";}",
-                "}").
-                sourceFile("custom/layer.xml", "<filesystem>",
-                "<folder name='Services'>",
-                "<file name='custom-Service.instance'><attr name='instanceOf' stringvalue='custom.Interface'/></file>",
-                "</folder>",
-                "</filesystem>").manifest(
-                "OpenIDE-Module: custom",
-                "OpenIDE-Module-Install: custom.Install",
-                "OpenIDE-Module-Layer: custom/layer.xml",
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.util.lookup, org.netbeans.core/2").done().
-                module("org.netbeans.core").
-                module("org.netbeans.modules.editor.mimelookup.impl"). // indirect dep of editor.mimelookup, from openide.loaders
-                run();
-        assertEquals("ok", System.getProperty("custom.service.result"));
-    }
-
-    public void testInstalledFileLocator() throws Exception {
-        new OSGiProcess(getWorkDir()).newModule().sourceFile("custom/Install.java", "package custom;",
-                "public class Install extends org.openide.modules.ModuleInstall {",
-                "public @Override void restored() {try {",
-                "System.setProperty(\"my.file.count\", ",
-                "Integer.toString(org.openide.modules.InstalledFileLocator.getDefault().locate(" +
-                "\"some\", null, false).list().length));",
-                "System.setProperty(\"my.file.length\", ",
-                "Long.toString(new java.io.File(org.openide.modules.InstalledFileLocator.getDefault().locate(" +
-                "\"some/stuff\", null, false).getParentFile(), \"otherstuff\").length()));",
-                "System.setProperty(\"my.url.length\", ",
-                "Integer.toString(new java.net.URL(\"nbinst://custom/some/stuff\").openConnection().getContentLength()));",
-                "} catch (Exception x) {x.printStackTrace();}",
-                "}",
-                "}").
-                sourceFile("OSGI-INF/files/some/stuff", "some text").
-                sourceFile("OSGI-INF/files/some/otherstuff", "hello").
-                manifest(
-                "OpenIDE-Module: custom",
-                "OpenIDE-Module-Install: custom.Install",
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().
-                module("org.netbeans.modules.masterfs").
-                backwards(). // XXX will not pass otherwise
-                run();
-        assertEquals("2", System.getProperty("my.file.count"));
-        assertEquals("6", System.getProperty("my.file.length"));
-        assertEquals("10", System.getProperty("my.url.length"));
     }
 
 }
