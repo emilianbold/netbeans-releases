@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -443,7 +442,7 @@ public class MakeConfiguration extends Configuration {
         copy.assign(this);
         // copy aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects();
-        Vector<ConfigurationAuxObject> copiedAuxs = new Vector<ConfigurationAuxObject>();
+        List<ConfigurationAuxObject> copiedAuxs = new ArrayList<ConfigurationAuxObject>();
         for (int i = 0; i < auxs.length; i++) {
             if (auxs[i] instanceof ItemConfiguration) {
                 copiedAuxs.add(((ItemConfiguration) auxs[i]).copy(copy));

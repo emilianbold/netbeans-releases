@@ -48,7 +48,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -191,7 +190,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
 
         // Repeast for all sub folders
-        Vector<Folder> subFolders = getFolders();
+        List<Folder> subFolders = getFolders();
         for (Folder f : subFolders) {
             f.refreshDiskFolder(setModified);
         }
@@ -228,7 +227,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
 
         // Repeast for all sub folders
-        Vector<Folder> subFolders = getFolders();
+        List<Folder> subFolders = getFolders();
         for (Folder f : subFolders) {
             f.attachListeners();
         }
@@ -879,15 +878,15 @@ public class Folder implements FileChangeListener, ChangeListener {
      * Returns a set of all logical folder in this folder as an array
      */
     public Folder[] getFoldersAsArray() {
-        Vector<Folder> folders = getFolders();
+        List<Folder> folders = getFolders();
         return folders.toArray(new Folder[folders.size()]);
     }
 
     /*
      * Returns a set of all logical folder in this folder
      */
-    public Vector<Folder> getFolders() {
-        Vector<Folder> folders = new Vector<Folder>();
+    public List<Folder> getFolders() {
+        List<Folder> folders = new ArrayList<Folder>();
         Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
         while (iter.hasNext()) {
             Object item = iter.next();
@@ -901,8 +900,8 @@ public class Folder implements FileChangeListener, ChangeListener {
     /*
      * Returns a set of all logical folder and subfolders in this folder
      */
-    public Vector<Folder> getAllFolders(boolean projectFilesOnly) {
-        Vector<Folder> folders = new Vector<Folder>();
+    public List<Folder> getAllFolders(boolean projectFilesOnly) {
+        List<Folder> folders = new ArrayList<Folder>();
 
         if (!projectFilesOnly || isProjectFiles()) {
             Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();

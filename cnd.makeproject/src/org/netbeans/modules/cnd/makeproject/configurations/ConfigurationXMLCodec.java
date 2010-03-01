@@ -45,7 +45,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
-import java.util.Vector;
 import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -93,7 +92,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private FileObject projectDirectory;
     private int descriptorVersion = -1;
     private MakeConfigurationDescriptor projectDescriptor;
-    private Vector<Configuration> confs = new Vector<Configuration>();
+    private List<Configuration> confs = new ArrayList<Configuration>();
     private Configuration currentConf = null;
     private ItemConfiguration currentItemConfiguration = null;
     private FolderConfiguration currentFolderConfiguration = null;
@@ -115,7 +114,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private Folder currentFolder = null;
     private String relativeOffset;
     private Map<String, String> cache = new HashMap<String, String>();
-    private Vector<XMLDecoder> decoders = new Vector<XMLDecoder>();
+    private List<XMLDecoder> decoders = new ArrayList<XMLDecoder>();
 
     public ConfigurationXMLCodec(String tag,
             FileObject projectDirectory,
@@ -182,13 +181,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
             // switch out old decoders
             for (int dx = 0; dx < decoders.size(); dx++) {
-                XMLDecoder decoder = decoders.elementAt(dx);
+                XMLDecoder decoder = decoders.get(dx);
                 deregisterXMLDecoder(decoder);
             }
 
             // switch in new decoders
             ConfigurationAuxObject[] profileAuxObjects = currentConf.getAuxObjects();
-            decoders = new Vector<XMLDecoder>();
+            decoders = new ArrayList<XMLDecoder>();
             for (int i = 0; i < profileAuxObjects.length; i++) {
                 if (profileAuxObjects[i].shared()) {
                     XMLDecoder newDecoder = profileAuxObjects[i].getXMLDecoder();
