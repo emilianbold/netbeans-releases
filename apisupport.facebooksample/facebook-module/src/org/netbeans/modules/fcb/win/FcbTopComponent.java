@@ -74,7 +74,7 @@ public final class FcbTopComponent extends TopComponent {
             User u = FacebookSocialNetworkingService.getUserInfo();
             initUserPanel(u);
         } catch (IOException ioe) {
-            initComponents();
+            initLoginPanel();
         }
         setName(NbBundle.getMessage(FcbTopComponent.class, "CTL_FcbTopComponent"));
         setToolTipText(NbBundle.getMessage(FcbTopComponent.class, "HINT_FcbTopComponent"));
@@ -91,27 +91,18 @@ public final class FcbTopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        loginPanel1 = new org.netbeans.modules.fcb.win.LoginPanel();
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(loginPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(302, Short.MAX_VALUE))
+            .addGap(0, 315, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(loginPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(231, Short.MAX_VALUE))
+            .addGap(0, 321, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.netbeans.modules.fcb.win.LoginPanel loginPanel1;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -135,7 +126,17 @@ public final class FcbTopComponent extends TopComponent {
     public static void openLoginPanel() {
         FcbTopComponent tc = findInstance();
         tc.removeAll();
-        tc.initComponents();
+        tc.initLoginPanel();
+    }
+
+    private void initLoginPanel() {
+        JPanel p = new LoginPanel();
+        GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap().addComponent(p, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addContainerGap(302, Short.MAX_VALUE)));
+        layout.setVerticalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap().addComponent(p, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addContainerGap(231, Short.MAX_VALUE)));
     }
 
     private void initUserPanel(User u) {

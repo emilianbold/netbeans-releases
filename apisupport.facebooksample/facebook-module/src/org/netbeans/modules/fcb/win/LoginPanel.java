@@ -76,6 +76,9 @@ public class LoginPanel extends javax.swing.JPanel {
             }
         });
 
+        jProgressBar1.setString(org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.jProgressBar1.string")); // NOI18N
+        jProgressBar1.setStringPainted(true);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -95,7 +98,7 @@ public class LoginPanel extends javax.swing.JPanel {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jButton1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 45, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 42, Short.MAX_VALUE)
                 .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -118,6 +121,7 @@ public class LoginPanel extends javax.swing.JPanel {
                 if (EventQueue.isDispatchThread()) {
                     finish();
                 } else {
+                    jProgressBar1.setString("Signing in...");
                     u = FacebookSocialNetworkingService.getUserInfo();
                     EventQueue.invokeLater(this);
                 }
