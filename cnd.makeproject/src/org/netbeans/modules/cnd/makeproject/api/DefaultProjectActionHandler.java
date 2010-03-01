@@ -74,7 +74,13 @@ import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.makeproject.ui.tests.CndTestRunnerNodeFactory;
+import org.netbeans.modules.cnd.makeproject.ui.tests.CndUnitHandlerFactory;
+import org.netbeans.modules.cnd.makeproject.ui.tests.TestRunnerLineConvertor;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -145,6 +151,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         if (actionType != ProjectActionEvent.PredefinedType.RUN
                 && actionType != ProjectActionEvent.PredefinedType.BUILD
                 && actionType != ProjectActionEvent.PredefinedType.CLEAN
+                && actionType != ProjectActionEvent.PredefinedType.BUILD_TESTS
                 && actionType != ProjectActionEvent.PredefinedType.TEST) {
             assert false;
         }
@@ -288,16 +295,57 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
         }
 
-        NativeExecutionDescriptor descr = new NativeExecutionDescriptor()
-                .controllable(true)
-                .frontWindow(true)
-                .inputVisible(showInput)
-                .inputOutput(io)
-                .outLineBased(true)
-                .showProgress(true)
-                .postExecution(processChangeListener)
-                .errConvertorFactory(processChangeListener)
-                .outConvertorFactory(processChangeListener);
+        NativeExecutionDescriptor descr;
+
+        if (actionType == PredefinedType.TEST) {
+            final TestSession session = new TestSession("Test", // NOI18N
+                    pae.getProject(),
+                    SessionType.TEST, new CndTestRunnerNodeFactory());
+
+            //session.setRerunHandler(this);
+
+            final Manager manager = Manager.getInstance();
+            final CndUnitHandlerFactory handlerFactory = new CndUnitHandlerFactory();
+
+            final TestRunnerLineConvertor outConvertor = new TestRunnerLineConvertor(manager, session, handlerFactory);
+            final TestRunnerLineConvertor errConvertor = new TestRunnerLineConvertor(manager, session, handlerFactory);
+
+            descr = new NativeExecutionDescriptor()
+                    .controllable(true)
+                    .frontWindow(false)
+                    .inputVisible(showInput)
+                    .inputOutput(io)
+                    .outLineBased(true)
+                    .showProgress(true)
+                    .postExecution(processChangeListener)
+                    .errConvertorFactory(new LineConvertorFactory() {
+                        LineConvertor c = errConvertor;
+
+                        @Override
+                        public LineConvertor newLineConvertor() {
+                            return c;
+                        }})
+                    .outConvertorFactory(new LineConvertorFactory() {
+                        LineConvertor c = outConvertor;
+
+                        @Override
+                        public LineConvertor newLineConvertor() {
+                            return c;
+                        }});
+        } else {
+            descr = new NativeExecutionDescriptor()
+                    .controllable(true)
+                    .frontWindow(true)
+                    .inputVisible(showInput)
+                    .inputOutput(io)
+                    .outLineBased(true)
+                    .showProgress(true)
+                    .postExecution(processChangeListener)
+                    .errConvertorFactory(processChangeListener)
+                    .outConvertorFactory(processChangeListener);
+
+        }
+
         if (actionType == PredefinedType.BUILD) {
             descr.noReset(true);
         }

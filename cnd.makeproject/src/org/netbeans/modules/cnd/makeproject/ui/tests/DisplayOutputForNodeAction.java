@@ -36,33 +36,41 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.testrunner.ui;
+package org.netbeans.modules.cnd.makeproject.ui.tests;
 
-import java.awt.event.ActionEvent;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.testrunner.TestRunner;
-import org.netbeans.modules.gsf.testrunner.api.Testcase;
-
-/**
- * Action for running all tests in a file.
- *
- * @author Erno Mononen
- */
-final class RunTestSuiteAction extends BaseTestMethodNodeAction {
-
-    private final boolean debug;
-
-    public RunTestSuiteAction(Testcase testcase, Project project, String name, boolean debug) {
-        super(testcase, project, name);
-        this.debug = debug;
-    }
-
-    protected void doActionPerformed(ActionEvent e) {
-        TestRunner.TestType type = TestRunner.TestType.valueOf(testcase.getType());
-//        DeclarationLocation location = PythonDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), true);
-//        if (!(DeclarationLocation.NONE == location)) {
-//            getTestRunner(type).runTest(location.getFileObject(), debug);
+//import java.awt.event.ActionEvent;
+//import java.util.List;
+//import javax.swing.AbstractAction;
+//import org.netbeans.modules.gsf.testrunner.Manager;
+//import org.netbeans.modules.gsf.testrunner.TestSession;
+////import org.netbeans.modules.gsf.testrunner.output.OutputLine;
+//
+///**
+// *
+// * @author Erno Mononen
+// */
+//final class DisplayOutputForNodeAction extends AbstractAction {
+//
+//    private final List<OutputLine> output;
+//    private final TestSession session;
+//
+//    public DisplayOutputForNodeAction(List<OutputLine> output, TestSession session) {
+//        this.output = output;
+//        this.session = session;
+//    }
+//
+//
+//    public Object getValue(String key) {
+//        if (NAME.equals(key)) {
+//            return "display";
 //        }
-
-    }
-}
+//        return super.getValue(key);
+//    }
+//
+//    public void actionPerformed(ActionEvent e) {
+//        Manager manager = Manager.getInstance();
+//        for (OutputLine ol : output) {
+//            manager.displayOutput(session, ol.getLine(), ol.isError());
+//        }
+//    }
+//}

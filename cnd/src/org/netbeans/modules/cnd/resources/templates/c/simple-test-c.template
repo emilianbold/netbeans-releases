@@ -9,22 +9,23 @@
 #include <stdlib.h>
 
 /*
- * Simple C Test
+ * Simple C Test Suite
  */
-int main(int argc, char** argv) {
-    printf("%s:%u: Running test : %<%NAME%>%\n", __FILE__, __LINE__);
 
-    printf("...\n");
-    printf("...\n");
-    printf("...\n");
 
-    int result = EXIT_SUCCESS;
-    if(result == EXIT_SUCCESS) {
-        printf("%s:%u: SUCCESS\n", __FILE__, __LINE__);
-    } else {
-        printf("%s:%u: FAILURE\n", __FILE__, __LINE__);
-    }
-
-    return (result);
+void test1() {
+    printf("%<%NAME%>% test 1\n");
 }
 
+int main(int argc, char** argv) {
+    printf("%%SUITE_STARTING%% %<%NAME%>%\n");
+    printf("%%SUITE_STARTED%%\n");
+
+    printf("%%TEST_STARTED%% test1 (%<%NAME%>%)\n");
+    test1();
+    printf("%%TEST_FINISHED%% time=0 test1 (%<%NAME%>%) \n");
+
+    printf("%%SUITE_FINISHED%% time=0\n");
+
+    return (EXIT_SUCCESS);
+}

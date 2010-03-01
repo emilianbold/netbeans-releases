@@ -39,12 +39,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.testrunner.ui;
+package org.netbeans.modules.cnd.makeproject.ui.tests;
 
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.cnd.testrunner.TestRunner.TestType;
 import org.netbeans.modules.gsf.testrunner.api.Locator;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
@@ -56,9 +55,9 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Marian Petras, Erno Mononen
  */
-public final class PythonTestsuiteNode extends TestsuiteNode {
+public final class CndTestsuiteNode extends TestsuiteNode {
 
-    public PythonTestsuiteNode(String suiteName, boolean filtered) {
+    public CndTestsuiteNode(String suiteName, boolean filtered) {
         super(null, suiteName, filtered, Lookups.singleton(new Locator() {
 
             public void jumpToSource(Node node) {
@@ -81,12 +80,12 @@ public final class PythonTestsuiteNode extends TestsuiteNode {
             // need to have at least one test case to locate the test file
             return null;
         }
-        TestType type = TestType.valueOf(testcase.getType());
+//        TestType type = TestType.valueOf(testcase.getType());
         //if (TestType.RSPEC == type) {
         //    //XXX: not the exact location of the class
-        //    return new JumpToCallStackAction(this, PythonTestMethodNode.getTestLocation(testcase, report.getProject()), 1);
+        //    return new JumpToCallStackAction(this, CndTestMethodNode.getTestLocation(testcase, report.getProject()), 1);
         //}
-        return new JumpToTestAction(getFirstTestCase(), report.getProject(), NbBundle.getMessage(PythonTestsuiteNode.class, "LBL_GoToSource"), true);
+        return new JumpToTestAction(getFirstTestCase(), report.getProject(), NbBundle.getMessage(CndTestsuiteNode.class, "LBL_GoToSource"), true);
     }
 
     @Override
@@ -103,8 +102,8 @@ public final class PythonTestsuiteNode extends TestsuiteNode {
         // these actions are enable only if the suite had at least one test (otherwise
         // we can't reliably locate the test file)
         if (testcase != null) {
-            actions.add(new RunTestSuiteAction(testcase, report.getProject(), NbBundle.getMessage(PythonTestMethodNode.class, "LBL_RerunTest"), false));
-            actions.add(new RunTestSuiteAction(testcase, report.getProject(), NbBundle.getMessage(PythonTestMethodNode.class, "LBL_DebugTest"), true));
+            actions.add(new RunTestSuiteAction(testcase, report.getProject(), NbBundle.getMessage(CndTestMethodNode.class, "LBL_RerunTest"), false));
+            actions.add(new RunTestSuiteAction(testcase, report.getProject(), NbBundle.getMessage(CndTestMethodNode.class, "LBL_DebugTest"), true));
 //            actions.add(new DisplayOutputForNodeAction(getOutput(), testcase.getSession()));
         }
         return actions.toArray(new Action[actions.size()]);
