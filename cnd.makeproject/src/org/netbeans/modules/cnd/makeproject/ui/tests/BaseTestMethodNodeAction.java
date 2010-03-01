@@ -36,34 +36,63 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.testrunner.ui;
 
-import java.awt.event.ActionEvent;
+package org.netbeans.modules.cnd.makeproject.ui.tests;
+
+import java.util.Collection;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.testrunner.TestRunner;
+import org.netbeans.modules.gsf.testrunner.api.TestNodeAction;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
- * An action for running/debugging a singe test method.
+ * Base class for actions associated with a test method node.
  *
  * @author Erno Mononen
  */
-class RunTestMethodAction extends BaseTestMethodNodeAction {
+abstract class BaseTestMethodNodeAction extends TestNodeAction {
 
-    private static final Logger LOGGER = Logger.getLogger(RunTestMethodAction.class.getName());
-    private final boolean debug;
+    private static final Logger LOGGER = Logger.getLogger(BaseTestMethodNodeAction.class.getName());
 
-    public RunTestMethodAction(Testcase testcase, Project project, String name, boolean debug) {
-        super(testcase, project, name);
-        this.debug = debug;
+    protected final Testcase testcase;
+    protected final Project project;
+    protected final String name;
+
+    public BaseTestMethodNodeAction(Testcase testcase, Project project, String name) {
+        this.testcase = testcase;
+        this.project = project;
+        this.name = name;
     }
 
-    protected void doActionPerformed(ActionEvent e) {
-        TestRunner.TestType type = TestRunner.TestType.valueOf(testcase.getType());
-//        DeclarationLocation location = PythonDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), false);
-//        if (!(DeclarationLocation.NONE == location)) {
-//            getTestRunner(type).runSingleTest(location.getFileObject(),testcase.getClassName(), testcase.getName(), debug);
+    @Override
+    public Object getValue(String key) {
+        if (NAME.equals(key)) {
+            return name;
+        }
+        return super.getValue(key);
+    }
+
+    protected String getTestMethod() {
+        return testcase.getClassName() + "/" + testcase.getName(); //NOI18N
+    }
+
+//    protected FileObject getTestSourceRoot() {
+//        PythonProject baseProject = project.getLookup().lookup(PythonProject.class);
+//        // need to use test source roots, not source roots -- see the comments in #135680
+//        FileObject[] testRoots = baseProject.getTestSourceRootFiles();
+//        // if there are not test roots, return the project root -- works in rails projects
+//        return 0 == testRoots.length ? project.getProjectDirectory() : testRoots[0];
+//    }
+//
+//    protected TestRunner getTestRunner(TestRunner.TestType testType) {
+//        Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
+//        for (TestRunner each : testRunners) {
+//            if (each.supports(testType)) {
+//                return each;
+//            }
 //        }
-    }
+//        return null;
+//    }
 }

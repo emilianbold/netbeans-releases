@@ -36,33 +36,19 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.testrunner.ui;
 
-import java.awt.event.ActionEvent;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.testrunner.TestRunner;
-import org.netbeans.modules.gsf.testrunner.api.Testcase;
+package org.netbeans.modules.cnd.makeproject.ui.tests;
+
+import java.util.List;
 
 /**
- * Action for running all tests in a file.
  *
  * @author Erno Mononen
  */
-final class RunTestSuiteAction extends BaseTestMethodNodeAction {
+public interface TestHandlerFactory {
 
-    private final boolean debug;
+    List<TestRecognizerHandler> createHandlers();
 
-    public RunTestSuiteAction(Testcase testcase, Project project, String name, boolean debug) {
-        super(testcase, project, name);
-        this.debug = debug;
-    }
+    boolean printSummary();
 
-    protected void doActionPerformed(ActionEvent e) {
-        TestRunner.TestType type = TestRunner.TestType.valueOf(testcase.getType());
-//        DeclarationLocation location = PythonDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), true);
-//        if (!(DeclarationLocation.NONE == location)) {
-//            getTestRunner(type).runTest(location.getFileObject(), debug);
-//        }
-
-    }
 }

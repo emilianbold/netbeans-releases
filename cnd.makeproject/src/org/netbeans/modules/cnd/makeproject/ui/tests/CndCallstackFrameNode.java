@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,42 +37,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.testrunner;
+package org.netbeans.modules.cnd.makeproject.ui.tests;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.testrunner.api.TestRunnerNodeFactory;
-import org.netbeans.modules.gsf.testrunner.api.Testcase;
-import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
-import org.netbeans.modules.cnd.testrunner.ui.PythonCallstackFrameNode;
-import org.netbeans.modules.cnd.testrunner.ui.PythonTestMethodNode;
-import org.netbeans.modules.cnd.testrunner.ui.PythonTestsuiteNode;
-import org.openide.nodes.Node;
+import javax.swing.Action;
+import org.netbeans.modules.gsf.testrunner.api.CallstackFrameNode;
+import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
+import org.netbeans.modules.gsf.testrunner.api.Trouble.ComparisonFailure;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Erno Mononen
+ * @author Marian Petras
  */
-public class CndTestRunnerNodeFactory extends TestRunnerNodeFactory {
+public final class CndCallstackFrameNode extends CallstackFrameNode {
+    private final String displayName;
 
-    @Override
-    public Node createTestMethodNode(Testcase testcase, Project project) {
-        return new PythonTestMethodNode(testcase, project);
+    public CndCallstackFrameNode(String frameInfo, String displayName) {
+        super(frameInfo, displayName);
+        // Keep our own copy since the parent will assign frameInfo to displayName
+        // if none is provided
+        this.displayName = displayName;
     }
 
+    /**
+     */
     @Override
-    public Node createCallstackFrameNode(String frameInfo, String dispayName) {
-        return new PythonCallstackFrameNode(frameInfo, dispayName);
+    public Action getPreferredAction() {
+        // If it's a diff failure line, the default action is to diff it!
+        if (displayName != null) {
+            ComparisonFailure failure = CndUnitHandlerFactory.getComparisonFailure(displayName);
+            if (failure != null) {
+                return new DiffViewAction(failure);
+            }
+        }
+        
+        return new JumpToCallStackAction(this, frameInfo);
     }
-
-    @Override
-    public TestsuiteNode createTestSuiteNode(String suiteName, boolean filtered) {
-        return new PythonTestsuiteNode(suiteName, filtered);
+    
+    public SystemAction[] getActions(boolean context) {
+        return new SystemAction[0];
     }
-
 }

@@ -37,11 +37,20 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.testrunner.ui;
+package org.netbeans.modules.cnd.makeproject.ui.tests;
 
 import java.awt.event.ActionEvent;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.openide.text.PositionBounds;
 
 /**
  * Jump to action for test methods.
@@ -58,10 +67,48 @@ final class JumpToTestAction extends BaseTestMethodNodeAction {
     }
 
     protected void doActionPerformed(ActionEvent e) {
-//        DeclarationLocation location = PythonDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), jumpToClass);
-//        if (!(DeclarationLocation.NONE == location)) {
-//            GsfUtilities.open(location.getFileObject(), location.getOffset(), null);
-//        }
+        ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        MakeConfigurationDescriptor projectDescriptor = cdp.getConfigurationDescriptor();
+
+        Folder root = projectDescriptor.getLogicalFolders();
+        Folder testRootFolder = null;
+        for (Folder folder : root.getFolders()) {
+            if(folder.isTestRootFolder()) {
+                testRootFolder = folder;
+                break;
+            }
+        }
+
+        String absPath = null;
+        if (testRootFolder != null) {
+            for (Folder folder : testRootFolder.getAllTests()) {
+                Item[] items = folder.getAllItemsAsArray();
+                for (int k = 0; k < items.length; k++) {
+                    if(items[k].getName().replaceAll("(.*)\\..*", "$1").equals(testcase.getClassName())) { // NOI18N
+                        absPath = items[k].getAbsPath();
+                    }
+                }
+            }
+        }
+        if(absPath == null) {
+            return;
+        }
+        CsmFile file = CsmModelAccessor.getModel().findFile(absPath, false);
+        if(file == null) {
+            return;
+        }
+        CsmOffsetableDeclaration targetDecl = null;
+        for (CsmOffsetableDeclaration decl : file.getDeclarations()) {
+            if(decl.getName().toString().equals(testcase.getName())) {
+                targetDecl = decl;
+                break;
+            }
+        }
+        if(targetDecl == null) {
+            return;
+        }
+        PositionBounds position = CsmUtilities.createPositionBounds(targetDecl);
+        CsmUtilities.openSource(position);
     }
 
 }
