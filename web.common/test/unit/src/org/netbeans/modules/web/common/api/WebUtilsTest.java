@@ -37,34 +37,55 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.web.common.api;
+
 import java.awt.Color;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.netbeans.modules.web.common.api.WebUtils;
-import static org.junit.Assert.*;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author marekfukala
  */
-public class WebUtilsTest {
+public class WebUtilsTest extends CslTestBase {
 
-    public WebUtilsTest() {
+    public WebUtilsTest(String testName) {
+        super(testName);
     }
 
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-    @Test
     public void toHexColorCode() {
         assertEquals("#ff0000", WebUtils.toHexCode(Color.RED));
         assertEquals("#2201aa", WebUtils.toHexCode(Color.decode("#2201aa")));
+    }
+
+    public void testResolve() {
+        FileObject one = getTestFile("one.txt");
+        assertNotNull(one);
+        FileObject two = getTestFile("third.txt");
+        assertNotNull(two);
+
+        FileObject resolved = WebUtils.resolve(one, "third.txt");
+        assertNotNull(resolved);
+        assertEquals(two, resolved);
+
+    }
+
+    public void testResolveFolderReferences() {
+        FileObject one = getTestFile("one.txt");
+        assertNotNull(one);
+        FileObject two = getTestFile("folder/second.txt");
+        assertNotNull(two);
+
+        //test resolve path reference
+        FileObject resolved = WebUtils.resolve(one, "folder/second.txt");
+        assertNotNull(resolved);
+        assertEquals(two, resolved);
+
+        //test resolve path reference backward
+        resolved = WebUtils.resolve(two, "../one.txt");
+        assertNotNull(resolved);
+        assertEquals(one, resolved);
+
     }
 
 }
