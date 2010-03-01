@@ -154,6 +154,10 @@ public final class TableSorter extends AbstractTableModel {
     private List<Directive> sortingColumns = new ArrayList<Directive>();
     private final IssueTable issueTable;
 
+    public TableSorter(TableModel tableModel) {
+        this(tableModel, null);
+    }
+
     public TableSorter(TableModel tableModel, IssueTable issueTable) {
         this.mouseListener = new MouseHandler();
         this.tableModelListener = new TableModelHandler();
@@ -467,7 +471,9 @@ public final class TableSorter extends AbstractTableModel {
                 status += e.isShiftDown() ? -1 : 1;
                 status = (status + 4) % 3 - 1; // signed mod, returning {-1, 0, 1}
                 setSortingStatus(column, status);
-                issueTable.sortOrderChanged();
+                if(issueTable != null) {
+                    issueTable.sortOrderChanged();
+                }
             }
         }
     }
