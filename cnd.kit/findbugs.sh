@@ -12,7 +12,7 @@ rm ${workspace}/cnd.modelimpl/build/classes/org/netbeans/modules/cnd/modelimpl/p
 
 prj="/tmp/cnd.fbp"
 echo "<Project filename=\"CND\" projectName=\"CND\">" > ${prj}
-for D in `ls -d ${workspace}/cnd* ${workspace}/lib.terminalemulator | grep -v cnd.antlr`; do
+for D in `ls -d ${workspace}/cnd* ${workspace}/lib.terminalemulator ${workspace}/terminal | grep -v cnd.antlr`; do
 	if [ -d $D/build/classes ]; then
 		echo "    <Jar>$D/build/classes</Jar>" >> ${prj}
 		echo "    <AuxClasspathEntry>$D/src</AuxClasspathEntry>" >> ${prj}
