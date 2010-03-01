@@ -276,8 +276,10 @@ public class CssFileModel {
                 }
 
             } else if(node.kind() == CssParserTreeConstants.JJTHEXCOLOR) {
-                String image = node.image().trim();
-                OffsetRange range = new OffsetRange(node.startOffset(), node.endOffset());
+                String image = node.image();
+                int[] wsLens = getTextWSPreAndPostLens(image);
+                image = image.substring(wsLens[0], image.length() - wsLens[1]);
+                OffsetRange range = new OffsetRange(node.startOffset() + wsLens[0], node.endOffset() - wsLens[1]);
                 Entry e = createEntry(image, range, false);
                 if(e != null) {
                     getColorsCollectionInstance().add(e);
@@ -369,5 +371,30 @@ public class CssFileModel {
         }
 
         return new Entry(name, range, documentRange, lineOffset, elementText, elementLineText, isVirtual);
+    }
+
+    private static int[] getTextWSPreAndPostLens(String text) {
+        int preWSlen = 0;
+        int postWSlen = 0;
+
+        for(int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if(Character.isWhitespace(c)) {
+                preWSlen++;
+            } else {
+                break;
+            }
+        }
+
+        for(int i = text.length() - 1; i >= 0; i--) {
+            char c = text.charAt(i);
+            if(Character.isWhitespace(c)) {
+                postWSlen++;
+            } else {
+                break;
+            }
+        }
+
+        return new int[]{preWSlen, postWSlen};
     }
 }

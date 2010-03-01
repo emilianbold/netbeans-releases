@@ -111,23 +111,28 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
 		Exceptions.printStackTrace(ex);
 	    }
         } else {
-            customPanel.setVisible(false);
+            //disabled the implementation section panel
+            selectedTextPane.setEnabled(false);
+            implSectionLabel.setEnabled(false);
         }
 	super.validate();
 
-	initValues(null, null, null);
+	initValues(null, null, null, false);
         
         browseButton.addActionListener( this );
         locationCB.addActionListener( this );
         documentNameTextField.getDocument().addDocumentListener( this );
         folderTextField.getDocument().addDocumentListener( this );
 	prefixTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
 	    public void insertUpdate(DocumentEvent e) {
 		prefixTextFieldModified();
 	    }
+            @Override
 	    public void removeUpdate(DocumentEvent e) {
 		prefixTextFieldModified();
 	    }
+            @Override
 	    public void changedUpdate(DocumentEvent e) {
 		prefixTextFieldModified();
 	    }
@@ -138,9 +143,14 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
         return wm;
     }
     
-    void initValues(FileObject template, FileObject preselectedFolder, String documentName) {
+    void initValues(FileObject template, FileObject preselectedFolder, String documentName, boolean fromEditor) {
 	assert project != null;
 
+        //disable the prefix field and label when is not wizard invoked from editor
+        prefixLabel.setEnabled(fromEditor);
+        prefixTextField.setEnabled(fromEditor);
+        prefixLocked = !fromEditor; //prevent the prefix computation if the prefix field is disabled
+        
 	projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
 
 	locationCB.setModel(new DefaultComboBoxModel(folders));
@@ -290,7 +300,7 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
         fileTextField = new javax.swing.JTextField();
         targetSeparator = new javax.swing.JSeparator();
         customPanel = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
+        implSectionLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         selectedTextPane = new javax.swing.JEditorPane();
         fillerPanel = new javax.swing.JPanel();
@@ -413,7 +423,7 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
         customPanel.setPreferredSize(new java.awt.Dimension(400, 180));
         customPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "LBL_IMPLEMENTATION")); // NOI18N
+        implSectionLabel.setText(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "LBL_IMPLEMENTATION")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -422,7 +432,7 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
-        customPanel.add(jLabel2, gridBagConstraints);
+        customPanel.add(implSectionLabel, gridBagConstraints);
 
         selectedTextPane.setEditable(false);
         selectedTextPane.setEnabled(false);
@@ -481,7 +491,7 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
     private javax.swing.JPanel fillerPanel;
     private javax.swing.JLabel folderLabel;
     private javax.swing.JTextField folderTextField;
-    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel implSectionLabel;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JComboBox locationCB;
     private javax.swing.JLabel locationLabel;
@@ -497,6 +507,7 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
 
     // ActionListener implementation -------------------------------------------
     
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent e) {
         if ( browseButton == e.getSource() ) {
             FileObject fo=null;
@@ -567,14 +578,17 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
 
     // DocumentListener implementation -----------------------------------------
     
+    @Override
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
         updateCreatedFolder();
     }
     
+    @Override
     public void insertUpdate(javax.swing.event.DocumentEvent e) {
         updateCreatedFolder();
     }
     
+    @Override
     public void removeUpdate(javax.swing.event.DocumentEvent e) {
         updateCreatedFolder();
     }
@@ -600,6 +614,7 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
             setOpaque( true );
         }
 
+        @Override
         public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus ) {
             if (value instanceof SourceGroup) {
                 SourceGroup group = (SourceGroup)value;
@@ -609,13 +624,8 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
                     setText( groupDisplayName );
                 }
                 else {
-                    setText( MessageFormat.format( "{1} - {0}",
+                    setText( MessageFormat.format( "{1} - {0}", //NOI18N
                         new Object[] { groupDisplayName, projectDisplayName, group.getRootFolder().getName() } ) );
-                    /*
-                    setText( MessageFormat.format(
-                        NbBundle.getMessage( SimpleTargetChooserPanelGUI.class, "FMT_TargetChooser_GroupProjectNameBadge" ), // NOI18N
-                        new Object[] { groupDisplayName, projectDisplayName } ) );
-                    */
                 }
 
                 setIcon( group.getIcon( false ) );

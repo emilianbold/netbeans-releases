@@ -84,6 +84,8 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
     private static final Pattern INVALID_FILENAME_CHARACTERS = Pattern.compile("[`~!@#$%^&*()=+\\|{};:'\",<>/?]"); // NOI18N
     private static final Pattern INVALID_FOLDERNAME_CHARACTERS = Pattern.compile("[`~!@#$%^&*()=+|{};:'\",<>?]"); // NOI18N
 
+    private static final String FROM_EDITOR_PROP = "fromEditor"; //NOI18N
+
     public CompositeComponentWizardPanel(TemplateWizard wizard, SourceGroup[] folders, String selectedText) {
 	this.wizard = wizard;
 	text = selectedText;
@@ -92,6 +94,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
     }
 
     //we need to run it in AWT thread because of the editor initialization
+    @Override
     public Component getComponent() {
 	if (SwingUtilities.isEventDispatchThread()) {
 	    return _getComponent();
@@ -99,6 +102,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 	    final AtomicReference<Component> ref = new AtomicReference<Component>();
 	    try {
 		SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
 		    public void run() {
 			ref.set(_getComponent());
 		    }
@@ -124,6 +128,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 	return component;
     }
 
+    @Override
     public HelpCtx getHelp() {
 	// Show no Help button for this panel:
 	return HelpCtx.DEFAULT_HELP;
@@ -131,6 +136,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 	// return new HelpCtx(SampleWizardPanel1.class);
     }
 
+    @Override
     public boolean isValid() {
 
     	String errorMessage = null;
@@ -174,35 +180,40 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 	    return true;
 	}
 
-	//current prefix in the panel
-	String prefix = component.getPrefix();
-	if(prefix.length() == 0) {
-	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "MSG_Library_Prefix_Empty");//NOI18N
-	} else {
-	    //there's some prefix
-	    //check for used prefixes
-	    //get declared libraries map //namespace2prefix map
-	    Map<String, String> declaredPrefixes = (Map<String, String>)wizard.getProperty("declaredPrefixes");
-	    //compute namespace of the library according to the folder
-	    String ccLibNamespace = component.getCompositeComponentURI();
-	    //warning if the current library namespace is not already declared, but the prefix is used for
-	    //another library
-	    if(declaredPrefixes!=null && !prefix.equals(declaredPrefixes.get(ccLibNamespace)) && declaredPrefixes.values().contains(prefix)) {
-		//the selected prefix is already in use, show warning, but let the user finish the wizard
-		wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(CompositeComponentVisualPanel.class, "MSG_Already_Used_Prefix", component.getPrefix()));//NOI18N
-		return true;
-	    }
-	}
+        //check the prefix only if the wizard invoken from editor and the prefix is enabled
+        if(Boolean.TRUE.equals((Boolean)wizard.getProperty(FROM_EDITOR_PROP))) { //NOI18N
+            //current prefix in the panel
+            String prefix = component.getPrefix();
+            if(prefix.length() == 0) {
+                errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "MSG_Library_Prefix_Empty");//NOI18N
+            } else {
+                //there's some prefix
+                //check for used prefixes
+                //get declared libraries map //namespace2prefix map
+                Map<String, String> declaredPrefixes = (Map<String, String>)wizard.getProperty("declaredPrefixes");
+                //compute namespace of the library according to the folder
+                String ccLibNamespace = component.getCompositeComponentURI();
+                //warning if the current library namespace is not already declared, but the prefix is used for
+                //another library
+                if(declaredPrefixes!=null && !prefix.equals(declaredPrefixes.get(ccLibNamespace)) && declaredPrefixes.values().contains(prefix)) {
+                    //the selected prefix is already in use, show warning, but let the user finish the wizard
+                    wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(CompositeComponentVisualPanel.class, "MSG_Already_Used_Prefix", component.getPrefix()));//NOI18N
+                    return true;
+                }
+            }
+        }
 	
 	wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage);
 	
 	return errorMessage == null;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
 	changeSupport.addChangeListener(l);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
 	changeSupport.removeChangeListener(l);
     }
@@ -211,6 +222,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
     // settings object will be the WizardDescriptor, so you can use
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
+    @Override
     public void readSettings(Object settings) {
 	if (settings instanceof TemplateWizard) {
 	    this.wizard = (TemplateWizard) settings;
@@ -226,8 +238,10 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 		}
 		// Try to preserve the already entered target name
 		String targetName = Templates.getTargetName(wizard);
+
+                boolean fromEditor = Boolean.TRUE.equals((Boolean)wizard.getProperty(FROM_EDITOR_PROP));
 		// Init values
-		component.initValues(Templates.getTemplate(wizard), preselectedTarget, targetName);
+		component.initValues(Templates.getTemplate(wizard), preselectedTarget, targetName, fromEditor); //NOI18N
 	    }
 	    Object substitute = component.getClientProperty("NewFileWizard_Title"); // NOI18N
 	    if (substitute != null) {
@@ -239,27 +253,28 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 	}
     }
 
+    @Override
     public void storeSettings(Object settings) {
 	if (settings instanceof TemplateWizard) {
-	    TemplateWizard wizard = (TemplateWizard) settings;
+	    TemplateWizard wiz = (TemplateWizard) settings;
 
-	    if (WizardDescriptor.PREVIOUS_OPTION.equals(wizard.getValue())) {
+	    if (WizardDescriptor.PREVIOUS_OPTION.equals(wiz.getValue())) {
 		return;
 	    }
-	    if (!wizard.getValue().equals(WizardDescriptor.CANCEL_OPTION) && isValid()) {
+	    if (!wiz.getValue().equals(WizardDescriptor.CANCEL_OPTION) && isValid()) {
 
-		FileObject template = Templates.getTemplate(wizard);
+		FileObject template = Templates.getTemplate(wiz);
 
 		String name = component.getTargetName();
 		if (name.indexOf('/') > 0) { // NOI18N
 		    name = name.substring(name.lastIndexOf('/') + 1);
 		}
 
-		Templates.setTargetFolder(wizard, getTargetFolderFromGUI());
-		Templates.setTargetName(wizard, name);
+		Templates.setTargetFolder(wiz, getTargetFolderFromGUI());
+		Templates.setTargetName(wiz, name);
 	    }
-	    wizard.putProperty("NewFileWizard_Title", null); // NOI18N
-	    wizard.putProperty("selectedPrefix", component.getPrefix()); //NOI18N
+	    wiz.putProperty("NewFileWizard_Title", null); // NOI18N
+	    wiz.putProperty("selectedPrefix", component.getPrefix()); //NOI18N
 	}
     }
 
@@ -293,6 +308,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 	return targetFolder;
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
 	changeSupport.fireChange();
     }
