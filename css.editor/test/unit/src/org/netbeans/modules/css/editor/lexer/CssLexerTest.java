@@ -56,12 +56,6 @@ public class CssLexerTest extends TestBase {
         super(name);
     }
 
-    public static Test xsuite() {
-        TestSuite suite = new TestSuite();
-        suite.addTest(new CssLexerTest("testLexing"));
-        return suite;
-    }
-
     @Override
     protected void setUp() throws java.lang.Exception {
         // Set-up testing environment
@@ -93,15 +87,6 @@ public class CssLexerTest extends TestBase {
         assertTrue(ts.moveNext());
         assertEquals(";", ts.token().text().toString());
         assertEquals(CssTokenId.SEMICOLON, ts.token().id());
-    }
-
-    public void testLexing() throws Exception {
-        String source = "h1 { }";
-        TokenHierarchy th = TokenHierarchy.create(source, CssTokenId.language());
-        TokenSequence ts = th.tokenSequence();
-        ts.moveStart();
-
-        System.out.println(ts);
     }
 
 }
