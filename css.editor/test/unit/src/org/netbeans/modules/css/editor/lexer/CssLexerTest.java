@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.css.editor.lexer;
 
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
@@ -52,6 +54,12 @@ public class CssLexerTest extends TestBase {
 
     public CssLexerTest(String name) {
         super(name);
+    }
+
+    public static Test xsuite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new CssLexerTest("testLexing"));
+        return suite;
     }
 
     @Override
@@ -85,6 +93,15 @@ public class CssLexerTest extends TestBase {
         assertTrue(ts.moveNext());
         assertEquals(";", ts.token().text().toString());
         assertEquals(CssTokenId.SEMICOLON, ts.token().id());
+    }
+
+    public void testLexing() throws Exception {
+        String source = "h1 { }";
+        TokenHierarchy th = TokenHierarchy.create(source, CssTokenId.language());
+        TokenSequence ts = th.tokenSequence();
+        ts.moveStart();
+
+        System.out.println(ts);
     }
 
 }
