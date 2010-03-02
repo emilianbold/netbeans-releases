@@ -50,8 +50,6 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="build" depends="init">
-        <!-- XXX dangerous to do incrementally since qualifier easily changes acc. to date or nb.org Hg rev: -->
-        <delete dir="${osgi.dest.dir}"/>
         <mkdir dir="${osgi.dest.dir}"/>
         <makeosgi destdir="${osgi.dest.dir}">
             <pathfileset>
@@ -89,14 +87,11 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="run" depends="init">
-        <!-- XXX Felix cache does not seem to work correctly, uses stale JARs; and org.osgi.framework.storage.clean=onFirstInit broken too: -->
-        <delete dir="${osgi.cache.dir}"/>
         <mkdir dir="${osgi.cache.dir}"/>
-        <!-- From felix/main/src/main/resources/config.properties; XXX is there a better way to grab these? -->
-        <property name="felix-sys-prop.felix.auto.deploy.action" value="install,start"/>
+        <property name="felix-sys-prop.felix.auto.deploy.action" value="uninstall,install,update,start"/> <!-- config.properties omits update,uninstall -->
         <property name="felix-sys-prop.felix.log.level" value="3"/> <!-- config.properties defaults to 4 but it is too noisy -->
-        <property name="felix-sys-prop.org.osgi.service.http.port" value="8080"/>
-        <property name="felix-sys-prop.obr.repository.url" value="http://felix.apache.org/obr/releases.xml"/>
+        <property name="felix-sys-prop.org.osgi.service.http.port" value="8080"/> <!-- from config.properties -->
+        <property name="felix-sys-prop.obr.repository.url" value="http://felix.apache.org/obr/releases.xml"/> <!-- from config.properties -->
         <java fork="true" classname="org.apache.felix.main.Main">
             <classpath>
                 <pathfileset>
