@@ -113,7 +113,6 @@ public final class Terminal extends JComponent {
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
-    private final TerminalContainer terminalContainer;
     private final IOContainer ioContainer;
     private final CallBacks callBacks = new CallBacks();
 
@@ -138,6 +137,7 @@ public final class Terminal extends JComponent {
     private boolean closed;
 
     private class TermOptionsPCL implements PropertyChangeListener {
+	@Override
         public void propertyChange(PropertyChangeEvent evt) {
             applyTermOptions(false);
         }
@@ -148,29 +148,35 @@ public final class Terminal extends JComponent {
      */
     private class CallBacks implements IOContainer.CallBacks {
 
+	@Override
         public void closed() {
             // System.out.printf("Terminal.CallBacks.closed()\n");
 	    // Causes assertion error in IOContainer/IOWindow.
             // OLD close();
         }
 
+	@Override
         public void selected() {
             // System.out.printf("Terminal.CallBacks.selected()\n");
         }
 
+	@Override
         public void activated() {
             // System.out.printf("Terminal.CallBacks.activated()\n");
         }
 
+	@Override
         public void deactivated() {
             // System.out.printf("Terminal.CallBacks.deactivated()\n");
         }
     }
 
-    public Terminal(IOContainer ioContainer, Action[] actions, String name) {
+    /* package */ Terminal(IOContainer ioContainer, Action[] actions, String name) {
+	if (ioContainer == null)
+	    throw new IllegalArgumentException("ioContainer cannot be null");
+
         termOptions = TermOptions.getDefault(prefs);
 
-        this.terminalContainer = null;
         this.ioContainer = ioContainer;
         // this.term = new StreamTerm();
         this.term = new ActiveTerm();
@@ -219,58 +225,6 @@ public final class Terminal extends JComponent {
         if (name != null)
             setTitle(name);
 	setActions(actions);
-    }
-
-
-    Terminal(TerminalContainer termTopComponent, String name) {
-        termOptions = TermOptions.getDefault(prefs);
-
-        this.terminalContainer = termTopComponent;
-        this.ioContainer = null;
-        // this.term = new StreamTerm();
-        this.term = new ActiveTerm();
-
-        this.term.setCursorVisible(true);
-
-        findState = new DefaultFindState(term);
-
-        term.setHorizontallyScrollable(false);
-        term.setEmulation("ansi");
-        term .setBackground(Color.white);
-        term.setHistorySize(4000);
-
-        termOptions.addPropertyChangeListener(termOptionsPCL);
-        applyTermOptions(true);
-
-        term.getScreen().addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (e.isPopupTrigger()) {
-                    Point p = SwingUtilities.convertPoint((Component) e.getSource(),
-                                                          e.getPoint(),
-                                                          term.getScreen());
-                    postPopupMenu(p);
-                }
-            }
-        } );
-
-        // Tell term about keystrokes we use for menu accelerators so
-        // it passes them through.
-        /* LATER
-         * A-V brings up the main View menu.
-        term.getKeyStrokeSet().add(copyAction.getValue(Action.ACCELERATOR_KEY));
-        term.getKeyStrokeSet().add(pasteAction.getValue(Action.ACCELERATOR_KEY));
-        term.getKeyStrokeSet().add(closeAction.getValue(Action.ACCELERATOR_KEY));
-        */
-
-        setLayout(new BorderLayout());
-        add(term, BorderLayout.CENTER);
-
-        termTopComponent.add(this);
-        termTopComponent.topComponent().open();
-        termTopComponent.topComponent().requestActive();
-        if (name != null)
-            setTitle(name);
     }
 
     public IOContainer.CallBacks callBacks() {
@@ -328,10 +282,7 @@ public final class Terminal extends JComponent {
      * Make this Terminal and the TopComponent containing it be visible.
      */
     public void select() {
-        if (terminalContainer != null)
-            terminalContainer.select(this);
-        else if (ioContainer != null)
-            ioContainer.select(this);
+	ioContainer.select(this);
     }
     
     /**
@@ -345,10 +296,7 @@ public final class Terminal extends JComponent {
     public void setTitle(String title) {
         String oldTitle = title;
         this.title = title;
-        if (terminalContainer != null)
-            terminalContainer.setTitle(this, title);
-        else if (ioContainer != null)
-            ioContainer.setTitle(this, title);
+	ioContainer.setTitle(this, title);
         pcs.firePropertyChange(PROP_TITLE, oldTitle, title);
     }
 
@@ -363,10 +311,7 @@ public final class Terminal extends JComponent {
     private void setActions(Action[] actions) {
         Action[] oldActions = actions;
         this.actions = actions;
-        if (terminalContainer != null)
-	    terminalContainer.setToolbarActions(this, actions);
-        else if (ioContainer != null)
-	    ioContainer.setToolbarActions(this, actions);
+	ioContainer.setToolbarActions(this, actions);
         pcs.firePropertyChange(PROP_ACTIONS, oldActions, actions);
     }
 
@@ -438,6 +383,7 @@ public final class Terminal extends JComponent {
             putValue(ACCELERATOR_KEY, accelerator);
         }
 
+	@Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled())
                 return;
@@ -453,6 +399,7 @@ public final class Terminal extends JComponent {
             putValue(ACCELERATOR_KEY, accelerator);
         }
 
+	@Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled())
                 return;
@@ -469,6 +416,7 @@ public final class Terminal extends JComponent {
             putValue(ACCELERATOR_KEY, accelerator);
         }
 
+	@Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled())
                 return;
@@ -485,6 +433,7 @@ public final class Terminal extends JComponent {
             putValue(ACCELERATOR_KEY, accelerator);
         }
 
+	@Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled())
                 return;
@@ -501,11 +450,13 @@ public final class Terminal extends JComponent {
             putValue(ACCELERATOR_KEY, accelerator);
         }
 
+	@Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled())
                 return;
-            if (terminalContainer != null)
-                terminalContainer.find(Terminal.this);
+	    /* LATER
+	    ioContainer.find(Terminal.this);
+	     */
         }
     }
 
@@ -519,6 +470,7 @@ public final class Terminal extends JComponent {
             putValue(BOOLEAN_STATE_ACTION_KEY, true);
         }
 
+	@Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled())
                 return;
@@ -612,13 +564,8 @@ public final class Terminal extends JComponent {
         assert closing;
         if (closed)
             return;
-        if (terminalContainer != null) {
-            terminalContainer.removeTerminal(this);
-            closed = true;
-        } else if (ioContainer != null) {
-            closed = true;
-            ioContainer.remove(this);
-        }
+	closed = true;
+	ioContainer.remove(this);
         termOptions.removePropertyChangeListener(termOptionsPCL);
     }
 
@@ -664,10 +611,7 @@ public final class Terminal extends JComponent {
 
     private void postPopupMenu(Point p) {
         JPopupMenu menu = new JPopupMenu();
-        if (terminalContainer != null)
-            menu.putClientProperty("container", terminalContainer); // NOI18N
-        else if (ioContainer != null)
-            menu.putClientProperty("container", ioContainer); // NOI18N
+	menu.putClientProperty("container", ioContainer); // NOI18N
         menu.putClientProperty("component", this);             // NOI18N
 
         Action[] acts = getActions();
@@ -695,10 +639,13 @@ public final class Terminal extends JComponent {
         term.setKeyStrokeSet(term.getKeyStrokeSet());
 
         menu.addPopupMenuListener(new PopupMenuListener() {
+	    @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
             }
+	    @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
             }
+	    @Override
             public void popupMenuCanceled(PopupMenuEvent e) {
             }
         } );
