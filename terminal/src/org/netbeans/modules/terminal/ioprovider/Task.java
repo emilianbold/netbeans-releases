@@ -92,8 +92,10 @@ import org.openide.windows.IOContainer;
 	@Override
 	public void perform() {
 	    container().add(terminal(), terminal().callBacks());
+	    /* OLD bug #181064
 	    container().open();
 	    container().requestActive();
+	     */
 	    if (terminal().name() != null)
 		terminal().setTitle(terminal().name());
 	}
