@@ -2,8 +2,8 @@
 State of macro map:
 Own Map:
 MACROS (sorted 2):
-<U>#define '["LUAI_DATA",<205>,line=2,col=9],offset=71,file=null'='["LUAI_FUNC",<205>,line=2,col=25],offset=81,file=null'
-<U>#define '["LUAI_FUNC",<205>,line=1,col=9],offset=8,file=null'='["__attribute__",<205>,line=1,col=25],offset=18,file=null ["(",<138>,line=1,col=38],offset=31,file=null ["(",<138>,line=1,col=39],offset=32,file=null ["visibility",<205>,line=1,col=40],offset=33,file=null ["(",<138>,line=1,col=50],offset=43,file=null [""hidden"",<193>,line=1,col=51],offset=44,file=null [")",<139>,line=1,col=59],offset=52,file=null [")",<139>,line=1,col=60],offset=53,file=null [")",<139>,line=1,col=61],offset=54,file=null ["extern",<205>,line=1,col=63],offset=56,file=null'
+<U>#define '["LUAI_DATA",<89>,line=2,col=9],offset=71,file=null'='["LUAI_FUNC",<89>,line=2,col=25],offset=81,file=null'
+<U>#define '["LUAI_FUNC",<89>,line=1,col=9],offset=8,file=null'='["__attribute__",<89>,line=1,col=25],offset=18,file=null ["(",<12>,line=1,col=38],offset=31,file=null ["(",<12>,line=1,col=39],offset=32,file=null ["visibility",<89>,line=1,col=40],offset=33,file=null ["(",<12>,line=1,col=50],offset=43,file=null [""hidden"",<77>,line=1,col=51],offset=44,file=null [")",<13>,line=1,col=59],offset=52,file=null [")",<13>,line=1,col=60],offset=53,file=null [")",<13>,line=1,col=61],offset=54,file=null ["extern",<89>,line=1,col=63],offset=56,file=null'
 System Map:
 MACROS (sorted 0):
 

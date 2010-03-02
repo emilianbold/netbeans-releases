@@ -2,7 +2,7 @@
 State of macro map:
 Own Map:
 MACROS (sorted 1):
-<U>#define '["mode",<205>,line=13,col=9],offset=201,file=null'='["100001",<10>,line=13,col=14],offset=206,file=null'
+<U>#define '["mode",<89>,line=13,col=9],offset=201,file=null'='["100001",<65>,line=13,col=14],offset=206,file=null'
 System Map:
 MACROS (sorted 0):
 
