@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.toplinkessentialslibrary</code-name-base>
+            <code-name-base>org.netbeans.modules.persistencelibrary</code-name-base>
             <suite-component/>
             <module-dependencies>
                 <dependency>
@@ -18,14 +18,15 @@
             <public-packages>
                 <package>javax.persistence</package>
                 <package>javax.persistence.spi</package>
+                <package>javax.persistence.criteria</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/toplink/toplink-essentials.jar</runtime-relative-path>
-                <binary-origin>${toplink-essentials.jar}</binary-origin>
+                <runtime-relative-path>ext/persistence/persistence-library1.jar</runtime-relative-path>
+                <binary-origin>external/persistence-library1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/toplink/toplink-essentials-agent.jar</runtime-relative-path>
-                <binary-origin>${toplink-essentials-agent.jar}</binary-origin>
+                <runtime-relative-path>ext/persistence/persistence-library2.jar</runtime-relative-path>
+                <binary-origin>external/persistence-library2.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

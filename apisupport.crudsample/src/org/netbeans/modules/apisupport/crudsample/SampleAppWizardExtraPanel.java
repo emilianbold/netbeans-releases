@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.libraries.Library;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
@@ -54,30 +55,28 @@ import org.openide.util.NbBundle;
 /**
  * Panel just asking for basic info.
  */
-public class SampleAppWizardPanel implements WizardDescriptor.Panel,
+public class SampleAppWizardExtraPanel implements WizardDescriptor.Panel,
         WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
     
     private WizardDescriptor wizardDescriptor;
-    private SampleAppPanelVisual component;
-    private final boolean isFinishPanel;
+    private SampleAppWizardExtraVisual component;
     
     /** Creates a new instance of templateWizardPanel */
-    public SampleAppWizardPanel(boolean isFinishPanel) {
-        this.isFinishPanel = isFinishPanel;
+    public SampleAppWizardExtraPanel() {
     }
     
     @Override
     public Component getComponent() {
         if (component == null) {
-            component = new SampleAppPanelVisual(this);
-            component.setName(NbBundle.getMessage(SampleAppWizardPanel.class, "LBL_CreateProjectStep"));
+            component = new SampleAppWizardExtraVisual(this);
+            component.setName(NbBundle.getMessage(SampleAppWizardExtraPanel.class, "LBL_CreatePersistenceStep"));
         }
         return component;
     }
     
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(SampleAppWizardPanel.class);
+        return new HelpCtx(SampleAppWizardExtraPanel.class);
     }
     
     @Override
@@ -113,24 +112,30 @@ public class SampleAppWizardPanel implements WizardDescriptor.Panel,
     @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
-        component.read(wizardDescriptor);
     }
     
     @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
     }
     
     @Override
     public boolean isFinishPanel() {
-        return isFinishPanel;
+        return true;
     }
     
     @Override
     public void validate() throws WizardValidationException {
         getComponent();
         component.validate(wizardDescriptor);
+    }
+
+    public String getDerbyLocation() {
+        return component.getDerbyLocation();
+    }
+
+    public Library getSelectedLibrary() {
+        return component.getSelectedLibrary();
     }
     
 }
