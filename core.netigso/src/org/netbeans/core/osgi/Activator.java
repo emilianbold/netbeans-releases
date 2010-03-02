@@ -39,6 +39,7 @@
 
 package org.netbeans.core.osgi;
 
+import java.beans.Introspector;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +60,10 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.core.startup.CoreBridge;
+import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.RunLevel;
+import org.netbeans.core.startup.Splash;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
 import org.openide.util.NbCollections;
@@ -222,7 +226,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         }
         LOG.log(Level.FINE, "loading: {0}", bundles);
         OSGiMainLookup.bundlesAdded(bundles);
-        boolean showWindowSystem = false;
+        boolean showWindowSystem = false; // trigger for showing main window and setting up related GUI elements
         boolean loadServicesFolder = false;
         for (Bundle bundle : bundles) {
             registerUrlProtocolHandlers(bundle);
@@ -238,6 +242,10 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         if (loadServicesFolder) {
             OSGiMainLookup.loadServicesFolder();
         }
+        if (showWindowSystem) {
+            Splash.getInstance().setRunning(true);
+            Main.initUICustomizations();
+        }
         for (Bundle bundle : bundles) {
             ModuleInstall mi = installerFor(bundle);
             if (mi != null) {
@@ -245,13 +253,15 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             }
         }
         if (showWindowSystem) {
-            // Trigger for showing main window and setting up related GUI elements.
-            // - Main.initUICustomizations()
-            // - add "org.netbeans.beaninfo" to Introspector.beanInfoSearchPath
-            // - CoreBridge.getDefault().registerPropertyEditors()
+            // XXX set ${jdk.home}?
+            List<String> bisp = new ArrayList<String>(Arrays.asList(Introspector.getBeanInfoSearchPath()));
+            bisp.add("org.netbeans.beaninfo"); // NOI18N
+            Introspector.setBeanInfoSearchPath(bisp.toArray(new String[bisp.size()]));
+            CoreBridge.getDefault().registerPropertyEditors();
             for (RunLevel rl : Lookup.getDefault().lookupAll(RunLevel.class)) {
                 rl.run();
             }
+            Splash.getInstance().setRunning(false);
         }
     }
 
