@@ -2,8 +2,8 @@
 State of macro map:
 Own Map:
 MACROS (sorted 2):
-<U>#define '["OMP",<205>,line=2,col=9],offset=38,file=null[["directive",<205>,line=2,col=13],offset=42,file=null]'='["Pragma",<205>,line=2,col=24],offset=53,file=null ["(",<138>,line=2,col=30],offset=59,file=null ["omp",<205>,line=2,col=31],offset=60,file=null ["directive",<205>,line=2,col=35],offset=64,file=null [")",<139>,line=2,col=44],offset=73,file=null'
-<U>#define '["Pragma",<205>,line=1,col=9],offset=8,file=null[["x",<205>,line=1,col=16],offset=15,file=null]'='["_Pragma",<205>,line=1,col=19],offset=18,file=null ["(",<138>,line=1,col=26],offset=25,file=null ["#",<183>,line=1,col=27],offset=26,file=null ["x",<205>,line=1,col=28],offset=27,file=null [")",<139>,line=1,col=29],offset=28,file=null'
+<U>#define '["OMP",<89>,line=2,col=9],offset=38,file=null[["directive",<89>,line=2,col=13],offset=42,file=null]'='["Pragma",<89>,line=2,col=24],offset=53,file=null ["(",<12>,line=2,col=30],offset=59,file=null ["omp",<89>,line=2,col=31],offset=60,file=null ["directive",<89>,line=2,col=35],offset=64,file=null [")",<13>,line=2,col=44],offset=73,file=null'
+<U>#define '["Pragma",<89>,line=1,col=9],offset=8,file=null[["x",<89>,line=1,col=16],offset=15,file=null]'='["_Pragma",<89>,line=1,col=19],offset=18,file=null ["(",<12>,line=1,col=26],offset=25,file=null ["#",<58>,line=1,col=27],offset=26,file=null ["x",<89>,line=1,col=28],offset=27,file=null [")",<13>,line=1,col=29],offset=28,file=null'
 System Map:
 MACROS (sorted 0):
 
