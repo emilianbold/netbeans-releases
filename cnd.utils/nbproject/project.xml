@@ -92,6 +92,7 @@
                 <friend>org.netbeans.modules.cnd.repository</friend>
                 <friend>org.netbeans.modules.cnd.script</friend>
                 <friend>org.netbeans.modules.cnd.source</friend>
+                <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.toolchain</friend>
                 <package>org.netbeans.modules.cnd.debug</package>
                 <package>org.netbeans.modules.cnd.spi.editor</package>

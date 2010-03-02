@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.ui.tests;
+package org.netbeans.modules.cnd.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.List;

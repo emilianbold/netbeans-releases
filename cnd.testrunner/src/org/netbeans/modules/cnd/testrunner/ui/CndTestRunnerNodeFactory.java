@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.ui.tests;
+package org.netbeans.modules.cnd.testrunner.ui;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.TestRunnerNodeFactory;

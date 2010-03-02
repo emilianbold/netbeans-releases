@@ -36,19 +36,33 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.testrunner.ui;
 
-package org.netbeans.modules.cnd.makeproject.ui.tests;
-
-import java.util.List;
+import java.awt.event.ActionEvent;
+import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
 
 /**
+ * An action for running/debugging a singe test method.
  *
  * @author Erno Mononen
  */
-public interface TestHandlerFactory {
+class RunTestMethodAction extends BaseTestMethodNodeAction {
 
-    List<TestRecognizerHandler> createHandlers();
+    private static final Logger LOGGER = Logger.getLogger(RunTestMethodAction.class.getName());
+    private final boolean debug;
 
-    boolean printSummary();
+    public RunTestMethodAction(Testcase testcase, Project project, String name, boolean debug) {
+        super(testcase, project, name);
+        this.debug = debug;
+    }
 
+    protected void doActionPerformed(ActionEvent e) {
+//        TestRunner.TestType type = TestRunner.TestType.valueOf(testcase.getType());
+//        DeclarationLocation location = PythonDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), false);
+//        if (!(DeclarationLocation.NONE == location)) {
+//            getTestRunner(type).runSingleTest(location.getFileObject(),testcase.getClassName(), testcase.getName(), debug);
+//        }
+    }
 }
