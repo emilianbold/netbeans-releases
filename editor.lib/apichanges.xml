@@ -104,6 +104,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ToolTipSupport-setToolTipVisible-public">
+            <summary>Making ToolTipSupport.setToolTipVisible() public</summary>
+            <version major="2" minor="3"/>
+            <date day="1" month="3" year="2010"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="no" deprecation="no" deletion="no" modification="yes" />
+            <description>
+                <p>
+                    Making <code>o.n.editor.ext.ToolTipSupport</code> public in order to allow
+                    modules to use custom tooltip components and have full control over their
+                    displaying.
+                </p>
+            </description>
+            <issue number="59336"/>
+        </change>
+
         <change id="Registry-cleanup">
             <summary>Cleaning up o.n.editor.Registry</summary>
             <version major="2" minor="2"/>

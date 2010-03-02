@@ -444,7 +444,9 @@ public class PopupManager {
                 KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
                 Object obj = im.get(ks);
                 LOG.log(Level.FINE, "Keystroke for event {0}: {1}; action-map-key=", new Object [] { e, ks, obj }); //NOI18N
-                if (obj != null) {
+                if (obj != null && 
+                    !obj.equals("tooltip-no-action") && obj.equals("tooltip-hide-action") //NOI18N ignore ToolTipSupport installed actions
+                ) {
                     // if yes, gets the popup's action for this keystroke, perform it 
                     // and consume key event
                     Action action = am.get(obj);
