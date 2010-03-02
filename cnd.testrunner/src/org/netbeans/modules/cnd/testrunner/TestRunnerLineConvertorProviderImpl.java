@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,35 +34,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui.tests;
 
-import java.awt.event.ActionEvent;
-import java.util.logging.Logger;
+package org.netbeans.modules.cnd.testrunner;
+
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.modules.cnd.makeproject.spi.TestRunnerLineConvertorProvider;
+import org.netbeans.modules.cnd.testrunner.ui.CndTestRunnerNodeFactory;
+import org.netbeans.modules.cnd.testrunner.ui.CndUnitHandlerFactory;
+import org.netbeans.modules.cnd.testrunner.ui.TestRunnerLineConvertor;
+import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
 
 /**
- * An action for running/debugging a singe test method.
  *
- * @author Erno Mononen
- */
-class RunTestMethodAction extends BaseTestMethodNodeAction {
+ * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ */@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.spi.TestRunnerLineConvertorProvider.class)
+public class TestRunnerLineConvertorProviderImpl implements TestRunnerLineConvertorProvider {
 
-    private static final Logger LOGGER = Logger.getLogger(RunTestMethodAction.class.getName());
-    private final boolean debug;
+    @Override
+     public LineConvertor createConvertor(Project project) {
+            final TestSession session = new TestSession("Test", // NOI18N
+                    project,
+                    SessionType.TEST, new CndTestRunnerNodeFactory());
 
-    public RunTestMethodAction(Testcase testcase, Project project, String name, boolean debug) {
-        super(testcase, project, name);
-        this.debug = debug;
-    }
+            //session.setRerunHandler(this);
 
-    protected void doActionPerformed(ActionEvent e) {
-//        TestRunner.TestType type = TestRunner.TestType.valueOf(testcase.getType());
-//        DeclarationLocation location = PythonDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), false);
-//        if (!(DeclarationLocation.NONE == location)) {
-//            getTestRunner(type).runSingleTest(location.getFileObject(),testcase.getClassName(), testcase.getName(), debug);
-//        }
-    }
+            final Manager manager = Manager.getInstance();
+            final CndUnitHandlerFactory handlerFactory = new CndUnitHandlerFactory();
+
+            return new TestRunnerLineConvertor(manager, session, handlerFactory);
+     }
+
 }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,64 +39,44 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.ui.tests;
+package org.netbeans.modules.cnd.testrunner.ui;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
+import javax.swing.Action;
+import org.netbeans.modules.gsf.testrunner.api.CallstackFrameNode;
+import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
+import org.netbeans.modules.gsf.testrunner.api.Trouble.ComparisonFailure;
+import org.openide.util.actions.SystemAction;
 
 /**
- * Jump to action for call stack lines.
  *
- * @author Marian Petras, Erno Mononen
+ * @author Marian Petras
  */
-final class JumpToCallStackAction extends AbstractAction {
+public final class CndCallstackFrameNode extends CallstackFrameNode {
+    private final String displayName;
 
-    /** */
-    private final Node node;
-    /** */
-    private final String callstackFrameInfo;
-
-    private int line;
-
-    /** Creates a new instance of JumpAction */
-    JumpToCallStackAction(Node node, String callstackFrameInfo) {
-        this(node, callstackFrameInfo, -1);
+    public CndCallstackFrameNode(String frameInfo, String displayName) {
+        super(frameInfo, displayName);
+        // Keep our own copy since the parent will assign frameInfo to displayName
+        // if none is provided
+        this.displayName = displayName;
     }
 
     /**
-     * @param node
-     * @param callstackFrameInfo a line in call stack representing the location 
-     * to jump
-     * @param line the line where to jump, if <code>line == -1</code>, then 
-     * the line will be computed from the given <code>callstackFrameInfo</code>.
      */
-    JumpToCallStackAction(Node node, String callstackFrameInfo, int line) {
-        this.node = node;
-        this.callstackFrameInfo = callstackFrameInfo;
-        this.line = line;
-    }
-
-
     @Override
-    public Object getValue(String key) {
-        if (NAME.equals(key)) {
-            return NbBundle.getMessage(JumpToCallStackAction.class, "LBL_GoToSource");
-        }
-        return super.getValue(key);
-    }
-
-    /**
-     * If the <code>callstackFrameInfo</code> is not <code>null</code>,
-     * tries to jump to the callstack frame source code. Otherwise does nothing.
-     */
-    public void actionPerformed(ActionEvent e) {
-        if (callstackFrameInfo == null) {
-            return;
+    public Action getPreferredAction() {
+        // If it's a diff failure line, the default action is to diff it!
+        if (displayName != null) {
+            ComparisonFailure failure = CndUnitHandlerFactory.getComparisonFailure(displayName);
+            if (failure != null) {
+                return new DiffViewAction(failure);
+            }
         }
         
-        OutputUtils.openCallstackFrame(node, callstackFrameInfo, line);
+        return new JumpToCallStackAction(this, frameInfo);
     }
-
+    
+    public SystemAction[] getActions(boolean context) {
+        return new SystemAction[0];
+    }
 }
