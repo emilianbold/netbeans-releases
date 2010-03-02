@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
@@ -46,6 +47,7 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
@@ -131,9 +133,9 @@ public class PHPNewLineIndenterQATest extends PHPTestBase {
      * 173937 issue
      * @throws
      */
-//    public void test175437() throws Exception {
-//        testIndentInFile("testfiles/indent/qa/issues/unstable_newIssues/175437.php");
-//    }
+    public void test175437() throws Exception {
+        testIndentInFile("testfiles/indent/qa/issues/stable_fixedIssues/175437.php");
+    }
     
     @Override
     protected boolean runInEQ() {
@@ -157,20 +159,20 @@ public class PHPNewLineIndenterQATest extends PHPTestBase {
         }
     }
 
-    protected void testIndentInFile(String file) throws Exception {
-        testIndentInFile(file, null);
+   protected void testIndentInFile(String file) throws Exception {
+        testIndentInFile(file, null, 0);
     }
 
-    protected void testIndentInFile(String file, IndentPrefs preferences) throws Exception {
+    protected void testIndentInFile(String file, IndentPrefs preferences, int initialIndent) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
         String source = readFile(fo);
 
-        int sourcePos = source.indexOf('^');     
+        int sourcePos = source.indexOf('^');
         assertNotNull(sourcePos);
         String sourceWithoutMarker = source.substring(0, sourcePos) + source.substring(sourcePos+1);
-        Formatter formatter = getFormatter(null);
-        
+        Formatter formatter = getFormatter(preferences);
+
         JEditorPane ta = getPane(sourceWithoutMarker);
         Caret caret = ta.getCaret();
         caret.setDot(sourcePos);
@@ -180,6 +182,10 @@ public class PHPNewLineIndenterQATest extends PHPTestBase {
         }
 
         setupDocumentIndentation(doc, preferences);
+
+
+        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        prefs.putInt(FmtOptions.initialIndent, initialIndent);
 
         runKitAction(ta, DefaultEditorKit.insertBreakAction, "\n");
 
