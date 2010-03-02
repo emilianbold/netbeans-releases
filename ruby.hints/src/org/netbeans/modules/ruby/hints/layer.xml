@@ -82,6 +82,7 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="200"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.hints.Bundle"/>
                         <file name="org-netbeans-modules-ruby-hints-RailsDeprecations.instance"/>
+                        <file name="org-netbeans-modules-ruby-hints-Rails3Deprecations.instance"/>
                         <file name="org-netbeans-modules-ruby-hints-RailsViews.instance"/>
                     </folder>    
                 </folder>    
