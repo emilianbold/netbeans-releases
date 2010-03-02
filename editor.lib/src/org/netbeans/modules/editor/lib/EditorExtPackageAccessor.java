@@ -41,35 +41,30 @@
 
 package org.netbeans.modules.editor.lib;
 
-import javax.swing.text.BadLocationException;
-import javax.swing.undo.CompoundEdit;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.InvalidMarkException;
-import org.netbeans.editor.Mark;
-import org.netbeans.modules.editor.lib.impl.MarkVector;
-import org.netbeans.modules.editor.lib.impl.MultiMark;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.ext.ToolTipSupport;
 
 
 /**
- * Accessor for the package-private functionality in org.netbeans.editor package.
+ * Accessor for the package-private functionality in org.netbeans.editor.ext package.
  *
  * @author Miloslav Metelka
  * @version 1.00
  */
 
-public abstract class EditorPackageAccessor {
+public abstract class EditorExtPackageAccessor {
 
-    private static EditorPackageAccessor ACCESSOR = null;
+    private static EditorExtPackageAccessor ACCESSOR = null;
 
-    public static synchronized void register(EditorPackageAccessor accessor) {
+    public static synchronized void register(EditorExtPackageAccessor accessor) {
         assert ACCESSOR == null : "Can't register two package accessors!"; //NOI18N
         ACCESSOR = accessor;
     }
 
-    public static synchronized EditorPackageAccessor get() {
-        // Trying to wake up BaseDocument ...
+    public static synchronized EditorExtPackageAccessor get() {
+        // Trying to wake up ToolTipSupport ...
         try {
-            Class clazz = Class.forName(BaseDocument.class.getName());
+            Class clazz = Class.forName(ToolTipSupport.class.getName());
         } catch (ClassNotFoundException e) {
             // ignore
         }
@@ -78,12 +73,8 @@ public abstract class EditorPackageAccessor {
         return ACCESSOR;
     }
 
-    protected EditorPackageAccessor() {
+    protected EditorExtPackageAccessor() {
     }
 
-    public abstract CompoundEdit BaseDocument_markAtomicEditsNonSignificant(BaseDocument doc);
-    public abstract MarkVector BaseDocument_getMarksStorage(BaseDocument doc);
-    public abstract Mark BaseDocument_getMark(BaseDocument doc, MultiMark multiMark);
-    public abstract void Mark_insert(Mark mark, BaseDocument doc, int pos) throws InvalidMarkException, BadLocationException;
-
+    public abstract ToolTipSupport createToolTipSupport(EditorUI eui);
 }
