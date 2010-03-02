@@ -50,9 +50,10 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * @author gorrus
  */
 public final class APTConstTextToken extends APTTokenAbstact implements APTTokenTypes {
-    private final static String[] constText = new String[APTTokenTypes.LAST_LEXER_FAKE_RULE];
-    private final static CharSequence[] constTextID = new CharSequence[APTTokenTypes.LAST_LEXER_FAKE_RULE];
-    
+    private final static String[] constText = new String[APTTokenTypes.LAST_CONST_TEXT_TOKEN];
+    private final static CharSequence[] constTextID = new CharSequence[APTTokenTypes.LAST_CONST_TEXT_TOKEN];
+    private static final int SHIFT = 8;
+    private static final int TYPE_MASK = ~(1<<SHIFT);
     protected short type = INVALID_TYPE;
     protected short column;
     protected int offset;
@@ -135,7 +136,16 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
         for (int i = 0; i < constText.length; i++) {
             String str = constText[i];
             constTextID[i] = CharSequenceKey.create(str);
+            if (str != null) {
+                if (i > LAST_CONST_TEXT_TOKEN) {
+                    System.err.printf("APTConstTextToken: token %s [%d] is higher than LAST_CONST_TEXT_TOKEN [%d]\n", str, i, LAST_CONST_TEXT_TOKEN);
+                }
+            } else {
+               // System.err.printf("APTConstTextToken: index [%d] does not have text \n", i);
+            }
         }
+        assert TYPE_MASK >= LAST_CONST_TEXT_TOKEN;
+//        System.err.printf("APTConstTextToken: %d\n", LAST_CONST_TEXT_TOKEN);
     }
     
     @Override
@@ -201,7 +211,7 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
 
     @Override
     public void setType(int t) {
-        assert t < Short.MAX_VALUE;
+        assert t < LAST_CONST_TEXT_TOKEN;
         type = (short) t;
     }
 
