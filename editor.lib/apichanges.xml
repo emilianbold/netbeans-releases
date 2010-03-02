@@ -104,6 +104,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ToolTipSupport-api-cleanup">
+            <summary>Hiding listener methods from public API</summary>
+            <version major="2" minor="4"/>
+            <date day="1" month="3" year="2010"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="incompatible" semantic="compatible" addition="no" deprecation="no" deletion="yes" modification="no" />
+            <description>
+                <p>
+                    A bunch of listener methods were accidentally made publically visible
+                    when ToolTipSupport class was first introduced. These were now removed
+                    and marked by @PatchedPublic in order to preserve binary compatibility.
+                </p>
+            </description>
+        </change>
+
         <change id="ToolTipSupport-setToolTipVisible-public">
             <summary>Making ToolTipSupport.setToolTipVisible() public</summary>
             <version major="2" minor="3"/>
