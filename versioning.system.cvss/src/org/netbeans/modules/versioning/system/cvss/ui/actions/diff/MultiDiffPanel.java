@@ -485,7 +485,8 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             }
             TopComponent tc = (TopComponent) getClientProperty(TopComponent.class);
             if (tc != null) {
-                tc.setActivatedNodes(new Node[] {setups[currentModelIndex].getNode()});
+                Node node = setups[currentModelIndex].getNode();
+                tc.setActivatedNodes(new Node[] {node == null ? Node.EMPTY : node});
             }
             EditorCookie editorCookie = editorCookies[currentModelIndex];
             if (editorCookie instanceof EditorCookie.Observable) {

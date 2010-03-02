@@ -85,6 +85,8 @@ public class SvnModuleConfig {
     private static final String PROP_EXCLUDE_NEW_FILES = "excludeNewFiles"; //NOI18N
     private static final String LAST_COMMIT_MESSAGE = "lastCommitMessage"; //NOI18N
     private static final String PREFIX_REPOSITORY_PATH = "prefixRepositoryPath"; //NOI18N
+    private static final String SEPARATOR = "###"; //NOI18N
+    private static final String KEY_SORTING = "sortingStatus."; //NOI18N
 
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
         
@@ -357,6 +359,37 @@ public class SvnModuleConfig {
 
     public void setRepositoryPathPrefixed(boolean prefixRepositoryPath) {
         getPreferences().putBoolean(PREFIX_REPOSITORY_PATH, prefixRepositoryPath);
+    }
+
+    public LinkedHashMap<String, Integer> getSortingStatus(String panel) {
+        LinkedHashMap<String, Integer> sortingState = null;
+        String packed = getPreferences().get(KEY_SORTING + panel, null);
+        if (packed != null) {
+            String[] tokens = packed.split(SEPARATOR);
+            sortingState = new LinkedHashMap<String, Integer>(tokens.length >> 1);
+            for (int i = 0; i < tokens.length - 1;) {
+                String column = tokens[i++];
+                try {
+                    Integer colState = Integer.parseInt(tokens[i++]);
+                    sortingState.put(column, colState);
+                } catch (NumberFormatException ex) {
+                    //
+                }
+            }
+        }
+        return sortingState;
+    }
+
+    public void setSortingStatus (String panel, Map<String, Integer> sortingState) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, Integer> e : sortingState.entrySet()) {
+            sb.append(e.getKey()).append(SEPARATOR).append(e.getValue().toString()).append(SEPARATOR);
+        }
+        if (sb.length() > 0) {
+            getPreferences().put(KEY_SORTING + panel, sb.toString());
+        } else {
+            getPreferences().remove(KEY_SORTING + panel);
+        }
     }
 
     // private methods ~~~~~~~~~~~~~~~~~~
