@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
@@ -109,7 +108,11 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
     }
 
     private void updateInProjectCombo(boolean show) {
-        inProjectLabel.setVisible(show);
+        if (show) {
+            remoteCheckBox.setText(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_In_Project")); // NOI18N
+        } else {
+            remoteCheckBox.setText(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Remote")); // NOI18N
+        }
         inProjectCombo.setVisible(show);
         if (show && projectsList == null) {
             List<Project> projects = getProjectsList();
@@ -164,7 +167,6 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         localCheckBox = new javax.swing.JCheckBox();
         singletonButton = new javax.swing.JRadioButton();
         inProjectCombo = new javax.swing.JComboBox();
-        inProjectLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(sessionTypeLabel, org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_SessionType")); // NOI18N
 
@@ -189,8 +191,6 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         singletonButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/session/Bundle").getString("MN_Singleton").charAt(0));
         singletonButton.setText(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Singleton")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(inProjectLabel, org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_In_Project")); // NOI18N
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -210,18 +210,14 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
                     .add(interfaceLabel)
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(localCheckBox))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(23, 23, 23)
-                                .add(inProjectLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(inProjectCombo, 0, 111, Short.MAX_VALUE))
-                            .add(layout.createSequentialGroup()
                                 .add(remoteCheckBox)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 135, Short.MAX_VALUE)))))
+                                .add(6, 6, 6)
+                                .add(inProjectCombo, 0, 129, Short.MAX_VALUE))
+                            .add(layout.createSequentialGroup()
+                                .add(localCheckBox)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 152, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -239,11 +235,9 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
                 .add(0, 0, 0)
                 .add(localCheckBox)
                 .add(0, 0, 0)
-                .add(remoteCheckBox)
-                .add(0, 0, 0)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(inProjectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(inProjectLabel)))
+                    .add(remoteCheckBox)
+                    .add(inProjectCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ejb/wizard/session/Bundle"); // NOI18N
@@ -260,7 +254,6 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox inProjectCombo;
-    private javax.swing.JLabel inProjectLabel;
     private javax.swing.JLabel interfaceLabel;
     private javax.swing.JCheckBox localCheckBox;
     private javax.swing.JCheckBox remoteCheckBox;
