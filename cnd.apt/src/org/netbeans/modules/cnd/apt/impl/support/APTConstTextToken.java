@@ -144,7 +144,7 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
                // System.err.printf("APTConstTextToken: index [%d] does not have text \n", i);
             }
         }
-        assert TYPE_MASK >= LAST_CONST_TEXT_TOKEN;
+//        assert TYPE_MASK >= LAST_CONST_TEXT_TOKEN;
 //        System.err.printf("APTConstTextToken: %d\n", LAST_CONST_TEXT_TOKEN);
     }
     
