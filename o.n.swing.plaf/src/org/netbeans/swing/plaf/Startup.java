@@ -168,13 +168,13 @@ public final class Startup {
               }
           }
           try {
-              uiClass = Class.forName(uiClassName);
+              uiClass = UIUtils.classForName(uiClassName);
           } catch (ClassNotFoundException e) {
               System.err.println("Custom UI class " + uiClassName + " not on classpath."); // NOI18N
 
               //#144402 - try fallback to Metal L&F
               try {
-                uiClass = Class.forName("javax.swing.plaf.metal.MetalLookAndFeel"); //NOI18N
+                uiClass = UIUtils.classForName("javax.swing.plaf.metal.MetalLookAndFeel"); //NOI18N
               } catch( Exception newEx) {
                   newEx.printStackTrace();
               }
@@ -347,7 +347,7 @@ public final class Startup {
                 return new GtkLFCustoms();
             } else {
                 try {
-                    return (LFCustoms) Class.forName(FORCED_CUSTOMS).newInstance();
+                    return (LFCustoms) UIUtils.classForName(FORCED_CUSTOMS).newInstance();
                 } catch (Exception e) {
                     System.err.println("UI customizations class not found: " //NOI18N
                         + FORCED_CUSTOMS); //NOI18N
