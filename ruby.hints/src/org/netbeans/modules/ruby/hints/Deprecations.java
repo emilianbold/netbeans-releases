@@ -76,12 +76,12 @@ import org.openide.util.NbBundle;
  */
 public class Deprecations extends RubyAstRule {
     
-    private static class Deprecation {
-        private String oldName;
-        private String newName;
+    static class Deprecation {
+        final String oldName;
+        final String newName;
         /** Key: {0} is the old name, {1} is the new name */
-        private String descriptionKey;
-        private String helpUrl;
+        final String descriptionKey;
+        final String helpUrl;
 
         public Deprecation(String oldName, String newName, String descriptionKey,
                 String helpUrl) {
