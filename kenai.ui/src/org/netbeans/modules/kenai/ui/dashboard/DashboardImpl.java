@@ -482,7 +482,7 @@ public final class DashboardImpl extends Dashboard {
         }
     }
 
-    void refreshMemberProjects(boolean force) {
+    public void refreshMemberProjects(boolean force) {
         synchronized( LOCK ) {
             if (!force) {
                 removeMemberProjectsFromModel(memberProjects);
@@ -687,6 +687,15 @@ public final class DashboardImpl extends Dashboard {
     public void bookmarkingFinished() {
         userNode.loadingFinished();
     }
+
+    public void deletingStarted() {
+        userNode.loadingStarted(NbBundle.getMessage(UserNode.class, "LBL_Deleting"));
+    }
+
+    public void deletingFinished() {
+        userNode.loadingFinished();
+    }
+
 
     private void loggingStarted() {
         userNode.loadingStarted(NbBundle.getMessage(UserNode.class, "LBL_Authenticating"));

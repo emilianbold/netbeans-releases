@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -66,12 +67,10 @@ import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
-import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
@@ -153,18 +152,29 @@ public class ProjectAccessorImpl extends ProjectAccessor {
 
     @Override
     public Action[] getPopupActions(final ProjectHandle project, boolean opened) {
+        PasswordAuthentication pa = project.getKenaiProject().getKenai().getPasswordAuthentication();
         if (!opened) {
-            return new Action[]{
-                        getOpenAction(project),
-                        new RefreshAction(project),
-                        getDetailsAction(project),
-            };
+            try {
+                if (pa != null && pa.getUserName().equals(project.getKenaiProject().getOwner().getUserName())) {
+                    return new Action[]{getOpenAction(project), new RefreshAction(project), getDetailsAction(project), new DeleteProjectAction(project)};
+                } else {
+                    return new Action[]{getOpenAction(project), new RefreshAction(project), getDetailsAction(project)};
+                }
+            } catch (KenaiException ex) {
+                Exceptions.printStackTrace(ex);
+                return new Action[]{getOpenAction(project), new RefreshAction(project), getDetailsAction(project)};
+            }
         } else {
-            return new Action[]{
-                        new RemoveProjectAction(project),
-                        new RefreshAction(project),
-                        getDetailsAction(project)
-            };
+            try {
+                if (pa != null && pa.getUserName().equals(project.getKenaiProject().getOwner().getUserName())) {
+                    return new Action[]{new RemoveProjectAction(project), new RefreshAction(project), getDetailsAction(project), new DeleteProjectAction(project)};
+                } else {
+                    return new Action[]{new RemoveProjectAction(project), new RefreshAction(project), getDetailsAction(project)};
+                }
+            } catch (KenaiException ex) {
+                Exceptions.printStackTrace(ex);
+                return new Action[]{new RemoveProjectAction(project), new RefreshAction(project), getDetailsAction(project)};
+            }
         }
     }
 
