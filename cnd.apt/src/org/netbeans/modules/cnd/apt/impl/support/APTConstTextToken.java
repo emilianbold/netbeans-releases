@@ -52,13 +52,10 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 public final class APTConstTextToken extends APTTokenAbstact implements APTTokenTypes {
     final static String[] constText = new String[APTTokenTypes.LAST_CONST_TEXT_TOKEN];
     final static CharSequence[] constTextID = new CharSequence[APTTokenTypes.LAST_CONST_TEXT_TOKEN];
-    private static final int SHIFT = 8;
-    private static final int TYPE_MASK = ~(1<<SHIFT);
-    protected short type = INVALID_TYPE;
-    protected short column;
-    protected int offset;
-    //protected int endOffset;
-    protected int line;
+    private int type = INVALID_TYPE;
+    private int column;
+    private int offset;
+    private int line;
     /**
      * Creates a new instance of APTConstTextToken
      */
@@ -211,8 +208,7 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
 
     @Override
     public void setType(int t) {
-        assert t < LAST_CONST_TEXT_TOKEN;
-        type = (short) t;
+        type = t;
     }
 
     @Override
@@ -227,7 +223,6 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
 
     @Override
     public void setColumn(int c) {
-        assert c < Short.MAX_VALUE;
-        column = (short) c;
+        column = c;
     }
 }

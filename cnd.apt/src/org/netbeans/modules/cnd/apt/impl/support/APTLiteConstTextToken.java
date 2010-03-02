@@ -49,13 +49,22 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 public final class APTLiteConstTextToken  extends APTTokenAbstact implements APTTokenTypes {
 
     private static final int COL_BITS  = 10;
-    public  static final int MAX_COL   = (1<<COL_BITS) - 1;
+    private static final int MAX_COL   = (1<<COL_BITS) - 1;
     private static final int LINE_BITS = 16;
-    public  static final int MAX_LINE  = (1<<LINE_BITS) - 1;
+    private static final int MAX_LINE  = (1<<LINE_BITS) - 1;
     private static final int TYPE_BITS = 6;
-    public  static final int MAX_TYPE  = (1<< TYPE_BITS) - 1;
+    private static final int MAX_TYPE  = (1<<TYPE_BITS) - 1;
     private final int offset;
     private final int columnLineType;
+
+    public static boolean isApplicable(int type, int offset, int column, int line) {
+        if (type > APTTokenTypes.NULL_TREE_LOOKAHEAD && type < APTTokenTypes.LAST_CONST_TEXT_TOKEN && type <= APTLiteConstTextToken.MAX_TYPE) {
+            if (line <= APTLiteConstTextToken.MAX_LINE && column <= APTLiteConstTextToken.MAX_COL) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Creates a new instance of APTConstTextToken
@@ -63,9 +72,9 @@ public final class APTLiteConstTextToken  extends APTTokenAbstact implements APT
     public APTLiteConstTextToken(int type, int offset, int column, int line) {
         this.offset = offset;
         columnLineType = ((((column & MAX_COL)<<LINE_BITS) + (line & MAX_LINE))<<TYPE_BITS) + (type & MAX_TYPE);
-        assert type == this.getType();
-        assert column == this.getColumn();
-        assert line == this.getLine();
+        assert type == getType();
+        assert column == getColumn();
+        assert line == getLine();
     }
 
     @Override

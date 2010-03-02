@@ -165,10 +165,8 @@ public class APTUtils {
 
     public static APTToken createAPTToken(int type, int startOffset, int endOffset, int startColumn, int startLine, int endColumn, int endLine) {
         // TODO: optimize factory
-        if (type > APTTokenTypes.NULL_TREE_LOOKAHEAD && type < APTTokenTypes.LAST_CONST_TEXT_TOKEN && type <= APTLiteConstTextToken.MAX_TYPE) {
-            if (startLine <= APTLiteConstTextToken.MAX_LINE && startColumn <= APTLiteConstTextToken.MAX_COL) {
-                return new APTLiteConstTextToken(type, startOffset, startColumn, startLine);
-            }
+        if (APTLiteConstTextToken.isApplicable(type, startOffset, startColumn, startLine)){
+            return new APTLiteConstTextToken(type, startOffset, startColumn, startLine);
         }
         APTToken out = createAPTToken(type);
         out.setType(type);
