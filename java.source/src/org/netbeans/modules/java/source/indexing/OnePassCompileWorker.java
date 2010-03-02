@@ -220,9 +220,6 @@ final class OnePassCompileWorker extends CompileWorker {
                             continue;
                         }
                     }
-                } finally {
-                    fileManager.handleOption(AptSourceFileManager.ORIGIN_FILE, Collections.singletonList("").iterator()); //NOI18N
-                }
                 JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
                 if (mem.isLowMemory()) {
                     units = null;
@@ -230,6 +227,9 @@ final class OnePassCompileWorker extends CompileWorker {
                     return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 jt.analyze(types);
+                } finally {
+                    fileManager.handleOption(AptSourceFileManager.ORIGIN_FILE, Collections.singletonList("").iterator()); //NOI18N
+                }
                 if (mem.isLowMemory()) {
                     units = null;
                     System.gc();

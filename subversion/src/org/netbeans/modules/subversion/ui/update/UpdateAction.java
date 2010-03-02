@@ -48,6 +48,7 @@ import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.*;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
@@ -62,6 +63,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
@@ -100,7 +102,7 @@ public class UpdateAction extends ContextAction {
         performUpdate(nodes);
     }
 
-    private void performUpdate(final Node[] nodes) {
+    protected void performUpdate(final Node[] nodes) {
         // FIXME add shalow logic allowing to ignore nested projects
         // look into CVS, it's very tricky:
         // project1/
@@ -114,15 +116,23 @@ public class UpdateAction extends ContextAction {
             Subversion.LOG.info("UpdateAction.performUpdate: context is empty, some files may be unversioned."); //NOI18N
             return;
         }
+        final SVNRevision revision = getRevision(ctx);
+        if (revision == null) {
+            return;
+        }
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
-                update(ctx, this, getContextDisplayName(nodes));
+                update(ctx, this, getContextDisplayName(nodes), revision);
             }
         };                    
         support.start(createRequestProcessor(nodes));
     }
 
-    private static void update(Context ctx, SvnProgressSupport progress, String contextDisplayName) {
+    protected SVNRevision getRevision (Context ctx) {
+        return SVNRevision.HEAD;
+    }
+
+    private static void update(Context ctx, SvnProgressSupport progress, String contextDisplayName, SVNRevision revision) {
                
         File[] roots = ctx.getRootFiles();
         
@@ -143,10 +153,10 @@ public class UpdateAction extends ContextAction {
 
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         cache.refreshCached(ctx);
-        update(roots, progress, contextDisplayName, repositoryUrl);
+        update(roots, progress, contextDisplayName, repositoryUrl, revision);
     }
 
-    private static void update(File[] roots, SvnProgressSupport progress, String contextDisplayName, SVNUrl repositoryUrl) {
+    private static void update(File[] roots, SvnProgressSupport progress, String contextDisplayName, SVNUrl repositoryUrl, SVNRevision revision) {
         File[][] split = Utils.splitFlatOthers(roots);
         final List<File> recursiveFiles = new ArrayList<File>();
         final List<File> flatFiles = new ArrayList<File>();
@@ -171,6 +181,7 @@ public class UpdateAction extends ContextAction {
             // we have to explicitly force the refresh for the relevant context - see bellow in updateRoots
             client.removeNotifyListener(Subversion.getInstance().getRefreshHandler());
             client.addNotifyListener(listener);
+            client.addNotifyListener(progress);
             progress.setCancellableDelegate(client);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
@@ -181,13 +192,19 @@ public class UpdateAction extends ContextAction {
             UpdateNotifyListener l = new UpdateNotifyListener();            
             client.addNotifyListener(l);            
             try {
-                updateRoots(recursiveFiles, progress, client, true);
+                updateRoots(recursiveFiles, progress, client, true, revision);
                 if(progress.isCanceled()) {                
                     return;
                 }
-                updateRoots(flatFiles, progress, client, false);
+                updateRoots(flatFiles, progress, client, false, revision);
             } finally {
                 client.removeNotifyListener(l);
+                client.removeNotifyListener(progress);
+            }
+            if (!l.existedFiles.isEmpty()) {
+                // status of replaced files should be refreshed
+                // because locally added files can be replaced with those in repository and their status would be still the same in the cache
+                Subversion.getInstance().getStatusCache().refreshAsync(l.existedFiles.toArray(new File[l.existedFiles.size()]));
             }
             if (l.causedConflict) {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -218,13 +235,13 @@ public class UpdateAction extends ContextAction {
         });
     }
     
-    private static void updateRoots(List<File> roots, SvnProgressSupport support, SvnClient client, boolean recursive) throws SVNClientException {
+    private static void updateRoots(List<File> roots, SvnProgressSupport support, SvnClient client, boolean recursive, SVNRevision revision) throws SVNClientException {
         for (Iterator<File> it = roots.iterator(); it.hasNext();) {
             File root = it.next();
             if(support.isCanceled()) {
                 break;
             }
-            long rev = client.update(root, SVNRevision.HEAD, recursive);
+            long rev = client.update(root, revision == null ? SVNRevision.HEAD : revision, recursive);
             revisionUpdateWorkaround(recursive, root, client, rev);
         }
         return;
@@ -297,7 +314,7 @@ public class UpdateAction extends ContextAction {
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {
-                update(context, this, contextDisplayName);
+                update(context, this, contextDisplayName, null);
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
@@ -329,7 +346,7 @@ public class UpdateAction extends ContextAction {
             public void perform() {
 //                FileStatusCache cache = Subversion.getInstance().getStatusCache();
 //                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                update(new File[] {file}, this, file.getAbsolutePath(), repositoryUrl);
+                update(new File[] {file}, this, file.getAbsolutePath(), repositoryUrl, null);
             }
         };
         support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
@@ -382,7 +399,9 @@ public class UpdateAction extends ContextAction {
 
     private static class UpdateNotifyListener implements ISVNNotifyListener {
         private Pattern p = Pattern.compile("C   (.+)");
+        private Pattern existedFilePattern = Pattern.compile("E   (.+)"); //NOI18N
         boolean causedConflict = false;
+        HashSet<File> existedFiles = new HashSet<File>();
         public void logMessage(String msg) {
             catchMessage(msg);
         }
@@ -396,10 +415,16 @@ public class UpdateAction extends ContextAction {
         public void onNotify(File arg0, SVNNodeKind arg1)   { /* boring */  }
 
         private void catchMessage (String message) {
-            if(causedConflict) return;
-            Matcher m = p.matcher(message);
-            if(m.matches()) {
-                causedConflict = true;
+            if (!causedConflict) {
+                Matcher m = p.matcher(message);
+                if (m.matches()) {
+                    causedConflict = true;
+                }
+            }
+            Matcher m = existedFilePattern.matcher(message);
+            if (m.matches() && m.groupCount() > 0) {
+                String filePath = m.group(1);
+                existedFiles.add(FileUtil.normalizeFile(new File(filePath)));
             }
         }
     }

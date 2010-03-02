@@ -637,6 +637,16 @@ public final class Kenai implements Comparable<Kenai> {
         }
     }
 
+    void delete(KenaiProject project) throws KenaiException {
+        assert auth!=null;
+        impl.deleteProject(project.getName(), auth);
+        synchronized (this) {
+            if (myProjects != null) {
+                myProjects.remove(project);
+            }
+        }
+    }
+
     private class LazyCollection<I,O> extends AbstractCollection<O> {
 
         private Collection<I> delegate;
