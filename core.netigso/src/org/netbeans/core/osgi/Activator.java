@@ -87,7 +87,9 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
     public Activator() {}
 
     /** Bundles which have been loaded or are in line to be loaded. */
-    private final DependencyQueue<String,Bundle> queue = new DependencyQueue<String,Bundle>();
+    private DependencyQueue<String,Bundle> queue;
+    private BundleContext context;
+    private Framework framework;
 
     public @Override void start(final BundleContext context) throws Exception {
         if (System.getProperty("netbeans.home") != null) {
@@ -99,7 +101,10 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         }
         System.setProperty("TopSecurityManager.disable", "true");
         OSGiMainLookup.initialize(context);
-        if (((Framework) context.getBundle(0)).getState() == Bundle.STARTING) {
+        queue = new DependencyQueue<String,Bundle>();
+        this.context = context;
+        framework = ((Framework) context.getBundle(0));
+        if (framework.getState() == Bundle.STARTING) {
 //            System.err.println("framework still starting");
             final AtomicReference<FrameworkListener> frameworkListener = new AtomicReference<FrameworkListener>();
             frameworkListener.set(new FrameworkListener() {
@@ -108,32 +113,43 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
 //                        System.err.println("framework started");
                         context.removeFrameworkListener(frameworkListener.get());
                         context.addBundleListener(Activator.this);
-                        processLoadedBundles(context);
+                        processLoadedBundles();
                     }
                 }
             });
             context.addFrameworkListener(frameworkListener.get());
         } else {
             context.addBundleListener(this);
-            processLoadedBundles(context);
+            processLoadedBundles();
         }
     }
 
-    private void processLoadedBundles(BundleContext context) {
+    private void processLoadedBundles() {
         List<Bundle> toLoad = new ArrayList<Bundle>();
         for (Bundle b : context.getBundles()) {
-            switch (b.getState()) {
-            case Bundle.ACTIVE:
+            if (b.getState() == Bundle.ACTIVE) {
                 Dictionary<?,?> headers = b.getHeaders();
                 toLoad.addAll(queue.offer(b, provides(headers), requires(headers), needs(headers)));
-                break;
             }
         }
 //        System.err.println("processing already loaded bundles: " + toLoad);
         load(toLoad);
     }
 
-    public @Override void stop(BundleContext context) throws Exception {}
+    public @Override void stop(BundleContext context) throws Exception {
+        context.removeBundleListener(this);
+        context = null;
+        framework = null;
+    }
+
+    private void unloadAll(List<Bundle> toUnloadInitial) {
+        for (Bundle b : context.getBundles()) {
+            if (b.getState() == Bundle.ACTIVE) {
+                toUnloadInitial.addAll(queue.retract(b));
+            }
+        }
+        unload(toUnloadInitial, true);
+    }
 
     public @Override void bundleChanged(BundleEvent event) {
         Bundle bundle = event.getBundle();
@@ -145,7 +161,15 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             break;
         case BundleEvent.STOPPED:
 //            System.err.println("stopped " + bundle.getSymbolicName());
-            unload(queue.retract(bundle));
+            List<Bundle> toUnload = queue.retract(bundle);
+            if (framework.getState() == Bundle.STOPPING) {
+//                System.err.println("fwork stopping during " + bundle.getSymbolicName());
+//                ActiveQueue.stop();
+                context.removeBundleListener(this);
+                unloadAll(toUnload);
+            } else {
+                unload(toUnload, false);
+            }
             break;
         }
     }
@@ -193,6 +217,10 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
     }
 
     private void load(List<Bundle> bundles) {
+        if (bundles.isEmpty()) {
+            return;
+        }
+        LOG.log(Level.FINE, "loading: {0}", bundles);
         OSGiMainLookup.bundlesAdded(bundles);
         boolean showWindowSystem = false;
         boolean loadServicesFolder = false;
@@ -227,7 +255,16 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         }
     }
 
-    private void unload(List<Bundle> bundles) {
+    private void unload(List<Bundle> bundles, boolean shutdown) {
+        if (bundles.isEmpty()) {
+            return;
+        }
+        if (shutdown) {
+            LOG.log(Level.FINE, "shutdown on: {0}", bundles);
+            // XXX could call closing/close
+            return;
+        }
+        LOG.log(Level.FINE, "unloading: {0}", bundles);
         for (Bundle bundle : bundles) {
             ModuleInstall mi = installerFor(bundle);
             if (mi != null) {
@@ -247,8 +284,13 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             }
             String explicit = (String) b.getHeaders().get("OpenIDE-Module-Layer");
             if (explicit != null) {
-                layers.add(b.getResource(explicit));
-                // XXX could also add localized/branded variants
+                URL layer = b.getResource(explicit);
+                if (layer != null) {
+                    layers.add(layer);
+                    // XXX could also add localized/branded variants
+                } else {
+                    LOG.log(Level.WARNING, "no such layer {0} in {1} of state {2}", new Object[] {explicit, b.getSymbolicName(), b.getState()});
+                }
             }
             URL generated = b.getResource("META-INF/generated-layer.xml");
             if (generated != null) {
