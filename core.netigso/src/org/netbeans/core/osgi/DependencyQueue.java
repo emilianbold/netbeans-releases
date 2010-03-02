@@ -94,7 +94,7 @@ final class DependencyQueue<K,V> {
      *         of values which were not previously accepted but now are;
      *         returned in dependency order
      */
-    public List<V> offer(V value, Set<K> provides, Set<K> requires, Set<K> needs) {
+    public synchronized List<V> offer(V value, Set<K> provides, Set<K> requires, Set<K> needs) {
 //        System.err.println("offer: " + value + " p=" + provides + " r=" + requires + " n=" + needs);
         this.provides.put(value, Collections.unmodifiableSet(provides));
         this.requires.put(value, Collections.unmodifiableSet(requires));
@@ -174,8 +174,12 @@ final class DependencyQueue<K,V> {
      *         of values which had been accepted but now are not;
      *         returned in reverse dependency order
      */
-    public List<V> retract(V value) {
-        for (K k : provides.remove(value)) {
+    public synchronized List<V> retract(V value) {
+        Set<K> provided = provides.remove(value);
+        if (provided == null) {
+            return Collections.emptyList();
+        }
+        for (K k : provided) {
             Set<V> p = providers.get(k);
             p.remove(value);
             if (p.isEmpty()) {
@@ -184,8 +188,41 @@ final class DependencyQueue<K,V> {
         }
         requires.remove(value);
         needs.remove(value);
-        // XXX
-        return accepted.remove(value) ? Collections.singletonList(value) : Collections.<V>emptyList();
+        if (!accepted.remove(value)) {
+            return Collections.emptyList();
+        }
+        LinkedList<V> proposed = new LinkedList<V>();
+        proposed.add(value);
+        boolean lookForExtra = true;
+        while (lookForExtra) {
+            lookForExtra = false;
+            for (V extra : this.provides.keySet()) {
+                if (!accepted.contains(extra)) {
+                    continue;
+                }
+                Set<K> constraints = new LinkedHashSet<K>(requires.get(extra));
+                constraints.addAll(needs.get(extra));
+                for (K k : constraints) {
+                    boolean sat = false;
+                    Set<V> p = providers.get(k);
+                    if (p != null) {
+                        for (V v : p) {
+                            if (accepted.contains(v)) {
+                                sat = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!sat) {
+                        accepted.remove(extra);
+                        proposed.addFirst(extra);
+                        lookForExtra = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return proposed;
     }
 
 }
