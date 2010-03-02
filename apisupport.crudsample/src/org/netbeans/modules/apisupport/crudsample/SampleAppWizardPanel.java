@@ -59,11 +59,14 @@ public class SampleAppWizardPanel implements WizardDescriptor.Panel,
     
     private WizardDescriptor wizardDescriptor;
     private SampleAppPanelVisual component;
+    private final boolean isFinishPanel;
     
     /** Creates a new instance of templateWizardPanel */
-    public SampleAppWizardPanel() {
+    public SampleAppWizardPanel(boolean isFinishPanel) {
+        this.isFinishPanel = isFinishPanel;
     }
     
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new SampleAppPanelVisual(this);
@@ -72,21 +75,25 @@ public class SampleAppWizardPanel implements WizardDescriptor.Panel,
         return component;
     }
     
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(SampleAppWizardPanel.class);
     }
     
+    @Override
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
     }
     
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -95,7 +102,7 @@ public class SampleAppWizardPanel implements WizardDescriptor.Panel,
     protected final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
@@ -103,20 +110,24 @@ public class SampleAppWizardPanel implements WizardDescriptor.Panel,
         }
     }
     
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
     }
     
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
     }
     
+    @Override
     public boolean isFinishPanel() {
-        return true;
+        return isFinishPanel;
     }
     
+    @Override
     public void validate() throws WizardValidationException {
         getComponent();
         component.validate(wizardDescriptor);

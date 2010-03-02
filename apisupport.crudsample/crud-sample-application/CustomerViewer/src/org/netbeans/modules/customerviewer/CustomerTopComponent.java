@@ -73,6 +73,7 @@ public final class CustomerTopComponent extends TopComponent implements Explorer
         setToolTipText(NbBundle.getMessage(CustomerTopComponent.class, "HINT_CustomerTopComponent"));
         associateLookup(ExplorerUtils.createLookup(em, getActionMap()));
         RequestProcessor.getDefault().post(new Runnable () {
+            @Override
             public void run() {
                 readCustomer();
             }
@@ -95,6 +96,7 @@ public final class CustomerTopComponent extends TopComponent implements Explorer
         }
         final Query query = entityManager.createQuery("SELECT c FROM Customer c");
         SwingUtilities.invokeLater(new Runnable () {
+            @Override
             public void run() {
                 @SuppressWarnings("unchecked")
                 List<Customer> resultList = query.getResultList();
@@ -203,6 +205,7 @@ public final class CustomerTopComponent extends TopComponent implements Explorer
         return PREFERRED_ID;
     }
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return em;
     }

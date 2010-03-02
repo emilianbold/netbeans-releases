@@ -152,6 +152,7 @@ public final class TerminalIOProviderSupport {
 
 	io = iop.getIO(title, actions, ioContainer);
 
+	// comment out to verify fix for bug #181064
         io.select();
         try {
             IOColorLines.println(io, "GREETINGS\r", Color.GREEN);

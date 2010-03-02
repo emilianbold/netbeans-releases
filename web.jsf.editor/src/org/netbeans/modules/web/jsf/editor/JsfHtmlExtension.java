@@ -48,6 +48,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import javax.servlet.jsp.tagext.TagData;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -82,9 +83,14 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.web.common.taginfo.AttrValueType;
+import org.netbeans.modules.web.common.taginfo.LibraryMetadata;
+import org.netbeans.modules.web.common.taginfo.TagAttrMetadata;
+import org.netbeans.modules.web.common.taginfo.TagMetadata;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryMetadata;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
@@ -373,6 +379,40 @@ public class JsfHtmlExtension extends HtmlExtension {
     @Override
     public List<CompletionItem> completeAttributeValue(CompletionContext context) {
         List<CompletionItem> items = new ArrayList<CompletionItem>();
+        String ns = context.getCurrentNode().getNamespace();
+        String attrName = context.getAttributeName();
+        String tagName = context.getCurrentNode().getNameWithoutPrefix();
+        LibraryMetadata lib = FaceletsLibraryMetadata.get(ns);
+
+        if (lib != null){
+            TagMetadata tag = lib.getTag(tagName);
+
+            if (tag != null){
+                TagAttrMetadata attr = tag.getAttribute(attrName);
+
+                if (attr != null){
+                    Collection<AttrValueType> valueTypes = attr.getValueTypes();
+
+                    if (valueTypes != null){
+                        for (AttrValueType valueType : valueTypes){
+                            String[] possibleVals = valueType.getPossibleValues();
+
+                            if (possibleVals != null){
+                                for (String val : possibleVals){
+                                    if (val.startsWith(context.getPrefix())){
+                                        CompletionItem itm = HtmlCompletionItem.createAttributeValue(val,
+                                                context.getCCItemStartOffset());
+                                        
+                                        items.add(itm);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
 
         if (context.getAttributeName().toLowerCase(Locale.ENGLISH).startsWith("xmlns")) {
             //xml namespace completion for facelets namespaces

@@ -299,29 +299,11 @@ public class ProjectActionSupport {
 
         private InputOutput getTermIO() {
             final String TERM_PROVIDER = "Terminal"; // NOI18N
-            InputOutput io;
-            // hide issues in Terminal IO Provider for now
-            final AtomicReference<InputOutput> refIO = new AtomicReference<InputOutput>(null);
-            try {
-                // init new term
-                // FIXUP: due to non lazy creation - we have to do it in EDT and wait
-                SwingUtilities.invokeAndWait(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        IOProvider termProvider = IOProvider.get(TERM_PROVIDER);
-                        if (termProvider != null) {
-                            InputOutput io = termProvider.getIO(TERM_PROVIDER + " - " + tabNameSeq, true); // NOI18N
-                            refIO.set(io);
-                        }
-                    }
-                });
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
+            InputOutput io = null;
+            IOProvider termProvider = IOProvider.get(TERM_PROVIDER);
+            if (termProvider != null) {
+                io = termProvider.getIO(TERM_PROVIDER + " - " + tabNameSeq, true); // NOI18N
             }
-            io = refIO.get();
             return io;
         }
 

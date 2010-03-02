@@ -99,7 +99,7 @@ void _trace_startup(const char* _prefix, const char* env_var, const char* binary
         } else {
             trace_file = stderr;
         }
-        char dir[PATH_MAX];
+        char dir[PATH_MAX + 1];
         getcwd(dir, sizeof dir);
         trace("%s started in %s\n", binary, dir);
     }

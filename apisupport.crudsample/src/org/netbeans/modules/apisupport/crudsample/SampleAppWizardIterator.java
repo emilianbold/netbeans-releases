@@ -42,32 +42,43 @@ package org.netbeans.modules.apisupport.crudsample;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 
 public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIterator {
-    
+
     private static final long serialVersionUID = 1L;
     
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
+    private SampleAppWizardExtraPanel configurationPanel;
     
     public SampleAppWizardIterator() {}
     
@@ -76,26 +87,43 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
     }
     
     private WizardDescriptor.Panel[] createPanels() {
+        configurationPanel = new SampleAppWizardExtraPanel();
         return new WizardDescriptor.Panel[] {
-            new SampleAppWizardPanel(),
+            new SampleAppWizardPanel(configurationPanel.isValid()),
+            configurationPanel
         };
     }
     
     private String[] createSteps() {
         return new String[] {
-            NbBundle.getMessage(SampleAppWizardIterator.class, "LBL_CreateProjectStep")
+            NbBundle.getMessage(SampleAppWizardIterator.class, "LBL_CreateProjectStep"),
+            NbBundle.getMessage(SampleAppWizardIterator.class, "LBL_CreatePersistenceStep"),
         };
     }
     
+    @Override
     public Set/*<FileObject>*/ instantiate() throws IOException {
-        Set resultSet = new LinkedHashSet();
+        Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
         File dirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
         dirF.mkdirs();
         
         FileObject template = Templates.getTemplate(wiz);
         FileObject dir = FileUtil.toFileObject(dirF);
+
+        // 1) unzip
         unZipFile(template.getInputStream(), dir);
-        
+        try {
+            // 2) copy persistence libraries
+            copyPersistenceLibraries(configurationPanel.getSelectedLibrary(), dir);
+        } catch (URISyntaxException ex) {
+            throw new IOException(ex);
+        } catch (IllegalStateException ex) {
+            throw new IOException(ex);
+        }
+
+        // 3) set DB location in Derby module
+        configureDerby(configurationPanel.getDerbyLocation(), dir);
+
         // Always open top dir as a project:
         resultSet.add(dir);
         // Look for nested projects to open as well:
@@ -115,6 +143,7 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
         return resultSet;
     }
     
+    @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
@@ -139,6 +168,7 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
         }
     }
     
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz.putProperty("projdir",null); // NOI18N
         this.wiz.putProperty("name",null); // NOI18N
@@ -146,19 +176,23 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
         panels = null;
     }
     
+    @Override
     public String name() {
         return NbBundle.getMessage(SampleAppWizardIterator.class, "SampleAppWizardIterator.name.format",
                 new Object[] {new Integer(index + 1), new Integer(panels.length)});
     }
     
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
     
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
     
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -166,6 +200,7 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
         index++;
     }
     
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -173,12 +208,15 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
         index--;
     }
     
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
     
     // If nothing unusual changes in the middle of the wizard, simply:
+    @Override
     public final void addChangeListener(ChangeListener l) {}
+    @Override
     public final void removeChangeListener(ChangeListener l) {}
     
     private static void unZipFile(InputStream source, FileObject projectRoot) throws IOException {
@@ -201,6 +239,99 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
         } finally {
             source.close();
         }
+    }
+
+    private void copyPersistenceLibraries(Library l, FileObject projectRoot) throws URISyntaxException, IllegalStateException, FileNotFoundException, IOException {
+        // 1) source libraries
+        List<FileObject> libs = new ArrayList<FileObject>();
+        for (URL url : l.getContent("classpath")) { //NOI18N
+            FileObject fo = URLMapper.findFileObject(url);
+            Logger.getLogger(SampleAppWizardIterator.class.getName()).log(Level.FINE, "Libary {0} has jar: {1}", new Object[]{l.getName(), fo});
+            FileObject jarFO = null;
+            if ("jar".equals(url.getProtocol())) {  //NOI18N
+                jarFO = FileUtil.getArchiveFile(fo);
+            }
+            if (jarFO == null) {
+                throw new IllegalStateException("No file object on " + url);
+            }
+            libs.add(jarFO);
+        }
+
+        // 2) target place
+        File targetFile = new File(FileUtil.toFile(projectRoot), "persistence-library" + File.separator + "external");
+        targetFile.mkdirs();
+        FileObject targetFO = FileUtil.toFileObject(targetFile);
+
+        // 3) copying
+        for (FileObject fo : libs) {
+            File f = FileUtil.toFile(fo);
+            Logger.getLogger(SampleAppWizardIterator.class.getName()).log(Level.FINE, "Copy {0} in {1} as {2}", new Object[]{fo, targetFO, f.getName()});
+            FileUtil.copyFile(fo, targetFO, fo.getName());
+        }
+
+        // 4) modify project.properties
+        // XXX: better to modify project.xml with native jars names
+        File projectPropertiesFile = new File(FileUtil.toFile(projectRoot), "persistence-library" + File.separator +
+                "nbproject" + File.separator + "project.properties");
+        FileObject projectPropertiesFO = FileUtil.toFileObject(projectPropertiesFile);
+        Properties projectProperties = new Properties();
+        InputStream inputStream = null;
+        try {
+            inputStream = projectPropertiesFO.getInputStream();
+            projectProperties.load(inputStream);
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        }
+        assert libs.size() == 2 : "Just two libraries are processed but " + libs;
+        projectProperties.setProperty("persistence-library1.jar", "external/" + libs.get(0).getNameExt());
+        projectProperties.setProperty("persistence-library2.jar", "external/" + libs.get(1).getNameExt());
+        OutputStream outputStream = null;
+        try {
+            outputStream = projectPropertiesFO.getOutputStream();
+            projectProperties.store(outputStream, null);
+        } finally {
+            if (outputStream != null) {
+                outputStream.close();
+            }
+        }
+        Logger.getLogger(SampleAppWizardIterator.class.getName()).log(Level.FINE, "project.properties file written : {0}", new Object[]{projectProperties});
+
+        // 5)  modify $persistencelibrary.xml to persistence.xml
+        File libraryConfFile = new File(FileUtil.toFile(projectRoot), "CustomerDBAccess" + File.separator +
+                "src" + File.separator + "META-INF" + File.separator + l.getName() + ".xml");
+        Logger.getLogger(SampleAppWizardIterator.class.getName()).log(Level.FINE, "META-INF/peristence.xml found at {0}", new Object[]{libraryConfFile});
+        assert libraryConfFile.exists() : libraryConfFile + " exists.";
+        File persistenceConfFile = new File(libraryConfFile.getParent(), "persistence.xml"); // NOI18N
+        libraryConfFile.renameTo(persistenceConfFile);
+    }
+
+    private void configureDerby(String loc, FileObject projectRoot) throws FileNotFoundException, IOException {
+        File projectPropertiesFile = new File(FileUtil.toFile(projectRoot), "derbyclient-library" + File.separator +
+                "nbproject" + File.separator + "project.properties");
+        FileObject projectPropertiesFO = FileUtil.toFileObject(projectPropertiesFile);
+        Properties projectProperties = new Properties();
+        InputStream inputStream = null;
+        try {
+            inputStream = projectPropertiesFO.getInputStream();
+            projectProperties.load(inputStream);
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        }
+        projectProperties.setProperty("derbyclient.jar", loc);
+        OutputStream outputStream = null;
+        try {
+            outputStream = projectPropertiesFO.getOutputStream();
+            projectProperties.store(outputStream, null);
+        } finally {
+            if (outputStream != null) {
+                outputStream.close();
+            }
+        }
+        Logger.getLogger(SampleAppWizardIterator.class.getName()).log(Level.FINE, "Derby location in project.properties is {0}", new Object[]{loc});
     }
     
 }
