@@ -60,6 +60,7 @@ public class SampleAppPanelVisual extends JPanel implements DocumentListener {
     private SampleAppWizardPanel panel;
     
     /** Creates new form PanelProjectLocationVisual */
+    @SuppressWarnings("LeakingThisInConstructor")
     public SampleAppPanelVisual(SampleAppWizardPanel panel) {
         initComponents();
         this.panel = panel;
@@ -148,7 +149,7 @@ public class SampleAppPanelVisual extends JPanel implements DocumentListener {
     
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
             JFileChooser chooser = new JFileChooser();
-            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+            chooser.setCurrentDirectory(null);
             chooser.setDialogTitle(org.openide.util.NbBundle.getMessage(SampleAppPanelVisual.class, "SampleAppPanelVisual.select_project_location"));
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             String path = this.projectLocationTextField.getText();
@@ -257,6 +258,7 @@ public class SampleAppPanelVisual extends JPanel implements DocumentListener {
     
     // Implementation of DocumentListener --------------------------------------
     
+    @Override
     public void changedUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
@@ -264,6 +266,7 @@ public class SampleAppPanelVisual extends JPanel implements DocumentListener {
         }
     }
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
@@ -271,6 +274,7 @@ public class SampleAppPanelVisual extends JPanel implements DocumentListener {
         }
     }
     
+    @Override
     public void removeUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
