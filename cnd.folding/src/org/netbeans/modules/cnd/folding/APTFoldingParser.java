@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
     private static final int CLASS_FOLD = CppFoldRecord.CLASS_FOLD;
     private static final int NAMESPACE_FOLD = CppFoldRecord.NAMESPACE_FOLD;
     private static final int FUNCTION_FOLD = CppFoldRecord.FUNCTION_FOLD;
-    private static final int FIRST_TOKEN = APTTokenTypes.FLOATONE;
+    private static final int FIRST_TOKEN = APTTokenTypes.NULL_TREE_LOOKAHEAD+1;
     private static final int LAST_TOKEN = APTTokenTypes.LAST_LEXER_FAKE_RULE;
     //private int curCurlyLevel = 0;
     private List<CppFoldRecord> parserFolders = new ArrayList<CppFoldRecord>();
