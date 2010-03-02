@@ -168,4 +168,9 @@ public abstract class KenaiImpl {
             long member_id,
             PasswordAuthentication pa)
             throws KenaiException;
+
+    public abstract void deleteProject (
+            String name,
+            PasswordAuthentication pa)
+            throws KenaiException;
 }
