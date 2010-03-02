@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.build;
+package org.netbeans.modules.cnd.remote.pbuild;
 
 import java.io.File;
 import java.io.IOException;

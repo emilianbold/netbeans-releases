@@ -37,33 +37,40 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.build;
+package org.netbeans.modules.cnd.remote.pbuild;
 
-import org.netbeans.modules.cnd.remote.build.RemoteBuildTestBase;
+import java.util.concurrent.TimeUnit;
+import junit.framework.Test;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-
+import org.openide.filesystems.FileObject;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 /**
  *
  * @author Vladimir Kvashin
  */
-public abstract class RfsBaseRemoteBuildTestCase extends RemoteBuildTestBase {
+public class RfsSunStudioRemoteBuildTest extends RfsBaseRemoteBuildTestCase {
 
-    static {
-        System.setProperty("cnd.remote.fs", "true");
-        System.setProperty("cnd.remote.scp", "true");
-    }
-
-    public RfsBaseRemoteBuildTestCase(String testName) {
+    public RfsSunStudioRemoteBuildTest(String testName) {
         super(testName);
     }
 
-    public RfsBaseRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
+    public RfsSunStudioRemoteBuildTest(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);       
     }
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        setupHost("rfs");
+    @ForAllEnvironments
+    public void testBuildRfsSampleArgsSunStudio() throws Exception {
+        setDefaultCompilerSet("SunStudio");
+        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_SunStudio_01");
+        clearRemoteSyncRoot();
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
+    }
+
+    public static Test suite() {
+        return new RemoteDevelopmentTestSuite(RfsSunStudioRemoteBuildTest.class);
     }
 }

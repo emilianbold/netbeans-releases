@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,62 +34,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.build;
+package org.netbeans.modules.cnd.remote.pbuild;
 
-import java.util.Collection;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import org.netbeans.modules.cnd.remote.pbuild.RemoteBuildTestBase;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
-public class BuildTestSuite extends CndBaseTestSuite {
+public abstract class RfsBaseRemoteBuildTestCase extends RemoteBuildTestBase {
 
-    public static final String PLATFORMS_SECTION = "remote.platforms";
-    public static final String DEFAULT_SECTION = "remote";
-
-    public BuildTestSuite(Class testClass) {
-        this(testClass.getName(), testClass);
+    static {
+        System.setProperty("cnd.remote.fs", "true");
+        System.setProperty("cnd.remote.scp", "true");
     }
 
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public BuildTestSuite(String name, Test... tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
+    public RfsBaseRemoteBuildTestCase(String testName) {
+        super(testName);
     }
 
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public BuildTestSuite(String name, Collection<Test> tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
+    public RfsBaseRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);       
     }
 
-    public BuildTestSuite() {
-        this("Remote Development", // NOI18N
-             RfsGnuRemoteBuildTest.class,
-             RfsSunStudioRemoteBuildTest.class,
-             RemoteBuildSamplesTest.class,
-             RemoteBuildMakefileTest.class);
-    }
-
-
-    private BuildTestSuite(String name, Class... testClasses) {
-        super(name, PLATFORMS_SECTION, testClasses);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new BuildTestSuite();
-        return suite;
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        setupHost("rfs");
     }
 }
