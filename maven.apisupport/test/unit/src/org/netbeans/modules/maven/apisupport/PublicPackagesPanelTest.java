@@ -37,18 +37,62 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.spi.customizer;
+package org.netbeans.modules.maven.apisupport;
 
 import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import junit.framework.TestCase;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author dafe
+ * @author Dafe Simonek
  */
-public interface SelectedItemsTablePersister {
+public class PublicPackagesPanelTest extends TestCase {
 
-    public SortedMap<String, Boolean> read ();
+    public PublicPackagesPanelTest(String testName) {
+        super(testName);
+    }
 
-    public void write (SortedMap<String, Boolean> selItems);
+    /**
+     * Test of getPublicPackagesForPlugin method, of class PublicPackagesPanel.
+     */
+    @Test
+    public void testGetPublicPackagesForPlugin() {
+        System.out.println("testing getPublicPackagesForPlugin...");
+        SortedMap<String, Boolean> selItems = new TreeMap<String, Boolean>();
+        selItems.put("a.b.c", Boolean.TRUE);
+        selItems.put("a.b.d", Boolean.TRUE);
+        selItems.put("a", Boolean.TRUE);
+        selItems.put("a.b.e", Boolean.TRUE);
+        selItems.put("something.different", Boolean.TRUE);
+        selItems.put("a.b", Boolean.TRUE);
+        selItems.put("just.another", Boolean.FALSE);
+
+        SortedSet expResult = new TreeSet<String>();
+        expResult.add("a.*");
+        expResult.add("something.different");
+
+        SortedSet result = PublicPackagesPanel.getPublicPackagesForPlugin(selItems);
+
+        assertEquals(expResult, result);
+
+        SortedMap<String, Boolean> unchanged = new TreeMap<String, Boolean>();
+        unchanged.put("a.b.c", Boolean.TRUE);
+        unchanged.put("a.b.d", Boolean.TRUE);
+        unchanged.put("a", Boolean.TRUE);
+
+        SortedSet expResult2 = new TreeSet<String>();
+        expResult2.add("a");
+        expResult2.add("a.b.c");
+        expResult2.add("a.b.d");
+
+        SortedSet result2 = PublicPackagesPanel.getPublicPackagesForPlugin(unchanged);
+
+        assertEquals(expResult2, result2);
+    }
 
 }

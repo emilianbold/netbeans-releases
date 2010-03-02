@@ -46,6 +46,60 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="MultiFileSystem.weight">
+            <api name="filesystems"/>
+            <summary>Ability to specify "weight" for <code>MultiFileSystem</code> overrides</summary>
+            <version major="7" minor="36"/>
+            <date day="1" month="3" year="2010"/>
+            <author login="jglick"/>
+            <compatibility semantic="compatible">
+                <p>
+                    Modules need no longer declare runtime-only dependencies
+                    on other modules merely to override their layer entries.
+                    Instead, they should specify a higher weight.
+                    (Normally the base module will declare no weight, so any
+                    positive number will do.)
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    <code>MultiFileSystem</code>s will now interpret a special
+                    file attribute <code>weight</code> to determine how to
+                    resolve otherwise ambiguous overrides. For example, in the
+                    system filesystem, module XML layers can use this attribute.
+                    Suppose a generic infrastructure module declares:
+                </p>
+                <pre>
+&lt;filesystem>
+    &lt;folder name="my-snippets">
+        &lt;file name="common.xml" url="generic-snippet.xml"/>
+    &lt;/folder>
+&lt;/filesystem>
+                </pre>
+                <p>
+                    If another module wishes to override this declaration, it
+                    can do so by specifying:
+                </p>
+                <pre>
+&lt;filesystem>
+    &lt;folder name="my-snippets">
+        &lt;file name="common.xml" url="special-snippet.xml">
+            &lt;attribute name="weight" intvalue="100"/>
+        &lt;/file>
+    &lt;/folder>
+&lt;/filesystem>
+                </pre>
+                <p>
+                    This override will work even if the module system happens
+                    to load the specializing module <em>before</em> the infrastructure
+                    module (as could happen if there is no module dependency
+                    between them). The weight attribute also makes it clear that
+                    something is being overridden.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="MultiFileSystem"/>
+            <issue number="141925"/>
+        </change>
            <change id="JarFileSystem-constructor-file">
               <api name="filesystems"/>
               <summary>Effective constructor for JarFileSystem</summary>

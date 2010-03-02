@@ -2,7 +2,7 @@
 State of macro map:
 Own Map:
 MACROS (sorted 1):
-<U>#define '["MCI_ANIM_WINDOW_DEFAULT",<205>,line=1,col=9],offset=8,file=null'='["0xL",<7>,line=1,col=33],offset=32,file=null'
+<U>#define '["MCI_ANIM_WINDOW_DEFAULT",<89>,line=1,col=9],offset=8,file=null'='["0xL",<63>,line=1,col=33],offset=32,file=null'
 System Map:
 MACROS (sorted 0):
 

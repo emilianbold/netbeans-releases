@@ -66,6 +66,7 @@ public final class ProjectActionEvent {
         DEBUG_LOAD_ONLY("Debug"), // NOI18N
         CHECK_EXECUTABLE("CheckExecutable"), // NOI18N
         CUSTOM_ACTION("Custom"), // NOI18N
+        BUILD_TESTS("BuildTests"), // NOI18N
         TEST("Test"); // NOI18N
 
         private final String localizedName;

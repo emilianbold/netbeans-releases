@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.testrunner.ui;
+package org.netbeans.modules.cnd.makeproject.ui.tests;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,8 +51,6 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
-import org.netbeans.modules.cnd.testrunner.CndUnitRunner;
-import org.netbeans.modules.cnd.testrunner.TestRunner.TestType;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,10 +66,14 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
 
     private static final Logger LOGGER = Logger.getLogger(CndUnitHandlerFactory.class.getName());
 
+    private static String CPP_UNIT = "Cpp Unit Test"; // NOI18N
+
+    @Override
     public boolean printSummary() {
         return true;
     }
 
+    @Override
     public List<TestRecognizerHandler> createHandlers() {
         List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();
         result.add(new SuiteStartingHandler());
@@ -100,9 +102,9 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         List<String> stackTraceList = new ArrayList<String>();
         stackTraceList.add(message);
         for (String location : stackTrace.split("%BR%")) { //NOI18N
-            if (/*!location.contains(CndUnitRunner.MEDIATOR_SCRIPT_NAME) &&*/ !location.contains(CndUnitRunner.RUNNER_SCRIPT_NAME)) { //NOI18N
-                stackTraceList.add(location);
-            }
+//            if (/*!location.contains(CndUnitRunner.MEDIATOR_SCRIPT_NAME) &&*/ !location.contains(CndUnitRunner.RUNNER_SCRIPT_NAME)) { //NOI18N
+//                stackTraceList.add(location);
+//            }
         }
         return stackTraceList.toArray(new String[stackTraceList.size()]);
     }
@@ -156,7 +158,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(matcher.group(2), TestType.CPP_UNIT.name(), session);
+            Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
             testcase.setTrouble(new Trouble(false));
@@ -202,7 +204,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(matcher.group(2), TestType.CPP_UNIT.name(), session);
+            Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
             testcase.setTrouble(new Trouble(true));
@@ -257,7 +259,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Testcase testcase = new Testcase(matcher.group(2), TestType.CPP_UNIT.name(), session);
+            Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
             testcase.setTimeMillis(toMillis(matcher.group(1)));
             testcase.setClassName(matcher.group(3));
             session.addTestCase(testcase);

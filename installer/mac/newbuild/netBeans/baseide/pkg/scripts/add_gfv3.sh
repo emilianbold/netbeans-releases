@@ -26,7 +26,7 @@ then
                            org.netbeans.modules.glassfish.common.registration.AutomaticRegistration \
                            \
                            "$nb_dir/nb" \
-                           "$gf_dir"
+                           "$gf_dir/glassfish"
   val=$?
 
   if [ $val -eq 0 ] ; then

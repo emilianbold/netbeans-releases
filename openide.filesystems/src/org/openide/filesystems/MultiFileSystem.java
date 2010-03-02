@@ -61,9 +61,18 @@ import org.openide.util.actions.SystemAction;
  *
  * <p>This filesystem has no form of storage in and of itself. Rather, it composes and proxies one or more
  * "delegate" filesystems. The result is that of a "layered" sandwich of filesystems, each able to provide files
- * to appear in the merged result. The layers are ordered so that a filesystem in "front" can override one in
- * "back". Often the frontmost layer will be writable, and all changes to the filesystem are sent to this layer,
+ * to appear in the merged result.
+ * Often the frontmost layer will be writable, and all changes to the filesystem are sent to this layer,
  * but that behavior is configurable.
+ *
+ * <p>The layers are ordered so that entries in a filesystem in "front" can override one in "back".
+ * Since it is often not straightforward to arrange layers so that particular overrides work,
+ * as of org.openide.filesystems 7.36
+ * you may set the special file attribute {@code weight} to any {@link Number} on a layer entry.
+ * (If unspecified, the implicit default value is zero.)
+ * A variant with a higher weight will override one with a lower weight even if it is further back.
+ * (The exception is that entries in a writable frontmost layer always override other layers,
+ * regardless of weight.)
  *
  * <p>Creating a new <code>MultiFileSystem</code> is easy in the simplest cases: just call {@link
  * #MultiFileSystem(FileSystem[])} and pass a list of delegates. If you pass it only read-only delegates, the
@@ -448,6 +457,15 @@ public class MultiFileSystem extends FileSystem {
         return systems[WRITE_SYSTEM_INDEX];
     }
 
+    FileSystem writableLayer(String path) {
+        try {
+            return createWritableOn(path);
+        } catch (IOException x) {
+            // ignore
+            return systems.length > WRITE_SYSTEM_INDEX ? systems[WRITE_SYSTEM_INDEX] : null;
+        }
+    }
+
     /** Special case of createWritableOn (@see #createWritableOn).
     *
     * @param oldName original name of the file (full)
@@ -555,6 +573,7 @@ public class MultiFileSystem extends FileSystem {
     Enumeration<FileObject> delegates(final String name) {
         Enumeration<FileSystem> en = Enumerations.array(systems);
 
+        // XXX order (stably) by weight
         class Resources implements Enumerations.Processor<FileSystem, FileObject> {
             public @Override FileObject process(FileSystem fs, Collection<FileSystem> ignore) {
                 if (fs == null) {

@@ -86,7 +86,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.modules.Dependency;
-import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbCollections;
@@ -477,12 +476,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         assertNoErrors(errors.size() + " actions is not registered properly", errors);
     }
     
-    public void testIfOneFileIsDefinedTwiceByDifferentModulesTheyNeedToHaveMutualDependency() throws Exception {
+    public void testLayerOverrides() throws Exception {
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         assertNotNull ("In the IDE mode, there always should be a classloader", l);
         
-        // String -> List<Modules>
-        Map<String,List<String>> files = new HashMap<String,List<String>>();
         class ContentAndAttrs {
             final byte[] contents;
             final Map<String,Object> attrs;
@@ -506,19 +503,15 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 return Arrays.equals(contents, caa.contents) && attrs.equals(caa.attrs);
             }
         }
-        /* < FO path , { content, attributes } > */
-        Map<String,ContentAndAttrs> contents = new HashMap<String,ContentAndAttrs>();
-        /* < FO path , < module name, { content, attributes } > > */
-        Map<String,Map<String,ContentAndAttrs>> differentContents = new HashMap<String,Map<String,ContentAndAttrs>>();
+        Map</* path */String,Map</* owner */String,ContentAndAttrs>> files = new TreeMap<String,Map<String,ContentAndAttrs>>();
         Map</* path */String,Map</* attr name */String,Map</* module name */String,/* attr value */Object>>> folderAttributes =
                 new TreeMap<String,Map<String,Map<String,Object>>>();
+        Map<String,Set<String>> directDeps = new HashMap<String,Set<String>>();
         StringBuffer sb = new StringBuffer();
         Map<String,URL> hiddenFiles = new HashMap<String, URL>();
         Set<String> allFiles = new HashSet<String>();
         final String suffix = "_hidden";
 
-        
-        boolean atLeastOne = false;
         Enumeration<URL> en = l.getResources("META-INF/MANIFEST.MF");
         while (en.hasMoreElements ()) {
             URL u = en.nextElement();
@@ -535,35 +528,47 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             }
             String layer = mf.getMainAttributes ().getValue ("OpenIDE-Module-Layer");
             if (layer == null) {
+                // XXX should also consider META-INF/generated-layer.xml here
                 continue;
             }
+            String depsS = mf.getMainAttributes().getValue("OpenIDE-Module-Module-Dependencies");
+            if (depsS != null) {
+                Set<String> deps = new HashSet<String>();
+                for (Dependency d : Dependency.create(Dependency.TYPE_MODULE, depsS)) {
+                    deps.add(d.getName().replaceFirst("/.+$", ""));
+                }
+                directDeps.put(module, deps);
+            }
             
-            atLeastOne = true;
             URL base = new URL(u, "../");
             URL layerURL = new URL(base, layer);
-            java.net.URLConnection connect = layerURL.openConnection ();
+            URLConnection connect = layerURL.openConnection ();
             connect.setDefaultUseCaches (false);
             FileSystem fs = new XMLFileSystem(layerURL);
 
             Enumeration<? extends FileObject> all = fs.getRoot().getChildren(true);
             while (all.hasMoreElements ()) {
                 FileObject fo = all.nextElement ();
-                String path = fo.getPath();
+                String simplePath = fo.getPath();
 
-                if (path.endsWith(suffix)) {
-                    hiddenFiles.put(path, layerURL);
+                if (simplePath.endsWith(suffix)) {
+                    hiddenFiles.put(simplePath, layerURL);
                 } else {
-                    allFiles.add(path);
+                    allFiles.add(simplePath);
                 }
+
+                Number weight = (Number) fo.getAttribute("weight");
+                // XXX if weight != null, test that it is actually overriding something or being overridden
+                String weightedPath = weight == null ? simplePath : simplePath + "#" + weight;
 
                 Map<String,Object> attributes = getAttributes(fo, base);
 
                 if (fo.isFolder()) {
                     for (Map.Entry<String,Object> attr : attributes.entrySet()) {
-                        Map<String,Map<String,Object>> m1 = folderAttributes.get(path);
+                        Map<String,Map<String,Object>> m1 = folderAttributes.get(weightedPath);
                         if (m1 == null) {
                             m1 = new TreeMap<String,Map<String,Object>>();
-                            folderAttributes.put(path, m1);
+                            folderAttributes.put(weightedPath, m1);
                         }
                         Map<String,Object> m2 = m1.get(attr.getKey());
                         if (m2 == null) {
@@ -575,103 +580,50 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     continue;
                 }
                 
-                List<String> list = files.get(path);
-                if (list == null) {
-                    list = new ArrayList<String>();
-                    files.put (path, list);
-                    list.add (module);
-                    contents.put(path, new ContentAndAttrs(fo.asBytes(), attributes, layerURL));
-                } else {
-                    ContentAndAttrs contentAttrs = contents.get(path);
-                    ContentAndAttrs nue = new ContentAndAttrs(fo.asBytes(), attributes, layerURL);
-                    if (!nue.equals(contentAttrs)) {
-                        //System.err.println("Found differences in " + path + " between " + nue + " and " + contentAttrs);
-                        Map<String,ContentAndAttrs> diffs = differentContents.get(path);
-                        if (diffs == null) {
-                            diffs = new HashMap<String,ContentAndAttrs>();
-                            differentContents.put(path, diffs);
-                            diffs.put(list.get(0), contentAttrs);
-                        }
-                        diffs.put(module, nue);
-                        list.add (module);
-                    }
+                Map<String,ContentAndAttrs> overrides = files.get(weightedPath);
+                if (overrides == null) {
+                    overrides = new TreeMap<String,ContentAndAttrs>();
+                    files.put(weightedPath, overrides);
                 }
+                overrides.put(module, new ContentAndAttrs(fo.asBytes(), attributes, layerURL));
             }
             // make sure the filesystem closes the stream
             connect.getInputStream ().close ();
         }
-        contents = null; // Not needed any more
-        
-        for (Map.Entry<String,List<String>> e : files.entrySet()) {
-            List<String> list = e.getValue();
-            if (list.size() == 1) {
+        assertFalse("At least one layer file is usually used", allFiles.isEmpty());
+
+        for (Map.Entry<String,Map<String,ContentAndAttrs>> e : files.entrySet()) {
+            Map<String,ContentAndAttrs> overrides = e.getValue();
+            if (overrides.size() == 1) {
                 continue;
             }
-            
-            Collection<? extends ModuleInfo> res = Lookup.getDefault().lookupAll(ModuleInfo.class);
-            assertFalse("Some modules found", res.isEmpty());
-            
-            List<String> list2 = new ArrayList<String>(list);
-            for (String name : list) {
-                for (ModuleInfo info : res) {
-                    if (name.equals (info.getCodeName ())) {
-                        // remove dependencies
-                        for (Dependency d : info.getDependencies()) {
-                            list2.remove(d.getName());
-                        }
+            Set<String> overriders = overrides.keySet();
+            String file = e.getKey();
+
+            if (new HashSet<ContentAndAttrs>(overrides.values()).size() == 1) {
+                // All the same. Check whether these are parallel declarations (e.g. CND debugger vs. Java debugger), or vertical.
+                for (String overrider : overriders) {
+                    Set<String> deps = new HashSet<String>(directDeps.get(overrider));
+                    deps.retainAll(overriders);
+                    if (!deps.isEmpty()) {
+                        sb.append(file).append(" is pointlessly overridden in ").append(overrider).
+                                append(" relative to ").append(deps.iterator().next()).append('\n');
                     }
                 }
-            }
-            // ok, modules depend on each other
-            if (list2.size() <= 1) {
                 continue;
             }
-            
-            sb.append (e.getKey ()).append( " is provided by: " ).append(list).append('\n');
-            Map<String,ContentAndAttrs> diffList = differentContents.get(e.getKey());
-            if (diffList != null) {
-                if (list.size() == 2) {
-                    String module1 = list.get(0);
-                    String module2 = list.get(1);
-                    ContentAndAttrs contentAttrs1 = diffList.get(module1);
-                    ContentAndAttrs contentAttrs2 = diffList.get(module2);
-                    if (!Arrays.equals(contentAttrs1.contents, contentAttrs2.contents)) {
-                        sb.append(' ').append(module1).append(": content = '").append(new String(contentAttrs1.contents)).append('\n');
-                        sb.append(' ').append(module2).append(": content = '").append(new String(contentAttrs2.contents)).append('\n');
-                    }
-                    if (!contentAttrs1.attrs.equals(contentAttrs2.attrs)) {
-                        Map<String,Object> attr1 = contentAttrs1.attrs;
-                        Map<String,Object> attr2 = contentAttrs2.attrs;
-                        Set<String> keys = new HashSet<String>(attr1.keySet());
-                        keys.retainAll(attr2.keySet());
-                        for (String attribute : keys) {
-                            Object value1 = attr1.get(attribute);
-                            Object value2 = attr2.get(attribute);
-                            if (value1 == value2 || (value1 != null && value1.equals(value2))) {
-                                // Remove the common attributes so that just the differences show up
-                                attr1.remove(attribute);
-                                attr2.remove(attribute);
-                            }
-                        }
-                        sb.append(' ').append(module1).append(": different attributes = '").append(contentAttrs1.attrs).append('\n');
-                        sb.append(' ').append(module2).append(": different attributes = '").append(contentAttrs2.attrs).append('\n');
-                    }
-                } else {
-                    for (String module : list) {
-                        ContentAndAttrs contentAttrs = diffList.get(module);
-                        sb.append(" ").append(module).append(": content = '").append(new String(contentAttrs.contents)).
-                                append("', attributes = ").append(contentAttrs.attrs).append("\n");
-                    }
-                }
+
+            sb.append(file).append(" is provided by: ").append(overriders).append('\n');
+            for (Map.Entry<String,ContentAndAttrs> entry : overrides.entrySet()) {
+                ContentAndAttrs contentAttrs = entry.getValue();
+                sb.append(" ").append(entry.getKey()).append(": content = '").append(new String(contentAttrs.contents)).
+                        append("', attributes = ").append(contentAttrs.attrs).append("\n");
             }
         }        
-        
-        assertTrue ("At least one layer file is usually used", atLeastOne);
         
         for (Map.Entry<String,Map<String,Map<String,Object>>> entry1 : folderAttributes.entrySet()) {
             for (Map.Entry<String,Map<String,Object>> entry2 : entry1.getValue().entrySet()) {
                 if (new HashSet<Object>(entry2.getValue().values()).size() > 1) {
-                    // XXX currently do not check if the modules are unrelated by dependency.
                     sb.append("Some modules conflict on the definition of ").append(entry2.getKey()).append(" for ").
                             append(entry1.getKey()).append(": ").append(entry2.getValue()).append("\n");
                 }
@@ -679,7 +631,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         }
 
         if (sb.length () > 0) {
-            fail ("Some modules override their files and do not depend on each other\n" + sb);
+            fail("Some modules override some files without using the weight attribute correctly\n" + sb);
         }
 
 
