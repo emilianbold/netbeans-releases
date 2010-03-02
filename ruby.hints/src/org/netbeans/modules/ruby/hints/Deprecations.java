@@ -241,7 +241,7 @@ public class Deprecations extends RubyAstRule {
         return null;
     }
     
-    private static class DeprecationCallFix implements PreviewableFix {
+    static class DeprecationCallFix implements PreviewableFix {
 
         private final RubyRuleContext context;
         private final Node node;
@@ -278,7 +278,12 @@ public class Deprecations extends RubyAstRule {
 
         public EditList getEditList() throws Exception {
             BaseDocument doc = context.doc;
-            OffsetRange range = AstUtilities.getCallRange(node);
+            OffsetRange range = null;
+            if (AstUtilities.isCall(node)) {
+                range = AstUtilities.getCallRange(node);
+            } else {
+                range = AstUtilities.getRange(node);
+            }
             
             EditList list = new EditList(doc);
             if (range != OffsetRange.NONE) {

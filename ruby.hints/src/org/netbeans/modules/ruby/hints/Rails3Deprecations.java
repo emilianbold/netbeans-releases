@@ -48,7 +48,9 @@ import javax.swing.JComponent;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstPath;
@@ -57,6 +59,7 @@ import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.Deprecations.Deprecation;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
+import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.ruby.hints.RailsDeprecations.*;
@@ -83,6 +86,8 @@ public class Rails3Deprecations extends RubyAstRule {
         DEPRECATED_AR_METHODS.add(new Deprecation("validates_presence_of", "validates...:presence => true", null, null)); // NOI18N
     }
 
+    private RubyRuleContext context;
+
     public Rails3Deprecations() {
     }
 
@@ -100,6 +105,7 @@ public class Rails3Deprecations extends RubyAstRule {
 
     @Override
     public void run(RubyRuleContext context, List<Hint> result) {
+        this.context = context;
         Node root = context.node;
         ParserResult info = context.parserResult;
         AstPath path = context.path;
@@ -140,16 +146,14 @@ public class Rails3Deprecations extends RubyAstRule {
             // Skip matches in _test files, since the standard code generator still
             // spits out code which violates the deprecations
             // (such as    @request    = ActionController::TestRequest.new )
-            for (Deprecation deprecation : DEPRECATED_CONSTANTS) {
-                if (deprecation.oldName.equals(name)) {
-                    String message = NbBundle.getMessage(Rails3Deprecations.class, "DeprecatedRailsConstant", deprecation.oldName, deprecation.newName);
-                    addFix(this, info, node, result, message);
-                    break;
-                }
+            Deprecation deprecation = findMatching(name, DEPRECATED_CONSTANTS);
+            if (deprecation != null) {
+                String message = NbBundle.getMessage(Rails3Deprecations.class, "DeprecatedRailsConstant", deprecation.oldName, deprecation.newName);
+                addHintAndFix(node, result, message, deprecation);
             }
         } else if (AstUtilities.isCall(node)) {
-            String name = AstUtilities.getName(node);
             Deprecation deprecation = null;
+            String name = AstUtilities.getName(node);
             if (inActionController(info, node, this)) {
                 deprecation = findMatching(name, DEPRECATED_CONTROLLER_METHODS);
             } else if (inActiveRecordModel(info, node, this)) {
@@ -157,7 +161,7 @@ public class Rails3Deprecations extends RubyAstRule {
             }
             if (deprecation != null) {
                 String message = NbBundle.getMessage(Rails3Deprecations.class, "DeprecatedRailsMethodUse", deprecation.oldName, deprecation.newName);
-                addFix(this, info, node, result, message);
+                addHintAndFix(node, result, message, deprecation);
             }
         }
 
@@ -179,6 +183,17 @@ public class Rails3Deprecations extends RubyAstRule {
         }
         return null;
 
+    }
+
+    private void addHintAndFix(Node node, List<Hint> result, String displayName, Deprecation deprecation) {
+        OffsetRange range = AstUtilities.getNameRange(node);
+        ParserResult info = context.parserResult;
+        range = LexUtilities.getLexerOffsets(info, range);
+        if (range != OffsetRange.NONE) {
+            HintFix fix = new Deprecations.DeprecationCallFix(context, node, deprecation, false);
+            Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range, Collections.singletonList(fix), 100);
+            result.add(desc);
+        }
     }
 
     @Override

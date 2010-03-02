@@ -74,8 +74,11 @@ public abstract class RubyHints {
     static boolean isInRails3Project(FileObject file) {
         Project project = FileOwnerQuery.getOwner(file);
         // assumes that the presence of script/rails means it is a rails 3 project
+        if (!isRailsProject(project)){
+            return false;
+        }
         FileObject railsScript = project.getProjectDirectory().getFileObject("script/rails");
-        return isRailsProject(project) && railsScript != null && railsScript.isValid();
+        return railsScript != null && railsScript.isValid();
     }
 
     private static boolean isRailsProject(Project project) {
