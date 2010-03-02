@@ -420,7 +420,7 @@ static int init_files() {
             if (*path == '/') {
                 add_file_data(path, new_state);
             } else {
-                char real_path [PATH_MAX];
+                char real_path [PATH_MAX + 1];
                 if (normalize_path(path, real_path, sizeof real_path)) {
                     add_file_data(real_path, new_state);
                 } else {
