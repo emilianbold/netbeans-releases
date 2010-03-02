@@ -80,7 +80,7 @@ public class OutputLogger implements ISVNNotifyListener {
      * and in that case it should be closed again. See getLog().
      */
     private static final HashSet<String> openedWindows = new HashSet<String>(5);
-    private static final Pattern filePattern = Pattern.compile("[AUCGE ][ U][ B] (.*)"); //NOI18N
+    private static final Pattern filePattern = Pattern.compile("[AUCGE ][ UC][ BC] (.+)"); //NOI18N
     
     public static OutputLogger getLogger(SVNUrl repositoryRoot) {
         if (repositoryRoot != null) {
