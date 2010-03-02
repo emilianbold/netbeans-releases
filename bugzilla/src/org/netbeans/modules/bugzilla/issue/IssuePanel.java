@@ -298,19 +298,19 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         tasklistButton.setEnabled(false);
         reloadForm(true);
 
-        if(BugtrackingUtil.isNbRepository(issue.getRepository())) {
-            Node[] selection = issue.getSelection();
-            if(selection == null) {
-                // XXX not sure why we need this - i'm going to keep it for now,
-                // doesn't seem to harm
-                selection = WindowManager.getDefault().getRegistry().getActivatedNodes();
-            }
-            ownerInfo = ((BugzillaRepository) issue.getRepository()).getOwnerInfo(selection);
-            if(issue.isNew()) {
+        if (issue.isNew()) {
+            if(BugtrackingUtil.isNbRepository(issue.getRepository())) {
+                Node[] selection = issue.getSelection();
+                if(selection == null) {
+                    // XXX not sure why we need this - i'm going to keep it for now,
+                    // doesn't seem to harm
+                    selection = WindowManager.getDefault().getRegistry().getActivatedNodes();
+                }
+                ownerInfo = ((BugzillaRepository) issue.getRepository()).getOwnerInfo(selection);
                 addNetbeansInfo();
             }
+            selectProduct();
         }
-        selectProduct();
 
         // Hack to "link" the width of both columns
         Dimension dim = ccField.getPreferredSize();
