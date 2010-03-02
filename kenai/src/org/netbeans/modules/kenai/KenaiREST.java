@@ -263,6 +263,29 @@ public class KenaiREST extends KenaiImpl {
             throw new KenaiException(resp.getResponseMessage(),resp.getDataAsString());
     }
 
+    @Override
+    public void deleteProject(String project, PasswordAuthentication pa) throws KenaiException {
+        RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects/" + project + ".json", pa);
+        RestResponse resp = null;
+
+        long start = 0;
+        if (TIMER.isLoggable(Level.FINE)) {
+            start = System.currentTimeMillis();
+            System.err.println("Removing project " + project);
+        }
+        try {
+            resp = conn.delete(null);
+        } catch (IOException iOException) {
+            throw new KenaiException(iOException);
+        }
+        if (TIMER.isLoggable(Level.FINE)) {
+            System.err.println("project " + project + " removed in " + (System.currentTimeMillis()-start) + " ms");
+        }
+
+        if (resp.getResponseCode() != 200)
+            throw new KenaiException(resp.getResponseMessage(),resp.getDataAsString());
+    }
+
     private class LazyList<COLLECTION extends ListData, ITEM> extends AbstractCollection<ITEM> {
 
         private COLLECTION col;

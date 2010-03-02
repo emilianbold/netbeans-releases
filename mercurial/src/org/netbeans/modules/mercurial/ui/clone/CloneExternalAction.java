@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.mercurial.ui.clone;
 
+import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.wizards.CloneWizardAction;
 import org.openide.nodes.Node;
@@ -59,6 +60,9 @@ public class CloneExternalAction extends ContextAction {
 
     @Override
     protected void performContextAction(Node[] nodes) {
+        if (!Mercurial.getInstance().isAvailable(true)) {
+            return;
+        }
         CloneWizardAction wiz = CloneWizardAction.getInstance();
         wiz.performAction();
     }
