@@ -193,7 +193,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
         b.setBorderPainted(false);
         b.setOpaque(false);
         b.setText(null);
-        b.putClientProperty("hideActionText", Boolean.TRUE);
+        b.putClientProperty("hideActionText", Boolean.TRUE);	// NOI18N
         // NOI18N
         return b;
     }
@@ -272,7 +272,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
             return;
         }
         if (nTerm <= 0) {
-            throw new IllegalStateException("<= 0 Terminals");
+            throw new IllegalStateException("<= 0 Terminals");	// NOI18N
         }
         nTerm--;
         if (nTerm >= 1) {
@@ -302,7 +302,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
             title = originalName;
         }
         if (nTerm == 1) {
-            owner.setName(originalName + " - " + title);
+            owner.setName(originalName + " - " + title);	// NOI18N
         } else {
             owner.setName(originalName);
             tabbedPane.setTitleAt(tabbedPane.indexOfComponent(who), title);
@@ -389,7 +389,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
 	if (comp instanceof Terminal) {
 	    select((Terminal) comp);
 	} else {
-	    throw new UnsupportedOperationException("Can't select non-Terminals");
+	    throw new UnsupportedOperationException("Can't select non-Terminals");	// NOI18N
 	}
 
     }
@@ -410,12 +410,12 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
 
     @Override
     public void setToolTipText(JComponent comp, String text) {
-	throw new UnsupportedOperationException("Not supported yet.");
+	throw new UnsupportedOperationException("Not supported yet.");	// NOI18N
     }
 
     @Override
     public void setIcon(JComponent comp, Icon icon) {
-	throw new UnsupportedOperationException("Not supported yet.");
+	throw new UnsupportedOperationException("Not supported yet.");	// NOI18N
     }
 
     @Override
@@ -432,7 +432,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
 
     @Override
     public boolean isCloseable(JComponent comp) {
-	throw new UnsupportedOperationException("Not supported yet.");
+	throw new UnsupportedOperationException("Not supported yet.");	// NOI18N
     }
 
     public IOContainer ioContainer() {
