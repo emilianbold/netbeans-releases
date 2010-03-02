@@ -586,15 +586,16 @@ public class Utilities {
 
         JavacTaskImpl jti = JavaSourceAccessor.getINSTANCE().getJavacTask(info);
         Context context = jti.getContext();
+        JavaCompiler jc = JavaCompiler.instance(context);
 
         Log.instance(context).nerrors = 0;
 
         //TODO: remove impl. dep. on java.source
         JavaFileObject jfo = FileObjects.memoryFileObject("$", "$", new File("/tmp/t" + count + ".java").toURI(), System.currentTimeMillis(), clazz.toString());
-        boolean oldSkipAPs = jti.skipAnnotationProcessing;
+        boolean oldSkipAPs = jc.skipAnnotationProcessing;
 
         try {
-            jti.skipAnnotationProcessing = true;
+            jc.skipAnnotationProcessing = true;
             
             Iterable<? extends CompilationUnitTree> parsed = jti.parse(jfo);
             CompilationUnitTree cut = parsed.iterator().next();
@@ -606,7 +607,7 @@ public class Utilities {
             Exceptions.printStackTrace(ex);
             return null;
         } finally {
-            jti.skipAnnotationProcessing = oldSkipAPs;
+            jc.skipAnnotationProcessing = oldSkipAPs;
         }
     }
     }

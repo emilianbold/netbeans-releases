@@ -402,6 +402,45 @@ public class KenaiTest extends NbTestCase {
         }
     }
 
+    /**
+     * Test of createProject method, of class Kenai.
+     */
+    @Test
+    public void testDeleteProject() throws KenaiException {
+        System.out.println("deleteProject");
+        String name = UNITTESTUNIQUENAME;
+        String displayName = "Test Display Name";
+        String description = "Test Description";
+        String[] licenses = {"MIT"};
+        KenaiProject result;
+        try {
+            result = instance.createProject(name, displayName, description, licenses, "java");
+            assert result.getName().equals(name);
+            assert result.getDisplayName().equals(displayName);
+            assert result.getDescription().equals(description);
+
+            result.delete();
+
+            try {
+                instance.getProject(UNITTESTUNIQUENAME);
+                fail(UNITTESTUNIQUENAME + " not deleted");
+            } catch (KenaiException kenaiException) {
+                System.out.println(kenaiException);
+            }
+
+            try {
+                result.getDescription();
+                fail(UNITTESTUNIQUENAME + " not deleted");
+            } catch (KenaiException kenaiException) {
+                System.out.println(kenaiException);
+            }
+        } catch (KenaiException kem) {
+            System.out.println(kem.getAsString());
+            throw kem;
+        }
+    }
+
+
     @Test
     /**
      * Test of createProjectFeature method of class Kenai
@@ -708,6 +747,7 @@ public class KenaiTest extends NbTestCase {
         _suite.addTest(new KenaiTest("testGetServices"));
         _suite.addTest(new KenaiTest("testGetMyProjects"));
         _suite.addTest(new KenaiTest("testIsAuthorized"));
+        _suite.addTest(new KenaiTest("testDeleteProject"));
         return _suite;
     }
     ;

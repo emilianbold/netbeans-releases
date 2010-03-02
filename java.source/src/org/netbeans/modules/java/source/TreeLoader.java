@@ -58,6 +58,7 @@ import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.model.LazyTreeLoader;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -143,21 +144,22 @@ public class TreeLoader extends LazyTreeLoader {
             try {
                 FileObject fo = SourceUtils.getFile(clazz, cpInfo);                
                 JavacTaskImpl jti = context.get(JavacTaskImpl.class);
+                JavaCompiler jc = JavaCompiler.instance(context);
                 if (fo != null && jti != null) {
                     final Log log = Log.instance(context);
                     log.nerrors = 0;
                     JavaFileObject jfo = FileObjects.nbFileObject(fo, null);
                     Map<ClassSymbol, StringBuilder> oldCouplingErrors = couplingErrors;
-                    boolean oldSkipAPT = jti.skipAnnotationProcessing;
+                    boolean oldSkipAPT = jc.skipAnnotationProcessing;
                     try {
                         couplingErrors = new HashMap<ClassSymbol, StringBuilder>();
-                        jti.skipAnnotationProcessing = true;
+                        jc.skipAnnotationProcessing = true;
                         jti.analyze(jti.enter(jti.parse(jfo)));
                         if (persist)
                             dumpSymFile(ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), jti, clazz);
                         return true;
                     } finally {
-                        jti.skipAnnotationProcessing = oldSkipAPT;
+                        jc.skipAnnotationProcessing = oldSkipAPT;
                         log.nerrors = 0;
                         for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.entrySet()) {
                             dumpCouplingAbort(new CouplingAbort(e.getKey(), null), e.getValue().toString());

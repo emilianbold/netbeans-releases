@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.subversion.client;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.logging.Level;
@@ -53,14 +54,16 @@ import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TaskListener;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
  * @author Tomas Stupka
  */
-public abstract class SvnProgressSupport implements Runnable, Cancellable {
+public abstract class SvnProgressSupport implements Runnable, Cancellable, ISVNNotifyListener {
 
     private Cancellable delegate; 
     private volatile boolean canceled;
@@ -204,5 +207,30 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
 
     public void annotate(SVNClientException ex) {                        
         SvnClientExceptionHandler.notifyException(ex, !isCanceled(), true);        
+    }
+
+    @Override
+    public void setCommand(int i) { }
+
+    @Override
+    public void logCommandLine(String string) { }
+
+    @Override
+    public void logMessage(String string) { }
+
+    @Override
+    public void logError(String string) { }
+
+    @Override
+    public void logRevision(long l, String string) { }
+
+    @Override
+    public void logCompleted(String string) { }
+
+    @Override
+    public void onNotify(File file, SVNNodeKind svnnk) {
+        if(progressHandle != null) {
+            progressHandle.progress(file.getName());
+        }
     }
 }
