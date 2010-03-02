@@ -206,7 +206,7 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
                     Collection<Entry> imports = model.getImports();
                     //find the import of the base file
                     for(Entry e : imports) {
-                        if(e.getName().indexOf(baseFileName) != -1) {
+                        if(e.isValidInSourceDocument() && e.getName().indexOf(baseFileName) != -1) {
                             //found
                             WhereUsedElement elem = WhereUsedElement.create(file, e, ElementKind.FILE);
                             elements.add(refactoring, elem);

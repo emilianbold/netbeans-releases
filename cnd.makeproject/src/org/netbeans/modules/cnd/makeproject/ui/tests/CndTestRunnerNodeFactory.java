@@ -37,54 +37,33 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.testrunner;
+package org.netbeans.modules.cnd.makeproject.ui.tests;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.modules.gsf.testrunner.api.TestRunnerNodeFactory;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
+import org.openide.nodes.Node;
 
 /**
- * Utility methods for <code>TestRunner</code> implementations.
  *
  * @author Erno Mononen
  */
-final class TestRunnerUtilities {
-    
-    private TestRunnerUtilities() {
+public class CndTestRunnerNodeFactory extends TestRunnerNodeFactory {
+
+    @Override
+    public Node createTestMethodNode(Testcase testcase, Project project) {
+        return new CndTestMethodNode(testcase, project);
     }
 
-    /**
-     * Checks whether the given task should be run using the UI test runner.
-     * 
-     * @param project
-     * @param property
-     * @param task
-     * @param taskEvaluator
-     * @return true if the given task should be run using the UI test runner;
-     * false otherwise.
-     */
-    static boolean useTestRunner(Project project, String property, /*RakeTask task,*/ DefaultTaskEvaluator taskEvaluator) {
-throw new RuntimeException("useTestRunner -- not sure what to do here"); // NOI18N
-//        PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
-//        if (evaluator == null || evaluator.getProperty(property) == null) {
-//            return taskEvaluator.isDefault(task);
-//        }
-//        String definedTasks = evaluator.getProperty(property);
-//        if ("".equals(definedTasks.trim())) {
-//            return false;
-//        }
-//        for (String each : definedTasks.split(",")) { //NOI18N
-//            if (task.getTask().equals(each.trim())) {
-//                return true;
-//            }
-//        }
-//        return false;
-//        return true;
+    @Override
+    public Node createCallstackFrameNode(String frameInfo, String dispayName) {
+        return new CndCallstackFrameNode(frameInfo, dispayName);
     }
-    
- 
-    interface DefaultTaskEvaluator {
-        
-        boolean isDefault(Object task/*RakeTask task*/);
+
+    @Override
+    public TestsuiteNode createTestSuiteNode(String suiteName, boolean filtered) {
+        return new CndTestsuiteNode(suiteName, filtered);
     }
-    
+
 }

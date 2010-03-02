@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,21 +34,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.common.api;
 
-package org.netbeans.modules.cnd.testrunner.ui;
-
-import java.util.List;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 
 /**
+ * File reference descriptor. Represents a link from one file to another
  *
- * @author Erno Mononen
+ * @author marekfukala
  */
-public interface TestHandlerFactory {
+public final class FileReference {
 
-    List<TestRecognizerHandler> createHandlers();
+    private FileObject source, target;
+    private String linkPath;
+    private FileReferenceType type;
 
-    boolean printSummary();
+    public FileReference(FileObject source, FileObject target, String linkPath, FileReferenceType type) {
+        this.source = source;
+        this.target = target;
+        this.linkPath = linkPath;
+        this.type = type;
+    }
+    
+    public FileObject source() {
+        return source;
+    }
+
+    public FileObject target() {
+        return target;
+    }
+
+    public String linkPath() {
+        return linkPath;
+    }
+
+    /**
+     * @return normalized relative path.
+     */
+    public String optimizedLinkPath() {
+        return type() == FileReferenceType.RELATIVE ?
+            WebUtils.getRelativePath(source, target):
+            linkPath();
+    }
+
+    public FileReferenceType type() {
+        return type;
+    }
 
 }

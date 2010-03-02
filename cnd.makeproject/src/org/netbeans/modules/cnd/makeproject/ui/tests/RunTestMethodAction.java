@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,70 +31,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.ui.tests;
 
-package org.netbeans.modules.cnd.testrunner;
-
+import java.awt.event.ActionEvent;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
 
 /**
- *  An interface for unit test runner implementations.
+ * An action for running/debugging a singe test method.
  *
- * @author Nikolay Krasilnikov (http://nnnnnk.name)
+ * @author Erno Mononen
  */
-public interface TestRunner {
-    
-    enum TestType {
-        /**
-         * Represents Cpp Unit tests.
-         */
-        CPP_UNIT
+class RunTestMethodAction extends BaseTestMethodNodeAction {
+
+    private static final Logger LOGGER = Logger.getLogger(RunTestMethodAction.class.getName());
+    private final boolean debug;
+
+    public RunTestMethodAction(Testcase testcase, Project project, String name, boolean debug) {
+        super(testcase, project, name);
+        this.debug = debug;
     }
 
-    TestRunner getInstance();
-    
-    /**
-     * Checks whether this test runner supports running of tests of the
-     * given <code>type</code>.
-     * 
-     * @param type the type of the tests to run.
-     * @return true if this test runner supports the given <code>type</code>.
-     */
-    boolean supports(TestType type);
-    
-    /**
-     * Runs the given test file, i.e runs all tests
-     * in it.
-     * 
-     * @param testFile the file representing a unit test class.
-     * @param debug specifies whether the test file should be run 
-     * in the debug mode.
-     */
-    void runTest(FileObject testFile, boolean debug);
-    
-    /**
-     * Runs a single test method.
-     * 
-     * @param testFile the file representing the unit test class
-     * whose test method to run.
-     * @param testMethod the name of the test method to run.
-     * @param debug specifies whether the test method should be run in the 
-     * debug mode.
-     */
-    void runSingleTest(FileObject testFile, String testMethod, boolean debug);
-    
-    /**
-     * Runs all units tests in the given project.
-     * 
-     * @param project the project whose unit tests to run.
-     * @param debug specifies whether the tests of the project should 
-     * be run in the debug mode.
-     */
-    void runAllTests(Project project, boolean debug);
-
+    protected void doActionPerformed(ActionEvent e) {
+//        TestRunner.TestType type = TestRunner.TestType.valueOf(testcase.getType());
+//        DeclarationLocation location = PythonDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), false);
+//        if (!(DeclarationLocation.NONE == location)) {
+//            getTestRunner(type).runSingleTest(location.getFileObject(),testcase.getClassName(), testcase.getName(), debug);
+//        }
+    }
 }

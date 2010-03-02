@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,39 +34,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.testrunner;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.testrunner.api.TestRunnerNodeFactory;
-import org.netbeans.modules.gsf.testrunner.api.Testcase;
-import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
-import org.netbeans.modules.cnd.testrunner.ui.PythonCallstackFrameNode;
-import org.netbeans.modules.cnd.testrunner.ui.PythonTestMethodNode;
-import org.netbeans.modules.cnd.testrunner.ui.PythonTestsuiteNode;
-import org.openide.nodes.Node;
+package org.netbeans.modules.web.common.api;
 
 /**
+ * Represents a type of link between two files.
  *
- * @author Erno Mononen
+ * @author marekfukala
  */
-public class CndTestRunnerNodeFactory extends TestRunnerNodeFactory {
+public enum FileReferenceType {
 
-    @Override
-    public Node createTestMethodNode(Testcase testcase, Project project) {
-        return new PythonTestMethodNode(testcase, project);
-    }
-
-    @Override
-    public Node createCallstackFrameNode(String frameInfo, String dispayName) {
-        return new PythonCallstackFrameNode(frameInfo, dispayName);
-    }
-
-    @Override
-    public TestsuiteNode createTestSuiteNode(String suiteName, boolean filtered) {
-        return new PythonTestsuiteNode(suiteName, filtered);
-    }
+    RELATIVE, ABSOLUTE
 
 }

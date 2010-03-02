@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.testrunner.ui;
+package org.netbeans.modules.cnd.makeproject.ui.tests;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;

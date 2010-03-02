@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,46 +31,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.testrunner.ui;
+package org.netbeans.modules.cnd.makeproject.ui.tests;
 
-import javax.swing.Action;
-import org.netbeans.modules.gsf.testrunner.api.CallstackFrameNode;
-import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
-import org.netbeans.modules.gsf.testrunner.api.Trouble.ComparisonFailure;
-import org.openide.util.actions.SystemAction;
+import java.util.List;
 
 /**
  *
- * @author Marian Petras
+ * @author Erno Mononen
  */
-public final class PythonCallstackFrameNode extends CallstackFrameNode {
-    private final String displayName;
+public interface TestHandlerFactory {
 
-    public PythonCallstackFrameNode(String frameInfo, String displayName) {
-        super(frameInfo, displayName);
-        // Keep our own copy since the parent will assign frameInfo to displayName
-        // if none is provided
-        this.displayName = displayName;
-    }
+    List<TestRecognizerHandler> createHandlers();
 
-    /**
-     */
-    @Override
-    public Action getPreferredAction() {
-        // If it's a diff failure line, the default action is to diff it!
-        if (displayName != null) {
-            ComparisonFailure failure = CndUnitHandlerFactory.getComparisonFailure(displayName);
-            if (failure != null) {
-                return new DiffViewAction(failure);
-            }
-        }
-        
-        return new JumpToCallStackAction(this, frameInfo);
-    }
-    
-    public SystemAction[] getActions(boolean context) {
-        return new SystemAction[0];
-    }
+    boolean printSummary();
+
 }

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.css.gsf;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.csl.api.ColoringAttributes;
@@ -62,7 +63,7 @@ public class CssOccurancesFinder extends OccurrencesFinder {
 
     private int caretDocumentPosition;
     private boolean cancelled;
-    private Map<OffsetRange, ColoringAttributes> occurances = new HashMap<OffsetRange, ColoringAttributes>();
+    private Map<OffsetRange, ColoringAttributes> occurances = Collections.emptyMap();
 
     @Override
     public void setCaretPosition(int position) {
@@ -70,7 +71,6 @@ public class CssOccurancesFinder extends OccurrencesFinder {
         
         //TODO Add an optimalization which caches the occurances for some
         //document range - typically a token start-end.
-        occurances.clear();
     }
 
     @Override
@@ -117,6 +117,7 @@ public class CssOccurancesFinder extends OccurrencesFinder {
                 return ;
         }
 
+        final Map<OffsetRange, ColoringAttributes> occurancesLocal = new HashMap<OffsetRange, ColoringAttributes>();
         SimpleNodeUtil.visitChildren(root, new NodeVisitor() {
 
             @Override
@@ -139,10 +140,14 @@ public class CssOccurancesFinder extends OccurrencesFinder {
                         return ; //something is virtual
                     }
 
-                    occurances.put(new OffsetRange(docFrom, docTo), ColoringAttributes.MARK_OCCURRENCES);
+                    occurancesLocal.put(new OffsetRange(docFrom, docTo), ColoringAttributes.MARK_OCCURRENCES);
                 }
             }
         });
+
+        if(occurancesLocal.size() > 0) {
+            occurances = occurancesLocal;
+        }
 
     }
 
