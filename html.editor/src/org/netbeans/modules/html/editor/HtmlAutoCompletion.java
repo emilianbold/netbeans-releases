@@ -119,17 +119,21 @@ public class HtmlAutoCompletion {
             int dotPos,
             Caret caret,
             char ch) throws BadLocationException {
-        if (ch == '=') {
-            completeQuotes(doc, dotPos, caret);
-        } else if (ch == '"') {
+        if (ch == '=') { //NOI18N
+            if(HtmlPreferences.autocompleteQuotesAfterEqualSign()) {
+                completeQuotes(doc, dotPos, caret);
+            }
+        } else if (ch == '"') { //NOI18N
             //user has pressed quotation mark
-            handleQuotationMark(doc, dotPos, caret);
-        } else if (ch == '{') {
+            if(HtmlPreferences.autocompleteQuotes()) {
+                handleQuotationMark(doc, dotPos, caret);
+            }
+        } else if (ch == '{') { //NOI18N
             //user has pressed quotation mark
             handleEL(doc, dotPos, caret);
-        } else if (ch == '/') {
+        } else if (ch == '/') { //NOI18N
             handleEmptyTagCloseSymbol(doc, dotPos, caret);
-        } else if (ch == '>') {
+        } else if (ch == '>') { //NOI18N
             handleTagClosingSymbol(doc, dotPos, ch);
         }
     }

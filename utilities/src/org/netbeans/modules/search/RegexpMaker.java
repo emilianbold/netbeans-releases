@@ -101,8 +101,7 @@ final class RegexpMaker {
                 if (wholeWords && bufIsEmpty && isWordChar(c)) {
                     buf.append(checkNotAfterWordChar);
                 }
-                buf.append('\\');
-                if (isSimpleCharacter(c)) {
+                if ((c == 'n') || isSpecialCharacter(c)) {
                     buf.append('\\');
                 }
                 buf.append(c);
@@ -129,7 +128,7 @@ final class RegexpMaker {
                     if (wholeWords && bufIsEmpty && isWordChar(c)) {
                         buf.append(checkNotAfterWordChar);
                     }
-                    if (!isSimpleCharacter(c)) {
+                    if (isSpecialCharacter(c)) {
                         buf.append('\\');
                     }
                     buf.append(c);
@@ -275,7 +274,7 @@ final class RegexpMaker {
         boolean starPresent = false;
         for (char c : simplePatternList.toCharArray()) {
             if (quoted) {
-                if (!isSimpleCharacter(c)) {
+                if ((c == 'n') || isSpecialCharacter(c)) {
                     buf.append('\\');
                 }
                 buf.append(c);
@@ -302,7 +301,7 @@ final class RegexpMaker {
                     if (c == '\\') {
                         quoted = true;
                     } else {
-                        if (!isSimpleCharacter(c)) {
+                        if (isSpecialCharacter(c)) {
                             buf.append('\\');
                         }
                         buf.append(c);
@@ -321,13 +320,21 @@ final class RegexpMaker {
         return buf.toString();
     }
     
-    private static boolean isSimpleCharacter(char c) {
-        int cint = (int) c;
-        return (cint == 0x20)                               //space
-                || (cint > 0x7f)                            //non-ASCII
-                || (cint >= 0x30) && (cint <= 0x39)          //'0' .. '9'
-                || (cint & ~0x7f) == 0
-                    && ((cint &= ~0x20) >= 0x41) && (cint <= 0x5a); //a..z,A..Z
+    private static boolean isSpecialCharacter(char c) {
+        return (c > 0x20) && (c < 0x80) && !isAlnum(c);
+    }
+
+    private static boolean isAlnum(char c) {
+        return isAlpha(c) || isDigit(c);
+}
+
+    private static boolean isAlpha(char c) {
+        c |= 0x20;  //to lower case
+        return (c >= 'a') && (c <= 'z');
+    }
+
+    private static boolean isDigit(char c) {
+        return (c >= '0') && (c <= '9');
     }
 
 }

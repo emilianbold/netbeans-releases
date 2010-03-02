@@ -627,7 +627,7 @@ public interface DrawGraphics {
             }
 
             
-            if (drawTextLimitLine) { // draw limit line
+            if (drawTextLimitLine && textLimitWidth > 0) { // draw limit line
                 Rectangle clip = graphics.getClipBounds();
                 int lineX = absoluteX + textLimitWidth * defaultSpaceWidth;
                 if (lineX >= startX && lineX <= x){
@@ -797,7 +797,7 @@ public interface DrawGraphics {
         }
 
         public @Override void eol() {
-            if (drawTextLimitLine) { // draw limit line
+            if (drawTextLimitLine && textLimitWidth > 0) { // draw limit line
                 int lineX = absoluteX + textLimitWidth * defaultSpaceWidth;
                 if (lineX >= x-defaultSpaceWidth){
                     Color bakColor = graphics.getColor();

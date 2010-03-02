@@ -80,10 +80,6 @@ public abstract class CoreBridge {
     /** Abstracts away from definition of property editors. 
      * @since 1.7 */
     public abstract void registerPropertyEditors();
-    /** Abstracts away from loading of IDESettings.
-     * @since 1.7 
-     */
-    protected abstract void loadSettings();
 
     public abstract Lookup lookupCacheLoad ();
     
@@ -92,8 +88,6 @@ public abstract class CoreBridge {
     public abstract void setStatusText (String status);
     
     public abstract void initializePlaf (Class uiClass, int uiFontSize, java.net.URL themeURL);
-
-    public abstract void cliUsage(PrintWriter printWriter);
 
     public abstract int cli(
         String[] string, 
@@ -151,13 +145,7 @@ public abstract class CoreBridge {
         public void initializePlaf (Class uiClass, int uiFontSize, java.net.URL themeURL) {
         }
 
-        public void cliUsage(PrintWriter printWriter) {
-        }
-
         public void registerPropertyEditors() {
-        }
-
-        protected void loadSettings() {
         }
 
         public int cli(String[] string, InputStream inputStream, OutputStream outputStream, OutputStream errorStream, File file) {

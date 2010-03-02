@@ -55,6 +55,15 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-php-project-ui-actions-tests-CreateTestsAction.instance"/>
         </folder>
     </folder>
+    <folder name="UI">
+        <folder name="ToolActions">
+            <folder name="PHP">
+                <file name="org-netbeans-modules-php-project-ui-actions-tests-CreateTestsAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-php-project-ui-actions-tests-CreateTestsAction.instance"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
 
     <!-- uncomment/change default values for actions Download, Upload
     <folder name="Shortcuts">
@@ -187,7 +196,7 @@ made subject to such option by the copyright holder.
                 </file>
                 <file name="Formatting.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.indent.project.api.Customizers.createFormattingCategoryProvider"/>
                     <attr name="allowedMimeTypes" stringvalue="text/x-php5"/>
                     <attr name="position" intvalue="1000"/>
                 </file>

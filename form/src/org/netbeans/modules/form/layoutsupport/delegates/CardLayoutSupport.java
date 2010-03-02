@@ -64,6 +64,7 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
     /** Gets the supported layout manager class - CardLayout.
      * @return the class supported by this delegate
      */
+    @Override
     public Class getSupportedClass() {
         return CardLayout.class;
     }
@@ -269,6 +270,7 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
             this.card = card;
         }
 
+        @Override
         public Node.Property[] getProperties() {
             if (properties == null) {
                 properties = new Node.Property[] {
@@ -277,10 +279,12 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
                                  getBundle().getString("PROP_cardName"), // NOI18N
                                  getBundle().getString("HINT_cardName")) { // NOI18N
 
+                        @Override
                         public Object getTargetValue() {
                             return card;
                         }
 
+                        @Override
                         public void setTargetValue(Object value) {
                             card = (String)value;
                         }
@@ -297,10 +301,12 @@ public class CardLayoutSupport extends AbstractLayoutSupport {
             return properties;
         }
 
+        @Override
         public Object getConstraintsObject() {
             return card;
         }
 
+        @Override
         public LayoutConstraints cloneConstraints() {
             return new CardConstraints(card);
         }

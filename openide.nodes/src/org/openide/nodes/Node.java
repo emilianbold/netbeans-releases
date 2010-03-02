@@ -1262,6 +1262,11 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
         return this == obj;
     }
 
+    // For the benefit of FindBugs.
+    public @Override int hashCode() {
+        return super.hashCode();
+    }
+
     /** Obtains a resource string from bundle.
     * @param resName resource name
     * @return the string

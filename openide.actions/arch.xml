@@ -531,7 +531,7 @@ No.
 <answer id="exec-property">
         <ul>
             <li>
-                <api type="export" group="property" name="org.openide.util.actions.CallableSystemAction.synchronousByDefault" category="friend">
+                <api type="export" group="systemproperty" name="org.openide.util.actions.CallableSystemAction.synchronousByDefault" category="friend">
                     If set to <code>true</code>, changes default value of the
                     <code>asynchronous()</code> method. Useful for unit tests
                     which would prefer to run all tested actions synchronously.
@@ -825,8 +825,11 @@ No.
         </question>
 -->
 <answer id="resources-layer">
-No in fact. Just concrete action implementation provided by this module
-are typically used in xml layers.
+    <api name="UI-ToolActions" group="layer" type="export" category="stable">
+        Register your <a href="@JDK@/javax/swing/Action.html">javax.swing.Action</a>
+        instances in <code>UI/ToolActions</code> folder to make them known
+        to <a href="@TOP@/org/openide/actions/ToolsAction.html">ToolsAction</a>.
+    </api>
 </answer>
 
 

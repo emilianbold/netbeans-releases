@@ -39,14 +39,13 @@
 package org.netbeans.modules.css.indexing;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.css.gsf.CssLanguage;
+import org.netbeans.modules.css.gsf.api.CssParserResult;
+import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -65,75 +64,111 @@ import org.openide.util.Exceptions;
  */
 public class CssIndexer extends EmbeddingIndexer {
 
-    private static final Logger LOG = Logger.getLogger(CssIndexer.class.getSimpleName());
+    private static final Logger LOGGER = Logger.getLogger(CssIndexer.class.getSimpleName());
+    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
-    static {
-//	LOG.setLevel(Level.ALL); //DEBUG, DELETE!!!!!!!!!!!!!!!!
-    }
+    public static final String IMPORTS_KEY = "imports"; //NOI18N
+    public static final String IDS_KEY = "ids"; //NOI18N
+    public static final String CLASSES_KEY = "classes"; //NOI18N
+    public static final String HTML_ELEMENTS_KEY = "htmlElements"; //NOI18N
+    public static final String COLORS_KEY = "colors"; //NOI18N
 
+//    static {
+//	LOG.setLevel(Level.ALL);
+//    }
     @Override
     protected void index(Indexable indexable, Result parserResult, Context context) {
-	try {
-	    FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
-	    LOG.log(Level.FINE, "indexing " + fo.getPath()); //NOI18N
-	    List<IndexDocument> documents = new LinkedList<IndexDocument>();
-	    IndexingSupport support = IndexingSupport.getInstance(context);
+        try {
+            if(LOG) {
+                FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
+                LOGGER.log(Level.FINE, "indexing " + fo.getPath()); //NOI18N
+            }
 
-//            //get JSF models and index them
-//            Collection<JsfPageModel> models = JsfPageModelFactory.getModels((HtmlParserResult) parserResult);
-//            for (JsfPageModel model : models) {
-//                IndexDocument document = support.createDocument(indexable);
-//                modifications.add(model.storeToIndex(document));
-//                documents.add(document);
-//            }
+            CssFileModel model = new CssFileModel((CssParserResult) parserResult);
+            if (!model.isEmpty()) {
+                IndexingSupport support = IndexingSupport.getInstance(context);
+                IndexDocument document = support.createDocument(indexable);
+                
+                storeEntries(model.getIds(), document, IDS_KEY);
+                storeEntries(model.getClasses(), document, CLASSES_KEY);
+                storeEntries(model.getHtmlElements(), document, HTML_ELEMENTS_KEY);
+                storeEntries(model.getImports(), document, IMPORTS_KEY);
+                storeEntries(model.getColors(), document, COLORS_KEY);
 
-	    //add the documents to the index
-	    for (IndexDocument d : documents) {
-		support.addDocument(d);
-	    }
+                support.addDocument(document);
+            }
 
-	} catch (IOException ex) {
-	    Exceptions.printStackTrace(ex);
-	}
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void storeEntries(Collection<Entry> entries, IndexDocument doc, String key) {
+        if (!entries.isEmpty()) {
+            StringBuffer sb = new StringBuffer();
+            Iterator<Entry> i = entries.iterator();
+            while (i.hasNext()) {
+                sb.append(i.next().getName());
+                if (i.hasNext()) {
+                    sb.append(','); //NOI18N
+                }
+            }
+            sb.append(';'); //end of string
+            doc.addPair(key, sb.toString(), true, true);
+        }
     }
 
     public static class Factory extends EmbeddingIndexerFactory {
 
-	static final String NAME = "css"; //NOI18N
-	static final int VERSION = 1;
+        static final String NAME = "css"; //NOI18N
+        static final int VERSION = 1;
 
-	@Override
-	public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
-	    if (isIndexable(snapshot)) {
-		return new CssIndexer();
-	    } else {
-		return null;
-	    }
-	}
+        @Override
+        public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
+            if (isIndexable(snapshot)) {
+                return new CssIndexer();
+            } else {
+                return null;
+            }
+        }
 
-	@Override
-	public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
-	}
+        @Override
+        public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
+            try {
+                IndexingSupport is = IndexingSupport.getInstance(context);
+                for(Indexable i : deleted) {
+                    is.removeDocuments(i);
+                }
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, null, ioe);
+            }
+        }
 
-	@Override
-	public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
-	}
+        @Override
+        public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
+            try {
+                IndexingSupport is = IndexingSupport.getInstance(context);
+                for(Indexable i : dirty) {
+                    is.markDirtyDocuments(i);
+                }
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, null, ioe);
+            }
+        }
 
-	@Override
-	public String getIndexerName() {
-	    return NAME;
-	}
+        @Override
+        public String getIndexerName() {
+            return NAME;
+        }
 
-	@Override
-	public int getIndexVersion() {
-	    return VERSION;
-	}
+        @Override
+        public int getIndexVersion() {
+            return VERSION;
+        }
 
-	private boolean isIndexable(Snapshot snapshot) {
-	    //index all files possibly containing css
-	    FileObject fo = snapshot.getSource().getFileObject();
-	    String sourceFileMimeType = fo.getMIMEType();
-	    return Css.CSS_MIME_TYPE.equals(sourceFileMimeType);
-	}
-    } //end of Factory class
+        private boolean isIndexable(Snapshot snapshot) {
+            //index all files possibly containing css
+            return CssLanguage.CSS_MIME_TYPE.equals(snapshot.getMimeType());
+        }
+    }
 }

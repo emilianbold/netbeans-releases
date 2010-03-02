@@ -44,6 +44,7 @@ import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.CommentHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -108,6 +109,11 @@ public class JspLanguage extends DefaultLanguageConfig {
     @Override
     public KeystrokeHandler getKeystrokeHandler() {
         return new JspKeystrokeHandler();
+    }
+
+    @Override
+    public CommentHandler getCommentHandler() {
+        return new JspCommentHandler();
     }
 
 }

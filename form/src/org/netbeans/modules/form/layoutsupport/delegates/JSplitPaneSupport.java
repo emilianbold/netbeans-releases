@@ -71,6 +71,7 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
     /** Gets the supported layout manager class - JSplitPane.
      * @return the class supported by this delegate
      */
+    @Override
     public Class getSupportedClass() {
         return JSplitPane.class;
     }
@@ -510,6 +511,7 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
             this.position = position;
         }
 
+        @Override
         public Node.Property[] getProperties() {
             if (properties == null) {
                 properties = new Node.Property[] {
@@ -519,9 +521,11 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
                             getBundle().getString("PROP_splitPos"), // NOI18N
                             getBundle().getString("HINT_splitPos")) // NOI18N
                     {
+                        @Override
                         public Object getTargetValue() {
                             return position;
                         }
+                        @Override
                         public void setTargetValue(Object value) {
                             position = (String)value;
                         }
@@ -549,10 +553,12 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
             return properties;
         }
 
+        @Override
         public Object getConstraintsObject() {
             return position;
         }
 
+        @Override
         public LayoutConstraints cloneConstraints() {
             return new SplitConstraints(position);
         }

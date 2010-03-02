@@ -108,7 +108,7 @@ public final class MacroExpansionViewUtils {
         if (mainDoc == null) {
             return false;
         }
-        CsmFile csmFile = CsmUtilities.getCsmFile(mainDoc, true);
+        CsmFile csmFile = CsmUtilities.getCsmFile(mainDoc, true, false);
         if (csmFile == null) {
             return false;
         }

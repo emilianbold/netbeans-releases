@@ -206,44 +206,19 @@ public final class CreateElement implements ErrorRule<Void> {
 
         if (errorPath.getLeaf().getKind() == Kind.MEMBER_SELECT) {
             TreePath exp = new TreePath(errorPath, ((MemberSelectTree) errorPath.getLeaf()).getExpression());
-            Element targetElement = info.getTrees().getElement(exp);
             TypeMirror targetType = info.getTrees().getTypeMirror(exp);
 
-            if (targetElement != null && targetType != null && targetType.getKind() != TypeKind.ERROR) {
-                switch (targetElement.getKind()) {
-                    case CLASS:
-                    case INTERFACE:
-                    case ENUM:
-                    case ANNOTATION_TYPE:
-                        //situation like <something>.ClassName.<identifier>,
-                        //targetElement representing <something>.ClassName:
-                        //the new element needs to be static
-                        target = (TypeElement) targetElement;
-                        modifiers.add(Modifier.STATIC);
-                        break;
+            if (targetType != null && targetType.getKind() == TypeKind.DECLARED) {
+                Element expElement = info.getTrees().getElement(exp);
 
-                    case FIELD:
-                    case ENUM_CONSTANT:
-                    case LOCAL_VARIABLE:
-                    case PARAMETER:
-                    case EXCEPTION_PARAMETER:
-                        TypeMirror tm = targetElement.asType();
-                        if (tm.getKind() == TypeKind.DECLARED) {
-                            target = (TypeElement)((DeclaredType)tm).asElement();
-                        }
-                        break;
-                    case METHOD:
-                        Element el = info.getTypes().asElement(((ExecutableElement) targetElement).getReturnType());
+                if (isClassLikeElement(expElement)) {
+                    modifiers.add(Modifier.STATIC);
+                }
 
-                        if (el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
-                            target = (TypeElement) el;
-                        }
+                Element targetElement = info.getTypes().asElement(targetType);
 
-                        break;
-                    case CONSTRUCTOR:
-                        target = (TypeElement) targetElement.getEnclosingElement();
-                        break;
-                    //TODO: type parameter?
+                if (isClassLikeElement(targetElement)) {
+                    target = (TypeElement) targetElement;
                 }
             }
 
@@ -535,6 +510,10 @@ public final class CreateElement implements ErrorRule<Void> {
             return ElementKind.ENUM;
 
         return null;
+    }
+
+    private static boolean isClassLikeElement(Element expElement) {
+        return expElement != null && (expElement.getKind().isClass() || expElement.getKind().isInterface());
     }
 
     public void cancel() {

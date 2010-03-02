@@ -212,16 +212,19 @@ made subject to such option by the copyright holder.
         <output_object_file flags="-o " />
     </assembler>
     <scanner id="SunStudio">
-        <error pattern="^&quot;(.*)&quot;, line ([0-9]+):" language="c"/>
-        <error pattern="^&quot;(.*)&quot;, line ([0-9]+): Error:" language="cpp"/>
-        <error pattern="^&quot;(.*)&quot;, Line = ([0-9]+)," language="fortran"/>
-        <warning pattern="^&quot;(.*)&quot;, line ([0-9]+): warning:" language="c"/>
-        <warning pattern="^&quot;(.*)&quot;, line ([0-9]+): Warning:" language="cpp"/>
-        <warning pattern="^&quot;(.*)&quot;, Line = ([0-9]+), Column = ([0-9]+): WARNING:" language="fortran"/>
+        <error pattern="^&quot;(.*)&quot;, line ([0-9]+): warning:(.*)" severity="warning" language="c"/>
+        <error pattern="^&quot;(.*)&quot;, line ([0-9]+): Warning:(.*)" severity="warning" language="cpp"/>
+        <error pattern="^&quot;(.*)&quot;, line ([0-9]+):     Where:(.*)" severity="warning" language="cpp"/>
+        <error pattern="^&quot;(.*)&quot;, line ([0-9]+): Error:(.*)" severity="error" language="cpp"/>
+        <error pattern="^&quot;(.*)&quot;, line ([0-9]+):(.*)" severity="error" language="c,cpp"/>
+        <error pattern="^&quot;(.*)&quot;, Line = ([0-9]+), Column = ([0-9]+): WARNING:(.*)" severity="warning" language="fortran"/>
+        <error pattern="^&quot;(.*)&quot;, Line = ([0-9]+),(.*)" severity="error" language="fortran"/>
         <enter_directory pattern="^\(([^)]*)\)[^:]*:"/>
         <filter_out pattern="^::\(.*\)"/>
         <filter_out pattern="^:\(.*\).*"/>
         <filter_out pattern="^\(.*\).*:"/>
+        <filter_out pattern=".* --> Job errors$"/>
+        <filter_out pattern=".* --> Job output$"/>
     </scanner>
     <linker>
         <library_prefix stringvalue="lib"/>
@@ -233,12 +236,14 @@ made subject to such option by the copyright holder.
         <dynamic_library flags="-Bdynamic"/>
         <dynamic_library_basic flags="-G "/>
         <output_file flags="-o "/>
+        <strip_flag flags="-s"/>
     </linker>
     <make>
         <tool name="dmake"/>
         <alternative_path>
-            <path toolchain_name="*"/>
             <path directory="$PATH"/>
+            <path toolchain_family="SunStudio"/>
+            <path toolchain_name="*"/>
         </alternative_path>
         <version flags="-v" />
         <dependency_support code=".KEEP_STATE:\n.KEEP_STATE_FILE:.make.state.${CONF}\n" />
@@ -246,24 +251,24 @@ made subject to such option by the copyright holder.
     <debugger>
         <tool name="gdb"/>
         <alternative_path>
-            <path toolchain_name="*"/>
             <path directory="$PATH"/>
+            <path toolchain_name="*"/>
         </alternative_path>
         <version flags="-v" />
     </debugger>
     <qmake>
         <tool name="qmake"/>
         <alternative_path>
-            <path toolchain_name="*"/>
             <path directory="$PATH"/>
+            <path toolchain_name="*"/>
         </alternative_path>
         <version flags="-v" />
     </qmake>
     <cmake>
         <tool name="cmake"/>
         <alternative_path>
-            <path toolchain_name="*"/>
             <path directory="$PATH"/>
+            <path toolchain_name="*"/>
         </alternative_path>
         <version flags="--version" />
     </cmake>

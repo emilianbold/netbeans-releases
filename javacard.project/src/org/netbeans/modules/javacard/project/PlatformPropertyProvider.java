@@ -48,9 +48,12 @@ import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.javacard.JCUtil;
+import org.netbeans.modules.javacard.common.CommonSystemFilesystemPaths;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.propdos.ObservableProperties;
 import org.netbeans.modules.propdos.PropertiesAdapter;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
+import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.openide.loaders.DataObject;
@@ -82,6 +85,7 @@ class PlatformPropertyProvider implements PropertyProvider, PropertyChangeListen
     protected PropertiesAdapter findAdapter() {
         PropertyProvider projectProps = antHelper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String platformName = projectProps.getProperties().get(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
+        platformName = platformName == null ? JCConstants.DEFAULT_JAVACARD_PLATFORM_FILE_NAME : platformName;
         DataObject dob = JCUtil.findPlatformDataObjectNamed(platformName);
         if (dob != null) {
             PropertiesAdapter adap = dob.getLookup().lookup(PropertiesAdapter.class);

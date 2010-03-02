@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -42,8 +42,7 @@
 package org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions;
 
 import java.io.File;
-import java.util.logging.Logger;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
+import org.netbeans.modules.glassfish.eecommon.api.VerifierSupport;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.filesystems.FileObject;
@@ -54,7 +53,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 
-import org.netbeans.modules.j2ee.sun.ide.j2ee.VerifierSupport;
 /** Action that can always be invoked and work procedurally.
  * This action will display the verifier tool from app server
  * @author  ludo
@@ -102,7 +100,7 @@ public class RunASVerifierAction extends NodeAction {
       //      Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
         }        
         try{
-            VerifierSupport.launchVerifier(archiveLocation,null);
+            VerifierSupport.launchVerifier(archiveLocation,null,irf);
         } catch (Throwable t) {
             t.printStackTrace();
         } finally {

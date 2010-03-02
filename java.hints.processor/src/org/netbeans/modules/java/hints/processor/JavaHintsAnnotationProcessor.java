@@ -84,7 +84,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 @SupportedAnnotationTypes("org.netbeans.modules.java.hints.jackpot.code.spi.*")
-@ServiceProvider(service=Processor.class)
+@ServiceProvider(service=Processor.class, position=100)
 public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
     
     private static final Logger LOG = Logger.getLogger(JavaHintsAnnotationProcessor.class.getName());
@@ -237,6 +237,9 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
             checkBundle(rb, "DN_" + id, hint);
             checkBundle(rb, "DESC_" + id, hint);
         } catch (IOException ex) {
+            LOG.log(Level.FINE, null, ex);
+        } catch (IllegalArgumentException ex) {
+            //#179942: the SOURCE_PATH location may be unsupported, skip the check for bundle.
             LOG.log(Level.FINE, null, ex);
         }
 

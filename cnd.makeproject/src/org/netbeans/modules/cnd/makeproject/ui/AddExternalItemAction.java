@@ -50,10 +50,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -101,14 +101,14 @@ public class AddExternalItemAction extends AbstractAction {
                 continue;
             }
 	    String itemPath;
-	    if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
-                itemPath = IpeUtils.toAbsoluteOrRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
-            } else if (PathPanel.getMode() == PathPanel.REL) {
-                itemPath = IpeUtils.toRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
+	    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                itemPath = CndPathUtilitities.toRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
             } else {
                 itemPath = files[i].getPath();
             }
-	    itemPath = FilePathAdaptor.normalize(itemPath);
+	    itemPath = CndPathUtilitities.normalize(itemPath);
             Item item = makeProjectDescriptor.getExternalItemFolder().findItemByPath(itemPath);
 	    if (item != null) {
                 items.add(item);

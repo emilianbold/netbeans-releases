@@ -56,6 +56,7 @@ public class FlowLayoutSupport extends AbstractLayoutSupport
     /** Gets the supported layout manager class - FlowLayout.
      * @return the class supported by this delegate
      */
+    @Override
     public Class getSupportedClass() {
         return FlowLayout.class;
     }

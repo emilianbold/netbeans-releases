@@ -92,6 +92,7 @@ made subject to such option by the copyright holder.
              the changes if appropriate -->
         <file name="Standard.xml" url="Standard.xml">
             <attr name="position" intvalue="800"/>
+            <attr name="weight" intvalue="100"/><!-- override core.ui -->
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ide.resources.Bundle"/>
         </file>
         <file name="Debugging.xml" url="Debugging.xml">

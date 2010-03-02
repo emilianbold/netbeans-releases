@@ -45,6 +45,7 @@ import junit.framework.TestCase;
 import java.io.*;
 
 import org.netbeans.api.diff.Difference;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 
 /**
@@ -52,7 +53,7 @@ import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
  *
  * @author Maros Sandor
  */
-public class UnifiedDiffTest extends TestCase {
+public class UnifiedDiffTest extends NbTestCase {
     
     private File    dataRootDir;
     private File[]  testFiles;
@@ -66,7 +67,7 @@ public class UnifiedDiffTest extends TestCase {
 
     protected void setUp() throws Exception {
         //data.root.dir defined in project.properties
-        dataRootDir = new File(System.getProperty("data.root.dir"));
+        dataRootDir = getDataDir();
         diffProvider = new BuiltInDiffProvider();
         initPermutations();
     }

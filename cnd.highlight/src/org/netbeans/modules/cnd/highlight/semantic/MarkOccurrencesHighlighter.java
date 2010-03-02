@@ -158,7 +158,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                 return;
             }
 
-            CsmFile file = CsmUtilities.getCsmFile(doc, false);
+            CsmFile file = CsmUtilities.getCsmFile(doc, false, false);
             FileObject fo = CsmUtilities.getFileObject(doc);
 
             if (file == null || fo == null) {

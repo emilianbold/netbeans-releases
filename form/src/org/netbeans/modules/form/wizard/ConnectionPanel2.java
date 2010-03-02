@@ -47,7 +47,6 @@ import javax.swing.event.*;
 
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.form.*;
 import org.openide.WizardDescriptor;
 
 /**
@@ -86,6 +85,7 @@ class ConnectionPanel2 extends javax.swing.JPanel {
 
         actionList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         actionList.addListSelectionListener(new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent evt) {
                 if (!evt.getValueIsAdjusting())
                     ConnectionPanel2.this.wizardPanel.fireStateChanged();
@@ -175,6 +175,7 @@ class ConnectionPanel2 extends javax.swing.JPanel {
 
                 // sort the properties by name
                 Collections.sort(list, new Comparator<PropertyDescriptor>() {
+                    @Override
                     public int compare(PropertyDescriptor o1, PropertyDescriptor o2) {
                         return o1.getName().compareTo(o2.getName());
                     }
@@ -205,6 +206,7 @@ class ConnectionPanel2 extends javax.swing.JPanel {
 
                 // sort the methods by name
                 Collections.sort(list, new Comparator<MethodDescriptor>() {
+                    @Override
                     public int compare(MethodDescriptor o1, MethodDescriptor o2) {
                         return o1.getName().compareTo(o2.getName());
                     }
@@ -227,7 +229,7 @@ class ConnectionPanel2 extends javax.swing.JPanel {
     }
 
     private static String getMethodName(MethodDescriptor desc) {
-        StringBuffer sb = new StringBuffer(desc.getName());
+        StringBuilder sb = new StringBuilder(desc.getName());
         Class[] params = desc.getMethod().getParameterTypes();
         if ((params == null) ||(params.length == 0)) {
             sb.append("()"); // NOI18N

@@ -75,6 +75,7 @@ public final class MultiTargetChooserPanel implements WizardDescriptor.Panel, Ch
 
     public static final String TARGET_NAME = "MultiTargetChooserPanel.TARGET_NAME";
     public static final String TARGET_FOLDER = "MultiTargetChooserPanel.TARGET_FOLDER";
+    public static final String TARGET_PACKAGE = "MultiTargetChooserPanel.TARGET_PACKAGE";
     
     static final int TYPE_FILE = 0;
     static final int TYPE_PACKAGE = 1;
@@ -199,6 +200,7 @@ public final class MultiTargetChooserPanel implements WizardDescriptor.Panel, Ch
         
         wizard.putProperty(TARGET_NAME, gui.getTargetName());
         wizard.putProperty(TARGET_FOLDER, rootFolder.getFileObject(gui.getPackageFileName().replace ('.', '/')));
+        wizard.putProperty(TARGET_PACKAGE, gui.getPackageFileName());
         
         // this enables to display error messages from the bottom panel
         // Nevertheless, the previous error messages have bigger priorities 

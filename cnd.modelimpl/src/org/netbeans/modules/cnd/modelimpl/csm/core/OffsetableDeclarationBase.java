@@ -47,6 +47,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
@@ -231,8 +232,24 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
 
     @Override
     public String toString() {
-        return "" + getKind() + ' ' + getName()  + getOffsetString(); // NOI18N
-    }    
+        return "" + getKind() + ' ' + getName()  + getOffsetString() + getPositionString(); // NOI18N
+    }
+
+    protected CharSequence getPositionString() {
+        StringBuilder sb = new StringBuilder("["); // NOI18N
+        Position pos;
+        pos = getStartPosition();
+        sb.append(pos.getLine());
+        sb.append(':');
+        sb.append(pos.getColumn());
+        sb.append('-');
+        pos = getEndPosition();
+        sb.append(pos.getLine());
+        sb.append(':');
+        sb.append(pos.getColumn());
+        sb.append(']');
+        return sb;
+    }
 
     @Override
     public boolean equals(Object obj) {

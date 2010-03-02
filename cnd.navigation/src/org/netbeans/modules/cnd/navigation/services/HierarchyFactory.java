@@ -74,22 +74,27 @@ public class HierarchyFactory {
             this.actions = actions;
             direction = whoIncludes;
         }
+        @Override
         public Map<CsmFile, Set<CsmFile>> getModel() {
             return map;
         }
 
+        @Override
         public Action[] getDefaultActions() {
             return actions;
         }
 
+        @Override
         public Action getCloseWindowAction() {
             return close;
         }
 
+        @Override
         public void setCloseWindowAction(Action close) {
             this.close = close;
         }
 
+        @Override
         public boolean isDownDirection() {
             return !direction;
         }

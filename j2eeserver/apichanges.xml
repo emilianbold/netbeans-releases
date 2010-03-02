@@ -107,12 +107,62 @@ is the proper place.
         <!-- org.netbeans.modules.j2ee.deployment.profiler -->
         <apidef name="profiler">J2EE Server Common API</apidef>
         <!-- org.netbeans.modules.j2ee.deployment.plugins.spi.support -->
-        <apidef name="support">Server Integration Plugin SPI Support</apidef>        
+        <apidef name="support">Server Integration Plugin SPI Support</apidef>
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="optionalFactoryProxy">
+	    <api name="support"/>
+	    <summary>
+                Added class proxying the OptionalDeploymentManagerFactory and adding
+                the optional noInitializationFinish attribute.
+	    </summary>
+	    <version major="1" minor="66"/>
+	    <date day="25" month="2" year="2010"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                Added class ProxyOptionalFactory which delegates all calls
+                to configured delegate. Via noInitializationFinish it
+                is possible to supress finishInitialization() method when
+                it is not required by the plugin.
+                </p>
+                <p>
+                Designed to be used from XML Layer.
+                </p>
+	    </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.support" name="ProxyOptionalFactory"/>
+            <issue number="180893"/>
+	 </change>
+
+        <change id="deploymentFactoryProxy">
+	    <api name="support"/>
+	    <summary>
+                Added class proxying the DeploymentFactory and adding
+                the optional urlPattern attribute.
+	    </summary>
+	    <version major="1" minor="65"/>
+	    <date day="22" month="2" year="2010"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                Added class ProxyDeploymentFactory which delegates all calls
+                to configured delegate. Via urlPattern it is possible to do
+                precheck of server instance uri. The uri has to mach the pattern
+                otherwise the instance is rejected as not supported but
+                the factory.
+                </p>
+                <p>
+                Designed to be used from XML Layer.
+                </p>
+	    </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.support" name="ProxyDeploymentFactory"/>
+            <issue number="148177"/>
+	 </change>
 
         <change id="resourceChangeReporter">
 	    <api name="devmodules"/>

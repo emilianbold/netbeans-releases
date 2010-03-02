@@ -178,7 +178,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
          * @param tokenSequence  The token sequence for the RHTML code
          */
         public List<Embedding> translate(Snapshot snapshot) {
-            TokenHierarchy th = snapshot.getTokenHierarchy();
+            TokenHierarchy<?> th = snapshot.getTokenHierarchy();
             if (th == null) {
                 //the token hierarchy may be null if the language is not initialized yet
                 //for example if ergonomics is used and j2ee cluster not activated
@@ -284,7 +284,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
         public List<Embedding> translate(Snapshot snapshot) {
             List<Embedding> embeddings = new ArrayList<Embedding>();
-            TokenHierarchy th = snapshot.getTokenHierarchy();
+            TokenHierarchy<?> th = snapshot.getTokenHierarchy();
             if (th == null) {
                 //likely a rhtml language couldn't be found
                 LOG.info("Cannot get TokenHierarchy from snapshot " + snapshot); //NOI18N
@@ -628,7 +628,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         boolean in_javascript = false;
         boolean in_inlined_javascript = false;
         boolean opening_quotation_stripped = false;
-        Token lastInlinedJavascriptToken = null;
+        Token<?> lastInlinedJavascriptToken = null;
         Embedding lastInlinedJavscriptEmbedding = null;
     }
 }

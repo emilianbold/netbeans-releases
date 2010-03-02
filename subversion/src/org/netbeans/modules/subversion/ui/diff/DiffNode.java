@@ -53,13 +53,19 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
+import org.netbeans.modules.subversion.SvnFileNode;
+import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * Visible in the Search History Diff view.
  * 
  * @author Maros Sandor
  */
-class DiffNode extends AbstractNode {
+public class DiffNode extends AbstractNode {
     
     static final String COLUMN_NAME_NAME = "name";
     static final String COLUMN_NAME_PROPERTY = "property";
@@ -70,8 +76,8 @@ class DiffNode extends AbstractNode {
     private String          htmlDisplayName;
     private int displayStatuses;
     
-    public DiffNode(Setup setup, int displayStatuses) {
-        super(Children.LEAF, Lookups.singleton(setup));
+    DiffNode(Setup setup, SvnFileNode node, int displayStatuses) {
+        super(Children.LEAF, getLookupFor(setup, node.getLookupObjects()));
         this.setup = setup;
         this.displayStatuses = displayStatuses;
         setName(setup.getBaseFile().getName());
@@ -96,7 +102,7 @@ class DiffNode extends AbstractNode {
         return htmlDisplayName;
     }
     
-    public Setup getSetup() {
+    Setup getSetup() {
         return setup;
     }
 
@@ -106,6 +112,28 @@ class DiffNode extends AbstractNode {
         return new Action [0];
     }
     
+    /**
+     * Provide cookies to actions.
+     * If a node represents primary file of a DataObject
+     * it has respective DataObject cookies.
+     */
+    @SuppressWarnings("unchecked") // Adding getCookie(Class<Cookie> klass) results in name clash
+    @Override
+    public Cookie getCookie(Class klass) {
+        FileObject fo = FileUtil.toFileObject(getSetup().getBaseFile());
+        if (fo != null) {
+            try {
+                DataObject dobj = DataObject.find(fo);
+                if (fo.equals(dobj.getPrimaryFile())) {
+                    return dobj.getCookie(klass);
+                }
+            } catch (DataObjectNotFoundException e) {
+                // ignore file without data objects
+            }
+        }
+        return super.getCookie(klass);
+    }
+
     private void initProperties() {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = Sheet.createPropertiesSet();
@@ -119,6 +147,13 @@ class DiffNode extends AbstractNode {
         
         sheet.put(ps);
         setSheet(sheet);        
+    }
+
+    private static org.openide.util.Lookup getLookupFor (Setup setup, Object[] lookupObjects) {
+        Object[] allLookupObjects = new Object[lookupObjects.length + 1];
+        allLookupObjects[0] = setup;
+        System.arraycopy(lookupObjects, 0, allLookupObjects, 1, lookupObjects.length);
+        return Lookups.fixed(allLookupObjects);
     }
 
     private abstract class DiffNodeProperty extends PropertySupport.ReadOnly {
@@ -167,7 +202,7 @@ class DiffNode extends AbstractNode {
         public LocationProperty() {
             super(COLUMN_NAME_LOCATION, String.class, COLUMN_NAME_LOCATION, COLUMN_NAME_LOCATION);
             try {
-                location = SvnUtils.getRelativePath(setup.getBaseFile());
+                location = SvnModuleConfig.getDefault().isRepositoryPathPrefixed() ? SvnUtils.getRepositoryUrl(setup.getBaseFile()).toString() : SvnUtils.getRelativePath(setup.getBaseFile());
             } catch (SVNClientException e) {
                 location = "";
             }

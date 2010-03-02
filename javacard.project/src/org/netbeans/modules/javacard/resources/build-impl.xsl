@@ -284,6 +284,8 @@ No emulator found at ${emulator.executable}]]>
                 </xsl:choose>
                 <path id="javacard.tasks.path">
                     <pathelement path="${{javacard.nbtasksClassPath}}"/>
+                    <pathelement path="${{javacard.toolClassPath}}"/>
+                    <xsl:comment>Incorrect but appears to have been used at some point:</xsl:comment>
                     <pathelement path="${{javacard.toolClasspath}}"/>
                 </path>
                 <taskdef name="jc-pack" classname="${{javacard.tasks.packTaskClass}}">

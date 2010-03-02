@@ -142,13 +142,14 @@ public class MergeAction extends ContextAction {
         support.start(rp, root, NbBundle.getMessage(MergeAction.class, "MSG_MERGE_PROGRESS")); // NOI18N
     }
 
-    public static void doMergeAction(File root, String revStr, OutputLogger logger) throws HgException {
+    public static List<String> doMergeAction(File root, String revStr, OutputLogger logger) throws HgException {
         List<String> listMerge = HgCommand.doMerge(root, revStr);
         
         if (listMerge != null && !listMerge.isEmpty()) {
             logger.output(listMerge);
             handleMergeOutput(root, listMerge, true, logger);
         }
+        return listMerge;
     }
 
     public static void handleMergeOutput(File root, List<String> listMerge, boolean bDone, OutputLogger logger) throws HgException {

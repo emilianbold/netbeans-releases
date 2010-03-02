@@ -1,0 +1,270 @@
+body {
+    background: #000000;
+    font: 0.75em Trebuchet MS;
+    color: #555555;
+    margin: 0px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 800px;
+}
+img {
+    border: 0px;
+}
+a {
+    color: #323232;
+    text-decoration: none;
+    font-weight: bold;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+#mainpage {
+    width: 800px;
+    background: #445060;
+    margin: 0px;
+    padding: 0px;
+    float: left;
+}
+#find {
+}
+
+
+
+
+#header {
+    width: 800px;
+
+    background: #000000 url('images/logo.gif');
+    height: 129px;
+    float: left;
+    padding-left:0px; padding-right:0px; padding-top:0px; padding-bottom:0px;
+    border-bottom: 0px solid #000000;
+
+}
+
+#header .box {
+
+
+}
+
+#logo {
+
+
+    height: 60px;
+
+    padding-left:0px; padding-right:0px; padding-top:0px; padding-bottom:0px;
+
+}
+
+#logo h1 {
+    margin-top: 20px;
+    font: 30px AvantGarde Md BT;
+    color: #FFFFFF;
+    font-weight: bold;
+    text-align: center;
+}
+
+#logo h1 a {
+    margin-top: 20px;
+    font: 30px AvantGarde Md BT;
+    color: #FFFFFF;
+    font-weight: bold;
+    text-align: center;
+}
+
+#logo h2 {
+    margin-top: 25px;
+    font: 17px "AvantGarde Md BT";
+    color: #102842;
+    font-weight: bold;
+    text-align: center;
+}
+
+
+
+input {
+    height: 20px;
+    border: 1px solid #FFFFFF;
+    vertical-align: middle;
+    background: #FFFFFF url('images/in.gif');
+    font-family: Trebuchet MS;
+    font-weight: bold;
+    color: #555555;
+    font-size: 13px;
+
+}
+
+
+
+
+
+#search h1 {
+
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #FFFFFF;
+    margin: 0px;
+    text-align: left;
+
+
+
+}
+
+#box1 {
+    width: 468px;
+    height: 60px;
+    float: left;
+    text-align: center;
+    color: #FFFFFF;
+    padding-left:0px; padding-right:0px; padding-top:0px; padding-bottom:0px;
+}
+#box1 .box {
+    height: 60px;
+    background: #152B43;
+    border: 0px solid #000000;
+}
+
+#box2 {
+    width: 332px;
+    height: 60px;
+    float: left;
+    text-align: center;
+    color: #FFFFFF;
+    padding-left:0px; padding-right:0px; padding-top:0px; padding-bottom:0px;
+}
+#box2 .box {
+    height: 60px;
+    background: #152B43;
+    border: 0px solid #000000;
+}
+#box2 h1 {
+    height: 20px;
+
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 0px;
+    padding: 0px;
+}
+
+#footer {
+    width: 800px;
+    height: 40px;
+    text-align: center;
+    color: #ffffff;
+    float: left;
+    padding: 0px;
+    margin: 0px;
+}
+#footer .box {
+
+
+    background: #000000 url('images/bot.gif');
+}
+#footer p {
+    padding-left:0px; padding-right:0px; padding-top:0px; padding-bottom:0px;
+    margin: 0px;
+    height: 40px;
+    vertical-align: middle;
+
+
+}
+
+
+
+#content {
+    width: 648px;
+    float: left;
+    padding-left:0px; padding-right:0px; padding-top:0px; padding-bottom:0px;
+
+    border-left: 0px solid #000000;
+    border-right: 1px solid #000000;
+    border-top: 0px solid #000000;
+    border-bottom: 1px solid #000000;
+
+
+}
+#content .box {
+
+    background: #FFFFFF;
+
+
+}
+#content .box h1 {
+    color: #FFFFFF;
+    font-size: 1.2em;
+    height: 24px;
+    margin: 0px;
+    margin-top: 0px;
+    padding-left:10px; padding-right:0px; padding-top:1px; padding-bottom:0px;
+    border-top: 0px solid #000000;
+    border-bottom: 0px solid #000000;
+    background: #000000 url('images/gradient.gif');
+    vertical-align: middle;
+}
+#content .box h1 a {
+    color: #FFFFFF;
+
+}
+#content .box p {
+    line-height: 1.6em;
+    margin: 0px 0px ;
+    margin-top: 0px;
+    padding: 0px 10px;
+}
+
+
+
+
+#sidebar2 {
+
+    width: 151px;
+    float: right;
+    color: #ffffff;
+    font-size: 0.9em;
+    padding-left:0px; padding-right:0px; padding-top:0px; padding-bottom:0px;
+
+
+}
+#sidebar2 .box {
+    background: #445060;
+
+
+
+
+}
+#sidebar2 .box h1 {
+    text-align: center;
+    margin: 0px;
+    height: 25px;
+    background: #000000 url('images/menu.gif');
+    font-size: 1.2em;
+    font-weight: bold;
+    padding-left:0px; padding-right:0px; padding-top:4px; padding-bottom:0px;
+    color: #FFFFFF;
+}
+#sidebar2 ul {
+    list-style: none;
+    margin: 0px;
+    padding: 0px;
+
+}
+#sidebar2 ul li {
+    padding: 0px;
+    margin: 0px;
+    list-style: none;
+
+
+}
+#sidebar2 ul li a {
+    padding: 0px 0px 0px 8px;
+    display: block;
+    color: #E1E1E1;
+    text-decoration: none;
+    margin: 0px;
+}
+#sidebar2 ul li a:hover {
+    text-decoration: none;
+    background: #152B43;
+
+}

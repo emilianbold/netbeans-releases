@@ -117,6 +117,9 @@
               <Dimension value="[100, 66]"/>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="hyperlinkUpdate" listener="javax.swing.event.HyperlinkListener" parameters="javax.swing.event.HyperlinkEvent" handler="descriptionHyperlinkUpdate"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

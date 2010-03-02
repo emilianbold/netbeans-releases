@@ -69,6 +69,7 @@ import java.util.TreeSet;
 import javax.lang.model.element.TypeElement;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
+import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.swing.text.PlainDocument;
@@ -330,7 +331,9 @@ public final class CreatedModifiedFilesFactory {
     private static void copyAndSubstituteTokens(FileObject content, FileObject target, Map<String,String> tokens) throws IOException {
         ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
         ScriptEngine engine = scriptEngineManager.getEngineByName("freemarker");
-        assert engine != null : scriptEngineManager.getEngineFactories();
+        assert engine != null : "#163878: " + scriptEngineManager.getEngineFactories() + " lacks freemarker using " +
+                Thread.currentThread().getContextClassLoader() + " though lookup has " +
+                Lookup.getDefault().lookupAll(ScriptEngineFactory.class);
         Map<String,Object> bindings = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
         String basename = target.getName();
         for (CreateFromTemplateAttributesProvider provider : Lookup.getDefault().lookupAll(CreateFromTemplateAttributesProvider.class)) {

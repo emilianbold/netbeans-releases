@@ -111,6 +111,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
     private final ButtonModel moveUp;
     private final ButtonModel moveDown;
     private final ButtonModel edit;
+    private final boolean allowRemoveClassPath;
     private Document libraryPath;
     private ClassPathUiSupport.Callback callback;
     private AntProjectHelper helper;
@@ -131,6 +132,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                          ButtonModel moveUp,
                          ButtonModel moveDown, 
                          ButtonModel edit,
+                         boolean allowRemoveClassPath,
                          Document libPath,
                          ClassPathUiSupport.Callback callback,
                          String[] antArtifactTypes,
@@ -157,6 +159,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
         this.filter = filter;
         this.fileSelectionMode = fileSelectionMode;
         this.antArtifactTypes = antArtifactTypes;
+        this.allowRemoveClassPath = allowRemoveClassPath;
     }
 
     public static void register(Project project,
@@ -173,11 +176,53 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                                 Document libPath,
                                 ClassPathUiSupport.Callback callback) {    
         register(project, helper, refHelper, list, addJar, addLibrary, 
-                addAntArtifact, remove, moveUp, moveDown, edit, libPath, 
-                callback, DEFAULT_ANT_ARTIFACT_TYPES, JAR_ZIP_FILTER, 
-                JFileChooser.FILES_AND_DIRECTORIES);
+                addAntArtifact, remove, moveUp, moveDown, edit, false, libPath,
+                callback);
     }
     
+    public static void register(Project project,
+                                AntProjectHelper helper,
+                                ReferenceHelper refHelper,
+                                ListComponent list,
+                                ButtonModel addJar,
+                                ButtonModel addLibrary,
+                                ButtonModel addAntArtifact,
+                                ButtonModel remove,
+                                ButtonModel moveUp,
+                                ButtonModel moveDown,
+                                ButtonModel edit,
+                                boolean allowRemoveClassPath,
+                                Document libPath,
+                                ClassPathUiSupport.Callback callback) {
+        register(project, helper, refHelper, list, addJar, addLibrary,
+                addAntArtifact, remove, moveUp, moveDown, edit, allowRemoveClassPath, libPath,
+                callback, DEFAULT_ANT_ARTIFACT_TYPES, JAR_ZIP_FILTER,
+                JFileChooser.FILES_AND_DIRECTORIES);
+    }
+
+    public static void register(Project project,
+                                AntProjectHelper helper,
+                                ReferenceHelper refHelper,
+                                ListComponent list,
+                                ButtonModel addJar,
+                                ButtonModel addLibrary,
+                                ButtonModel addAntArtifact,
+                                ButtonModel remove,
+                                ButtonModel moveUp,
+                                ButtonModel moveDown,
+                                ButtonModel edit,
+                                Document libPath,
+                                ClassPathUiSupport.Callback callback,
+                                String[] antArtifactTypes,
+                                FileFilter filter,
+                                int fileSelectionMode) {
+        register(project, helper, refHelper, list, addJar, addLibrary, addAntArtifact, remove, moveUp, moveDown, edit, false, libPath, callback, antArtifactTypes, filter, fileSelectionMode);
+    }
+
+    /**Added {@code allowRemoveClassPath} option that will allow the user to delete {@code ${javac.classpath}}.
+     *
+     * @since org.netbeans.modules.java.api.common/0 1.14
+     */
     public static void register(Project project,
                                 AntProjectHelper helper,
                                 ReferenceHelper refHelper,
@@ -189,6 +234,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                                 ButtonModel moveUp,
                                 ButtonModel moveDown, 
                                 ButtonModel edit,
+                                boolean allowRemoveClassPath,
                                 Document libPath,
                                 ClassPathUiSupport.Callback callback,
                                 String[] antArtifactTypes,
@@ -206,6 +252,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                                             moveUp,
                                             moveDown,
                                             edit,
+                                            allowRemoveClassPath,
                                             libPath,
                                             callback,
                                             antArtifactTypes,
@@ -409,7 +456,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                 if ( selectionModel.isSelectedIndex( i ) ) {
                     ClassPathSupport.Item item = (ClassPathSupport.Item)listModel.get( i );
                     if ( item.getType() == ClassPathSupport.Item.TYPE_CLASSPATH ) {
-                        canRemove = false;
+                        canRemove = allowRemoveClassPath;
                         break;
                     }
                 }

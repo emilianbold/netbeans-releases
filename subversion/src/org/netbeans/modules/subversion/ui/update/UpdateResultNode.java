@@ -52,6 +52,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.util.lookup.Lookups;
@@ -167,10 +168,10 @@ class UpdateResultNode extends AbstractNode {
         refreshHtmlDisplayName();
     }
 
-    private String getRelativePath () {
+    private String getLocation () {
         if (relativePath == null) {
             try {
-                relativePath = SvnUtils.getRelativePath(info.getFile());
+                relativePath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed() ? SvnUtils.getRepositoryUrl(info.getFile()).toString() : SvnUtils.getRelativePath(info.getFile());
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(ex, false, false);
                 relativePath = "";                                      //NOI18N
@@ -197,7 +198,7 @@ class UpdateResultNode extends AbstractNode {
         private String shortPath;
         public PathProperty() {
             super(COLUMN_NAME_PATH, String.class, NbBundle.getMessage(UpdateResultNode.class, "LBL_Path_Name"), NbBundle.getMessage(UpdateResultNode.class, "LBL_Path_Desc")); // NOI18N
-            shortPath = getRelativePath();
+            shortPath = getLocation();
             setValue("sortkey", shortPath + "\t" + UpdateResultNode.this.getName()); // NOI18N
         }
         public String getValue() throws IllegalAccessException, InvocationTargetException {
@@ -221,7 +222,7 @@ class UpdateResultNode extends AbstractNode {
         private String shortPath;        
         public FileStatusProperty() {            
             super(COLUMN_NAME_STATUS, String.class, NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Name"), NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Desc"));            
-            shortPath = getRelativePath();
+            shortPath = getLocation();
             String sortable = Integer.toString(info.getAction());
             setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + UpdateResultNode.this.getName());
         }

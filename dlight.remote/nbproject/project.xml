@@ -54,16 +54,40 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.dlight.nativeexecution</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.dlight.remote.api</package>
-                <package>org.netbeans.modules.dlight.remote.spi</package>
-            </public-packages>
+            <friend-packages>
+                <friend>com.sun.cloud.cnd</friend>
+                <friend>com.sun.cloud.cnd.remote.ext</friend>
+                <friend>com.sun.tools.debugger.common</friend>
+                <friend>com.sun.tools.debugger.dbx</friend>
+                <friend>com.sun.tools.debugger.dbxgui</friend>
+                <friend>com.sun.tools.debugger.gdb</friend>
+                <friend>org.netbeans.modules.cnd</friend>
+                <friend>org.netbeans.modules.cnd.api.remote</friend>
+                <friend>org.netbeans.modules.cnd.audit</friend>
+                <friend>org.netbeans.modules.cnd.debugger.common</friend>
+                <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
+                <friend>org.netbeans.modules.cnd.discovery</friend>
+                <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
+                <friend>org.netbeans.modules.cnd.gizmo</friend>
+                <friend>org.netbeans.modules.cnd.makeproject</friend>
+                <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
+                <friend>org.netbeans.modules.cnd.remote</friend>
+                <friend>org.netbeans.modules.cnd.tha</friend>
+                <friend>org.netbeans.modules.cnd.toolchain</friend>
+                <package>org.netbeans.modules.remote.api</package>
+                <package>org.netbeans.modules.remote.spi</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

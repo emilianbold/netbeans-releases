@@ -138,6 +138,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             designer.setTopDesignComponent(radContainer, true);
             // terrible hack - wait for designer update
             invokeLater(2, new Runnable() {
+                @Override
                 public void run() {
                     containerProxy.addAllProxies();
                 }
@@ -353,6 +354,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
      * once, before the Customizer has been added to any parent AWT container.
      * @param bean  The object to be customized.
      */
+    @Override
     public void setObject(Object bean) {
         layoutSupport = (GridBagLayoutSupport) bean;
 //                        ((LayoutSupportManager)bean).getLayoutDelegate();
@@ -391,6 +393,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
     // Form listener implementation
 
     class FormListener implements FormModelListener {
+        @Override
         public void formChanged(FormModelEvent[] events) {
             if (events != null && GridBagCustomizer.this.isShowing()) {
                 boolean modifying = false;
@@ -408,6 +411,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                 // (it would be much nicer to have some listener on
                 //  FormDesigner directly...)
                 invokeLater(3, new Runnable() {
+                    @Override
                     public void run() {
                         containerProxy.updateAllProxies();
                     }
@@ -423,6 +427,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
         try {
             while (count > 0) {
                 SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                     }
                 });
@@ -439,6 +444,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             task.run();
         else
             SwingUtilities.invokeLater(new Runnable() {
+            @Override
                 public void run() {
                     invokeLater(count-1, task);
                 }
@@ -1332,10 +1338,12 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             setBounds(Utilities.findCenterBounds(size));
         }
 
+        @Override
         public void setObject(Object bean) {
             customizerPanel.setObject(bean);
         }
 
+        @Override
         public void actionPerformed(ActionEvent ev) {
             if (ev.getActionCommand().equals("close")) // NOI18N
                 dispose();

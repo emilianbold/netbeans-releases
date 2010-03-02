@@ -38,110 +38,161 @@
  */
 package org.netbeans.modules.php.dbgp;
 
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArraySet;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.project.api.PhpProjectUtils;
+import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.util.Cancellable;
 
 /**
  * @author Radek Matous
  */
-public class SessionManager {
-    static String ID = "netbeans-PHP-DBGP-DebugInfo";// NOI18N
-    private Set<DebugSession> debugSessions;
-    private ServerThread serverThread;
+public class SessionManager  {
+    private static final String ID = "netbeans-PHP-DBGP-DebugInfo";// NOI18N
+    private static final ServerThread serverThread;
     private static final SessionManager INSTANCE = new SessionManager();
 
     public static SessionManager getInstance(){
         return INSTANCE;
     }
-    
-    SessionManager() {
-        debugSessions = new CopyOnWriteArraySet<DebugSession>();
-        serverThread = new ServerThread(this);
+
+    static {
+        serverThread = new ServerThread();
     }
 
-    public synchronized  void startSession(SessionId id,DebuggerOptions options, Callable<Cancellable> backendLauncher) {
+    public void startNewSession(Project project, Callable<Cancellable> run, XDebugStarter.Properties properties) {
+        assert properties.startFile != null;
+        SessionId sessionId = SessionManager.getSessionId(project);
+        if (sessionId == null) {
+            sessionId = new SessionId(properties.startFile);
+            DebuggerOptions options = new DebuggerOptions();
+            options.debugForFirstPageOnly = properties.closeSession;
+            options.pathMapping = properties.pathMapping;
+            options.debugProxy = properties.debugProxy;
+            startSession(sessionId, options, run);
+            long started = System.currentTimeMillis();
+            if (!sessionId.isInitialized(true)) {
+                ConnectionErrMessage.showMe(((int) (System.currentTimeMillis() - started) / 1000));
+                return;
+            }
+        }
+    }
+
+    public boolean isAlreadyRunning() {
+        return getPhpSession() != null;
+    }
+
+    public void stopCurrentSession(boolean wait) {
+        Session session = getPhpSession();
+        if (session != null) {
+            DebugSession dbgSession = ConversionUtils.toDebugSession(session);
+            SessionManager.getInstance().stopSession(session);
+            if (wait) {
+                dbgSession.waitFinished();
+            }
+        }
+    }
+
+    synchronized  Session startSession(SessionId id, DebuggerOptions options, Callable<Cancellable> backendLauncher) {
         DebugSession dbgSession = new DebugSession(options, new BackendLauncher(backendLauncher));
         DebuggerInfo dInfo = DebuggerInfo.create(ID, new Object[]{id, dbgSession});
-        DebuggerInfo.create(ID, new Object[]{id, dbgSession});
-        DebuggerEngine[] engines = DebuggerManager.getDebuggerManager().startDebugging(dInfo);
-        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-        for (Session session : sessions) {
+        DebuggerManager.getDebuggerManager().startDebugging(dInfo);        
+        for (Session session : DebuggerManager.getDebuggerManager().getSessions()) {
             DebugSession debugSession = session.lookupFirst(null, DebugSession.class);
             if (debugSession != null && debugSession == dbgSession) {
                 dbgSession.setSession(session);
             }
         }
-        serverThread.invokeLater();
-    }
-
-
-    synchronized DebugSession add(DebugSession session) {
-        debugSessions.add(session);
+        Session session = dbgSession.getSession();
+        if (session != null) {
+            serverThread.invokeLater();
+        }
         return session;
     }
 
-    synchronized DebugSession remove(DebugSession session) {
-        debugSessions.remove(session);
-        return session;
-    }
-
-    public synchronized List<DebugSession> findSessionsById(SessionId id){
-        List<DebugSession> result = new LinkedList<DebugSession>();
-        for( DebugSession session : debugSessions) {
-            SessionId sessId = session.getSessionId();
-            if (id.equals(sessId)){
-                result.add( session );
-            }
-        }
-        return result;
-    }
-
-    public synchronized DebugSession getCurrentSession( SessionId id ){
-        if ( id == null ) {
-            return null;
-        }
-        return ConversionUtils.toDebugSession(id);
-    }
-
-    public synchronized void stop(Session session) {
+    public synchronized void stopSession(Session session) {
         SessionId id = session.lookupFirst(null, SessionId.class);
-        List<DebugSession> list = findSessionsById(id);
-        for (DebugSession debSess : list) {
-            debSess.cancel();
-            remove(debSess);
+        DebugSession debSess = getSession(id);
+        if (debSess != null) {
+            debSess.stopSession();
+        } else {
+            stopEngines(session);
         }
-        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-        boolean last = true;
-        for (Session sess : sessions) {
-            if ( sess.equals(session )) {
-                continue;
-            }
-            if ( sess.lookupFirst( null , SessionId.class )!= null ) {
-                last = false;
-            }
-        }
-        if ( last ) {
-            serverThread.cancel();
-        }
-
-        stopEngines( session );
     }
 
-    private void stopEngines( Session session ) {
+    public static void stopEngines(Session session) {
         String[] languages = session.getSupportedLanguages();
         for (String language : languages) {
             DebuggerEngine engine = session.getEngineForLanguage(language);
-            ((DbgpEngineProvider)engine.lookupFirst(null,
+            ((DbgpEngineProvider) engine.lookupFirst(null,
                     DebuggerEngineProvider.class)).getDestructor().killEngine();
         }
+        SessionManager.closeServerThread(session);
+    }
+
+    public static SessionId getSessionId(Project project) {
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        for (Session session : sessions) {
+            SessionId sessionId = session.lookupFirst(null, SessionId.class);
+            if (sessionId != null) {
+                Project sessionProject = sessionId.getProject();
+                if (project.equals(sessionProject)) {
+                    return sessionId;
+                }
+            }
+        }
+        return null;
+    }
+
+    public List<DebugSession> findSessionsById(SessionId id){
+        return Collections.singletonList(getSession(id));
+    }
+
+    public DebugSession getSession(SessionId id){
+        return (id != null) ? ConversionUtils.toDebugSession(id) : null;
+    }
+
+
+    public static void closeServerThread(Session session) {
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        boolean last = true;
+        for (Session sess : sessions) {
+            if (sess.equals(session)) {
+                continue;
+            }
+            if (sess.lookupFirst(null, SessionId.class) != null) {
+                last = false;
+            }
+        }
+        if (last) {
+            serverThread.cancel();
+        }
+    }
+
+    private Session getPhpSession() {
+        DebuggerManager manager = DebuggerManager.getDebuggerManager();
+        Session currentSession = manager.getCurrentSession();
+        Session retval = currentSession != null ? getPhpSession(new Session[] {currentSession}) : null;
+        return  retval != null ? retval : getPhpSession(manager.getSessions());
+    }
+    
+    private Session getPhpSession(Session[] sessions) {
+        for (Session session : sessions) {
+            SessionId sessionId = session.lookupFirst(null, SessionId.class);
+            if (sessionId != null) {
+                Project sessionProject = sessionId.getProject();
+                if (sessionProject != null && PhpProjectUtils.isPhpProject(sessionProject)) {
+                    return session;
+                }
+            }
+        }
+        return null;
     }
 }

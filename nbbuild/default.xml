@@ -123,8 +123,8 @@ made subject to such option by the copyright holder.
     <taskdef name="checkmoduleconfigs" classname="org.netbeans.nbbuild.CheckModuleConfigs" classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <property name="tasks-already-set" value="true"/>
   </target>
-  
-  <target name="init" depends="init-tasks">
+
+  <target name="init" depends="init-tasks,-define-cluster-path">
     <!-- Gets the module name -->
     <getmodulename name="module.name" root="${nb_all}"/>
     
@@ -141,7 +141,9 @@ made subject to such option by the copyright holder.
       <entry  key="${module.name}.dir" value="$${netbeans.dest.dir}/${cluster.dir}"/>
     </propertyfile>
     <property name="${module.name}.dir" value="${netbeans.dest.dir}/${cluster.dir}"/>
+  </target>
 
+  <target name="-define-cluster-path">
     <!-- netbeans.dest.dir -> cluster.path.id translation for NB.org modules -->
     <!-- XXX should use cluster.properties rather than relying on this file -->
     <available property="clusters.file" file="${nb_all}/ide/launcher/netbeans.clusters" value="${nb_all}/ide/launcher/netbeans.clusters"/>

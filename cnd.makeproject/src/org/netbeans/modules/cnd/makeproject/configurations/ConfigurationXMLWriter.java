@@ -84,7 +84,7 @@ public class ConfigurationXMLWriter extends XMLDocWriter {
      */
     private void write(String relPath) {
     	File projectDirectoryFile = FileUtil.toFile(projectDirectory);
-        File projectDescriptorFile = new File(projectDirectoryFile.getPath() + '/' + relPath); // UNIX path
+        File projectDescriptorFile = new File(projectDirectoryFile.getPath(), relPath); // UNIX path
 
         if (!projectDescriptorFile.exists()) {
             try {

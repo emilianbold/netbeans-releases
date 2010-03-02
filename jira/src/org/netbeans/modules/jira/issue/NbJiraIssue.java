@@ -113,13 +113,23 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     private JiraRepository repository;
     private Controller controller;
 
-    static final String LABEL_NAME_ID           = "jira.issue.id";          // NOI18N
-    static final String LABEL_NAME_TYPE         = "jira.issue.type";        // NOI18N
-    static final String LABEL_NAME_PRIORITY     = "jira.issue.priority";    // NOI18N
-    static final String LABEL_NAME_STATUS       = "jira.issue.status";      // NOI18N
-    static final String LABEL_NAME_RESOLUTION   = "jira.issue.resolution";  // NOI18N
-    static final String LABEL_NAME_SUMMARY      = "jira.issue.summary";     // NOI18N
-    static final String LABEL_NAME_ASSIGNED_TO  = "jira.issue.assigned";    // NOI18N
+    static final String LABEL_NAME_ID               = "jira.issue.id";          // NOI18N
+    static final String LABEL_NAME_TYPE             = "jira.issue.type";        // NOI18N
+    static final String LABEL_NAME_PRIORITY         = "jira.issue.priority";    // NOI18N
+    static final String LABEL_NAME_STATUS           = "jira.issue.status";      // NOI18N
+    static final String LABEL_NAME_RESOLUTION       = "jira.issue.resolution";  // NOI18N    
+    static final String LABEL_NAME_ASSIGNED_TO      = "jira.issue.assigned";    // NOI18N
+
+    static final String LABEL_NAME_PROJECT          = "jira.issue.project";     // NOI18N
+    static final String LABEL_NAME_COMPONENTS       = "jira.issue.components";  // NOI18N
+    static final String LABEL_NAME_AFFECTS_VERSION  = "jira.issue.affectsversion"; // NOI18N
+    static final String LABEL_NAME_FIX_VERSION      = "jira.issue.fixversion";  // NOI18N
+    static final String LABEL_NAME_CREATED          = "jira.issue.created";     // NOI18N
+    static final String LABEL_NAME_UPDATED          = "jira.issue.updated";     // NOI18N
+    static final String LABEL_NAME_DUE              = "jira.issue.due";         // NOI18N
+    static final String LABEL_NAME_ESTIMATE         = "jira.issue.estimate";    // NOI18N
+    static final String LABEL_NAME_INITIAL_ESTIMATE = "jira.issue.initestimte"; // NOI18N
+    static final String LABEL_NAME_TIME_SPENT       = "jira.issue.timespent";   // NOI18N
 
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm";               // NOI18N
     private static final int SHORTENED_SUMMARY_LENGTH = 22;
@@ -258,6 +268,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
             public void run() {
                 ((JiraIssueNode)getNode()).fireDataChanged();
                 fireDataChanged();
+                refreshViewData(false);
             }
         });
     }
@@ -490,7 +501,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      * @param key key of the issue
      * @return true if successfully refreshed
      */
-    public boolean refresh(String key, boolean cacheThisIssue) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+    private boolean refresh(String key, boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
             TaskData td = JiraUtils.getTaskDataByKey(repository, key);
@@ -498,9 +509,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                 return false;
             }
             getRepository().getIssueCache().setIssueData(this, td); // XXX
-            if (controller != null) {
-                controller.refreshViewData();
-            }
+            refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);
         }
@@ -512,7 +521,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      * @param id id of the issue
      * @return true if successfully refreshed
      */
-    public boolean refreshById(String id) {
+    private boolean refreshById(String id, boolean afterSubmitRefresh) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
             TaskData td = JiraUtils.getTaskDataById(repository, id);
@@ -520,9 +529,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                 return false;
             }
             getRepository().getIssueCache().setIssueData(this, td);
-            if (controller != null) {
-                controller.refreshViewData();
-            }
+            refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);
         }
@@ -838,7 +845,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                 }
                 Jira.getInstance().getRepositoryConnector().getTaskAttachmentHandler().postContent(repository.getTaskRepository(),
                         task, attachmentSource, comment, attAttribute, new NullProgressMonitor());
-                refresh(); // XXX to much refresh - is there no other way?
+                refresh(getID(), true); // XXX to much refresh - is there no other way?
             }
         };
         repository.getExecutor().execute(cmd);
@@ -978,37 +985,76 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
 
     public static ColumnDescriptor[] getColumnDescriptors(JiraRepository repository) {
         if(DESCRIPTORS == null) {
-            ResourceBundle loc = NbBundle.getBundle(NbJiraIssue.class);
-            JiraConfiguration conf = repository.getConfiguration();
+            ResourceBundle loc = NbBundle.getBundle(NbJiraIssue.class);            
             JTable t = new JTable();
             DESCRIPTORS = new ColumnDescriptor[] {
                 new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
-                                                  loc.getString("CTL_Issue_ID_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_ID_Desc"), // NOI18N
-                                                  BugtrackingUtil.getColumnWidthInPixels(20, t)),
-                new ColumnDescriptor<String>(LABEL_NAME_SUMMARY, String.class,
-                                                  loc.getString("CTL_Issue_Summary_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Summary_Desc")), // NOI18N
+                                              loc.getString("CTL_Issue_ID_Title"), // NOI18N
+                                              loc.getString("CTL_Issue_ID_Desc"), // NOI18N
+                                              BugtrackingUtil.getColumnWidthInPixels(20, t)),
+                new ColumnDescriptor<String>(IssueNode.LABEL_NAME_SUMMARY, String.class,
+                                              loc.getString("CTL_Issue_Summary_Title"), // NOI18N
+                                              loc.getString("CTL_Issue_Summary_Desc")), // NOI18N
                 new ColumnDescriptor<String>(LABEL_NAME_TYPE, String.class,
-                                                  loc.getString("CTL_Issue_Type_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Type_Desc"), // NOI18N
-                                                  0),
+                                              loc.getString("CTL_Issue_Type_Title"), // NOI18N
+                                              loc.getString("CTL_Issue_Type_Desc"), // NOI18N
+                                              0),
                 new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
-                                                  loc.getString("CTL_Issue_Priority_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Priority_Desc"), // NOI18N
-                                                  0),
+                                              loc.getString("CTL_Issue_Priority_Title"), // NOI18N
+                                              loc.getString("CTL_Issue_Priority_Desc"), // NOI18N
+                                              0),
                 new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
-                                                  loc.getString("CTL_Issue_Status_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Status_Desc"), // NOI18N
-                                                  0),
+                                              loc.getString("CTL_Issue_Status_Title"), // NOI18N
+                                              loc.getString("CTL_Issue_Status_Desc"), // NOI18N
+                                              0),
                 new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
-                                                  loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
-                                                  loc.getString("CTL_Issue_Resolution_Desc"), // NOI18N
-                                                  0),
+                                              loc.getString("CTL_Issue_Resolution_Title"), // NOI18N
+                                              loc.getString("CTL_Issue_Resolution_Desc"), // NOI18N
+                                              0),
                 new ColumnDescriptor<String>(LABEL_NAME_ASSIGNED_TO, String.class,
                                               loc.getString("CTL_Issue_Assigned_Title"),        // NOI18N
                                               loc.getString("CTL_Issue_Assigned_Desc"),         // NOI18N
-                                              0)
+                                              0),
+                new ColumnDescriptor<String>(LABEL_NAME_PROJECT, String.class,
+                                              loc.getString("CTL_Issue_Project_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Project_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_COMPONENTS, String.class,
+                                              loc.getString("CTL_Issue_Components_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Components_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_AFFECTS_VERSION, String.class,
+                                              loc.getString("CTL_Issue_Affects_Version_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Affects_Version_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_FIX_VERSION, String.class,
+                                              loc.getString("CTL_Issue_Fix_Version_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Fix_Version_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_CREATED, String.class,
+                                              loc.getString("CTL_Issue_Created_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Created_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_UPDATED, String.class,
+                                              loc.getString("CTL_Issue_Updated_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Updated_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_DUE, String.class,
+                                              loc.getString("CTL_Issue_Due_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Due_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_ESTIMATE, String.class,
+                                              loc.getString("CTL_Issue_Estimate_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Estimate_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_INITIAL_ESTIMATE, String.class,
+                                              loc.getString("CTL_Issue_Initial_Estimate_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Initial_Estimate_Desc"),         // NOI18N
+                                              0, false),
+                new ColumnDescriptor<String>(LABEL_NAME_TIME_SPENT, String.class,
+                                              loc.getString("CTL_Issue_Time_Spent_Title"),        // NOI18N
+                                              loc.getString("CTL_Issue_Time_Spent_Desc"),         // NOI18N
+                                              0, false)
             };
         }
         return DESCRIPTORS;
@@ -1059,7 +1105,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      * @param f
      * @return
      */
-    private String getFieldDisplayValue(IssueField f) {
+    String getFieldDisplayValue(IssueField f) {
         String value = getFieldValue(taskData, f);
         if(value == null || value.trim().equals("")) {
             return "";                                                          // NOI18N
@@ -1088,18 +1134,11 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                         values.add(version.getName());
                     }
                 }
-                return values.toString();
+                return toString(values);
             case AFFECTSVERSIONS:
+                return toString(getVersionValues(f, config));
             case FIXVERSIONS:
-                projectId = getFieldValue(IssueField.PROJECT);
-                values = new LinkedList<String>();
-                for (String v : getFieldValues(f)) {
-                    Version version = config != null ? config.getVersionById(projectId, v) : null;
-                    if (version != null) {
-                        values.add(version.getName());
-                    }
-                }
-                return values.toString();
+                return toString(getVersionValues(f, config));
             case TYPE:
                 IssueType type = config != null ? config.getIssueTypeById(value) : null;
                 return type != null ? type.getName() : "";                      // NOI18N
@@ -1108,6 +1147,28 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         }
     }
 
+    private List<String> getVersionValues(IssueField f, JiraConfiguration config) {
+        String projectId = getFieldValue(IssueField.PROJECT);
+        List<String> values = new LinkedList<String>();
+        for (String v : getFieldValues(f)) {
+            Version version = config != null ? config.getVersionById(projectId, v) : null;
+            if (version != null) {
+                values.add(version.getName());
+            }
+        }
+        return values;
+    }
+
+    private String toString(List<String> l) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < l.size(); i++) {
+            sb.append(l.get(i));
+            if(i < l.size() -1) {
+                sb.append(',');
+            } //  NOI18N
+        }
+        return sb.toString();
+    }
 
     static String getFieldValue(TaskData taskData, IssueField f) {
         TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
@@ -1241,7 +1302,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
                 if (!wasNew) {
                     refresh();
                 } else {
-                    refreshById(rr[0].getTaskId());
+                    refreshById(rr[0].getTaskId(), true);
                 }
             }
         };
@@ -1325,6 +1386,13 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         return availableOperations;
     }
 
+    private void refreshViewData(boolean force) {
+        if (controller != null) {
+            // view might not exist yet and we won't unnecessarily create it
+            controller.refreshViewData(force);
+        }
+    }
+
     private class Controller extends BugtrackingController {
         private JComponent component;
         private IssuePanel issuePanel;
@@ -1344,8 +1412,6 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
             BugtrackingUtil.keepFocusedComponentVisible(scrollPane);
             issuePanel = panel;
             component = scrollPane;
-
-            refreshViewData();
         }
 
         @Override
@@ -1380,8 +1446,8 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         public void applyChanges() {
         }
 
-        private void refreshViewData() {
-            // PENDING
+        private void refreshViewData(boolean force) {
+            issuePanel.reloadFormInAWT(force);
         }
 
         @Override

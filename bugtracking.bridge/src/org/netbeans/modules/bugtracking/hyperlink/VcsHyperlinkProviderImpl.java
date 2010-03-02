@@ -45,7 +45,7 @@ import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.IssueFinderUtils;
-import org.netbeans.modules.versioning.util.HyperlinkProvider;
+import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -54,8 +54,8 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.HyperlinkProvider.class)
-public class VcsHyperlinkProviderImpl extends HyperlinkProvider {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.util.VCSHyperlinkProvider.class)
+public class VcsHyperlinkProviderImpl extends VCSHyperlinkProvider {
 
     @Override
     public int[] getSpans(String text) {

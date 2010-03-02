@@ -29,13 +29,13 @@ package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.netbeans.Module;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
@@ -56,23 +56,28 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
     public FoDUpdateUnitProvider() {
     }
 
+    @Override
     public String getName () {
         return "fod-provider";
     }
 
+    @Override
     public String getDisplayName () {
         return null;
     }
 
 
+    @Override
     public String getDescription() {
         return null;
     }
 
+    @Override
     public CATEGORY getCategory() {
         return CATEGORY.STANDARD;
     }
 
+    @Override
     public Map<String, UpdateItem> getUpdateItems () throws IOException {
         Map<String, UpdateItem> res = new HashMap<String, UpdateItem> ();
         Collection<? extends ModuleInfo> all = Lookup.getDefault().lookupAll(ModuleInfo.class);
@@ -118,6 +123,7 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
         return res;
     }
     
+    @Override
     public boolean refresh (boolean force) throws IOException {
         return true;
     }
@@ -131,7 +137,7 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
         justKits.addAll(codeNames);
         String name = "fod." + prefCnb; // NOI18N
         ModuleInfo preferred = null;
-        StringBuffer description = new StringBuffer();
+        StringBuilder description = new StringBuilder();
         for (ModuleInfo mi : allModules) {
             if (prefCnb != null && prefCnb.equals(mi.getCodeNameBase())) {
                 preferred = mi;
@@ -155,7 +161,7 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
                         description.append(sb);
                     }
                     for (Dependency d : mi.getDependencies()) {
-                        if (d.getType() != d.TYPE_MODULE) {
+                        if (d.getType() != Dependency.TYPE_MODULE) {
                             continue;
                         }
                         FeatureInfo fi = FeatureManager.findInfo(d.getName());
@@ -197,18 +203,12 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
         return isModuleFrom(mi, "platform"); // NOI18N
     }
 
-    private static Method m;
     private static boolean isModuleFrom(ModuleInfo mi, String prefix) {
         File f;
-        try {
-            if (m == null) {
-                Method tmp = mi.getClass().getMethod("getJarFile"); // NOI18N
-                tmp.setAccessible(true);
-                m = tmp;
-            }
-            f = (File)m.invoke(mi);
-        } catch (Exception ex) {
-            throw new IllegalStateException(ex);
+        if (mi instanceof Module) {
+            f = ((Module)mi).getJarFile();
+        } else {
+            return false;
         }
         if (f.getParentFile().getName().equals("modules")) { // NOI18N
             if (f.getParentFile().getParentFile().getName().startsWith(prefix)) {

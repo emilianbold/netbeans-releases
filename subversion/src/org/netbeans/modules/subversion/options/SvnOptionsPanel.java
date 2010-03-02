@@ -119,11 +119,10 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(excludeNewFiles, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.excludeNewFiles.text")); // NOI18N
         excludeNewFiles.setToolTipText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.excludeNewFiles.toolTipText")); // NOI18N
         excludeNewFiles.setBorder(null);
-        excludeNewFiles.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                excludeNewFilesActionPerformed(evt);
-            }
-        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(prefixRepositoryPath, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.prefixRepositoryPath.text")); // NOI18N
+        prefixRepositoryPath.setToolTipText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.prefixRepositoryPath.toolTipText")); // NOI18N
+        prefixRepositoryPath.setBorder(null);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -188,6 +187,10 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(excludeNewFiles)
                 .addContainerGap(94, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(prefixRepositoryPath)
+                .addContainerGap(167, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -241,7 +244,9 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
                 .add(cbOpenOutputWindow)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(excludeNewFiles)
-                .addContainerGap(28, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(prefixRepositoryPath)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         executablePathTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSN_SvnOptionsPanel.executablePathTextField.text")); // NOI18N
@@ -262,10 +267,6 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
         jLabel7.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel7.AccessibleContext.accessibleDescription")); // NOI18N
         cbOpenOutputWindow.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSD_SvnOptionsPanel.cbOpenOutput.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-    private void excludeNewFilesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_excludeNewFilesActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_excludeNewFilesActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -289,6 +290,7 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JSeparator jSeparator3;
     final javax.swing.JButton manageConnSettingsButton = new javax.swing.JButton();
     final javax.swing.JButton manageLabelsButton = new javax.swing.JButton();
+    final javax.swing.JCheckBox prefixRepositoryPath = new javax.swing.JCheckBox();
     // End of variables declaration//GEN-END:variables
 
 }

@@ -27,17 +27,8 @@
  */
 package org.netbeans.modules.javascript.hints;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
 import org.netbeans.modules.javascript.editing.JsTestBase;
-import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
-import org.netbeans.modules.javascript.hints.infrastructure.JsAstRule;
-import org.netbeans.modules.javascript.hints.infrastructure.JsErrorRule;
 import org.netbeans.modules.javascript.hints.infrastructure.JsHintsProvider;
 
 /**
@@ -56,47 +47,4 @@ public abstract class HintTestBase extends JsTestBase {
         return new JsHintsProvider();
     }
     
-    @SuppressWarnings("unchecked")
-    public void ensureRegistered(JsAstRule hint) throws Exception {
-        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(JsTokenId.JAVASCRIPT_MIME_TYPE);
-        assertNotNull(language.getHintsProvider());
-        GsfHintsManager hintsManager = language.getHintsManager();
-        Map<Integer, List<JsAstRule>> hints = (Map)hintsManager.getHints();
-        Set<Integer> kinds = hint.getKinds();
-        for (Integer nodeType : kinds) {
-            List<JsAstRule> rules = hints.get(nodeType);
-            assertNotNull(rules);
-            boolean found = false;
-            for (JsAstRule rule : rules) {
-                if (rule.getClass() == hint.getClass()) {
-                    found  = true;
-                    break;
-                }
-            }
-            
-            assertTrue(found);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public void ensureRegistered(JsErrorRule hint) throws Exception {
-        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(JsTokenId.JAVASCRIPT_MIME_TYPE);
-        assertNotNull(language.getHintsProvider());
-        GsfHintsManager hintsManager = language.getHintsManager();
-        Map<Integer, List<JsErrorRule>> hints = (Map)hintsManager.getErrors();
-        Set<String> kinds = hint.getCodes();
-        for (String codes : kinds) {
-            List<JsErrorRule> rules = hints.get(codes);
-            assertNotNull(rules);
-            boolean found = false;
-            for (JsErrorRule rule : rules) {
-                if (rule.getClass() == hint.getClass()) {
-                    found  = true;
-                    break;
-                }
-            }
-            
-            assertTrue(found);
-        }
-    }
 }

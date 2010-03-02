@@ -193,6 +193,7 @@
         <exec executable="${ant.executable}" 
               dir="${engine.dir}" 
               failonerror="false">
+            <env key="JAVA_HOME" value="${java.home}"/>
             <arg value="clean"/>
             
             <arg value="-Dwork.dir=${engine.work.dir}"/>

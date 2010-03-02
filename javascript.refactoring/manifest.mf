@@ -3,4 +3,4 @@ OpenIDE-Module: org.netbeans.modules.javascript.refactoring/1
 OpenIDE-Module-Layer: org/netbeans/modules/refactoring/javascript/resources/mf-layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/refactoring/javascript/resources/Bundle.properties
 AutoUpdate-Show-In-Client: false
-OpenIDE-Module-Specification-Version: 0.68
+OpenIDE-Module-Specification-Version: 0.69

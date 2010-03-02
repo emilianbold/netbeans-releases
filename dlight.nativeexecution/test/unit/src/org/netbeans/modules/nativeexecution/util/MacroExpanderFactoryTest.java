@@ -122,6 +122,7 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
         });
         try {
             task.waitFinished(20000);
+            task.cancel();
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
             assertFalse("Cannot connect to " + execEnv.getDisplayName(), false); // NOI18N
@@ -179,6 +180,7 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
     private void doTestPath(final ExecutionEnvironment execEnv) {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
         npb.setExecutable("env"); // NOI18N
+        npb.redirectError();
         MacroMap env = npb.getEnvironment();
         env.prependPathVariable("PATH", "/firstPath"); // NOI18N
         env.appendPathVariable("PATH", "${ZZZ}_${platform}"); // NOI18N
@@ -187,8 +189,6 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
 
         try {
             Process p = npb.call();
-            int result = p.waitFor();
-            assertEquals(0, result);
 
             List<String> pout = ProcessUtils.readProcessOutput(p);
             int ok = 0;
@@ -204,6 +204,9 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
                     }
                 }
             }
+
+            int result = p.waitFor();
+            assertEquals(0, result);
 
             assertEquals(2, ok);
         } catch (InterruptedException ex) {

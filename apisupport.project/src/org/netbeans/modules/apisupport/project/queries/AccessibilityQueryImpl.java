@@ -43,7 +43,6 @@ package org.netbeans.modules.apisupport.project.queries;
 
 import java.util.Iterator;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.java.queries.AccessibilityQueryImplementation;
 import org.openide.ErrorManager;
@@ -70,10 +69,10 @@ public final class AccessibilityQueryImpl implements AccessibilityQueryImplement
             if (path != null) {
                 String name = path.replace('/', '.');
                 Element config = project.getPrimaryConfigurationData();
-                Element pubPkgs = Util.findElement(config, "public-packages", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+                Element pubPkgs = Util.findElement(config, "public-packages", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                 if (pubPkgs == null) {
                     // Try <friend-packages> too.
-                    pubPkgs = Util.findElement(config, "friend-packages", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+                    pubPkgs = Util.findElement(config, "friend-packages", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                 }
                 if (pubPkgs != null) {
                     Iterator it = Util.findSubElements(pubPkgs).iterator();

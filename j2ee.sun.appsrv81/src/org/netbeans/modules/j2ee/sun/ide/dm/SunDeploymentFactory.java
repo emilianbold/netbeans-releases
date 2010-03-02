@@ -175,6 +175,7 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory, Insta
      * @param uri
      * @return boolean value
      */
+    // also check the urlPattern in layer.xml when changing this
     public boolean handlesURI(String uri) {
         if (uri==null){
             return false;

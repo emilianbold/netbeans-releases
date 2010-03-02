@@ -157,6 +157,70 @@ public class MakeNBMTest extends NbTestCase {
         }
         
     }
+
+    public void testGenerateNBMOSGi() throws Exception {
+        Manifest m;
+
+        m = ModuleDependenciesTest.createManifest ();
+        m.getMainAttributes ().putValue ("Bundle-SymbolicName", "org.my.module");
+        m.getMainAttributes ().putValue ("Bundle-Version", "1.0");
+        File simpleJar = generateJar (new String[0], m);
+
+        File parent = simpleJar.getParentFile ();
+        File output = new File(parent, "output");
+        File ks = generateKeystore("nbm", "netbeans-test");
+        if (ks == null) {
+            return;
+        }
+
+        File ut = new File (new File(getWorkDir(), "update_tracking"), "org-my-module.xml");
+        ut.getParentFile().mkdirs();
+        FileWriter w = new FileWriter(ut);
+        String UTfile =
+            "<?xml version='1.0' encoding='UTF-8'?>" +
+            "<module codename='org.my.module'>" +
+            "    <module_version install_time='1136503038669' last='true' origin='installer' specification_version='2.16.1'>" +
+            "        <file crc='3405032071' name='modules/" + simpleJar.getName() + "'/>" +
+            "    </module_version>" +
+            "</module>";
+        w.write(UTfile);
+        w.close();
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"makenbm\" classname=\"org.netbeans.nbbuild.MakeNBM\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <mkdir dir='" + output + "' />" +
+            "  <makenbm file='" + output + "/x.nbm'" +
+            "           productdir='" + getWorkDir() + "'" +
+            "           module='modules/" + simpleJar.getName() + "'" +
+            "           homepage='http://www.homepage.org'" +
+            "           distribution='distro'" +
+            "           needsrestart='false'" +
+            "           global='false'" +
+            "           releasedate='today'" +
+            "           moduleauthor='test'>" +
+            "     <license file='" + simpleJar + "'/>" +
+            "     <signature keystore='" + ks + "' storepass='netbeans-test' alias='nbm'/>" +
+            "     <updaterjar path='${nb_all}/nbbuild/netbeans/platform/modules/ext/updater.jar'/>" +
+            "  </makenbm>" +
+      //      "  <fail if='do.fail'/>" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+
+        assertTrue ("Output exists", output.exists ());
+        assertTrue ("Output directory created", output.isDirectory());
+
+        String[] files = output.list();
+        assertEquals("It has the nbm file", 1, files.length);
+
+        if (!files[0].endsWith("x.nbm")) {
+            fail("Not the right one: " + files[0]);
+        }
+    }
     
     private final File createNewJarFile (String prefix) throws IOException {
         if (prefix == null) {

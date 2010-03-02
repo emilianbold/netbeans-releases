@@ -52,6 +52,8 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -352,4 +354,23 @@ public class Utils {
         (byte) 'H', (byte) 'T', (byte) 'T', (byte) 'P', (byte) '/', (byte) '1',
         (byte) '.', (byte) '0', (byte)'\n', (byte)'\n'
     };
+
+    public static void doCopy(FileObject from, FileObject toParent) throws IOException {
+        if (null != from) {
+            if (from.isFolder()) {
+                //FileObject copy = toParent.getF
+                FileObject copy = FileUtil.createFolder(toParent,from.getNameExt());
+                FileObject[] kids = from.getChildren();
+                for (int i = 0; i < kids.length; i++) {
+                    doCopy(kids[i], copy);
+                }
+            } else {
+                assert from.isData();
+                FileObject target = toParent.getFileObject(from.getName(),from.getExt());
+                if (null == target) {
+                    FileUtil.copyFile(from, toParent, from.getName(), from.getExt());
+                }
+            }
+        }
+    }
 }

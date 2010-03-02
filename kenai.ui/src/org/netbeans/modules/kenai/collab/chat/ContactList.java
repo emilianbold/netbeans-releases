@@ -56,6 +56,7 @@ import javax.swing.event.DocumentListener;
 //import org.jivesoftware.smack.RosterListener;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 
 /**
  *
@@ -158,9 +159,9 @@ public class ContactList extends javax.swing.JPanel {
         searchLabel = new javax.swing.JLabel();
 
         setBackground(java.awt.SystemColor.control);
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 3, 0, 3));
         setFocusCycleRoot(true);
 
+        filterCombo.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         filterCombo.setNextFocusableComponent(contactJList);
         filterCombo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -173,6 +174,7 @@ public class ContactList extends javax.swing.JPanel {
             }
         });
 
+        contactJList.setBackground(ColorManager.getDefault().getDefaultBackground());
         contactJList.setNextFocusableComponent(searchField);
         contactJList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -228,16 +230,16 @@ public class ContactList extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(filterCombo, 0, 247, Short.MAX_VALUE)
+            .add(filterCombo, 0, 249, Short.MAX_VALUE)
             .add(searchPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(contactListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
+            .add(contactListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(filterCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(contactListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE)
+                .add(2, 2, 2)
+                .add(contactListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(searchPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );

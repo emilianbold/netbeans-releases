@@ -45,9 +45,9 @@ import java.beans.PropertyEditorSupport;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.OptionsConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.AllOptionsProvider;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
@@ -57,11 +57,11 @@ public class OptionsNodeProp extends PropertySupport<String> {
     private OptionsConfiguration commandLineConfiguration;
     private BooleanConfiguration inheritValues;
     private AllOptionsProvider optionsProvider;
-    private BasicCompiler compiler;
+    private AbstractCompiler compiler;
     private String delimiter = ""; // NOI18N
     private String[] texts;
 
-    public OptionsNodeProp(OptionsConfiguration commandLineConfiguration, BooleanConfiguration inheritValues, AllOptionsProvider optionsProvider, BasicCompiler compiler, String delimiter, String[] texts) {
+    public OptionsNodeProp(OptionsConfiguration commandLineConfiguration, BooleanConfiguration inheritValues, AllOptionsProvider optionsProvider, AbstractCompiler compiler, String delimiter, String[] texts) {
         super("ID", String.class, texts[0], texts[1], true, true); // NOI18N
         this.commandLineConfiguration = commandLineConfiguration;
         this.inheritValues = inheritValues;

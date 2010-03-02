@@ -1,0 +1,8 @@
+@import "newcss.css";
+
+root {
+    azimuth: behind;
+    display: block;
+    border-color: black;
+}
+

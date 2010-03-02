@@ -52,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -114,6 +115,7 @@ public class ProjectsRootNodePhysicalViewTest extends NbTestCase {
         OpenProjectListSettings.getInstance().setOpenProjectsIcons(icons);
     }
 
+    @RandomlyFails // NB-Core-Build #3939: "Can be garbage collected when closed" involving TimedWeakReference
     public void testBehaviourOfProjectsLogicNode() throws InterruptedException {
         Node n = doBehaviourOfProjectsNode();
         

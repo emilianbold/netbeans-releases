@@ -235,7 +235,6 @@ public class ComputeOverriders {
 
         return overriding;
     }
-    private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
 
     private static void fillInMethods(Iterable<? extends TypeElement> types, Map<ElementHandle<TypeElement>, List<ElementHandle<ExecutableElement>>> methods) {
         for (TypeElement te : types) {
@@ -251,7 +250,7 @@ public class ComputeOverriders {
         }
     }
     private Set<ElementHandle<TypeElement>> computeUsers(URL source, Set<ElementHandle<TypeElement>> base, long[] classIndexCumulative) {
-        ClasspathInfo cpinfo = ClasspathInfo.create(EMPTY, EMPTY, ClassPathSupport.createClassPath(source));
+        ClasspathInfo cpinfo = ClasspathInfo.create(ClassPath.EMPTY, ClassPath.EMPTY, ClassPathSupport.createClassPath(source));
         
         return computeUsers(cpinfo, ClassIndex.SearchScope.SOURCE, base, classIndexCumulative);
     }
@@ -371,7 +370,7 @@ public class ComputeOverriders {
             binaryRoots.retainAll(binaryDeps.keySet());
 
             for (ElementHandle<TypeElement> handle : baseHandles) {
-                Set<ElementHandle<TypeElement>> types = computeUsers(ClasspathInfo.create(EMPTY, ClassPathSupport.createClassPath(binaryRoots.toArray(new URL[0])), EMPTY), SearchScope.DEPENDENCIES, Collections.singleton(handle), classIndexCumulative);
+                Set<ElementHandle<TypeElement>> types = computeUsers(ClasspathInfo.create(ClassPath.EMPTY, ClassPathSupport.createClassPath(binaryRoots.toArray(new URL[0])), ClassPath.EMPTY), SearchScope.DEPENDENCIES, Collections.singleton(handle), classIndexCumulative);
 
                 if (types == null/*canceled*/ || cancel.get()) {
                     return null;

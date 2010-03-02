@@ -49,7 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.csl.core.UiUtils;
+import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.refactoring.spi.ui.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

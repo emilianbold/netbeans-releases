@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugtracking.util;
 
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -47,14 +48,12 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelectorBuilder;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiManager;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport;
-import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -312,7 +311,7 @@ public abstract class BugtrackingOwnerSupport {
 
             try {
                 repo = getKenaiBugtrackingRepository(fileObj);
-            } catch (KenaiException ex) {
+            } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
                 repo = null;
             }
@@ -329,7 +328,7 @@ public abstract class BugtrackingOwnerSupport {
                 if (repo != null) {
                     return repo;
                 }
-            } catch (KenaiException ex) {
+            } catch (IOException ex) {
                 return null;
             }
 
@@ -352,7 +351,7 @@ public abstract class BugtrackingOwnerSupport {
                     if (repo != null) {
                         return repo;
                     }
-                } catch (KenaiException ex) {
+                } catch (IOException ex) {
                     LOG.log(Level.WARNING,
                           " communication with Kenai failed while loading " //NOI18N
                               + "information about bugtracking repository", //NOI18N
@@ -393,21 +392,28 @@ public abstract class BugtrackingOwnerSupport {
             return null;
         }
 
-        private static Repository getKenaiBugtrackingRepository(FileObject fileObject) throws KenaiException {
+        private static Repository getKenaiBugtrackingRepository(FileObject fileObject) throws IOException {
+            return getRepository(fileObject);
+        }
+
+        /**
+         *
+         * @param fileObject
+         * @return
+         * @throws IOException
+         */
+        private static Repository getRepository(FileObject fileObject) throws IOException {
             Object attValue = fileObject.getAttribute(
-                                       "ProvidedExtensions.RemoteLocation");//NOI18N
+                                           "ProvidedExtensions.RemoteLocation");//NOI18N
             if (attValue instanceof String) {
                 Repository repository = null;
                 String url = (String) attValue;
                 if(BugtrackingUtil.isNbRepository(url)) {
                     File file = FileUtil.toFile(fileObject);
                     if(file != null) {
-                        OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(NbModuleOwnerSupport.NB_BUGZILLA_CONFIG, file);
+                        OwnerInfo ownerInfo = KenaiUtil.getOwnerInfo(file);
                         if(ownerInfo != null) {
-                            KenaiProject kp = KenaiUtil.getKenai(url).getProject(ownerInfo.getOwner());
-                            repository = (kp != null)
-                                   ? KenaiUtil.getKenaiBugtrackingRepository(kp)
-                                   : null;        //not a Kenai project repository
+                            repository = KenaiUtil.getRepository(url, ownerInfo.getOwner());
                         }
                     }
                 }
@@ -415,21 +421,21 @@ public abstract class BugtrackingOwnerSupport {
                     return repository;
                 }
                 try {
-                    repository = getKenaiBugtrackingRepository((String) attValue);
+                    repository = KenaiUtil.getRepository(url);
                     if (repository != null) {
                         return repository;
                     }
-                } catch (KenaiException ex) {
+                } catch (IOException ex) {
                     /* the remote location (URL) denotes a Kenai project */
                     if ("Not Found".equals(ex.getMessage())) {              //NOI18N
-                        LOG.log(Level.INFO,
+                        BugtrackingManager.LOG.log(Level.INFO,
                                 "Kenai project corresponding to URL "       //NOI18N
                                         + attValue
                                         + " does not exist.");              //NOI18N
                     } else {
-                        LOG.throwing(
+                        BugtrackingManager.LOG.throwing(
                                 BugtrackingOwnerSupport.class.getName(),    //class name
-                                "getKenaiBugtrackingRepository(String)",    //method name //NOI18N
+                                "getRepository(String)",    //method name //NOI18N
                                 ex);
                     }
                     throw ex;
@@ -452,16 +458,13 @@ public abstract class BugtrackingOwnerSupport {
          *          some problem getting the project's repository, e.g. because
          *          the given project does not exist on Kenai
          */
-        private static Repository getKenaiBugtrackingRepository(String remoteLocation) throws KenaiException {
-            KenaiProject project = KenaiProject.forRepository(remoteLocation);//throws KenaiException
-            return (project != null)
-                   ? KenaiUtil.getKenaiBugtrackingRepository(project)
-                   : null;        //not a Kenai project repository
+        private static Repository getKenaiBugtrackingRepository(String remoteLocation) throws IOException {
+            return KenaiUtil.getRepository(remoteLocation);
         }
 
         private Repository askUserToSpecifyRepository(String issueId,
                                                       Repository suggestedRepo) {
-            Repository[] repos = BugtrackingUtil.getKnownRepositories();
+            Repository[] repos = BugtrackingUtil.getKnownRepositories(true);
             BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
 
             final RepositorySelectorBuilder selectorBuilder = new RepositorySelectorBuilder();

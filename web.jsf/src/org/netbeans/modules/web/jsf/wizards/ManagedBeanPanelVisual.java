@@ -51,7 +51,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 //import org.netbeans.modules.web.struts.StrutsConfigUtilities;
@@ -71,7 +74,7 @@ import org.openide.util.NbBundle;
 public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, ListDataListener, DocumentListener {
     
     private final DefaultComboBoxModel scopeModel = new DefaultComboBoxModel();
-    
+    private boolean isCDIEnabled = false;
     /**
      * Creates new form PropertiesPanelVisual
      */
@@ -103,15 +106,40 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
                 }
             }
         }
-        ManagedBean.Scope[] scopes = ManagedBean.Scope.values();
-        for (int i = 0; i < scopes.length; i++){
-            scopeModel.addElement(scopes[i]);
+        Object[] scopes;
+        isCDIEnabled = JSFUtils.isCDIEnabled(wm);
+        if (isCDIEnabled) {
+            scopes = ManagedBeanIterator.NamedScope.values();
+        } else {
+            scopes = ManagedBean.Scope.values();
+        }
+
+        for (Object scope : scopes) {
+            scopeModel.addElement(scope);
         }
 
         jTextFieldName.setText("NewJSFManagedBean");
         jTextFieldName.getDocument().addDocumentListener(this);
         
 //        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FormBeanNewPanelVisual.class, "ACS_BeanFormProperties"));  // NOI18N
+    }
+
+    private void updateScopeModel(boolean addToConfig) {
+        if (isCDIEnabled && addToConfig) {
+            scopeModel.removeAllElements();
+            for (ManagedBean.Scope scope : ManagedBean.Scope.values()) {
+                scopeModel.addElement(scope);
+            }
+        } else if (isCDIEnabled && !addToConfig) {
+            scopeModel.removeAllElements();
+            for (ManagedBeanIterator.NamedScope scope : ManagedBeanIterator.NamedScope.values()) {
+                scopeModel.addElement(scope);
+            }
+        } else {
+            return;
+        }
+        jComboBoxScope.setModel(scopeModel);
+        repaint();
     }
     
     /** This method is called from within the constructor to
@@ -222,7 +250,9 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     }//GEN-LAST:event_jComboBoxConfigFileActionPerformed
 
     private void jCheckBox1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox1ItemStateChanged
-        jComboBoxConfigFile.setEnabled(jCheckBox1.isSelected());
+        boolean addToConfig = jCheckBox1.isSelected();
+        jComboBoxConfigFile.setEnabled(addToConfig);
+        updateScopeModel(addToConfig);
     }//GEN-LAST:event_jCheckBox1ItemStateChanged
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -244,6 +274,13 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
         Project project = Templates.getProject(wizardDescriptor);
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
 
+        SourceGroup[] sources = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sources.length == 0) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_No_Sources_found"));
+            return false;
+        }
+        
         if (configFile==null) {
             if (!Utilities.isJavaEE6((TemplateWizard) wizardDescriptor) && !isAddBeanToConfig() && !(JSFUtils.isJavaEE5((TemplateWizard) wizardDescriptor) && JSFUtils.isJSF20(wm))) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,

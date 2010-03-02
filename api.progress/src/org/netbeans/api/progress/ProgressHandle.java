@@ -220,5 +220,10 @@ public final class ProgressHandle {
         return internal.extractMainLabel();
     }
     
-
+    String getDisplayName() {
+        //XXX internal.getDisplayName() improperly synchronized
+        synchronized (internal) {
+            return internal.getDisplayName();
+        }
+    }
 }

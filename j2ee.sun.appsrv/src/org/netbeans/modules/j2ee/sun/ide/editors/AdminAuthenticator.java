@@ -1,8 +1,7 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-// </editor-fold>
 
 package org.netbeans.modules.j2ee.sun.ide.editors;
 
@@ -47,6 +45,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
@@ -138,7 +137,7 @@ public class AdminAuthenticator extends java.net.Authenticator {
                     if (dd.getValue().equals(NotifyDescriptor.OK_OPTION)) {
                         // try to update info for the node...
                         if (ip != null) {
-                            String oldpass = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
+                            String oldpass = Keyring.read(ip.getProperty(InstanceProperties.URL_ATTR)).toString();
                             String oldname = ip.getProperty(InstanceProperties.USERNAME_ATTR);
                             ip.setProperty(InstanceProperties.USERNAME_ATTR, passwordPanel.getUsername());
                             ip.setProperty(InstanceProperties.PASSWORD_ATTR, passwordPanel.getTPassword());

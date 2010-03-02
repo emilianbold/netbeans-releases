@@ -73,7 +73,7 @@ public class SwitchToCommand extends SvnCommand {
     public void prepareCommand(Arguments arguments) throws IOException {                     
         arguments.add("switch");
         arguments.add(url);
-        arguments.add(file);
+        arguments.add(file.getAbsolutePath());
         if (!rec) {
             arguments.add("-N");               
         }

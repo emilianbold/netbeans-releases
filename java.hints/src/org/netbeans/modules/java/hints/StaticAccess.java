@@ -33,7 +33,6 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -50,19 +49,15 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JComponent;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -159,11 +154,7 @@ public class StaticAccess extends AbstractHint {
         simpleName[0] = used.getSimpleName().toString();
         
         List<Fix> fixes = new ArrayList<Fix>(2);
-        fixes.add( new FixImpl(
-            TreePathHandle.create(expr, info),
-            TreePathHandle.create(type, info),
-            info.getFileObject()
-        ));
+        fixes.add(JavaFix.toEditorFix(new FixImpl(info, expr, type)));
         fixes.addAll(FixFactory.createSuppressWarnings(info, treePath, SUPPRESS_WARNINGS_KEY));
 
 
@@ -234,44 +225,28 @@ public class StaticAccess extends AbstractHint {
         return null;
     }    
 
-    static final class FixImpl implements Fix, Task<WorkingCopy> {
-        private final TreePathHandle expr;
-        private final TreePathHandle type;
-        private final FileObject file;
-        
-        public FixImpl(TreePathHandle expr, TreePathHandle type, FileObject file) {
-            this.file = file;
-            this.type = type;
-            this.expr = expr;
+    static final class FixImpl extends JavaFix {
+        private final ElementHandle<TypeElement> desiredType;
+        public FixImpl(CompilationInfo info, TreePath expr, TypeElement desiredType) {
+            super(info, expr);
+            this.desiredType = ElementHandle.create(desiredType);
         }
-        
         
         public String getText() {
             return NbBundle.getMessage(DoubleCheck.class, "MSG_StaticAccessText"); // NOI18N
         }
         
-        public ChangeInfo implement() throws IOException {
-            ModificationResult result = JavaSource.forFileObject(file).runModificationTask(this);
-            result.commit();
-            return null;
-        }
-        
-        @Override public String toString() {
-            return "FixStaticAccess"; // NOI18N
-        }
+        @Override
+        protected void performRewrite(WorkingCopy wc, TreePath tp, UpgradeUICallback callback) {
+            Element element = desiredType.resolve(wc);
 
-        public void run(WorkingCopy copy) throws Exception {
-            copy.toPhase(JavaSource.Phase.RESOLVED);
-            TreePath path = expr.resolve(copy);
-
-            if (path == null) {
-                Logger.getLogger("org.netbeans.modules.java.hints").log(Level.INFO, "Cannot resolve target.");
+            if (element == null) {
+                Logger.getLogger("org.netbeans.modules.java.hints").log(Level.INFO, "Cannot resolve target element.");
                 return;
             }
 
-            Element element = type.resolveElement(copy);
-            ExpressionTree idt = copy.getTreeMaker().QualIdent(element);
-            copy.rewrite(path.getLeaf(), idt);
+            ExpressionTree idt = wc.getTreeMaker().QualIdent(element);
+            wc.rewrite(tp.getLeaf(), idt);
         }
     }
     

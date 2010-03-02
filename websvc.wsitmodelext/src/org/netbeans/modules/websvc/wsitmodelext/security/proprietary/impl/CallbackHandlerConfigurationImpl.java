@@ -60,20 +60,34 @@ public class CallbackHandlerConfigurationImpl extends ProprietarySecurityPolicyC
         super(model, e);
     }
     
+    @Override
     public void setVisibility(String vis) {
         setAnyAttribute(ProprietaryPolicyQName.VISIBILITY.getQName(), vis);
     }
 
+    @Override
     public String getVisibility() {
         return getAnyAttribute(ProprietaryPolicyQName.VISIBILITY.getQName());
     }
 
+    @Override
     public void setTimestampTimeout(String timeout) {
         setAttribute(TIMESTAMPTIMEOUT, ProprietarySecurityPolicyAttribute.TIMESTAMPTIMEOUT, timeout);        
     }
 
+    @Override
     public String getTimestampTimeout() {
         return getAttribute(ProprietarySecurityPolicyAttribute.TIMESTAMPTIMEOUT);
+    }
+
+    @Override
+    public void setIterationsForPDK(String iterations) {
+        setAttribute(ITERATIONS, ProprietarySecurityPolicyAttribute.ITERATIONSFORPDK, iterations);
+    }
+
+    @Override
+    public String getIterationsForPDK() {
+        return getAttribute(ProprietarySecurityPolicyAttribute.ITERATIONSFORPDK);
     }
     
 }

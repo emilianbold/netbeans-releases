@@ -43,6 +43,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.NbBundle;
 
@@ -65,7 +66,7 @@ final class CustomizerCompiling extends NbPropertyPanel.Single {
         deprecation.setSelected(getBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEPRECATION));
         options.setText(getProperty(SingleModuleProperties.JAVAC_COMPILERARGS));
         NbPlatform platform = getProperties().getActivePlatform();
-        options.setEnabled(platform == null || platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1); // #71631
+        options.setEnabled(platform == null || platform.getHarnessVersion().compareTo(HarnessVersion.V50u1) >= 0); // #71631
     }
     
     @Override
@@ -76,7 +77,7 @@ final class CustomizerCompiling extends NbPropertyPanel.Single {
         }
         if (SingleModuleProperties.NB_PLATFORM_PROPERTY.equals(evt.getPropertyName())) {
             NbPlatform platform = getProperties().getActivePlatform();
-            options.setEnabled(platform == null || platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1);
+            options.setEnabled(platform == null || platform.getHarnessVersion().compareTo(HarnessVersion.V50u1) >= 0);
         }
     }
     

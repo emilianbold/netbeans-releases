@@ -40,15 +40,19 @@
 package org.netbeans.modules.kenai.ui.nodes;
 
 import java.net.MalformedURLException;
+import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -56,57 +60,98 @@ import org.openide.util.NbBundle;
  */
 public class AddInstanceAction extends AbstractAction {
 
+    public static final String ADD_BUTTON = org.openide.util.NbBundle.getMessage(AddInstanceAction.class, "CTL_ADD");
+    public static final String CANCEL_BUTTON = org.openide.util.NbBundle.getMessage(AddInstanceAction.class, "CTL_Cancel");
+
     private Kenai kenai;
+    private JDialog dialog;
 
     public AddInstanceAction() {
         super(NbBundle.getMessage(AddInstanceAction.class, "CTL_AddInstance"));
     }
 
-    public void actionPerformed(ActionEvent e) {
-        KenaiInstance s = showInputDialog();
-        if (s!=null) {
-            try {
-                kenai = KenaiManager.getDefault().createKenai(s.name, s.url);
-                if (e!=null && e.getSource() instanceof JComboBox) {
-                    ((JComboBox) e.getSource()).setSelectedItem(kenai);
+    @Override
+    public void actionPerformed(final ActionEvent ae) {
+        final KenaiInstanceCustomizer kenaiInstanceCustomizer = new KenaiInstanceCustomizer();
+        ActionListener bl = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource().equals(ADD_BUTTON)) {
+                    kenaiInstanceCustomizer.startProgress();
+                    RequestProcessor.getDefault().post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            Kenai kenai = null;
+                            try {
+                                kenai = KenaiManager.getDefault().createKenai(kenaiInstanceCustomizer.getDisplayName(), kenaiInstanceCustomizer.getUrl());
+                                kenai.getServices();
+                                AddInstanceAction.this.kenai = kenai;
+                                SwingUtilities.invokeLater(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        kenaiInstanceCustomizer.stopProgress();
+                                        dialog.setVisible(false);
+                                        dialog.dispose();
+                                        if (ae != null && ae.getSource() instanceof JComboBox) {
+                                            ((JComboBox) ae.getSource()).setSelectedItem(AddInstanceAction.this.kenai);
+                                        }
+                                    }
+                                });
+                            } catch (KenaiException ex) {
+                                if (kenai != null) {
+                                    KenaiManager.getDefault().removeKenai(kenai);
+                                }
+                                SwingUtilities.invokeLater(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        kenaiInstanceCustomizer.showError(NbBundle.getMessage(AddInstanceAction.class, "ERR_KenaiNotValid"));
+                                    }
+                                });
+                            } catch (MalformedURLException ex) {
+                                if (kenai != null) {
+                                    KenaiManager.getDefault().removeKenai(kenai);
+                                }
+                                SwingUtilities.invokeLater(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        kenaiInstanceCustomizer.showError(NbBundle.getMessage(AddInstanceAction.class, "ERR_KenaiNotValid"));
+                                    }
+                                });
+                            }
+                        }
+                    });
+                } else {
+                    dialog.setVisible(false);
+                    dialog.dispose();
+                    if (ae != null && ae.getSource() instanceof JComboBox) {
+                        ((JComboBox) ae.getSource()).setSelectedIndex(0);
+                    }
                 }
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
             }
-        } else {
-            if (e != null && e.getSource() instanceof JComboBox) {
-                ((JComboBox) e.getSource()).setSelectedIndex(0);
-            }
-        }
+        };
+
+        DialogDescriptor dd = new DialogDescriptor(
+                kenaiInstanceCustomizer,
+                NbBundle.getMessage(AddInstanceAction.class, "CTL_NewKenaiInstance"),
+                true,
+                new Object[] {ADD_BUTTON, CANCEL_BUTTON}, ADD_BUTTON,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                bl
+                );
+        kenaiInstanceCustomizer.setNotificationsSupport(dd.createNotificationLineSupport());
+        kenaiInstanceCustomizer.setDialogDescriptor(dd);
+
+        dialog = (JDialog) DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
     }
 
     public Kenai getLastKenai() {
         return kenai;
     }
-
-    private static class KenaiInstance {
-
-        public KenaiInstance(String name, String url) {
-            this.name = name;
-            this.url = url;
-        }
-
-        String name;
-        String url;
-    }
-
-    private static KenaiInstance showInputDialog() {
-        String ret = "";
-        KenaiInstanceCustomizer kenaiInstanceCustomizer = new KenaiInstanceCustomizer();
-        DialogDescriptor dd = new DialogDescriptor(kenaiInstanceCustomizer, NbBundle.getMessage(AddInstanceAction.class, "CTL_NewKenaiInstance"));
-        kenaiInstanceCustomizer.setNotificationsSupport(dd.createNotificationLineSupport());
-        kenaiInstanceCustomizer.setDialogDescriptor(dd);
-        if (DialogDisplayer.getDefault().notify(dd).equals(DialogDescriptor.OK_OPTION)) {
-            ret = kenaiInstanceCustomizer.getUrl();
-        } else {
-            return null;
-        }
-        return new KenaiInstance(kenaiInstanceCustomizer.getDisplayName(), ret);
-    }
-
 }

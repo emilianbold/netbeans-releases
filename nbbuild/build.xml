@@ -118,6 +118,7 @@ made subject to such option by the copyright holder.
       </fileset>
     </jar>
   </target>
+
   <target name="download-all-extbins" unless="ext.binaries.downloaded" depends="bootstrap">
     <echo>Downloading external binaries (*/external/ directories)...</echo>
     <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
@@ -127,6 +128,20 @@ made subject to such option by the copyright holder.
         </manifest>
     </downloadbinaries>
     <property name="ext.binaries.downloaded" value="true"/>
+  </target>
+
+  <target name="download-selected-extbins" unless="ext.binaries.downloaded" depends="init-module-list">
+    <echo>Downloading external binaries (*/external/ directories) for cluster.config=${cluster.config}...</echo>
+    <pathconvert property="modules.binaries-list" pathsep=",">
+        <path>
+            <dirset dir="${nb_all}" includes="nbbuild,${allmodules}"/>
+        </path>
+        <map from="${nb_all}/" to=""/>
+        <globmapper from="*" to="*/external/binaries-list"/>
+    </pathconvert>
+    <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
+        <manifest dir="${nb_all}" includes="${modules.binaries-list}"/>
+    </downloadbinaries>
   </target>
 
   <target name="init-module-list" depends="bootstrap,init-tasks">
@@ -153,8 +168,6 @@ made subject to such option by the copyright holder.
     <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
     <taskdef name="getdependsclusters" classname="org.netbeans.nbbuild.GetDependsClusters" classpath="nbantext.jar"/>
     <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
-
-    <property name="sanitystart.args" value="-J-Dnetbeans.close=true ${sanitystart.args.additional}"/>
 
     <!-- Set up automatic all-* targets: -->
     <taskdef name="insert-module-all-targets" classname="org.netbeans.nbbuild.InsertModuleAllTargets" classpath="nbantext.jar"/>
@@ -272,11 +285,9 @@ made subject to such option by the copyright holder.
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 
-  <target name="build-nozip" depends="init,download-all-extbins,clean-cluster-flags,build-clusters,create-license-summary,create-netbeans-import,finish-build" description="Build the IDE but do not create a final ZIP file."/>
+  <target name="build-nozip" depends="init,download-selected-extbins,clean-cluster-flags,build-clusters,create-license-summary,create-netbeans-import,finish-build" description="Build the IDE but do not create a final ZIP file."/>
   <target name="finish-build" depends="init">
     <loadproperties srcFile="${clusters.list.file}" />
-     
-    <loadproperties srcfile="${netbeans.dest.dir}/moduleCluster.properties" />
         
     <mkdir dir="${netbeans.dest.dir}/bin" />
     <copy file="../ide/launcher/unix/netbeans" todir="${netbeans.dest.dir}/bin" />
@@ -317,7 +328,7 @@ Hg ID:    ${hg.id}
     <delete file="NetBeans-${buildnum}-javadoc-web.zip"/> <!-- XXX why? -->
     <delete file="NetBeans-${buildnum}-javadoc.zip"/> <!-- XXX why? -->
 
-    <property name="nb-extra-files" value="*.built,test/**,extra/**"/>
+    <property name="nb-extra-files" value="test/**,extra/**"/>
 
     <antcall target="zip-cluster-config" inheritall="true"/>
     
@@ -345,13 +356,6 @@ the ${netbeans.dest}/bin/ directory.
              targetprefix="all-" 
              mergedependentmodules="${merge.dependent.modules}" >
     </nbmerge>
-    <chmod perm="ugo+x">
-      <fileset dir="${netbeans.dest.dir}">
-        <include name="bin/netbeans"/>
-        <include name="bin/**/*.pl"/>
-        <include name="jakarta-tomcat-*/bin/*.sh"/>
-      </fileset>
-    </chmod>
   </target>
 
 
@@ -456,7 +460,7 @@ the ${netbeans.dest}/bin/ directory.
     <property name="${one.cluster.name}-is-built" value="true"/>
   </target>
 
-  <target name="zip-cluster-config" depends="init">
+  <target name="zip-cluster-config" depends="init,-define-cluster-path">
     <property name="zip.dir" location="."/>
     <mkdir dir="${zip.dir}"/>
     <property name="zip.name" location="${zip.dir}/NetBeans-${buildnum}-${cluster.config}.zip"/>
@@ -465,31 +469,21 @@ the ${netbeans.dest}/bin/ directory.
     </resolvelist>
     <pathconvert property="nb.clusters.includes" pathsep=",">
         <dirset dir="${netbeans.dest.dir}" includes="${nb.clusters.dirs},etc,bin"/>
-        <mapper type="regexp" from=".*/([^/\\]*)" to="\1/**/*"/>
+        <mapper type="regexp" from=".*/([^/\\]*)" to="\1/"/>
     </pathconvert>
-    <pathconvert property="nb.clusters.exe.includes" pathsep=",">
-        <dirset dir="${netbeans.dest.dir}" includes="${nb.clusters.dirs}"/>
-        <mapper type="regexp" from=".*/([^/\\]*)" to="\1/**/*.sh,\1/**/bin/*,\1/**/bin/nativeexecution/**,\1/**/modules/ext/lib/*/tools_exec,\1/**/modules/ext/lib/**/*.so,\1/**/modules/ext/lib/**/*.dylib"/>
-    </pathconvert>
-    <pathconvert property="nb.clusters.exe.excludes" pathsep=",">
-        <dirset dir="${netbeans.dest.dir}" includes="${nb.clusters.dirs}"/>
-        <mapper type="regexp" from=".*/([^/\\]*)" to="\1/**/bin/*.bat,\1/**/bin/*.cmd"/>
-    </pathconvert>
+    <taskdef name="find-executables" classname="org.netbeans.nbbuild.FindExecutables" classpath="nbantext.jar"/>
+    <find-executables allmodules="${allmodules}" exeincludeproperty="nb.clusters.exe.includes"/>
     <!-- package the zip file -->
     <zip destfile="${zip.name}" update="true" duplicate="preserve">
-      <zipfileset file="${netbeans.dest.dir}/bin/netbeans" filemode="755" prefix="${netbeans.dest}/bin"/>
-      <zipfileset file="${netbeans.dest.dir}/${nb.cluster.platform.dir}/lib/nbexec" filemode="755" prefix="${netbeans.dest}/${nb.cluster.platform.dir}/lib"/>
       <zipfileset dir="${netbeans.dest.dir}" filemode="755" prefix="${netbeans.dest}"
-        includes="${nb.clusters.exe.includes}"
-        excludes="${nb.clusters.exe.excludes}"
+        includes="bin/netbeans,${nb.clusters.exe.includes}"
       />
       <zipfileset
         dir="${netbeans.dest.dir}" prefix="${netbeans.dest}"
         includes="${nb.clusters.includes}" excludes="${nb-extra-files}"
       />
       <zipfileset
-        dir="${netbeans.dest.dir}" prefix="${netbeans.dest}"
-        excludes="${nb-extra-files}">
+        dir="${netbeans.dest.dir}" prefix="${netbeans.dest}">
             <include name="*.txt"/>
             <include name="*.css"/>
             <include name="*.html"/>
@@ -883,7 +877,6 @@ BASEDIR=${pkg.svr4.basedir}
 PKGINST=${pkg.svr4.pkginst}</echo>
   </target>
     
-  <target name="sanity-check" depends="testuserdir-delete,sanity-start" description="Test whether the build can start up without problems."/>
     <target name="-testuserdir-delete-init" depends="init">
       <property name="test.user.dir.lock" location="${test.user.dir}/lock"/>
       <available property="app.running" file="${test.user.dir.lock}"/>
@@ -896,42 +889,12 @@ PKGINST=${pkg.svr4.pkginst}</echo>
       <fail>Will not delete ${test.user.dir} because ${test.user.dir.lock} still exists; kill any running process and delete lock file if necessary</fail>
     </target>
   <target name="testuserdir-delete" depends="-testuserdir-delete-ok,-testuserdir-delete-fail" description="Clean temporary testing user directory."/>
-  <target name="sanity-start" depends="init,maybe-build-nozip,-jdk-init">
-    <mkdir dir="${test.user.dir}"/>
-    <echo>Starting the IDE as a sanity check...</echo>
-    <echo>WARNING - the sanity-start target is deprecated. Use commit-validation instead.</echo>
-    <!-- XXX better would be to scan start log for stacktraces and just show those; -->
-    <!-- possibly after filtering for duplicates or something like this. -->
-    <!-- Timeout is ten minutes; should be enough for valid start, while preventing -->
-    <!-- a deadlock from hanging an automated build: -->
-    <exec osfamily="windows" executable="${netbeans.dest.dir}/bin/netbeans.exe" failonerror="yes" timeout="600000">
-      <arg value="--jdkhome"/>
-      <arg file="${nbjdk.home}"/>
-      <arg value="--userdir"/>
-      <arg file="${test.user.dir}"/>
-      <arg line="${sanitystart.args}"/>
-    </exec>
-    <exec osfamily="unix" dir="." executable="sh" failonerror="yes" timeout="600000">
-      <arg value="${netbeans.dest.dir}/bin/netbeans"/>
-      <arg value="--jdkhome"/>
-      <arg file="${nbjdk.home}"/>
-      <arg value="--userdir"/>
-      <arg file="${test.user.dir}"/>
-      <arg line="${sanitystart.args}"/>
-    </exec>
-    <echo>Finished starting the IDE, pay attention to any reported errors.</echo>
-  </target>
 
   <target name="check-for-build"  >
     <available property="have-build" file="${netbeans.dest.dir}/bin/netbeans"/>
   </target>
   <target name="maybe-build-nozip" depends="check-for-build" unless="have-build">
     <ant dir="${basedir}" target="build-nozip"/>
-  </target>
-
-  <target name="nozip-check" 
-          depends="build-nozip,sanity-check">
-    <echo>WARNING - the nozip-check target is deprecated. Use all-nozip instead.</echo>
   </target>
 
   <target name="tryme-setup-debug-args" if="debug.port" >
@@ -1181,7 +1144,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <mkdir dir="build/test/unit/results"/>
         <property name="includes" value="**/*Test"/>
         <property name="junit.vm.args" value=""/>
-        <junit showoutput="true" fork="true" tempdir="build/test/unit/results">
+        <junit showoutput="true" fork="true" tempdir="build/test/unit/results" filtertrace="false" includeantruntime="false">
             <batchtest todir="build/test/unit/results">
                 <fileset dir="build/test/unit/classes">
                     <include name="${includes}.class"/>
@@ -1407,7 +1370,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <verifylibsandlicenses report="build/verifylibsandlicenses.xml" nball=".."/>
     </target>
 
-    <target name="create-license-summary" depends="bootstrap,download-all-extbins" description="Create a summary of the licenses used by libraries in the build.">
+    <target name="create-license-summary" depends="bootstrap,download-selected-extbins" description="Create a summary of the licenses used by libraries in the build.">
         <taskdef name="createlicensesummary" classname="org.netbeans.nbbuild.extlibs.CreateLicenseSummary" classpath="nbantext.jar"/>
         <mkdir dir="build"/>
         <createlicensesummary report="build/createlicensesummary.xml" nball=".." build="${netbeans.dest.dir}" summary="${netbeans.dest.dir}/THIRDPARTYLICENSE-generated.txt"/>

@@ -49,6 +49,7 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -72,7 +73,7 @@ class HarnessUpgrader {
             if (p.isDefault() && !p.isValid()) {
                 continue;
             }
-            if (p.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1) {
+            if (p.getHarnessVersion().compareTo(HarnessVersion.V50u1) >= 0) {
                 continue;
             }
             if (!p.getHarnessLocation().equals(p.getBundledHarnessLocation())) {

@@ -116,6 +116,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     }
     
     private JTree errorTree;
+    private DefaultTreeModel errorTreeModel;
     private JLabel severityLabel;
     private JComboBox severityComboBox;
     private JCheckBox tasklistCheckBox;
@@ -137,11 +138,12 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         depScanningModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_SrcRoot")); //NOI18N
     }
     
-    void connect( JTree errorTree, JLabel severityLabel, JComboBox severityComboBox,
+    void connect( JTree errorTree, DefaultTreeModel errorTreeModel, JLabel severityLabel, JComboBox severityComboBox,
                   JCheckBox tasklistCheckBox, JPanel customizerPanel,
                   JEditorPane descriptionTextArea) {
         
         this.errorTree = errorTree;
+        this.errorTreeModel = errorTreeModel;
         this.severityLabel = severityLabel;
         this.severityComboBox = severityComboBox;
         this.tasklistCheckBox = tasklistCheckBox;
@@ -402,7 +404,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
 
         Object o = getUserObject(treePath);
 
-        DefaultTreeModel model = (DefaultTreeModel) errorTree.getModel();
+        DefaultTreeModel model = errorTreeModel;
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
 
 

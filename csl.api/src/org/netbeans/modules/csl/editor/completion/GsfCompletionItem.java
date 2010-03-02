@@ -62,6 +62,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
+import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -101,7 +103,18 @@ public abstract class GsfCompletionItem implements CompletionItem {
             this.completionResult = completionResult;
             this.info = info;
         }
-        
+
+        @Override
+        public void defaultAction(JTextComponent component) {
+            if(item instanceof DefaultCompletionProposal) {
+                boolean cancel = ((DefaultCompletionProposal)item).beforeDefaultAction();
+                if(cancel) {
+                    return ; //do not invoke the default action
+                }
+            }
+            super.defaultAction(component);
+        }
+
         public int getSortPriority() {
             if (item.getSortPrioOverride() != 0) {
                 return item.getSortPrioOverride();

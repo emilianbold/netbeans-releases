@@ -56,6 +56,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -131,6 +132,31 @@ public class AbstractLookupBaseHid extends NbTestCase {
         new Integer (10), 
         new Object ()
     };
+
+    public void testAddFirstWithExecutorBeforeLookupAssociationFails() {
+        doAddFirstWithExecutorBeforeLookupAssociationFails(false);
+    }
+
+    private void doAddFirstWithExecutorBeforeLookupAssociationFails(boolean before) {
+        ScheduledExecutorService e = Executors.newSingleThreadScheduledExecutor();
+        // The next line is replacement for: ic = new AbstractLookup.Content(e);
+        ic.attachExecutor(e);
+        String msg = "Adding a pair to Content not connected to Lookup is not supported!";
+        try {
+            ic.addPair(new AbstractLookupMemoryTest.EmptyPair());
+            if (before) {
+                fail(msg);
+            }
+
+        } catch (NullPointerException ex) {
+            if (before) {
+                assertEquals("OK message", msg, ex.getMessage());
+                // OK
+                return;
+            }
+            throw ex;
+        }
+    }
     
     /** Test if first is really first.
      */
@@ -1755,6 +1781,9 @@ public class AbstractLookupBaseHid extends NbTestCase {
 
             assertEquals("No equals called", 0, CntPair.cnt);
             assertEquals("1000 instances ", how, CntPair.instances);
+        }
+        if (n.equals("testAddFirstWithExecutorBeforeLookupAssociationFails")) {
+            doAddFirstWithExecutorBeforeLookupAssociationFails(true);
         }
     }
     

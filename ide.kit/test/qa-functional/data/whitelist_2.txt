@@ -1,3 +1,8 @@
+#179838
+org.apache.derby.jdbc.AutoloadedDriver
+org.h2.Driver
+org.netbeans.modules.db.explorer.DatabaseConnector
+
 #177514
 org.netbeans.modules.cnd.api.model.CsmClass
 org.netbeans.modules.cnd.api.model.CsmClassifier
@@ -5527,3 +5532,25 @@ org.netbeans.modules.ide.ergonomics.Installer
 org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$FCL
 org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$RootsListeners
 
+# OK on Feb 4, 2010:
+javax.swing.GroupLayout
+javax.swing.GroupLayout$Alignment
+javax.swing.GroupLayout$ParallelGroup
+org.netbeans.modules.parsing.impl.indexing.DefaultPathRecognizer
+org.netbeans.modules.parsing.impl.indexing.errors.ErrorAnnotator
+org.netbeans.modules.progress.spi.Controller
+org.netbeans.modules.progress.spi.ExtractedProgressUIWorker
+org.netbeans.modules.progress.spi.InternalHandle
+org.netbeans.modules.progress.spi.ProgressEvent
+org.netbeans.modules.progress.spi.ProgressUIWorker
+org.netbeans.modules.progress.spi.ProgressUIWorkerProvider
+org.netbeans.modules.progress.spi.ProgressUIWorkerWithModel
+org.netbeans.modules.progress.spi.TaskModel
+org.openide.util.NbPreferences$Provider
+org.openide.util.actions.ActionPresenterProvider
+org.openide.util.lookup.implspi.NamedServicesProvider
+
+# classes loaded to make VersioningAnnotator asynchronous and much more responsive
+# permitted in #180830
+org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache
+org.netbeans.modules.versioning.VersioningAnnotationProvider$Cache$AnnotationRefreshTask

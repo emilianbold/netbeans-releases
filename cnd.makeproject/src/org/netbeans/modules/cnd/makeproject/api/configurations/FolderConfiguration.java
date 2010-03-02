@@ -103,17 +103,20 @@ public class FolderConfiguration implements ConfigurationAuxObject {
     }
 
     // interface ConfigurationAuxObject
+    @Override
     public boolean shared() {
         return true;
     }
 
     // interface ConfigurationAuxObject
+    @Override
     public boolean hasChanged() {
         return needSave;
     }
 
     // interface ProfileAuxObject
-    public void clearChanged() {
+    @Override
+    public final void clearChanged() {
         needSave = false;
     }
 
@@ -121,6 +124,7 @@ public class FolderConfiguration implements ConfigurationAuxObject {
      * Returns an unique id (String) used to retrive this object from the
      * pool of aux objects
      */
+    @Override
     public String getId() {
         return folder.getId();
     }
@@ -130,6 +134,7 @@ public class FolderConfiguration implements ConfigurationAuxObject {
         getCCCompilerConfiguration().assign(folderConfiguration.getCCCompilerConfiguration());
     }
 
+    @Override
     public void assign(ConfigurationAuxObject profileAuxObject) {
         if (!(profileAuxObject instanceof FolderConfiguration)) {
             // FIXUP: exception ????
@@ -165,14 +170,17 @@ public class FolderConfiguration implements ConfigurationAuxObject {
 
     //
     // XML codec support
+    @Override
     public XMLDecoder getXMLDecoder() {
         return new FolderXMLCodec(this);
     }
 
+    @Override
     public XMLEncoder getXMLEncoder() {
         return new FolderXMLCodec(this);
     }
 
+    @Override
     public void initialize() {
         // FIXUP: this doesn't make sense...
     }
@@ -192,17 +200,19 @@ public class FolderConfiguration implements ConfigurationAuxObject {
 
     private static class StringRONodeProp extends PropertySupport<String> {
 
-        String value;
+        private String value;
 
         public StringRONodeProp(String name, String value) {
             super(name, String.class, name, name, true, false);
             this.value = value;
         }
 
+        @Override
         public String getValue() {
             return value;
         }
 
+        @Override
         public void setValue(String v) {
         }
     }

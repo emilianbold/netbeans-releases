@@ -40,14 +40,12 @@
  */
 package org.netbeans.modules.javacard.project.refactoring;
 
-import org.netbeans.modules.javacard.common.Utils;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.openide.util.Lookup;
 
-import java.util.Collection;
 
 /**
  * Rename refactoring for Java Card projects. It's involved in renaming of
@@ -59,10 +57,10 @@ public class JCRenameRefactoringPlugin implements RefactoringPlugin {
     /* This one is important creature - makes sure that cycles between 
      * plugins won't appear */
     private static ThreadLocal<Object> semafor = new ThreadLocal<Object>();
-    private RenameRefactoring refactoring;
+    private AbstractRefactoring refactoring;
     private ImportantFilesRenameRefactoring importantFilesRenameRefactoring;
 
-    public JCRenameRefactoringPlugin(RenameRefactoring refactoring) {
+    public JCRenameRefactoringPlugin(AbstractRefactoring refactoring) {
         this.refactoring = refactoring;
         this.importantFilesRenameRefactoring = new ImportantFilesRenameRefactoring(refactoring);
     }
@@ -113,9 +111,6 @@ public class JCRenameRefactoringPlugin implements RefactoringPlugin {
         Problem problem = null;
 
         if (semafor.get() == null) {
-            Lookup lookup = refactoring.getRefactoringSource();
-            Collection<Object> res =
-                    (Collection<Object>) lookup.lookupAll(Object.class);
             problem = importantFilesRenameRefactoring.prepare(elems);
         }
         return problem;

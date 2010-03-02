@@ -570,7 +570,8 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
     
     void store(WizardDescriptor d) {
         d.putProperty(ProjectServerWizardPanel.SERVER_INSTANCE_ID, getSelectedServer());
-        d.putProperty(ProjectServerWizardPanel.J2EE_LEVEL, getSelectedJ2eeProfile());
+        Profile j2ee = getSelectedJ2eeProfile();
+        d.putProperty(ProjectServerWizardPanel.J2EE_LEVEL, j2ee);
         d.putProperty(ProjectServerWizardPanel.CONTEXT_PATH, jTextFieldContextPath.getText().trim());
         d.putProperty(ProjectServerWizardPanel.EAR_APPLICATION, getSelectedEarApplication());
         d.putProperty(ProjectServerWizardPanel.WAR_NAME,  jTextFieldWebAppName.getText());
@@ -581,13 +582,14 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         d.putProperty(ProjectServerWizardPanel.CREATE_JAR, Boolean.valueOf(createEjbCheckBox.isVisible() ? createEjbCheckBox.isSelected() : false));
         d.putProperty(ProjectServerWizardPanel.CREATE_CAR, Boolean.valueOf(createCarCheckBox.isVisible() ? createCarCheckBox.isSelected() : false));
         d.putProperty(ProjectServerWizardPanel.CDI, Boolean.valueOf(cdiCheckbox.isVisible() ? cdiCheckbox.isSelected() : false));
-    
+
         // #119052
         String sourceLevel = "1.5"; // NOI18N
+        if (j2ee != null && (Profile.JAVA_EE_6_FULL.equals(j2ee) || Profile.JAVA_EE_6_WEB.equals(j2ee))) {
+            sourceLevel = "1.6"; // NOI18N
+        }
         if (warningPanel != null && warningPanel.getDowngradeAllowed()) {
             d.putProperty(ProjectServerWizardPanel.JAVA_PLATFORM, warningPanel.getSuggestedJavaPlatformName());
-            
-            Profile j2ee = getSelectedJ2eeProfile();
             if (j2ee != null) {
                 String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
                 UserProjectSettings fls = UserProjectSettings.getDefault();

@@ -148,13 +148,16 @@ public class TreeLoader extends LazyTreeLoader {
                     log.nerrors = 0;
                     JavaFileObject jfo = FileObjects.nbFileObject(fo, null);
                     Map<ClassSymbol, StringBuilder> oldCouplingErrors = couplingErrors;
+                    boolean oldSkipAPT = jti.skipAnnotationProcessing;
                     try {
                         couplingErrors = new HashMap<ClassSymbol, StringBuilder>();
+                        jti.skipAnnotationProcessing = true;
                         jti.analyze(jti.enter(jti.parse(jfo)));
                         if (persist)
                             dumpSymFile(ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), jti, clazz);
                         return true;
                     } finally {
+                        jti.skipAnnotationProcessing = oldSkipAPT;
                         log.nerrors = 0;
                         for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.entrySet()) {
                             dumpCouplingAbort(new CouplingAbort(e.getKey(), null), e.getValue().toString());

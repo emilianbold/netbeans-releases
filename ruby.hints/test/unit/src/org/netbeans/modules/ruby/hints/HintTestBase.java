@@ -43,8 +43,6 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.csl.core.Language;
-import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstUtilities;
@@ -166,25 +164,4 @@ public abstract class HintTestBase extends RubyTestBase {
         assertTrue(fails.toString(), fails.size() == 0);
     }
     
-    @SuppressWarnings("unchecked")
-    public void ensureRegistered(RubyAstRule hint) throws Exception {
-        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(RubyInstallation.RUBY_MIME_TYPE);
-        assertNotNull(language.getHintsProvider());
-        GsfHintsManager hintsManager = language.getHintsManager();
-        Map<NodeType, List<RubyAstRule>> hints = (Map)hintsManager.getHints();
-        Set<NodeType> kinds = hint.getKinds();
-        for (NodeType nodeType : kinds) {
-            List<RubyAstRule> rules = hints.get(nodeType);
-            assertNotNull(rules);
-            boolean found = false;
-            for (RubyAstRule rule : rules) {
-                if (rule.getClass() == hint.getClass()) {
-                    found  = true;
-                    break;
-                }
-            }
-            
-            assertTrue(found);
-        }
-    }
 }

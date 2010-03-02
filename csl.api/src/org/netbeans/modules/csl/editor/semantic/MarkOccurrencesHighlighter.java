@@ -79,6 +79,8 @@ import org.openide.util.NbBundle;
  * @author Jan Lahoda
  */
 public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
+
+    private static final Logger LOG = Logger.getLogger(MarkOccurrencesHighlighter.class.getName());
     
     //private FileObject file;
     private final Language language;
@@ -103,7 +105,7 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
         Document doc = snapshot.getSource().getDocument(false);
         
         if (doc == null) {
-            Logger.global.log(Level.INFO, "MarkOccurencesHighlighter: Cannot get document!");
+            LOG.log(Level.INFO, "MarkOccurencesHighlighter: Cannot get document!"); //NOI18N
             return ;
         }
         

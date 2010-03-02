@@ -62,6 +62,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -71,6 +72,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
@@ -78,8 +80,6 @@ import org.netbeans.modules.bugzilla.query.QueryController;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport;
-import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -406,6 +406,18 @@ public class BugzillaRepository extends Repository {
         return queries;
     }
 
+    public void setAuthentication(String user, String password, String httpUser, String httpPassword) {
+        String shortLoginEnabled = taskRepository.getProperty(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN);
+        setTaskRepository(
+                name,
+                taskRepository.getUrl(),
+                user != null ? user : "",                                       // NOI18N
+                password != null ? password : "",                               // NOI18N
+                httpUser != null ? httpUser : "",                               // NOI18N
+                httpPassword != null ? httpPassword : "",                       // NOI18N
+                "true".equals(shortLoginEnabled));                              // NOI18N
+    }
+
     protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
         HashMap<String, Object> oldAttributes = createAttributesMap();
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);
@@ -479,7 +491,7 @@ public class BugzillaRepository extends Repository {
         }
         if(BugzillaUtil.isNbRepository(this)) {
             if(nodes != null && nodes.length > 0) {
-                OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(nodes[0]);
+                OwnerInfo ownerInfo = KenaiUtil.getOwnerInfo(nodes[0]);
                 if(ownerInfo != null /*&& ownerInfo.getOwner().equals(product)*/ ) {
                     return ownerInfo;
                 }

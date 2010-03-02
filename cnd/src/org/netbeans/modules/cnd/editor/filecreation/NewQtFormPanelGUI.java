@@ -285,6 +285,7 @@ import org.openide.loaders.DataObjectNotFoundException;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPanel1.add(cbFormType, gridBagConstraints);
 
+        cbCreateClass.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(cbCreateClass, org.openide.util.NbBundle.getMessage(NewQtFormPanelGUI.class, "LBL_TargetChooser_CreateWrapperClass")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

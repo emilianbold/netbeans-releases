@@ -75,6 +75,7 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard>
     // ----------
     // WizardDescriptor.Panel implementation
 
+    @Override
     public java.awt.Component getComponent() {
         if (fileChooser == null) { // create the UI component for the wizard step
             fileChooser = new JFileChooser(lastDirectoryUsed);
@@ -91,16 +92,19 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard>
             fileChooser.setMultiSelectionEnabled(true);
 
             fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+                @Override
                 public boolean accept(File f) {
                     return f.isDirectory()
                            || f.getName().toLowerCase().endsWith(".jar"); // NOI18N
                 }
+                @Override
                 public String getDescription() {
                     return PaletteUtils.getBundleString("CTL_JarArchivesMask"); // NOI18N
                 }
             });
 
             fileChooser.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent ev) {
                     if (JFileChooser.APPROVE_SELECTION.equals(ev.getActionCommand()))
                         wizard.stepToNext();
@@ -110,6 +114,7 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard>
             });
 
             fileChooser.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent ev) {
                     if (JFileChooser.SELECTED_FILES_CHANGED_PROPERTY
                                         .equals(ev.getPropertyName()))
@@ -123,11 +128,13 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard>
         return fileChooser;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelp() {
         // PENDING
         return new org.openide.util.HelpCtx("beans.adding"); // NOI18N
     }
 
+    @Override
     public boolean isValid() {
         if (fileChooser != null && fileChooser.getSelectedFiles().length > 0) {
             lastDirectoryUsed = fileChooser.getCurrentDirectory().getAbsolutePath();
@@ -136,10 +143,12 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard>
         return false;
     }
 
+    @Override
     public void readSettings(AddToPaletteWizard settings) {
         wizard = settings;
     }
 
+    @Override
     public void storeSettings(AddToPaletteWizard settings) {
         if (fileChooser != null) {
             List<ClassSource.JarEntry> entries = new ArrayList<ClassSource.JarEntry>();
@@ -150,10 +159,12 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard>
         }
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         cs.addChangeListener(listener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         cs.removeChangeListener(listener);
     }

@@ -46,6 +46,40 @@ made subject to such option by the copyright holder.
 <apidef name="csl.api">Common Scripting Language API</apidef>
 </apidefs>
 <changes>
+    <change id="ToggleBlockCommentAction-noarg-ctor">
+        <api name="csl.api"/>
+        <summary>Adding no-arg constructor to ToggleBlockCommentAction</summary>
+        <version major="2" minor="2"/>
+        <date day="15" month="2" year="2010"/>
+        <author login="vstejskal"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" source="compatible" deprecation="yes"/>
+        <description>
+            <p>
+            Adding no-arg constructor to <code>ToggleBlockCommentAction</code> class and deprecated
+            the <code>ToggleBlockCommentAction(CommentHandler cH)</code> constructor. The action dynamically
+            determines the type of comments for the document section where it is invoked.
+            </p>
+        </description>
+        <issue number="167300"/>
+    </change>
+    <change id="api-cleanup">
+        <api name="csl.api"/>
+        <summary>Removing o.n.m.csl.core and o.n.m.csl.editor from public API</summary>
+        <version major="2" minor="1"/>
+        <date day="28" month="1" year="2010"/>
+        <author login="vstejskal"/>
+        <compatibility addition="no" deletion="yes" modification="yes" binary="incompatible" source="incompatible"/>
+        <description>
+            <p>
+            The packages <code>o.n.m.csl.core</code> and <code>o.n.m.csl.editor</code> were removed
+            from the public API. They contained implementation classes and should never have been
+            made public in the first place. The only classes in these packages that were needed
+            by language plugins are several editor actions. They were moved to <code>o.n.m.csl.api</code>
+            package.
+            </p>
+        </description>
+        <issue number="169991"/>
+    </change>
     <change id="LanguageRegistration-annotation">
         <api name="csl.api"/>
         <summary>Adding @LanguageRegistration annotation</summary>

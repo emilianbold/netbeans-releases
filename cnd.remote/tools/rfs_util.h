@@ -40,6 +40,9 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <limits.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 
 typedef int bool;
 
@@ -47,6 +50,13 @@ enum {
     true = 1,
     false = 0
 };
+
+extern bool trace_flag;
+
+static void init_trace_flag(const char* env_var) {
+    char *env = getenv(env_var);
+    trace_flag = env && *env == '1';
+}
 
 void report_error(const char *format, ...);
 
@@ -56,24 +66,89 @@ static void report_unresolved_path(const char* path) {
     report_error("Can not resolve path: %s  cwd: %s\n", path, pwd);
 }
 
-#if TRACE
-    void trace(const char *format, ...);
-    void trace_startup(const char* prefix, const char* env_var, const char* binary);
-    void trace_shutdown();
-    static void trace_unresolved_path(const char* path) {
+
+#define trace(...) if (trace_flag) { _trace(__VA_ARGS__); }
+void _trace(const char *format, ...);
+
+#define trace_startup(prefix, env_var, binary) if (trace_flag) { _trace_startup(prefix, env_var, binary); }
+void _trace_startup(const char* prefix, const char* env_var, const char* binary);
+
+#define trace_shutdown() if (trace_flag) { _trace_shutdown(); }
+void _trace_shutdown();
+
+#define trace_unresolved_path(path) if (trace_flag) { _trace_unresolved_path(path); }
+static void _trace_unresolved_path(const char* path) {
+    if (trace_flag) {
         char pwd[PATH_MAX];
         getcwd(pwd, sizeof pwd);
         trace("Can not resolve path: %s  pwd: %s\n", path, pwd);
     }
-    static void dbg_sleep(int time) {
+}
+
+#define dbg_sleep(time) if (trace_flag) { _dbg_sleep(time); }
+static void _dbg_sleep(int time) {
+    if (trace_flag) {
         trace("Sleeping %d sec...\n", time);
         sleep(time);
         trace("Awoke\n");
     }
-#else
-    #define trace_startup(...)
-    #define trace(...)
-    #define trace_shutdown()
-    #define trace_unresolved_path(...)
-    #define dbg_sleep(...)
-#endif
+}
+
+static char *normalize_path(const char *path, char *buffer, int max_size) {
+    if (path == NULL || buffer == NULL) {
+        errno = EINVAL;
+        return NULL;
+    }
+    const char *src = path; // points to the current char in the source path
+    char *dst = buffer; // points to the next char in the destination path
+    char* limit = buffer + max_size;
+    if (*path != '/') {
+        if (getcwd(buffer, max_size)) {
+            int len = strlen(buffer);
+            dst = buffer + len;
+            if (dst + 1 >= limit) {
+                errno = ENAMETOOLONG;
+                return NULL;
+            }
+            *(dst++) = '/';
+        } else {
+            return NULL;
+        }
+    }
+    while (*src) {
+        if (*src == '.' && (src == path || *(src-1) == '/')) {
+            if (*(src+1) == '.' && *(src+2) == '/') {
+                // it's "/../"
+                src += 3;
+                dst--; // point the last added one
+                if (*dst == '/') {
+                    dst--;
+                }
+                while (dst > buffer && *dst != '/') {
+                    dst--;
+                }
+                dst++;
+                continue;
+            } else if (*(src+1) == '/') {
+                // it's "/./" - skip '.' and '/'
+                src += 2;
+                continue;
+            }
+        }
+        if (dst + 1 >= limit) {
+            errno = ENAMETOOLONG;
+            return NULL;
+        }
+        *(dst++) = *(src++);
+    }
+    if (*dst == '/') {
+        dst--;
+    }
+    if (dst + 1 >= limit) {
+        errno = ENAMETOOLONG;
+        return NULL;
+    }
+    *dst = 0;
+    trace("normalize: %s -> %s\n", path, buffer);
+    return dst;
+}

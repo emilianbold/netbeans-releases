@@ -46,7 +46,9 @@ made subject to such option by the copyright holder.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.libs.jsr223</code-name-base>
             <module-dependencies/>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.libs.jsr223</package>
+            </public-packages>
         </data>
     </configuration>
 </project>

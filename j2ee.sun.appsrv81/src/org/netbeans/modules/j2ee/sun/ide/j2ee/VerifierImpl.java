@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.FileOwnerQuery;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.glassfish.eecommon.api.VerifierSupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
@@ -91,10 +92,10 @@ public  class VerifierImpl extends org.netbeans.modules.j2ee.deployment.plugins.
             J2eeModuleProvider modProvider = getModuleProvider(target);
             boolean verificationType = avkSupport.createAVKSupport(dm, modProvider);
             if(verificationType){ 
-                VerifierSupport.launchVerifier(jname, logger);
+                VerifierSupport.launchVerifier(jname, logger,sdm.getPlatformRoot());
             }
         }else{
-            VerifierSupport.launchVerifier(jname,logger);
+            VerifierSupport.launchVerifier(jname,logger,sdm.getPlatformRoot());
         }   
     }
     

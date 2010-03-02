@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.api.model.services;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -52,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.util.Lookup;
 
@@ -61,7 +61,8 @@ import org.openide.util.Lookup;
  */
 public abstract class CsmVirtualInfoQuery {
     public abstract boolean isVirtual(CsmMethod method);
-    public abstract Collection<CsmMethod> getBaseDeclaration(CsmMethod method);
+    public abstract Collection<CsmMethod> getTopmostBaseDeclarations(CsmMethod method);
+    public abstract Collection<CsmMethod> getFirstBaseDeclarations(CsmMethod method);
     public abstract Collection<CsmMethod> getOverridenMethods(CsmMethod method, boolean searchFromBase);
     private static final CsmVirtualInfoQuery EMPTY = new Empty();
     
@@ -86,7 +87,7 @@ public abstract class CsmVirtualInfoQuery {
     //
     // Implementation of the default query
     //
-    private static final class Empty extends CsmVirtualInfoQuery {
+        private static final class Empty extends CsmVirtualInfoQuery {
         private Empty() {
         }
 
@@ -121,56 +122,80 @@ public abstract class CsmVirtualInfoQuery {
             }
             return false;
         }
-        
+
         @Override
-        public Collection<CsmMethod> getBaseDeclaration(CsmMethod method) {
+        public Collection<CsmMethod> getTopmostBaseDeclarations(CsmMethod method) {
+            return getBaseDeclaration(method, false);
+        }
+
+        @Override
+        public Collection<CsmMethod> getFirstBaseDeclarations(CsmMethod method) {
+            return getBaseDeclaration(method, true);
+        }
+
+        private Collection<CsmMethod> getBaseDeclaration(CsmMethod method, boolean first) {
             Set<CharSequence> antilLoop = new HashSet<CharSequence>();
             CharSequence sig = method.getSignature();
-            CsmMethod met = processMethod(sig, method.getContainingClass(), antilLoop);
-            if (met != null) {
-                CsmMethod next = met;
-                while(next != null) {
-                    met = next;
-                    CsmClass base = next.getContainingClass();
-                    next = null;
-                    if (base != null) {
-                        for(CsmInheritance inh : base.getBaseClasses()){
-                            CsmMethod m = processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop);
-                            if (m != null) {
-                                next = m;
-                                break;
+            Set<CsmMethod> result = new HashSet<CsmMethod>();
+            CsmClass cls = method.getContainingClass();
+            if (cls != null) {
+                for(CsmInheritance inh : cls.getBaseClasses()) {
+                    processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop,
+                                null, null, result, first);
+                }
+            }
+            return result;
+        }
+
+        /**
+         * Searches for method with the given signature in the given class and its ancestors.
+         * @param sig signature to search
+         * @param cls class to start with
+         * @param antilLoop prevents infinite loops
+         * @param result if a method with the given signature is found, it's stored in result - even if it is not virtual.
+         * @param first if true, returns first found method, otherwise the topmost one
+         * @return true if method found and it is virtual, otherwise false
+         */
+        private void processMethod(CharSequence sig, CsmClass cls, Set<CharSequence> antilLoop,
+                CsmMethod firstFound, CsmMethod lastFound,
+                Set<CsmMethod> result, boolean first) {
+
+            boolean theLastInHierarchy;
+            if (cls == null || antilLoop.contains(cls.getQualifiedName())) {
+                theLastInHierarchy = true;
+            } else {
+
+                antilLoop.add(cls.getQualifiedName());
+                for(CsmMember member : cls.getMembers()) {
+                    if (CsmKindUtilities.isMethod(member)) {
+                        CsmMethod method = (CsmMethod) member;
+                        if (CharSequenceKey.Comparator.compare(sig, method.getSignature()) == 0) {
+                            if (firstFound == null) {
+                                firstFound = method;
+                            }
+                            lastFound = method;
+                            if (method.isVirtual()) {
+                                if (first) {
+                                    result.add(firstFound);
+                                    return;
+                                }
                             }
                         }
                     }
                 }
-            }
-            if (met == null) {
-                return Collections.<CsmMethod>emptyList();
-            }
-            return Collections.<CsmMethod>singleton(met);
-        }
+                theLastInHierarchy = cls.getBaseClasses().isEmpty();
+                for(CsmInheritance inh : cls.getBaseClasses()) {
+                    processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, firstFound, lastFound, result, first);
+                }
 
-        private CsmMethod processMethod(CharSequence sig, CsmClass cls, Set<CharSequence> antilLoop){
-            if (cls == null || antilLoop.contains(cls.getQualifiedName())) {
-                return null;
             }
-            antilLoop.add(cls.getQualifiedName());
-            for(CsmMember m : cls.getMembers()){
-                if (CsmKindUtilities.isMethod(m)) {
-                    CsmMethod met = (CsmMethod) m;
-                    if (CharSequenceKey.Comparator.compare(sig, met.getSignature())==0
-                        && met.isVirtual()){
-                        return met;
-                    }
+            if (theLastInHierarchy) {
+                CsmMethod m  = lastFound;
+                if (m != null && m.isVirtual()) {
+                    CndUtils.assertNotNull(firstFound, "last found != null && first found == null ?!"); //NOI18N
+                    result.add(first ? firstFound : m);
                 }
             }
-            for(CsmInheritance inh : cls.getBaseClasses()){
-                CsmMethod met = processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop);
-                if (met != null) {
-                    return met;
-                }
-            }
-            return null;
         }
 
         @Override
@@ -178,7 +203,7 @@ public abstract class CsmVirtualInfoQuery {
             Set<CsmMethod> res = new HashSet<CsmMethod>();
             CsmClass cls;
             if (searchFromBase) {
-                Iterator<CsmMethod> it = getBaseDeclaration(method).iterator();
+                Iterator<CsmMethod> it = getTopmostBaseDeclarations(method).iterator();
                 if (it.hasNext()){
                     method = it.next();
                 }
@@ -189,12 +214,14 @@ public abstract class CsmVirtualInfoQuery {
                 CharSequence sig = method.getSignature();
                 for(CsmReference ref :CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, false)){
                     CsmClass c = (CsmClass) ref.getOwner();
-                    for(CsmMember m : c.getMembers()){
-                        if (CsmKindUtilities.isMethod(m)) {
-                            CsmMethod met = (CsmMethod) m;
-                            if (CharSequenceKey.Comparator.compare(sig, met.getSignature())==0){
-                                res.add(met);
-                                break;
+                    if (c != null) {
+                        for(CsmMember m : c.getMembers()){
+                            if (CsmKindUtilities.isMethod(m)) {
+                                CsmMethod met = (CsmMethod) m;
+                                if (CharSequenceKey.Comparator.compare(sig, met.getSignature())==0){
+                                    res.add(met);
+                                    break;
+                                }
                             }
                         }
                     }

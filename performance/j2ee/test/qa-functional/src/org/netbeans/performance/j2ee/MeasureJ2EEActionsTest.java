@@ -68,7 +68,7 @@ public class MeasureJ2EEActionsTest  {
         .addTest(OpenJ2EEFilesTest.class)
         .addTest(OpenJ2EEFilesWithOpenedEditorTest.class)
         .addTest(CreateJ2EEProjectTest.class)
-        .enableModules(".*").clusters("websvccommon[0-9]|webcommon[0-9]|xml[0-9]|enterprise[0-9]").reuseUserDir(true)));
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;
     }

@@ -42,6 +42,7 @@ package org.netbeans.modules.openide.util;
 import java.net.URLStreamHandler;
 import java.util.Collections;
 import java.util.Set;
+import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
@@ -49,8 +50,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import org.openide.util.URLStreamHandlerRegistration;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.implspi.AbstractServiceProviderProcessor;
 
+@ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class URLStreamHandlerRegistrationProcessor extends AbstractServiceProviderProcessor {
 
@@ -60,10 +63,7 @@ public class URLStreamHandlerRegistrationProcessor extends AbstractServiceProvid
 
     public static final String REGISTRATION_PREFIX = "URLStreamHandler/"; // NOI18N
 
-    /** public for ServiceLoader */
-    public URLStreamHandlerRegistrationProcessor() {}
-
-    protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+    protected @Override boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (Element el : roundEnv.getElementsAnnotatedWith(URLStreamHandlerRegistration.class)) {
             TypeElement clazz = (TypeElement) el;
             URLStreamHandlerRegistration r = clazz.getAnnotation(URLStreamHandlerRegistration.class);

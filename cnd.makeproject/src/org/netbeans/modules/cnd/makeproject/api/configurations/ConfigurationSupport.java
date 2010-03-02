@@ -58,10 +58,12 @@ public final class ConfigurationSupport {
 	    // Strip "'s
 	    String token = st.nextToken();
 	    String displayName = token; //token.substring(1, token.length()-1);
-	    if (displayName.equals(oldConf.getDisplayName()))
-		continue;
-	    if (newConfs.length() > 0)
-		newConfs.append(","); // NOI18N
+	    if (displayName.equals(oldConf.getDisplayName())) {
+                continue;
+            }
+	    if (newConfs.length() > 0) {
+                newConfs.append(","); // NOI18N
+            }
 	    newConfs.append(displayName);
 	}
 	return newConfs.toString();
@@ -97,17 +99,19 @@ public final class ConfigurationSupport {
 		tmp.append("_"); // NOI18N
 	    }
 	}
-	if (tmp.length() == 0) 
-	    return "Configuration"; // NOI18N
-	else
-	    return tmp.toString();
+	if (tmp.length() == 0) {
+            return "Configuration"; // NOI18N
+        } else {
+            return tmp.toString();
+        }
     }
     
     private static boolean isLetterOrDigit(char ch) {
-        if (ch < '0' || ch > 'z')
+        if (ch < '0' || ch > 'z') {
             return false;
-        else
+        } else {
             return Character.isLetterOrDigit(ch);
+        }
     }
 
     public static String getNameFromDisplayName(String displayName) {
@@ -131,12 +135,14 @@ public final class ConfigurationSupport {
 	int number = 1;
 	String newDisplayName;
 	while (true) {
-	    if (number == 1)
-		newDisplayName = baseName;
-	    else
-		newDisplayName = baseName + "-" + number; // NOI18N
-	    if (isNameUnique(cs, newDisplayName))
-		break;
+	    if (number == 1) {
+                newDisplayName = baseName;
+            } else {
+                newDisplayName = baseName + "-" + number; // NOI18N
+            }
+	    if (isNameUnique(cs, newDisplayName)) {
+                break;
+            }
 	    number++;
 	}
 	return newDisplayName;
@@ -151,12 +157,14 @@ public final class ConfigurationSupport {
 	String newBaseName = "Copy"; // NOI18N
 	String newName;
 	while (true) {
-	    if (number == 1)
-		newName = newBaseName + "_of_" + copy.getName(); // NOI18N
-	    else
-		newName = newBaseName + "-" + number + "_of_" + copy.getName(); // NOI18N
-	    if (isNameUnique(cs, newName))
-		break;
+	    if (number == 1) {
+                newName = newBaseName + "_of_" + copy.getName(); // NOI18N
+            } else {
+                newName = newBaseName + "-" + number + "_of_" + copy.getName(); // NOI18N
+            }
+	    if (isNameUnique(cs, newName)) {
+                break;
+            }
 	    number++;
 	}
 	return newName;
@@ -178,8 +186,9 @@ public final class ConfigurationSupport {
     public static String getConfsPropertyValue(Configuration[] cs) {
 	StringBuilder configurationProperty = new StringBuilder();
 	for (int i = 0; i < cs.length; i++) {
-	    if (configurationProperty.length() > 0)
-		configurationProperty.append(","); // NOI18N
+	    if (configurationProperty.length() > 0) {
+                configurationProperty.append(","); // NOI18N
+            }
 	    configurationProperty.append(cs[i].getDisplayName());
 	}
 	return configurationProperty.toString();

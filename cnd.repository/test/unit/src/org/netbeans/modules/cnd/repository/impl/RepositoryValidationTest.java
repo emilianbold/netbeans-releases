@@ -53,6 +53,8 @@ public class RepositoryValidationTest extends CndBaseTestSuite {
 
     static {
         System.setProperty("cnd.modelimpl.parser.threads", "8");
+//        System.setProperty("cnd.pp.condition.comparision.trace", "true");
+//        System.setProperty("cnd.modelimpl.trace.file", "gmodule-dl.c");
     }
 
     public RepositoryValidationTest() {

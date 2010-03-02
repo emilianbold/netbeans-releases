@@ -42,10 +42,11 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.openide.util.Lookup;
 
 public interface CustomizerNodeProvider {
     /**
      * Creates an instance of CustomizerNode node
      */
-    public CustomizerNode factoryCreate();
+    public CustomizerNode factoryCreate(Lookup lookup);
 }

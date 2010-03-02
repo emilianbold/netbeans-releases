@@ -45,7 +45,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -116,7 +119,11 @@ public class GeneratedSourceRootTest extends NbTestCase {
         ClassPath sourcePath = ClassPath.getClassPath(src, ClassPath.SOURCE);
         assertEquals(Arrays.asList(src, stuff), Arrays.asList(sourcePath.getRoots()));
         FileObject moreStuff = FileUtil.createFolder(d, "build/generated-sources/morestuff");
-        assertEquals(Arrays.asList(src, stuff, moreStuff), Arrays.asList(sourcePath.getRoots()));
+        final Set<FileObject> expected = new TreeSet<FileObject>(new FOComparator());
+        expected.addAll(Arrays.asList(src, stuff, moreStuff));
+        final Set<FileObject> result = new TreeSet<FileObject>(new FOComparator());
+        result.addAll(Arrays.asList(sourcePath.getRoots()));
+        assertEquals(expected, result);
         ClassPath compile = ClassPath.getClassPath(src, ClassPath.COMPILE);
         assertEquals(compile, ClassPath.getClassPath(stuff, ClassPath.COMPILE));
         assertEquals(compile, ClassPath.getClassPath(moreStuff, ClassPath.COMPILE));
@@ -369,6 +376,14 @@ public class GeneratedSourceRootTest extends NbTestCase {
         public void stateChanged(ChangeEvent event) {
             this.fireChange();
         }
+    }
+
+    private static class FOComparator implements Comparator<FileObject> {
+        @Override
+        public int compare(FileObject o1, FileObject o2) {
+            return o1.getName().compareTo(o2.getName());
+        }
+
     }
 
 }

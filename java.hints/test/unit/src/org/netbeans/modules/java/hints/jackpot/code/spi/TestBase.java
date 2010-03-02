@@ -40,6 +40,7 @@
 package org.netbeans.modules.java.hints.jackpot.code.spi;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,6 +61,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
+import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.hints.jackpot.code.CodeHintProviderImpl;
@@ -110,7 +112,7 @@ public abstract class TestBase extends NbTestCase {
         this.sourceLevel = sourceLevel;
     }
     
-    private void prepareTest(String fileName, String code) throws Exception {
+    protected void prepareTest(String fileName, String code) throws Exception {
         clearWorkDir();
         File wdFile = getWorkDir();
         FileUtil.refreshFor(wdFile);
@@ -153,6 +155,13 @@ public abstract class TestBase extends NbTestCase {
     private FileObject sourceRoot;
     private CompilationInfo info;
     private Document doc;
+
+    protected final void setTestFileCaretLocation(int pos) throws Exception {
+        Method m = CaretAwareJavaSourceTaskFactory.class.getDeclaredMethod("setLastPosition", FileObject.class, int.class);
+
+        m.setAccessible(true);
+        m.invoke(null, info.getFileObject(), pos);
+    }
 
     private List<ErrorDescription> computeErrors(CompilationInfo info) {
         Map<HintMetadata, Collection<HintDescription>> hints = new HashMap<HintMetadata, Collection<HintDescription>>();

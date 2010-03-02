@@ -112,6 +112,7 @@ public abstract class Configuration implements ProjectConfiguration {
         this.baseDir = baseDir;
     }
 
+    @Override
     public String getDisplayName() {
             return getName();
     }

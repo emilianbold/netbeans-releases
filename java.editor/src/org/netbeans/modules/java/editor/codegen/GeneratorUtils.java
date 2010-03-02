@@ -473,7 +473,8 @@ public class GeneratorUtils {
      * @return true if SourceVersion of source represented by provided info supports Override
      */
     public static boolean supportsOverride(CompilationInfo info) {
-        return SUPPORTS_OVERRIDE_SOURCE_VERSIONS.contains(info.getSourceVersion());
+        return SUPPORTS_OVERRIDE_SOURCE_VERSIONS.contains(info.getSourceVersion())
+               && info.getElements().getTypeElement("java.lang.Override") != null;
     }
     
     private static final Set<String> SUPPORTS_OVERRIDE_SOURCE_LEVELS;

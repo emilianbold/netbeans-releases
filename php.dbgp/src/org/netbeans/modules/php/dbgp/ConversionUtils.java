@@ -42,7 +42,6 @@ package org.netbeans.modules.php.dbgp;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.modules.php.dbgp.SessionId;
 
 /**
  *

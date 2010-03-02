@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.settings.convertors;
 
+import java.beans.ExceptionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
@@ -59,6 +60,7 @@ import org.netbeans.spi.settings.Convertor;
 import org.netbeans.spi.settings.Saver;
 
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.io.ReaderInputStream;
 
 /** Convertor using {@link  java.beans.XMLEncoder} and
@@ -96,10 +98,25 @@ public final class XMLBeanConvertor extends Convertor implements PropertyChangeL
         return d.readObject();
     }
     
-    public void write(java.io.Writer w, Object inst) throws IOException {
+    public @Override void write(java.io.Writer w, final Object inst) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         XMLEncoder e = new XMLEncoder(out);
-        e.writeObject(inst);
+        e.setExceptionListener(new ExceptionListener() {
+            public @Override void exceptionThrown(Exception x) {
+                Logger.getLogger(XMLBeanConvertor.class.getName()).log(Level.INFO, "Problem writing " + inst, x);
+            }
+        });
+        ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+        try {
+            // XXX would inst.getClass().getClassLoader() be more appropriate?
+            ClassLoader ccl2 = Lookup.getDefault().lookup(ClassLoader.class);
+            if (ccl2 != null) {
+                Thread.currentThread().setContextClassLoader(ccl2);
+            }
+            e.writeObject(inst);
+        } finally {
+            Thread.currentThread().setContextClassLoader(ccl);
+        }
         e.close();
         String data = new String(out.toByteArray(), "UTF-8");
         data = data.replaceFirst("<java", "<!DOCTYPE xmlbeans PUBLIC \"-//NetBeans//DTD XML beans 1.0//EN\" \"http://www.netbeans.org/dtds/xml-beans-1_0.dtd\">\n<java");

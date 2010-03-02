@@ -74,6 +74,7 @@ import org.netbeans.modules.ruby.rubyproject.IrbAction;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 import org.netbeans.modules.ruby.rubyproject.TestActionConfiguration;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
+import org.netbeans.modules.ruby.rubyproject.bundler.BundlerSupport;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunnerAction;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.netbeans.modules.ruby.rubyproject.ui.RubyBaseLogicalViewProvider;
@@ -355,6 +356,8 @@ public final class RailsLogicalViewProvider extends RubyBaseLogicalViewProvider 
         // Private methods -------------------------------------------------------------
         
         private Action[] getAdditionalActions() {
+
+            bundlerSupport.initialize();
             
             ResourceBundle bundle = NbBundle.getBundle(RailsLogicalViewProvider.class);
             
@@ -390,6 +393,9 @@ public final class RailsLogicalViewProvider extends RubyBaseLogicalViewProvider 
                 actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null)); // NOI18N
             }
 
+            if (bundlerSupport.installed()) {
+                actions.add(bundlerSupport.createAction());
+            }
             actions.add(RubyCoverageProvider.createCoverageAction(getProject()));
             actions.add(null);
 

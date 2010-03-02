@@ -55,7 +55,6 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -116,7 +115,7 @@ import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
 import org.netbeans.modules.jira.Jira;
@@ -128,7 +127,6 @@ import org.netbeans.modules.jira.util.ProjectRenderer;
 import org.netbeans.modules.jira.util.ResolutionRenderer;
 import org.netbeans.modules.jira.util.StatusRenderer;
 import org.netbeans.modules.jira.util.TypeRenderer;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -595,16 +593,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             // Created field
             String createdFormat = bundle.getString("IssuePanel.createdField.format"); // NOI18N
             String reporter = config.getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName();
-            String creation = dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.CREATION), true);
+            String creation = JiraUtils.dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.CREATION), true);
             String createdTxt = MessageFormat.format(createdFormat, creation, reporter);
             createdField.setText(createdTxt);
             fixPrefSize(createdField);
             boolean isKenaiRepository = (issue.getRepository() instanceof KenaiRepository);
             if ((reporterStatusLabel.getIcon() == null) && isKenaiRepository) {
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                KenaiUserUI ku = new KenaiUserUI(reporter + "@" + host);
-                ku.setMessage(KenaiUtil.getChatLink(issue));
-                JLabel label = ku.createUserWidget();
+                JLabel label = KenaiUtil.createUserWidget(reporter, host, KenaiUtil.getChatLink(issue));
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(reporterStatusLabel, label);
                 reporterStatusLabel = label;
@@ -631,9 +627,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             String selectedAssignee = (assigneeField.getParent() == null) ? assigneeCombo.getSelectedItem().toString() : assigneeField.getText();
             if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                KenaiUserUI ku = new KenaiUserUI(assignee + "@" + host);
-                ku.setMessage(KenaiUtil.getChatLink(issue));
-                JLabel label = ku.createUserWidget();
+                JLabel label = KenaiUtil.createUserWidget(assignee, host, KenaiUtil.getChatLink(issue));
                 label.setText(null);
                 ((GroupLayout)getLayout()).replace(assigneeStatusLabel, label);
                 assigneeStatusLabel = label;
@@ -644,9 +638,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadField(assigneeField, assignee, NbJiraIssue.IssueField.ASSIGNEE);
             reloadField(assigneeCombo, assignee, NbJiraIssue.IssueField.ASSIGNEE);
             reloadField(environmentArea, issue.getFieldValue(NbJiraIssue.IssueField.ENVIRONMENT), NbJiraIssue.IssueField.ENVIRONMENT);
-            reloadField(updatedField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.MODIFICATION), true), NbJiraIssue.IssueField.MODIFICATION);
+            reloadField(updatedField, JiraUtils.dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.MODIFICATION), true), NbJiraIssue.IssueField.MODIFICATION);
             fixPrefSize(updatedField);
-            reloadField(dueField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE)), NbJiraIssue.IssueField.DUE);
+            reloadField(dueField, JiraUtils.dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE)), NbJiraIssue.IssueField.DUE);
 
             // Work-log
             String originalEstimateTxt = issue.getFieldValue(NbJiraIssue.IssueField.INITIAL_ESTIMATE);
@@ -938,31 +932,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         return versions;
     }
 
-    private String dateByMillis(String text, boolean includeTime) {
-        if (text.trim().length() > 0) {
-            try {
-                long millis = Long.parseLong(text);
-                DateFormat format = includeTime ? DateFormat.getDateTimeInstance() : DateFormat.getDateInstance();
-                return format.format(new Date(millis));
-            } catch (NumberFormatException nfex) {
-                nfex.printStackTrace();
-            }
-        }
-        return ""; // NOI18N
-    }
-
-    private Date dateByMillis(String text) {
-        if (text.trim().length() > 0) {
-            try {
-                long millis = Long.parseLong(text);
-                return new Date(millis);
-            } catch (NumberFormatException nfex) {
-                nfex.printStackTrace();
-            }
-        }
-        return null;
-    }
-
     private int toInt(String text) {
         if (text.trim().length() > 0) {
             try {
@@ -1000,17 +969,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     };
 
     private void attachIssueListener(final NbJiraIssue issue) {
-        issue.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getSource() != issue) {
-                    return;
-                }
-                if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
-                    reloadFormInAWT(false);
-                } 
-            }
-        });
         IssueCacheUtils.removeCacheListener(issue, cacheListener);
         IssueCacheUtils.addCacheListener(issue, cacheListener);
     }

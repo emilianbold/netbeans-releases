@@ -48,6 +48,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
 
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
+import org.netbeans.modules.cnd.makefile.parser.MakefileTargetProviderImpl;
 import org.openide.loaders.MultiDataObject;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
@@ -68,6 +69,7 @@ public class MakefileDataObject extends MultiDataObject {
         CookieSet cookies = getCookieSet();
         cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
 	cookies.add(new MakeExecSupport(getPrimaryEntry()));
+        cookies.add(new MakefileTargetProviderImpl(getPrimaryFile()));
     }
 
     @Override

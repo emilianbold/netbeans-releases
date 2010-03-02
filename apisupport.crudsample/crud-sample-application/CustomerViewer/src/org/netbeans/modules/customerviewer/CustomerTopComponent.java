@@ -44,14 +44,18 @@ import demo.Customer;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.customerdb.JavaDBSupport;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.Children;
+import org.openide.util.RequestProcessor;
 
 /**
  * Top component which displays something.
@@ -59,8 +63,7 @@ import org.openide.nodes.Children;
 public final class CustomerTopComponent extends TopComponent implements ExplorerManager.Provider {
 
     private static CustomerTopComponent instance;
-    /** path to the icon used by the component and its open action */
-//    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
+
     private static final String PREFERRED_ID = "CustomerTopComponent";
     private static ExplorerManager em = new ExplorerManager();
 
@@ -68,16 +71,36 @@ public final class CustomerTopComponent extends TopComponent implements Explorer
         initComponents();
         setName(NbBundle.getMessage(CustomerTopComponent.class, "CTL_CustomerTopComponent"));
         setToolTipText(NbBundle.getMessage(CustomerTopComponent.class, "HINT_CustomerTopComponent"));
-//        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-        EntityManager entityManager = Persistence.createEntityManagerFactory("CustomerDBAccessPU").createEntityManager();
-        Query query = entityManager.createQuery("SELECT c FROM Customer c");
-        @SuppressWarnings("unchecked")
-        List<Customer> resultList = query.getResultList();
-        em.setRootContext(new CustomerRootNode(Children.create(new CustomerChildFactory(resultList), true)));
         associateLookup(ExplorerUtils.createLookup(em, getActionMap()));
-//        for (Customer c : resultList) {
-//            jTextArea1.append(c.getName() + " (" + c.getCity() + ")" + "\n");
-//        }
+        RequestProcessor.getDefault().post(new Runnable () {
+            public void run() {
+                readCustomer();
+            }
+        });
+    }
+
+    private void readCustomer() {
+        JavaDBSupport.ensureStartedDB();
+        EntityManagerFactory factory = Persistence.createEntityManagerFactory("CustomerDBAccessPU");
+        if (factory == null) {
+            // XXX: message box?
+            return ;
+        }
+        EntityManager entityManager = null;
+        try {
+            entityManager = factory.createEntityManager();
+        } catch (RuntimeException re) {
+            // XXX: message box?
+            return ;
+        }
+        final Query query = entityManager.createQuery("SELECT c FROM Customer c");
+        SwingUtilities.invokeLater(new Runnable () {
+            public void run() {
+                @SuppressWarnings("unchecked")
+                List<Customer> resultList = query.getResultList();
+                em.setRootContext(new CustomerRootNode(Children.create(new CustomerChildFactory(resultList), true)));
+            }
+        });
     }
 
     /** This method is called from within the constructor to

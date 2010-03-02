@@ -502,6 +502,7 @@ public final class PaletteUtils {
             classPath = cp;
         }
 
+        @Override
         public boolean isValidCategory(Lookup lkp) {
             Node categoryNode = lkp.lookup(Node.class);
             if (!representsShowableCategory(categoryNode))
@@ -530,6 +531,7 @@ public final class PaletteUtils {
             return dobjs.length == 0;
         }
 
+        @Override
         public boolean isValidItem(Lookup lkp) {
             return isValidItem(lkp.lookup(PaletteItem.class));
         }
@@ -579,11 +581,13 @@ public final class PaletteUtils {
             projRef = new WeakReference<Project>(p);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
                 final Project p = projRef.get();
                 if (p != null) {
                     EventQueue.invokeLater(new Runnable() { // Issue 141326
+                        @Override
                         public void run() {
                             PaletteUtils.bootClassPathChanged(p, classPath);
                         }

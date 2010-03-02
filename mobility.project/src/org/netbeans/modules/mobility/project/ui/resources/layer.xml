@@ -364,7 +364,7 @@ made subject to such option by the copyright holder.
                         </file>
                         <!-- Java ME SDK beginning -->
                         <file name="cdc-hi-init" url="buildscript/cdc-hi-init">
-                            <attr name="position" intvalue="1000"/>
+                            <attr name="position" intvalue="750"/>
                         </file>
                         <!-- Java ME SDK end -->
                     </folder>
@@ -466,7 +466,7 @@ made subject to such option by the copyright holder.
                             <attr name="position" intvalue="0"/>
                         </file>
                         <file name="cdc-hi-run" url="buildscript/cdc-hi-run">
-                            <attr name="position" intvalue="1000"/>
+                            <attr name="position" intvalue="975"/>
                         </file>
                         <file name="open-profiler" url="buildscript/open-profiler">
                             <attr name="position" intvalue="1200"/>

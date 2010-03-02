@@ -44,7 +44,7 @@ VARIABLE class [5:1/48-5:11/58]  TYPE: int TEXT=int  [5:1/48-5:4/51]  INIT: null
 State of macro map:
 Own Map:
 MACROS (sorted 1):
-<U>#define '["__cplusplus",<205>,line=1,col=9],offset=8,file=null'='["1998",<10>,line=1,col=21],offset=20,file=null ["<comment text skipped>",<221>,line=1,col=26],offset=25,file=null'
+<U>#define '["__cplusplus",<89>,line=1,col=9],offset=8,file=null'='["1998",<65>,line=1,col=21],offset=20,file=null ["<comment text skipped>",<432>,line=1,col=26],offset=25,file=null'
 System Map:
 MACROS (sorted 0):
 

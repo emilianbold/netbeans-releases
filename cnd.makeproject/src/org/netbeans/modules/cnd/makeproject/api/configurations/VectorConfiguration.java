@@ -88,10 +88,10 @@ public class VectorConfiguration<E> {
     }
 
     public boolean getModified() {
-        return value.size() != 0;
+        return !value.isEmpty();
     }
 
-    public void reset() {
+    public final void reset() {
         //value.removeAll(); // FIXUP
         value = new ArrayList<E>(0);
     }

@@ -90,6 +90,18 @@ public final class DerbyDataStorageFactory extends SQLDataStorageFactory<DerbyDa
         return null;
     }
 
+    @Override
+    public DerbyDataStorage createStorage(String uniqueKey) {
+        try {
+            return new DerbyDataStorage(uniqueKey);
+        } catch (SQLException ex) {
+            DLightLogger.getLogger(DerbyDataStorageFactory.class).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
+    
+
     public String getUniqueKey(DerbyDataStorage storage) {
         return storage.getURL();
     }

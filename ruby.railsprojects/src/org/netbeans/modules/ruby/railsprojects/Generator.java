@@ -80,7 +80,7 @@ public class Generator {
         new Generator("web_service", null, null, "ApiMethods", null, 1); // NOI18N
 
     private final String name;
-    private final FileObject location;
+    private FileObject location;
     private final String nameKey;
     private final String arg1Key;
     private final String arg2Key;
@@ -109,8 +109,13 @@ public class Generator {
         this.arg2Key = arg2Key;
     }
     
-    /** Add in the "known" or builtin generators. */
-    static List<Generator> getBuiltinGenerators(String railsVersion) {
+    /**
+     * Add in the "known" or builtin generators.
+     * 
+     * @param foundBuiltin the builtin generators found in the rails installation
+     *  of the project.
+     */
+    static List<Generator> getBuiltinGenerators(String railsVersion, List<Generator> foundBuiltin) {
         boolean isRailsOne = railsVersion != null && railsVersion.startsWith("1."); // NOI18N
         List<Generator> list = new ArrayList<Generator>();
         list.add(CONTROLLER);
@@ -130,9 +135,29 @@ public class Generator {
             // TODO - missing scaffold_resource!
         }
         
-        return list;
+        return configureBuiltins(list, foundBuiltin);
     }
-    
+
+    private static List<Generator> configureBuiltins(List<Generator> builtin, List<Generator> foundBuiltin) {
+        // sets the location for built-in generators so that the usage file is found, not pretty
+        // but other approaches
+        // would require rather extensive changes.
+        for (Generator found : foundBuiltin) {
+            boolean match = false;
+            for (Generator preConfigured : builtin) {
+                if (found.name.equals(preConfigured.name)) {
+                    preConfigured.location = found.location;
+                    match = true;
+                }
+            }
+            if (!match) {
+                builtin.add(found);
+            }
+        }
+        return builtin;
+    }
+
+
     public int getArgsRequired() {
         return argsRequired;
     }
@@ -201,30 +226,7 @@ public class Generator {
             }
         }
 
-        StringBuilder sb = new StringBuilder();
-
-        try {
-            BufferedReader fr = new BufferedReader(new FileReader(usageFile));
-
-            while (true) {
-                String line = fr.readLine();
-
-                if (line == null) {
-                    break;
-                }
-
-                sb.append(line);
-                sb.append("\n"); // NOI18N
-            }
-
-            if (sb.length() > 0) {
-                return sb.toString();
-            }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-
-        return null;
+        return RailsProjectUtil.asText(usageFile);
     }
 
     String getNameLabel() {
@@ -248,6 +250,26 @@ public class Generator {
             return NbBundle.getMessage(Generator.class, arg2Key);
         } else {
             return null;
+        }
+    }
+
+    static final class Script {
+
+        final String script;
+        final List<String> args = new ArrayList<String>();
+
+        public Script(String script) {
+            this.script = script;
+        }
+
+        Script addArgs(String... argsToAdd) {
+            if (argsToAdd == null) {
+                return this;
+            }
+            for (String each : argsToAdd) {
+                args.add(each);
+            }
+            return this;
         }
     }
 }

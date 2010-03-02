@@ -40,12 +40,13 @@
  */
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Sheet;
@@ -186,7 +187,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
     }
     
     @Override
-    public String getAllOptions(BasicCompiler compiler) {
+    public String getAllOptions(Tool tool) {
         return getAllOptions(true);
     }
     
@@ -244,13 +245,13 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         return sheet;
     }
     
-    class AdditionalDependenciesOptions implements AllOptionsProvider {
+    private class AdditionalDependenciesOptions implements AllOptionsProvider {
         public String getOptions() {
             return null; // Not used
         }
         
         @Override
-        public String getAllOptions(BasicCompiler compiler) {
+        public String getAllOptions(Tool tool) {
             String options = ""; // NOI18N
             options += additionalDependencies.getPreDefined();
             return CppUtils.reformatWhitespaces(options);
@@ -272,7 +273,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         
         @Override
         public void setValue(String v) {
-            if (IpeUtils.hasMakeSpecialCharacters(v)) {
+            if (CndPathUtilitities.hasMakeSpecialCharacters(v)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
                 return;
             }
@@ -281,7 +282,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
     }
     
     private String getOutputDefault() {
-        String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase();
+        String outputName = CndPathUtilitities.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase();
         switch (getMakeConfiguration().getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_STATIC_LIB:
                 outputName = "lib" + outputName + ".a"; // NOI18N
@@ -295,7 +296,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
      * Default output pre version 28
      */
     public String getOutputDefault27() {
-        String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase();
+        String outputName = CndPathUtilitities.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase();
         outputName = "lib" + outputName + ".a"; // NOI18N
         return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + outputName; // UNIX path // NOI18N
     }

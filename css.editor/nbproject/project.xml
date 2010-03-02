@@ -19,8 +19,8 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.19</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>2.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -66,6 +66,15 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.19</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -124,6 +133,14 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.refactoring.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.web.common</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -297,6 +314,7 @@
                 <package>org.netbeans.modules.css.formatting.api.support</package>
                 <package>org.netbeans.modules.css.lexer.api</package>
                 <package>org.netbeans.modules.css.parser</package>
+                <package>org.netbeans.modules.css.refactoring.api</package>
             </friend-packages>
         </data>
     </configuration>

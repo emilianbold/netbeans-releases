@@ -49,7 +49,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.core.UiUtils;
+import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.refactoring.spi.ui.*;
 import org.openide.filesystems.FileObject;

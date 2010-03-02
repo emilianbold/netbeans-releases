@@ -109,7 +109,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
             final boolean hasUnknownMember, final String... expectedTypes) {
         RubyType expected = new RubyType(expectedTypes);
         if (hasUnknownMember) {
-            expected.append(RubyType.createUnknown());
+            expected.append(RubyType.unknown());
         }
         assertTrue(message + ":" +
                 "\n  actualTypes:   " + actualTypes +

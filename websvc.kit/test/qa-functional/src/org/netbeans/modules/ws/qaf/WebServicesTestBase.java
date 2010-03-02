@@ -203,7 +203,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 case WEB:
                 case EJB:
                 case APPCLIENT:
-                    return 0;
+                    return 1;
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
@@ -224,7 +224,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 case WEB:
                 case APPCLIENT:
                 case EJB:
-                    return 1;
+                    return 2;
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }

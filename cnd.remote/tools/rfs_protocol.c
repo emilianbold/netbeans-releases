@@ -50,7 +50,7 @@
 //  char[2] 2-bytes size representation (high byte first)
 //  char[] data 0-32K bytes null-terminated string
 
-static int do_send(int sd, const char* buffer, int size) {
+static int do_send(int sd, const unsigned char* buffer, int size) {
     int sent = 0;
     while (sent < size) {
         int sent_now = send(sd, buffer + sent, size - sent, 0);
@@ -63,6 +63,7 @@ static int do_send(int sd, const char* buffer, int size) {
     return true;
 }
 
+__attribute__ ((visibility ("hidden")))
 enum sr_result pkg_send(int sd, enum kind kind, const char* buf) {
     unsigned int size = strlen(buf) + 1;
     unsigned char header[3];
@@ -70,13 +71,14 @@ enum sr_result pkg_send(int sd, enum kind kind, const char* buf) {
     header[1] = (unsigned char) (size >> 8); // high byte
     header[2] = (unsigned char) (size); // low byte
     if (do_send(sd, header, sizeof header)) {
-        if (do_send(sd, buf, size)) {
+        if (do_send(sd, (unsigned char*)buf, size)) {
             return sr_success;
         }
     }
     return sr_failure;
 }
 
+__attribute__ ((visibility ("hidden")))
 enum sr_result pkg_recv(int sd, struct package* p, short max_data_size) {
     // clear pkg
     p->kind = pkg_null;

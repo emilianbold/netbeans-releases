@@ -95,7 +95,7 @@ public class Utilities {
         while (ts.moveNext()) {
             Token<JavaTokenId> t = ts.token();
             
-            if (text.equals(t.text().toString())) {
+            if (t.id() == JavaTokenId.IDENTIFIER && text.equals(info.getTreeUtilities().decodeIdentifier(t.text()).toString())) {
                 return t;
             }
         }
@@ -172,7 +172,7 @@ public class Utilities {
             while (ts.offset() >= start) {
                 Token<JavaTokenId> t = ts.token();
 
-                if (member.equals(t.text().toString())) {
+                if (t.id() == JavaTokenId.IDENTIFIER && member.equals(info.getTreeUtilities().decodeIdentifier(t.text()).toString())) {
                     return t;
                 }
 
@@ -504,6 +504,6 @@ public class Utilities {
         
         return el.getModifiers().contains(Modifier.PRIVATE);
     }
-    
+
 
 }

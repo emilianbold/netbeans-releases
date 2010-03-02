@@ -120,9 +120,9 @@ public final class ResultIterator {
     }
     
     /**
-     * Returns parse {@link Result} for current source.
+     * Returns parse {@link Result} for current source or <code>null</code>.
      * 
-     * @return              parse {@link Result} for current source.
+     * @return              parse {@link Result} for current source or <code>null</code>.
      */
     public Result getParserResult () throws ParseException {
         if (result == null) {
@@ -137,9 +137,9 @@ public final class ResultIterator {
     }
     
     /**
-     * Returns parse {@link Result} for deepest embedding on given offset.
+     * Returns parse {@link Result} for deepest embedding on given offset or <code>null</code>.
      * 
-     * @return              parse {@link Result} for current source.
+     * @return              parse {@link Result} for current source or <code>null</code>.
      */
     public Result getParserResult (int offset) throws ParseException {
         for (Embedding embedding : getEmbeddings ())

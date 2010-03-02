@@ -91,6 +91,10 @@ public final class CndFileUtils {
         return TRUE_CASE_SENSITIVE_SYSTEM;
     }
 
+    public static boolean areFilenamesEqual(String firstFile, String secondFile) {
+        return isSystemCaseSensitive() ? firstFile.equals(secondFile) : firstFile.equalsIgnoreCase(secondFile);
+    }
+
     public static void clearFileExistenceCache() {
         mapRef.clear();
     }

@@ -49,13 +49,9 @@ import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.api.KenaiService.Type;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.api.KenaiFeature;
-import org.netbeans.modules.kenai.api.KenaiService;
 
 /**
  *
@@ -70,37 +66,27 @@ public class KenaiSupportImpl extends KenaiSupport {
 
     @Override
     public Repository createRepository(KenaiProject project) {
-        if(project == null) {
+        if(project == null || project.getType() != BugtrackingType.BUGZILLA) {
             return null;
         }
-        try {
-            KenaiFeature[] features = project.getFeatures(Type.ISSUES);
-            for (KenaiFeature f : features) {
-                if (!KenaiService.Names.BUGZILLA.equals(f.getService())) {
-                    return null;
-                }
 
-                KenaiRepository repo = createKenaiRepository(project, project.getDisplayName(), f.getLocation());
-                if(repo == null) {
-                    return null;
-                }
-                synchronized (repositories) {
-                    repositories.add(repo);
-                }
-
-                KenaiConfiguration kc = (KenaiConfiguration) repo.getConfiguration(); // force repo configuration init before controler populate
-                if(kc.getRepositoryConfiguration(repo, false) == null) {
-                    // something went wrong, can't use the repo anyway => return null
-                    Bugzilla.LOG.fine("KenaiRepository.getRepositoryConfiguration() returned null for KenaiProject ["   // NOI18N
-                            + project.getDisplayName() + "," + project.getName() + "]");                                // NOI18N
-                    return null;
-                }
-                return repo;
-            }
-        } catch (KenaiException kenaiException) {
-            Bugzilla.LOG.log(Level.SEVERE, kenaiException.getMessage(), kenaiException);
+        KenaiRepository repo = createKenaiRepository(project, project.getDisplayName(), project.getFeatureLocation());
+        if(repo == null) {
+            return null;
         }
-        return null;
+        synchronized (repositories) {
+            repositories.add(repo);
+        }
+
+        KenaiConfiguration kc = (KenaiConfiguration) repo.getConfiguration(); // force repo configuration init before controler populate
+        if(kc.getRepositoryConfiguration(repo, false) == null) {
+            // something went wrong, can't use the repo anyway => return null
+            Bugzilla.LOG.fine("KenaiRepository.getRepositoryConfiguration() returned null for KenaiProject ["   // NOI18N
+                    + project.getDisplayName() + "," + project.getName() + "]");                                // NOI18N
+            return null;
+        }
+        return repo;
+         
     }
 
     @Override

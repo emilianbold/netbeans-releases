@@ -38,7 +38,6 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Map;
-import java.util.logging.Logger;
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -46,23 +45,22 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.swing.text.PlainDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.text.IndentEngine;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 
-/** Processeses templates that have associated attribute
+/** Processes templates that have associated attribute
 * with name of the scripting engine.
 *
 * @author  Jaroslav Tulach
 */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.loaders.CreateFromTemplateHandler.class)
+@ServiceProvider(service=CreateFromTemplateHandler.class)
 public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandler {
     private static ScriptEngineManager manager;
-    private static final Logger LOG = Logger.getLogger(ScriptingCreateFromTemplateHandler.class.getName());
     
     private static final String ENCODING_PROPERTY_NAME = "encoding"; //NOI18N
     
@@ -122,20 +120,14 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
         if (obj instanceof ScriptEngine) {
             return (ScriptEngine)obj;
         }
-        try {
-            if (obj instanceof String) {
-                synchronized (ScriptingCreateFromTemplateHandler.class) {
-                    if (manager == null) {
-                        manager = new ScriptEngineManager();
-                    }
+        if (obj instanceof String) {
+            synchronized (ScriptingCreateFromTemplateHandler.class) {
+                if (manager == null) {
+                    ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+                    manager = new ScriptEngineManager(loader != null ? loader : Thread.currentThread().getContextClassLoader());
                 }
-                return manager.getEngineByName((String) obj);
             }
-        } catch (UnsupportedClassVersionError e) {
-            NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                    org.openide.util.NbBundle.getBundle(ScriptingCreateFromTemplateHandler.class)
-                    .getString("ERR_Switch_To_Java_6"), NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(msg);
+            return manager.getEngineByName((String) obj);
         }
         return null;
     }

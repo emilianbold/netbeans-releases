@@ -192,6 +192,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
         set.put(new BooleanNodeProp(language, preferences, EditorOptions.indentCasesFromSwitch));
         set.put(new BooleanNodeProp(language, preferences, EditorOptions.absoluteLabelIndent));
         set.put(new VisibilityIndentProperty(language, preferences, EditorOptions.indentVisibility));
+        set.put(new  BooleanNodeProp(language, preferences, EditorOptions.spaceKeepExtra));
         sheet.put(set);
 
         set = new Sheet.Set();

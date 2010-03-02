@@ -107,6 +107,24 @@ is the proper place.
     <changes>
         <change>
             <api name="apisupport_spi"/>
+            <summary>Added prepareContext method</summary>
+            <version major="1" minor="38"/>
+            <date day="23" month="2" year="2010"/>
+            <author login="saubrecht"/>
+            <compatibility addition="yes"/>
+            <description>
+                NbModuleProvider now includes method <code>boolean prepareContext()</code>.
+                The method may get invoked before asking for some NetBeans module
+                properties. The main purpose of this method is to give Maven platform
+                mdules a chance to ask user which app suite they belong to and provide
+                correct classpath context for e.g. XML layer editing. The method
+                must be always invoked from EDT.
+            </description>
+            <class package="org.netbeans.modules.apisupport.project.spi" name="NbModuleProvider"/>
+        </change>
+
+        <change>
+            <api name="apisupport_spi"/>
             <summary>Introduced ModuleTypePanel</summary>
             <version major="1" minor="23"/>
             <date day="29" month="8" year="2008"/>

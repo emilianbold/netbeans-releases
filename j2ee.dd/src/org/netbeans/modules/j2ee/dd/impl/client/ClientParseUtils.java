@@ -106,7 +106,7 @@ public class ClientParseUtils {
                 resolver=new DDResolver();
             }
             return resolver;
-        }        
+        }
         public InputSource resolveEntity(String publicId, String systemId) {
             if ("-//Sun Microsystems, Inc.//DTD J2EE Application Client 1.3//EN".equals(publicId)) {
                 return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/application-client_1_3.dtd"); //NOI18N
@@ -114,14 +114,16 @@ public class ClientParseUtils {
                 return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/application-client_1_4.xsd"); //NOI18N
             } else if ("http://java.sun.com/xml/ns/javaee/application-client_5.xsd".equals(systemId)) {
                 return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/application-client_5.xsd"); //NOI18N
+            } else if ("http://java.sun.com/xml/ns/javaee/application-client_6.xsd".equals(systemId)) {
+                return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/application-client_6.xsd"); //NOI18N
             } else {
                 // use the default behaviour
                 return null;
             }
         }
     }
-    
-    
+
+
     public static SAXParseException parse(FileObject fo)
     throws org.xml.sax.SAXException, java.io.IOException {
         // no need to close the stream, will be closed by the parser, see @org.xml.sax.InputSource

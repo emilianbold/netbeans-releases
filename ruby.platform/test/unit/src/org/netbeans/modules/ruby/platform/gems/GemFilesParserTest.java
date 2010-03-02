@@ -78,6 +78,10 @@ public class GemFilesParserTest extends NbTestCase {
         assertEquals("win32-api", GemFilesParser.parseNameAndVersion(gem5)[0]);
         assertEquals("1.0.5", GemFilesParser.parseNameAndVersion(gem5)[1]);
 
+        String gem6 = "rails-3.0.0.beta";
+        assertEquals("rails", GemFilesParser.parseNameAndVersion(gem6)[0]);
+        assertEquals("3.0.0.beta", GemFilesParser.parseNameAndVersion(gem6)[1]);
+
     }
 
     public void testVersionSorting() throws IOException {

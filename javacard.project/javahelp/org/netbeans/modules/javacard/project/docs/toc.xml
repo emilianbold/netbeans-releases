@@ -56,7 +56,7 @@
         <tocitem target="org.netbeans.modules.javacard.SettingClassicAppletPackagingProperties" text="Setting Classic Applet Build - Packaging Properties" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingClassicAppletSecurityProperties" text="Setting Classic Applet Build - Security Properties" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingClassicAppletRunProperties" text="Setting Classic Applet Run Properties" expand="false"></tocitem></tocitem>
-    <tocitem target="org.netbeans.modules.javacard.RunningClassicAppletProject" text="Running a Classic Applet Project" expand="false">
+    <tocitem target="org.netbeans.modules.javacard.RunningClassicAppletProject" text="Running a Classic Applet Sample" expand="false">
         <tocitem target="org.netbeans.modules.javacard.RunningClassicAppletSamples" text="Run HelloWorld Classic Applet Sample" expand="false"></tocitem></tocitem>
     <tocitem target="org.netbeans.modules.javacard.GetAdditionalClassicAppletSamples" text="Getting Additional Classic Applet Samples" expand="false"></tocitem>
     <tocitem target="org.netbeans.modules.javacard.CreatingExtendedAppletProject" text="Creating an Extended Applet Project" expand="false">
@@ -73,7 +73,7 @@
         <tocitem target="org.netbeans.modules.javacard.SettingExtendedAppletCompilingProperties" text="Setting Extended Applet Build - Compiling Properties" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingExtendedAppletSecurityProperties" text="Setting Extended Applet Build - Security Properties" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingExtendedAppletRunProperties" text="Setting Extended Applet Run Properties" expand="false"></tocitem></tocitem>
-    <tocitem target="org.netbeans.modules.javacard.RunningExtendedAppletProject" text="Running an Extended Applet Project" expand="false">
+    <tocitem target="org.netbeans.modules.javacard.RunningExtendedAppletProject" text="Running an Extended Applet Sample" expand="false">
         <tocitem target="org.netbeans.modules.javacard.RunningExtendedAppletSamples" text="Run HelloWorld Extended Applet Sample" expand="false"></tocitem></tocitem>
     <tocitem target="org.netbeans.modules.javacard.GetAdditionalExtendedAppletSamples" text="Getting Additional Extended Applet Samples" expand="false"></tocitem>
     <tocitem target="org.netbeans.modules.javacard.CreatingClassicLibProject" text="Creating a Classic Library Project" expand="false">
@@ -115,7 +115,7 @@
         <tocitem target="org.netbeans.modules.javacard.SettingWebAppCompilingProperties" text="Setting Web Application Build - Compiling Properties" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingWebAppSecurityProperties" text="Setting Web Application Build - Security Properties" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.SettingWebAppRunProperties" text="Setting Web Application Run Properties" expand="false"></tocitem></tocitem>
-    <tocitem target="org.netbeans.modules.javacard.RunningWebAppProject" text="Running a Web Application Project" expand="false">
+    <tocitem target="org.netbeans.modules.javacard.RunningWebAppProject" text="Running a Web Application Sample" expand="false">
         <tocitem target="org.netbeans.modules.javacard.RunningWebApplicationSamples" text="Run HelloWorld Web Application Sample" expand="false"></tocitem></tocitem>
     <tocitem target="org.netbeans.modules.javacard.GetAdditionalWebAppSamples" text="Getting Additional Web Application Samples" expand="false"></tocitem>
     <tocitem target="org.netbeans.modules.javacard.GetRefAppSample" text="Getting the Transit Reference Application Sample" expand="false"></tocitem>

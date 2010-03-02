@@ -269,7 +269,7 @@ public class FolderChildrenTest extends NbTestCase {
         assertNodes( arr, new String[] { "B.txt", "BA.txt" } );
     }
 
-
+    @RandomlyFails // NB-Core-Build #3979 (in FolderChildrenEagerTest)
     public void testOrderAttributesAreReflected() throws Exception {
         FileObject root = FileUtil.createFolder(FileUtil.getConfigRoot(), "order");
 

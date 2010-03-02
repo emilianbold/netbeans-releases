@@ -81,7 +81,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
      *
      * @return the singleton instance of the factory
      */
-    public static synchronized DeploymentFactory getInstance() {
+    public static synchronized WLDeploymentFactory getInstance() {
         if (instance == null) {
             instance = new WLDeploymentFactory();
             //DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance);

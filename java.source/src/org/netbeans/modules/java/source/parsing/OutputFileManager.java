@@ -70,12 +70,11 @@ import org.openide.util.Exceptions;
 public class OutputFileManager extends CachingFileManager {
 
     private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
-    
+    private static final String OUTPUT_ROOT = "output-root";   //NOI18N
     /**
      * Exception used to signal that the sourcepath is broken (project is deleted)
      */
     public class InvalidSourcePath extends IllegalStateException {
-        
     }
 
     private ClassPath scp;
@@ -83,7 +82,8 @@ public class OutputFileManager extends CachingFileManager {
     private final Set<File> filteredFiles = new HashSet<File>();
     private boolean filtered;
     private String outputRoot;
-    
+    private URL explicitSibling;
+
     /** Creates a new instance of CachingFileManager */
     public OutputFileManager(final CachingArchiveProvider provider,
             final ClassPath outputClassPath,
@@ -95,18 +95,18 @@ public class OutputFileManager extends CachingFileManager {
 	this.scp = sourcePath;
         this.apt = aptPath == null ? EMPTY_PATH : aptPath;
     }
-    
+
     public final boolean isFiltered () {
         return this.filtered;
     }
-    
+
     public final synchronized void setFilteredFiles (final Set<File> files) {
         assert files != null;
         this.filteredFiles.clear();
         this.filteredFiles.addAll(files);
         this.filtered = true;
     }
-    
+
     public final synchronized void clearFilteredFiles () {
         this.filteredFiles.clear();
         this.filtered = false;
@@ -124,19 +124,19 @@ public class OutputFileManager extends CachingFileManager {
                     File f = ((FileObjects.FileBase)o).f;
                     return filteredFiles.contains(f) ? 0 : -1;
                 }
-            });            
+            });
             return res;
         }
     }
-            
+
     public @Override JavaFileObject getJavaFileForOutput( Location l, String className, JavaFileObject.Kind kind, javax.tools.FileObject sibling ) 
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
-        
-        
+
+
         if (kind != JavaFileObject.Kind.CLASS) {
             throw new IllegalArgumentException ();
         }
-        else { 
+        else {
             File activeRoot = null;
             if (outputRoot != null) {
                 activeRoot = new File(outputRoot);
@@ -161,60 +161,58 @@ public class OutputFileManager extends CachingFileManager {
             }
             String baseName = className.replace('.', File.separatorChar);       //NOI18N
             String nameStr = baseName + '.' + FileObjects.SIG;
-            int nameComponentIndex = nameStr.lastIndexOf(File.separatorChar);            
+            int nameComponentIndex = nameStr.lastIndexOf(File.separatorChar);
             if (nameComponentIndex != -1) {
                 String pathComponent = nameStr.substring(0, nameComponentIndex);
                 new File (activeRoot, pathComponent).mkdirs();
             }
             else {
                 activeRoot.mkdirs();
-            }                                                            
+            }
             File f = FileUtil.normalizeFile(new File (activeRoot, nameStr));
-            return OutputFileObject.create (activeRoot, f);
+            return FileObjects.fileFileObject(f, activeRoot, null, null);
         }
-    }    
-        
+    }
+
     public @Override javax.tools.FileObject getFileForOutput( Location l, String pkgName, String relativeName, javax.tools.FileObject sibling )
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
         assert pkgName != null;
         assert relativeName != null;
-        if (sibling == null) {
+        URL siblingURL = explicitSibling != null ? explicitSibling : sibling == null ? null : sibling.toUri().toURL();
+        if (siblingURL == null) {
             throw new IllegalArgumentException ("sibling == null");
-        }        
-        final int index = getActiveRootImpl (sibling);
+        }
+        final int index = getActiveRootImpl (siblingURL);
         if (index == -1) {
             //Deleted project
             throw new InvalidSourcePath ();
         }
         assert index >= 0 && index < this.cp.entries().size();
         File activeRoot = new File (URI.create(this.cp.entries().get(index).getURL().toExternalForm()));
-        File folder;
-        if (pkgName.length() == 0) {
-            folder = activeRoot;
+        if (File.separatorChar != '/') {    //NOI18N
+            relativeName = relativeName.replace('/', File.separatorChar);   //NOI18N
         }
-        else {
-            folder = new File (activeRoot,FileObjects.convertPackage2Folder(pkgName));
+        final StringBuilder  path = new StringBuilder();
+        if (pkgName.length() > 0) {
+            path.append(FileObjects.convertPackage2Folder(pkgName, File.separatorChar));
+            path.append(File.separatorChar);
         }
-        if (!folder.exists()) {
-            if (!folder.mkdirs()) {
-                throw new IOException ();
-            }
-        }
-        File file = FileUtil.normalizeFile(new File (folder,relativeName));
-        return OutputFileObject.create (activeRoot,file);
+        path.append(relativeName);
+        final File file = FileUtil.normalizeFile(new File (activeRoot,path.toString()));
+        return FileObjects.fileFileObject(file, activeRoot,null,null);
     }
-        
+
 
     private int getActiveRoot (final javax.tools.FileObject sibling, final String baseName) throws IOException {
-        return sibling == null ? getActiveRootImpl(baseName) : getActiveRootImpl(sibling);
+        return sibling == null ? getActiveRootImpl(baseName) : getActiveRootImpl(sibling.toUri().toURL());
     }
-    
-    private int getActiveRootImpl (final javax.tools.FileObject file) throws IOException {
+
+    private int getActiveRootImpl (final URL sibling) throws IOException {
         List<ClassPath.Entry> entries = this.scp.entries();
         int eSize = entries.size();
         if ( eSize == 1) {
             return 0;
-        }        
+        }
         if (eSize == 0) {
             return -1;
         }
@@ -223,20 +221,18 @@ public class OutputFileManager extends CachingFileManager {
         try {
             for (int i = 0; it.hasNext(); i++) {
                 URL rootUrl = it.next().getURL();
-                if (FileObjects.isParentOf(rootUrl, file.toUri().toURL())) {
+                if (FileObjects.isParentOf(rootUrl, sibling)) {
                     return i;
                 }
             }
         } catch (IllegalArgumentException e) {
             //Logging for issue #151416
-            String message = String.format("file: %s class: %s uri: %s", file.toString(), file.getClass().toString(), file.toUri().toString());
+            String message = String.format("uri: %s", sibling.toString());
             throw Exceptions.attachMessage(e, message);
         }
         return -2;
     }
-    
-    
-    
+
     private int getActiveRootImpl (String baseName) {
         List<ClassPath.Entry> entries = this.scp.entries();
         int eSize = entries.size();
@@ -248,7 +244,7 @@ public class OutputFileManager extends CachingFileManager {
         }
         final String[] parentName = splitParentName(baseName);
         Iterator<ClassPath.Entry> it = entries.iterator();
-        for (int i=0; it.hasNext(); i++) {            
+        for (int i=0; it.hasNext(); i++) {
             FileObject root = it.next().getRoot();
             if (root != null) {
                 FileObject parentFile = root.getFileObject(parentName[0]);
@@ -258,7 +254,7 @@ public class OutputFileManager extends CachingFileManager {
                     }
                 }
             }
-        }        
+        }
 	return -2;
     }
 
@@ -327,18 +323,35 @@ public class OutputFileManager extends CachingFileManager {
 	}
         return new String[] {parent, name};
     }
-    
+
     @Override
     public boolean handleOption(String head, Iterator<String> tail) {
-        if ("output-root".equals(head)) { //NOI18N
+        if (OUTPUT_ROOT.equals(head)) { //NOI18N
             if (!tail.hasNext())
                 throw new IllegalArgumentException();
             outputRoot = tail.next();
             if (outputRoot.length() <= 0)
                 outputRoot = null;
             return true;
+        } if (AptSourceFileManager.ORIGIN_FILE.equals(head)) {
+            if (!tail.hasNext()) {
+                throw new IllegalArgumentException("The apt-origin requires folder.");    //NOI18N
+            }
+            final String aptOrigin = tail.next();
+            if (aptOrigin.length() == 0) {
+                    explicitSibling = null;
+            }
+            else {
+                try {
+                    explicitSibling = new URL(aptOrigin);
+                } catch (MalformedURLException ex) {
+                    throw new IllegalArgumentException("Invalid path argument: " + aptOrigin);    //NOI18N
+                }
+            }
+            return false;   //Pass the option to all FileManagers
         }
-        return super.handleOption(head, tail);
+        else {
+            return super.handleOption(head, tail);
+        }
     }
-    
 }

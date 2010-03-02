@@ -102,6 +102,7 @@ public class RADProperty extends FormProperty {
         return desc;
     }
 
+    @Override
     public Object getTargetValue() throws IllegalAccessException,
                                           InvocationTargetException {
         Method readMethod = desc.getReadMethod();
@@ -111,6 +112,7 @@ public class RADProperty extends FormProperty {
         return readMethod.invoke(component.getBeanInstance(), new Object[0]);
     }
 
+    @Override
     public void setTargetValue(Object value) throws IllegalAccessException,
                                                  IllegalArgumentException,
                                                  InvocationTargetException {

@@ -97,6 +97,7 @@ import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.rm.RMQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.Attachments;
 import org.netbeans.modules.websvc.wsitmodelext.security.Trust13;
+import org.netbeans.modules.websvc.wsitmodelext.security.parameters.ProtectTokens;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.RequireIssuerSerialReference;
 
 /**
@@ -355,6 +356,14 @@ public class SecurityPolicyModelHelper {
             PolicyModelHelper.getInstance(configVersion).createElement(secBinding, SecurityPolicyQName.ONLYSIGNENTIREHEADERSANDBODY.getQName(configVersion), OnlySignEntireHeadersAndBody.class, true);
         } else {
             PolicyModelHelper.removeElement(secBinding, OnlySignEntireHeadersAndBody.class, true);
+        }
+    }
+
+    public void enableProtectTokens(WSDLComponent secBinding, boolean enable) {
+        if (enable) {
+            PolicyModelHelper.getInstance(configVersion).createElement(secBinding, SecurityPolicyQName.PROTECTTOKENS.getQName(configVersion), ProtectTokens.class, true);
+        } else {
+            PolicyModelHelper.removeElement(secBinding, ProtectTokens.class, true);
         }
     }
 
@@ -1048,6 +1057,14 @@ public class SecurityPolicyModelHelper {
         }
         return false;
     }
+
+    public static boolean isProtectTokens(WSDLComponent c) {
+        ExtensibilityElement e = getSecurityBindingTypeElement(c);
+        if (e != null) {
+            return isAttributeEnabled(e, ProtectTokens.class);
+        }
+        return false;
+   }
 
    public void setLayout(WSDLComponent c, String msgLayout) {
         WSDLModel model = c.getModel();

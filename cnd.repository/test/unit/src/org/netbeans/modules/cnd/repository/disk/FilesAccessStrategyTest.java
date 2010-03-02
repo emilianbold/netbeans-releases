@@ -56,7 +56,7 @@ import org.openide.util.RequestProcessor;
  */
 public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
 
-    private static final boolean TRACE = true;
+    private static final boolean TRACE = false;
     private static final Random rnd = new Random();
 
     static {

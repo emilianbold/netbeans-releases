@@ -40,11 +40,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
-import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.ProjectPropPanel;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -53,44 +48,26 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.Vector;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
-import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ui.DebuggerCustomizerNode;
-import org.netbeans.modules.cnd.makeproject.configurations.ui.DebuggerChooserNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
-import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
+import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
+import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -104,40 +81,40 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
-public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provider {
+public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provider {
 
     private Component currentCustomizer;
     private PropertyNode currentConfigurationNode = null;
-    private GridBagConstraints fillConstraints;
-    private Project project;
-    private MakeCustomizer makeCustomizer;
+    private final GridBagConstraints fillConstraints;
+    private final Project project;
     private DialogDescriptor dialogDescriptor;
-    private ConfigurationDescriptor projectDescriptor;
-    private Item item;
-    private Folder folder;
-    private ArrayList<JComponent> controls;
+    private final ConfigurationDescriptor projectDescriptor;
+    private final Item item;
+    private final Folder folder;
+    private final List<JComponent> controls;
     private CategoryView currentCategoryView;
     private String currentNodeName;
     private Configuration[] configurationItems;
     private Configuration[] selectedConfigurations;
     private int lastComboboxIndex = -1;
-    private ProjectPropPanel projectPropPanel = null;
+    private MakeContext lastContext;
 
     /** Creates new form MakeCustomizer */
-    public MakeCustomizer(Project project, String preselectedNodeName, ConfigurationDescriptor projectDescriptor, Item item, Folder folder, ArrayList<JComponent> controls) {
+    public MakeCustomizer(Project project, String preselectedNodeName, ConfigurationDescriptor projectDescriptor, Item item, Folder folder, Collection<JComponent> controls) {
         initComponents();
         this.projectDescriptor = projectDescriptor;
-        this.controls = controls;
+        this.controls = new ArrayList<JComponent>(controls);
         this.project = project;
-        this.makeCustomizer = this;
         this.item = item;
         this.folder = folder;
-        controls.add(configurationComboBox);
-        controls.add(configurationsButton);
+        this.controls.add(configurationComboBox);
+        this.controls.add(configurationsButton);
 
-        configurationItems = projectDescriptor.getConfs().getConfs();
+        configurationItems = projectDescriptor.getConfs().toArray();
         for (int i = 0; i < configurationItems.length; i++) {
             configurationComboBox.addItem(configurationItems[i]);
         }
@@ -177,20 +154,16 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         allConfigurationComboBox.getAccessibleContext().setAccessibleDescription(getString("CONFIGURATION_COMBOBOX_AD"));
         allConfigurationComboBox.setToolTipText(getString("ALL_CONFIGURATIONS_TOOLTIP"));
     }
-    private Map<Item, Map<Configuration, ItemConfiguration>> itemConfigurations = new HashMap<Item, Map<Configuration, ItemConfiguration>>();
+    private Map<Item, SharedItemConfiguration> itemConfigurations = new HashMap<Item, SharedItemConfiguration>();
 
-    private ItemConfiguration getItemConfiguration(Item item, Configuration configuration) {
-        Map<Configuration, ItemConfiguration> map = itemConfigurations.get(item);
-        if (map == null) {
-            map = new HashMap<Configuration, ItemConfiguration>();
-            itemConfigurations.put(item, map);
+    private SharedItemConfiguration getSharedItemConfiguration(Item item) {
+        if (item == null) {
+            return null;
         }
-        ItemConfiguration res = map.get(configuration);
+        SharedItemConfiguration res = itemConfigurations.get(item);
         if (res == null) {
-            res = new ProxyItemConfiguration(configuration, item);
-            map.put(configuration, res);
-            ItemConfiguration old = (ItemConfiguration) configuration.removeAuxObject(res);
-            configuration.addAuxObject(res);
+            res = new SharedItemConfiguration(item);
+            itemConfigurations.put(item, res);
         }
         return res;
     }
@@ -307,7 +280,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     }// </editor-fold>//GEN-END:initComponents
 
     private void configurationsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configurationsButtonActionPerformed
-        MyListEditorPanel configurationsEditor = new MyListEditorPanel(projectDescriptor.getConfs().getConfigurtions());
+        MyListEditorPanel configurationsEditor = new MyListEditorPanel(projectDescriptor);
         JPanel outerPanel = new JPanel();
         outerPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -342,7 +315,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         configurationComboBox.removeActionListener(actionListeners[0]); // assuming one and only one!
         configurationComboBox.removeAllItems();
         configurationComboBox.addActionListener(actionListeners[0]); // assuming one and only one!
-        configurationItems = projectDescriptor.getConfs().getConfs();
+        configurationItems = projectDescriptor.getConfs().toArray();
         for (int i = 0; i < configurationItems.length; i++) {
             configurationComboBox.addItem(configurationItems[i]);
         }
@@ -361,6 +334,14 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         refresh();
     }//GEN-LAST:event_configurationComboBoxActionPerformed
 
+    public String getCurrentNodeName() {
+        return currentNodeName;
+    }
+
+    public MakeContext getLastContext() {
+        return lastContext;
+    }
+
     public void refresh() {
         if (currentCategoryView != null) {
             String selectedNodeName = currentNodeName;
@@ -376,8 +357,8 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     }
 
     public void save() {
-        if (projectPropPanel != null) {
-            projectPropPanel.save();
+        if (lastContext != null) {
+            lastContext.save();
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -393,6 +374,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     // End of variables declaration//GEN-END:variables
 
     // HelpCtx.Provider implementation -----------------------------------------
+    @Override
     public HelpCtx getHelpCtx() {
         if (currentConfigurationNode != null) {
             return HelpCtx.findHelp(currentConfigurationNode);
@@ -402,7 +384,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     }
 
     // Private innerclasses ----------------------------------------------------
-    private class CategoryView extends JPanel implements ExplorerManager.Provider {
+    private final class CategoryView extends JPanel implements ExplorerManager.Provider {
 
         private ExplorerManager manager;
         private BeanTreeView btv;
@@ -453,6 +435,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             }
         }
 
+        @Override
         public ExplorerManager getExplorerManager() {
             return manager;
         }
@@ -507,6 +490,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
          */
         private class ManagerChangeListener implements PropertyChangeListener {
 
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getSource() != manager) {
                     return;
@@ -526,22 +510,27 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                     JPanel panel = new JPanel();
                     panel.setLayout(new java.awt.GridBagLayout());
                     currentConfigurationNode = (PropertyNode) node;
-                    if (currentConfigurationNode.custumizerStyle() == CustomizerNode.CustomizerStyle.PANEL) {
-                        panel.add(currentConfigurationNode.getPanel(project, projectDescriptor), fillConstraints);
+                    if (currentConfigurationNode.customizerStyle() == CustomizerNode.CustomizerStyle.PANEL) {
+                        panel.add(currentConfigurationNode.getPanel(null), fillConstraints);
                         configurationLabel.setEnabled(false);
                         configurationComboBox.setEnabled(false);
                         configurationsButton.setEnabled(true);
                         configurationComboBox.setVisible(false);
                         allConfigurationComboBox.setVisible(true);
                         allConfigurationComboBox.setEnabled(false);
-                    } else if (currentConfigurationNode.custumizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
+                    } else if (currentConfigurationNode.customizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
                         panel.setBorder(new javax.swing.border.EtchedBorder());
                         PropertySheet propertySheet = new PropertySheet(); // See IZ 105525 for details.
-                        DummyNode[] dummyNodes = new DummyNode[selectedConfigurations.length];
-                        for (int i = 0; i < selectedConfigurations.length; i++) {
-                            dummyNodes[i] = new DummyNode(currentConfigurationNode.getSheet(project, projectDescriptor, selectedConfigurations[i]), selectedConfigurations[i].getName());
+                        List<DummyNode> dummyNodes = new ArrayList<DummyNode>(selectedConfigurations.length*nodes.length);
+                        for (Node selNode : nodes) {
+                            if (selNode instanceof PropertyNode && ((PropertyNode)selNode).customizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
+                                PropertyNode propNode = (PropertyNode) selNode;
+                                for (int i = 0; i < selectedConfigurations.length; i++) {
+                                    dummyNodes.add(new DummyNode(propNode.getSheet(selectedConfigurations[i]), selectedConfigurations[i].getName()));
+                                }
+                            }
                         }
-                        propertySheet.setNodes(dummyNodes);
+                        propertySheet.setNodes(dummyNodes.toArray(new DummyNode[dummyNodes.size()]));
                         panel.add(propertySheet, fillConstraints);
                         configurationLabel.setEnabled(true);
                         configurationComboBox.setEnabled(true);
@@ -560,7 +549,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                     customizerPanel.repaint();
                     currentCustomizer = panel;
 
-                    IpeUtils.requestFocus(btv);
+                    CndUIUtilities.requestFocus(btv);
 
                     if (dialogDescriptor != null && currentConfigurationNode != null) {
                         dialogDescriptor.setHelpCtx(HelpCtx.findHelp(currentConfigurationNode));
@@ -607,610 +596,24 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     // Private methods ---------------------------------------------------------
     private Node createRootNode(Project project, ConfigurationDescriptor projectDescriptor, Item item, Folder folder) {
         if (item != null) {
-            return createRootNodeItem(project, item);
+            lastContext = new MakeContext(MakeContext.Kind.Item, project, getSelectedHost(), selectedConfigurations)
+                    .setSharedItem(getSharedItemConfiguration(item))
+                    .setConfigurationDescriptor(projectDescriptor);
+            Lookup lookup = Lookups.fixed(lastContext);
+            return ItemNodeFactory.createRootNodeItem(lookup);
         } else if (folder != null) {
-            return createRootNodeFolder(project, folder);
+            lastContext = new MakeContext(MakeContext.Kind.Folder, project, getSelectedHost(), selectedConfigurations)
+                    .setFolder(folder)
+                    .setConfigurationDescriptor(projectDescriptor);
+            Lookup lookup = Lookups.fixed(lastContext);
+            return FolderNodeFactory.createRootNodeFolder(lookup);
         } else {
-            return createRootNodeProject(project, projectDescriptor);
+            lastContext = new MakeContext(MakeContext.Kind.Project, project, getSelectedHost(), selectedConfigurations)
+                    .setPanel(this)
+                    .setConfigurationDescriptor(projectDescriptor);
+            Lookup lookup = Lookups.fixed(lastContext);
+            return ProjectNodeFactory.createRootNodeProject(lookup);
         }
-    }
-
-    private Node createRootNodeProject(Project project, ConfigurationDescriptor projectDescriptor) {
-        int compilerSet = -1;
-        boolean isCompileConfiguration = ((MakeConfiguration) selectedConfigurations[0]).isCompileConfiguration();
-        boolean includeMakefileDescription = true;
-        boolean includeRunDebugDescriptions = true;
-
-        // calculate the greatest common subset of project properties
-        for (int i = 0; i < selectedConfigurations.length; i++) {
-            MakeConfiguration makeConfiguration = (MakeConfiguration) selectedConfigurations[i];
-
-            compilerSet = makeConfiguration.getCompilerSet().getValue();
-
-            includeMakefileDescription &= makeConfiguration.isMakefileConfiguration();
-            includeRunDebugDescriptions &= !makeConfiguration.isLibraryConfiguration();
-        }
-
-        List<CustomizerNode> uncheckedCustomizers = CustomizerRootNodeProvider.getInstance().getCustomizerNodes();
-        List<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
-        CustomizerNode node = createGeneralDescription(project);
-        if (node != null) {
-            descriptions.add(node);
-        }
-        node = createBuildDescription(project);
-        if (node != null) {
-            descriptions.add(node);
-        }
-
-        // Run customizers
-        List<CustomizerNode> runCustomizers = CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Run"); // NOI18N
-        if (includeRunDebugDescriptions) {
-            if (!descriptions.addAll(runCustomizers)) {
-                descriptions.add(createNotFoundNode("Run")); // NOI18N
-            }
-        }
-        uncheckedCustomizers.removeAll(runCustomizers);
-
-        // Profile customizers
-        List<CustomizerNode> profileCustomizers = CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Profile"); // NOI18N
-        if (includeRunDebugDescriptions) {
-            descriptions.addAll(profileCustomizers);
-        }
-        uncheckedCustomizers.removeAll(profileCustomizers);
-
-        // Debug customizers
-        List<CustomizerNode> debugCustomizers = CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Debug"); // NOI18N
-        if (includeRunDebugDescriptions) {
-            descriptions.addAll(getVisibleDebuggerNodes(debugCustomizers));
-        }
-        uncheckedCustomizers.removeAll(debugCustomizers);
-
-        CustomizerNode advanced = getAdvancedCustomizerNode(uncheckedCustomizers);
-        if (advanced != null) {
-            descriptions.add(advanced);
-        }
-
-        descriptions.add(createRequiredProjectsDescription(project));
-        if (includeMakefileDescription) {
-            descriptions.add(createCodeAssistantDescription(project, compilerSet, null, null, isCompileConfiguration));
-        }
-        
-        CustomizerNode rootDescription = new CustomizerNode(
-                "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), descriptions.toArray(new CustomizerNode[descriptions.size()]));  // NOI18N
-
-        return new PropertyNode(rootDescription);
-    }
-
-    private List<CustomizerNode> getVisibleDebuggerNodes(List<CustomizerNode> debuggerNodes) {
-        List<CustomizerNode> res = new ArrayList<CustomizerNode>();
-        if (debuggerNodes.size() > 1) {
-            // Figure out toolchain families
-            Set<String> families = new HashSet<String>();
-            for (Configuration conf : selectedConfigurations) {
-                MakeConfiguration makeConfiguration = (MakeConfiguration) conf;
-                CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
-                if (compilerSet == null) {
-                    continue;
-                }
-                for (String family : compilerSet.getCompilerFlavor().getToolchainDescriptor().getFamily()) {
-                    families.add(family);
-                }
-            }
-
-            // Find correct debugger customizer
-            for (CustomizerNode dNode : debuggerNodes) {
-                if (dNode instanceof DebuggerCustomizerNode) {
-                    if (families.contains(((DebuggerCustomizerNode)dNode).getFamily())) {
-                        res.add(dNode);
-                    }
-                } else {
-                    res.add(dNode);
-                }
-            }
-        } else if (debuggerNodes.size() == 1) {
-            res.addAll(debuggerNodes);
-        } else {
-            res.add(createNotFoundNode("Debug")); // NOI18N
-        }
-        return res;
-    }
-
-    // Code Assistant Node
-    private CustomizerNode createCodeAssistantDescription(Project project, int compilerSetIdx, Item item, Folder folder, boolean isCompilerConfiguration) {
-        ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
-        descriptions.add(createCCompilerDescription(project, compilerSetIdx, item, folder, isCompilerConfiguration));
-        descriptions.add(createCCCompilerDescription(project, compilerSetIdx, item, folder, isCompilerConfiguration));
-        String nodeLabel = getString("LBL_PARSER_NODE");
-
-        CustomizerNode rootDescription = new CustomizerNode(
-                "CodeAssistant", // NOI18N
-                nodeLabel,
-                descriptions.toArray(new CustomizerNode[descriptions.size()]));
-
-        return rootDescription;
-    }
-
-    private CustomizerNode getAdvancedCustomizerNode(List<CustomizerNode> descriptions) {
-//      Vector advancedNodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodes(true);
-//        List<CustomizerNode> advancedNodes = new ArrayList<CustomizerNode>();
-//        List<CustomizerNode> nodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodes();
-//        for (CustomizerNode node : nodes) {
-//            if (node != null && !descriptions.contains(node)) {
-//                advancedNodes.add(node);
-//            }
-//        }
-        if (descriptions.size() == 0) {
-            return null;
-        }
-        return new CustomizerNode(
-                "advanced", // NOI18N
-                getString("ADVANCED_CUSTOMIZER_NODE"), // NOI18N
-                descriptions.toArray(new CustomizerNode[descriptions.size()]));
-    }
-
-    private CustomizerNode createNotFoundNode(String nodeName) {
-        return new CustomizerNode(nodeName, nodeName + " - not found", null); // NOI18N
-    }
-
-    private Node createRootNodeItem(Project project, Item item) {
-        CustomizerNode descriptions[];
-
-        int tool = -1;
-        int compilerSet = -1;
-        boolean isCompileConfiguration = ((MakeConfiguration) selectedConfigurations[0]).isCompileConfiguration();
-
-        for (int i = 0; i < selectedConfigurations.length; i++) {
-            MakeConfiguration makeConfiguration = (MakeConfiguration) selectedConfigurations[i];
-            int compilerSet2 = makeConfiguration.getCompilerSet().getValue();
-            ItemConfiguration itemConfiguration = getItemConfiguration(item, makeConfiguration);
-            if (itemConfiguration == null) {
-                continue;
-            }
-            int tool2 = itemConfiguration.getTool();
-            if (tool == -1 && compilerSet == -1) {
-                tool = tool2;
-                compilerSet = compilerSet2;
-            }
-            if (tool != tool2 || compilerSet != compilerSet2) {
-                tool = -1;
-                break;
-            }
-
-            if ((isCompileConfiguration && !makeConfiguration.isCompileConfiguration()) || (!isCompileConfiguration && makeConfiguration.isCompileConfiguration())) {
-                tool = -1;
-                break;
-            }
-        }
-
-        int count = 1;
-        if (tool >= 0) {
-            count++;
-        }
-        descriptions = new CustomizerNode[count];
-        int index = 0;
-        descriptions[index++] = createGeneralItemDescription(project, item);
-        if (tool >= 0) {
-            if (tool == Tool.CCompiler) {
-                descriptions[index++] = createCCompilerDescription(project, compilerSet, item, folder, isCompileConfiguration);
-            } else if (tool == Tool.CCCompiler) {
-                descriptions[index++] = createCCCompilerDescription(project, compilerSet, item, folder, isCompileConfiguration);
-            } else if (tool == Tool.FortranCompiler) {
-                descriptions[index++] = createFortranCompilerDescription(project, compilerSet, item, isCompileConfiguration);
-            } else if (tool == Tool.Assembler) {
-                descriptions[index++] = createAssemblerDescription(project, compilerSet, item, isCompileConfiguration);
-            } else if (tool == Tool.CustomTool) {
-                descriptions[index++] = createCustomBuildItemDescription(project, item);
-            } else {
-                descriptions[index++] = createCustomBuildItemDescription(project, item); // FIXUP
-            }
-        }
-
-        CustomizerNode rootDescription = new CustomizerNode(
-                "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), descriptions);  // NOI18N
-
-        return new PropertyNode(rootDescription);
-    }
-
-    private Node createRootNodeFolder(Project project, Folder folder) {
-        ArrayList<CustomizerNode> descriptions;
-
-        int compilerSet = -1;
-        boolean isCompileConfiguration = ((MakeConfiguration) selectedConfigurations[0]).isCompileConfiguration();
-
-        for (int i = 0; i < selectedConfigurations.length; i++) {
-            MakeConfiguration makeConfiguration = (MakeConfiguration) selectedConfigurations[i];
-            int compilerSet2 = makeConfiguration.getCompilerSet().getValue();
-            if (compilerSet == -1) {
-                compilerSet = compilerSet2;
-            }
-            if (compilerSet != compilerSet2) {
-                compilerSet = -1;
-                break;
-            }
-
-            if ((isCompileConfiguration && !makeConfiguration.isCompileConfiguration()) || (!isCompileConfiguration && makeConfiguration.isCompileConfiguration())) {
-                compilerSet = -1;
-                break;
-            }
-        }
-        descriptions = new ArrayList<CustomizerNode>(); //new CustomizerNode[2];
-        descriptions.add(createGeneralFolderDescription(project, folder));
-        if (compilerSet >= 0) {
-            descriptions.add(createCCompilerDescription(project, compilerSet, null, folder, isCompileConfiguration));
-            descriptions.add(createCCCompilerDescription(project, compilerSet, null, folder, isCompileConfiguration));
-        }
-
-        CustomizerNode rootDescription = new CustomizerNode(
-                "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), descriptions.toArray(new CustomizerNode[descriptions.size()]));  // NOI18N
-
-        return new PropertyNode(rootDescription);
-    }
-
-    private CustomizerNode createGeneralDescription(Project project) {
-        return new GeneralCustomizerNode(
-                "General", // NOI18N
-                getString("LBL_Config_General"), // NOI18N
-                null);
-    }
-
-    private class GeneralCustomizerNode extends CustomizerNode {
-
-        public GeneralCustomizerNode(String name, String displayName, CustomizerNode[] children) {
-            super(name, displayName, children);
-        }
-
-        @Override
-        public JPanel getPanel(Project project, ConfigurationDescriptor configurationDescriptor) {
-            if (projectPropPanel == null) {
-                projectPropPanel = new ProjectPropPanel(project, configurationDescriptor);
-            }
-            return projectPropPanel;
-        }
-
-        @Override
-        public CustomizerStyle customizerStyle() {
-            return CustomizerStyle.PANEL;
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectProperties"); // NOI18N
-        }
-    }
-
-    private CustomizerNode createBuildDescription(Project project) {
-
-        boolean includeMakefileDescription = true;
-        boolean includeQtDescription = true;
-        boolean includeCompilerDescription = true;
-        boolean includeLinkerDescription = true;
-        boolean includeArchiverDescription = true;
-        int compilerSet = -1;
-        boolean isCompileConfiguration = ((MakeConfiguration) selectedConfigurations[0]).isCompileConfiguration();
-        boolean isQtMode = false;
-
-        for (int i = 0; i < selectedConfigurations.length; i++) {
-            MakeConfiguration makeConfiguration = (MakeConfiguration) selectedConfigurations[i];
-
-            if (compilerSet >= 0 && makeConfiguration.getCompilerSet().getValue() != compilerSet) {
-                includeCompilerDescription = false;
-            }
-            compilerSet = makeConfiguration.getCompilerSet().getValue();
-
-            if ((isCompileConfiguration && !makeConfiguration.isCompileConfiguration()) || (!isCompileConfiguration && makeConfiguration.isCompileConfiguration())) {
-                includeCompilerDescription = false;
-            }
-
-            includeMakefileDescription &= makeConfiguration.isMakefileConfiguration();
-            includeQtDescription &= makeConfiguration.isQmakeConfiguration();
-            includeCompilerDescription &= !makeConfiguration.isMakefileConfiguration();
-            includeLinkerDescription &= makeConfiguration.isApplicationConfiguration() || makeConfiguration.isDynamicLibraryConfiguration();
-            includeArchiverDescription &= makeConfiguration.isLibraryConfiguration() && !makeConfiguration.isDynamicLibraryConfiguration() && !makeConfiguration.isQmakeConfiguration();
-            isQtMode |= makeConfiguration.isQmakeConfiguration();
-        }
-
-        ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
-        if (includeMakefileDescription) {
-            descriptions.add(createMakefileDescription(project));
-        }
-        if (includeQtDescription) {
-            descriptions.add(createQtDescription());
-        }
-        if (includeCompilerDescription) {
-            descriptions.addAll(createCompilerNodes(project, compilerSet, isCompileConfiguration, isQtMode));
-        }
-        if (includeLinkerDescription) {
-            descriptions.add(createLinkerDescription(isQtMode));
-        }
-        if (includeArchiverDescription) {
-            descriptions.add(createArchiverDescription());
-        }
-
-        descriptions.add(createPackagingDescription());
-
-        return new BuildCustomizerNode(
-                "Build", // NOI18N
-                getString("LBL_Config_Build"), // NOI18N
-                descriptions.toArray(new CustomizerNode[descriptions.size()]));
-    }
-
-    private class BuildCustomizerNode extends CustomizerNode {
-
-        public BuildCustomizerNode(String name, String displayName, CustomizerNode[] children) {
-            super(name, displayName, children);
-        }
-
-        @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            return ((MakeConfiguration) configuration).getBuildSheet(project, makeCustomizer);
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsBuild"); // NOI18N
-        }
-    }
-
-    private CustomizerNode createGeneralItemDescription(Project project, Item item) {
-        return new GeneralItemCustomizerNode(
-                item,
-                "GeneralItem", // NOI18N
-                getString("LBL_Config_General"),
-                null);
-    }
-
-    private class GeneralItemCustomizerNode extends CustomizerNode {
-
-        private Item item;
-
-        public GeneralItemCustomizerNode(Item item, String name, String displayName, CustomizerNode[] children) {
-            super(name, displayName, children);
-            this.item = item;
-        }
-
-        @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            ItemConfiguration itemConfiguration = getItemConfiguration(item, configuration);
-            return itemConfiguration.getGeneralSheet();
-        }
-    }
-
-    private CustomizerNode createGeneralFolderDescription(Project project, Folder folder) {
-        return new GeneralFolderCustomizerNode(
-                folder,
-                "GeneralItem", // NOI18N
-                getString("LBL_Config_General"),
-                null);
-    }
-
-    private static class GeneralFolderCustomizerNode extends CustomizerNode {
-
-        private Folder folder;
-
-        public GeneralFolderCustomizerNode(Folder folder, String name, String displayName, CustomizerNode[] children) {
-            super(name, displayName, children);
-            this.folder = folder;
-        }
-
-        @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            return folder.getFolderConfiguration(configuration).getGeneralSheet();
-        }
-    }
-
-    private CustomizerNode createCustomBuildItemDescription(Project project, Item item) {
-        return new CustomBuildItemCustomizerNode(
-                item,
-                "Custom Build Step", // NOI18N
-                getString("LBL_Config_Custom_Build"), // NOI18N
-                null);
-    }
-
-    private class CustomBuildItemCustomizerNode extends CustomizerNode {
-
-        private Item item;
-
-        public CustomBuildItemCustomizerNode(Item item, String name, String displayName, CustomizerNode[] children) {
-            super(name, displayName, children);
-            this.item = item;
-        }
-
-        @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            ItemConfiguration itemConfiguration = getItemConfiguration(item, configuration);
-            return itemConfiguration.getCustomToolConfiguration().getSheet();
-        }
-    }
-
-    private class DebugCustomizerNode extends CustomizerNode {
-
-        public DebugCustomizerNode(String name, String displayName, CustomizerNode[] children) {
-            super(name, displayName, children);
-        }
-
-        @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            Sheet sheet = new Sheet();
-
-            Sheet.Set set = new Sheet.Set();
-            set.setName("DebuggerChooser"); // NOI18N
-            set.setDisplayName(getString("LBL_DebuggerChooser")); // NOI18N
-            set.setShortDescription(getString("HINT_DebuggerChooser")); // NOI18N
-            set.put(new DebuggerChooserNodeProp(((MakeConfiguration) configuration).getDebuggerChooserConfiguration(),
-                    getString("LBL_DebuggerChooser"), getString("HINT_DebuggerChooser"))); // NOI18N
-            sheet.put(set);
-            return sheet;
-        }
-    }
-
-    // Make Node
-    private CustomizerNode createMakefileDescription(Project project) {
-        return new MakefileCustomizerNode(
-                "Make", // NOI18N
-                getString("LBL_MAKE_NODE"),
-                null);
-    }
-
-    private static class MakefileCustomizerNode extends CustomizerNode {
-
-        public MakefileCustomizerNode(String name, String displayName, CustomizerNode[] children) {
-            super(name, displayName, children);
-        }
-
-        @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            return ((MakeConfiguration) configuration).getMakefileConfiguration().getSheet();
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsMake"); // NOI18N
-        }
-    }
-
-    // Required Projects Node
-    private CustomizerNode createRequiredProjectsDescription(Project project) {
-        return new RequiredProjectsCustomizerNode(
-                "RequiredProjects", // NOI18N
-                getString("LBL_REQUIRED_PROJECTS_NODE"),
-                null);
-    }
-
-    private static class RequiredProjectsCustomizerNode extends CustomizerNode {
-
-        public RequiredProjectsCustomizerNode(String name, String displayName, CustomizerNode[] children) {
-            super(name, displayName, children);
-        }
-
-        @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            return ((MakeConfiguration) configuration).getRequiredProjectsSheet(project, (MakeConfiguration) configuration);
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsRequiredProjects"); // NOI18N
-        }
-    }
-
-    // C/C++/Fortran Node
-    private ArrayList<CustomizerNode> createCompilerNodes(Project project, int compilerSetIdx, boolean isCompilerConfiguration, boolean isQtMode) {
-        ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
-        if (!isQtMode) {
-            descriptions.add(createCCompilerDescription(project, compilerSetIdx, null, null, isCompilerConfiguration));
-        }
-        descriptions.add(createCCCompilerDescription(project, compilerSetIdx, null, null, isCompilerConfiguration));
-        if (!isQtMode) {
-            descriptions.add(createFortranCompilerDescription(project, compilerSetIdx, null, isCompilerConfiguration));
-            descriptions.add(createAssemblerDescription(project, compilerSetIdx, null, isCompilerConfiguration));
-        }
-        return descriptions;
-    }
-
-    // Linker
-    private CustomizerNode createLinkerDescription(boolean isQtMode) {
-        CustomizerNode generalLinkerNode = new LinkerGeneralCustomizerNode("Linker", getString("LBL_LINKER_NODE"), null, isQtMode); // NOI18N
-        return generalLinkerNode;
-    }
-
-    private static class LinkerGeneralCustomizerNode extends CustomizerNode {
-
-        private boolean isQtMode;
-
-        public LinkerGeneralCustomizerNode(String name, String displayName, CustomizerNode[] children, boolean isQtMode) {
-            super(name, displayName, children);
-            this.isQtMode = isQtMode;
-        }
-
-        @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            return ((MakeConfiguration) configuration).getLinkerConfiguration().getGeneralSheet(project, (MakeConfigurationDescriptor) configurationDescriptor, (MakeConfiguration) configuration, isQtMode);
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsLinking"); // NOI18N
-        }
-    }
-
-    // Archiver
-    private CustomizerNode createArchiverDescription() {
-        CustomizerNode generalNode = new ArchiverGeneralCustomizerNode("Archiver", getString("LBL_ARCHIVER_NODE"), null); // NOI18N
-        return generalNode;
-    }
-
-    private static class ArchiverGeneralCustomizerNode extends CustomizerNode {
-
-        public ArchiverGeneralCustomizerNode(String name, String displayName, CustomizerNode[] children) {
-            super(name, displayName, children);
-        }
-
-        @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            return ((MakeConfiguration) configuration).getArchiverConfiguration().getGeneralSheet();
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsArchiverGeneral"); // NOI18N
-        }
-    }
-
-    private CustomizerNode createQtDescription() {
-        CustomizerNode node = new QtCustomizerNode("Qt", getString("LBL_QT_NODE"), null); // NOI18N
-        return node;
-    }
-
-    private static class QtCustomizerNode extends CustomizerNode {
-
-        public QtCustomizerNode(String name, String displayName, CustomizerNode[] children) {
-            super(name, displayName, children);
-        }
-
-        @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            return ((MakeConfiguration) configuration).getQmakeConfiguration().getGeneralSheet();
-        }
-    }
-
-    // Packaging
-    private CustomizerNode createPackagingDescription() {
-        CustomizerNode node = new PackagingCustomizerNode("Packaging", getString("LBL_PACKAGING_NODE"), null); // NOI18N
-        return node;
-    }
-
-    private class PackagingCustomizerNode extends CustomizerNode {
-
-        public PackagingCustomizerNode(String name, String displayName, CustomizerNode[] children) {
-            super(name, displayName, children);
-        }
-
-        @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            return ((MakeConfiguration) configuration).getPackagingConfiguration().getGeneralSheet(makeCustomizer);
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsPackaging"); // NOI18N // FIXUP
-        }
-    }
-
-    // C Compiler Node
-    private CustomizerNode createCCompilerDescription(Project project, int compilerSetIdx,
-            Item item, Folder folder, boolean isCompilerConfiguration) {
-        ExecutionEnvironment execEnv = getSelectedHost();
-        CompilerSet csm = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx);
-        String compilerName = csm.getTool(BasicCompiler.CCompiler).getName();
-        String compilerDisplayName = csm.getTool(BasicCompiler.CCompiler).getDisplayName();
-        CustomizerNode cCompilerCustomizerNode = new CCompilerCustomizerNode(
-                compilerName,
-                compilerDisplayName,
-                null,
-                item,
-                folder,
-                isCompilerConfiguration);
-        return cCompilerCustomizerNode;
     }
 
     private ExecutionEnvironment getSelectedHost() {
@@ -1236,181 +639,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         return execEnv;
     }
 
-    private class CCompilerCustomizerNode extends CustomizerNode {
-
-        private Item item;
-        private Folder folder;
-        private boolean isCompilerConfiguration;
-
-        public CCompilerCustomizerNode(String name, String displayName, CustomizerNode[] children, Item item, Folder folder, boolean isCompilerConfiguration) {
-            super(name, displayName, children);
-            this.item = item;
-            this.folder = folder;
-            this.isCompilerConfiguration = isCompilerConfiguration;
-        }
-
-        @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            if (item != null) {
-                ItemConfiguration itemConfiguration = getItemConfiguration(item, configuration);
-                return itemConfiguration.getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, folder);
-            } else if (folder != null) {
-                return folder.getFolderConfiguration((MakeConfiguration) configuration).getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, folder);
-            } else {
-                return ((MakeConfiguration) configuration).getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, folder);
-            }
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx(isCompilerConfiguration ? "ProjectPropsCompiling" : "ProjectPropsParser"); // NOI18N
-        }
-    }
-
-    // CC Compiler Node
-    private CustomizerNode createCCCompilerDescription(Project project, int compilerSetIdx, Item item, Folder folder, boolean isCompilerConfiguration) {
-        ExecutionEnvironment execEnv = getSelectedHost();
-        String compilerName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.CCCompiler).getName();
-        String compilerDisplayName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.CCCompiler).getDisplayName();
-        CustomizerNode ccCompilerCustomizerNode = new CCCompilerCustomizerNode(
-                compilerName,
-                compilerDisplayName,
-                null,
-                item,
-                folder,
-                isCompilerConfiguration);
-        return ccCompilerCustomizerNode;
-    }
-
-    private class CCCompilerCustomizerNode extends CustomizerNode {
-
-        private Item item;
-        private Folder folder;
-        private boolean isCompilerConfiguration;
-
-        public CCCompilerCustomizerNode(String name, String displayName, CustomizerNode[] children, Item item, Folder folder, boolean isCompilerConfiguration) {
-            super(name, displayName, children);
-            this.item = item;
-            this.folder = folder;
-            this.isCompilerConfiguration = isCompilerConfiguration;
-        }
-
-        @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            if (item != null) {
-                ItemConfiguration itemConfiguration = getItemConfiguration(item, configuration);
-                return itemConfiguration.getCCCompilerConfiguration().getSheet((MakeConfiguration) configuration, folder);
-            } else if (folder != null) {
-                return folder.getFolderConfiguration(configuration).getCCCompilerConfiguration().getSheet((MakeConfiguration) configuration, folder);
-            } else {
-                return ((MakeConfiguration) configuration).getCCCompilerConfiguration().getSheet((MakeConfiguration) configuration, folder);
-            }
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx(isCompilerConfiguration ? "ProjectPropsCompiling" : "ProjectPropsParser"); // NOI18N
-        }
-    }
-
-    // Fortran Compiler Node
-    private CustomizerNode createFortranCompilerDescription(Project project, int compilerSetIdx, Item item, boolean isCompilerConfiguration) {
-        ExecutionEnvironment execEnv = getSelectedHost();
-        String compilerName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.FortranCompiler).getName();
-        String compilerDisplayName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.FortranCompiler).getDisplayName();
-        CustomizerNode fortranCompilerCustomizerNode = new FortranCompilerCustomizerNode(
-                compilerName,
-                compilerDisplayName,
-                null,
-                item);
-        return fortranCompilerCustomizerNode;
-    }
-
-    private class FortranCompilerCustomizerNode extends CustomizerNode {
-
-        private Item item;
-
-        public FortranCompilerCustomizerNode(String name, String displayName, CustomizerNode[] children, Item item) {
-            super(name, displayName, children);
-            this.item = item;
-        }
-
-        @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            if (item != null) {
-                ItemConfiguration itemConfiguration = getItemConfiguration(item, configuration);
-                return itemConfiguration.getFortranCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration);
-            } else {
-                return ((MakeConfiguration) configuration).getFortranCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration);
-            }
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsCompiling"); // NOI18N
-        }
-    }
-
-    // Assembler Compiler Node
-    private CustomizerNode createAssemblerDescription(Project project, int compilerSetIdx, Item item, boolean isCompilerConfiguration) {
-        ExecutionEnvironment execEnv = getSelectedHost();
-        String compilerName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.Assembler).getName();
-        String compilerDisplayName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.Assembler).getDisplayName();
-        CustomizerNode assemblerCustomizerNode = new AssemblerCustomizerNode(
-                compilerName,
-                compilerDisplayName,
-                null,
-                item);
-        return assemblerCustomizerNode;
-    }
-
-    private class AssemblerCustomizerNode extends CustomizerNode {
-
-        private Item item;
-
-        public AssemblerCustomizerNode(String name, String displayName, CustomizerNode[] children, Item item) {
-            super(name, displayName, children);
-            this.item = item;
-        }
-
-        @Override
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            if (item != null) {
-                ItemConfiguration itemConfiguration = getItemConfiguration(item, configuration);
-                return itemConfiguration.getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration);
-            } else {
-                return ((MakeConfiguration) configuration).getAssemblerConfiguration().getGeneralSheet((MakeConfiguration) configuration);
-            }
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectPropsCompiling"); // NOI18N
-        }
-    }
-
-    /*
-    class DummyCustomizerNode extends CustomizerNode {
-    public DummyCustomizerNode(String name, String displayName) {
-    super(name, displayName, null);
-    }
-    }
-     */
-    // Private meyhods ---------------------------------------------------------
-    private javax.swing.JLabel createEmptyLabel(String text) {
-
-        JLabel label;
-        if (text == null) {
-            label = new JLabel();
-        } else {
-            label = new JLabel(text);
-            label.setHorizontalAlignment(JLabel.CENTER);
-        }
-
-        return label;
-    }
-
-    private static class DummyNode extends AbstractNode {
+    private static final class DummyNode extends AbstractNode {
 
         public DummyNode(Sheet sheet, String name) {
             super(Children.LEAF);
@@ -1421,69 +650,11 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
     }
 
-    /** Node to be used for configuration
-     */
-    private class PropertyNode extends AbstractNode implements HelpCtx.Provider {
-
-        private CustomizerNode description;
-
-        public PropertyNode(CustomizerNode description) {
-            super(description.children == null ? Children.LEAF : new PropertyNodeChildren(description.children));
-            setName(description.name);
-            setDisplayName(description.displayName);
-            setIconBaseWithExtension(CustomizerNode.icon);
-            this.description = description;
-        }
-
-        public CustomizerNode.CustomizerStyle custumizerStyle() {
-            return description.customizerStyle();
-        }
-
-        public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            return description.getSheet(project, configurationDescriptor, configuration);
-        }
-
-        public JPanel getPanel(Project project, ConfigurationDescriptor configurationDescriptor) {
-            return description.getPanel(project, configurationDescriptor);
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return description.getHelpCtx();
-        }
-    }
-
-    /** Children used for configuration
-     */
-    private class PropertyNodeChildren extends Children.Keys<CustomizerNode> {
-
-        private Collection<CustomizerNode> descriptions;
-
-        public PropertyNodeChildren(CustomizerNode[] descriptions) {
-            this.descriptions = Arrays.asList(descriptions);
-        }
-
-        // Children.Keys impl --------------------------------------------------
-        @Override
-        public void addNotify() {
-            setKeys(descriptions);
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public void removeNotify() {
-            setKeys(Collections.EMPTY_LIST);
-        }
-
-        protected Node[] createNodes(CustomizerNode key) {
-            return new Node[]{new PropertyNode(key)};
-        }
-    }
-
-    private class MyListEditorPanel extends ListEditorPanel<Configuration> {
-
-        public MyListEditorPanel(List<Configuration> objects) {
-            super(objects);
+    private static final class MyListEditorPanel extends ListEditorPanel<Configuration> {
+        final ConfigurationDescriptor projectDescriptor;
+        public MyListEditorPanel(ConfigurationDescriptor descriptor) {
+            super(descriptor.getConfs().getConfigurations());
+            projectDescriptor = descriptor;
             setAllowedToRemoveAll(false);
         }
 
@@ -1518,19 +689,19 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         public void removeAction(Configuration o) {
             Configuration c = o;
             if (c.isDefault()) {
-                if (getListData().elementAt(0) == o) {
-                    (getListData().elementAt(1)).setDefault(true);
+                if (getListData().get(0) == o) {
+                    (getListData().get(1)).setDefault(true);
                 } else {
-                    (getListData().elementAt(0)).setDefault(true);
+                    (getListData().get(0)).setDefault(true);
                 }
             }
         }
 
         @Override
         public void defaultAction(Configuration o) {
-            Vector confs = getListData();
-            for (Enumeration e = confs.elements(); e.hasMoreElements();) {
-                ((Configuration) e.nextElement()).setDefault(false);
+            List<Configuration> confs = getListData();
+            for (Configuration c : confs) {
+                c.setDefault(false);
             }
             o.setDefault(true);
         }
@@ -1600,95 +771,8 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             getDefaultButton().setEnabled(!conf.isDefault());
         }
     }
-    /** Look up i18n strings here */
-    private ResourceBundle bundle;
 
-    private String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(MakeCustomizer.class);
-        }
-        return bundle.getString(s);
-    }
-
-    private static class ProxyItemConfiguration extends ItemConfiguration {
-
-        private AssemblerConfiguration assemblerConfiguration;
-        private CCCompilerConfiguration cCCompilerConfiguration;
-        private CCompilerConfiguration cCompilerConfiguration;
-        private FortranCompilerConfiguration fortranCompilerConfiguration;
-        private CustomToolConfiguration customToolConfiguration;
-
-        private ProxyItemConfiguration(Configuration configuration, Item item) {
-            super(item.getItemConfiguration(configuration));
-        }
-
-        @Override
-        public synchronized AssemblerConfiguration getAssemblerConfiguration() {
-            if (getTool() == Tool.Assembler) {
-                return super.getAssemblerConfiguration();
-            } else {
-                if (assemblerConfiguration == null) {
-                    assemblerConfiguration = new AssemblerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(),
-                            ((MakeConfiguration) getConfiguration()).getAssemblerConfiguration());
-                }
-                return assemblerConfiguration;
-            }
-        }
-
-        @Override
-        public synchronized CCCompilerConfiguration getCCCompilerConfiguration() {
-            if (getTool() == Tool.CCCompiler) {
-                return super.getCCCompilerConfiguration();
-            } else {
-                if (cCCompilerConfiguration == null) {
-                    FolderConfiguration folderConfiguration = getItem().getFolder().getFolderConfiguration(getConfiguration());
-                    if (folderConfiguration != null) {
-                        cCCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), folderConfiguration.getCCCompilerConfiguration());
-                    } else {
-                        cCCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), null);
-                    }
-                }
-                return cCCompilerConfiguration;
-            }
-        }
-
-        @Override
-        public CCompilerConfiguration getCCompilerConfiguration() {
-            if (getTool() == Tool.CCompiler) {
-                return super.getCCompilerConfiguration();
-            } else {
-                FolderConfiguration folderConfiguration = getItem().getFolder().getFolderConfiguration(getConfiguration());
-                if (folderConfiguration != null) {
-                    cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), folderConfiguration.getCCompilerConfiguration());
-                } else {
-                    cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), null);
-                }
-                return cCompilerConfiguration;
-            }
-        }
-
-        @Override
-        public synchronized FortranCompilerConfiguration getFortranCompilerConfiguration() {
-            if (getTool() == Tool.FortranCompiler) {
-                return super.getFortranCompilerConfiguration();
-            } else {
-                if (fortranCompilerConfiguration == null) {
-                    fortranCompilerConfiguration = new FortranCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), ((MakeConfiguration) getConfiguration()).getFortranCompilerConfiguration());
-                }
-                return fortranCompilerConfiguration;
-            }
-        }
-
-        @Override
-        public synchronized CustomToolConfiguration getCustomToolConfiguration() {
-            if (getTool() == Tool.CustomTool) {
-                return super.getCustomToolConfiguration();
-            } else {
-                if (customToolConfiguration == null) {
-                    customToolConfiguration = new CustomToolConfiguration();
-                }
-                return customToolConfiguration;
-            }
-        }
+    private static String getString(String s) {
+        return NbBundle.getBundle(MakeCustomizer.class).getString(s);
     }
 }

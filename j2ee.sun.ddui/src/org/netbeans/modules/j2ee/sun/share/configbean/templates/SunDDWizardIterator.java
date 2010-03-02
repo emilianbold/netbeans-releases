@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -48,6 +48,8 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.glassfish.eecommon.api.Utils;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -59,7 +61,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.glassfish.eecommon.api.XmlFileCreator;
 import org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration;
-import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
 
 /*
@@ -109,17 +111,19 @@ public final class SunDDWizardIterator implements WizardDescriptor.Instantiating
         return panels;
     }
     
+    @Override
     public Set instantiate() throws IOException {
         Set result = Collections.EMPTY_SET;
         SunDDWizardPanel wizardPanel = (SunDDWizardPanel) panels[0];
         
         File configDir = wizardPanel.getSelectedLocation();
         FileObject configFolder = FileUtil.createFolder(configDir);
-        String sunDDFileName = wizardPanel.getFileName();
-
         if(configFolder != null) {
-            String resource = "org-netbeans-modules-j2ee-sun-ddui/" + sunDDFileName; // NOI18N
-            FileObject sunDDTemplate = FileUtil.getConfigFile(resource);
+            String sunDDFileName = wizardPanel.getFileName();
+            Project p = wizardPanel.getProject();
+            J2eeModuleProvider mod = p.getLookup().lookup(J2eeModuleProvider.class);
+            if (null != mod) {
+                FileObject sunDDTemplate = Utils.getSunDDFromProjectsModuleVersion(mod.getJ2eeModule(), sunDDFileName);
             if(sunDDTemplate != null) {
                 FileSystem fs = configFolder.getFileSystem();
                 XmlFileCreator creator = new XmlFileCreator(sunDDTemplate, configFolder, 
@@ -145,12 +149,8 @@ public final class SunDDWizardIterator implements WizardDescriptor.Instantiating
                             NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notify(nd);
                 }
-            } else {
-                NotifyDescriptor nd = new NotifyDescriptor.Message(
-                        NbBundle.getMessage(SunDDWizardIterator.class,"ERR_TemplateNotFound", resource), // NOI18N
-                        NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(nd);
             }
+        }
         } else {
             NotifyDescriptor nd = new NotifyDescriptor.Message(
                     NbBundle.getMessage(SunDDWizardIterator.class,"ERR_LocationNotFound", configDir.getAbsolutePath()), // NOI18N
@@ -160,30 +160,37 @@ public final class SunDDWizardIterator implements WizardDescriptor.Instantiating
         return result;
     }
     
+    @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
     }
     
+    @Override
     public void uninitialize(WizardDescriptor wizard) {
         panels = null;
     }
     
+    @Override
     public WizardDescriptor.Panel current() {
         return getPanels()[index];
     }
     
+    @Override
     public String name() {
         return index + 1 + ". from " + getPanels().length;
     }
     
+    @Override
     public boolean hasNext() {
         return index < getPanels().length - 1;
     }
     
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
     
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -191,6 +198,7 @@ public final class SunDDWizardIterator implements WizardDescriptor.Instantiating
         index++;
     }
     
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -199,7 +207,9 @@ public final class SunDDWizardIterator implements WizardDescriptor.Instantiating
     }
     
     // If nothing unusual changes in the middle of the wizard, simply:
+    @Override
     public void addChangeListener(ChangeListener l) {}
+    @Override
     public void removeChangeListener(ChangeListener l) {}
     
     // If something changes dynamically (besides moving between panels), e.g.

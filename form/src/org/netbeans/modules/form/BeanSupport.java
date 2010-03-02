@@ -42,7 +42,6 @@
 package org.netbeans.modules.form;
 
 import java.awt.*;
-import java.beans.*;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.*;

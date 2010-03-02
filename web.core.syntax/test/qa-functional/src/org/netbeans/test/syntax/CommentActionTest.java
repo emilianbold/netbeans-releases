@@ -38,12 +38,14 @@
  */
 package org.netbeans.test.syntax;
 
+import java.awt.Dialog;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -71,6 +73,12 @@ public class CommentActionTest extends J2eeTestCase {
             File projectDir = new File(getDataDir(), PROJECT_DIR_NAME);
             openProjects(projectDir.getAbsolutePath());
             firstRun = false;
+            Dialog d = JDialogOperator.getTopModalDialog();
+            while (d != null){
+                d.setVisible(false);
+                d.dispose();
+                d = JDialogOperator.getTopModalDialog();
+            }
         }
     }
 

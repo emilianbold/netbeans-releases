@@ -761,6 +761,16 @@ public final class TreeMaker {
                                             List<? extends Tree> typeArguments) {
         return delegate.ParameterizedType(type, typeArguments);
     }
+
+    //XXX: AnnotationType and (maybe) TypeAnnotation should be public:
+    AnnotatedTypeTree AnnotatedType(List<? extends AnnotationTree> annotations,
+                                           ExpressionTree type) {
+        return delegate.AnnotatedType(annotations, type);
+    }
+
+    AnnotationTree TypeAnnotation(AnnotationTree t) {
+        return delegate.TypeAnnotation(t);
+    }
     
     /**
      * Creates a new ParenthesizedTree.

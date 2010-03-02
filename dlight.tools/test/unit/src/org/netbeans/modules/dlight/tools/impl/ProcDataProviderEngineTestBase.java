@@ -56,6 +56,11 @@ public abstract class ProcDataProviderEngineTestBase extends NbTestCase implemen
         super(name);
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     protected File getDataFile() {
         String fullClassName = this.getClass().getName();
         String dataFilePath = fullClassName.replace('.', '/') + '/' + getName() + ".txt";

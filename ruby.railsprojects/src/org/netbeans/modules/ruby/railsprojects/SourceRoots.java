@@ -164,27 +164,24 @@ public final class SourceRoots {
         }
         sourceRoots = Collections.unmodifiableList(result);
     }
-    
+
+    private void addPlainFiles(FileObject dir, String... fileNames) {
+        plainFiles = new ArrayList<FileObject>(20);
+        for (String fileName : fileNames) {
+            FileObject toAdd = dir.getFileObject(fileName);
+            if (toAdd != null) {
+                plainFiles.add(toAdd);
+            }
+        }
+    }
+
     /** Create a logical view of the project: flatten app/ and test/
      * and substitute logical names instead of the directory names
      */
     private void initializeRootsLogical() {
-        plainFiles = new ArrayList<FileObject>(20);
 
         FileObject fo = helper.getRakeProjectHelper().getProjectDirectory();
-        
-        FileObject rakefile = fo.getFileObject("Rakefile"); // NOI18N
-        if (rakefile != null) {
-            plainFiles.add(rakefile);
-        }
-        FileObject readme = fo.getFileObject("README"); // NOI18N
-        if (readme != null) {
-            plainFiles.add(readme);
-        }
-        FileObject capfile = fo.getFileObject("Capfile"); // NOI18N
-        if (capfile != null) {
-            plainFiles.add(capfile);
-        }
+        addPlainFiles(fo, "Capfile", "Gemfile", "Rakefile", "README");
 
         // show app/metal for Rack applications, but only if the folder already exists
         boolean metal = fo.getFileObject("app/metal") != null;//NOI18N

@@ -61,6 +61,8 @@ import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
 import org.netbeans.modules.cnd.apt.impl.support.lang.APTBaseLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
+import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
@@ -156,6 +158,19 @@ public class APTUtils {
             System.err.printf("unexpected token %s while assigning text %s", _token, new String(buf, start, count));
             _token.setText(new String(buf, start, count));
         }
+    }
+
+    public static APTToken createAPTToken(int type, int startOffset, int endOffset, int startColumn, int startLine, int endColumn, int endLine) {
+        // TODO: optimize factory
+        APTToken out = createAPTToken(type);
+        out.setType(type);
+        out.setColumn(startColumn);
+        out.setLine(startLine);
+        out.setOffset(startOffset);
+        out.setEndOffset(endOffset);
+        out.setEndColumn(endColumn);
+        out.setEndLine(endLine);
+        return out;
     }
 
     public static APTToken createAPTToken(int type) {
@@ -309,6 +324,14 @@ public class APTUtils {
     
     public static boolean isID(Token token) {
         return token != null && token.getType() == APTTokenTypes.ID;
+    }
+
+    public static boolean isFortranKeyword(int tokenType) {
+        APTLanguageFilter filter = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.FORTRAN);
+        if (filter instanceof APTBaseLanguageFilter) {
+            return ((APTBaseLanguageFilter) filter).isKeyword(tokenType);
+        }
+        return false;
     }
 
     public static boolean isInt(Token token) {
@@ -578,6 +601,7 @@ public class APTUtils {
     }
     
     public static final APTToken EOF_TOKEN = new APTEOFToken();
+    public static final APTToken EOF_TOKEN2 = new APTEOFToken2();
     
     public static final TokenStream EMPTY_STREAM = new TokenStream() {
         public Token nextToken() throws TokenStreamException {
@@ -671,4 +695,93 @@ public class APTUtils {
         }
 
     }
+
+
+    private static final class APTEOFToken2 extends APTTokenAbstact {
+        public APTEOFToken2() {
+        }
+
+        @Override
+        public int getOffset() {
+            throw new UnsupportedOperationException("getOffset must not be used"); // NOI18N
+        }
+
+        @Override
+        public void setOffset(int o) {
+            throw new UnsupportedOperationException("setOffset must not be used"); // NOI18N
+        }
+
+        @Override
+        public int getEndOffset() {
+            throw new UnsupportedOperationException("getEndOffset must not be used"); // NOI18N
+        }
+
+        @Override
+        public void setEndOffset(int o) {
+            throw new UnsupportedOperationException("setEndOffset must not be used"); // NOI18N
+        }
+
+        @Override
+        public CharSequence getTextID() {
+            throw new UnsupportedOperationException("getTextID must not be used"); // NOI18N
+        }
+
+        @Override
+        public void setTextID(CharSequence id) {
+            throw new UnsupportedOperationException("setTextID must not be used"); // NOI18N
+        }
+
+        @Override
+        public int getEndColumn() {
+            throw new UnsupportedOperationException("getEndColumn must not be used"); // NOI18N
+        }
+
+        @Override
+        public void setEndColumn(int c) {
+            throw new UnsupportedOperationException("setEndColumn must not be used"); // NOI18N
+        }
+
+        @Override
+        public int getEndLine() {
+            throw new UnsupportedOperationException("getEndLine must not be used"); // NOI18N
+        }
+
+        @Override
+        public void setEndLine(int l) {
+            throw new UnsupportedOperationException("setEndLine must not be used"); // NOI18N
+        }
+
+        @Override
+        public int getType() {
+            return -1;
+        }
+
+        @Override
+        public String getText() {
+            return "<EOF>"; // NOI18N
+        }
+
+        @Override
+        public int getColumn() {
+            return Integer.MAX_VALUE;
+        }
+
+        @Override
+        public int getLine() {
+            return Integer.MAX_VALUE;
+        }
+
+        @Override
+        public int hashCode() {
+            return 1;
+        }
+
+        @Override
+        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+        public boolean equals(Object obj) {
+            return this == obj;
+        }
+
+    }
+
 }

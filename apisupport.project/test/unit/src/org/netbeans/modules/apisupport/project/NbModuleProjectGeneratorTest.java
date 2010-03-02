@@ -53,10 +53,13 @@ import java.util.TreeSet;
 import java.util.jar.Manifest;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -206,5 +209,26 @@ public class NbModuleProjectGeneratorTest extends TestBase {
 //                "org/example/testModule/resources/Bundle.properties",
 //                "org/example/testModule/resources/layer.xml");
 //    }
+
+    public void testCreateOSGiBundle() throws Exception { // #179752
+        File targetPrjDir = new File(getWorkDir(), "testModule");
+        NbModuleProjectGenerator.createStandAloneModule(
+                targetPrjDir,
+                "org.example.testModule", // cnb
+                "Testing Module", // display name
+                "org/example/testModule/resources/Bundle.properties",
+                "org/example/testModule/resources/layer.xml",
+                NbPlatform.PLATFORM_ID_DEFAULT, true);
+        FileObject fo = FileUtil.toFileObject(targetPrjDir);
+        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
+        assertNotNull(p);
+        assertEquals("Testing Module", ProjectUtils.getInformation(p).getDisplayName());
+        EditableManifest mf = Util.loadManifest(p.getProjectDirectory().getFileObject("manifest.mf"));
+        assertNull(mf.getAttribute("OpenIDE-Module-Localizing-Bundle", null));
+        assertEquals("org/example/testModule/resources/Bundle", mf.getAttribute("Bundle-Localization", null));
+        assertEquals("%OpenIDE-Module-Name", mf.getAttribute("Bundle-Name", null));
+        EditableProperties props = Util.loadProperties(p.getProjectDirectory().getFileObject("src/org/example/testModule/resources/Bundle.properties"));
+        assertEquals("Testing Module", props.get("OpenIDE-Module-Name"));
+    }
     
 }

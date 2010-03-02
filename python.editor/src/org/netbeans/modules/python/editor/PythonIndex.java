@@ -1374,6 +1374,13 @@ public class PythonIndex {
             return CLUSTER_URL + url.substring(s.length());
         }
 
+        if (url.startsWith("jar:file:")) { // NOI18N
+           String sub = url.substring(4);
+            if (sub.startsWith(s)) {
+                return CLUSTER_URL + sub.substring(s.length());
+            }
+        }
+
         return url;
     }
 
@@ -1424,6 +1431,9 @@ public class PythonIndex {
                 return null;
             } else if (url.startsWith(CLUSTER_URL)) {
                 url = getClusterUrl() + url.substring(CLUSTER_URL.length()); // NOI18N
+                if (url.indexOf(".egg!/") != -1) { // NOI18N
+                    url = "jar:" + url; // NOI18N
+                }
             }
 
             return URLMapper.findFileObject(new URL(url));

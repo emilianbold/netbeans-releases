@@ -41,6 +41,7 @@ package org.netbeans.modules.php.dbgp;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.concurrent.Callable;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
@@ -290,7 +291,9 @@ public class DebuggerTest extends NbTestCase {
         final ProcessBuilder processBuilder = new ProcessBuilder(new String[]{gePHPInterpreter(), scriptFile.getAbsolutePath()});
         processBuilder.directory(scriptFile.getParentFile());
         processBuilder.environment().put("XDEBUG_CONFIG", "idekey=" + sessionId.getId()); //NOI18N
-        SessionManager.getInstance().startSession(sessionId, DebuggerOptions.getGlobalInstance(), new Callable<Cancellable>() {
+        final DebuggerOptions options = DebuggerOptions.getGlobalInstance();
+        options.pathMapping = Collections.emptyList();
+        SessionManager.getInstance().startSession(sessionId, options, new Callable<Cancellable>() {
             public Cancellable call() throws Exception {
                 processes[0] = processBuilder.start();
                 return new Cancellable() {

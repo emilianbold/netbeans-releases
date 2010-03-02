@@ -44,9 +44,9 @@ package org.netbeans.api.java.queries;
 import java.net.URL;
 import java.util.Arrays;
 import javax.swing.event.ChangeListener;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -75,10 +75,7 @@ public class JavadocForBinaryQuery {
      * @return a result object encapsulating the answer (never null)
      */
     public static Result findJavadoc(URL binary) {
-        if (FileUtil.isArchiveFile(binary)) {
-            throw new IllegalArgumentException("File URL pointing to " + // NOI18N
-                "JAR is not valid classpath entry. Use jar: URL. Was: "+binary); // NOI18N
-        }
+        ClassPathSupport.createResource(binary); // just to check for IAE; XXX might be unnecessary since CP ctor now check this too
         boolean log = ERR.isLoggable(ErrorManager.INFORMATIONAL);
         if (log) ERR.log("JFBQ.findJavadoc: " + binary);
         for  (JavadocForBinaryQueryImplementation impl : implementations.allInstances()) {

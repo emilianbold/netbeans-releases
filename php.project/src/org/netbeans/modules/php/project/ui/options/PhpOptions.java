@@ -64,6 +64,7 @@ public final class PhpOptions {
     public static final int DEFAULT_DEBUGGER_PORT = 9000;
     public static final String DEFAULT_DEBUGGER_SESSION_ID = "netbeans-xdebug"; // NOI18N
     public static final boolean DEFAULT_DEBUGGER_STOP_AT_FIRST_LINE = true;
+    public static final boolean DEFAULT_DEBUGGER_WATCHES_AND_EVAL = false;
 
     // php cli
     public static final String PHP_INTERPRETER = "phpInterpreter"; // NOI18N
@@ -75,6 +76,7 @@ public final class PhpOptions {
     public static final String PHP_DEBUGGER_PORT = "phpDebuggerPort"; // NOI18N
     public static final String PHP_DEBUGGER_SESSION_ID = "phpDebuggerSessionId"; // NOI18N
     public static final String PHP_DEBUGGER_STOP_AT_FIRST_LINE = "phpDebuggerStopAtFirstLine"; // NOI18N
+    public static final String PHP_DEBUGGER_WATCHES_AND_EVAL = "phpDebuggerWatchesAndEval"; // NOI18N
 
     // php unit
     public static final String PHP_UNIT = "phpUnit"; // NOI18N
@@ -184,6 +186,14 @@ public final class PhpOptions {
 
     public void setDebuggerStoppedAtTheFirstLine(boolean debuggerStoppedAtTheFirstLine) {
         getPreferences().putBoolean(PHP_DEBUGGER_STOP_AT_FIRST_LINE, debuggerStoppedAtTheFirstLine);
+    }
+
+    public boolean isDebuggerWatchesAndEval() {
+        return getPreferences().getBoolean(PHP_DEBUGGER_WATCHES_AND_EVAL, DEFAULT_DEBUGGER_WATCHES_AND_EVAL);
+    }
+
+    public void setDebuggerWatchesAndEval(boolean debuggerWatchesAndEval) {
+        getPreferences().putBoolean(PHP_DEBUGGER_WATCHES_AND_EVAL, debuggerWatchesAndEval);
     }
 
     /**

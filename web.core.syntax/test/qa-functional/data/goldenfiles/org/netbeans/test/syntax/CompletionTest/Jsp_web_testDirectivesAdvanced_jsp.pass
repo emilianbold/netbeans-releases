@@ -24,10 +24,12 @@ End cursor position = 706
 < c:validateDoubleRange >
 < c:validateLength >
 < c:validateLongRange >
+< c:validateRegex / >
 < c:validator / >
 < c:valueChangeListener / >
 < c:verbatim >
 < c:view >
+< c:viewParam >
 End cursor position = 812
 [<c:view |, locale, <c:view locale="", 907]
 afterPhase

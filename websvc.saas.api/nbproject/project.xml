@@ -197,6 +197,7 @@
                 <friend>org.netbeans.modules.websvc.components.strikeiron</friend>
                 <friend>org.netbeans.modules.websvc.jaxwsmodel</friend>
                 <friend>org.netbeans.modules.websvc.manager</friend>
+                <friend>org.netbeans.modules.websvc.rest</friend>
                 <friend>org.netbeans.modules.websvc.saas.codegen</friend>
                 <friend>org.netbeans.modules.websvc.saas.codegen.j2ee</friend>
                 <friend>org.netbeans.modules.websvc.saas.codegen.java</friend>

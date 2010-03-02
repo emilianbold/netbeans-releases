@@ -47,14 +47,22 @@ import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 
 /**
  *
- * @author  gfink
+ * @author Petr Hejl
  */
 public class TestDeploymentFactory implements DeploymentFactory {
-    
+
     private Map managers = new HashMap();
 
+    private final String prefix;
+
     /** Creates a new instance of DepFactory */
-    public TestDeploymentFactory() {
+    protected TestDeploymentFactory(String prefix) {
+        assert prefix != null;
+        this.prefix = prefix;
+    }
+
+    public static TestDeploymentFactory create(Map map) {
+        return new TestDeploymentFactory((String) map.get("prefix"));
     }
 
     public synchronized javax.enterprise.deploy.spi.DeploymentManager getDeploymentManager(String str, String str1, String str2) throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException {
@@ -84,7 +92,7 @@ public class TestDeploymentFactory implements DeploymentFactory {
     }
     
     public boolean handlesURI(String str) {
-        return (str != null && str.startsWith("fooservice"));
+        return (str != null && str.startsWith(prefix));
     }
     
 }

@@ -42,6 +42,7 @@ package org.netbeans.modules.xml.schema.completion;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
 import org.openide.util.NbBundle;
@@ -53,18 +54,18 @@ import org.openide.util.NbBundle;
 public class EndTagResultItem extends CompletionResultItem {
     private static final Logger _logger = Logger.getLogger(EndTagResultItem.class.getName());
 
-    private String tagName;
     private int endTagSortPriority = -1;
 
-    public EndTagResultItem(String tagName) {
+    public EndTagResultItem(String tagName, TokenSequence tokenSequence) {
         super(null, null);
-        this.tagName = tagName;
-        itemText = tagName;
+        this.itemText = tagName;
+        setTokenSequence(tokenSequence);
     }
 
+    @Override
     public String getDisplayText() {
         return (CompletionUtil.END_TAG_PREFIX + 
-               (tagName != null ? tagName : NbBundle.getMessage(EndTagResultItem.class,
+               (itemText != null ? itemText : NbBundle.getMessage(EndTagResultItem.class,
                    "UNKNOWN_TAG_NAME")) +
                 CompletionUtil.TAG_LAST_CHAR);
     }
@@ -79,6 +80,7 @@ public class EndTagResultItem extends CompletionResultItem {
         return 0;
     }
 
+    @Override
     public CompletionPaintComponent getPaintComponent() {
         if (component == null) {
             component = new CompletionPaintComponent.DefaultCompletionPaintComponent(this);
@@ -86,12 +88,8 @@ public class EndTagResultItem extends CompletionResultItem {
         return component;
     }
 
-    public int getEndTagSortPriority() {
-        return endTagSortPriority;
-    }
-
-    public void setEndTagSortPriority(int endTagSortPriority) {
-        this.endTagSortPriority = endTagSortPriority;
+    public void setSortPriority(int sortPriority) {
+        this.endTagSortPriority = sortPriority;
     }
 
     @Override
@@ -104,10 +102,13 @@ public class EndTagResultItem extends CompletionResultItem {
         final int offset, final int len) {
         final BaseDocument doc = (BaseDocument) component.getDocument();
         doc.runAtomic(new Runnable() {
+            @Override
             public void run() {
                 try {
-                    doc.remove(offset, len);
-                    doc.insertString(offset, text, null);
+                    if (len > 0) doc.remove(offset, len);
+                    
+                    String insertingText = getInsertingText(component, text);
+                    doc.insertString(offset, insertingText, null);
                 } catch (Exception e) {
                     _logger.log(Level.SEVERE,
                         e.getMessage() == null ? e.getClass().getName() : e.getMessage(), e);

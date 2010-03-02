@@ -333,11 +333,13 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         return changed;
     }
     
+    @Override
     public void actionPerformed (ActionEvent e) {
         if (listen)
             changed = true;
     }
     
+    @Override
     public void stateChanged (ChangeEvent e) {
         if (listen)
             changed = true;

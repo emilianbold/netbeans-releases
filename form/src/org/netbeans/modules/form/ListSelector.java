@@ -56,6 +56,7 @@ public class ListSelector extends javax.swing.JPanel {
     public ListSelector() {
         initComponents();
         ListDataListener listener = new ListDataListener() {
+            @Override
             public void contentsChanged(ListDataEvent e) {
                 if (e.getSource() == availableList.getModel()) {
                     addAllButton.setEnabled(availableList.getModel().getSize() != 0);
@@ -63,9 +64,11 @@ public class ListSelector extends javax.swing.JPanel {
                     removeAllButton.setEnabled(selectedList.getModel().getSize() != 0);
                 }
             }
+            @Override
             public void intervalAdded(ListDataEvent e) {
                 contentsChanged(e);
             }
+            @Override
             public void intervalRemoved(ListDataEvent e) {
                 contentsChanged(e);
             }

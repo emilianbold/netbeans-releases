@@ -119,7 +119,7 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         if (this.csmFile == null) {
             BaseDocument bDoc = getBaseDocument();
             if (bDoc != null) {
-                this.csmFile = CsmUtilities.getCsmFile(bDoc, true);
+                this.csmFile = CsmUtilities.getCsmFile(bDoc, true, false);
                 String mimeType = (String) bDoc.getProperty(NbEditorDocument.MIME_TYPE_PROP); 
                 if ("text/x-dialog-binding".equals(mimeType)) { // NOI18N
                     // this is context based code completion

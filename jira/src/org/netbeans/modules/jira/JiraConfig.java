@@ -129,22 +129,25 @@ public class JiraConfig {
     public void putRepository(String repoID, JiraRepository repository) {
         String repoName = repository.getDisplayName();
 
-        String user = repository.getUsername();
-        String password = BugtrackingUtil.scramble(repository.getPassword());
+        String user = repository.getUsername();        
 
-        String httpUser = repository.getHttpUsername();
-        String httpPassword = BugtrackingUtil.scramble(repository.getHttpPassword());
+        String httpUser = repository.getHttpUsername();        
         String url = repository.getUrl();
         getPreferences().put(
                 REPO_NAME + repoID,
                 url + DELIMITER +
                 user + DELIMITER +
-                password + DELIMITER +
+                "" + DELIMITER +          // NOI18N - skip password, will be saved via keyring
                 httpUser + DELIMITER +
-                httpPassword + DELIMITER +
+                "" + DELIMITER +          // NOI18N - skip http password, will be saved via keyring
                 repoName);
-    }
 
+        String password = repository.getPassword();
+        String httpPassword = repository.getHttpPassword();
+        BugtrackingUtil.savePassword(password, null, user, url);
+        BugtrackingUtil.savePassword(httpPassword, "http", httpUser, url); // NOI18N
+
+    }
     public JiraRepository getRepository(String repoID) {
         String repoString = getPreferences().get(REPO_NAME + repoID, "");     // NOI18N
         if(repoString.equals("")) {                                             // NOI18N
@@ -153,16 +156,24 @@ public class JiraConfig {
         String[] values = repoString.split(DELIMITER);
         String url = values[0];
         String user = values[1];
-        String password = BugtrackingUtil.descramble(values[2]);
+        String password = new String(BugtrackingUtil.readPassword(values[2], null, user, url));
         String httpUser = values.length > 3 ? values[3] : null;
-        String httpPassword = values.length > 3 ? BugtrackingUtil.descramble(values[4]) : null;
+        String httpPassword = new String(values.length > 3 ? BugtrackingUtil.readPassword(values[4], "http", httpUser, url) : null); // NOI18N
         String repoName;
         if(values.length > 5) {
             repoName = values[5];
         } else {
             repoName = repoID;
         }
-        return new JiraRepository(repoID, repoName, url, user, password, httpUser, httpPassword);
+
+        JiraRepository repo = new JiraRepository(repoID, repoName, url, user, password, httpUser, httpPassword);
+
+        // make sure tha scrambled password is removed
+        if(!values[2].trim().equals("") || (values.length > 3 && !values[3].trim().equals(""))) {
+            putRepository(repoID, repo);
+        }
+
+        return repo;
     }
 
     public String[] getRepositories() {

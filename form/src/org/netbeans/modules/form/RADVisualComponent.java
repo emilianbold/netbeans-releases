@@ -229,6 +229,7 @@ public class RADVisualComponent extends RADComponent {
                     FormUtils.getBundleString("CTL_LayoutTab"), // NOI18N
                     FormUtils.getBundleString("CTL_LayoutTabHint")) // NOI18N
             {
+                @Override
                 public Node.Property[] getProperties() {
                     Node.Property[] props = getConstraintsProperties();
                     return (props == null) ? NO_PROPERTIES : props;
@@ -331,6 +332,7 @@ public class RADVisualComponent extends RADComponent {
                 new LayoutComponentResizableProperty(component, LayoutConstants.VERTICAL)
             };
             component.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     RADComponentNode node = getNodeReference();
                     if (node != null) {
@@ -383,6 +385,7 @@ public class RADVisualComponent extends RADComponent {
     private class ConstraintsListenerConvertor implements VetoableChangeListener,
                              PropertyChangeListener, FormProperty.ValueConvertor
     {
+        @Override
         public void vetoableChange(PropertyChangeEvent ev)
             throws PropertyVetoException
         {
@@ -408,6 +411,7 @@ public class RADVisualComponent extends RADComponent {
             }
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent ev) {
             Object source = ev.getSource();
             if (source instanceof FormProperty
@@ -427,6 +431,7 @@ public class RADVisualComponent extends RADComponent {
             }
         }
 
+        @Override
         public Object convert(Object value, FormProperty property) {
             return resourcePropertyConvert(value, property);
         }
@@ -459,6 +464,7 @@ public class RADVisualComponent extends RADComponent {
             setValue("canEditAsText", Boolean.TRUE); // NOI18N
         }
             
+        @Override
         public void setValue(Object value) {
             if (!(value instanceof Integer))
                 throw new IllegalArgumentException();
@@ -486,6 +492,7 @@ public class RADVisualComponent extends RADComponent {
             }
         }
         
+        @Override
         public Object getValue() {
             int size = component.getLayoutInterval(dimension).getPreferredSize(false);
             return new Integer(size);
@@ -571,6 +578,7 @@ public class RADVisualComponent extends RADComponent {
             this.dimension = dimension;
         }
             
+        @Override
         public void setValue(Object value) {
             if (!(value instanceof Boolean))
                 throw new IllegalArgumentException();
@@ -602,6 +610,7 @@ public class RADVisualComponent extends RADComponent {
             }
         }
         
+        @Override
         public Object getValue() {
             int pref = component.getLayoutInterval(dimension).getPreferredSize(false);
             int max = component.getLayoutInterval(dimension).getMaximumSize(false);

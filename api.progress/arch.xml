@@ -535,8 +535,10 @@ The progress API is good for tracking progress of long lasting tasks in the IDE.
 -->
  <answer id="exec-component">
   <p>
-   No.
-  </p>
+   The API is not.  The implementation provided in the progress.ui module
+   allows the look and feel to set the color used to gray out the main window
+   during blocking progress operations, using <code>UIManager.getColor("progress.windowMaskColor")</code>.
+   </p>
  </answer>
 
 

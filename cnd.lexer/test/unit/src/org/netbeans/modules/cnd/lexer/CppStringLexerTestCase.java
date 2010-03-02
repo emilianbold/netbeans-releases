@@ -62,6 +62,11 @@ public class CppStringLexerTestCase extends NbTestCase {
         LexerTestUtilities.setTesting(true);
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testZero() {
         String text = "\\0";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppStringTokenId.languageSingle());

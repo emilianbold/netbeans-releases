@@ -41,6 +41,7 @@ package org.netbeans.modules.hudson.mercurial;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -212,8 +213,18 @@ public class HudsonMercurialSCM implements HudsonSCM {
             LOG.log(Level.FINE, "{0} was malformed, perhaps no workspace: {1}", new Object[] {hgrc, x});
             return null;
         } catch (FileNotFoundException x) {
-            LOG.log(Level.FINE, "{0} is not an Hg repo", repository);
-            return null;
+            try {
+                ConnectionBuilder cb = new ConnectionBuilder();
+                if (job != null) {
+                    cb = cb.job(job);
+                }
+                cb.url(repository.resolve(".hg/requires").toURL()).connection();
+            } catch (IOException x2) {
+                LOG.log(Level.FINE, "{0} is not an Hg repo", repository);
+                return null;
+            }
+            LOG.log(Level.FINE, "{0} not found", hgrc);
+            return repository;
         } catch (Exception x) {
             LOG.log(Level.WARNING, "Could not parse " + hgrc, x);
             return null;
@@ -222,7 +233,7 @@ public class HudsonMercurialSCM implements HudsonSCM {
         }
         if (defaultPull == null) {
             LOG.log(Level.FINE, "{0} does not specify paths.default or default-pull", hgrc);
-            return null;
+            return repository;
         }
         if (!defaultPull.endsWith("/")) { // NOI18N
             defaultPull += "/"; // NOI18N

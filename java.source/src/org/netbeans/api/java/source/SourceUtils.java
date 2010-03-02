@@ -301,8 +301,7 @@ public class SourceUtils {
             }
         } else { // embedded java, look up the handler for the top level language
             Lookup lookup = MimeLookup.getLookup(MimePath.get(topLevelLanguageMIMEType));
-            Lookup.Result result = lookup.lookup(new Lookup.Template(ImportProcessor.class));
-            Collection<ImportProcessor> instances = result.allInstances();
+            Collection<? extends ImportProcessor> instances = lookup.lookupAll(ImportProcessor.class);
 
             for (ImportProcessor importsProcesor : instances) {
                 importsProcesor.addImport(info.getDocument(), fqn);
@@ -418,7 +417,8 @@ public class SourceUtils {
             List<FileObject> fos = cp.findAllResources(pkgName);
             for (FileObject fo : fos) {
                 FileObject root = cp.findOwnerRoot(fo);
-                assert root != null;
+                if (root == null)
+                    continue;
                 FileObject[] sourceRoots = SourceForBinaryQuery.findSourceRoots(root.getURL()).getRoots();                        
                 ClassPath sourcePath = ClassPathSupport.createClassPath(sourceRoots);
                 LinkedList<FileObject> folders = new LinkedList<FileObject>(sourcePath.findAllResources(pkgName));

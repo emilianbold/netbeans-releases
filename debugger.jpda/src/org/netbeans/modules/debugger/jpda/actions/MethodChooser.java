@@ -87,25 +87,44 @@ import org.openide.util.NbBundle;
  * Support for Step Into action implementations. It allows the user to select
  * directly in a source file a method call the debugger should step into.
  * A simple graphical interface is provided. The user can navigate among available
- * method calls. The navigation can be done by the keyboard as well as by the mouse.
+ * method calls. The navigation can be done using a keyboard as well as a mouse.
  *
  * <p>The method chooser is initialized by an url (pointing to a source file), an array of
- * {@link Segment} elemets (each of them corresponds typically to a method call name
+ * {@link Segment} elements (each of them corresponds typically to a method call name
  * in the source file) and an index of the segment element which is displayed
  * as the default selection.
  *
- * <p>Optionally, [todo]
- *
- * <p>It is also possible to pass a text, which should be shown at the editor pane's
+ * <p>Optionally, two sets of (additional) shortcuts that confirm, resp. cancel the selection
+ * mode can be specified.
+ * It is also possible to pass a text, which should be shown at the editor pane's
  * status line after the selection mode has been activated. This text serves as a hint
  * to the user how to make the method call selection.
  *
- * xml [todo]
+ * <p>Method chooser does not use any special highlighting for the background of the
+ * area where the selection takes place. If it is required it can be done by attaching
+ * instances of {@link Annotation} to the proper source file's lines. These annotation should
+ * be added before calling {@link #showUI} and removed after calling {@link #releaseUI}.
+ *
+ * <p>To display the method chooser's ui correctly, it is required to register
+ * {@link HighlightsLayerFactory} created by {@link #createHighlihgtsLayerFactory}
+ * in an xml layer. An example follows.
+ *
+ * <pre class="examplecode">
+    &lt;folder name=&quot;Editors&quot;&gt;
+        &lt;folder name=&quot;text&quot;&gt;
+            &lt;folder name=&quot;x-java&quot;&gt;
+                &lt;file name=&quot;org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance&quot;&gt;
+                    &lt;attr name=&quot;instanceCreate&quot; methodvalue=&quot;org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory&quot;/&gt;
+                &lt;/file&gt;
+            &lt;/folder&gt;
+        &lt;/folder&gt;
+    &lt;/folder&gt;</pre>
+ * <code>"x-java"</code> should be replaced by the targeted mime type.
  *
  * @author Daniel Prusa
  * @since 2.22
  */
-public class MethodChooser implements KeyListener, MouseListener, MouseMotionListener, FocusListener {
+public class MethodChooser {
 
     private static AttributeSet defaultHyperlinkHighlight;
 
@@ -128,7 +147,8 @@ public class MethodChooser implements KeyListener, MouseListener, MouseMotionLis
     private Cursor handCursor;
     private Cursor arrowCursor;
     private Cursor originalCursor;
-    
+
+    private CentralListener mainListener;
     private Document doc;
     private JEditorPane editorPane;
     private List<ReleaseListener> releaseListeners = new ArrayList<ReleaseListener>();
@@ -213,11 +233,12 @@ public class MethodChooser implements KeyListener, MouseListener, MouseMotionLis
         } catch (BadLocationException e) {
         }
         // continue by showing method selection ui
+        mainListener = new CentralListener();
         editorPane.putClientProperty(MethodChooser.class, this);
-        editorPane.addKeyListener(this);
-        editorPane.addMouseListener(this);
-        editorPane.addMouseMotionListener(this);
-        editorPane.addFocusListener(this);
+        editorPane.addKeyListener(mainListener);
+        editorPane.addMouseListener(mainListener);
+        editorPane.addMouseMotionListener(mainListener);
+        editorPane.addFocusListener(mainListener);
         originalCursor = editorPane.getCursor();
         handCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
         arrowCursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
@@ -247,10 +268,10 @@ public class MethodChooser implements KeyListener, MouseListener, MouseMotionLis
             return; // do nothing
         }
         getHighlightsBag(doc).clear();
-        editorPane.removeKeyListener(this);
-        editorPane.removeMouseListener(this);
-        editorPane.removeMouseMotionListener(this);
-        editorPane.removeFocusListener(this);
+        editorPane.removeKeyListener(mainListener);
+        editorPane.removeMouseListener(mainListener);
+        editorPane.removeMouseMotionListener(mainListener);
+        editorPane.removeFocusListener(mainListener);
         editorPane.putClientProperty(MethodChooser.class, null);
         editorPane.setCursor(originalCursor);
         Caret caret = editorPane.getCaret();
@@ -310,17 +331,16 @@ public class MethodChooser implements KeyListener, MouseListener, MouseMotionLis
      * This method should be referenced in xml layer files. To display the method
      * chooser ui correctly, it is required to register an instance of
      * {@link HighlightsLayerFactory} using the following pattern.
-     * <verbatim>
-        <folder name="Editors">
-            <folder name="text">
-                <folder name="x-java">
-                    <file name="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory"/>
-                    </file>
-                </folder>
-            </folder>
-        </folder>
-     * </verbatim>
+     * <pre class="examplecode">
+    &lt;folder name=&quot;Editors&quot;&gt;
+        &lt;folder name=&quot;text&quot;&gt;
+            &lt;folder name=&quot;x-java&quot;&gt;
+                &lt;file name=&quot;org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance&quot;&gt;
+                    &lt;attr name=&quot;instanceCreate&quot; methodvalue=&quot;org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory&quot;/&gt;
+                &lt;/file&gt;
+            &lt;/folder&gt;
+        &lt;/folder&gt;
+    &lt;/folder&gt;</pre>
      * <code>"x-java"</code> should be replaced by the targeted mime type
      *
      * @return highligts layer factory that handles method chooser ui visualization
@@ -452,216 +472,6 @@ public class MethodChooser implements KeyListener, MouseListener, MouseMotionLis
     }
     
     // **************************************************************************
-    // KeyListener implementation
-    // **************************************************************************
-
-    /**
-     * Invoked when a key has been typed.
-     */
-    @Override
-    public void keyTyped(KeyEvent e) {
-        e.consume();
-    }
-
-    /**
-     * Invoked when a key has been pressed.
-     */
-    @Override
-    public void keyPressed(KeyEvent e) {
-        int code = e.getKeyCode();
-        boolean consumeEvent = true;
-        switch (code) {
-            case KeyEvent.VK_ENTER:
-            case KeyEvent.VK_SPACE:
-                // selection confirmed
-                releaseUI(true);
-                break;
-            case KeyEvent.VK_ESCAPE:
-                // action canceled
-                releaseUI(false);
-                break;
-            case KeyEvent.VK_RIGHT:
-            case KeyEvent.VK_DOWN:
-            case KeyEvent.VK_TAB:
-                selectedIndex++;
-                if (selectedIndex == segments.length) {
-                    selectedIndex = 0;
-                }
-                requestRepaint();
-                break;
-            case KeyEvent.VK_LEFT:
-            case KeyEvent.VK_UP:    
-                selectedIndex--;
-                if (selectedIndex < 0) {
-                    selectedIndex = segments.length - 1;
-                }
-                requestRepaint();
-                break;
-            case KeyEvent.VK_HOME:
-                selectedIndex = 0;
-                requestRepaint();
-                break;
-            case KeyEvent.VK_END:
-                selectedIndex = segments.length - 1;
-                requestRepaint();
-                break;
-            default:
-                int mods = e.getModifiersEx();
-                for (int x = 0; x < stopEvents.length; x++) {
-                    if (stopEvents[x].getKeyCode() == code &&
-                            (stopEvents[x].getModifiers() & mods) == stopEvents[x].getModifiers()) {
-                        releaseUI(false);
-                        consumeEvent = false;
-                        break;
-                    }
-                }
-                for (int x = 0; x < confirmEvents.length; x++) {
-                    if (confirmEvents[x].getKeyCode() == code &&
-                            (confirmEvents[x].getModifiers() & mods) == confirmEvents[x].getModifiers()) {
-                        releaseUI(true);
-                        break;
-                    }
-                }
-        }
-        if (consumeEvent) {
-            e.consume();
-        }
-    }
-
-    /**
-     * Invoked when a key has been released.
-     */
-    @Override
-    public void keyReleased(KeyEvent e) {
-        e.consume();
-    }
-
-    // **************************************************************************
-    // MouseListener and MouseMotionListener implementation
-    // **************************************************************************
-
-    /**
-     * Invoked when the mouse button has been clicked (pressed
-     * and released) on the component.
-     */
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        if (e.isPopupTrigger()) {
-            return;
-        }
-        e.consume();
-        int position = editorPane.viewToModel(e.getPoint());
-        if (e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON1) {
-            if (position < 0) {
-                return;
-            }
-            if (mousedIndex != -1) {
-                selectedIndex = mousedIndex;
-                releaseUI(true);
-                return;
-            }
-        }
-        try {
-            int line = Utilities.getLineOffset((BaseDocument) doc, position) + 1;
-            if (line < startLine || line > endLine) {
-                releaseUI(false);
-                return;
-            }
-        } catch (BadLocationException ex) {
-        }
-    }
-
-    /**
-     * Invoked when the mouse cursor has been moved onto the component
-     * but no buttons have been pushed.
-     */
-    @Override
-    public void mouseMoved(MouseEvent e) {
-        e.consume();
-        int position = editorPane.viewToModel(e.getPoint());
-        int newIndex = -1;
-        if (position >= 0) {
-            for (int x = 0; x < segments.length; x++) {
-                int start = segments[x].getStartOffset();
-                int end = segments[x].getEndOffset();
-                if (position >= start && position <= end) {
-                    newIndex = x;
-                    break;
-                }
-            } // for
-        } // if
-        if (newIndex != mousedIndex) {
-            if (newIndex == -1) {
-                editorPane.setCursor(arrowCursor);
-            } else {
-                editorPane.setCursor(handCursor);
-            }
-            mousedIndex = newIndex;
-            requestRepaint();
-        }
-    }
-
-    /**
-     * Invoked when a mouse button has been released on the component.
-     */
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        e.consume();
-    }
-
-    /**
-     * Invoked when a mouse button has been pressed on the component.
-     */
-    @Override
-    public void mousePressed(MouseEvent e) {
-        e.consume();
-    }
-
-    /**
-     * Invoked when the mouse exits the component.
-     */
-    @Override
-    public void mouseExited(MouseEvent e) {
-        e.consume();
-    }
-
-    /**
-     * Invoked when the mouse enters the component.
-     */
-    @Override
-    public void mouseEntered(MouseEvent e) {
-        e.consume();
-    }
-
-    /**
-     * Invoked when a mouse button is pressed on the component and then
-     * dragged.
-     */
-    @Override
-    public void mouseDragged(MouseEvent e) {
-        e.consume();
-    }
-
-    // **************************************************************************
-    // FocusListener implementation
-    // **************************************************************************
-
-    /**
-     * Invoked when the component gains the keyboard focus.
-     */
-    @Override
-    public void focusGained(FocusEvent e) {
-        editorPane.getCaret().setVisible(false);
-    }
-
-    /**
-     * Invoked when the component loses the keyboard focus.
-     */
-    @Override
-    public void focusLost(FocusEvent e) {
-    }
-
-    // **************************************************************************
     // public inner classes
     // **************************************************************************
 
@@ -725,6 +535,181 @@ public class MethodChooser implements KeyListener, MouseListener, MouseMotionLis
     // **************************************************************************
     // private inner classes
     // **************************************************************************
+
+    private class CentralListener implements KeyListener, MouseListener, MouseMotionListener, FocusListener {
+
+        // **************************************************************************
+        // KeyListener implementation
+        // **************************************************************************
+
+        @Override
+        public void keyTyped(KeyEvent e) {
+            e.consume();
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            int code = e.getKeyCode();
+            boolean consumeEvent = true;
+            switch (code) {
+                case KeyEvent.VK_ENTER:
+                case KeyEvent.VK_SPACE:
+                    // selection confirmed
+                    releaseUI(true);
+                    break;
+                case KeyEvent.VK_ESCAPE:
+                    // action canceled
+                    releaseUI(false);
+                    break;
+                case KeyEvent.VK_RIGHT:
+                case KeyEvent.VK_DOWN:
+                case KeyEvent.VK_TAB:
+                    selectedIndex++;
+                    if (selectedIndex == segments.length) {
+                        selectedIndex = 0;
+                    }
+                    requestRepaint();
+                    break;
+                case KeyEvent.VK_LEFT:
+                case KeyEvent.VK_UP:
+                    selectedIndex--;
+                    if (selectedIndex < 0) {
+                        selectedIndex = segments.length - 1;
+                    }
+                    requestRepaint();
+                    break;
+                case KeyEvent.VK_HOME:
+                    selectedIndex = 0;
+                    requestRepaint();
+                    break;
+                case KeyEvent.VK_END:
+                    selectedIndex = segments.length - 1;
+                    requestRepaint();
+                    break;
+                default:
+                    int mods = e.getModifiersEx();
+                    for (int x = 0; x < stopEvents.length; x++) {
+                        if (stopEvents[x].getKeyCode() == code &&
+                                (stopEvents[x].getModifiers() & mods) == stopEvents[x].getModifiers()) {
+                            releaseUI(false);
+                            consumeEvent = false;
+                            break;
+                        }
+                    }
+                    for (int x = 0; x < confirmEvents.length; x++) {
+                        if (confirmEvents[x].getKeyCode() == code &&
+                                (confirmEvents[x].getModifiers() & mods) == confirmEvents[x].getModifiers()) {
+                            releaseUI(true);
+                            break;
+                        }
+                    }
+            }
+            if (consumeEvent) {
+                e.consume();
+            }
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+            e.consume();
+        }
+
+        // **************************************************************************
+        // MouseListener and MouseMotionListener implementation
+        // **************************************************************************
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                return;
+            }
+            e.consume();
+            int position = editorPane.viewToModel(e.getPoint());
+            if (e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON1) {
+                if (position < 0) {
+                    return;
+                }
+                if (mousedIndex != -1) {
+                    selectedIndex = mousedIndex;
+                    releaseUI(true);
+                    return;
+                }
+            }
+            try {
+                int line = Utilities.getLineOffset((BaseDocument) doc, position) + 1;
+                if (line < startLine || line > endLine) {
+                    releaseUI(false);
+                    return;
+                }
+            } catch (BadLocationException ex) {
+            }
+        }
+
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            e.consume();
+            int position = editorPane.viewToModel(e.getPoint());
+            int newIndex = -1;
+            if (position >= 0) {
+                for (int x = 0; x < segments.length; x++) {
+                    int start = segments[x].getStartOffset();
+                    int end = segments[x].getEndOffset();
+                    if (position >= start && position <= end) {
+                        newIndex = x;
+                        break;
+                    }
+                } // for
+            } // if
+            if (newIndex != mousedIndex) {
+                if (newIndex == -1) {
+                    editorPane.setCursor(arrowCursor);
+                } else {
+                    editorPane.setCursor(handCursor);
+                }
+                mousedIndex = newIndex;
+                requestRepaint();
+            }
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            e.consume();
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            e.consume();
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+            e.consume();
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+            e.consume();
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            e.consume();
+        }
+
+        // **************************************************************************
+        // FocusListener implementation
+        // **************************************************************************
+
+        @Override
+        public void focusGained(FocusEvent e) {
+            editorPane.getCaret().setVisible(false);
+        }
+
+        @Override
+        public void focusLost(FocusEvent e) {
+        }
+
+    }
 
     static class MethodChooserHighlightsLayerFactory implements HighlightsLayerFactory {
 

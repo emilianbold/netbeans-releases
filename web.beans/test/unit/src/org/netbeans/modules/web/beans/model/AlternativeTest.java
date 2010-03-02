@@ -731,7 +731,7 @@ public class AlternativeTest extends CommonTestCase {
         String name = injectable.getSimpleName().toString();
         
         assertEquals( "myField1", name );
-        
+
         Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
         Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
         

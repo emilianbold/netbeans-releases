@@ -53,8 +53,9 @@ import org.openide.ErrorManager;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
@@ -89,9 +90,7 @@ public class GsfDataNode extends DataNode {
             List<Action> actions = new ArrayList<Action>();
 
             try {
-                FileObject fo =
-                    Repository.getDefault().getDefaultFileSystem()
-                              .findResource("Loaders/" + mimeType + "/Actions"); // NOI18N
+                FileObject fo = FileUtil.getConfigFile("Loaders/" + mimeType + "/Actions"); // NOI18N
 
                 if (fo != null) {
                     DataFolder df = DataFolder.findFolder(fo);

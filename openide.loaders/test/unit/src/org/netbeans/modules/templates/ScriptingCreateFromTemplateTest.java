@@ -51,6 +51,7 @@ import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -70,10 +71,10 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
-        MockServices.setServices(SimpleLoader.class);
+        MockLookup.setInstances(new SimpleLoader());
     }
 
-    public void testCreateFromTemplateEndcodingProperty() throws Exception {
+    public void testCreateFromTemplateEncodingProperty() throws Exception {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject fo = FileUtil.createData(root, "simpleObject.txt");
         OutputStream os = fo.getOutputStream();
@@ -86,13 +87,20 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(root, "target"));
         
         Map<String,String> parameters = Collections.emptyMap();
-        DataObject inst = obj.createFromTemplate(folder, "complex", parameters);
+        DataObject inst;
+        ClassLoader oldLoader = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader().getParent());
+        try {
+            inst = obj.createFromTemplate(folder, "complex", parameters);
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldLoader);
+        }
         
         FileObject instFO = inst.getPrimaryFile();
         
         Charset targetEnc = FileEncodingQuery.getEncoding(instFO);
         assertNotNull("Template encoding is null", targetEnc);
-        assertEquals("Encoding in template doesn't match", targetEnc.name(), readFile(instFO));
+        assertEquals("Encoding in template doesn't match", targetEnc.name(), instFO.asText());
     }
     
     //fix for this test was rolled back because of issue #120865
@@ -116,14 +124,7 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         assertTrue(TestEditorKit.createDefaultDocumentCalled);
         
         String exp = "test";
-        assertEquals(exp, readFile(inst.getPrimaryFile()));
-    }
-    
-    private static String readFile(FileObject fo) throws IOException {
-        byte[] arr = new byte[(int)fo.getSize()];
-        int len = fo.getInputStream().read(arr);
-        assertEquals("Fully read", arr.length, len);
-        return new String(arr);
+        assertEquals(exp, inst.getPrimaryFile().asText());
     }
     
     public static final class SimpleLoader extends MultiFileLoader {

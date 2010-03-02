@@ -75,5 +75,15 @@ public class CallbackHandlerConfigurationImpl extends ProprietarySecurityPolicyC
     public String getTimestampTimeout() {
         return getAttribute(ProprietarySecurityPolicyAttribute.TIMESTAMPTIMEOUT);
     }
+
+    @Override
+    public void setIterationsForPDK(String iterations) {
+        setAttribute(ITERATIONS, ProprietarySecurityPolicyAttribute.ITERATIONSFORPDK, iterations);
+    }
+
+    @Override
+    public String getIterationsForPDK() {
+        return getAttribute(ProprietarySecurityPolicyAttribute.ITERATIONSFORPDK);
+    }
     
 }

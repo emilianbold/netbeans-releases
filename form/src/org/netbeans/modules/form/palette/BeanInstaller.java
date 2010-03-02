@@ -110,6 +110,7 @@ public final class BeanInstaller {
 
             final FileObject fo = dobj.getPrimaryFile();            
             JavaClassHandler handler = new JavaClassHandler() {
+                @Override
                 public void handle(String className, String problem) {
                     if (problem == null) {
                         ClassSource classSource = 
@@ -131,23 +132,23 @@ public final class BeanInstaller {
         
         if (unableToInstall.size() > 0) {
             Iterator iter = unableToInstall.iterator();
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             while (iter.hasNext()) {
-                sb.append(iter.next()+", "); // NOI18N
+                sb.append(iter.next()).append(", "); // NOI18N
             }
             sb.delete(sb.length()-2, sb.length());
             String messageFormat = PaletteUtils.getBundleString("MSG_cannotInstallBeans"); // NOI18N
             String message = MessageFormat.format(messageFormat, new Object[] {sb.toString()});
             NotifyDescriptor nd = new NotifyDescriptor.Message(message);
             DialogDisplayer.getDefault().notify(nd);
-            if (beans.size() == 0) return;
+            if (beans.isEmpty()) return;
         }
 
         String message = null;
-        if (beans.size() == 0) {
+        if (beans.isEmpty()) {
             message = PaletteUtils.getBundleString("MSG_noBeansUnderNodes"); // NOI18N
         }
-        if (noBeans.size() != 0) {
+        if (!noBeans.isEmpty()) {
             Iterator<String> iter = noBeans.iterator();
             while (iter.hasNext()) {
                 String className = iter.next();
@@ -165,7 +166,7 @@ public final class BeanInstaller {
             NotifyDescriptor nd = new NotifyDescriptor.Message(message);
             DialogDisplayer.getDefault().notify(nd);
         }
-        if (beans.size() == 0) return;
+        if (beans.isEmpty()) return;
 
         String category = CategorySelector.selectCategory();
         if (category == null)
@@ -176,6 +177,7 @@ public final class BeanInstaller {
         try {
             FileUtil.runAtomicAction(
             new FileSystem.AtomicAction () {
+                @Override
                 public void run() {
                     Iterator it = beans.iterator();
                     while (it.hasNext()) {
@@ -294,6 +296,7 @@ public final class BeanInstaller {
         try {
             FileUtil.runAtomicAction(
             new FileSystem.AtomicAction () {
+                @Override
                 public void run() {
                     for (int i=0; i < beans.length; i++)
                         try {
@@ -316,6 +319,7 @@ public final class BeanInstaller {
      * be JavaBeans. */
     private static void scanFolderForBeans(FileObject folder, final Map<String,ItemInfo> beans, final ClassSource.Entry root) {
         JavaClassHandler handler = new JavaClassHandler() {
+            @Override
             public void handle(String className, String problem) {
                 if (problem == null) {
                     ItemInfo ii = new ItemInfo();
@@ -359,6 +363,7 @@ public final class BeanInstaller {
     public static String findJavaBeanName(FileObject file) {
         final String[] fqn = new String[1];
         scanFileObject(null, file, new JavaClassHandler() {
+            @Override
             public void handle(String className, String problem) {
                 if (problem == null) {
                     fqn[0] = className;
@@ -372,9 +377,11 @@ public final class BeanInstaller {
         try {
             JavaSource js = JavaSource.forFileObject(javaFO);
             js.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() {
                 }
 
+                @Override
                 public void run(CompilationController ctrl) throws Exception {
                     ctrl.toPhase(Phase.ELEMENTS_RESOLVED);
                     TypeElement clazz = findClass(ctrl, javaFO.getName());
@@ -492,6 +499,7 @@ public final class BeanInstaller {
         String classname;
         ClassSource.Entry entry;
 
+        @Override
         public int compareTo(ItemInfo ii) {
             int i;
             i = classname.lastIndexOf('.');

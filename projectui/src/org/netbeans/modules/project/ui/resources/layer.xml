@@ -225,9 +225,9 @@ made subject to such option by the copyright holder.
         </folder>
         
         <folder name="Privileged">
-            <!-- overwrite definition of privileged Folder from core/ui -->
 	    <file name="Folder.shadow">
                 <attr name="originalFile" stringvalue="Templates/Other/Folder"/>
+                <attr name="position" intvalue="2000"/>
             </file>
 	</folder>
 
@@ -246,7 +246,9 @@ made subject to such option by the copyright holder.
     <folder name="Windows2">
         
         <folder name="Modes">
-            <file name="explorer.wsmode" url="explorer-override.wsmode"/>
+            <file name="explorer.wsmode" url="explorer-override.wsmode">
+                <attr name="weight" intvalue="100"/><!-- override core.ui -->
+            </file>
             <folder name="explorer">            
                 <file name="projectTabLogical_tc.wstcref" url="projectsLogical.wstcref">
                     <attr name="position" intvalue="100"/>

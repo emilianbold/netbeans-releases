@@ -96,7 +96,7 @@ public class ZendOptionsPanelController extends OptionsPanelController implement
         }
 
         // everything ok
-        zendOptionsPanel.setError(" "); // NOI18N
+        zendOptionsPanel.clearError();
         return true;
     }
 

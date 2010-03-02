@@ -79,6 +79,11 @@ public class FortranLexerPerformanceTestCase extends NbTestCase {
     protected void tearDown() throws java.lang.Exception {
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     protected InputAttributes getLexerAttributes() {
         InputAttributes lexerAttrs = new InputAttributes();
         lexerAttrs.setValue(FortranTokenId.languageFortran(), CndLexerUtilities.FORTRAN_MAXIMUM_TEXT_WIDTH, 132, true);

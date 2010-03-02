@@ -47,12 +47,14 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
+import org.netbeans.modules.ruby.rubyproject.bundler.BundlerSupport;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  * Base for Ruby project's logical view providers.
@@ -64,6 +66,7 @@ public abstract class RubyBaseLogicalViewProvider implements LogicalViewProvider
     private final PropertyEvaluator evaluator;
     private final ReferenceHelper resolver;
     private List<ChangeListener> changeListeners;
+    protected final BundlerSupport bundlerSupport;
 
     protected RubyBaseLogicalViewProvider(
             final RubyBaseProject project,
@@ -77,7 +80,7 @@ public abstract class RubyBaseLogicalViewProvider implements LogicalViewProvider
         this.evaluator = evaluator;
         assert evaluator != null;
         this.resolver = resolver;
-
+        this.bundlerSupport = new BundlerSupport(project);
     }
 
     public final RubyBaseProject getProject() {

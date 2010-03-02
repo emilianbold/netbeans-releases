@@ -152,6 +152,7 @@ class PaletteItemDataObject extends MultiDataObject implements CookieSet.Factory
         return new ItemNode();
     }
 
+    @Override
     public <T extends Node.Cookie> T createCookie(Class<T> cookieClass) {
         if (PaletteItem.class.equals(cookieClass)) {
             if (!fileLoaded)
@@ -218,7 +219,7 @@ class PaletteItemDataObject extends MultiDataObject implements CookieSet.Factory
         FileObject itemFile = folder.createData(fileName,
                                                 PaletteItemDataLoader.ITEM_EXT);
 
-        StringBuffer buff = new StringBuffer(512);
+        StringBuilder buff = new StringBuilder(512);
         buff.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"); // NOI18N
         buff.append("<palette_item version=\"1.0\">\n"); // NOI18N
         buff.append("  <component classname=\""); // NOI18N
@@ -270,6 +271,7 @@ class PaletteItemDataObject extends MultiDataObject implements CookieSet.Factory
         }
         
 
+        @Override
         protected MultiDataObject createMultiObject(FileObject primaryFile)
             throws DataObjectExistsException, IOException
         {

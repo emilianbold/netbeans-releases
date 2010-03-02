@@ -59,6 +59,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
+import org.openide.awt.AcceleratorBinding;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
@@ -71,6 +72,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.ServiceProvider;
@@ -334,18 +336,31 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
     }
 
     public KeyStroke[] getKeyStrokesForAction(Action a) {
-        FileObject definingFile = (FileObject) a.getValue("definingFile"); // cf. o.o.awt.Toolbar.setAccelerator
-        if (definingFile == null) {
-            LOG.log(Level.FINE, "no defining file known for {0}", id(a));
-            return new KeyStroke[0];
-        }
+        return new KeyStroke[0];
+    }
+
+    KeyStroke keyStrokeForAction(Action a, FileObject definingFile) {
         String id = idForFile(definingFile);
         bindings();
         action2Id.put(a, id);
         KeyStroke k = id2Stroke.get(id);
         LOG.log(Level.FINE, "found keystroke {0} for {1} with ID {2}", new Object[] {k, id(a), id});
-        return k != null ? new KeyStroke[] {k} : new KeyStroke[0];
+        return k;
     }
+
+    @ServiceProvider(service=AcceleratorBinding.class)
+    public static final class AcceleratorBindingImpl extends AcceleratorBinding {
+        protected @Override KeyStroke keyStrokeForAction(Action action, FileObject definingFile) {
+            Keymap km = Lookup.getDefault().lookup(Keymap.class);
+            if (km instanceof NbKeymap) {
+                return ((NbKeymap) km).keyStrokeForAction(action, definingFile);
+            } else {
+                LOG.log(Level.WARNING, "unexpected keymap: {0}", km);
+                return null;
+            }
+        }
+    }
+
     /**
      * Traverses shadow files to origin.
      * Returns impl class name if that is obvious (common for SystemAction's);
@@ -366,7 +381,7 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
                         f = ((DataShadow) d).getOriginal().getPrimaryFile();
                     }
                 } catch (DataObjectNotFoundException x) {
-                    LOG.log(Level.INFO, f.getPath(), x);
+                    LOG.log(Level.FINE, f.getPath(), x);
                 }
             }
         }

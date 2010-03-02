@@ -108,6 +108,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
         osFamily = hostInfo == null ? OSFamily.UNKNOWN : hostInfo.getOSFamily();
     }
 
+    @Override
     protected void create() throws Throwable {
         File pidFileFile = null;
         File envFileFile = null;
@@ -173,7 +174,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
             pb.directory(workingDirectory);
             pb.redirectErrorStream(true);
 
-            LOG.log(Level.FINEST, "Command: " + command); // NOI18N
+            LOG.log(Level.FINEST, "Command: %s", command); // NOI18N
 
             final MacroMap env = info.getEnvironment().clone();
 
@@ -222,14 +223,14 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 boolean exists = false;
 
                 while (attempts > 0) {
-                    exists = HostInfoUtils.fileExists(ExecutionEnvironmentFactory.getLocal(), shFileFile.getPath()) &
-                            HostInfoUtils.fileExists(ExecutionEnvironmentFactory.getLocal(), envFileFile.getPath());
+                    exists = HostInfoUtils.fileExists(ExecutionEnvironmentFactory.getLocal(), shFileFile.getPath())
+                            & HostInfoUtils.fileExists(ExecutionEnvironmentFactory.getLocal(), envFileFile.getPath());
 
                     if (exists) {
                         break;
                     }
 
-                    LOG.warning("env or sh file is not available yet... waiting [" + attempts + "]"); // NOI18N
+                    LOG.log(Level.WARNING, "env or sh file is not available yet... waiting [%d]", attempts); // NOI18N
                     Thread.sleep(50);
                     attempts--;
                 }

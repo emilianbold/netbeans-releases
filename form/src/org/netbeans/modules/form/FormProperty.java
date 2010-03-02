@@ -226,6 +226,7 @@ public abstract class FormProperty extends Node.Property {
         if (!FormLAF.inLAFBlock() && (propertyContext.getFormModel() != null)) {
             final Exception[] ex = new Exception[1];
             FormLAF.executeWithLookAndFeel(propertyContext.getFormModel(), new Runnable() {
+                @Override
                 public void run() {
                     try {
                         setTargetValue(value);
@@ -257,6 +258,7 @@ public abstract class FormProperty extends Node.Property {
      * @throws java.lang.IllegalAccessException when there is an access problem.
      * @throws java.lang.reflect.InvocationTargetException when there is an invocation problem.
      */
+    @Override
     public Object getValue() throws IllegalAccessException,
                                     InvocationTargetException {
 //        if (!canRead())
@@ -276,6 +278,7 @@ public abstract class FormProperty extends Node.Property {
      * @throws java.lang.IllegalArgumentException when the specified value is not valid.
      * @throws java.lang.reflect.InvocationTargetException when there is an invocation problem.
      */
+    @Override
     public void setValue(Object value) throws IllegalAccessException,
                                               IllegalArgumentException,
                                               InvocationTargetException
@@ -563,12 +566,14 @@ public abstract class FormProperty extends Node.Property {
 
     /** Tests whether the property is readable.
      */
+    @Override
     public boolean canRead() {
         return (propType & NO_READ_PROP) == 0;
     }
 
     /** Tests whether the property is writable.
      */
+    @Override
     public boolean canWrite() {
         return (propType & NO_WRITE_PROP) == 0;
     }
@@ -1221,6 +1226,7 @@ public abstract class FormProperty extends Node.Property {
     }
 
     public static final Filter CHANGED_PROPERTY_FILTER = new Filter() {
+        @Override
         public boolean accept(FormProperty property) {
             return property.isChanged();
         }

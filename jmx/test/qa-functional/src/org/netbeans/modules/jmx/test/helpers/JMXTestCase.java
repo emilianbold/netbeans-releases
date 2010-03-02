@@ -97,6 +97,12 @@ import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
  */
 public abstract class JMXTestCase extends JellyTestCase {
 
+    @Override
+    protected void tearDown() throws java.lang.Exception {
+        waitNoEvent(2000);
+        super.tearDown();
+    }
+
     /** Creates a new instance of JMXTestCase */
     public JMXTestCase(String name) {
         super(name);
@@ -128,7 +134,7 @@ public abstract class JMXTestCase extends JellyTestCase {
             String type,
             String name) throws IOException {
         NewProjectWizardOperator project = NewProjectWizardOperator.invoke();
-        project.selectCategory(category);
+        project.selectCategory(category);       
         project.selectProject(type);
         project.next();
         NewJavaProjectNameLocationStepOperator projectName =
@@ -343,11 +349,12 @@ public abstract class JMXTestCase extends JellyTestCase {
                 }
                 // Non default operation return type
                 if (operation.getReturnType() != null) {
-                    jto.clickForEdit(rowIndex,
-                            jto.findColumn(OPERATION_RETURN_TYPE_COLUMN_NAME));
-                    jtmd.editCell(jto, rowIndex,
-                            jto.findColumn(OPERATION_RETURN_TYPE_COLUMN_NAME),
-                            operation.getReturnType());
+//                    jto.clickForEdit(rowIndex,
+//                            jto.findColumn(OPERATION_RETURN_TYPE_COLUMN_NAME));
+//                    jtmd.editCell(jto, rowIndex,
+//                            jto.findColumn(OPERATION_RETURN_TYPE_COLUMN_NAME),
+//                            operation.getReturnType());
+                    jto.setValueAt(operation.getReturnType(), rowIndex, jto.findColumn(OPERATION_RETURN_TYPE_COLUMN_NAME));
                 }
                 // Non default operation description
                 if (operation.getDescription() != null) {
@@ -489,10 +496,19 @@ public abstract class JMXTestCase extends JellyTestCase {
                 giveAPIFocus(jto);
 
                 // Non default notification class name
-                if (notification.getClassName() != null) {
-                    jtmd.editCell(jto, rowIndex,
-                            jto.findColumn(NOTIFICATION_CLASS_COLUMN_NAME),
-                            notification.getClassName());
+                String classname = notification.getClassName();
+                if (classname != null) {
+//                    jtmd.editCell(jto, rowIndex,
+//                            jto.findColumn(NOTIFICATION_CLASS_COLUMN_NAME),
+//                            notification.getClassName());
+                    int columnIndex = jto.findColumn(NOTIFICATION_CLASS_COLUMN_NAME);
+                    if (classname.equals("javax.management.AttributeChangeNotification")) {
+                        jto.clickOnCell(rowIndex, columnIndex);
+                        JComboBoxOperator jcbo = new JComboBoxOperator(ndo, new NameComponentChooser("notifClassBox"));
+                        jcbo.selectItem("javax.management.AttributeChangeNotification");
+                    } else {
+                        jto.setValueAt(notification.getClassName(), rowIndex, columnIndex);
+                    }
                 }
                 // Non default notification description
                 if (notification.getDescription() != null) {

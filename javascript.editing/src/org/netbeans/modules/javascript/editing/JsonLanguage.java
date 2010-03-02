@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 
 /**
  * Configuration for JSON
@@ -60,6 +61,7 @@ import org.netbeans.modules.parsing.spi.Parser;
  * @author Tor Norbye
  */
 @LanguageRegistration(mimeType="text/x-json") //NOI18N
+@PathRecognizerRegistration(mimeTypes="text/x-json", libraryPathIds=JsClassPathProvider.BOOT_CP, binaryLibraryPathIds={})
 public class JsonLanguage extends DefaultLanguageConfig {
 
     public JsonLanguage() {

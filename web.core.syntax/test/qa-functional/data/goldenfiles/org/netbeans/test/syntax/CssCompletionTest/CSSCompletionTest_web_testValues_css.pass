@@ -172,7 +172,7 @@ color threedface
 color threedhighlight
 color threedlightshadow
 color threedshadow
-border-bottom-color transparent
+border-bottom-color transparen
 color white
 color window
 color windowframe

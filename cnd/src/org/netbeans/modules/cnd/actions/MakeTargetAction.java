@@ -43,14 +43,21 @@ package org.netbeans.modules.cnd.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
+import org.netbeans.modules.cnd.builds.MakefileTargetProvider;
 import org.netbeans.modules.cnd.builds.TargetEditor;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
@@ -100,8 +107,25 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
                     return null;
                 }
 
-                Node activedNode = activeNodes[0];
-                MakeExecSupport mes = activedNode.getCookie(MakeExecSupport.class);
+                Node activeNode = activeNodes[0];
+
+                MakefileTargetProvider targetProvider = activeNode.getCookie(MakefileTargetProvider.class);
+                if (targetProvider != null) {
+                    try {
+                        List<String> targets = new ArrayList<String>(targetProvider.getPreferredTargets());
+                        Collections.sort(targets);
+                        for (String target : targets) {
+                            popup.add(new PopupItemTarget(activeNode, target, -1));
+                        }
+                        if (!targets.isEmpty()) {
+                            popup.add(new JSeparator());
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+
+                MakeExecSupport mes = activeNode.getCookie(MakeExecSupport.class);
                 if (mes != null) {
                     String[] targets = mes.getMakeTargetsArray();
 
@@ -109,12 +133,12 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
                     //if (targets.length > 0)
                     //popup.add(new JSeparator());
                     for (int i = 0; i < targets.length; i++) {
-                        popup.add(new PopupItemTarget(activedNode, targets[i], -1));
+                        popup.add(new PopupItemTarget(activeNode, targets[i], -1));
                     }
                     if (targets.length > 0) {
                         popup.add(new JSeparator());
                     }
-                    popup.add(new PopupItemAddTarget(activedNode));
+                    popup.add(new PopupItemAddTarget(activeNode));
                 }
                 initialized = true;
             }

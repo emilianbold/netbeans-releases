@@ -49,9 +49,9 @@ import javax.swing.event.HyperlinkListener;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiModification;
-import org.netbeans.modules.versioning.util.VCSKenaiSupport.VCSKenaiNotification;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.VCSKenaiModification;
+import org.netbeans.modules.versioning.util.VCSKenaiAccessor.VCSKenaiNotification;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
 
@@ -59,10 +59,10 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotificationListener {
+public class KenaiNotificationListener extends VCSKenaiAccessor.KenaiNotificationListener {
 
     protected void handleVCSNotification(final VCSKenaiNotification notification) {
-        if(notification.getService() != VCSKenaiSupport.Service.VCS_HG) {
+        if(notification.getService() != VCSKenaiAccessor.Service.VCS_HG) {
             Mercurial.LOG.fine("rejecting VCS notification " + notification + " because not from hg"); // NOI18N
             return;
         }
@@ -111,7 +111,7 @@ public class KenaiNotificationListener extends VCSKenaiSupport.KenaiNotification
                 KenaiNotificationListener.class,
                 "MSG_NotificationBubble_Description", 
                 getFileNames(files),
-                HgKenaiSupport.getInstance().getRevisionUrl(url, revision)); //NOI18N
+                HgKenaiAccessor.getInstance().getRevisionUrl(url, revision)); //NOI18N
         pane.setText(text);
 
         pane.addHyperlinkListener(new HyperlinkListener() {

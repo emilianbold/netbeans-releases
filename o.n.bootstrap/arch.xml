@@ -398,11 +398,11 @@ made subject to such option by the copyright holder.
             in fact it is deprecated. The preferred way is to directly show
             dialog using <code>DialogDisplayer</code>.
         </api>
-        <api group="property" category="devel" name="netbeans.exception.alert.min.level" type="export">
+        <api group="systemproperty" category="devel" name="netbeans.exception.alert.min.level" type="export">
             Minimum integer level that triggers the blinking icon signaling an
             exceptional state. By default 900 - e.g. WARNING.
         </api>
-        <api group="property" category="devel" name="netbeans.exception.report.min.level" type="export">
+        <api group="systemproperty" category="devel" name="netbeans.exception.report.min.level" type="export">
             Minimum integer level that triggers the dialog with exception.
             By default 900 with assertions on and 1001 without them.
         </api>
@@ -471,7 +471,7 @@ made subject to such option by the copyright holder.
                 </api>
             </li>
             <li>
-                <api type="export" group="property" name="netbeans.mainclass" category="friend">
+                <api type="export" group="systemproperty" name="netbeans.mainclass" category="friend">
                     Main Java class for bootstrap code to start (currently <code>org.netbeans.core.startup.Main</code>).
                     Might be used by alternate launchers.
                 </api>
@@ -485,23 +485,23 @@ made subject to such option by the copyright holder.
                 </api>
             </li>
             <li>
-                <api type="export" group="property" name="netbeans.home" category="devel">
+                <api type="export" group="systemproperty" name="netbeans.home" category="devel">
                     NetBeans installation directory (where the launcher is).
                 </api>
             </li>
             <li>
-                <api type="export" group="property" name="netbeans.user" category="devel">
+                <api type="export" group="systemproperty" name="netbeans.user" category="devel">
                     NetBeans user directory.
                 </api>
             </li>
             <li>
-                <api type="export" group="property" name="netbeans.dirs" category="friend">
+                <api type="export" group="systemproperty" name="netbeans.dirs" category="friend">
                     Additional secondary NetBeans installation directories, if <a
                     href="http://www.netbeans.org/issues/show_bug.cgi?id=27151">applicable</a>.
                 </api>
             </li>
             <li>
-                <api type="export" group="property" name="netbeans.system_http_proxy" category="devel">
+                <api type="export" group="systemproperty" name="netbeans.system_http_proxy" category="devel">
                     System proxy setting in the format of hostname:port.  The
                     launcher does its best to detect the OS/desktop HTTP proxy
                     setting.  There is no guarantee that it succeeds.  The property
@@ -509,7 +509,7 @@ made subject to such option by the copyright holder.
                 </api>
             </li>
             <li>
-                <api type="export" group="property" name="netbeans.system_http_non_proxy_hosts" category="devel">
+                <api type="export" group="systemproperty" name="netbeans.system_http_non_proxy_hosts" category="devel">
                     List of addresses that are not accessed through proxy.  The
                     launcher attempts to detect the OS/desktop HTTP proxy
                     setting.  There is no guarantee that it succeeds.  The property
@@ -518,7 +518,7 @@ made subject to such option by the copyright holder.
                 </api>
             </li>
             <li>
-                <api type="export" group="property" name="netbeans.classpath" category="friend">
+                <api type="export" group="systemproperty" name="netbeans.classpath" category="friend">
                     Classpath to prepend to core loader (normally just
                     <samp>lib/*.jar</samp>). Possibly useful for testing
                     infrastructure etc.
@@ -530,7 +530,7 @@ made subject to such option by the copyright holder.
                 </api>
             </li>
             <li>
-                <api name="netbeans.importclass" category="friend" group="property" type="export" >
+                <api name="netbeans.importclass" category="friend" group="systemproperty" type="export" >
                     There is a special support for importing the settings from previous
                     versions. As only the product itself knows about what to import and
                     where this cannot be done directly in the launcher, but we need at 
@@ -551,7 +551,7 @@ made subject to such option by the copyright holder.
                     check should be performed, no other code is supposed to realy on 
                     this file.
                 </api>
-                <api name="netbeans.accept_license_class" category="friend" group="property" type="export" >
+                <api name="netbeans.accept_license_class" category="friend" group="systemproperty" type="export" >
                     Before first usage of IDE user must accept license. If user does not install IDE
                     by installer (user must accept license during installation) user must accept license
                     during IDE first start.
@@ -565,14 +565,14 @@ made subject to such option by the copyright holder.
                 </api>
              </li>
             <li>
-                <api type="export" group="property" name="netbeans.logger.console" category="friend">
+                <api type="export" group="systemproperty" name="netbeans.logger.console" category="friend">
                     <p>
                         Controls whether to log messages to the console, or just to the log file.
                     </p>
                 </api>
             </li>
             <li>
-                <api type="export" group="property" name="org.netbeans.CLIHandler" category="private">
+                <api type="export" group="systemproperty" name="org.netbeans.CLIHandler" category="private">
                     <p>
                         Setting this property to less than zero value enables logging of what is
                         going on in the CLIHandler - e.g. in the code that locks user directory and
@@ -582,7 +582,7 @@ made subject to such option by the copyright holder.
                 </api>
             </li>
             <li>
-                <api type="export" group="property" name="org.netbeans.core.systemfilesystem.custom" category="friend">
+                <api type="export" group="systemproperty" name="org.netbeans.core.systemfilesystem.custom" category="friend">
                     <p>
                         Contains class name of a class that can serve as provider of the writable layer of the
                         system file system. The class must be a subclass of 

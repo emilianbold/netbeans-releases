@@ -46,8 +46,8 @@ import org.openide.util.Mutex;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
@@ -78,6 +78,7 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
      * @param file a file to check for sharability (may or may not yet exist)
      * @return one of {@link org.netbeans.api.queries.SharabilityQuery}'s constants
      */
+    @Override
     public int getSharability(final File file) {
         //ConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
         //if (configurationDescriptor != null && configurationDescriptor.getModified()) {
@@ -87,6 +88,7 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
         //}
         Integer ret = ProjectManager.mutex().readAccess(new Mutex.Action<Integer>() {
 
+            @Override
             public Integer run() {
                 synchronized (MakeSharabilityQuery.this) {
                     if (IGNORE_BINARIES && CndFileVisibilityQuery.getDefault().isIgnored(file))  {
@@ -103,37 +105,37 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
                         return Integer.valueOf(SharabilityQuery.UNKNOWN);
                     }
                     String subString = file.getPath().substring(baseDirLength + 1);
-                    if (subString.equals("nbproject")) // NOI18N
+                    if (subString.equals(MakeConfiguration.NBPROJECT_FOLDER)) // NOI18N
                     {
                         return Integer.valueOf(SharabilityQuery.MIXED);
                     } else if (subString.equals("Makefile")) // NOI18N
                     {
                         return Integer.valueOf(SharabilityQuery.SHARABLE);
-                    } else if (subString.equals("nbproject" + File.separator + "configurations.xml")) // NOI18N
+                    } else if (subString.equals(MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.CONFIGURATIONS_XML)) // NOI18N
                     {
                         return Integer.valueOf(SharabilityQuery.SHARABLE);
-                    } else if (subString.equals("nbproject" + File.separator + "private")) // NOI18N
+                    } else if (subString.equals(MakeConfiguration.NBPROJECT_FOLDER + File.separator + "private")) // NOI18N
                     {
                         return Integer.valueOf(privateShared ? SharabilityQuery.SHARABLE : SharabilityQuery.NOT_SHARABLE); // see IZ 121796, IZ 109580 and IZ 109573
-                    } else if (subString.equals("nbproject" + File.separator + "project.properties")) // NOI18N
+                    } else if (subString.equals(MakeConfiguration.NBPROJECT_FOLDER + File.separator + "project.properties")) // NOI18N
                     {
                         return Integer.valueOf(SharabilityQuery.SHARABLE);
-                    } else if (subString.equals("nbproject" + File.separator + "project.xml")) // NOI18N
+                    } else if (subString.equals(MakeConfiguration.NBPROJECT_FOLDER + File.separator + MakeConfiguration.PROJECT_XML)) // NOI18N
                     {
                         return Integer.valueOf(SharabilityQuery.SHARABLE);
-                    } else if (subString.startsWith("nbproject" + File.separator + "Makefile-")) // NOI18N
+                    } else if (subString.startsWith(MakeConfiguration.NBPROJECT_FOLDER + File.separator + "Makefile-")) // NOI18N
                     {
                         return Integer.valueOf(SharabilityQuery.SHARABLE);
-                    } else if (subString.startsWith("nbproject" + File.separator + "Package-")) // NOI18N
+                    } else if (subString.startsWith(MakeConfiguration.NBPROJECT_FOLDER + File.separator + "Package-")) // NOI18N
                     {
                         return Integer.valueOf(SharabilityQuery.SHARABLE);
-                    } else if (subString.startsWith("nbproject" + File.separator + "qt-")) // NOI18N
+                    } else if (subString.startsWith(MakeConfiguration.NBPROJECT_FOLDER + File.separator + "qt-")) // NOI18N
                     {
                         return Integer.valueOf(subString.endsWith(".pro")? SharabilityQuery.SHARABLE : SharabilityQuery.NOT_SHARABLE); // NOI18N
-                    } else if (subString.startsWith("build" + File.separator)) // NOI18N
+                    } else if (subString.startsWith(MakeConfiguration.BUILD_FOLDER + File.separator)) // NOI18N
                     {
                         return Integer.valueOf(SharabilityQuery.NOT_SHARABLE);
-                    } else if (subString.startsWith("dist" + File.separator)) // NOI18N
+                    } else if (subString.startsWith(MakeConfiguration.DIST_FOLDER + File.separator)) // NOI18N
                     {
                         return Integer.valueOf(SharabilityQuery.NOT_SHARABLE);
                     }

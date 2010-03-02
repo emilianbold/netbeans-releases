@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.mercurial.ui.commit;
 
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -60,6 +61,7 @@ import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,17 +80,20 @@ import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
-import org.netbeans.modules.mercurial.hooks.spi.HgHookContext;
-import org.netbeans.modules.mercurial.hooks.spi.HgHook;
+import org.netbeans.modules.versioning.hooks.HgHookContext;
+import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
+import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
 
 /**
@@ -152,6 +157,7 @@ public class CommitAction extends ContextAction {
         final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] {CommitTableModel.COLUMN_NAME_PATH });
 
         panel.setCommitTable(data);
+        data.setCommitPanel(panel);
 
         final JButton commitButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit"));
@@ -162,7 +168,7 @@ public class CommitAction extends ContextAction {
         cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_Cancel"));
         cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSD_Commit_Action_Cancel"));
 
-        DialogDescriptor dd = new DialogDescriptor(panel,
+        final DialogDescriptor dd = new DialogDescriptor(panel,
               org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_CommitDialog_Title", contentTitle), // NOI18N
               true,
               new Object[] {commitButton, cancelButton},
@@ -170,6 +176,27 @@ public class CommitAction extends ContextAction {
               DialogDescriptor.DEFAULT_ALIGN,
               new HelpCtx(CommitAction.class),
               null);
+        ActionListener al;
+        dd.setButtonListener(al = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dd.setClosingOptions(new Object[] {commitButton, cancelButton});
+                SaveCookie[] saveCookies = panel.getSaveCookies();
+                if (cancelButton == e.getSource()) {
+                    if (saveCookies.length > 0 && !SaveBeforeClosingDiffConfirmation.allSaved(saveCookies)) {
+                        dd.setClosingOptions(new Object[0]);
+                    }
+                    dd.setValue(cancelButton);
+                } else if (commitButton == e.getSource()) {
+                    if (saveCookies.length > 0 && !SaveBeforeCommitConfirmation.allSaved(saveCookies)) {
+                        dd.setClosingOptions(new Object[0]);
+                    } else if (!panel.canCommit()) {
+                        dd.setClosingOptions(new Object[0]);
+                    }
+                    dd.setValue(commitButton);
+                }
+            }
+        });
         computeNodes(data, panel, ctx, repository, cancelButton);
         commitButton.setEnabled(false);
         panel.addVersioningListener(new VersioningListener() {
@@ -192,10 +219,14 @@ public class CommitAction extends ContextAction {
         dialog.pack();
         dialog.setVisible(true);
 
-        if (dd.getValue() == commitButton) {
-
+        final String message = panel.getCommitMessage().trim();
+        if (!message.isEmpty()) {
+            HgModuleConfig.getDefault().setLastCommitMessage(message);
+        }
+        if (dd.getValue() == DialogDescriptor.CLOSED_OPTION) {
+            al.actionPerformed(new ActionEvent(cancelButton, ActionEvent.ACTION_PERFORMED, null));
+        } else if (dd.getValue() == commitButton) {
             final Map<HgFileNode, CommitOptions> commitFiles = data.getCommitFiles();
-            final String message = panel.getCommitMessage();
             final Map<File, Set<File>> rootFiles = HgUtils.sortUnderRepository(ctx, true);
             org.netbeans.modules.versioning.util.Utils.insert(HgModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
@@ -322,10 +353,10 @@ public class CommitAction extends ContextAction {
         }
 
         if (stickyTags.size() > 1) {
-            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_BRANCH, CommitTableModel.COLUMN_NAME_STATUS,
+            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_COMMIT, CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_BRANCH, CommitTableModel.COLUMN_NAME_STATUS,
                                                 CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
         } else {
-            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_STATUS,
+            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_COMMIT, CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_STATUS,
                                                 CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
         }
 
@@ -605,7 +636,11 @@ public class CommitAction extends ContextAction {
 
                 HgLogMessage tip = HgCommand.doTip(repository, logger);
 
-                context = new HgHookContext(hookFiles, msg, new HgHookContext.LogEntry(tip));
+                context = new HgHookContext(hookFiles, msg, new HgHookContext.LogEntry(
+                        tip.getMessage(),
+                        tip.getAuthor(),
+                        tip.getCSetShortID(),
+                        tip.getDate()));
                 for (HgHook hook : hooks) {
                     hook.afterCommit(context);
                 }

@@ -50,6 +50,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -59,7 +60,6 @@ import org.openide.filesystems.FileUtil;
  */
 public final class TestEntry {
     
-    private static final String JAR_NAME = "tests.jar"; // NOI18N
     /** Hardcoded location of testdistribution relatively to nb source root. */
     private static final String TEST_DIST_DIR = "nbbuild/build/testdist"; // NOI18N;
     private final String codeNameBase;
@@ -84,10 +84,9 @@ public final class TestEntry {
      * @return null when the file is not jarfile with tests
      */
     public static TestEntry get(File jarFile) {
-        // testtype/cluster/codenamebase/testsjar
-        String path = jarFile.getPath().replace(File.separatorChar,'/');
-        if (path.endsWith(JAR_NAME)) {
-            String tokens[] = path.split("/");
+        if (jarFile.getName().equals("tests.jar")) { // NOI18N
+            // testtype/cluster/codenamebase/tests.jar
+            String tokens[] = jarFile.getPath().split("[/\\\\]"); // NOI18N
             int len = tokens.length;
             if (len > 3 ) {
                String cnb = tokens[len - 2].replace('-','.') ;
@@ -142,8 +141,7 @@ public final class TestEntry {
             } 
         }
         Project prj = FileOwnerQuery.getOwner(FileUtil.toFileObject(prjDir));
-        if (prj != null) {
-            // ModuleSuite
+        if (prj != null && prj.getLookup().lookup(SuiteProject.class) != null) {
             SubprojectProvider subprojects = prj.getLookup().lookup(SubprojectProvider.class);
             if (subprojects != null) {
                 for (Project p : subprojects.getSubprojects()) {

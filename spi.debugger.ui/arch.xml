@@ -123,7 +123,7 @@ List of APIs:
 <li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeActionsProvider" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
 <li><api name="Meta-inf-debugger-DebuggerView-ID-org.netbeans.spi.viewmodel.NodeActionsProviderFilter" group="lookup" type="import" category="official" url="@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
 
-<li><api name="netbeans.debugger.models" group="property" type="import" category="private"/>Writes information about loading of models to console.</li>
+<li><api name="netbeans.debugger.models" group="systemproperty" type="import" category="private"/>Writes information about loading of models to console.</li>
 </ul>
 Registrations in standard Lookup:
 <ul>

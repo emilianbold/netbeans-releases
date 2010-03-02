@@ -162,7 +162,7 @@ public class InitMessage extends DbgpMessage {
     }
 
     private void setId( DebugSession session ) {
-        session.setId( this );
+        session.initConnection( this );
     }
 
 }

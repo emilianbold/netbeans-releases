@@ -58,10 +58,11 @@ public class ScriptingMeasureMenusTest {
         System.setProperty("suitename", ScriptingMeasureMenusTest.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness Scripting Menus suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingProjectNodePopupTest.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+        .addTest(ScriptingProjectNodePopupTest.class)
         .addTest(ScriptingNodePopupTest.class)
         .addTest(EditorMenuPopupTest.class)
-        .enableModules(".*").clusters("websvccommon[0-9]|php[0-9]|ruby[0-9]|webcommon[0-9]|gsf[0-9]|enterprise[0-9]").reuseUserDir(true)));
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
         
         return suite;
     }

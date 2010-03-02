@@ -45,6 +45,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.rest.client.ClientJavaSourceHelper;
+import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.text.ActiveEditorDrop;
@@ -64,9 +65,8 @@ public class ResourceToEditorDrop implements ActiveEditorDrop {
     @Override
     public boolean handleTransfer(JTextComponent targetComponent) {
         Object mimeType = targetComponent.getDocument().getProperty("mimeType"); //NOI18N
-        ResourceUriProvider resourceUriProvider = resourceNode.getLookup().lookup(ResourceUriProvider.class);
-        if (resourceUriProvider != null &&
-            resourceUriProvider.getResourceUri().length() > 0 &&
+        RestServiceDescription serviceDescription = resourceNode.getLookup().lookup(RestServiceDescription.class);
+        if (serviceDescription != null &&
             mimeType!=null &&
             "text/x-java".equals(mimeType)) { //NOI18N
             
@@ -74,7 +74,7 @@ public class ResourceToEditorDrop implements ActiveEditorDrop {
                 FileObject targetFo = NbEditorUtilities.getFileObject(targetComponent.getDocument());
                 if (targetFo != null) {
                     // Generate Jersey Client
-                    ClientJavaSourceHelper.generateJerseyClient(resourceNode, targetFo);
+                    ClientJavaSourceHelper.generateJerseyClient(resourceNode, targetFo, serviceDescription.getName()+"_JerseyClient");
                     // logging usage of action
                     Object[] params = new Object[2];
                     params[0] = LogUtils.WS_STACK_JAXRS;

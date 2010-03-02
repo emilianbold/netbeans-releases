@@ -40,6 +40,7 @@ package org.netbeans.modules.maven.api;
 
 import java.util.Collections;
 import java.util.List;
+import javax.xml.namespace.QName;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.model.ModelOperation;
@@ -48,7 +49,9 @@ import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.DependencyManagement;
+import org.netbeans.modules.maven.model.pom.POMComponent;
 import org.netbeans.modules.maven.model.pom.POMComponentFactory;
+import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Project;
@@ -296,5 +299,31 @@ public final class ModelUtils {
         }
     }
 
+    /**
+     * Returns child element of given parent, specified by its local name.
+     * Creates such child in case it doesn't exist.
+     *
+     * @param parent parent element
+     * @param localQName local name of the child
+     * @param pomModel whole pom model
+     * @return existing or newly created child
+     */
+    public static POMExtensibilityElement getOrCreateChild (POMComponent parent, String localQName, POMModel pomModel) {
+        POMExtensibilityElement result = null;
+        for (POMExtensibilityElement el : parent.getExtensibilityElements()) {
+            if (localQName.equals(el.getQName().getLocalPart())) {
+                result = el;
+                break;
+            }
+        }
+
+        if (result == null) {
+            result = pomModel.getFactory().
+                    createPOMExtensibilityElement(new QName(localQName));
+            parent.addExtensibilityElement(result);
+        }
+
+        return result;
+    }
 
 }

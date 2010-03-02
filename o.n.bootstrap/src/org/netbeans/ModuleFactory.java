@@ -61,8 +61,21 @@ public class ModuleFactory {
      */
     public Module create(File jar, Object history, boolean reloadable,
             boolean autoload, boolean eager, ModuleManager mgr, Events ev)
-            throws IOException {
-        return new StandardModule(mgr, ev, jar, history, reloadable, autoload, eager);
+    throws IOException {
+        try {
+            StandardModule m = new StandardModule(mgr, ev, jar, history, reloadable, autoload, eager);
+            return m;
+        } catch (InvalidException ex) {
+            Manifest mani = ex.getManifest();
+            if (mani != null) {
+                String name = mani.getMainAttributes().getValue("Bundle-SymbolicName"); // NOI18N
+                if (name == null) {
+                    throw ex;
+                }
+                return new NetigsoModule(mani, jar, mgr, ev, history, reloadable, autoload, eager);
+            }
+            throw ex;
+        }
     }
 
     /**
@@ -74,7 +87,8 @@ public class ModuleFactory {
      */
     public Module createFixed(Manifest mani, Object history, ClassLoader loader, boolean autoload, boolean eager,
             ModuleManager mgr, Events ev) throws InvalidException {
-        return new FixedModule(mgr, ev, mani, history, loader, autoload, eager);
+        Module m = new FixedModule(mgr, ev, mani, history, loader, autoload, eager);
+        return m;
     }
     /**
      * Allows specifying different parent classloader of all modules classloaders.

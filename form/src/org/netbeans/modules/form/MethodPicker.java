@@ -44,7 +44,6 @@ package org.netbeans.modules.form;
 
 import java.beans.*;
 import java.util.*;
-import java.awt.*;
 
 import org.openide.awt.Mnemonics;
 
@@ -171,6 +170,7 @@ public class MethodPicker extends javax.swing.JPanel {
 	    
             // sort the methods by name
             Arrays.sort(items, new Comparator<MethodPickerItem>() {
+                @Override
                 public int compare(MethodPickerItem o1, MethodPickerItem o2) {
                     return o1.getMethodName().compareTo(o2.getMethodName());
                 }
@@ -189,12 +189,15 @@ public class MethodPicker extends javax.swing.JPanel {
     private MethodPickerItem createItem(final MethodDescriptor desc) {
 	return new MethodPickerItem() {		
 	    private String name = FormUtils.getMethodName(desc);
+            @Override
 	    public String getMethodName() {
 		return name;
 	    }
+            @Override
 	    public Class[] getParameterTypes() {
 		return desc.getMethod().getParameterTypes();
 	    }
+            @Override
 	    public MethodDescriptor getMethodDescriptor() {
 		return desc;
 	    }
@@ -204,12 +207,15 @@ public class MethodPicker extends javax.swing.JPanel {
     private MethodPickerItem createItem(final String methodName) {
 	return new MethodPickerItem() {			
 	    private String name = FormUtils.getMethodName(methodName, NO_PARAMETERS);
+            @Override
 	    public String getMethodName() {
 		return name;
 	    }
+            @Override
 	    public Class[] getParameterTypes() {
 		return NO_PARAMETERS;
 	    }
+            @Override
 	    public MethodDescriptor getMethodDescriptor() {
 		return null;
 	    }	

@@ -45,9 +45,13 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugzilla.commands.ValidateCommand;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * 
@@ -60,17 +64,53 @@ public class ReportNBIssueAction extends SystemAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(ReportNBIssueAction.class, "CTL_ReportIssueAction");
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ReportNBIssueAction.class);
     }
 
+    @Override
     public void actionPerformed(ActionEvent ev) {
-        BugzillaRepository repo = NBRepositorySupport.findNbRepository();
-        Issue.open(repo, null);        
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                final BugzillaRepository repo = NBRepositorySupport.findNbRepository();
+                if(!checkLogin(repo)) {
+                    return;
+                }
+                Issue.open(repo, null);
+            }
+        });
     }
-    
+
+    static boolean checkLogin(final BugzillaRepository repo) {
+        if(repo.getUsername() != null && !repo.getUsername().equals("")) {
+            return true;
+        }
+
+        String errorMsg = NbBundle.getMessage(ReportNBIssueAction.class, "MSG_MISSING_USERNAME_PASSWORD");  // NOI18N
+        while(NBLoginPanel.show(repo, errorMsg)) {
+
+            ValidateCommand cmd = new ValidateCommand(repo.getTaskRepository());
+            ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ReportNBIssueAction.class, "MSG_CONNECTING_2_NBORG")); // NOI18N
+            handle.start();
+            try {
+                repo.getExecutor().execute(cmd, false, false);
+            } finally {
+                handle.finish();
+            }
+            if(cmd.hasFailed()) {
+                errorMsg = cmd.getErrorMessage();
+                continue;
+            }
+            return true;
+        }
+        repo.setAuthentication(null, null, null, null); // reset 
+        return false;
+    }
 }

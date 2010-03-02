@@ -131,7 +131,10 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 }
                 if (nodes[0] instanceof CallStackFrame) {
                     CallStackFrame f = (CallStackFrame) nodes[0];
-                    f.getThread().makeCurrent();
+                    JPDAThread thread = f.getThread();
+                    if (debugger.getCurrentThread() != thread) {
+                        thread.makeCurrent();
+                    }
                     f.makeCurrent ();
                     goToSource(f);
                 }
@@ -432,7 +435,10 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                         ((JPDAThread) node).makeCurrent ();
                     } else if (node instanceof CallStackFrame) {
                         CallStackFrame f = (CallStackFrame) node;
-                        f.getThread().makeCurrent();
+                        JPDAThread thread = f.getThread();
+                        if (debugger.getCurrentThread() != thread) {
+                            thread.makeCurrent();
+                        }
                         f.makeCurrent();
                         goToSource(f);
                     }

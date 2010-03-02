@@ -39,8 +39,25 @@
 package org.netbeans.modules.css.indexing;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
+import org.netbeans.modules.web.common.api.DependenciesGraph;
+import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * An instance of the indexer which can be held until the source roots are valid.
@@ -49,19 +66,292 @@ import org.openide.filesystems.FileObject;
  */
 public class CssIndex {
 
-    public static CssIndex create(FileObject[] sourceRoots) throws IOException {
-        return new CssIndex(sourceRoots);
+    private static final Logger LOGGER = Logger.getLogger(CssIndex.class.getSimpleName());
+    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
+
+    public static CssIndex create(Project project) throws IOException {
+        return new CssIndex(project);
     }
-    
-    private final FileObject[] sourceRoots;
     private final QuerySupport querySupport;
 
     /** Creates a new instance of JsfIndex */
-    private CssIndex(FileObject[] sourceRoots) throws IOException {
-        this.sourceRoots = sourceRoots;
-	//QuerySupport now refreshes the roots indexes so it can held until 
-	//the source roots are valid
-	this.querySupport = QuerySupport.forRoots(CssIndexer.Factory.NAME, CssIndexer.Factory.VERSION, sourceRoots);
+    private CssIndex(Project project) throws IOException {
+        //QuerySupport now refreshes the roots indexes so it can held until the source roots are valid
+        Collection<FileObject> sourceRoots = QuerySupport.findRoots(project,
+                null /* all source roots */,
+                Collections.<String>emptyList(),
+                Collections.<String>emptyList());
+        this.querySupport = QuerySupport.forRoots(CssIndexer.Factory.NAME, CssIndexer.Factory.VERSION, sourceRoots.toArray(new FileObject[]{}));
+    }
+
+    /**
+     *
+     * @param id
+     * @return collection of files defining exactly the given element
+     */
+    public Collection<FileObject> findIds(String id) {
+        return find(RefactoringElementType.ID, id);
+    }
+
+    /**
+     *
+     * @param id
+     * @return collection of files defining exactly the given element
+     */
+    public Collection<FileObject> findClasses(String clazz) {
+        return find(RefactoringElementType.CLASS, clazz);
+    }
+
+    /**
+     *
+     * @param id
+     * @return collection of files defining exactly the given element
+     */
+    public Collection<FileObject> findHtmlElement(String htmlElement) {
+        return find(RefactoringElementType.ELEMENT, htmlElement);
+    }
+
+    /**
+     *
+     * @param id
+     * @return collection of files defining exactly the given element
+     */
+    public Collection<FileObject> findColor(String colorCode) {
+        return find(RefactoringElementType.COLOR, colorCode);
+    }
+
+    /**
+     *
+     * @param prefix
+     * @return map of fileobject to collection of classes defined in the file starting with prefix
+     */
+    public Map<FileObject, Collection<String>> findClassesByPrefix(String prefix) {
+        return findByPrefix(RefactoringElementType.CLASS, prefix);
+    }
+
+    /**
+     *
+     * @param prefix
+     * @return map of fileobject to collection of ids defined in the file starting with prefix
+     */
+    public Map<FileObject, Collection<String>> findIdsByPrefix(String prefix) {
+        return findByPrefix(RefactoringElementType.ID, prefix);
+    }
+
+    /**
+     *
+     * @param prefix
+     * @return map of fileobject to collection of colors defined in the file starting with prefix
+     */
+    public Map<FileObject, Collection<String>> findColorsByPrefix(String prefix) {
+        return findByPrefix(RefactoringElementType.COLOR, prefix);
+    }
+    
+    public Map<FileObject, Collection<String>> findByPrefix(RefactoringElementType type, String prefix) {
+        String keyName = type.getIndexKey();
+        Map<FileObject, Collection<String>> map = new HashMap<FileObject, Collection<String>>();
+        try {
+            Collection<? extends IndexResult> results;
+            if(prefix.length() == 0) {
+                results = querySupport.query(keyName, "", QuerySupport.Kind.PREFIX, keyName);
+            } else {
+                String searchExpression = ".*("+prefix+").*"; //NOI18N
+                results = querySupport.query(keyName, searchExpression, QuerySupport.Kind.REGEXP, keyName);
+            }
+            for (IndexResult result : results) {
+                Collection<String> elements = decodeListValue(result.getValue(keyName));
+                for(String e : elements) {
+                    if(e.startsWith(prefix)) {
+                        Collection<String> col = map.get(result.getFile());
+                        if(col == null) {
+                            col = new LinkedList<String>();
+                            map.put(result.getFile(), col);
+                        }
+                        col.add(e);
+                    }
+                }
+
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return map;
+    }
+
+    public Map<FileObject, Collection<String>> findAll(RefactoringElementType type) {
+        String keyName = type.getIndexKey();
+        Map<FileObject, Collection<String>> map = new HashMap<FileObject, Collection<String>>();
+        try {
+            Collection<? extends IndexResult> results =
+                    querySupport.query(keyName, "", QuerySupport.Kind.PREFIX, keyName);
+
+            for (IndexResult result : results) {
+                Collection<String> elements = decodeListValue(result.getValue(keyName));
+                for (String e : elements) {
+                    Collection<String> col = map.get(result.getFile());
+                    if (col == null) {
+                        col = new LinkedList<String>();
+                        map.put(result.getFile(), col);
+                    }
+                    col.add(e);
+                }
+
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return map;
+    }
+
+    /**
+     *
+     * @param keyName
+     * @param value
+     * @return returns a collection of files which contains the keyName key and the
+     * value matches the value regular expression
+     */
+    public Collection<FileObject> find(RefactoringElementType type, String value) {
+        String keyName = type.getIndexKey();
+        try {
+            String searchExpression = ".*(" + value + ")[,;].*"; //NOI18N
+            Collection<FileObject> matchedFiles = new LinkedList<FileObject>();
+            Collection<? extends IndexResult> results = querySupport.query(keyName, searchExpression, QuerySupport.Kind.REGEXP, keyName);
+            for (IndexResult result : results) {
+                matchedFiles.add(result.getFile());
+            }
+            return matchedFiles;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return Collections.emptyList();
+    }
+
+    /**
+     * Gets all 'related' files to the given css file object.
+     * 
+     * @param cssFile
+     * @return a collection of all files which either imports or are imported
+     * by the given cssFile both directly and indirectly (transitive relation)
+     */
+    public DependenciesGraph getDependencies(FileObject cssFile) {
+        try {
+            DependenciesGraph deps = new DependenciesGraph(cssFile);
+            AllDependenciesMaps alldeps = getAllDependencies();
+            resolveDependencies(deps.getSourceNode(), alldeps.getSource2dest(), alldeps.getDest2source());
+            return deps;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets two maps wrapped in the AllDependenciesMaps class which contains
+     * all dependencies defined by imports in the current project.
+     *
+     * @return instance of AllDependenciesMaps
+     * @throws IOException
+     */
+    public AllDependenciesMaps getAllDependencies() throws IOException {
+        Collection<? extends IndexResult> results = querySupport.query(CssIndexer.IMPORTS_KEY, "", QuerySupport.Kind.PREFIX, CssIndexer.IMPORTS_KEY);
+        Map<FileObject, Collection<FileObject>> source2dests = new HashMap<FileObject, Collection<FileObject>>();
+        Map<FileObject, Collection<FileObject>> dest2sources = new HashMap<FileObject, Collection<FileObject>>();
+        for (IndexResult result : results) {
+            String importsValue = result.getValue(CssIndexer.IMPORTS_KEY);
+            FileObject file = result.getFile();
+            Collection<String> imports = decodeListValue(importsValue);
+            Collection<FileObject> imported = new HashSet<FileObject>();
+            for (String importedFileName : imports) {
+                //resolve the file
+                FileObject resolvedFileObject = WebUtils.resolve(file, importedFileName);
+                if (resolvedFileObject != null) {
+                    imported.add(resolvedFileObject);
+                    //add reverse dependency
+                    Collection<FileObject> sources = dest2sources.get(resolvedFileObject);
+                    if (sources == null) {
+                        sources = new HashSet<FileObject>();
+                        dest2sources.put(resolvedFileObject, sources);
+                    }
+                    sources.add(file);
+                }
+            }
+            source2dests.put(file, imported);
+        }
+
+        return new AllDependenciesMaps(source2dests, dest2sources);
+
+    }
+    
+
+    private void resolveDependencies(Node base, Map<FileObject, Collection<FileObject>> source2dests, Map<FileObject, Collection<FileObject>> dest2sources) {
+        FileObject baseFile = base.getFile();
+        Collection<FileObject> destinations = source2dests.get(baseFile);
+        if (destinations != null) {
+            //process destinations (file this one refers to)
+            for(FileObject destination : destinations) {
+                Node node = base.getDependencyGraph().getNode(destination);
+                if(base.addReferedNode(node)) {
+                    //recurse only if we haven't been there yet
+                    resolveDependencies(node, source2dests, dest2sources);
+                }
+            }
+        }
+        Collection<FileObject> sources = dest2sources.get(baseFile);
+        if(sources != null) {
+            //process sources (file this one is refered by)
+            for(FileObject source : sources) {
+                Node node = base.getDependencyGraph().getNode(source);
+                if(base.addReferingNode(node)) {
+                    //recurse only if we haven't been there yet
+                    resolveDependencies(node, source2dests, dest2sources);
+                }
+            }
+        }
+
+    }
+
+
+    //each list value is terminated by semicolon
+    private Collection<String> decodeListValue(String value) {
+        assert value.charAt(value.length() - 1) == ';';
+        Collection<String> list = new ArrayList<String>();
+        StringTokenizer st = new StringTokenizer(value.substring(0, value.length() - 1), ",");
+        while (st.hasMoreTokens()) {
+            list.add(st.nextToken());
+        }
+        return list;
+    }
+
+    public static class AllDependenciesMaps {
+
+        Map<FileObject, Collection<FileObject>> source2dest, dest2source;
+
+        public AllDependenciesMaps(Map<FileObject, Collection<FileObject>> source2dest, Map<FileObject, Collection<FileObject>> dest2source) {
+            this.source2dest = source2dest;
+            this.dest2source = dest2source;
+        }
+
+        /**
+         *
+         * @return reversed map of getSource2dest() (imported file -> collection of
+         * importing files)
+         */
+        public Map<FileObject, Collection<FileObject>> getDest2source() {
+            return dest2source;
+        }
+
+        /**
+         *
+         * @return map of fileobject -> collection of fileobject(s) describing
+         * relations between css file defined by import directive. The key represents
+         * a fileobject which imports the files from the value's collection.
+         */
+        public Map<FileObject, Collection<FileObject>> getSource2dest() {
+            return source2dest;
+        }
+
     }
 
     

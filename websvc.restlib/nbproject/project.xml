@@ -45,7 +45,17 @@ made subject to such option by the copyright holder.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.websvc.restlib</code-name-base>
-            <module-dependencies/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.jaxb.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.3</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
             <public-packages>
                 <package>javax.ws.rs</package>
                 <package>javax.ws.rs.core</package>
@@ -64,6 +74,8 @@ made subject to such option by the copyright holder.
                 <package>com.sun.jersey.api.uri</package>
                 <package>com.sun.jersey.api.view</package>
                 <package>com.sun.jersey.api.wadl</package>
+                <package>com.sun.jersey.client.urlconnection</package>
+                <package>com.sun.jersey.core.util</package>
                 <package>com.sun.jersey.spi</package>
                 <package>com.sun.jersey.spi.container</package>
                 <package>com.sun.jersey.spi.container.servlet</package>
@@ -73,6 +85,7 @@ made subject to such option by the copyright holder.
                 <package>com.sun.jersey.spi.service</package>
                 <package>com.sun.jersey.spi.template</package>
                 <package>com.sun.jersey.spi.uri.rules</package>
+
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/jsr311-api-1.1.1.jar</runtime-relative-path>

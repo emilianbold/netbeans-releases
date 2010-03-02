@@ -49,7 +49,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -57,12 +57,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
-import org.netbeans.spi.project.support.ant.SourcesHelper.SourceRootConfig;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -84,6 +82,7 @@ public class MakeSources implements Sources, AntProjectListener {
     private final ChangeSupport changeSupport;
     private long eventID = 0;
     
+    @Override
     public SourceGroup[] getSourceGroups(String str) {
         if (!str.equals("generic")) { // NOI18N
             return new SourceGroup[0];
@@ -123,7 +122,7 @@ public class MakeSources implements Sources, AntProjectListener {
                     for (int i = 0; i < projectItems.length; i++) {
                         Item item = projectItems[i];
                         String name = item.getPath();
-                        if (!IpeUtils.isPathAbsolute(name)) {
+                        if (!CndPathUtilitities.isPathAbsolute(name)) {
                             continue;
                         }
                         File file = new File(name);
@@ -135,7 +134,7 @@ public class MakeSources implements Sources, AntProjectListener {
                         }
                         name = file.getPath();
                         set.add(name);
-                        epd.addSourceRootRaw(IpeUtils.toRelativePath(epd.getBaseDir(), name));
+                        epd.addSourceRootRaw(CndPathUtilitities.toRelativePath(epd.getBaseDir(), name));
                     }
                 }
             }
@@ -147,20 +146,20 @@ public class MakeSources implements Sources, AntProjectListener {
             
             // Add buildfolder from makefile projects to sources. See IZ 90190.
             if (epd.getVersion() < 41) {
-                Configuration[] confs = epd.getConfs().getConfs();
+                Configuration[] confs = epd.getConfs().toArray();
                 for (int i = 0; i < confs.length; i++) {
                     MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
                     if (makeConfiguration.isMakefileConfiguration()) {
                         MakefileConfiguration makefileConfiguration = makeConfiguration.getMakefileConfiguration();
                         String path = makefileConfiguration.getAbsBuildCommandWorkingDir();
                         set.add(path);
-                        epd.addSourceRootRaw(IpeUtils.toRelativePath(epd.getBaseDir(), path));
+                        epd.addSourceRootRaw(CndPathUtilitities.toRelativePath(epd.getBaseDir(), path));
                     }
                 }
             }
             
             for (String name : set) {
-                String displayName = IpeUtils.toRelativePath(epd.getBaseDir(), name);
+                String displayName = CndPathUtilitities.toRelativePath(epd.getBaseDir(), name);
 //                int index1 = displayName.lastIndexOf(File.separatorChar);
 //                if (index1 > 0) {
 //                    int index2 = displayName.substring(0, index1).lastIndexOf(File.separatorChar);
@@ -168,7 +167,7 @@ public class MakeSources implements Sources, AntProjectListener {
 //                        displayName = "..." + displayName.substring(index2); // NOI18N
 //                    }
 //                }
-                displayName = FilePathAdaptor.naturalize(displayName);
+                displayName = CndPathUtilitities.naturalize(displayName);
                 h.sourceRoot(name).displayName(displayName).add();
                 h.sourceRoot(name).type("generic").displayName(displayName).add(); // NOI18N
             }
@@ -177,10 +176,12 @@ public class MakeSources implements Sources, AntProjectListener {
         return h.createSources();
     }
 
+    @Override
     public void addChangeListener(ChangeListener changeListener) {
         changeSupport.addChangeListener(changeListener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener changeListener) {
         changeSupport.removeChangeListener(changeListener);
     }
@@ -190,6 +191,7 @@ public class MakeSources implements Sources, AntProjectListener {
         changeSupport.fireChange();
     }
 
+    @Override
     public void configurationXmlChanged(AntProjectEvent ev) {
         // fireChange(); // ignore - cnd projects don't keep source file info in project.xml
     }
@@ -198,6 +200,7 @@ public class MakeSources implements Sources, AntProjectListener {
         // fireChange(); // ignore
     }
 
+    @Override
     public void propertiesChanged(AntProjectEvent ev) {
         // ignore
     }

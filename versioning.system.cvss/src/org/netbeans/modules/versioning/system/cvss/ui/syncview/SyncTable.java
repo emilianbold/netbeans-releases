@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.syncview;
 
+import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.nodes.*;
 import org.openide.nodes.PropertySupport.ReadOnly;
@@ -84,18 +85,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.Component;
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.Point;
 import java.util.*;
 import java.io.File;
 import org.netbeans.modules.versioning.util.SortedTable;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.netbeans.modules.versioning.util.VersioningListener;
+import org.openide.util.RequestProcessor;
 
 /**
  * Table that displays nodes in the Versioning view. 
  * 
  * @author Maros Sandor
  */
-class SyncTable implements MouseListener, ListSelectionListener, AncestorListener {
+class SyncTable implements MouseListener, ListSelectionListener, AncestorListener, VersioningListener {
 
     private NodeTableModel  tableModel;
     private JTable          table;
@@ -104,6 +108,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     
     private String []   tableColumns; 
     private TableSorter sorter;
+    private final RequestProcessor rp = new RequestProcessor("CVS.SyncTableProcessor", 1); //NOI18N
 
     /**
      * Defines labels for Versioning view table columns.
@@ -224,6 +229,13 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     public JComponent getComponent() {
         return component;
     }
+
+    @Override
+    public void versioningEvent(VersioningEvent event) {
+        if (CvsVersioningSystem.EVENT_REFRESH_ANNOTATIONS.equals(event.getId())) {
+            refreshNodes();
+        }
+    }
     
     /**
      * Sets visible columns in the Versioning table.
@@ -258,10 +270,32 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     void setTableModel(SyncFileNode [] nodes) {
         this.nodes = nodes;
         tableModel.setNodes(nodes);
+        rp.post(new Runnable () {
+            @Override
+            public void run() {
+                refreshNodes();
+            }
+        });
     }
 
     void focus() {
         table.requestFocus();
+    }
+
+    private void refreshNodes () {
+        SyncFileNode[] toRefreshNodes = nodes;
+        for (SyncFileNode node : toRefreshNodes) {
+            node.refresh();
+        }
+        if (toRefreshNodes.length > 0) {
+            EventQueue.invokeLater(new Runnable () {
+                @Override
+                public void run() {
+                    table.revalidate();
+                    table.repaint();
+                }
+            });
+        }
     }
 
     private static class ColumnDescriptor extends ReadOnly {

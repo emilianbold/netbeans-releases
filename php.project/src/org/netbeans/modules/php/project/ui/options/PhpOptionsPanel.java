@@ -42,9 +42,12 @@ package org.netbeans.modules.php.project.ui.options;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.List;
 import javax.swing.DefaultListModel;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -66,6 +69,8 @@ import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.PathUiSupport;
 import org.netbeans.modules.php.project.ui.Utils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -74,9 +79,10 @@ import org.openide.util.NbBundle;
  * @author  Tomas Mysik
  */
 public class PhpOptionsPanel extends JPanel {
-    private static final long serialVersionUID = 109856412432078L;
+    private static final long serialVersionUID = 10985641247986428L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final WatchesAndEvalListener watchesAndEvalListener = new WatchesAndEvalListener();
 
     public PhpOptionsPanel() {
         initComponents();
@@ -89,6 +95,7 @@ public class PhpOptionsPanel extends JPanel {
         phpInterpreterTextField.getDocument().addDocumentListener(documentListener);
         debuggerPortTextField.getDocument().addDocumentListener(documentListener);
         debuggerSessionIdTextField.getDocument().addDocumentListener(documentListener);
+        watchesAndEvalCheckBox.addItemListener(watchesAndEvalListener);
     }
 
     private void initPhpGlobalIncludePath() {
@@ -175,6 +182,16 @@ public class PhpOptionsPanel extends JPanel {
         stopAtTheFirstLineCheckBox.setSelected(debuggerStoppedAtTheFirstLine);
     }
 
+    public boolean isDebuggerWatchesAndEval() {
+        return watchesAndEvalCheckBox.isSelected();
+    }
+
+    public void setDebuggerWatchesAndEval(boolean debuggerWatchesAndEval) {
+        watchesAndEvalCheckBox.removeItemListener(watchesAndEvalListener);
+        watchesAndEvalCheckBox.setSelected(debuggerWatchesAndEval);
+        watchesAndEvalCheckBox.addItemListener(watchesAndEvalListener);
+    }
+
     public String getPhpGlobalIncludePath() {
         String[] paths = GlobalIncludePathSupport.getInstance().encodeToStrings(
                 PathUiSupport.getIterator((DefaultListModel) includePathList.getModel()));
@@ -235,6 +252,7 @@ public class PhpOptionsPanel extends JPanel {
         debuggerSessionIdLabel = new JLabel();
         debuggerSessionIdTextField = new JTextField();
         stopAtTheFirstLineCheckBox = new JCheckBox();
+        watchesAndEvalCheckBox = new JCheckBox();
         globalIncludePathSeparator = new JSeparator();
         globalIncludePathLabel = new JLabel();
         useTheFollowingPathByDefaultLabel = new JLabel();
@@ -282,8 +300,10 @@ public class PhpOptionsPanel extends JPanel {
 
         debuggerSessionIdLabel.setLabelFor(debuggerSessionIdTextField);
 
+
         Mnemonics.setLocalizedText(debuggerSessionIdLabel, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerSessionIdLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(stopAtTheFirstLineCheckBox, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_StopAtTheFirstLine"));
+        Mnemonics.setLocalizedText(watchesAndEvalCheckBox, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.watchesAndEvalCheckBox.text"));
 
         globalIncludePathLabel.setLabelFor(this);
         Mnemonics.setLocalizedText(globalIncludePathLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_GlobalIncludePath")); // NOI18N
@@ -306,7 +326,7 @@ public class PhpOptionsPanel extends JPanel {
         errorLabel.setLabelFor(this);
         Mnemonics.setLocalizedText(errorLabel, "ERROR");
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
@@ -319,7 +339,7 @@ public class PhpOptionsPanel extends JPanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(phpInterpreterTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
+                        .addComponent(phpInterpreterTextField, GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(phpInterpreterBrowseButton)
                         .addPreferredGap(ComponentPlacement.RELATED)
@@ -333,28 +353,31 @@ public class PhpOptionsPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(commandLineLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(commandLineSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE))
+                .addComponent(commandLineSeparator, GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(debuggingLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(debuggingSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE))
+                .addComponent(debuggingSeparator, GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(stopAtTheFirstLineCheckBox)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(stopAtTheFirstLineCheckBox)
+                        .addPreferredGap(ComponentPlacement.UNRELATED)
+                        .addComponent(watchesAndEvalCheckBox))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(debuggerPortLabel)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(debuggerPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(debuggerPortTextField, GroupLayout.PREFERRED_SIZE, 101, GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(debuggerSessionIdLabel)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(debuggerSessionIdTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addComponent(debuggerSessionIdTextField, GroupLayout.PREFERRED_SIZE, 124, GroupLayout.PREFERRED_SIZE))))
             .addGroup(layout.createSequentialGroup()
                 .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(includePathScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
+                        .addComponent(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(Alignment.TRAILING)
                             .addComponent(addFolderButton)
@@ -366,7 +389,7 @@ public class PhpOptionsPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(globalIncludePathLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(globalIncludePathSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE))
+                .addComponent(globalIncludePathSeparator, GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addFolderButton, moveDownButton, moveUpButton, removeButton});
@@ -378,11 +401,11 @@ public class PhpOptionsPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.TRAILING)
                     .addComponent(commandLineLabel)
-                    .addComponent(commandLineSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(commandLineSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(phpInterpreterBrowseButton)
-                    .addComponent(phpInterpreterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(phpInterpreterTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(phpInterpreterSearchButton)
                     .addComponent(phpInterpreterLabel))
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -394,24 +417,26 @@ public class PhpOptionsPanel extends JPanel {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(Alignment.TRAILING)
                     .addComponent(debuggingLabel)
-                    .addComponent(debuggingSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(debuggingSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(debuggerPortLabel)
-                    .addComponent(debuggerPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(debuggerPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(debuggerSessionIdLabel)
-                    .addComponent(debuggerSessionIdTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(debuggerSessionIdTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(stopAtTheFirstLineCheckBox)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(stopAtTheFirstLineCheckBox)
+                    .addComponent(watchesAndEvalCheckBox))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(Alignment.TRAILING)
                     .addComponent(globalIncludePathLabel)
-                    .addComponent(globalIncludePathSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(globalIncludePathSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(useTheFollowingPathByDefaultLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(includePathScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
+                    .addComponent(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(addFolderButton)
                         .addPreferredGap(ComponentPlacement.RELATED)
@@ -539,6 +564,7 @@ public class PhpOptionsPanel extends JPanel {
     private JButton removeButton;
     private JCheckBox stopAtTheFirstLineCheckBox;
     private JLabel useTheFollowingPathByDefaultLabel;
+    private JCheckBox watchesAndEvalCheckBox;
     private JCheckBox webBrowserCheckBox;
     // End of variables declaration//GEN-END:variables
 
@@ -558,6 +584,23 @@ public class PhpOptionsPanel extends JPanel {
 
         private void processUpdate() {
             fireChange();
+        }
+    }
+
+    private static final class WatchesAndEvalListener implements ItemListener {
+        private static boolean warningShown = false;
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            if (warningShown) {
+                return;
+            }
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(PhpOptionsPanel.class, "MSG_WatchesAndEval"),
+                        NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(descriptor);
+                warningShown = true;
+            }
         }
     }
 }

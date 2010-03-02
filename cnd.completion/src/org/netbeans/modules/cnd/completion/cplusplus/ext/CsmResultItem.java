@@ -319,7 +319,7 @@ public abstract class CsmResultItem implements CompletionItem {
                 BaseDocument doc = (BaseDocument) component.getDocument();
                 Object ob = getAssociatedObject();
                 if (CsmKindUtilities.isCsmObject(ob)) {
-                    CsmFile currentFile = CsmUtilities.getCsmFile(doc, false);
+                    CsmFile currentFile = CsmUtilities.getCsmFile(doc, false, false);
                     if (!inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
                         String include = inclResolver.getIncludeDirective(currentFile, (CsmObject) ob);
                         if (include.length() != 0 && !isForwardDeclaration(component) && !isAlreadyIncluded(component, include)) {

@@ -187,14 +187,6 @@ public class ModelUtils {
     }
 
     @CheckForNull
-    public static <T extends Occurence> T getFirst(Collection<? extends T> all) {
-        if (all instanceof List) {
-            return all.size() > 0 ? ((List<T>)all).get(0) : null;
-        }
-        return all.size() > 0 ? all.iterator().next() : null;
-    }
-
-    @CheckForNull
     public static <T extends ModelElement> T getLast(List<? extends T> all) {
         return all.size() > 0 ? all.get(all.size()-1) : null;
     }

@@ -38,19 +38,12 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.support.Encrypter;
-import org.openide.util.NbPreferences;
 
 public final class PasswordManager {
 
-    private static final String KEY_PREFIX = "remote.user.info"; // NOI18N
     private static PasswordManager instance = new PasswordManager();
-    private final Map<String, String> cache =
-            Collections.synchronizedMap(new HashMap<String, String>());
 
     private PasswordManager() {
     }
@@ -61,46 +54,16 @@ public final class PasswordManager {
 
     public char[] get(ExecutionEnvironment execEnv) {
         String key = execEnv.toString();
-        Encrypter crypter = new Encrypter(key);
-
-        String cachedPassword = cache.get(key);
-
-        if (cachedPassword != null) {
-            return crypter.decrypt(cachedPassword).toCharArray();
-        }
-
-        String passwordProperyKey = crypter.encrypt(KEY_PREFIX + key);
-        String storedEncryptedPassword = NbPreferences.forModule(PasswordManager.class).get(
-                passwordProperyKey, null);
-
-        if (storedEncryptedPassword != null) {
-            cache.put(key, storedEncryptedPassword);
-            return crypter.decrypt(storedEncryptedPassword.toCharArray());
-        }
-
-        return null;
+        return Keyring.read(key);
     }
 
     public void put(ExecutionEnvironment execEnv, char[] password, boolean store) {
         String key = execEnv.toString();
-        Encrypter crypter = new Encrypter(key);
-
-        String encryptedPasswordToStore = String.valueOf(crypter.encrypt(password));
-        cache.put(key, encryptedPasswordToStore);
-
-        if (store) {
-            String passwordProperyKey = crypter.encrypt(KEY_PREFIX + key);
-            NbPreferences.forModule(PasswordManager.class).put(
-                    passwordProperyKey, String.valueOf(encryptedPasswordToStore));
-        }
+        Keyring.save(key, password, "Password for "+execEnv.getDisplayName()); // NOI18N
     }
 
     public void clearPassword(ExecutionEnvironment execEnv) {
         String key = execEnv.toString();
-        Encrypter crypter = new Encrypter(key);
-        cache.remove(key);
-        String passwordProperyKey = crypter.encrypt(KEY_PREFIX + key);
-        NbPreferences.forModule(PasswordManager.class).remove(
-                passwordProperyKey);
+        Keyring.delete(key);
     }
 }

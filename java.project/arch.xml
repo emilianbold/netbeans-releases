@@ -610,7 +610,7 @@ Nothing.
  <answer id="exec-property">
   <ul>
    <li>
-    <api group="property" name="org.netbeans.spi.java.project.support.ui.packageView.TRUNCATE_PACKAGE_NAMES" type="export" category="private">
+    <api group="systemproperty" name="org.netbeans.spi.java.project.support.ui.packageView.TRUNCATE_PACKAGE_NAMES" type="export" category="private">
      <p>
       If set to <code>true</code>, displays a truncated version of Java package
       names, usually in the <b>Projects</b> tab.
@@ -618,7 +618,7 @@ Nothing.
     </api>
    </li>
    <li>
-    <api group="property" name="org.netbeans.spi.java.project.support.ui.packageView.USE_TREE_VIEW" type="export" category="private">
+    <api group="systemproperty" name="org.netbeans.spi.java.project.support.ui.packageView.USE_TREE_VIEW" type="export" category="private">
      <p>
       If set to <code>true</code>, displays Java packages in a tree rather than a
       flat list, usually in the <b>Projects</b> tab.

@@ -1135,15 +1135,10 @@ further customization.
 
 <h3><a name="sec-action">Action</a></h3>
 
-The class <code>Action</code> installs a system action into NetBeans. Refer to the
-
-<a href="@org-openide-actions@/org/openide/actions/doc-files/api.html">Actions API</a>
-
-for details on how to create an action. The class must implement
-
-<a href="@org-openide-util@/org/openide/util/actions/SystemAction.html"><code>SystemAction</code></a>.
-
-<p>By using this manifest section, your action will be available as
+Old and deprecated class <code>Action</code>
+installs a system action into NetBeans. Since NetBeans 6.9 prefer
+registration via layers (folder <code>UI/ToolActions</code>) to make
+your action available as
 a "tool", i.e. it will appear (when enabled) in a list of all
 extension tools in any popup menu (etc.) using
 

@@ -139,14 +139,14 @@ public abstract class IndexedElement extends RubyElement {
             }
         }
         if (type == null) {
-            type = RubyType.createUnknown();
+            type = RubyType.unknown();
         }
         return type;
     }
 
     private RubyType parseTypes(final String types) {
         if (types.length() == 0) {
-            return RubyType.createUnknown();
+            return RubyType.unknown();
         }
         if (!types.contains("|")) { // just one type
             return RubyType.create(types);

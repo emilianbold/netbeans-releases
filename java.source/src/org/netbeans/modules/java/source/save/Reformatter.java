@@ -144,7 +144,7 @@ public class Reformatter implements ReformatTask {
         try {
             ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
             ClasspathInfo cpInfo = ClasspathInfo.create(JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries(), empty, empty);
-            JavacTaskImpl javacTask = JavacParser.createJavacTask(cpInfo, null, null, null, null);
+            JavacTaskImpl javacTask = JavacParser.createJavacTask(cpInfo, null, null, null, null, null);
             com.sun.tools.javac.util.Context ctx = javacTask.getContext();
             JavaCompiler.instance(ctx).genEndPos = true;
             CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject("","", text)).iterator().next(); //NOI18N
@@ -452,11 +452,20 @@ public class Reformatter implements ReformatTask {
                 pretty.scan(path, null);
             }
             if (path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+                CompilationUnitTree cut = (CompilationUnitTree) path.getLeaf();
+                List<? extends Tree> typeDecls = cut.getTypeDecls();
+                int size = typeDecls.size();
+                int cnt = size > 0 && typeDecls.get(size - 1).getKind() == Tree.Kind.CLASS ? cs.getBlankLinesAfterClass() : 1;
+                if (cnt < 1)
+                    cnt = 1;
+                String s = pretty.getNewlines(cnt);
                 pretty.tokens.moveEnd();
                 pretty.tokens.movePrevious();
-                if (pretty.tokens.token().id() != WHITESPACE || pretty.tokens.token().text().toString().indexOf('\n') < 0) {
+                if (pretty.tokens.token().id() != WHITESPACE) {
                     String text = info.getText();
-                    pretty.diffs.addFirst(new Diff(text.length(), text.length(), NEWLINE));
+                    pretty.diffs.addFirst(new Diff(text.length(), text.length(), s));
+                } else if (!s.contentEquals(pretty.tokens.token().text())) {
+                    pretty.diffs.addFirst(new Diff(pretty.tokens.offset(), pretty.tokens.offset() + pretty.tokens.token().length(), s));
                 }
             }
             return pretty.diffs;
@@ -465,10 +474,19 @@ public class Reformatter implements ReformatTask {
         public static LinkedList<Diff> reformat(String text, TokenSequence<JavaTokenId> tokens, TreePath path, SourcePositions sp, CodeStyle cs, int rightMargin) {
             Pretty pretty = new Pretty(text, tokens, path, sp, cs, 0, text.length(), rightMargin);
             pretty.scan(path, null);
+            CompilationUnitTree cut = (CompilationUnitTree) path.getLeaf();
+            List<? extends Tree> typeDecls = cut.getTypeDecls();
+            int size = typeDecls.size();
+            int cnt = size > 0 && typeDecls.get(size - 1).getKind() == Tree.Kind.CLASS ? cs.getBlankLinesAfterClass() : 1;
+            if (cnt < 1)
+                cnt = 1;
+            String s = pretty.getNewlines(cnt);
             tokens.moveEnd();
             tokens.movePrevious();
-            if (tokens.token().id() != WHITESPACE || tokens.token().text().toString().indexOf('\n') < 0)
-                pretty.diffs.addFirst(new Diff(text.length(), text.length(), NEWLINE));
+            if (tokens.token().id() != WHITESPACE)
+                pretty.diffs.addFirst(new Diff(text.length(), text.length(), s));
+            else if (!s.contentEquals(tokens.token().text()))
+                pretty.diffs.addFirst(new Diff(tokens.offset(), tokens.offset() + tokens.token().length(), s));
             return pretty.diffs;
         }
 
@@ -2206,6 +2224,7 @@ public class Reformatter implements ReformatTask {
         public Boolean visitParenthesized(ParenthesizedTree node, Void p) {
             accept(LPAREN);
             boolean spaceWithinParens;
+            int old = indent;
             switch(getCurrentPath().getParentPath().getLeaf().getKind()) {
                 case IF:
                     spaceWithinParens = cs.spaceWithinIfParens();
@@ -2225,10 +2244,13 @@ public class Reformatter implements ReformatTask {
                     break;
                 default:
                     spaceWithinParens = cs.spaceWithinParens();
+                    if (cs.alignMultilineParenthesized())
+                        indent = col;
             }
             spaces(spaceWithinParens ? 1 : 0);
             scan(node.getExpression(), p);
             spaces(spaceWithinParens ? 1 : 0);
+            indent = old;
             accept(RPAREN);
             return true;
         }

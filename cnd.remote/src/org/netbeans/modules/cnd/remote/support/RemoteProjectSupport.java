@@ -44,7 +44,7 @@ import java.io.FileFilter;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -58,6 +58,9 @@ import org.openide.filesystems.FileUtil;
  * @author Vladimir Kvashin
  */
 public class RemoteProjectSupport {
+
+    private RemoteProjectSupport() {
+    }
 
     public static ExecutionEnvironment getExecutionEnvironment(Project project) {
         MakeConfiguration mk = ConfigurationSupport.getProjectActiveConfiguration(project);
@@ -100,7 +103,7 @@ public class RemoteProjectSupport {
 
         MakeConfigurationDescriptor mcs = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
         for(String soorceRoot : mcs.getSourceRoots()) {
-            String path = IpeUtils.toAbsolutePath(baseDir.getAbsolutePath(), soorceRoot);
+            String path = CndPathUtilitities.toAbsolutePath(baseDir.getAbsolutePath(), soorceRoot);
             File file = new File(path); // or canonical?
             sourceFilesAndDirs.add(file);
         }
@@ -108,7 +111,7 @@ public class RemoteProjectSupport {
         // Make sure 1st level subprojects are visible remotely
         // First, remembr all subproject locations
         for (String subprojectDir : conf.getSubProjectLocations()) {
-            subprojectDir = IpeUtils.toAbsolutePath(baseDir.getAbsolutePath(), subprojectDir);
+            subprojectDir = CndPathUtilitities.toAbsolutePath(baseDir.getAbsolutePath(), subprojectDir);
             sourceFilesAndDirs.add(new File(subprojectDir));
         }
         // Then go trough open subprojects and add their external source roots
@@ -131,9 +134,11 @@ public class RemoteProjectSupport {
             if (!filter.accept(normFile)) {
                 // user explicitely added file -> copy it even
                 filesToSync.add(normFile);
-                File parentFile = normFile.getParentFile();
             } else if (!isContained(normFile, filesToSync)) {
                 // directory containing file is not yet added => copy it
+                filesToSync.add(normFile);
+            } else if (!normFile.exists()) {
+                // it won't be added while recursin into directories
                 filesToSync.add(normFile);
             }
         }

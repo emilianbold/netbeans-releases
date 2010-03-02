@@ -45,7 +45,7 @@ import java.awt.*;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 import org.netbeans.modules.form.RADVisualComponent.MenuType;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
@@ -290,7 +290,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     private static Class[] getPossibleSubmenus(MenuType menuContainerType) {
         if (supportedMenus == null) {
-            supportedMenus = new HashMap<MenuType, Class[]>();
+            supportedMenus = new EnumMap<MenuType, Class[]>(MenuType.class);
             supportedMenus.put(MenuType.JMenuBar, new Class[] { JMenu.class });
             supportedMenus.put(MenuType.JMenu,
                                new Class[] { JMenuItem.class,
@@ -325,6 +325,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     // the following methods implement ComponentContainer interface
 
     /** @return all subcomponents (including the menu component) */
+    @Override
     public RADComponent[] getSubBeans() {
         int n = subComponents.size();
         if (containerMenu != null)
@@ -338,6 +339,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         return components;
     }
 
+    @Override
     public void initSubComponents(RADComponent[] initComponents) {
         if (subComponents == null)
             subComponents = new ArrayList<RADVisualComponent>(initComponents.length);
@@ -360,6 +362,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             refillContainerInstance();
     }
 
+    @Override
     public void reorderSubComponents(int[] perm) {
         RADVisualComponent[] components = new RADVisualComponent[subComponents.size()];
         LayoutConstraints[] constraints;
@@ -387,6 +390,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         }
     }
 
+    @Override
     public void add(RADComponent comp) {
         add(comp, -1);
     }
@@ -419,6 +423,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         }
     }
 
+    @Override
     public void remove(RADComponent comp) {
         if (comp == containerMenu) {
             containerMenu = null;
@@ -431,11 +436,12 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             else {
                 getContainerDelegate(getBeanInstance()).remove(index);
             }
-            if (subComponents.remove(comp))
+            if (subComponents.remove((RADVisualComponent)comp))
                 comp.setParentComponent(null);
         }
     }
 
+    @Override
     public int getIndexOf(RADComponent comp) {
         if (comp != null && comp == containerMenu)
             return subComponents.size();

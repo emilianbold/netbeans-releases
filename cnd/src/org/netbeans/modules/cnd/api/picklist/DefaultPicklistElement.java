@@ -62,9 +62,10 @@ public class DefaultPicklistElement implements PicklistElement, Serializable {
     }
 
     /**
-     * Compares two PicklistElement for equality. Returns true if equeal,
-     * othervise false.
+     * Compares two PicklistElement for equality. Returns true if equal,
+     * otherwise false.
      */
+    @Override
     public boolean equals(PicklistElement elem) {
 	return ((DefaultPicklistElement)elem).getString().equals(this.elem);
     }
@@ -73,6 +74,7 @@ public class DefaultPicklistElement implements PicklistElement, Serializable {
      * Returns a String representation of this element to be used
      * for displaying the element.
      */
+    @Override
     public String displayName() {
 	return elem;
     }
@@ -80,6 +82,7 @@ public class DefaultPicklistElement implements PicklistElement, Serializable {
     /**
      * Return a clone (copy) of this element
      */
+    @Override
     public PicklistElement cloneElement() {
 	return new DefaultPicklistElement(elem);
     }

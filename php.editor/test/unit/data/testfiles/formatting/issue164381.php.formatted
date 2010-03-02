@@ -13,11 +13,11 @@ if (isset($_POST['ic_input'])) {
     echo "IC moze obsahovat len cisla!";
     return false;
   }
-  else if (strlen($text) < 8 ) {
+  else if (strlen($text) < 8) {
     echo "Text je prilis kratky";
     return false;
   }
-  elseif (strlen($text) > 8 ) {
+  elseif (strlen($text) > 8) {
     echo "Text je prilis dlhy";
     return false;
   }

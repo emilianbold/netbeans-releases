@@ -142,7 +142,6 @@ public class JsfCompletionItem {
                     sb.append(descr);
                 }
             } else {
-                String msg = NbBundle.getBundle(this.getClass()).getString("MSG_NO_TLD"); //NOI18N
                 //extract some simple info from the component
                 sb.append("<table border=\"1\">"); //NOI18N
                 for (String[] descr : component.getDescription()) {
@@ -158,7 +157,6 @@ public class JsfCompletionItem {
                     sb.append("</tr>"); //NOI18N
                 }
                 sb.append("</table>"); //NOI18N
-                sb.append("<p style=\"color: red\">" + msg + "</p>"); //NOI18N
             }
             return sb.toString();
         }
@@ -192,7 +190,19 @@ public class JsfCompletionItem {
             sb.append("<h1>"); //NOI18N
             sb.append(attr.getName());
             sb.append("</h1>"); //NOI18N
-            sb.append(attr.getDescription());
+            if(attr.isRequired()) {
+                sb.append("<p>");
+                sb.append(NbBundle.getMessage(JsfCompletionItem.class, "MSG_RequiredAttribute"));
+                sb.append("</p>");
+            }
+            sb.append("<p>");
+            if(attr.getDescription() != null) {
+                sb.append(attr.getDescription());
+            } else {
+                sb.append(NbBundle.getMessage(JsfCompletionItem.class, "MSG_NoAttributeDescription"));
+            }
+            sb.append("</p>");
+            
             return sb.toString();
         }
 

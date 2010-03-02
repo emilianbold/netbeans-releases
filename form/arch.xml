@@ -458,10 +458,10 @@ when used, need to be distributed with the created application.
         </question>
 -->
 <answer id="exec-property">
-    <api type="export" group="property" name="netbeans.form.no_undo" category="private">
+    <api type="export" group="systemproperty" name="netbeans.form.no_undo" category="private">
         Set to true, turns off the undo/redo capability. For debugging purposes only.
     </api>
-    <api type="export" group="property" name="netbeans.form.use_idelaf" category="private">
+    <api type="export" group="systemproperty" name="netbeans.form.use_idelaf" category="private">
         Set to true, turns off the strict usage of standard Look And Feel defaults
         (so then the same LAF settings as in the IDE are used for designed forms).
         Can be useful when designing forms to be used in the IDE. Also for

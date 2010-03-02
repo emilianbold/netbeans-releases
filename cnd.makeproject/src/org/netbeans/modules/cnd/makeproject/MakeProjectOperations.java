@@ -47,10 +47,9 @@ import java.util.List;
 //import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
@@ -73,16 +72,18 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         }
     }
 
+    @Override
     public List<FileObject> getMetadataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
         List<FileObject> files = new ArrayList<FileObject>();
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        addFile(projectDirectory, "nbproject", files); // NOI18N
+        addFile(projectDirectory, MakeConfiguration.NBPROJECT_FOLDER, files); // NOI18N
         addFile(projectDirectory, pdp.getConfigurationDescriptor().getProjectMakefileName(), files); // NOI18N
 
         return files;
     }
 
+    @Override
     public List<FileObject> getDataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
 
@@ -94,7 +95,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
                 files.add(children[i]);
             }
         }
-        if (files.size() == 0) {
+        if (files.isEmpty()) {
             // FIXUP: Don't return empty list. If the list is empty, the "Also Delete Sources" checkbox in the dialog is disabled and the project dir cannot be deleted.
             // IZ?????
             files.add(projectDirectory);
@@ -102,6 +103,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         return files;
     }
 
+    @Override
     public void notifyDeleting() throws IOException {
 //        J2SEActionProvider ap = (J2SEActionProvider) project.getLookup().lookup(J2SEActionProvider.class);
 //        
@@ -118,6 +120,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
 //        ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
     }
 
+    @Override
     public void notifyDeleted() throws IOException {
         project.getAntProjectHelper().notifyDeleted();
         NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
@@ -132,6 +135,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         }
     }
 
+    @Override
     public void notifyCopying() {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         pdp.getConfigurationDescriptor().save();
@@ -140,6 +144,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         makeSharabilityQuery.setPrivateShared(true);
     }
 
+    @Override
     public void notifyCopied(Project original, File originalPath, String nueName) {
         if (original == null) {
             //do nothing for the original project.
@@ -150,9 +155,9 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         String originalFilePath = originalPath.getPath();
         String newFilePath = FileUtil.toFile(project.getProjectDirectory()).getPath();
         if (!originalFilePath.equals(newFilePath)) {
-            //String fromOriginalToNew = IpeUtils.getRelativePath(originalFilePath, newFilePath);
-            String fromNewToOriginal = IpeUtils.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
-            fromNewToOriginal = FilePathAdaptor.normalize(fromNewToOriginal);
+            //String fromOriginalToNew = CndPathUtilitities.getRelativePath(originalFilePath, newFilePath);
+            String fromNewToOriginal = CndPathUtilitities.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
+            fromNewToOriginal = CndPathUtilitities.normalize(fromNewToOriginal);
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.setRelativeOffset(fromNewToOriginal);
         }
@@ -166,6 +171,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         makeSharabilityQuery.setPrivateShared(false);
     }
 
+    @Override
     public void notifyMoving() throws IOException {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         pdp.getConfigurationDescriptor().save();
@@ -175,6 +181,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         makeSharabilityQuery.setPrivateShared(true);
     }
 
+    @Override
     public void notifyMoved(Project original, File originalPath, String nueName) {
         if (original == null) {
             project.getAntProjectHelper().notifyDeleted();
@@ -184,9 +191,9 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         String originalFilePath = originalPath.getPath();
         String newFilePath = FileUtil.toFile(project.getProjectDirectory()).getPath();
         if (!originalFilePath.equals(newFilePath)) {
-            //String fromOriginalToNew = IpeUtils.getRelativePath(originalFilePath, newFilePath);
-            String fromNewToOriginal = IpeUtils.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
-            fromNewToOriginal = FilePathAdaptor.normalize(fromNewToOriginal);
+            //String fromOriginalToNew = CndPathUtilitities.getRelativePath(originalFilePath, newFilePath);
+            String fromNewToOriginal = CndPathUtilitities.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
+            fromNewToOriginal = CndPathUtilitities.normalize(fromNewToOriginal);
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.setRelativeOffset(fromNewToOriginal);
         }

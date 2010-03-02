@@ -77,6 +77,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
     /** Gets the supported layout manager class - GridBagLayout.
      * @return the class supported by this delegate
      */
+    @Override
     public Class getSupportedClass() {
         return GridBagLayout.class;
     }
@@ -365,6 +366,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             this.cord = cord;
         }
         
+        @Override
         public int compare(LayoutInfo layoutleft, LayoutInfo layoutright) {
             if ((layoutleft == null) || (layoutright == null)) return 0;
             if (cord == XAXIS) {
@@ -558,6 +560,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             this.constraints = constraints;
         }
 
+        @Override
         public Node.Property[] getProperties() {
             if (properties == null) {
                 createProperties();
@@ -566,10 +569,12 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             return properties;
         }
 
+        @Override
         public Object getConstraintsObject() {
             return constraints;
         }
 
+        @Override
         public LayoutConstraints cloneConstraints() {
             return new GridBagLayoutConstraints((GridBagConstraints)
                                                 constraints.clone());
@@ -888,18 +893,22 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                 this.delegate = delegate;
             }
 
+            @Override
             public boolean useMultipleEditors() {
                 return false; // Issue 20940
             }
 
+            @Override
             public void initPropertyEditor(PropertyEditor prEd, FormProperty property) {
                 delegate.initPropertyEditor(prEd, property);
             }
 
+            @Override
             public FormModel getFormModel() {
                 return delegate.getFormModel();
             }
 
+            @Override
             public Object getOwner() {
                 return delegate.getOwner();
             }
@@ -930,6 +939,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                 }
             }
 
+            @Override
             public Object getTargetValue() {
                 try {
                     return field.get(constraints);
@@ -940,6 +950,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                 }
             }
 
+            @Override
             public void setTargetValue(Object value) {
                 try {
                     field.set(constraints, value);
@@ -1129,6 +1140,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
     static final class AnchorEditor extends GridBagConstrEditor implements FormAwareEditor {
 
+        @Override
         public void setContext(FormModel formModel, FormProperty property) {
             FileObject formFile = FormEditor.getFormDataObject(formModel).getPrimaryFile();
             boolean isJDK6Compatible = ClassPathUtils.isJava6ProjectPlatform(formFile);
@@ -1235,6 +1247,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             property.setCurrentEditor(this);
         }
 
+        @Override
         public void updateFormVersionLevel() {
         }
     }

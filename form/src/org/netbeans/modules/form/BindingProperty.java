@@ -102,10 +102,12 @@ public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
         return binding != null ? "<b>" + getDisplayName() : null; // NOI18N
     }
 
+    @Override
     public MetaBinding getValue() {
         return binding;
     }
 
+    @Override
     public void setValue(MetaBinding val) {
         MetaBinding old = binding;
         if ((old == null) && (val != null)) {
@@ -335,6 +337,7 @@ public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
             if (customizer == null) {
                 customizer = new BindingCustomizer(BindingProperty.this);
                 customizerListener = new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent ev) {
                         setValue(customizer.getBinding());
                     }
@@ -356,10 +359,12 @@ public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
             this.supportsDefaultValue = supportsDefaultValue;
         }
 
+        @Override
         public Object getTargetValue() throws IllegalAccessException, InvocationTargetException {
             return value;
         }
 
+        @Override
         public void setTargetValue(Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             this.value = value;
         }

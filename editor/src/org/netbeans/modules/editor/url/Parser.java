@@ -40,18 +40,16 @@
  */
 package org.netbeans.modules.editor.url;
 
-import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class Parser {
+public final class Parser {
 
     private Parser() {}
 
@@ -69,10 +67,10 @@ public class Parser {
                 }
 
                 switch (ch) {
-                    case '"': case '/': case '.': case '?':
-                    case '%': case '_': case '~': case '=':
-                    case '\\':case '&': case '$': case '-':
-                    case '\'':
+                    case '/': case '.': case '?': //NOI18N
+                    case '%': case '_': case '~': case '=': //NOI18N
+                    case '\\':case '&': case '$': case '-': //NOI18N
+                    case '\'': //NOI18N
                         continue OUTER;
                 }
 
@@ -85,14 +83,14 @@ public class Parser {
             }
 
             switch (ch) {
-                case 'h':
+                case 'h': //NOI18N
                     if (state == 0) {
                         lastURLStart = cntr;
                         state = 1;
                         continue OUTER;
                     }
                     break;
-                case 't':
+                case 't': //NOI18N
                     if (state == 1) {
                         state = 2;
                         continue OUTER;
@@ -103,20 +101,20 @@ public class Parser {
                         }
                     }
                     break;
-                case 'f':
+                case 'f': //NOI18N
                     if (state == 0) {
                         lastURLStart = cntr;
                         state = 2;
                         continue OUTER;
                     }
                     break;
-                case 'p':
+                case 'p': //NOI18N
                     if (state == 3) {
                         state = 4;
                         continue OUTER;
                     }
                     break;
-                case ':':
+                case ':': //NOI18N
                     if (state == 4) {
                         state = 5;
                         continue OUTER;
@@ -128,7 +126,7 @@ public class Parser {
             lastURLStart = (-1);
         }
 
-        if (lastURLStart != (-1)) {
+        if (lastURLStart != (-1) && state == 5) {
             result.add(new int[] {lastURLStart, text.length()});
         }
         

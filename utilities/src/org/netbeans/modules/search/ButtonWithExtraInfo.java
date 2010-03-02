@@ -46,9 +46,9 @@ import java.awt.Point;
 import java.awt.Shape;
 import javax.swing.JLabel;
 import javax.swing.JRadioButton;
+import javax.swing.LayoutStyle;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
-import org.jdesktop.layout.Baseline;
-import org.jdesktop.layout.LayoutStyle;
 
 /**
  * A radio-button with an extra information displayed by the main text.
@@ -86,10 +86,10 @@ class ButtonWithExtraInfo extends JRadioButton {
     private void checkInfoGap() {
         if (infoGap == -1) {
             checkInfoLabel();
-            infoGap = LayoutStyle.getSharedInstance()
+            infoGap = LayoutStyle.getInstance()
                       .getPreferredGap(this,
                                        lblInfo,
-                                       LayoutStyle.RELATED,
+                                       ComponentPlacement.RELATED,
                                        SwingConstants.EAST,
                                        getParent());
             startWidth = lblStart.getPreferredSize().width;
@@ -100,7 +100,7 @@ class ButtonWithExtraInfo extends JRadioButton {
     private void checkInfoPrefSize() {
         if (infoPrefSize == null) {
             infoPrefSize = lblInfo.getPreferredSize();
-            infoBaseline = Baseline.getBaseline(lblInfo, infoPrefSize.width,
+            infoBaseline = lblInfo.getBaseline(infoPrefSize.width,
                                                          infoPrefSize.height);
         }
     }
@@ -125,7 +125,7 @@ class ButtonWithExtraInfo extends JRadioButton {
                 checkInfoPrefSize();
                 assert infoBaseline != -1;
                 int infoX = prefSize.width - insets.right + infoGap;
-                int infoY = Baseline.getBaseline(this, size.width,
+                int infoY = getBaseline(size.width,
                                                        size.height)
                             - infoBaseline;
                 int infoWidth = Math.min(widthDelta - infoGap - (startWidth + endWidth),

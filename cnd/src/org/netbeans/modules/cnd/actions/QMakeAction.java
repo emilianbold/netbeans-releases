@@ -50,7 +50,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
@@ -129,12 +129,12 @@ public class QMakeAction extends AbstractExecutorRunAction {
         FileObject fileObject = dataObject.getPrimaryFile();
         File proFile = FileUtil.toFile(fileObject);
         // Build directory
-        String buildDir = getBuildDirectory(node,Tool.QMakeTool);
+        String buildDir = getBuildDirectory(node,PredefinedToolKind.QMakeTool);
         // Executable
-        String executable = getCommand(node, project, Tool.QMakeTool, "qmake"); // NOI18N
+        String executable = getCommand(node, project, PredefinedToolKind.QMakeTool, "qmake"); // NOI18N
         // Arguments
         String arguments = proFile.getName();// + " " + getArguments(node, Tool.QMakeTool); // NOI18N
-        String[] args = getArguments(node, Tool.QMakeTool); // NOI18N
+        String[] args = getArguments(node, PredefinedToolKind.QMakeTool); // NOI18N
 
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         buildDir = convertToRemoteIfNeeded(execEnv, buildDir);

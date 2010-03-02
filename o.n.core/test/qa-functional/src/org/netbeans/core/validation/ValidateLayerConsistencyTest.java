@@ -42,7 +42,6 @@
 package org.netbeans.core.validation;
 
 import java.io.ByteArrayOutputStream;
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -87,7 +86,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.modules.Dependency;
-import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbCollections;
@@ -117,7 +115,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     public @Override void setUp() throws Exception {
         clearWorkDir();
         Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
-            public Void run() {
+            public @Override Void run() {
                 contextClassLoader = Thread.currentThread().getContextClassLoader();
                 Thread.currentThread().setContextClassLoader(Lookup.getDefault().lookup(ClassLoader.class));
                 return null;
@@ -127,7 +125,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     
     public @Override void tearDown() {
         Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
-            public Void run() {
+            public @Override Void run() {
                 Thread.currentThread().setContextClassLoader(contextClassLoader);
                 return null;
             }
@@ -331,7 +329,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 try {
                     for (;;) {
                         int len = is.read (buffer);
-                        if (len == -1) break;
+                        if (len == -1) {
+                            break;
+                        }
                         read += len;
                     }
                 } finally {
@@ -476,12 +476,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         assertNoErrors(errors.size() + " actions is not registered properly", errors);
     }
     
-    public void testIfOneFileIsDefinedTwiceByDifferentModulesTheyNeedToHaveMutualDependency() throws Exception {
+    public void testLayerOverrides() throws Exception {
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         assertNotNull ("In the IDE mode, there always should be a classloader", l);
         
-        // String -> List<Modules>
-        Map<String,List<String>> files = new HashMap<String,List<String>>();
         class ContentAndAttrs {
             final byte[] contents;
             final Map<String,Object> attrs;
@@ -505,19 +503,15 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 return Arrays.equals(contents, caa.contents) && attrs.equals(caa.attrs);
             }
         }
-        /* < FO path , { content, attributes } > */
-        Map<String,ContentAndAttrs> contents = new HashMap<String,ContentAndAttrs>();
-        /* < FO path , < module name, { content, attributes } > > */
-        Map<String,Map<String,ContentAndAttrs>> differentContents = new HashMap<String,Map<String,ContentAndAttrs>>();
+        Map</* path */String,Map</* owner */String,ContentAndAttrs>> files = new TreeMap<String,Map<String,ContentAndAttrs>>();
         Map</* path */String,Map</* attr name */String,Map</* module name */String,/* attr value */Object>>> folderAttributes =
                 new TreeMap<String,Map<String,Map<String,Object>>>();
+        Map<String,Set<String>> directDeps = new HashMap<String,Set<String>>();
         StringBuffer sb = new StringBuffer();
         Map<String,URL> hiddenFiles = new HashMap<String, URL>();
         Set<String> allFiles = new HashSet<String>();
         final String suffix = "_hidden";
 
-        
-        boolean atLeastOne = false;
         Enumeration<URL> en = l.getResources("META-INF/MANIFEST.MF");
         while (en.hasMoreElements ()) {
             URL u = en.nextElement();
@@ -529,36 +523,52 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 is.close();
             }
             String module = mf.getMainAttributes ().getValue ("OpenIDE-Module");
-            if (module == null) continue;
+            if (module == null) {
+                continue;
+            }
             String layer = mf.getMainAttributes ().getValue ("OpenIDE-Module-Layer");
-            if (layer == null) continue;
+            if (layer == null) {
+                // XXX should also consider META-INF/generated-layer.xml here
+                continue;
+            }
+            String depsS = mf.getMainAttributes().getValue("OpenIDE-Module-Module-Dependencies");
+            if (depsS != null) {
+                Set<String> deps = new HashSet<String>();
+                for (Dependency d : Dependency.create(Dependency.TYPE_MODULE, depsS)) {
+                    deps.add(d.getName().replaceFirst("/.+$", ""));
+                }
+                directDeps.put(module, deps);
+            }
             
-            atLeastOne = true;
             URL base = new URL(u, "../");
             URL layerURL = new URL(base, layer);
-            java.net.URLConnection connect = layerURL.openConnection ();
+            URLConnection connect = layerURL.openConnection ();
             connect.setDefaultUseCaches (false);
             FileSystem fs = new XMLFileSystem(layerURL);
 
             Enumeration<? extends FileObject> all = fs.getRoot().getChildren(true);
             while (all.hasMoreElements ()) {
                 FileObject fo = all.nextElement ();
-                String path = fo.getPath();
+                String simplePath = fo.getPath();
 
-                if (path.endsWith(suffix)) {
-                    hiddenFiles.put(path, layerURL);
+                if (simplePath.endsWith(suffix)) {
+                    hiddenFiles.put(simplePath, layerURL);
                 } else {
-                    allFiles.add(path);
+                    allFiles.add(simplePath);
                 }
+
+                Number weight = (Number) fo.getAttribute("weight");
+                // XXX if weight != null, test that it is actually overriding something or being overridden
+                String weightedPath = weight == null ? simplePath : simplePath + "#" + weight;
 
                 Map<String,Object> attributes = getAttributes(fo, base);
 
                 if (fo.isFolder()) {
                     for (Map.Entry<String,Object> attr : attributes.entrySet()) {
-                        Map<String,Map<String,Object>> m1 = folderAttributes.get(path);
+                        Map<String,Map<String,Object>> m1 = folderAttributes.get(weightedPath);
                         if (m1 == null) {
                             m1 = new TreeMap<String,Map<String,Object>>();
-                            folderAttributes.put(path, m1);
+                            folderAttributes.put(weightedPath, m1);
                         }
                         Map<String,Object> m2 = m1.get(attr.getKey());
                         if (m2 == null) {
@@ -570,105 +580,58 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     continue;
                 }
                 
-                List<String> list = files.get(path);
-                if (list == null) {
-                    list = new ArrayList<String>();
-                    files.put (path, list);
-                    list.add (module);
-                    contents.put(path, new ContentAndAttrs(getFileContent(fo), attributes, layerURL));
-                } else {
-                    ContentAndAttrs contentAttrs = contents.get(path);
-                    ContentAndAttrs nue = new ContentAndAttrs(getFileContent(fo), attributes, layerURL);
-                    if (!nue.equals(contentAttrs)) {
-                        //System.err.println("Found differences in " + path + " between " + nue + " and " + contentAttrs);
-                        Map<String,ContentAndAttrs> diffs = differentContents.get(path);
-                        if (diffs == null) {
-                            diffs = new HashMap<String,ContentAndAttrs>();
-                            differentContents.put(path, diffs);
-                            diffs.put(list.get(0), contentAttrs);
-                        }
-                        diffs.put(module, nue);
-                        list.add (module);
-                    }
+                Map<String,ContentAndAttrs> overrides = files.get(weightedPath);
+                if (overrides == null) {
+                    overrides = new TreeMap<String,ContentAndAttrs>();
+                    files.put(weightedPath, overrides);
                 }
+                overrides.put(module, new ContentAndAttrs(fo.asBytes(), attributes, layerURL));
             }
             // make sure the filesystem closes the stream
             connect.getInputStream ().close ();
         }
-        contents = null; // Not needed any more
-        
-        for (Map.Entry<String,List<String>> e : files.entrySet()) {
-            List<String> list = e.getValue();
-            if (list.size () == 1) continue;
-            
-            Collection<? extends ModuleInfo> res = Lookup.getDefault().lookupAll(ModuleInfo.class);
-            assertFalse("Some modules found", res.isEmpty());
-            
-            List<String> list2 = new ArrayList<String>(list);
-            for (String name : list) {
-                for (ModuleInfo info : res) {
-                    if (name.equals (info.getCodeName ())) {
-                        // remove dependencies
-                        for (Dependency d : info.getDependencies()) {
-                            list2.remove(d.getName());
-                        }
-                    }
-                }
+        assertFalse("At least one layer file is usually used", allFiles.isEmpty());
+
+        for (Map.Entry<String,Map<String,ContentAndAttrs>> e : files.entrySet()) {
+            Map<String,ContentAndAttrs> overrides = e.getValue();
+            if (overrides.size() == 1) {
+                continue;
             }
-            // ok, modules depend on each other
-            if (list2.size() <= 1) continue;
-            
-            sb.append (e.getKey ()).append( " is provided by: " ).append(list).append('\n');
-            Map<String,ContentAndAttrs> diffList = differentContents.get(e.getKey());
-            if (diffList != null) {
-                if (list.size() == 2) {
-                    String module1 = list.get(0);
-                    String module2 = list.get(1);
-                    ContentAndAttrs contentAttrs1 = diffList.get(module1);
-                    ContentAndAttrs contentAttrs2 = diffList.get(module2);
-                    if (!Arrays.equals(contentAttrs1.contents, contentAttrs2.contents)) {
-                        sb.append(' ').append(module1).append(": content = '").append(new String(contentAttrs1.contents)).append('\n');
-                        sb.append(' ').append(module2).append(": content = '").append(new String(contentAttrs2.contents)).append('\n');
-                    }
-                    if (!contentAttrs1.attrs.equals(contentAttrs2.attrs)) {
-                        Map<String,Object> attr1 = contentAttrs1.attrs;
-                        Map<String,Object> attr2 = contentAttrs2.attrs;
-                        Set<String> keys = new HashSet<String>(attr1.keySet());
-                        keys.retainAll(attr2.keySet());
-                        for (String attribute : keys) {
-                            Object value1 = attr1.get(attribute);
-                            Object value2 = attr2.get(attribute);
-                            if (value1 == value2 || (value1 != null && value1.equals(value2))) {
-                                // Remove the common attributes so that just the differences show up
-                                attr1.remove(attribute);
-                                attr2.remove(attribute);
-                            }
-                        }
-                        sb.append(' ').append(module1).append(": different attributes = '").append(contentAttrs1.attrs).append('\n');
-                        sb.append(' ').append(module2).append(": different attributes = '").append(contentAttrs2.attrs).append('\n');
-                    }
-                } else {
-                    for (String module : list) {
-                        ContentAndAttrs contentAttrs = diffList.get(module);
-                        sb.append(" " + module + ": content = '" + new String(contentAttrs.contents) + "', attributes = " + contentAttrs.attrs + "\n");
+            Set<String> overriders = overrides.keySet();
+            String file = e.getKey();
+
+            if (new HashSet<ContentAndAttrs>(overrides.values()).size() == 1) {
+                // All the same. Check whether these are parallel declarations (e.g. CND debugger vs. Java debugger), or vertical.
+                for (String overrider : overriders) {
+                    Set<String> deps = new HashSet<String>(directDeps.get(overrider));
+                    deps.retainAll(overriders);
+                    if (!deps.isEmpty()) {
+                        sb.append(file).append(" is pointlessly overridden in ").append(overrider).
+                                append(" relative to ").append(deps.iterator().next()).append('\n');
                     }
                 }
+                continue;
+            }
+
+            sb.append(file).append(" is provided by: ").append(overriders).append('\n');
+            for (Map.Entry<String,ContentAndAttrs> entry : overrides.entrySet()) {
+                ContentAndAttrs contentAttrs = entry.getValue();
+                sb.append(" ").append(entry.getKey()).append(": content = '").append(new String(contentAttrs.contents)).
+                        append("', attributes = ").append(contentAttrs.attrs).append("\n");
             }
         }        
-        
-        assertTrue ("At least one layer file is usually used", atLeastOne);
         
         for (Map.Entry<String,Map<String,Map<String,Object>>> entry1 : folderAttributes.entrySet()) {
             for (Map.Entry<String,Map<String,Object>> entry2 : entry1.getValue().entrySet()) {
                 if (new HashSet<Object>(entry2.getValue().values()).size() > 1) {
-                    // XXX currently do not check if the modules are unrelated by dependency.
-                    sb.append("Some modules conflict on the definition of " + entry2.getKey() + " for " + entry1.getKey() + ": " + entry2.getValue() + "\n");
+                    sb.append("Some modules conflict on the definition of ").append(entry2.getKey()).append(" for ").
+                            append(entry1.getKey()).append(": ").append(entry2.getValue()).append("\n");
                 }
             }
         }
 
         if (sb.length () > 0) {
-            fail ("Some modules override their files and do not depend on each other\n" + sb);
+            fail("Some modules override some files without using the weight attribute correctly\n" + sb);
         }
 
 
@@ -677,7 +640,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             if (allFiles.contains(p)) {
                 continue;
             }
-            sb.append("file " + e.getKey() + " from " + e.getValue() + " does not hide any other file\n");
+            sb.append("file ").append(e.getKey()).append(" from ").append(e.getValue()).append(" does not hide any other file\n");
         }
 
         if (sb.length () > 0) {
@@ -705,7 +668,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             for (FileObject fo : NbCollections.iterable(new XMLFileSystem(layerURL).getRoot().getChildren(true))) {
                 Object v = getAttributes(fo, base).get(SFS_LB);
                 if (v instanceof Exception) {
-                    sb.append(layerURL + ": " + v + "\n");
+                    sb.append(layerURL).append(": ").append(v).append("\n");
                 }
             }
         }
@@ -733,9 +696,13 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 is.close();
             }
             String module = mf.getMainAttributes ().getValue ("OpenIDE-Module");
-            if (module == null) continue;
+            if (module == null) {
+                continue;
+            }
             String layer = mf.getMainAttributes ().getValue ("OpenIDE-Module-Layer");
-            if (layer == null) continue;
+            if (layer == null) {
+                continue;
+            }
             URL layerURL = new URL(u, "../" + layer);
             urls.add(layerURL);
         }
@@ -763,7 +730,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         
         LayerParseHandler () {}
         
-        public void publish(LogRecord rec) {
+        public @Override void publish(LogRecord rec) {
             if (Level.WARNING.equals(rec.getLevel()) || Level.SEVERE.equals(rec.getLevel())) {
                 errors.add(MessageFormat.format(rec.getMessage(), rec.getParameters()));
             }
@@ -773,11 +740,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             return errors;
         }
 
-        public void flush() {
-        }
+        public @Override void flush() {}
 
-        public void close() throws SecurityException {
-        }
+        public @Override void close() throws SecurityException {}
     }
 
     public void testFolderOrdering() throws Exception {
@@ -834,21 +799,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         FileUtil.getOrder(kids, true);
     }
 
-    private static byte[] getFileContent(FileObject fo) throws IOException {
-        BufferedInputStream in = new BufferedInputStream(fo.getInputStream());
-        int size = (int) fo.getSize();
-        byte[] content = new byte[size];
-        int length = 0;
-        while(length < size) {
-            int readLength = in.read(content, length, size - length);
-            if (readLength <= 0) {
-                throw new IOException("Bad size for "+fo+", size = "+size+", but actual length is "+length);
-            }
-            length +=readLength;
-        }
-        return content;
-    }
-    
     private static Map<String,Object> getAttributes(FileObject fo, URL base) {
         Map<String,Object> attrs = new TreeMap<String,Object>();
         Enumeration<String> en = fo.getAttributes();
@@ -882,34 +832,37 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         }
         return attrs;
     }
-    
+
+    private static final String[] SKIPPED = {
+        "Templates/GUIForms",
+        "Palette/Borders/javax-swing-border-",
+        "Palette/Layouts/javax-swing-BoxLayout",
+        "Templates/Beans/",
+        "PaletteUI/org-netbeans-modules-form-palette-CPComponent",
+        "Templates/Ant/CustomTask.java",
+        "Templates/Privileged/Main.shadow",
+        "Templates/Privileged/JFrame.shadow",
+        "Templates/Privileged/Class.shadow",
+        "Templates/Classes",
+        "Templates/JSP_Servlet",
+        "EnvironmentProviders/ProfileTypes/Execution/nb-j2ee-deployment.instance",
+        "Shortcuts/D-BACK_QUOTE.shadow",
+        "Windows2/Components/", // cannot be loaded with a headless toolkit, so we have to skip these for now
+    };
     private boolean skipFile(FileObject fo) {
         String s = fo.getPath();
-
-        if (s.startsWith("Windows2/Components/")) {
-            // cannot be loaded with a headless toolkit, so we have to skip these for now
-            return true;
-        }
 
         if (s.startsWith ("Templates/") && !s.startsWith ("Templates/Services")) {
             if (s.endsWith (".shadow") || s.endsWith (".java")) {
                 return true;
             }
         }
-        
-        if (s.startsWith ("Templates/GUIForms")) return true;
-        if (s.startsWith ("Palette/Borders/javax-swing-border-")) return true;
-        if (s.startsWith ("Palette/Layouts/javax-swing-BoxLayout")) return true;
-        if (s.startsWith ("Templates/Beans/")) return true;
-        if (s.startsWith ("PaletteUI/org-netbeans-modules-form-palette-CPComponent")) return true;
-        if (s.startsWith ("Templates/Ant/CustomTask.java")) return true;
-        if (s.startsWith ("Templates/Privileged/Main.shadow")) return true;
-        if (s.startsWith ("Templates/Privileged/JFrame.shadow")) return true;
-        if (s.startsWith ("Templates/Privileged/Class.shadow")) return true;
-        if (s.startsWith ("Templates/Classes")) return true;
-        if (s.startsWith ("Templates/JSP_Servlet")) return true;
-        if (s.startsWith ("EnvironmentProviders/ProfileTypes/Execution/nb-j2ee-deployment.instance")) return true;
-        if (s.startsWith ("Shortcuts/D-BACK_QUOTE.shadow")) return true;
+
+        for (String skipped : SKIPPED) {
+            if (s.startsWith(skipped)) {
+                return true;
+            }
+        }
         
         String iof = (String) fo.getAttribute("instanceOf");
         if (iof != null) {

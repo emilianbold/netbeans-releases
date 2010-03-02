@@ -155,7 +155,7 @@ public class CompletionTest extends J2eeTestCase {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(CompletionTest.class);
-        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
+        addServerTests(Server.GLASSFISH_V3, conf, new String[0]);//register server
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
     }
@@ -534,6 +534,9 @@ public class CompletionTest extends J2eeTestCase {
     private void logIntoRef(String message){
         message = message.replaceAll("<\\?>", "");
         message = message.replaceAll("<\\? >", "");
+        if (message.length() > 30){
+            message = message.substring(0,30);
+        }
         ref(message);
     }
 

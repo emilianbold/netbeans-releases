@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 /**
  * Create the second panel in the Makefile wizard.
@@ -112,7 +112,7 @@ public class BaseDirectoryPanel extends DirectoryChooserPanel {
         File dir = null;
 
         baseIsValid = false;
-        text = IpeUtils.expandPath(tf.getText());
+        text = CndPathUtilitities.expandPath(tf.getText());
         if (text.length() > 0) {
             if (text.charAt(0) == File.separatorChar) {
                 dir = new File(text);

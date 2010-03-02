@@ -68,6 +68,10 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
+import org.openidex.search.FileObjectFilter;
+import org.openidex.search.SearchInfoFactory;
 
 /**
  *
@@ -90,7 +94,9 @@ public class SrcNode extends FilterNode {
     }
 
     private SrcNode(PhpProject project, DataFolder folder, FilterNode node, String name, boolean isTest) {
-        super(node, new FolderChildren(project, node, isTest));
+        super(node, new FolderChildren(project, node, isTest), new ProxyLookup(
+                folder.getNodeDelegate().getLookup(),
+                Lookups.singleton(SearchInfoFactory.createSearchInfo(folder.getPrimaryFile(), true, new FileObjectFilter[] {project.getFileObjectFilter()}))));
 
         this.project = project;
         this.isTest = isTest;

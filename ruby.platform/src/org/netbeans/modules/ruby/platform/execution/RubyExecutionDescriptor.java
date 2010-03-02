@@ -97,6 +97,7 @@ public class RubyExecutionDescriptor {
     private InputProcessorFactory errProcessorFactory;
     private boolean addStandardConvertors;
     private boolean lineBased;
+    private boolean ansiStrippging;
     /**
      * Defines whether rerun should be allowed. <i>Currently needed
      * only because rerunning rake test tasks in the test runner does not
@@ -478,7 +479,7 @@ public class RubyExecutionDescriptor {
         this.lineBased = lineBased;
         return this;
     }
-    
+
     public ExecutionDescriptor toExecutionDescriptor() {
         return new ExecutionDescriptor()
             .showProgress(showProgress)

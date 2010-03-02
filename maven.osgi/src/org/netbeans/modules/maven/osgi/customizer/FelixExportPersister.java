@@ -42,13 +42,14 @@ package org.netbeans.modules.maven.osgi.customizer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.Configuration;
-import org.netbeans.modules.maven.model.pom.POMComponent;
 import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
@@ -69,7 +70,8 @@ public class FelixExportPersister implements SelectedItemsTablePersister {
         this.handle = handle;
     }
 
-    public Map<String, Boolean> read() {
+    @Override
+    public SortedMap<String, Boolean> read() {
         String[] exports = PluginPropertyUtils.getPluginPropertyList(project,
                 OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN,
                 OSGIConstants.PARAM_INSTRUCTIONS, OSGIConstants.EXPORT_PACKAGE,
@@ -94,7 +96,8 @@ public class FelixExportPersister implements SelectedItemsTablePersister {
         return InstructionsConverter.computeExportList(instructions, project);
     }
 
-    public void write(Map<String, Boolean> selItems) {
+    @Override
+    public void write(SortedMap<String, Boolean> selItems) {
         Map<Integer, String> exportIns = InstructionsConverter.computeExportInstructions(selItems);
         final POMModel pomModel = handle.getPOMModel();
         
@@ -135,8 +138,8 @@ public class FelixExportPersister implements SelectedItemsTablePersister {
             config.addExtensibilityElement(instructionsEl);
         }
         
-        POMExtensibilityElement exportEl = getOrCreateChild(instructionsEl, OSGIConstants.EXPORT_PACKAGE, pomModel);
-        POMExtensibilityElement privateEl = getOrCreateChild(instructionsEl, OSGIConstants.PRIVATE_PACKAGE, pomModel);
+        POMExtensibilityElement exportEl = ModelUtils.getOrCreateChild(instructionsEl, OSGIConstants.EXPORT_PACKAGE, pomModel);
+        POMExtensibilityElement privateEl = ModelUtils.getOrCreateChild(instructionsEl, OSGIConstants.PRIVATE_PACKAGE, pomModel);
 
         exportEl.setElementText(exportIns.get(InstructionsConverter.EXPORT_PACKAGE));
         privateEl.setElementText(exportIns.get(InstructionsConverter.PRIVATE_PACKAGE));
@@ -144,22 +147,5 @@ public class FelixExportPersister implements SelectedItemsTablePersister {
         handle.markAsModified(pomModel);
     }
 
-    static private POMExtensibilityElement getOrCreateChild (POMComponent parent, String localQName, POMModel pomModel) {
-        POMExtensibilityElement result = null;
-        for (POMExtensibilityElement el : parent.getExtensibilityElements()) {
-            if (localQName.equals(el.getQName().getLocalPart())) {
-                result = el;
-                break;
-            }
-        }
-        
-        if (result == null) {
-            result = pomModel.getFactory().
-                    createPOMExtensibilityElement(new QName(localQName));
-            parent.addExtensibilityElement(result);
-        }
-
-        return result;
-    }
 
 }

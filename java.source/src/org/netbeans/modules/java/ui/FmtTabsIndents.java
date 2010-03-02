@@ -72,36 +72,7 @@ public class FmtTabsIndents extends javax.swing.JPanel {
     public static PreferencesCustomizer.Factory getController() {
         return new CategorySupport.Factory(PreferencesCustomizer.TABS_AND_INDENTS_ID, FmtTabsIndents.class, //NOI18N
                 org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "SAMPLE_TabsIndents"), // NOI18N
-                new String[] { FmtOptions.rightMargin, "30" }, //NOI18N
-                new String[] { FmtOptions.wrapAnnotations, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapArrayInit, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapAssert, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapAssignOps, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapBinaryOps, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapChainedMethodCalls, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapDoWhileStatement, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapEnumConstants, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapExtendsImplementsKeyword, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapExtendsImplementsList, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapFor, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapForStatement, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapIfStatement, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapMethodCallArgs, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapMethodParams, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapTernaryOps, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapThrowsKeyword, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapThrowsList, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.wrapWhileStatement, WrapStyle.WRAP_ALWAYS.name() },
-                new String[] { FmtOptions.alignMultilineArrayInit, Boolean.FALSE.toString() },
-                new String[] { FmtOptions.alignMultilineAssignment, Boolean.FALSE.toString() },
-                new String[] { FmtOptions.alignMultilineBinaryOp, Boolean.FALSE.toString() },
-                new String[] { FmtOptions.alignMultilineCallArgs, Boolean.FALSE.toString() },
-                new String[] { FmtOptions.alignMultilineFor, Boolean.FALSE.toString() },
-                new String[] { FmtOptions.alignMultilineImplements, Boolean.FALSE.toString() },
-                new String[] { FmtOptions.alignMultilineMethodParams, Boolean.FALSE.toString() },
-                new String[] { FmtOptions.alignMultilineParenthesized, Boolean.FALSE.toString() },
-                new String[] { FmtOptions.alignMultilineTernaryOp, Boolean.FALSE.toString() },
-                new String[] { FmtOptions.alignMultilineThrows, Boolean.FALSE.toString() }
+                new String[] { FmtOptions.blankLinesBeforeClass, "0" }
                 );
     }
     

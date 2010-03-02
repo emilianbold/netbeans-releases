@@ -111,19 +111,22 @@ class MfLexer implements Lexer<MfTokenId> {
             state = 2;
             return info.tokenFactory ().createToken (MfTokenId.OPERATOR);
         }
-        int i = input.read ();
-        while (
-            i != '\n' &&
-            i != '\r' &&
-            i != LexerInput.EOF
-        )
-            i = input.read ();
+        int i = 0;
         do {
             i = input.read ();
-        } while (
-            i == '\n' ||
-            i == '\r'
-        );
+            while (
+                i != '\n' &&
+                i != '\r' &&
+                i != LexerInput.EOF
+            )
+                i = input.read ();
+            do {
+                i = input.read ();
+            } while (
+                i == '\n' ||
+                i == '\r'
+            );
+        } while (i == ' ');
         if (i != LexerInput.EOF)
             input.backup (1);
         state = 0;

@@ -43,7 +43,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
 import org.netbeans.modules.cnd.debugger.gdb.models.GdbLocalVariable;
 import org.netbeans.modules.cnd.debugger.gdb.models.GdbWatchVariable;

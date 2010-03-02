@@ -67,6 +67,7 @@ public class GenerateJnlpFileTask extends Task {
     private static final String DEFAULT_APPLICATION_DESC_SHORT = "${APPLICATION.DESC.SHORT}";
     private static final String DEFAULT_JNLP_ICON = "${JNLP.ICONS}";
     private static final String DEFAULT_JNLP_OFFLINE = "${JNLP.OFFLINE.ALLOWED}";
+    private static final String JNLP_UPDATE = "${JNLP.UPDATE}";
     private static final String DEFAULT_JNLP_SECURITY = "${JNLP.SECURITY}";
     private static final String DEFAULT_JNLP_RESOURCES_RUNTIME = "${JNLP.RESOURCES.RUNTIME}";
     private static final String DEFAULT_JNLP_RESOURCES_MAIN_JAR = "${JNLP.RESOURCES.MAIN.JAR}";
@@ -191,8 +192,12 @@ public class GenerateJnlpFileTask extends Task {
             codebaseProp = getProject().getProperty("jnlp.codebase.user"); // property in project.properties
         }
         log("jnlp.codebase.url = " + codebaseProp, Project.MSG_VERBOSE);
-        if (codebaseProp != null && codebaseAttr.equals(DEFAULT_JNLP_CODEBASE)) { // default value => replace
-            ((Element) jnlpElem).setAttribute("codebase", codebaseProp);
+        if (codebaseAttr.equals(DEFAULT_JNLP_CODEBASE)) {   // default value => replace
+            if (codebaseTypeProp.equals("no.codebase")) {   //NOI18N
+                ((Element)jnlpElem).removeAttribute("codebase");    //NOI18N
+            } else if (codebaseProp != null) {
+                ((Element) jnlpElem).setAttribute("codebase", codebaseProp);
+            }
         }
         
         String hrefAttr = ((Element) jnlpElem).getAttribute("href");
@@ -203,6 +208,7 @@ public class GenerateJnlpFileTask extends Task {
         }
         
         processInformationElem(docDom);
+        processBackgroundElem(docDom, jnlpElem);
         processSecurityElem(docDom, jnlpElem);
         processResourcesElem(docDom);
         processDescriptorElem(docDom);
@@ -282,6 +288,7 @@ public class GenerateJnlpFileTask extends Task {
                                     informationElem.appendChild(createIconElement(docDom, fileName, "default"));
                                 }
                             } else if (nodeValue.equals(DEFAULT_JNLP_OFFLINE)) {
+                                //Has to be here to keep compatibility with NB 6.8
                                 informationElem.removeChild(node);
                                 String offlineProp = getProperty("jnlp.offline-allowed", null); // property in project.properties
                                 if (offlineProp.equalsIgnoreCase("true")) {
@@ -297,7 +304,28 @@ public class GenerateJnlpFileTask extends Task {
             }
         }   
     }
-    
+
+    private void processBackgroundElem(final Document docDom, final Node parent) {
+        assert docDom != null;
+        assert parent != null;
+        NodeList childNodes = parent.getChildNodes();
+        int len = childNodes.getLength();
+        for (int i = 0; i < len; i++) {
+            Node node = childNodes.item(i);
+            if (node != null && node.getNodeType() == Node.COMMENT_NODE) { // node might be null (don't know why)
+                if (node.getNodeValue().equals(JNLP_UPDATE)) {
+                    String offlineProp = getProperty("jnlp.offline-allowed", null); // property in project.properties
+                    final Element updateElm = docDom.createElement("update");
+                    final String updateVal = offlineProp.equalsIgnoreCase("true") ? //NOI18N
+                        "background" :  //NOI18N
+                        "always";       //NOI18N
+                    updateElm.setAttribute("check", updateVal); //NOI18N
+                    parent.replaceChild(updateElm, node);
+                }
+            }
+        }
+    }
+
     private Element createIconElement(Document doc, String href, String kind) {
         Element iconElem = doc.createElement("icon");
         iconElem.setAttribute("href", href);
@@ -426,8 +454,8 @@ public class GenerateJnlpFileTask extends Task {
         if (main) {
             jarElem.setAttribute("main", "true"); // NOI18N
         }
-        if (eager) {
-            jarElem.setAttribute("eager", "true"); // NOI18N
+        if (!eager) {
+            jarElem.setAttribute("download", "lazy"); // NOI18N
         }
         return jarElem;
     }

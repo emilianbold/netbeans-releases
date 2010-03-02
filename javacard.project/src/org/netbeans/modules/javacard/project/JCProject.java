@@ -526,8 +526,14 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         //do nothing
     }
 
+    private ClassPath sourcePath;
     public ClassPath getSourceClassPath() {
-        return ClassPathSupport.createClassPath(getRoots().getRoots());
+        synchronized (pml) {
+            if (sourcePath == null) {
+               sourcePath = ClassPathSupport.createClassPath(getRoots().getRoots());
+            }
+            return sourcePath;
+        }
     }
 
     private final Object classpathClosureLock = new Object();
@@ -767,7 +773,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                     if (platform != null && platform.isValid()) {
                         bootPath = platform.getBootstrapLibraries(kind);
                     } else {
-                        return ClassPathSupport.createClassPath("");
+                        bootPath = ClassPathSupport.createClassPath("");
                     }
 
                 }
@@ -1060,6 +1066,8 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                         synchronized (JCProject.this) {
                             cachedBadProjectOrCard = null;
                         }
+                        platformProperties.fire();
+                        deviceProperties.fire();
                         supp.fireChange();
                     }
                 }

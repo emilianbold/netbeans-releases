@@ -66,13 +66,13 @@ static int test_env = 0;
 
 static int __thread inside_open = 0;
 
-#define get_real_addr(name) _get_real_addr(#name, name);
+#define get_real_addr(name) _get_real_addr(#name, (void*)name);
 
 static inline void *_get_real_addr(const char *name, void* wrapper_addr) {
     void *res;
     int saved_errno = errno;
     res = dlsym(RTLD_NEXT, name);
-    if (res && res == wrapper_addr) {
+    if (res && (res == wrapper_addr)) {
         res = dlsym(RTLD_NEXT, name);
     }
     if (!res) {
@@ -82,14 +82,12 @@ static inline void *_get_real_addr(const char *name, void* wrapper_addr) {
     return res;
 }
 
-#if TRACE
+/*--------------------------------------------------
 static void dbg_print_addr(const char* name) {
     void* addr = dlsym(RTLD_NEXT, name);
     trace("\t%s=%X\n", name, addr);
 }
-#endif
 
-#if TRACE
 static inline void print_dlsym() {
     const char* names[] = {
         "lstat", "_lstat", "stat", "_lxstat", "fstat", "lstat64", "fstat64", "_fxstat",
@@ -102,7 +100,7 @@ static inline void print_dlsym() {
         i++;
     }
 }
-#endif
+--------------------------------------------------*/
 
 static bool is_writing(int flags) {
     return flags & (O_TRUNC |  O_WRONLY | O_RDWR | O_CREAT);
@@ -130,7 +128,7 @@ static void post_open(const char *path, int flags) {
 
     if (path[0] != '/') {
         static __thread char real_path[PATH_MAX];
-        if ( realpath(path, real_path)) {
+        if ( normalize_path(path, real_path, sizeof real_path)) {
             path = real_path;
         } else {
             trace_unresolved_path(path);
@@ -192,7 +190,7 @@ static bool pre_open(const char *path, int flags) {
     const char* real_path;
     if (path[0] != '/') {
         static __thread char real_path_buffer[PATH_MAX];
-        if ( realpath(path, real_path_buffer)) {
+        if ( normalize_path(path, real_path_buffer, sizeof real_path_buffer)) {
             //path = real_path;
             real_path = real_path_buffer;
         } else {
@@ -256,8 +254,8 @@ pid_t fork() {
     pid_t result;
     static pid_t (*prev)(void);
         if (!prev) {
-            prev = (pid_t (*)(void)) _get_real_addr("fork", fork);
-        }
+            prev = (pid_t (*)(void)) get_real_addr(fork);
+            }
         if (prev) {
             result = prev();
         } else {
@@ -353,8 +351,8 @@ static void sleep_if_need() {
 static void
 __attribute__((constructor))
 rfs_startup(void) {
+    init_trace_flag("RFS_PRELOAD_TRACE");
     trace_startup("RFS_P", "RFS_PRELOAD_LOG", NULL);
-
     test_env = getenv("RFS_TEST_ENV") ? true : false; // like #ifdef :)
     trace("test_env %s\n", test_env ? "ON" : "OFF");
     
@@ -523,7 +521,7 @@ int execve(const char *path, char *const argv[], char *const envp[]) {
     if (pre_open(path, flags)) {
         static int (*prev)(const char *, char *const *, char *const *);
         if (!prev) {
-            prev = (int (*)(const char *, char *const *, char *const *)) _get_real_addr(function_name, execve);
+            prev = (int (*)(const char *, char *const *, char *const *)) _get_real_addr(function_name, (void*) execve);
         }
         if (prev) {
             result = prev(path, argv, envp);
@@ -548,7 +546,7 @@ int rename(const char *oldpath, const char *path) {
     if (pre_open(oldpath, 0)) {
         static int (*prev)(const char *, const char *);
         if (!prev) {
-            prev = (int (*)(const char *, const char *)) _get_real_addr(function_name, rename);
+            prev = (int (*)(const char *, const char *)) _get_real_addr(function_name, (void*) rename);
         }
         if (prev) {
             result = prev(oldpath, path);

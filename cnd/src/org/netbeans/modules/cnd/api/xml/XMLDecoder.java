@@ -157,10 +157,6 @@ public abstract class XMLDecoder {
         return false;
     }
 
-    private void registerXMLDecoder(String tag, XMLDecoder decoder) {
-        tagMap.put(tag, decoder);
-    }
-
     protected int getVersion(Attributes atts) {
         int version = 0;
         String versionString = atts.getValue("version");        // NOI18N

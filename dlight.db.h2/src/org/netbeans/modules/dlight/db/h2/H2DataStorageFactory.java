@@ -38,42 +38,109 @@
  */
 package org.netbeans.modules.dlight.db.h2;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
+import org.netbeans.modules.dlight.db.h2.RcFile.FormatException;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory.Mode;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorageFactory;
+import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
+import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author masha
  */
-@ServiceProvider(service = org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class, position = 10)
+@ServiceProviders({
+    @ServiceProvider(service = DataStorageFactory.class)
+})
 public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
 
+    private static RcFile rcFile;
     static final String H2_DATA_STORAGE_TYPE = "db:sql:h2"; // NOI18N
     private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
+    //should keep somehow the storages: store them somehow
+
+    {
+
+        String rcFileName = System.getProperty("dlight.h2.rcfile"); // NOI18N
+        if (rcFileName == null) {
+            String homePath = System.getProperty("user.home");// NOI18N
+            if (homePath != null) {
+                try {
+                    File homeDir = new File(homePath);
+                    rcFile = new RcFile(new File(homeDir, ".h2rc"));// NOI18N
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (FormatException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        } else {
+            try {
+                rcFile = new RcFile(new File(rcFileName));
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (FormatException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
 
     public H2DataStorageFactory() {
         supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(H2_DATA_STORAGE_TYPE));
         supportedStorageTypes.addAll(super.getStorageTypes());
+
     }
 
     @Override
     public Collection<DataStorageType> getStorageTypes() {
         return supportedStorageTypes;
+
+
     }
 
     @Override
     public H2DataStorage createStorage() {
         try {
             return new H2DataStorage();
+
+
+
+
+        } catch (SQLException ex) {
+            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, null, ex);
+
+
+
+            return null;
+        }
+
+
+    }
+
+    @Override
+    public H2DataStorage createStorage(String uniqueKey) {
+        try {
+            H2DataStorage result = new H2DataStorage();
+            result.isPersistent = true;
+            rcFile.put("h2.storages", uniqueKey, result.dbURL);//NOI18N
+            rcFile.save();
+
+
+            return result;
+        } catch (IOException ex) {
+            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, null, ex);
+            return null;
         } catch (SQLException ex) {
             DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, null, ex);
             return null;
@@ -81,14 +148,39 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
     }
 
     public H2DataStorage openStorage(String uniqueKey) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        try {
+            //find dburl
+            String dbURL = rcFile.get("h2.storages", uniqueKey);// NOI18N
+            if (dbURL != null) {
+                H2DataStorage result = new H2DataStorage(dbURL);
+                result.loadSchema();
+                result.isPersistent = true;
+                return result;
+            }
+        } catch (SQLException ex) {
+            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, null, ex);
+        }
+
+
+        return null;
+
+
     }
 
     public String getUniqueKey(H2DataStorage storage) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        try {
+            //generate key, put in the
+            rcFile.put("h2.storages", storage.dbURL, storage.dbURL);//NOI18N
+            rcFile.save();
+            return storage.dbURL;
+        } catch (IOException ex) {
+            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     public H2DataStorage openStorage(String uniqueKey, Mode mode) {
-        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        return openStorage(uniqueKey);
+
     }
-    }
+}

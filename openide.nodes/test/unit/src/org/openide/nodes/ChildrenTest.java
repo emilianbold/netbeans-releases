@@ -55,6 +55,12 @@ public class ChildrenTest extends NbTestCase {
         super(name);
     }
 
+    public void testCanCloneChildren() throws CloneNotSupportedException {
+        Children ch = new Children.Array();
+        Children nch = (Children)ch.clone();
+        assertEquals("No nodes", 0, nch.getNodesCount());
+    }
+
     public void testProjectManagerDeadlockDetector() throws Exception {
         boolean ea = false;
         assert ea = true;

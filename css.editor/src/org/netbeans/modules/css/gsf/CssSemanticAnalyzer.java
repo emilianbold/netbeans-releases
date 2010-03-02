@@ -97,6 +97,14 @@ public class CssSemanticAnalyzer extends  SemanticAnalyzer {
             public void visit(SimpleNode node) {
                 if (node.kind() == CssParserTreeConstants.JJTELEMENTNAME || node.kind() == CssParserTreeConstants.JJT_CLASS || node.kind() == CssParserTreeConstants.JJTPSEUDO || node.kind() == CssParserTreeConstants.JJTHASH || node.kind() == CssParserTreeConstants.JJTATTRIB) {
                     int dso = snapshot.getOriginalOffset(node.startOffset());
+                    if(dso == -1) {
+                        //try next offset - for virtually created class and id
+                        //selectors the . an # prefix are virtual code and is not
+                        //a part of the source document, try to highlight just
+                        //the class or id name
+                        dso = snapshot.getOriginalOffset(node.startOffset() + 1);
+                    }
+
                     int deo =snapshot.getOriginalOffset(node.endOffset());
                     //filter out generated and inlined style definitions - they have just virtual selector which
                     //is mapped to empty string

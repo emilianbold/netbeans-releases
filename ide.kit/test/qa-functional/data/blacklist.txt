@@ -26,10 +26,6 @@ org.netbeans.modules.uml.project.UMLProjectDataObject$Loader
 # org.netbeans.modules.visualweb.palette.PaletteItemDataObject$PaletteItemDataLoader
 # org.netbeans.modules.visualweb.complib.ComplibPaletteItemDataObject$PaletteItemDataLoader
 
-# IZ 140390:
-org.netbeans.modules.java.hints.analyzer.AnalyzeFolder
-org.netbeans.modules.java.hints.analyzer.AnalyzeFolder$ToolsAction
-org.netbeans.modules.java.hints.analyzer.OverridePreferences
 
 # org.netbeans.modules.java.jarloader.JarDataLoader
 
@@ -545,3 +541,7 @@ org.netbeans.modules.web.debug.actions.MainProjectManager
 org.netbeans.modules.web.debug.breakpoints.JspLineBreakpoint
 org.netbeans.modules.web.debug.util.Utils
 
+#180830
+org.netbeans.modules.versioning.system.cvss.options.AnnotationColorProvider
+org.netbeans.modules.versioning.util.OptionsPanelColorProvider
+org.netbeans.modules.versioning.util.OptionsPanelColorProvider$AnnotationFormat

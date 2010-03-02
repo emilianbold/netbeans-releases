@@ -23,8 +23,8 @@ trap rollback EXIT
 
 hg pull -r default -u http://hg.netbeans.org/"$push_repo"
 
-hg heads -r default
-HEADS=`hg heads -r default --template "{node}\n" | wc -l`
+hg heads
+HEADS=`hg heads --template "{branches}\n" | grep "^$" | wc -l`
 if [ $HEADS = 2 ]; then
     echo "2 heads, Need to merge"
     hg --config ui.merge=internal:merge --config ui.interactive=1 merge < /dev/null || exit 8
@@ -38,24 +38,13 @@ fi
 
 TIP=`hg log -r . --template '{node}'`
 
-if hg push -r $TIP https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo"; then
+if hg push -f -r $TIP https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo"; then
     echo Push OK.
 else
-    HEADS=`hg heads -r default --template "{node}\n" | wc -l`
+    hg heads
     hg incoming -r default http://hg.netbeans.org/"$push_repo"
-    STATUS=$?
-    # status is 1 when there are no incoming changesets
-    if [ $HEADS = 1 ] && [ $STATUS = 1 ]; then
-        echo Forced push for heads $HEADS and status $STATUS
-        hg push -f -r $TIP https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo" || exit 9
-        echo Forced push OK. Checking incoming changesets:
-        hg incoming
-        echo Done.
-    else
-        echo Too many heads $HEADS in default branch or there are some incoming changesets $STATUS
-        hg incoming
-        exit 9
-    fi
+    echo Too many heads in default branch or there are some incoming changesets
+    exit 9
 fi
 unset BASETIP
 exit 0

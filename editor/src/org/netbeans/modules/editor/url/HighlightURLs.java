@@ -45,11 +45,9 @@ import java.util.List;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JEditorPane;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -62,8 +60,6 @@ import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.ZOrder;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 
 /**
@@ -74,27 +70,22 @@ import org.openide.util.Lookup;
  * @author Tor Norbye
  * @author Jan Lahoda
  */
-public class HighlightURLs implements HighlightsContainer {
+public final class HighlightURLs implements HighlightsContainer {
 
     private static final Logger LOG = Logger.getLogger(HighlightURLs.class.getName());
     
-    private BaseDocument doc;
-    private Lookup lookup;
+    private final BaseDocument doc;
+    private final AttributeSet coloring;
 
-    public HighlightURLs(BaseDocument doc, Lookup lookup) {
+    public HighlightURLs(BaseDocument doc) {
         this.doc = doc;
-        this.lookup = lookup;
+        String mimeType = DocumentUtilities.getMimeType(doc);
+        FontColorSettings fcs = mimeType == null ? null : MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
+        this.coloring = fcs == null ? null : fcs.getTokenFontColors("url"); // NOI18N
     }
 
+    @Override
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
-        FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
-
-        if (fcs == null) {
-            return HighlightsSequence.EMPTY;
-        }
-        
-        AttributeSet coloring = fcs.getTokenFontColors("url"); // NOI18N
-
         if (coloring == null) {
             return HighlightsSequence.EMPTY;
         }
@@ -111,24 +102,27 @@ public class HighlightURLs implements HighlightsContainer {
             for (int[] span : Parser.recognizeURLs(text)) {
                 highlights.add(new int[] {startOffset + span[0], startOffset + span[1]});
             }
+
+            return new SeqImpl(highlights, coloring);
         } catch (BadLocationException e) {
-            Exceptions.printStackTrace(e);
+            LOG.log(Level.WARNING, null, e);
+            return HighlightsSequence.EMPTY;
         }
-        
-        return new SeqImpl(highlights, coloring);
     }
 
+    @Override
     public void addHighlightsChangeListener(HighlightsChangeListener listener) {
     }
 
+    @Override
     public void removeHighlightsChangeListener(HighlightsChangeListener listener) {
     }
     
     private static final class SeqImpl implements HighlightsSequence {
         
         private int[] current;
-        private List<int[]> highlights;
-        private AttributeSet as;
+        private final List<int[]> highlights;
+        private final AttributeSet as;
 
         public SeqImpl(List<int[]> highlights, AttributeSet as) {
             this.highlights = highlights;
@@ -142,7 +136,7 @@ public class HighlightURLs implements HighlightsContainer {
             }
         }
 
-        public boolean moveNext() {
+        public @Override boolean moveNext() {
             if (highlights.isEmpty())
                 return false;
             
@@ -151,49 +145,34 @@ public class HighlightURLs implements HighlightsContainer {
             return true;
         }
 
-        public int getStartOffset() {
+        public @Override int getStartOffset() {
             return current[0];
         }
 
-        public int getEndOffset() {
+        public @Override int getEndOffset() {
             return current[1];
         }
 
-        public AttributeSet getAttributes() {
+        public @Override AttributeSet getAttributes() {
             return as;
         }
-    }
+    } // End of SeqImpl class
     
     public static final class FactoryImpl implements HighlightsLayerFactory {
 
+        @Override
         public HighlightsLayer[] createLayers(Context context) {
             Document doc = context.getDocument();
             
             if (!(doc instanceof BaseDocument)) {
-                return new HighlightsLayer[0];
-            }
-            
-            String mimeType;
-            Object docMT = doc.getProperty("mimeType"); // NOI18N
-            
-            if (docMT instanceof String) {
-                mimeType = (String) docMT;
+                return null;
             } else {
-                JTextComponent pane = context.getComponent();
-
-                if (pane instanceof JEditorPane) {
-                    mimeType = ((JEditorPane) pane).getContentType();
-                } else {
-                    mimeType = "text/base"; // NOI18N
-                }
+                HighlightsContainer c = new HighlightURLs((BaseDocument) doc);
+                return new HighlightsLayer[] {
+                    HighlightsLayer.create(HighlightURLs.class.getName(), ZOrder.SYNTAX_RACK.forPosition(4950), false, c),
+                };
             }
-            
-            HighlightsContainer c = new HighlightURLs((BaseDocument) doc, MimeLookup.getLookup(mimeType));
-
-            return new HighlightsLayer[] {
-                HighlightsLayer.create(HighlightURLs.class.getName(), ZOrder.SYNTAX_RACK.forPosition(4950), false, c),
-            };
         }
         
-    }
+    } // End of FactoryImpl class
 }

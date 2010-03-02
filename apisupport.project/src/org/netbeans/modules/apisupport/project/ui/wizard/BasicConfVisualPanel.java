@@ -100,6 +100,9 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
             generateLayer.setVisible(false);
             layerDL = null;
             layerAL = null;
+            // We do not intend to support OSGi-style lib wrappers.
+            // These would need to use Bundle-ClassPath etc.
+            osgi.setVisible(false);
         } else {
             layerDL = new UIUtil.DocumentAdapter() {
                 public void insertUpdate(DocumentEvent e) {

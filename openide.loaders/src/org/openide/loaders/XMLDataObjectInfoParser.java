@@ -38,7 +38,6 @@ import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -123,20 +122,7 @@ implements FileChangeListener, LexicalHandler, LookupListener {
             if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
                 XMLDataObject.ERR.fine("Cyclic deps on queried class: " + clazz + " for " + getXml());
             }
-            return new InstanceCookie() {
-
-                public Class<?> instanceClass() {
-                    return clazz;
-                }
-
-                public Object instanceCreate() throws IOException {
-                    throw new IOException("Cyclic reference, sorry: " + clazz);
-                }
-
-                public String instanceName() {
-                    return clazz.getName();
-                }
-            };
+            return null;
         }
         Class<?> previous = QUERY.get();
         try {
@@ -247,7 +233,7 @@ implements FileChangeListener, LexicalHandler, LookupListener {
                 try {
                     in = myFileObject.getInputStream();
                 } catch (IOException ex) {
-                    warning(ex, "I/O exception while openning xml.");
+                    warning(ex, "I/O exception while opening " + myFileObject);
                     return NULL;
                 }
                 try {
@@ -390,7 +376,7 @@ implements FileChangeListener, LexicalHandler, LookupListener {
     }
 
     public void warning(Throwable ex, String annotation) {
-        XMLDataObject.ERR.log(Level.WARNING, annotation, ex);
+        XMLDataObject.ERR.log(Level.INFO, annotation, ex);
     }
 
     public void startDTD(String root, String pID, String sID) throws SAXException {

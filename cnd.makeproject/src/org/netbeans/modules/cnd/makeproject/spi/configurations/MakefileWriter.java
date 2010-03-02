@@ -65,6 +65,24 @@ public interface MakefileWriter {
     void writeBuildTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
 
     /**
+     * Writes build test target
+     *
+     * @param confDescriptor  project configuration descriptor
+     * @param conf  current project configuration
+     * @param writer  output stream to generated makefile
+     */
+    void writeBuildTestTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
+
+    /**
+     * Writes test target
+     *
+     * @param confDescriptor  project configuration descriptor
+     * @param conf  current project configuration
+     * @param writer  output stream to generated makefile
+     */
+    void writeRunTestTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
+
+    /**
      * Writes all compile targets (only for managed projects)
      *
      * @param confDescriptor  project configuration descriptor
@@ -74,6 +92,15 @@ public interface MakefileWriter {
     void writeCompileTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
 
     /**
+     * Writes all compile targets (only for managed projects)
+     *
+     * @param confDescriptor  project configuration descriptor
+     * @param conf  current project configuration
+     * @param writer  output stream to generated makefile
+     */
+    void writeCompileTestTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
+
+    /**
      * Writes link target (only for linked projects)
      *
      * @param confDescriptor  project configuration descriptor
@@ -81,6 +108,15 @@ public interface MakefileWriter {
      * @param writer  output stream to generated makefile
      */
     void writeLinkTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
+
+    /**
+     * Writes link test target (only for linked projects)
+     *
+     * @param confDescriptor  project configuration descriptor
+     * @param conf  current project configuration
+     * @param writer  output stream to generated makefile
+     */
+    void writeLinkTestTarget(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException;
 
     /**
      * Writes writes archive target (only for archive projects)

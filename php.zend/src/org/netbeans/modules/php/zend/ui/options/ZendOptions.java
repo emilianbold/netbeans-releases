@@ -40,9 +40,13 @@
 package org.netbeans.modules.php.zend.ui.options;
 
 import java.util.List;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.zend.ZendScript;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
 /**
@@ -60,13 +64,29 @@ public final class ZendOptions {
     // default params
     private static final String PARAMS_FOR_PROJECT = "default.params.project"; // NOI18N
 
+    final ChangeSupport changeSupport = new ChangeSupport(this);
+
     private volatile boolean zendSearched = false;
 
     private ZendOptions() {
+        getPreferences().addPreferenceChangeListener(new PreferenceChangeListener() {
+            @Override
+            public void preferenceChange(PreferenceChangeEvent evt) {
+                changeSupport.fireChange();
+            }
+        });
     }
 
     public static ZendOptions getInstance() {
         return INSTANCE;
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     public synchronized String getZend() {

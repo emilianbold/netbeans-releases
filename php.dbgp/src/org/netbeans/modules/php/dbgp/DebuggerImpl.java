@@ -41,10 +41,7 @@
 package org.netbeans.modules.php.dbgp;
 
 import java.util.concurrent.Callable;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.php.project.api.PhpProjectUtils;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.openide.util.Cancellable;
 
@@ -60,69 +57,18 @@ public class DebuggerImpl implements XDebugStarter {
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.Debugger#debug()
      */
+    @Override
     public void start(Project project, Callable<Cancellable> run, XDebugStarter.Properties properties) {
-        assert properties.startFile != null;
-        SessionId sessionId = getSessionId(project);
-        if (sessionId == null) {
-            sessionId = new SessionId(properties.startFile);
-            DebuggerOptions options = new DebuggerOptions();
-            options.debugForFirstPageOnly = properties.closeSession;
-            options.pathMapping = properties.pathMapping;
-            options.debugProxy = properties.debugProxy;
-
-            debug(sessionId, options, run);
-            long started = System.currentTimeMillis();
-            if (!sessionId.isInitialized(true)) {
-                ConnectionErrMessage.showMe(((int) (System.currentTimeMillis() - started) / 1000));
-                return;
-            }
-        }
+        SessionManager.getInstance().startNewSession(project, run, properties);
     }
 
+    @Override
     public void stop() {
-        Session phpSession = getPhpSession();
-        if (phpSession != null) {
-            SessionProgress forSession = SessionProgress.forSession(phpSession);
-            if (forSession != null) {
-                forSession.cancel();
-            }
-        }
+        SessionManager.getInstance().stopCurrentSession(true);
     }
 
+    @Override
     public boolean isAlreadyRunning() {
-        return getPhpSession() != null;
+        return SessionManager.getInstance().isAlreadyRunning();
     }
-
-    private Session getPhpSession() {
-        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-        for (Session session : sessions) {
-            SessionId sessionId = session.lookupFirst(null, SessionId.class);
-            if (sessionId != null) {
-                Project sessionProject = sessionId.getProject();
-                if (sessionProject != null && PhpProjectUtils.isPhpProject(sessionProject)) {
-                    return session;
-                }
-            }
-        }
-        return null;
-    }
-
-    private SessionId getSessionId(Project project) {
-        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-        for (Session session : sessions) {
-            SessionId sessionId = session.lookupFirst(null, SessionId.class);
-            if (sessionId != null) {
-                Project sessionProject = sessionId.getProject();
-                if (project.equals(sessionProject)) {
-                    return sessionId;
-                }
-            }
-        }
-        return null;
-    }
-
-    public void debug(SessionId id,DebuggerOptions options, Callable<Cancellable> backendLauncher) {
-        SessionManager.getInstance().startSession(id, options, backendLauncher);
-    }
-
 }

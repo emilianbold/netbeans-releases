@@ -58,6 +58,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.queries.FileEncodingQueryImpl;
+import org.netbeans.modules.apisupport.project.queries.OSGiSourceForBinaryImpl;
 import org.netbeans.modules.apisupport.project.queries.TemplateAttributesProvider;
 import org.netbeans.modules.apisupport.project.ui.SuiteActions;
 import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView;
@@ -65,6 +66,7 @@ import org.netbeans.modules.apisupport.project.ui.SuiteOperations;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -111,6 +113,7 @@ public final class SuiteProject implements Project {
     private final PropertyEvaluator eval;
     private final GeneratedFilesHelper genFilesHelper;
     
+    @SuppressWarnings("LeakingThisInConstructor")
     public SuiteProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
@@ -120,6 +123,7 @@ public final class SuiteProject implements Project {
             this, 
             new Info(),
             helper.createAuxiliaryConfiguration(),
+            helper.createAuxiliaryProperties(),
             helper.createCacheDirectoryProvider(),
             new SavedHook(),
             UILookupMergerSupport.createProjectOpenHookMerger(new OpenedHook()),
@@ -131,8 +135,9 @@ public final class SuiteProject implements Project {
             new SuiteCustomizer(this, helper, eval),
             new PrivilegedTemplatesImpl(),
             new SuiteOperations(this),
-            new TemplateAttributesProvider(helper, false),
-            new FileEncodingQueryImpl());
+            new TemplateAttributesProvider(null, helper, false),
+            new FileEncodingQueryImpl(),
+            new OSGiSourceForBinaryImpl(this));
         lookup = LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-apisupport-project-suite/Lookup");
     }
     
@@ -318,7 +323,7 @@ public final class SuiteProject implements Project {
             return;
         }
         String buildImplPath =
-                platform.getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65
+                platform.getHarnessVersion().compareTo(HarnessVersion.V65) <= 0
                 || eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
                 ? "build-impl-65.xsl" : "build-impl.xsl";    // NOI18N
         genFilesHelper.refreshBuildScript(

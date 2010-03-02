@@ -241,7 +241,6 @@ final class FileRecognitionPanel extends BasicWizardIterator.Panel {
 
         org.openide.awt.Mnemonics.setLocalizedText(rbByExtension, org.openide.util.NbBundle.getMessage(FileRecognitionPanel.class, "LBL_ByExtension")); // NOI18N
         rbByExtension.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rbByExtension.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -269,7 +268,6 @@ final class FileRecognitionPanel extends BasicWizardIterator.Panel {
 
         org.openide.awt.Mnemonics.setLocalizedText(rbByElement, org.openide.util.NbBundle.getMessage(FileRecognitionPanel.class, "LBL_ByElement")); // NOI18N
         rbByElement.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rbByElement.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -296,7 +294,7 @@ final class FileRecognitionPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(txtNamespace, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(mimeTypeHint, "(e.g. \"text/x-myformat\" of \"text/myformat+xml\" for XML)");
+        org.openide.awt.Mnemonics.setLocalizedText(mimeTypeHint, "(e.g. \"text/x-myformat\" or \"text/myformat+xml\" for XML)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;

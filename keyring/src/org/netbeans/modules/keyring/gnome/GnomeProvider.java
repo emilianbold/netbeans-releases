@@ -87,6 +87,8 @@ public class GnomeProvider implements KeyringProvider {
             SCHEMA.attributes[0].name = KEY;
             SCHEMA.attributes[0].type = 0; // GNOME_KEYRING_ATTRIBUTE_TYPE_STRING
             SCHEMA.attributes[1] = null;
+            // #178571: try to read some key just to make sure gnome_keyring_find_password_sync is bound:
+            read("NoNeXiStEnT"); // NOI18N
             return true;
         } catch (Throwable t) {
             LOG.log(Level.FINE, null, t);

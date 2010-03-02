@@ -162,6 +162,10 @@ public final class RepositoryPreferences {
                 int position = calculatePosition();
                 fo = getRepoFolder().createData(getFileObjectName(info.getId()));
                 fo.setAttribute("position", position); //NOI18N
+            } else {
+                if (infoCache.containsKey(fo)) {
+                    infoCache.put(fo, info);
+                }
             }
             fo.setAttribute(KEY_TYPE, info.getType());
             fo.setAttribute(KEY_DISPLAY_NAME, info.getName());
@@ -251,6 +255,7 @@ public final class RepositoryPreferences {
 
     private static class Comp implements Comparator<FileObject> {
 
+        @Override
         public int compare(FileObject o1, FileObject o2) {
             if (!o1.isValid() && !o2.isValid()) {
                 return 0;

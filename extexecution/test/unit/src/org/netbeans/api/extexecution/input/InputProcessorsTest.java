@@ -39,8 +39,6 @@
 
 package org.netbeans.api.extexecution.input;
 
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;

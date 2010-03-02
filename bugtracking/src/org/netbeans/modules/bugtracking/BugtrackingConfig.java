@@ -77,12 +77,15 @@ public class BugtrackingConfig {
         return getPreferences().getLong(ARCHIVED_TTL_KEY, DEFAULT_ARCHIVED_TTL);
     }
 
-    public void storeColumnWidths(String key, int[] widths) {
-        for (int i = 0; i < widths.length; i++) {
-            getPreferences().putInt(COLUMN_WIDTH_PREFIX + "." + key + "." + i, widths[i]); // NOI18N
-        }
+    public void storeColumns(String key, String columns) {
+        getPreferences().put(COLUMN_WIDTH_PREFIX + "." + key, columns); // NOI18N
     }
 
+    public String getColumns(String key) {
+        return getPreferences().get(COLUMN_WIDTH_PREFIX + "." + key, ""); // NOI18N
+    }
+
+    @Deprecated
     public int[] getColumnWidths(String key) {
         List<Integer> retval = new ArrayList<Integer>();
         try {
@@ -93,6 +96,7 @@ public class BugtrackingConfig {
                     int idx = Integer.parseInt(k.substring(k.lastIndexOf('.') + 1));    // NOI18N
                     int value = getPreferences().getInt(k, -1);
                     retval.add(idx, value);
+                    getPreferences().remove(k);
                 }
             }
             int[] ret = new int[retval.size()];

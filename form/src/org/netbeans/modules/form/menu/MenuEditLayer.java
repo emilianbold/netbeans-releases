@@ -352,6 +352,7 @@ public class MenuEditLayer extends JPanel {
         
         if(menuBarFormListener == null) {
             menuBarFormListener = new FormModelListener() {
+                @Override
                 public void formChanged(FormModelEvent[] events) {
                     if(events != null) {
                         for(FormModelEvent evt : events) {
@@ -382,6 +383,7 @@ public class MenuEditLayer extends JPanel {
         }
         if(paletteListener == null) {
             paletteListener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if(PaletteUtils.getSelectedItem() == null || 
                             !isMenuRelatedComponentClass(PaletteUtils.getSelectedItem().getComponentClass())) {
@@ -414,6 +416,7 @@ public class MenuEditLayer extends JPanel {
     private void configureSelectionListener() {
         if(selectionListener == null) {
             selectionListener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if(!isAlive) return;
                     Node[] newNodes = (Node[])evt.getNewValue();
@@ -463,6 +466,7 @@ public class MenuEditLayer extends JPanel {
                 
                 // do later so that the component will definitely be on screen by then
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             popup.show(menu,0,menu.getHeight());
@@ -586,6 +590,7 @@ public class MenuEditLayer extends JPanel {
     static final int ACCEL_PREVIEW_WIDTH = 80;
     private static final Border accel_border = new Border() {
 
+        @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             g.setColor(Color.WHITE);
             int offset = 5;
@@ -606,10 +611,12 @@ public class MenuEditLayer extends JPanel {
             g.drawString(shortcut, width-ACCEL_PREVIEW_WIDTH+15,height-3+ioffset);
         }
 
+        @Override
         public Insets getBorderInsets(Component c) {
             return new Insets(0,0,0,ACCEL_PREVIEW_WIDTH);
         }
 
+        @Override
         public boolean isBorderOpaque() {
             return true;
         }
@@ -947,6 +954,7 @@ public class MenuEditLayer extends JPanel {
             prevRollover = rollover;
             prevRollover.setBorder(new Border() {
 
+                @Override
                 public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
                     Graphics2D g2 = (Graphics2D) g;
                     g2.setStroke(DropTargetLayer.DROP_TARGET_LINE_STROKE);
@@ -954,10 +962,12 @@ public class MenuEditLayer extends JPanel {
                     g2.drawRect(x,y,width,height);
                 }
 
+                @Override
                 public Insets getBorderInsets(Component c) {
                     return new Insets(2,2,2,2);
                 }
 
+                @Override
                 public boolean isBorderOpaque() {
                     return false;
                 }
@@ -1173,6 +1183,7 @@ public class MenuEditLayer extends JPanel {
         // don't double register
         if(!formModelListeners.containsKey(metacomp)) {
             FormModelListener fml = new FormModelListener() {
+                @Override
                 public void formChanged(FormModelEvent[] events) {
                     if (events != null) {
                         for(FormModelEvent evt : events) {
@@ -1645,6 +1656,7 @@ public class MenuEditLayer extends JPanel {
     }
     
     private class GlassLayerDropTargetListener implements DropTargetListener {
+        @Override
         public void dragEnter(DropTargetDragEvent dtde) {
             if(shouldRedispatchDnDToHandle(dtde)) {
                 dragProxying = true;
@@ -1673,6 +1685,7 @@ public class MenuEditLayer extends JPanel {
             }
         }
         
+        @Override
         public void dragOver(DropTargetDragEvent dtde) {
             // look at the rad component under the cursor first
             if(dragProxying && shouldRedispatchDnDToHandle(dtde)) {
@@ -1687,9 +1700,11 @@ public class MenuEditLayer extends JPanel {
             }
         }
 
+        @Override
         public void dropActionChanged(DropTargetDragEvent dtde) {
         }
 
+        @Override
         public void dragExit(DropTargetEvent dte) {
             //if(shouldRedispatchDnDToHandle()) {
             if(dragProxying) {
@@ -1698,6 +1713,7 @@ public class MenuEditLayer extends JPanel {
             dragProxying = false;
         }
 
+        @Override
         public void drop(DropTargetDropEvent dtde) {
             //if(shouldRedispatchDnDToHandle()) {
             if(dragProxying) {
@@ -1739,6 +1755,7 @@ public class MenuEditLayer extends JPanel {
             this.wrapee = icon;
         }
         
+        @Override
         public void paintIcon(Component arg0, Graphics g, int x,  int y) {
             if(wrapee != null) {
                 wrapee.paintIcon(arg0, g, x, y);
@@ -1753,6 +1770,7 @@ public class MenuEditLayer extends JPanel {
             }
         }
         
+        @Override
         public int getIconWidth() {
             if(wrapee != null) {
                 return wrapee.getIconWidth();
@@ -1760,6 +1778,7 @@ public class MenuEditLayer extends JPanel {
             return 16;
         }
         
+        @Override
         public int getIconHeight() {
             if(wrapee != null) {
                 return wrapee.getIconHeight();

@@ -100,6 +100,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
@@ -229,7 +230,7 @@ public final class Util {
     public static final NamespaceContext nbmNamespaceContext() {
         return new NamespaceContext() {
             public String getNamespaceURI(String prefix) {
-                return prefix.equals("nbm") ? NbModuleProjectType.NAMESPACE_SHARED : null; // NOI18N
+                return prefix.equals("nbm") ? NbModuleProject.NAMESPACE_SHARED : null; // NOI18N
             }
             public String getPrefix(String namespaceURI) {return null;}
             public Iterator getPrefixes(String namespaceURI) {return null;}
@@ -340,8 +341,7 @@ public final class Util {
         try {
             if (locBundleResource != null) {
                 List<FileObject> bundleFOs = new ArrayList<FileObject>();
-                for (Iterator it = getPossibleResources(locBundleResource); it.hasNext(); ) {
-                    String resource = (String) it.next();
+                for (String resource : getPossibleResources(locBundleResource)) {
                     FileObject bundleFO = sourceDir.getFileObject(resource);
                     if (bundleFO != null) {
                         bundleFOs.add(bundleFO);
@@ -413,9 +413,7 @@ public final class Util {
                         }
                         String base = name.substring(0, dot);
                         String suffix = name.substring(dot);
-                        Iterator<String> it = NbBundle.getLocalizingSuffixes();
-                        while (it.hasNext()) {
-                            String infix = it.next();
+                        for (String infix : NbCollections.iterable(NbBundle.getLocalizingSuffixes())) {
                             File variant = new File(binaryProject.getParentFile(), "locale" + File.separatorChar + base + infix + suffix); // NOI18N
                             if (variant.isFile()) {
                                 JarFile jf = new JarFile(variant);
@@ -448,8 +446,7 @@ public final class Util {
     }
     
     private static void addBundlesFromJar(JarFile jf, List<InputStream> bundleISs, String locBundleResource) throws IOException {
-        for (Iterator it = getPossibleResources(locBundleResource); it.hasNext(); ) {
-            String resource = (String) it.next();
+        for (String resource : getPossibleResources(locBundleResource)) {
             ZipEntry entry = jf.getEntry(resource);
             if (entry != null) {
                 InputStream bundleIS = jf.getInputStream(entry);
@@ -589,9 +586,7 @@ public final class Util {
         ProjectXMLManager pxm = new ProjectXMLManager(target);
         
         // firstly check if the dependency is already not there
-        Set currentDeps = pxm.getDirectDependencies();
-        for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
-            ModuleDependency md = (ModuleDependency) it.next();
+        for (ModuleDependency md : pxm.getDirectDependencies()) {
             if (codeNameBase.equals(md.getModuleEntry().getCodeNameBase())) {
                 Util.err.log(ErrorManager.INFORMATIONAL, codeNameBase + " already added"); // NOI18N
                 return false;
@@ -642,7 +637,7 @@ public final class Util {
         return URLMapper.findFileObject(url) == null ? null : url;
     }
     
-    private static Iterator getPossibleResources(String locBundleResource) {
+    private static Iterable<String> getPossibleResources(String locBundleResource) {
         String locBundleResourceBase, locBundleResourceExt;
         int idx = locBundleResource.lastIndexOf('.');
         if (idx != -1 && idx > locBundleResource.lastIndexOf('/')) {
@@ -653,13 +648,12 @@ public final class Util {
             locBundleResourceExt = "";
         }
         Collection<String> resources = new LinkedHashSet<String>();
-        for (Iterator<String> it = NbBundle.getLocalizingSuffixes(); it.hasNext(); ) {
-            String suffix = it.next();
+        for (String suffix : NbCollections.iterable(NbBundle.getLocalizingSuffixes())) {
             String resource = locBundleResourceBase + suffix + locBundleResourceExt;
             resources.add(resource);
             resources.add(resource);
         }
-        return resources.iterator();
+        return resources;
     }
     
     public static Manifest getManifest(FileObject manifestFO) {
@@ -856,9 +850,9 @@ public final class Util {
         }
         
         // #72669: remove invalid packages.
-        Iterator it = availablePublicPackages.iterator();
+        Iterator<String> it = availablePublicPackages.iterator();
         while (it.hasNext()) {
-            String pkg = (String) it.next();
+            String pkg = it.next();
             if (!Util.isValidJavaFQN(pkg)) {
                 it.remove();
             }

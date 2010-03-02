@@ -317,8 +317,8 @@ final class ResultView extends TopComponent {
 
     private String getTabTitle(Component panel){
         return NbBundle.getMessage(ResultView.class,
-                            "TEXT_MSG_RESULTS_FOR_X",   //NOI18N
-                            String.valueOf(panel.getName())) + "   ";   //NOI18N
+                                   "TEXT_MSG_RESULTS_FOR_X",   //NOI18N
+                                   String.valueOf(panel.getName()));
     }
 
     private void updateTabTitle(JPanel panel) {

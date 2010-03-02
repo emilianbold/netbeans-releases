@@ -56,7 +56,6 @@ public class DialogDisplayerImpl extends DialogDisplayer {
     
     private static Object toReturn;
     private NotifyDescriptor lastNotifyDescriptor;
-    private Dialog dialog;
     
     public static void returnFromNotify(Object value) {
         Object o = DialogDisplayer.getDefault();
@@ -76,10 +75,7 @@ public class DialogDisplayerImpl extends DialogDisplayer {
     }
     
     public Dialog createDialog(DialogDescriptor descriptor) {
-        if (dialog == null) {
-            Assert.fail("Not implemented");
-        }
-        return dialog;
+        throw new UnsupportedOperationException();
     }
     
     public NotifyDescriptor getLastNotifyDescriptor() {
@@ -90,8 +86,4 @@ public class DialogDisplayerImpl extends DialogDisplayer {
         this.lastNotifyDescriptor = null;
     }
 
-    public void setDialog(Dialog dialog) {
-        this.dialog = dialog;
-    }
-    
 }

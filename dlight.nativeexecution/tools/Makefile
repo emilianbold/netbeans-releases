@@ -39,87 +39,38 @@
 
 INSTALLDIR = /dev/null
 
-APP_NAME=privp
-
-#CFLAGS-Windows_XP := -c -mno-cygwin
-CFLAGS-Linux := -c -fPIC
-CFLAGS-SunOS := -c -fPIC
-CFLAGS-Mac_OS_X := -c -fPIC
-
-ifdef 64BITS
-    FLAG64 := -m64
-endif
-
-# The following sets UNAME_S to a platform dependent string. Since
-# this gets evaluated each use, its assigned to "OSNAME" and that
-# is the actual value used in the rest of the Makefile.
-UNAME_S := $(shell uname -s)
-UNAME_P := $(shell uname -p)
-UNAME_M := $(shell uname -m)
-
-OSNAME = $(UNAME_S)
-ifeq ($(findstring _NT-,$(UNAME_S)), _NT-)  # catches Cygwin and MinGW
-	OSNAME = Windows
-endif
-ifeq (Darwin,$(UNAME_S))
-	OSNAME = Mac_OS_X
-endif
-
-CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG64}
-
-ifdef 64BITS
-    PLATFORM_64 := _64
-else
-    PLATFORM_64 :=
-endif
-
-PLATFORM-i386  :=  x86${PLATFORM_64}
-PLATFORM-i686  :=  x86${PLATFORM_64}
-PLATFORM-x86_64  :=  x86${PLATFORM_64}
-PLATFORM-sparc  :=  sparc${PLATFORM_64}
-ifeq (${UNAME_P}, unknown)
-	PLATFORM = ${PLATFORM-${UNAME_M}}
-else
-	PLATFORM = ${PLATFORM-${UNAME_P}}
-endif
-
 testit :sh= uname -s
+
+#CFLAGS-Windows_XP := -mno-cygwin
+CFLAGS-Linux := -fPIC
+CFLAGS-SunOS := -fPIC
+CFLAGS-Mac_OS_X := -fPIC
+FLAG64:=$(shell (echo ${PLATFORM_DIR} | grep 64 >/dev/null && echo -m64) || echo -m32)
 
 DIST=../release/bin/nativeexecution
 BUILD=./build
 
-PLATFORM_DIR=$(OSNAME)-$(PLATFORM)
-APP_PATH=${DIST}/${PLATFORM_DIR}/${APP_NAME}
-APP_OUT=${BUILD}/${PLATFORM_DIR}/${APP_NAME}.o
+APP_PATH=${DIST}/${PLATFORM_DIR}
 
-all: check init ${APP_PATH}
+all: check init privp process_start pty_open
 
-#appliction:
-${APP_PATH}: ${APP_OUT}
-	gcc ${LDFLAGS_APP} -o ${APP_PATH} ${APP_OUT}
+privp:
+	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
 
-${APP_OUT}: ${APP_NAME}.c
-	gcc ${CFLAGS} -o ${APP_OUT} ${APP_NAME}.c
+process_start:
+	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
+
+pty_open:
+	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
 
 clean:
-	rm -rf ${BUILD}/${PLATFORM_DIR} ${DIST}/${PLATFORM_DIR}
+	rm -rf ${APP_PATH} ${DIST}/${PLATFORM_DIR}
 
 cleanall:
 	rm -rf ${BUILD} ${DIST}
 
-install: all
-	@if [ -n "$(INSTALLDIR)" -a -d $(INSTALLDIR) ]; \
-	then \
-		mkdir -p $(INSTALLDIR); \
-		cp ${LIB_PATH} $(INSTALLDIR); \
-		echo "Installing ${LIB_NAME}-${PLATFORM_DIR}.$(SOEXT) in $(INSTALLDIR)"; \
-	else \
-		echo "Error: Missing INSTALLDIR"; \
-		exit 1; \
-	fi
-
 init:
-	@mkdir -p ${BUILD}/${PLATFORM_DIR} ${DIST}/${PLATFORM_DIR}
+	@mkdir -p ${APP_PATH} ${DIST}/${PLATFORM_DIR}
 
 check:
 	@if [ -n "$(testit)" ]; \
@@ -127,12 +78,10 @@ check:
 		echo "Error: You must use GNU make"; \
 		exit 1; \
 	fi
+	
+	@if [ "${PLATFORM_DIR}" = "" ]; \
+	then \
+		echo "PLATFORM_DIR undefined"; \
+		exit 1; \
+	fi
 
-test:
-	@echo "UNAME_S = [${UNAME_S}]"
-	@echo "UNAME_M = [${UNAME_M}]"
-	@echo "UNAME_P = [${UNAME_P}]"
-	@echo "OSNAME = [${OSNAME}]"
-	@echo "PLATFORM = [${PLATFORM}]"
-	@echo "CFLAGS = [${CFLAGS}]"
-	@echo "${APP_NAME} = [${APP_PATH}]"

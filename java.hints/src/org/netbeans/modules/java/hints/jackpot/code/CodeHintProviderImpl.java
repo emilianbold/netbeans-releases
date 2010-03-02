@@ -40,13 +40,9 @@
 package org.netbeans.modules.java.hints.jackpot.code;
 
 import com.sun.source.tree.Tree.Kind;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,7 +51,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,7 +62,6 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.CustomizerProvider;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
@@ -125,7 +119,7 @@ public class CodeHintProviderImpl implements HintProvider {
             id = clazz.getName();
         }
 
-        HintMetadata hm = HintMetadata.create(id, clazz.getName(), metadata.category(), metadata.enabled(), /*metadata.severity()*/HintSeverity.WARNING, createCustomizerProvider(metadata), metadata.suppressWarnings());
+        HintMetadata hm = HintMetadata.create(id, clazz.getName(), metadata.category(), metadata.enabled(), metadata.severity(), metadata.hintKind(), createCustomizerProvider(metadata), metadata.suppressWarnings());
         
         for (MethodWrapper m : clazz.getMethods()) {
             Hint localMetadataAnnotation = m.getAnnotation(Hint.class);
@@ -138,7 +132,7 @@ public class CodeHintProviderImpl implements HintProvider {
                     localID = clazz.getName() + "." + m.getName();
                 }
 
-                localMetadata = HintMetadata.create(localID, clazz.getName(), localMetadataAnnotation.category(), localMetadataAnnotation.enabled(), /*localMetadataAnnotation.severity()*/ HintSeverity.WARNING, createCustomizerProvider(localMetadataAnnotation), localMetadataAnnotation.suppressWarnings());
+                localMetadata = HintMetadata.create(localID, clazz.getName(), localMetadataAnnotation.category(), localMetadataAnnotation.enabled(), localMetadataAnnotation.severity(), localMetadataAnnotation.hintKind(), createCustomizerProvider(localMetadataAnnotation), localMetadataAnnotation.suppressWarnings());
             } else {
                 localMetadata = hm;
             }
@@ -148,11 +142,11 @@ public class CodeHintProviderImpl implements HintProvider {
     }
 
     private static CustomizerProvider createCustomizerProvider(Hint hint) {
-        Class<?> clazz = hint.customizerProvider();
+        Class<? extends CustomizerProvider> clazz = hint.customizerProvider();
 
-        if (CustomizerProvider.class.isAssignableFrom(clazz)) {
+        if (clazz != CustomizerProvider.class) {
             try {
-                return CustomizerProvider.class.cast(clazz.getConstructor().newInstance());
+                return clazz.getConstructor().newInstance();
             } catch (InstantiationException ex) {
                 Logger.getLogger(CodeHintProviderImpl.class.getName()).log(Level.INFO, null, ex);
             } catch (IllegalAccessException ex) {
@@ -332,8 +326,12 @@ public class CodeHintProviderImpl implements HintProvider {
             return Hint.class;
         }
 
-        public Class<?> customizerProvider() {
-            return Void.class;
+        public Class<? extends CustomizerProvider> customizerProvider() {
+            return CustomizerProvider.class;
+        }
+
+        public HintMetadata.Kind hintKind() {
+            return HintMetadata.Kind.HINT;
         }
 
     }

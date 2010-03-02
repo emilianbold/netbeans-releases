@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 import org.netbeans.modules.php.editor.indent.PHPBracketCompleter;
 import org.netbeans.modules.php.editor.indent.PHPFormatter;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
@@ -75,6 +76,7 @@ import org.netbeans.modules.php.project.api.PhpSourcePath;
  * @author Petr Pisl
  */
 @LanguageRegistration(mimeType="text/x-php5") //NOI18N
+@PathRecognizerRegistration(mimeTypes="text/x-php5", sourcePathIds=PhpSourcePath.SOURCE_CP, libraryPathIds=PhpSourcePath.BOOT_CP, binaryLibraryPathIds={}) //NOI18N
 public class PHPLanguage extends DefaultLanguageConfig {
 
     @Override

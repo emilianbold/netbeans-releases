@@ -45,9 +45,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -88,23 +90,21 @@ public class CustomizerPhpUnit extends JPanel {
         initComponents();
 
         initFile(uiProps.getPhpUnitBootstrap(), bootstrapCheckBox, bootstrapTextField);
+        bootstrapForCreateTestsCheckBox.setSelected(uiProps.getPhpUnitBootstrapForCreateTests());
         initFile(uiProps.getPhpUnitConfiguration(), configurationCheckBox, configurationTextField);
         initFile(uiProps.getPhpUnitSuite(), suiteCheckBox, suiteTextField);
 
-        enableFile(bootstrapCheckBox.isSelected(), bootstrapLabel, bootstrapTextField, bootstrapGenerateButton, bootstrapBrowseButton);
+        enableFile(bootstrapCheckBox.isSelected(), bootstrapLabel, bootstrapTextField, bootstrapGenerateButton, bootstrapBrowseButton, bootstrapForCreateTestsCheckBox);
         enableFile(configurationCheckBox.isSelected(), configurationLabel, configurationTextField, configurationGenerateButton, configurationBrowseButton);
-        enableFile(suiteCheckBox.isSelected(), suiteLabel, suiteTextField, suiteBrowseButton, null);
+        enableFile(suiteCheckBox.isSelected(), suiteLabel, suiteTextField, suiteBrowseButton);
 
         addListeners();
         validateData();
     }
 
-    void enableFile(boolean enabled, JLabel label, JTextField textField, JButton browseButton, JButton generateButton) {
-        label.setEnabled(enabled);
-        textField.setEnabled(enabled);
-        browseButton.setEnabled(enabled);
-        if (generateButton != null) {
-            generateButton.setEnabled(enabled);
+    void enableFile(boolean enabled, JComponent... components) {
+        for (JComponent component : components) {
+            component.setEnabled(enabled);
         }
     }
 
@@ -132,6 +132,7 @@ public class CustomizerPhpUnit extends JPanel {
         }
 
         uiProps.setPhpUnitBootstrap(bootstrap);
+        uiProps.setPhpUnitBootstrapForCreateTests(bootstrapForCreateTestsCheckBox.isSelected());
         uiProps.setPhpUnitConfiguration(configuration);
         uiProps.setPhpUnitSuite(suite);
 
@@ -150,11 +151,19 @@ public class CustomizerPhpUnit extends JPanel {
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         bootstrapCheckBox.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                enableFile(e.getStateChange() == ItemEvent.SELECTED, bootstrapLabel, bootstrapTextField, bootstrapGenerateButton, bootstrapBrowseButton);
+                enableFile(e.getStateChange() == ItemEvent.SELECTED,
+                        bootstrapLabel, bootstrapTextField, bootstrapGenerateButton, bootstrapBrowseButton, bootstrapForCreateTestsCheckBox);
                 validateData();
             }
         });
         bootstrapTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        bootstrapForCreateTestsCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                validateData();
+            }
+        });
+
         configurationCheckBox.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 enableFile(e.getStateChange() == ItemEvent.SELECTED, configurationLabel, configurationTextField, configurationGenerateButton, configurationBrowseButton);
@@ -162,9 +171,10 @@ public class CustomizerPhpUnit extends JPanel {
             }
         });
         configurationTextField.getDocument().addDocumentListener(defaultDocumentListener);
+
         suiteCheckBox.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                enableFile(e.getStateChange() == ItemEvent.SELECTED, suiteLabel, suiteTextField, suiteBrowseButton, null);
+                enableFile(e.getStateChange() == ItemEvent.SELECTED, suiteLabel, suiteTextField, suiteBrowseButton);
                 validateData();
             }
         });
@@ -242,6 +252,7 @@ public class CustomizerPhpUnit extends JPanel {
         bootstrapTextField = new JTextField();
         bootstrapBrowseButton = new JButton();
         bootstrapGenerateButton = new JButton();
+        bootstrapForCreateTestsCheckBox = new JCheckBox();
         configurationCheckBox = new JCheckBox();
         configurationLabel = new JLabel();
         configurationTextField = new JTextField();
@@ -275,6 +286,7 @@ public class CustomizerPhpUnit extends JPanel {
                 bootstrapGenerateButtonActionPerformed(evt);
             }
         });
+        Mnemonics.setLocalizedText(bootstrapForCreateTestsCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapForCreateTestsCheckBox.text"));
         Mnemonics.setLocalizedText(configurationCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationCheckBox.text"));
 
         configurationLabel.setLabelFor(configurationTextField);
@@ -310,26 +322,17 @@ public class CustomizerPhpUnit extends JPanel {
         suiteInfoLabel.setLabelFor(this);
 
         Mnemonics.setLocalizedText(suiteInfoLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteInfoLabel.text"));
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addComponent(bootstrapLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(bootstrapTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(bootstrapBrowseButton)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(bootstrapGenerateButton))
             .addComponent(configurationCheckBox)
             .addGroup(layout.createSequentialGroup()
                 .addGap(21, 21, 21)
                 .addComponent(configurationLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(configurationTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                .addComponent(configurationTextField, GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(configurationBrowseButton)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -344,7 +347,7 @@ public class CustomizerPhpUnit extends JPanel {
                         .addComponent(suiteInfoLabel)
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(suiteTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
+                        .addComponent(suiteTextField, GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(suiteBrowseButton))))
             .addGroup(layout.createSequentialGroup()
@@ -353,6 +356,20 @@ public class CustomizerPhpUnit extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(bootstrapCheckBox)
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(bootstrapForCreateTestsCheckBox)
+                        .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(bootstrapLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(bootstrapTextField, GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(bootstrapBrowseButton)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(bootstrapGenerateButton))))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {bootstrapBrowseButton, bootstrapGenerateButton, configurationBrowseButton, configurationGenerateButton, suiteBrowseButton});
@@ -366,15 +383,17 @@ public class CustomizerPhpUnit extends JPanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(bootstrapLabel)
-                    .addComponent(bootstrapTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(bootstrapTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(bootstrapGenerateButton)
                     .addComponent(bootstrapBrowseButton))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(bootstrapForCreateTestsCheckBox)
                 .addGap(18, 18, 18)
                 .addComponent(configurationCheckBox)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(configurationLabel)
-                    .addComponent(configurationTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(configurationTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(configurationGenerateButton)
                     .addComponent(configurationBrowseButton))
                 .addGap(18, 18, 18)
@@ -382,11 +401,11 @@ public class CustomizerPhpUnit extends JPanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(suiteLabel)
-                    .addComponent(suiteTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(suiteTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(suiteBrowseButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(suiteInfoLabel)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         phpUnitLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.phpUnitLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -467,6 +486,7 @@ public class CustomizerPhpUnit extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton bootstrapBrowseButton;
     private JCheckBox bootstrapCheckBox;
+    private JCheckBox bootstrapForCreateTestsCheckBox;
     private JButton bootstrapGenerateButton;
     private JLabel bootstrapLabel;
     private JTextField bootstrapTextField;

@@ -68,7 +68,7 @@ public class Installer extends ModuleInstall {
     public static synchronized Object create() {
         if (facadeDF == null){
             //this is our JSR88 factory lazy init, only when needed via layer.
-            PluginProperties.configureDefaultServerInstance();
+            //PluginProperties.configureDefaultServerInstance();
             facadeDF =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory();
         }
         return facadeDF;
@@ -79,7 +79,7 @@ public class Installer extends ModuleInstall {
     public static synchronized Object createGlassFishV1() {
         if (facadeDFGlassFishV1 == null){
             //this is our JSR88 factory lazy init, only when needed via layer.
-            PluginProperties.configureDefaultServerInstance();
+            //PluginProperties.configureDefaultServerInstance();
             facadeDFGlassFishV1 =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory(NbBundle.getMessage(Installer.class, "LBL_GlassFishV1"));
         }
         return facadeDFGlassFishV1;
@@ -90,7 +90,7 @@ public class Installer extends ModuleInstall {
     public static synchronized Object createGlassFishV2() {
         if (facadeDFGlassFishV2 == null){
             //this is our JSR88 factory lazy init, only when needed via layer.
-            PluginProperties.configureDefaultServerInstance();
+            //PluginProperties.configureDefaultServerInstance();
             facadeDFGlassFishV2 =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory(NbBundle.getMessage(Installer.class, "LBL_GlassFishV2"));
         }
         return facadeDFGlassFishV2;
@@ -101,14 +101,14 @@ public class Installer extends ModuleInstall {
     public static synchronized Object createJavaEEPlusSIP() {
         if (facadeDFJavaEEPlusSIP == null){
             //this is our JSR88 factory lazy init, only when needed via layer.
-            PluginProperties.configureDefaultServerInstance();
+            //PluginProperties.configureDefaultServerInstance();
             facadeDFJavaEEPlusSIP =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory(NbBundle.getMessage(Installer.class, "LBL_JavaEEPlusSIP"));
         }
         return facadeDFJavaEEPlusSIP;
     }  
     
     @Override public void restored() {
-        WindowManager.getDefault().invokeWhenUIReady(new PrepareEnvironment());
+        //WindowManager.getDefault().invokeWhenUIReady(new PrepareEnvironment());
     }
         
     private static class PrepareEnvironment implements Runnable {

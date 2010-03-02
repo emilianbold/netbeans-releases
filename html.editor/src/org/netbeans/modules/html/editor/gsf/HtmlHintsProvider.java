@@ -75,8 +75,6 @@ import org.openide.util.NbBundle;
  */
 public class HtmlHintsProvider implements HintsProvider {
 
-    private boolean cancelled = false;
-
     /**
      * Compute hints applicable to the given compilation info and add to the given result list.
      */
@@ -172,16 +170,21 @@ public class HtmlHintsProvider implements HintsProvider {
         if(e.getKey().equals(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES)) {
             fixes.add(new HintFix() {
                 
+                @Override
                 public String getDescription() {
                     return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_GENERATE_REQUIRED_ATTRIBUTES"); //NOI18N
                 }
 
+                @Override
                 public void implement() throws Exception {
                     AstNode node = HtmlParserResult.getBoundAstNode(e);
                     Collection<String> missingAttrs = (Collection<String>)node.getProperty(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES);
                     assert missingAttrs != null;
-                    int insertOffset = node.startOffset() + 1 + node.name().length();
-
+                    int astOffset = node.startOffset() + 1 + node.name().length();
+                    int insertOffset = context.parserResult.getSnapshot().getOriginalOffset(astOffset);
+                    if(insertOffset == -1) {
+                        return ;
+                    }
                     StringBuffer templateText = new StringBuffer();
                     templateText.append(' ');
 
@@ -191,11 +194,11 @@ public class HtmlHintsProvider implements HintsProvider {
                         templateText.append('"');
                         templateText.append("${");
                         templateText.append(attr);
-                        templateText.append(" default=\"\"}");
+                        templateText.append(" default=\"\"}"); //NOI18N
                         templateText.append('"');
                         templateText.append(' ');
                     }
-                    templateText.append("${cursor}");
+                    templateText.append("${cursor}"); //NOI18N
 
                     CodeTemplate ct = CodeTemplateManager.get(context.doc).createTemporary(templateText.toString());
                     JTextComponent pane = EditorRegistry.focusedComponent();
@@ -208,10 +211,12 @@ public class HtmlHintsProvider implements HintsProvider {
 
                 }
 
+                @Override
                 public boolean isSafe() {
                     return true;
                 }
 
+                @Override
                 public boolean isInteractive() {
                     return false;
                 }
@@ -225,15 +230,11 @@ public class HtmlHintsProvider implements HintsProvider {
         return fixes;
     }
 
-    private static List<HintFix> init(List<HintFix> i) {
-        return i != null ? i : new ArrayList<HintFix>();
-    }
-
     /**
      * Cancel in-progress processing of hints.
      */
+    @Override
     public void cancel() {
-        this.cancelled = true;
     }
 
     /**
@@ -290,22 +291,27 @@ public class HtmlHintsProvider implements HintsProvider {
             this.showInTasklist = showInTaskList;
         }
 
+        @Override
         public Set<?> getCodes() {
             return Collections.emptySet();
         }
 
+        @Override
         public boolean appliesTo(RuleContext context) {
             return true;
         }
 
+        @Override
         public String getDisplayName() {
             return "html"; //NOI18N //does this show up anywhere????
         }
 
+        @Override
         public boolean showInTasklist() {
             return showInTasklist;
         }
 
+        @Override
         public HintSeverity getDefaultSeverity() {
             return severity;
         }
@@ -325,10 +331,12 @@ public class HtmlHintsProvider implements HintsProvider {
             this.snapshot = snapshot;
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_DISABLE_ERROR_CHECKS_FILE"); //NOI18N
         }
 
+        @Override
         public void implement() throws Exception {
             FileObject fo = snapshot.getSource().getFileObject();
             if (fo != null) {
@@ -342,10 +350,12 @@ public class HtmlHintsProvider implements HintsProvider {
             }
         }
 
+        @Override
         public boolean isSafe() {
             return true;
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }
@@ -359,10 +369,12 @@ public class HtmlHintsProvider implements HintsProvider {
             this.snapshot = snapshot;
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_ENABLE_ERROR_CHECKS_FILE"); //NOI18N
         }
 
+        @Override
         public void implement() throws Exception {
             FileObject fo = snapshot.getSource().getFileObject();
             if (fo != null) {
@@ -376,10 +388,12 @@ public class HtmlHintsProvider implements HintsProvider {
             }
         }
 
+        @Override
         public boolean isSafe() {
             return true;
         }
 
+        @Override
         public boolean isInteractive() {
             return false;
         }
@@ -388,10 +402,12 @@ public class HtmlHintsProvider implements HintsProvider {
     private static void forceReparse(final Document doc) {
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 NbEditorDocument nbdoc = (NbEditorDocument) doc;
                 nbdoc.runAtomic(new Runnable() {
 
+                    @Override
                     public void run() {
                         MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
                         if (mti != null) {

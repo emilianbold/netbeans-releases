@@ -49,6 +49,7 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,12 +59,16 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
+import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.imports.ComputeImports;
 import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
@@ -72,11 +77,16 @@ import org.netbeans.modules.java.hints.infrastructure.CreatorBasedLazyFixList;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import org.netbeans.modules.java.hints.infrastructure.Pair;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
+import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -102,7 +112,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
     
     public List<Fix> run(final CompilationInfo info, String diagnosticKey, final int offset, TreePath treePath, Data<ImportCandidatesHolder> data) {
         resume();
-        
+
         int errorPosition = offset + 1; //TODO: +1 required to work OK, rethink
         
         if (errorPosition == (-1)) {
@@ -350,8 +360,23 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                     }
                     
             };
-            
-            js.runModificationTask(task).commit();
+
+            if (js != null) {
+                js.runModificationTask(task).commit();
+            } else {
+                DataObject od = DataObject.find(file);
+                EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
+                Document doc = ec != null ? ec.openDocument() : null;
+                String topLevelLanguageMIMEType = doc != null ? NbEditorUtilities.getMimeType(doc) : null;
+                if (topLevelLanguageMIMEType != null) {
+                    Lookup lookup = MimeLookup.getLookup(MimePath.get(topLevelLanguageMIMEType));
+                    Collection<? extends ImportProcessor> instances = lookup.lookupAll(ImportProcessor.class);
+
+                    for (ImportProcessor importsProcesor : instances) {
+                        importsProcesor.addImport(doc, fqn);
+                    }
+                }
+            }
             return null;
         }
         

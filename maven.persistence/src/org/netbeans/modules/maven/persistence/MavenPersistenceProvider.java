@@ -70,7 +70,7 @@ public class MavenPersistenceProvider implements PersistenceLocationProvider,
     private PersistenceScopeProviderImpl     scopeProvider    = null;
    
     private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
-//    private final FileChangeSupportListener listener = new FileListener();
+
     private ResourceListener res = new ResourceListener();
     /**
      * Creates a new instance of MavenPersistenceProvider

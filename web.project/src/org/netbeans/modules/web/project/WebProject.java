@@ -70,6 +70,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
+import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
@@ -166,6 +167,8 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
+import org.netbeans.spi.project.support.ant.PropertyProvider;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -349,14 +352,14 @@ public final class WebProject implements Project, AntProjectListener {
     
     WebProject(final AntProjectHelper helper) throws IOException {
         this.helper = helper;
-        eval = createEvaluator();
         aux = helper.createAuxiliaryConfiguration();
-        refHelper = new ReferenceHelper(helper, aux, eval);
-        buildExtender = AntBuildExtenderFactory.createAntExtender(new WebExtenderImplementation(), refHelper);
-        genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
         updateProject = new UpdateProjectImpl(this, this.helper, aux);
         this.updateHelper = new UpdateHelper(updateProject, helper);
         updateProject.setUpdateHelper(updateHelper);
+        eval = createEvaluator();
+        refHelper = new ReferenceHelper(helper, aux, eval);
+        buildExtender = AntBuildExtenderFactory.createAntExtender(new WebExtenderImplementation(), refHelper);
+        genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
         webModule = new ProjectWebModule (this, updateHelper, cpProvider);
         apiWebModule = WebModuleFactory.createWebModule(new WebModuleImpl2(webModule));
@@ -461,9 +464,35 @@ public final class WebProject implements Project, AntProjectListener {
     }
     
     private PropertyEvaluator createEvaluator() {
-        // XXX might need to use a custom evaluator to handle active platform substitutions... TBD
-        // It is currently safe to not use the UpdateHelper for PropertyEvaluator; UH.getProperties() delegates to APH
-        return helper.getStandardPropertyEvaluator();
+        // XXX might need to add a custom evaluator to handle active platform substitutions... TBD
+        helper.getStandardPropertyEvaluator();//workaround for issue for #181253, need to call before custom creation
+        PropertyEvaluator baseEval2 = PropertyUtils.sequentialPropertyEvaluator(
+                helper.getStockPropertyPreprovider(),
+                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
+        return PropertyUtils.sequentialPropertyEvaluator(
+                helper.getStockPropertyPreprovider(),
+                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
+                helper.getProjectLibrariesPropertyProvider(),
+                PropertyUtils.userPropertiesProvider(baseEval2,
+                    "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
+                helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH),
+                UPDATE_PROPERTIES);
+    }
+
+    private static final PropertyProvider UPDATE_PROPERTIES;
+
+    static {
+        Map<String, String> defs = new HashMap<String, String>();
+
+        defs.put(ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); //NOI18N
+        defs.put(ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "false"); //NOI18N
+        defs.put(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); //NOI18N
+        defs.put(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); //NOI18N
+        defs.put(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); //NOI18N
+        defs.put(ProjectProperties.JAVAC_PROCESSORPATH,"${" + ProjectProperties.JAVAC_CLASSPATH + "}"); //NOI18N
+        defs.put("javac.test.processorpath", "${" + ProjectProperties.JAVAC_TEST_CLASSPATH + "}"); // NOI18N
+
+        UPDATE_PROPERTIES = PropertyUtils.fixedPropertyProvider(defs);
     }
     
     public PropertyEvaluator evaluator() {
@@ -507,6 +536,7 @@ public final class WebProject implements Project, AntProjectListener {
             QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(), 
                     new String[]{"build.classes.dir", "dist.war"}, new String[]{"build.test.classes.dir"}),
             QuerySupport.createJavadocForBinaryQuery(helper, evaluator(), new String[]{"build.classes.dir", "dist.war"}),
+            QuerySupport.createAnnotationProcessingQuery(helper, eval, ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT),
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
@@ -541,6 +571,7 @@ public final class WebProject implements Project, AntProjectListener {
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
+            new ProjectWebRootProviderImpl()
         });
 
         Lookup ee6 = Lookups.fixed(new Object[]{
@@ -1973,6 +2004,7 @@ public final class WebProject implements Project, AntProjectListener {
             {
                 this.cosEnabled = cosEnabled;
                 this.delegate = delegate;
+                this.delegate.addChangeListener(this);
             }
 
             public boolean isBuilt()
@@ -2122,4 +2154,16 @@ public final class WebProject implements Project, AntProjectListener {
             });
         }
     }
+
+    private final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
+
+        @Override
+        public FileObject getWebRoot(FileObject file) {
+            WebModule webModule = WebModule.getWebModule(file);
+            return webModule != null ? webModule.getDocumentBase() : null;
+        }
+
+    }
+    
+
 }

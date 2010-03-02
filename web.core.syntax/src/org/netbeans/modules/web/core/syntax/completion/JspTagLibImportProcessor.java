@@ -72,14 +72,8 @@ public abstract class JspTagLibImportProcessor implements ImportProcessor {
     protected abstract String createImportDirective(String fqn);
 
     private void processDocument(BaseDocument doc, final String fqn) throws BadLocationException {
-        int insertPos = findInsertPos(doc);
+        int insertPos = Util.findPositionForJspDirective(doc);
         doc.insertString(insertPos, createImportDirective(fqn), null);
-    }
-
-    private int findInsertPos(BaseDocument doc){
-        //TODO: find the optimal position to insert the import directive
-
-        return 0;
     }
 
     public static class JspImportProcessor extends JspTagLibImportProcessor{

@@ -58,7 +58,6 @@ import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Parameters;
 
 /**
  * Miscellaneous utilities for the Rails project module.
@@ -69,6 +68,43 @@ public class RailsProjectUtil {
     
     private RailsProjectUtil () {}
 
+    /**
+     * Gets the contents of the given file as text.
+     * 
+     * @param toRead
+     * @return the contents; an empty string if anything went wrong.
+     */
+    static String asText(File toRead) {
+
+        BufferedReader fr = null;
+        try {
+            fr = new BufferedReader(new FileReader(toRead));
+            StringBuilder sb = new StringBuilder();
+            while (true) {
+                String line = fr.readLine();
+                if (line == null) {
+                    break;
+                }
+                sb.append(line);
+                sb.append("\n"); // NOI18N
+            }
+            
+            return sb.toString();
+
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        } finally {
+            try {
+                if (fr != null) {
+                    fr.close();
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        return "";
+    }
     /** Get the version string out of a ruby version.rb file */
     public static String getVersionString(File versionFile) {
         try {
@@ -113,12 +149,12 @@ public class RailsProjectUtil {
 
     /**
      * Gets the rails version the given <code>project</code> uses. Returns
-     * <code>null</code> if the version could not be determined.
+     * version <code>0</code> if the version could not be determined.
      *
      * @param project
-     * @return
+     * @return the version; <code>0</code> if unknown, never <code>null</code>.
      */
-    public static String getRailsVersion(Project project) {
+    public static RailsVersion getRailsVersion(Project project) {
         GemManager gemManager = RubyPlatform.gemManagerFor(project);
         // Add in the builtins first (since they provide some more specific
         // UI configuration for known generators (labelling the arguments etc.)
@@ -144,7 +180,10 @@ public class RailsProjectUtil {
             }
         }
 
-        return railsVersion;
+        if (railsVersion == null) {
+            return new RailsVersion(0);
+        }
+        return versionFor(railsVersion);
     }
 
     /** Return the version of Rails requested in environment.rb */
@@ -266,7 +305,7 @@ public class RailsProjectUtil {
             if (splitted.length == 2) {
                 return new RailsVersion(Integer.parseInt(splitted[0]),
                         Integer.parseInt(splitted[1]));
-            } else if (splitted.length == 3) {
+            } else if (splitted.length >= 3) {
                 return new RailsVersion(Integer.parseInt(splitted[0]),
                         Integer.parseInt(splitted[1]),
                         Integer.parseInt(splitted[2]));
@@ -278,6 +317,9 @@ public class RailsProjectUtil {
 
     }
 
+    /**
+     * Represents a rails version.
+     */
     public static final class RailsVersion implements Comparable<RailsVersion> {
         private final int major;
         private final int minor;
@@ -310,6 +352,10 @@ public class RailsProjectUtil {
 
         public String asString() {
             return getMajor() + "." + getMinor() + "." + getRevision();
+        }
+
+        public boolean isRails3OrHigher() {
+            return compareTo(new RailsVersion(3)) >= 0;
         }
 
         public int compareTo(RailsVersion o) {

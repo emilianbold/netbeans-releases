@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.openide.util.Lookup;
 
 /**
- * Servise that checks visibility of CSM object and finds include that makes CSM object visible
+ * Service that checks visibility of CSM object and finds include that makes CSM object visible
  * 
  * @author Nick Krasilnikov
  */
@@ -67,7 +67,7 @@ public abstract class CsmIncludeResolver {
     private static final CsmIncludeResolver EMPTY = new Empty();
     /** default instance */
     private static CsmIncludeResolver defaultResolver;
-
+    
     protected CsmIncludeResolver() {
     }
 

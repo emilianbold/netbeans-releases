@@ -60,6 +60,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -69,7 +70,11 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessors;
 import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
@@ -78,6 +83,7 @@ import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputProcessor;
 import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
+import org.netbeans.modules.ruby.railsprojects.Generator.Script;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -233,19 +239,12 @@ public final class GenerateAction extends NodeAction {
 
                 final FileObject dir = project.getProjectDirectory();
                 final File pwd = FileUtil.toFile(project.getProjectDirectory());
-                final String script = "script" + File.separator + panel.getScript(); // NOI18N
+                final Script generatorScript = panel.getScript();
+                final String scriptToRun = "script" + File.separator + generatorScript.script; // NOI18N
                 List<String> argvList = new ArrayList<String>();
+                argvList.addAll(generatorScript.args);
                 argvList.add(type);
 
-                if (panel.isForce()) {
-                    argvList.add("--force"); // NOI18N
-                } else {
-                    argvList.add("--skip"); // NOI18N
-                }
-
-                if (panel.isPretend()) {
-                    argvList.add("--pretend"); // NOI18N
-                }
 
                 String[] names = Utilities.parseParameters(panel.getGeneratedName());
 
@@ -271,6 +270,15 @@ public final class GenerateAction extends NodeAction {
                     }
                 }
 
+                if (panel.isForce()) {
+                    argvList.add("--force"); // NOI18N
+                } else {
+                    argvList.add("--skip"); // NOI18N
+                }
+                if (panel.isPretend()) {
+                    argvList.add("--pretend"); // NOI18N
+                }
+
                 final String[] argv = argvList.toArray(new String[argvList.size()]);
 
                 try {
@@ -288,13 +296,19 @@ public final class GenerateAction extends NodeAction {
                                 env.put("RAILS_ENV", railsEnv);
                             }
                             RubyExecutionDescriptor descriptor =
-                                    new RubyExecutionDescriptor(RubyPlatform.platformFor(project), displayName, pwd, script)
+                                    new RubyExecutionDescriptor(RubyPlatform.platformFor(project), displayName, pwd, scriptToRun)
                                     .additionalArgs(argv)
                                     .fileLocator(locator)
                                     .addStandardRecognizers()
                                     .addOutConvertor(convertor)
                                     .addErrConvertor(convertor);
                             descriptor.addAdditionalEnv(env);
+                            descriptor.setOutProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+                                @Override
+                                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                                    return InputProcessors.ansiStripping(defaultProcessor);
+                                }
+                            });
 
                             RubyProcessCreator rpc = new RubyProcessCreator(descriptor, charsetName);
                             Future<Integer> execution =

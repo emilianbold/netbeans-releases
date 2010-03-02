@@ -112,10 +112,12 @@ class CopySupport {
             this.radComponent = radComponent;
         }
 
+        @Override
         public DataFlavor[] getTransferDataFlavors() {
             return flavors;
         }
 
+        @Override
         public boolean isDataFlavorSupported(DataFlavor flavor) {
             for (int i = 0; i < flavors.length; i++) {
                 if (flavors[i] == flavor) {
@@ -125,6 +127,7 @@ class CopySupport {
             return false;
         }
 
+        @Override
         public Object getTransferData(DataFlavor flavor)
             throws UnsupportedFlavorException, IOException
         {
@@ -287,6 +290,7 @@ class CopySupport {
             return FormUtils.getBundleString(fromCut ? "CTL_CutPaste" : "CTL_CopyPaste"); // NOI18N
         }
 
+        @Override
         public Transferable paste() throws IOException {
             if (java.awt.EventQueue.isDispatchThread())
                 return doPaste();
@@ -306,6 +310,7 @@ class CopySupport {
             }
         }
 
+        @Override
         public Transferable run() throws Exception {
             return doPaste();
         }
@@ -547,6 +552,7 @@ class CopySupport {
             this.targetComponent = targetComponent;
         }
 
+        @Override
         public Transferable paste() throws IOException {
             if (java.awt.EventQueue.isDispatchThread()) {
                 return doPaste();
@@ -567,6 +573,7 @@ class CopySupport {
             }
         }
 
+        @Override
         public Transferable run() throws Exception {
             return doPaste();
         }

@@ -33,6 +33,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.cnd.api.model</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.9</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.cnd.api.project</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -51,6 +60,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.cnd.modelutil</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.10</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.cnd.toolchain</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -63,7 +81,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>1.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -89,6 +107,14 @@
                     <run-dependency>
                         <release-version>2</release-version>
                         <specification-version>1.19</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.gsf.testrunner</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.13</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -170,14 +196,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.execution</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.8.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.explorer</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -230,7 +248,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.16</specification-version>
+                        <specification-version>6.29</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -292,6 +310,10 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
                         <compile-dependency/>
                         <test/>
@@ -328,6 +350,7 @@
                 <friend>com.sun.dlight.xyplot</friend>
                 <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbx</friend>
+                <friend>com.sun.tools.debugger.dbxfacade.tool</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>com.sun.tools.debugger.dbxtool</friend>
                 <friend>com.sun.tools.debugger.gdb</friend>
@@ -345,20 +368,16 @@
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.make2netbeans</friend>
                 <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
+                <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <package>org.netbeans.modules.cnd.makeproject.api</package>
-                <package>org.netbeans.modules.cnd.makeproject.api.actions</package>
-                <package>org.netbeans.modules.cnd.makeproject.api.compilers</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.configurations</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.configurations.ui</package>
-                <package>org.netbeans.modules.cnd.makeproject.api.platforms</package>
-                <package>org.netbeans.modules.cnd.makeproject.api.remote</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.runprofiles</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.ui</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.wizards</package>
                 <package>org.netbeans.modules.cnd.makeproject.spi.configurations</package>
-                <package>org.netbeans.modules.cnd.makeproject.ui.utils</package>
             </friend-packages>
         </data>
     </configuration>

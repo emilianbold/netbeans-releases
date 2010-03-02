@@ -57,11 +57,13 @@ public class FormPaletteActions extends PaletteActions {
     public FormPaletteActions() {
     }
 
+    @Override
     public Action[] getImportActions() {
 
         Action[] res = new Action[3];
 
         res[0] = new AbstractAction( PaletteUtils.getBundleString("CTL_AddJAR_Button") ) { // NOI18N
+                    @Override
                     public void actionPerformed(java.awt.event.ActionEvent e) {
                         BeanInstaller.installBeans(ClassSource.JarEntry.class);
                     }
@@ -70,6 +72,7 @@ public class FormPaletteActions extends PaletteActions {
                  PaletteUtils.getBundleString("ACSD_AddJAR_Button") ); // NOI18N
         
         res[1] = new AbstractAction( PaletteUtils.getBundleString("CTL_AddLibrary_Button") ) { // NOI18N
+                    @Override
                     public void actionPerformed(java.awt.event.ActionEvent e) {
                         BeanInstaller.installBeans(ClassSource.LibraryEntry.class);
                     }
@@ -78,6 +81,7 @@ public class FormPaletteActions extends PaletteActions {
                  PaletteUtils.getBundleString("ACSD_AddLibrary_Button") ); // NOI18N
         
         res[2] = new AbstractAction( PaletteUtils.getBundleString("CTL_AddProject_Button") ) { // NOI18N
+                    @Override
                     public void actionPerformed(java.awt.event.ActionEvent e) {
                         BeanInstaller.installBeans(ClassSource.ProjectEntry.class);
                     }
@@ -88,18 +92,22 @@ public class FormPaletteActions extends PaletteActions {
         return res;
     }
 
+    @Override
     public Action[] getCustomCategoryActions(org.openide.util.Lookup category) {
         return new Action[0]; //TODO implement this
     }
 
+    @Override
     public Action[] getCustomItemActions(org.openide.util.Lookup item) {
         return new Action[0]; //TODO implement this
     }
 
+    @Override
     public Action[] getCustomPaletteActions() {
         return new Action[0]; //TODO implement this
     }
 
+    @Override
     public Action getPreferredAction(org.openide.util.Lookup item) {
         return null; //TODO implement this
     }

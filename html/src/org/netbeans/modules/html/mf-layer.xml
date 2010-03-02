@@ -126,10 +126,10 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
                         <attr name="position" intvalue="2000"/>
                     </file>
-                    <file name="RenameAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="RefactoringAll.shadow">
+			<attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringAll.instance"/>
+			<attr name="position" intvalue="1500"/>
+		    </file>
                     <file name="SaveAsTemplateAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
                         <attr name="position" intvalue="1700"/>
@@ -204,10 +204,10 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
                         <attr name="position" intvalue="2000"/>
                     </file>
-                    <file name="RenameAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    <file name="RefactoringAll.shadow">
+			<attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringAll.instance"/>
+			<attr name="position" intvalue="1500"/>
+		    </file>
                     <file name="SaveAsTemplateAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
                         <attr name="position" intvalue="1700"/>

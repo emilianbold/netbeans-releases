@@ -63,7 +63,6 @@ import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
@@ -297,7 +296,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         for (Map.Entry<FileObject,Element> entry : project.getExtraCompilationUnits().entrySet()) {
             final FileObject pkgroot = entry.getKey();
             Element pkgrootEl = entry.getValue();
-            Element classpathEl = Util.findElement(pkgrootEl, "classpath", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+            Element classpathEl = Util.findElement(pkgrootEl, "classpath", NbModuleProject.NAMESPACE_SHARED); // NOI18N
             assert classpathEl != null : "no <classpath> in " + pkgrootEl;
             final String classpathS = Util.findText(classpathEl);
             if (classpathS == null) {
@@ -334,7 +333,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     }
                     public void configurationXmlChanged(AntProjectEvent ev) {
                         Element pkgrootEl = project.getExtraCompilationUnits().get(pkgroot);
-                        Element classpathEl = Util.findElement(pkgrootEl, "classpath", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+                        Element classpathEl = Util.findElement(pkgrootEl, "classpath", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                         assert classpathEl != null : "no <classpath> in " + pkgrootEl;
                         cpS = Util.findText(classpathEl);
                         pcs.firePropertyChange(PROP_RESOURCES, null, null);

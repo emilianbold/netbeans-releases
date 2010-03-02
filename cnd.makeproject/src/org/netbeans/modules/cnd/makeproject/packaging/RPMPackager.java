@@ -45,7 +45,7 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.openide.util.NbBundle;
@@ -143,7 +143,7 @@ public class RPMPackager implements PackagerDescriptor {
             for (PackagerFileElement elem : fileList) {
                 bw.write("cd \"${TOP}\"\n"); // NOI18N
                 if (elem.getType() == PackagerFileElement.FileType.FILE) {
-                    String toDir = IpeUtils.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
+                    String toDir = CndPathUtilitities.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
                     if (toDir != null && toDir.length() >= 0) {
                         bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
                     }
@@ -151,8 +151,8 @@ public class RPMPackager implements PackagerDescriptor {
                 } else if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
                     bw.write("makeDirectory " + " \"${TMPDIR}/" + elem.getTo() + "\"" + " 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
-                    String toDir = IpeUtils.getDirName(elem.getTo());
-                    String toName = IpeUtils.getBaseName(elem.getTo());
+                    String toDir = CndPathUtilitities.getDirName(elem.getTo());
+                    String toName = CndPathUtilitities.getBaseName(elem.getTo());
                     if (toDir != null && toDir.length() >= 0) {
                         bw.write("makeDirectory " + "\"" + "${TMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
                     }

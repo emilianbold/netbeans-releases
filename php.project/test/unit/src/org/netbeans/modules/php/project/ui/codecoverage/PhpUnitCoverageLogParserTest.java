@@ -61,7 +61,7 @@ public class PhpUnitCoverageLogParserTest extends NbTestCase {
     }
 
     public void testParseLog() throws Exception {
-        Reader reader = new BufferedReader(new FileReader(getCoverageLog()));
+        Reader reader = new BufferedReader(new FileReader(getCoverageLog("phpunit-coverage.xml")));
         CoverageVO coverage = new CoverageVO();
 
         PhpUnitCoverageLogParser.parse(reader, coverage);
@@ -86,10 +86,6 @@ public class PhpUnitCoverageLogParserTest extends NbTestCase {
         assertEquals(2, classMetrics.coveredStatements);
         assertEquals(7, classMetrics.elements);
         assertEquals(6, classMetrics.coveredElements);
-
-        clazz = file.getClasses().get(0);
-        assertEquals("Calculator2", clazz.getName());
-        assertEquals("global", clazz.getNamespace());
 
         assertEquals(4, file.getLines().size());
         LineVO line = file.getLines().get(0);
@@ -137,8 +133,55 @@ public class PhpUnitCoverageLogParserTest extends NbTestCase {
         assertEquals(1234, coverageMetrics.coveredElements);
     }
 
-    private File getCoverageLog() throws Exception {
-        File coverageLog = new File(getDataDir(), "phpunit-coverage.xml");
+    public void testParseLogIssue180254() throws Exception {
+        Reader reader = new BufferedReader(new FileReader(getCoverageLog("phpunit-coverage-issue180254.xml")));
+        CoverageVO coverage = new CoverageVO();
+
+        PhpUnitCoverageLogParser.parse(reader, coverage);
+
+        assertEquals(1265274750, coverage.getGenerated());
+        assertEquals("3.4.6", coverage.getPhpUnitVersion());
+        assertEquals(20, coverage.getFiles().size());
+
+        FileVO file = coverage.getFiles().get(0);
+        assertEquals("/usr/local/zend/apache2/htdocs/mysgc/plugins/mcJobqueuePlugin/lib/jobhandler/McJobqueueTestjobHandler.php", file.getPath());
+        assertEquals(1, file.getClasses().size());
+
+        ClassVO clazz = file.getClasses().get(0);
+        assertEquals("McJobqueueTestjobHandler", clazz.getName());
+        assertEquals("global", clazz.getNamespace());
+
+        ClassMetricsVO classMetrics = clazz.getMetrics();
+        assertNotNull(classMetrics);
+        assertEquals(1, classMetrics.methods);
+        assertEquals(1, classMetrics.coveredMethods);
+        assertEquals(2, classMetrics.statements);
+        assertEquals(2, classMetrics.coveredStatements);
+        assertEquals(3, classMetrics.elements);
+        assertEquals(3, classMetrics.coveredElements);
+
+        assertEquals(5, file.getLines().size());
+        LineVO line = file.getLines().get(0);
+        assertEquals(10, line.num);
+        assertEquals("stmt", line.type);
+        assertEquals(1, line.count);
+
+        FileMetricsVO fileMetrics = file.getMetrics();
+        assertNotNull(fileMetrics);
+        assertEquals(13, fileMetrics.loc);
+        assertEquals(7, fileMetrics.ncloc);
+        assertEquals(1, fileMetrics.classes);
+        assertEquals(1, fileMetrics.methods);
+        assertEquals(1, fileMetrics.coveredMethods);
+        assertEquals(4, fileMetrics.statements);
+        assertEquals(4, fileMetrics.coveredStatements);
+        assertEquals(5, fileMetrics.elements);
+        assertEquals(5, fileMetrics.coveredElements);
+    }
+
+
+    private File getCoverageLog(String filename) throws Exception {
+        File coverageLog = new File(getDataDir(), filename);
         assertTrue(coverageLog.isFile());
         return coverageLog;
     }

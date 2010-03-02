@@ -142,7 +142,7 @@ public final class DocUtils {
         }
     }
     
-    private static Method findDeclaredMethod(Class clazz, String name, Class... parameters) throws NoSuchMethodException {
+    private static Method findDeclaredMethod(Class<?> clazz, String name, Class... parameters) throws NoSuchMethodException {
         while(clazz != null) {
             try {
                 return clazz.getDeclaredMethod(name, parameters);

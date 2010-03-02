@@ -192,6 +192,9 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
      * </p>
      */
     private static final String COMPOSITE_LIBRARY_NAME = "composite-library-name";
+
+    private static final String ATTRIBUTE_NAME = "attribute";
+
     //fake compiler, same name, different class, just not to change this class much
     public Compiler compiler = new Compiler();
     private FaceletsLibrarySupport support;
@@ -230,7 +233,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
             if (libraryClass != null && libraryClass.getLength() > 0) {
                 processTaglibraryClass(libraryClass, compiler);
             } else {
-                processTagLibrary(documentElement, namespace, compiler);
+                processTagLibrary(documents[i], documentElement, namespace, compiler);
             }
 
         }
@@ -249,7 +252,8 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
     }
 
-    private void processTagLibrary(Element documentElement,
+    private void processTagLibrary(DocumentInfo info,
+            Element documentElement,
             String namespace,
             Compiler compiler) {
 
@@ -270,7 +274,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
                 //nothing to process inside the library definition AFAIR...
                 compiler.addTagLibrary(new CompositeComponentLibrary(support, compositeLibraryName, taglibNamespace));
             } else {
-                ClassBasedFaceletsLibrary taglibrary = new ClassBasedFaceletsLibrary(support, taglibNamespace);
+                ClassBasedFaceletsLibrary taglibrary = new ClassBasedFaceletsLibrary(info.getSourceURL(), support, taglibNamespace);
                 //process the library content
                 NodeList tags =
                         documentElement.getElementsByTagNameNS(namespace, TAG);
@@ -318,7 +322,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
                         source = n;
                     } else if (HANDLER_CLASS.equals(n.getLocalName())) {
                         handlerClass = n;
-                    }
+                }
                 }
                 if (component != null) {
                     processComponent(component, taglibrary, tagName);

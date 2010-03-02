@@ -6,10 +6,12 @@ End cursor position = 277
 < f:validateDoubleRange >
 < f:validateLength >
 < f:validateLongRange >
+< f:validateRegex / >
 < f:validator / >
 < f:valueChangeListener / >
 < f:verbatim >
 < f:view >
+< f:viewParam >
 End cursor position = 306
 [<h:|, h:form, <h:form, 331]
 < h:column >

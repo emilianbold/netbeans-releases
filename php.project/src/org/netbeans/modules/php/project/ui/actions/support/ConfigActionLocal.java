@@ -52,6 +52,7 @@ import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.DebugUrl;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.XDebugUrlArguments;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
@@ -129,9 +130,11 @@ class ConfigActionLocal extends ConfigAction {
 
     @Override
     public void debugProject() {
-        final URL[] urlToShow = new URL[1];
+        final URL[] urlToShow = new URL[2];
         try {
             urlToShow[0] = getUrlToShow(CommandUtils.urlForDebugProject(project), CommandUtils.urlForProject(project));
+            urlToShow[1] = getUrlToShow(CommandUtils.urlForDebugProject(project, XDebugUrlArguments.XDEBUG_SESSION_STOP_NO_EXEC),
+                    CommandUtils.urlForProject(project));
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         } catch (StopDebuggingException exc) {
@@ -158,6 +161,16 @@ class ConfigActionLocal extends ConfigAction {
             }
         };
 
+        Cancellable cancellable = new Cancellable() {
+            public boolean cancel() {
+                if (urlToShow[1] != null) {
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(urlToShow[1]);
+                }
+                return true;
+            }
+        };
+
+
         boolean jsDebuggingAvailable = WebClientToolsSessionStarterService.isAvailable();
         if (jsDebuggingAvailable) {
             boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(project);
@@ -178,7 +191,7 @@ class ConfigActionLocal extends ConfigAction {
                 } else {
                     final FileObject fileForProject = CommandUtils.fileForProject(project, webRoot);
                     if (fileForProject != null) {
-                        startDebugger(dbgStarter, runnable, fileForProject);
+                        startDebugger(dbgStarter, runnable, cancellable, fileForProject);
                     } else {
                         String idxFileName = ProjectPropertiesSupport.getIndexFile(project);
                         String err = NbBundle.getMessage(ConfigActionLocal.class, "ERR_Missing_IndexFile", idxFileName);
@@ -212,9 +225,12 @@ class ConfigActionLocal extends ConfigAction {
     @Override
     public void debugFile(Lookup context) {
         // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
-        URL url = null;
+        URL urlForStartDebugging = null;
+        URL urlForStopDebugging = null;
         try {
-            url = getUrlToShow(CommandUtils.urlForDebugContext(project, context), CommandUtils.urlForContext(project, context));
+            urlForStartDebugging = getUrlToShow(CommandUtils.urlForDebugContext(project, context), CommandUtils.urlForContext(project, context));
+            urlForStopDebugging = getUrlToShow(CommandUtils.urlForDebugContext(project, context, XDebugUrlArguments.XDEBUG_SESSION_STOP_NO_EXEC),
+                    CommandUtils.urlForContext(project, context));
         } catch (MalformedURLException ex) {
             //TODO improve error handling
             Exceptions.printStackTrace(ex);
@@ -223,7 +239,7 @@ class ConfigActionLocal extends ConfigAction {
             return;
         }
         preShowUrl(context);
-        debugFile(CommandUtils.fileForContextOrSelectedNodes(context, webRoot), url);
+        debugFile(CommandUtils.fileForContextOrSelectedNodes(context, webRoot), urlForStartDebugging, urlForStopDebugging);
     }
 
     URL getUrlToShow(URL defaultDebugUrl, URL defaultRunUrl) throws MalformedURLException, StopDebuggingException {
@@ -252,27 +268,36 @@ class ConfigActionLocal extends ConfigAction {
         return urlToShow;
     }
 
-    void debugFile(final FileObject selectedFile, final URL debugUrl) {
+    void debugFile(final FileObject selectedFile, final URL urlForStartDebugging, final URL urlForStopDebugging) {
         assert selectedFile != null;
 
         Runnable runnable = new Runnable() {
             public void run() {
-                if (debugUrl != null) {
+                if (urlForStartDebugging != null) {
                     try {
                         if (CommandUtils.getDebugInfo(project).debugClient) {
                             try {
-                                launchJavaScriptDebugger(debugUrl);
+                                launchJavaScriptDebugger(urlForStartDebugging);
                             } catch (URISyntaxException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
                         } else {
-                            HtmlBrowser.URLDisplayer.getDefault().showURL(debugUrl);
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(urlForStartDebugging);
                         }
                     } catch (MalformedURLException ex) {
                         //TODO improve error handling
                         Exceptions.printStackTrace(ex);
                     }
                 }
+            }
+        };
+
+        Cancellable cancellable = new Cancellable() {
+            public boolean cancel() {
+                if (urlForStopDebugging != null) {
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(urlForStopDebugging);
+                }
+                return true;
             }
         };
 
@@ -290,10 +315,10 @@ class ConfigActionLocal extends ConfigAction {
                 if (dbgStarter.isAlreadyRunning()) {
                     if (CommandUtils.warnNoMoreDebugSession()) {
                         dbgStarter.stop();
-                        debugFile(selectedFile, debugUrl);
+                        debugFile(selectedFile, urlForStartDebugging, urlForStopDebugging);
                     }
                 } else {
-                    startDebugger(dbgStarter, runnable, selectedFile);
+                    startDebugger(dbgStarter, runnable, cancellable, selectedFile);
                 }
             }
         } else {
@@ -305,13 +330,8 @@ class ConfigActionLocal extends ConfigAction {
         // hook for subclasses
     }
 
-    private void startDebugger(final XDebugStarter dbgStarter, final Runnable initDebuggingCode,
+    private void startDebugger(final XDebugStarter dbgStarter, final Runnable initDebuggingCode, Cancellable cancellable,
             final FileObject debuggedFile) {
-        Cancellable cancellable = new Cancellable() {
-            public boolean cancel() {
-                return true;
-            }
-        };
         Callable<Cancellable> initDebuggingCallable = Executors.callable(initDebuggingCode, cancellable);
         XDebugStarter.Properties props = XDebugStarter.Properties.create(
                 debuggedFile,

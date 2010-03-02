@@ -77,7 +77,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 78;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 82;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -391,12 +391,15 @@ public final class RepositoryUtils {
         public void cleanErrorCount(String unitName) {
             wasErrors.remove(unitName);
         }
+        @Override
         public boolean unitOpened(String unitName) {
             return parent.unitOpened(unitName);
         }
+        @Override
         public void unitClosed(String unitName) {
             parent.unitClosed(unitName);
         }
+        @Override
         public void anExceptionHappened(String unitName, RepositoryException exc) {
             primitiveErrorStrategy(unitName, exc);
             parent.anExceptionHappened(unitName, exc);

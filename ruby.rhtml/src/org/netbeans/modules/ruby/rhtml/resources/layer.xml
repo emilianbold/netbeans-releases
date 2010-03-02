@@ -108,13 +108,25 @@
                         <attr name="position" intvalue="0"/>
                     </file>
                 </folder>
-                <file name="org-netbeans-modules-ruby-rhtml-editor-RubyEmbeddingProvider$Factory.instance"/>
-                <file name="org-netbeans-modules-ruby-rhtml-editor-HtmlEmbeddingProvider$Factory.instance"/>
+                <file name="org-netbeans-modules-ruby-rhtml-editor-RubyEmbeddingProvider$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
+                <file name="org-netbeans-modules-ruby-rhtml-editor-HtmlEmbeddingProvider$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
 
-                <file name="org-netbeans-modules-ruby-rhtml-RhtmlIndentTaskFactory.instance"/>
-                <file name="org-netbeans-modules-ruby-rhtml-EmbeddedSectionsHighlighting$Factory.instance"/>
-                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
-                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
+                <file name="org-netbeans-modules-ruby-rhtml-RhtmlIndentTaskFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
+                </file>
+                <file name="org-netbeans-modules-ruby-rhtml-EmbeddedSectionsHighlighting$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
                 <file name="org-netbeans-modules-csl-core-GsfParserFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.ParserFactory"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.csl.core.GsfParserFactory.create"/>

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.subversion;
 
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.turbo.CacheIndex;
 import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.turbo.TurboProvider;

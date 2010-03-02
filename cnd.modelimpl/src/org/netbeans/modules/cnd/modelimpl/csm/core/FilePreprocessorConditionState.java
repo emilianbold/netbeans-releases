@@ -241,12 +241,12 @@ public final class FilePreprocessorConditionState {
          * Implements APTParseFileWalker.EvalCallback -
          * adds offset of dead branch to offsets array
          */
+        @Override
         public void onEval(APT apt, boolean result) {
             if (result) {
                 // if condition was evaluated as 'true' check if we
                 // need to mark siblings as dead blocks
                 APT start = apt.getNextSibling();
-                deadBlocks:
                 while (start != null) {
                     APT end = start.getNextSibling();
                     if (end != null) {
@@ -332,6 +332,7 @@ public final class FilePreprocessorConditionState {
         }
 
         private static final Comparator<int[]> COMPARATOR = new Comparator<int[]>() {
+            @Override
             public int compare(int[] segment1, int[] segment2) {
                 return segment1[0] - segment2[0];
             }

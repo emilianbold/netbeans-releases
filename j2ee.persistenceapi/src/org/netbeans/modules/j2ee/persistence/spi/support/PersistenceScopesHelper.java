@@ -49,9 +49,10 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesFactory;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesImplementation;
-import org.netbeans.modules.j2ee.persistenceapi.FileChangeSupport;
-import org.netbeans.modules.j2ee.persistenceapi.FileChangeSupportEvent;
-import org.netbeans.modules.j2ee.persistenceapi.FileChangeSupportListener;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -71,7 +72,7 @@ public final class PersistenceScopesHelper {
 
     private final PersistenceScopes persistenceScopes = PersistenceScopesFactory.createPersistenceScopes(new PersistenceScopesImpl());
     private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
-    private final FileListener fileListener = new FileListener();
+    private final FileChangeListener fileChangeListener = new FileListener();
 
     private PersistenceScope persistenceScope;
     private File persistenceXml;
@@ -107,11 +108,11 @@ public final class PersistenceScopesHelper {
             LOG.fine("changePersistenceScope: newPersistenceXml=" + newPersistenceXml); // NOI18N
 
             if (persistenceXml != null) {
-                FileChangeSupport.DEFAULT.removeListener(fileListener, persistenceXml);
+                FileUtil.removeFileChangeListener(fileChangeListener, persistenceXml);
             }
             if (newPersistenceXml != null) {
                 persistenceXml = newPersistenceXml;
-                FileChangeSupport.DEFAULT.addListener(fileListener, persistenceXml);
+                FileUtil.addFileChangeListener(fileChangeListener, persistenceXml);
             } else {
                 persistenceXml = null;
             }
@@ -172,7 +173,7 @@ public final class PersistenceScopesHelper {
 
         if (oldPersistenceExists != newPersistenceExists) {
             LOG.fine("fileEvent: firing PROP_PERSISTENCE_SCOPES change"); // NOI18N
-            propChangeSupport.firePropertyChange(PersistenceScopes.PROP_PERSISTENCE_SCOPES, null, null);
+            propChangeSupport.firePropertyChange(PersistenceScopes.PROP_PERSISTENCE_SCOPES, oldPersistenceExists, newPersistenceExists);
         }
     }
 
@@ -197,20 +198,38 @@ public final class PersistenceScopesHelper {
     /**
      * Listener on the persistence.xml file.
      */
-    private class FileListener implements FileChangeSupportListener {
+    private class FileListener implements FileChangeListener {
 
-        public void fileCreated(FileChangeSupportEvent event) {
-            LOG.fine("fileCreated: " + event.getPath());
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            LOG.fine("fileCreated: " + fe.getFile().getPath());
             fileEvent();
         }
 
-        public void fileDeleted(FileChangeSupportEvent event) {
-            LOG.fine("fileDeleted: " + event.getPath());
+        @Override
+        public void fileChanged(FileEvent fe) {
+            LOG.fine("fileModified: " + fe.getFile().getPath());
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            LOG.fine("fileDeleted: " + fe.getFile().getPath());
             fileEvent();
         }
 
-        public void fileModified(FileChangeSupportEvent event) {
-            LOG.fine("fileModified: " + event.getPath());
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+
         }
     }
 
@@ -221,14 +240,17 @@ public final class PersistenceScopesHelper {
      */
     private class PersistenceScopesImpl implements PersistenceScopesImplementation {
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             PersistenceScopesHelper.this.addPropertyChangeListener(listener);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             PersistenceScopesHelper.this.removePropertyChangeListener(listener);
         }
 
+        @Override
         public PersistenceScope[] getPersistenceScopes() {
             return PersistenceScopesHelper.this.getPersistenceScopeList();
         }

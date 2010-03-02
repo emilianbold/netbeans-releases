@@ -58,7 +58,7 @@ import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
+import org.netbeans.modules.subversion.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.ui.diff.DiffAction;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
@@ -91,7 +91,7 @@ public class NotificationsManager {
     private final RequestProcessor rp;
     private final RequestProcessor.Task notificationTask;
     private final FileStatusCache cache;
-    private final SvnKenaiSupport supp;
+    private final SvnKenaiAccessor kenaiAccessor;
     private Boolean enabled;
 
     private Map<File, Long> notifiedFiles = Collections.synchronizedMap(new HashMap<File, Long>());
@@ -101,7 +101,7 @@ public class NotificationsManager {
         rp = new RequestProcessor("SubversionNotifications", 1, true);  //NOI18N
         notificationTask = rp.create(new NotificationTask());
         cache = Subversion.getInstance().getStatusCache();
-        supp = SvnKenaiSupport.getInstance();
+        kenaiAccessor = SvnKenaiAccessor.getInstance();
     }
 
     /**
@@ -179,7 +179,7 @@ public class NotificationsManager {
             // let's leave a possibility to disable the notifications
             enabled = new Boolean(!"false".equals(System.getProperty("subversion.notificationsEnabled", "true"))); //NOI18N
         }
-        return enabled.booleanValue() && supp.isLogged(null);
+        return enabled.booleanValue() && kenaiAccessor.isLogged(null);
     }
 
     private boolean isUpToDate(File file) {
@@ -354,7 +354,7 @@ public class NotificationsManager {
         private SVNUrl getRepositoryRoot (File file) {
             SVNUrl repositoryUrl = null;
             SVNUrl url = getRepositoryUrl(file);
-            if (url != null && supp.isKenai(url.toString()) && supp.isLogged(url.toString())) {
+            if (url != null && kenaiAccessor.isKenai(url.toString()) && kenaiAccessor.isLogged(url.toString())) {
                 repositoryUrl = url;
             }
             return repositoryUrl;

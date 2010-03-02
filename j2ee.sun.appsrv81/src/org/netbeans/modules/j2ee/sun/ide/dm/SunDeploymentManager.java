@@ -1,8 +1,7 @@
-// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-// </editor-fold>
 
 package org.netbeans.modules.j2ee.sun.ide.dm;
 
@@ -213,7 +211,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                 this.userName = userName;
             }
             if (password == null && props != null) {
-                this.password = props.getProperty(InstanceProperties.PASSWORD_ATTR);
+                this.password = DeploymentManagerProperties.getPassword(props);
             } else {
                 this.password = password;
             }
@@ -237,9 +235,9 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         resetInnerDeploymentManager();
         calculateIsLocal();
     }
+
     
-    
-    
+
     /* return the real dm created from the app server implementation of 88, not our wrapper (ie. not this class
      **
      */
@@ -298,7 +296,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     public String getPassword() {
         InstanceProperties props = SunURIManager.getInstanceProperties(platformRoot, host, adminPortNumber);
         if (null != props) {
-            this.password = props.getProperty(InstanceProperties.PASSWORD_ATTR);
+            this.password = DeploymentManagerProperties.getPassword(props);
         }
         if ("".equals(password)) { // NOI18N
             //it means we did not stored the password. Get it from the static in memory cache if available
@@ -1581,10 +1579,6 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         String val = getUserName();
         if (null != val) {
             antProps.setProperty("sjsas.username", val);         // NOI18N
-        }
-        val = getPassword();
-        if (null != val) {
-            antProps.setProperty("sjsas.password", val);         // NOI18N
         }
         antProps.setProperty("sjsas.host",getHost());
         antProps.setProperty("sjsas.port",getPort()+"");

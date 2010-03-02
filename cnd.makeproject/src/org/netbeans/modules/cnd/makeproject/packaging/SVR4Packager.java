@@ -49,8 +49,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
@@ -187,7 +187,7 @@ public class SVR4Packager implements PackagerDescriptor {
             // Do all sub dirrectories
             for (PackagerFileElement elem : fileList) {
                 if (elem.getType() == PackagerFileElement.FileType.FILE || elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
-                    String path = IpeUtils.getDirName(packagingConfiguration.expandMacros(elem.getTo()));
+                    String path = CndPathUtilitities.getDirName(packagingConfiguration.expandMacros(elem.getTo()));
                     String base = ""; // NOI18N
                     if (path != null && path.length() > 0) {
                         StringTokenizer tokenizer = new StringTokenizer(path, "/"); // NOI18N
@@ -260,8 +260,8 @@ public class SVR4Packager implements PackagerDescriptor {
                 bw.write(" " + elem.getTo());// NOI18N
                 if (elem.getFrom().length() > 0) {
                     String from = elem.getFrom();
-                    if (IpeUtils.isPathAbsolute(from)) {
-                        from = IpeUtils.toRelativePath(conf.getBaseDir(), from);
+                    if (CndPathUtilitities.isPathAbsolute(from)) {
+                        from = CndPathUtilitities.toRelativePath(conf.getBaseDir(), from);
                     }
                     bw.write("=" + from);// NOI18N
                 }

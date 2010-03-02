@@ -56,16 +56,16 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushOperation;
-import org.netbeans.modules.mercurial.hooks.spi.HgHook;
-import org.netbeans.modules.mercurial.hooks.spi.HgHookContext;
-import org.netbeans.modules.mercurial.hooks.spi.HgHookContext.LogEntry;
+import org.netbeans.modules.versioning.hooks.HgHook;
+import org.netbeans.modules.versioning.hooks.HgHookContext;
+import org.netbeans.modules.versioning.hooks.HgHookContext.LogEntry;
 import org.openide.util.NbBundle;
 
 /**
  * Mercurial commit hook implementation
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.mercurial.hooks.spi.HgHook.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.hooks.HgHook.class)
 public class HgHookImpl extends HgHook {
 
     private static final String[] SUPPORTED_ISSUE_INFO_VARIABLES = new String[] {"id", "summary"};                        // NOI18N

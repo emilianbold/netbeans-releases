@@ -65,6 +65,9 @@ public final class ClusterizeVisualPanel3 extends JPanel {
 
     @Override
     public String getName() {
+        if (panel == null || panel.settings == null) {
+            return "";
+        }
         return panel.settings.getStep(2);
     }
 

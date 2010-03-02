@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.maven.spi.customizer;
 
-import java.util.Map;
+import java.util.SortedMap;
 
 /**
  *
@@ -47,8 +47,8 @@ import java.util.Map;
  */
 public interface SelectedItemsTablePersister {
 
-    public Map<String, Boolean> read ();
+    public SortedMap<String, Boolean> read ();
 
-    public void write (Map<String, Boolean> selItems);
+    public void write (SortedMap<String, Boolean> selItems);
 
 }

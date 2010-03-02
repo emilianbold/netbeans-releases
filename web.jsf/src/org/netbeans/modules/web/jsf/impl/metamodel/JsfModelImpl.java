@@ -272,11 +272,22 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
                 try {
                     boolean nullRoot = model.getRootComponent() == null;
                     model.sync();
-                    if (nullRoot) {
-                        if (model.getRootComponent() != null) {
-                            myFacesConfigs.add(model.getRootComponent());
+                    FacesConfig fc = model.getRootComponent();
+                    if (fc != null) {
+                        if (nullRoot) {
+                            myFacesConfigs.add(fc);
+                        }
+                        //apparently the root component is created somewhere else since
+                        //a model instance with model.getRootComponent() != null
+                        //has no entry in myFacesConfigs.
+                        //I even wonder why they needs to be held separately if
+                        //one can always call JSFConfigModel.getRootComponent()?????
+                        if(!myFacesConfigs.contains(fc)) {
+                            //has the FacesConfig always have a reasonable equals????
+                            myFacesConfigs.add(fc); 
                         }
                     }
+
                 }
                 catch (IOException e) {
                     LOG.log(Level.SEVERE,
@@ -525,9 +536,11 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
 
             public void fileDeleted( FileEvent event ) {
                 FileObject file = event.getFile();
-                if ( !wasConfigFile(file)){
-                    return;
-                }
+                //slower but more accurate - the ModelUnit should listen on the
+                //config files themselves not this global FS listening mess !!!
+//                if ( !wasConfigFile(file)){
+//                    return;
+//                }
                 JSFConfigModel model = null;
                 synchronized (myModels) {
                     for (JSFConfigModel mod : myModels) {

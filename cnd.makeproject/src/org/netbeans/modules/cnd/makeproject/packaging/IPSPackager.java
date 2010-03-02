@@ -47,11 +47,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.openide.util.NbBundle;
 
 /**
@@ -170,7 +170,7 @@ public class IPSPackager implements PackagerDescriptor {
             // Do all sub dirrectories
             for (PackagerFileElement elem : fileList) {
                 if (elem.getType() == PackagerFileElement.FileType.FILE || elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
-                    String path = IpeUtils.getDirName(packagingConfiguration.expandMacros(elem.getTo()));
+                    String path = CndPathUtilitities.getDirName(packagingConfiguration.expandMacros(elem.getTo()));
                     String base = ""; // NOI18N
                     if (path != null && path.length() > 0) {
                         StringTokenizer tokenizer = new StringTokenizer(path, "/"); // NOI18N
@@ -198,7 +198,7 @@ public class IPSPackager implements PackagerDescriptor {
             for (PackagerFileElement elem : fileList) {
                 bw.write("cd \"${TOP}\"\n"); // NOI18N
                 if (elem.getType() == PackagerFileElement.FileType.FILE) {
-                    String toDir = IpeUtils.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
+                    String toDir = CndPathUtilitities.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
                     if (toDir != null && toDir.length() >= 0) {
                         if (toDir.charAt(0) == '/') {
                             toDir = toDir.substring(1);
@@ -209,8 +209,8 @@ public class IPSPackager implements PackagerDescriptor {
                 } else if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
                     bw.write("makeDirectory " + " \"${TMPDIR}/" + elem.getTo() + "\"" + " 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
-                    String toDir = IpeUtils.getDirName(elem.getTo());
-                    String toName = IpeUtils.getBaseName(elem.getTo());
+                    String toDir = CndPathUtilitities.getDirName(elem.getTo());
+                    String toName = CndPathUtilitities.getBaseName(elem.getTo());
                     if (toDir != null && toDir.length() >= 0) {
                         if (toDir.charAt(0) == '/') {
                             toDir = toDir.substring(1);

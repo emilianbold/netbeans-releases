@@ -40,17 +40,17 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.utils;
 
+import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
-import java.util.Vector;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -250,15 +250,15 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
                 return null;
             }
             String itemPath = fileChooser.getSelectedFile().getPath();
-            itemPath = FilePathAdaptor.naturalize(itemPath);
+            itemPath = CndPathUtilitities.naturalize(itemPath);
             String bd = baseDir;
-            bd = FilePathAdaptor.naturalize(bd);
-            if (pathPanel != null && PathPanel.getMode() == PathPanel.REL_OR_ABS) {
-                itemPath = IpeUtils.toAbsoluteOrRelativePath(bd, itemPath);
-            } else if (pathPanel != null && PathPanel.getMode() == PathPanel.REL) {
-                itemPath = IpeUtils.toRelativePath(bd, itemPath);
+            bd = CndPathUtilitities.naturalize(bd);
+            if (pathPanel != null && MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(bd, itemPath);
+            } else if (pathPanel != null && MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                itemPath = CndPathUtilitities.toRelativePath(bd, itemPath);
             }
-            itemPath = FilePathAdaptor.normalize(itemPath);
+            itemPath = CndPathUtilitities.normalize(itemPath);
             return itemPath;
         }
 
@@ -318,8 +318,8 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            Vector<String> vector = super.getListData();
-            Object[] arr = super.getListData().toArray();
+            List<String> vector = super.getListData();
+            Object[] arr = vector.toArray();
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] == o) {
                     vector.remove(i);

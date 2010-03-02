@@ -303,6 +303,10 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
         return viewName;
     }
 
+    protected final void loadTable(final DataTableMetadata metadata){
+        tables.put(metadata.getName(), metadata);
+    }
+
     protected final boolean createTable(final DataTableMetadata metadata) {
         if (tables.containsKey(metadata.getName())) {
             return true;
@@ -511,6 +515,17 @@ public abstract class SQLDataStorage implements PersistentDataStorage {
     public final void addData(String tableName, List<DataRow> data) {
         for (DataRow row : data) {
             requestQueue.add(new DataRowInsertRequest(tableName, row));
+        }
+    }
+
+    public final synchronized void syncAddData(String tableName, List<DataRow> data) {
+        for (DataRow row : data) {
+            DataRowInsertRequest request = new DataRowInsertRequest(tableName, row);
+            try {
+                request.execute();
+            } catch (SQLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 

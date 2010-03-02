@@ -60,6 +60,17 @@ public abstract class DefaultCompletionProposal implements CompletionProposal {
     protected boolean smart;
     protected ElementKind elementKind;
 
+    /**
+     * Called before the defaultAction method is called, i.e. when user
+     * invokes the completion proposal and the text is going to be inserted.
+     * One may hook here some UI action like css color chooser which then
+     *
+     * @return true if the defaultActions should be cancelled, false otherwise
+     */
+    public boolean beforeDefaultAction() {
+        return false;
+    }
+
     public int getSortPrioOverride() {
         return 0;
     }

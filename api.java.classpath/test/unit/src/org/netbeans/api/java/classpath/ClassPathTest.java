@@ -301,12 +301,7 @@ public class ClassPathTest extends NbTestCase {
     public void testChangesAcknowledgedWithoutListener() throws Exception {
         // Discovered in #72573.
         clearWorkDir();
-        File root = new File(getWorkDir(), "root");
-        URL rootU = root.toURI().toURL();
-        if (!rootU.toExternalForm().endsWith("/")) {
-            rootU = new URL(rootU.toExternalForm() + "/");
-        }
-        ClassPath cp = ClassPathSupport.createClassPath(new URL[] {rootU});
+        ClassPath cp = ClassPathSupport.createClassPath(FileUtil.urlForArchiveOrDir(new File(getWorkDir(), "root")));
         assertEquals("nothing there yet", null, cp.findResource("f"));
         FileObject f = FileUtil.createData(FileUtil.toFileObject(getWorkDir()), "root/f");
         assertEquals("found new file", f, cp.findResource("f"));
@@ -559,8 +554,8 @@ public class ClassPathTest extends NbTestCase {
                 pcs.firePropertyChange(e);
             }
         }
-        FPRI fpri1 = new FPRI(new File(getWorkDir(), "src1").toURI().toURL());
-        FPRI fpri2 = new FPRI(new File(getWorkDir(), "src2").toURI().toURL());
+        FPRI fpri1 = new FPRI(FileUtil.urlForArchiveOrDir(new File(getWorkDir(), "src1")));
+        FPRI fpri2 = new FPRI(FileUtil.urlForArchiveOrDir(new File(getWorkDir(), "src2")));
         class L implements PropertyChangeListener {
             int cnt;
             public void propertyChange(PropertyChangeEvent e) {
@@ -571,8 +566,7 @@ public class ClassPathTest extends NbTestCase {
         }
         ClassPath cp = ClassPathSupport.createClassPath(Arrays.asList(fpri1, fpri2));
         L l = new L();
-        cp.addPropertyChangeListener(l);        
-        //No events fired before cp.entries() called
+        cp.addPropertyChangeListener(l);
         fpri1.fire(null);
         assertEquals(0, l.cnt);
         cp.entries();
@@ -706,8 +700,30 @@ public class ClassPathTest extends NbTestCase {
         assertEquals(cp.toString(), ClassPathSupport.createClassPath(cp.toString()).toString());
         // XXX could also test IAE (tricky - need to have a URLMapper in Lookup, etc.)
     }
+
+    public void testEmptyClassPath() throws Exception {
+        final ClassPath cp = ClassPath.EMPTY;
+        assertNotNull(cp);
+        assertTrue(cp.entries().isEmpty());
+    }
+
     private String massagePath(String path) throws Exception {
         return path.replace('/', File.separatorChar).replace(':', File.pathSeparatorChar).replace("<root>", getWorkDir().getAbsolutePath());
+    }
+
+    public void testInvalidURLs() throws Exception {
+        try {
+            ClassPathSupport.createClassPath(new URL("file:/some/jar/without/correct/protocol.jar"));
+            fail();
+        } catch (IllegalArgumentException x) {/* right */}
+        try {
+            ClassPathSupport.createClassPath(new URL("file:/some/dir/without/final/slash"));
+            fail();
+        } catch (IllegalArgumentException x) {/* right */}
+        try {
+            ClassPathSupport.createClassPath(new URL("file:/some/jar/without/correct/protocol.jar/"));
+            fail();
+        } catch (IllegalArgumentException x) {/* right */}
     }
 
 }

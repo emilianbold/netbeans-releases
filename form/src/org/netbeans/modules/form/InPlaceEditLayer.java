@@ -280,24 +280,31 @@ public class InPlaceEditLayer extends JPanel
     private void createListeners() {
         // listening for mouse events
         MouseInputListener layerMouseListener = new MouseInputListener() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 processMouse(e);
             }
+            @Override
             public void mousePressed(MouseEvent e) {
                 processMouse(e);
             }
+            @Override
             public void mouseReleased(MouseEvent e) {
                 processMouse(e);
             }
+            @Override
             public void mouseEntered(MouseEvent e) {
                 processMouse(e);
             }
+            @Override
             public void mouseExited(MouseEvent e) {
                 processMouse(e);
             }
+            @Override
             public void mouseDragged(MouseEvent e) {
                 processMouse(e);
             }
+            @Override
             public void mouseMoved(MouseEvent e) {
                 processMouse(e);
             }
@@ -336,6 +343,7 @@ public class InPlaceEditLayer extends JPanel
 
         // listening for Enter
         compActionListener = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 finishEditing(true);
             }

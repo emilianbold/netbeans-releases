@@ -1133,10 +1133,16 @@ public class AbstractLookup extends Lookup implements Serializable {
     }
      // end of R
 
-    /** A class that can be used by the creator of the AbstractLookup to
-     * control its content. It can be passed to AbstractLookup constructor
-     * and used to add and remove pairs.
-     *
+    /** A class that can be used by the creator of the 
+     * {@link AbstractLookup} to
+     * control its content (a kind of 
+     * <a href="http://wiki.apidesign.org/wiki/Privileged_API">Privileged API</a>
+     * giving creator of the lookup more rights than subsequent users of the lookup).
+     * Typical usage: <pre>
+     * {@link Content} ic = new {@link InstanceContent#InstanceContent() InstanceContent()};
+     * {@link Lookup} lookup = new {@link AbstractLookup#AbstractLookup(org.openide.util.lookup.AbstractLookup.Content) AbstractLookup(ic)};
+     * {@link Content#addPair(org.openide.util.lookup.AbstractLookup.Pair) ic.addPair(...)};
+     * </pre>
      * @since 1.25
      */
     public static class Content extends Object implements Serializable {
@@ -1186,14 +1192,26 @@ public class AbstractLookup extends Lookup implements Serializable {
             }
         }
 
-        /** The method to add instance to the lookup with.
+        /** The method to add a pair to the associated {@link AbstractLookup}.
+         * Preferably call this method when lookup is already associated with
+         * this <em>content</em> (association is done by passing this object to some
+         * {@link AbstractLookup#AbstractLookup(org.openide.util.lookup.AbstractLookup.Content) AbstractLookup's constructor}
+         * once).
+         *
          * @param pair class/instance pair
+         * @throws NullPointerException may throw NullPointerException if called
+         *   before association with {@link AbstractLookup}
          */
         public final void addPair(Pair<?> pair) {
             AbstractLookup a = al;
             Executor e = getExecutor();
 
             if (a != null || e != null) {
+                if (a == null) {
+                    throw new NullPointerException(
+                        "Adding a pair to Content not connected to Lookup is not supported!" // NOI18N
+                    );
+                }
                 a.addPair(pair, e);
             } else {
                 if (notifyIn == null) {

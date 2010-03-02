@@ -97,12 +97,22 @@
                 <file name="org-netbeans-modules-groovy-gsp-editor-embedding-GroovyEmbeddingProvider$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
-                <file name="org-netbeans-modules-groovy-gsp-editor-embedding-HtmlEmbeddingProvider$Factory.instance"/>
+                <file name="org-netbeans-modules-groovy-gsp-editor-embedding-HtmlEmbeddingProvider$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
 
-                <file name="org-netbeans-modules-groovy-gsp-GspIndentTaskFactory.instance"/>
-                <file name="org-netbeans-modules-groovy-gsp-EmbeddedSectionsHighlighting$Factory.instance"/>
-                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
-                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
+                <file name="org-netbeans-modules-groovy-gsp-GspIndentTaskFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
+                </file>
+                <file name="org-netbeans-modules-groovy-gsp-EmbeddedSectionsHighlighting$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
                 <file name="org-netbeans-modules-csl-core-GsfParserFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.ParserFactory"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.csl.core.GsfParserFactory.create"/>

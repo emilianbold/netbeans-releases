@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." name="common.ergonomics">
+    <description>Common targets for generating ergonomics data</description>
+    <!--
+    - single cluster operations
+    -->
+    <target name="-proxy-one-cluster">
+        <property name="cluster" location="."/>
+        <pathconvert property="cluster.name">
+            <path location="${cluster}"/>
+            <mapper type="regexp" from=".*[/\\]([a-z]*)[0-9\.]*" to="\1"/>
+        </pathconvert>
+        <property name="proxytmp" value="${ergonomicsdir}/build/proxies/${cluster.name}"/>
+        <property name="proxydir" value="${ergonomicsdir}/build/classes/org/netbeans/modules/ide/ergonomics/${cluster.name}"/>
+        <property name="cluster.properties" value="${ergonomicsdir}/${cluster.name}.properties"/>
+        <available
+            file="${cluster.properties}" value="${cluster.properties}" property="proxyprop"
+        />
+        <property name="proxyprop" location="${ergonomicsdir}/empty.properties"/>
+        <property name="cluster.entries" location="${cluster}"/>
+        <mkdir dir="${proxydir}"/>
+        <extractlayer
+            clusterName="${cluster.name}"
+            bundle="${proxydir}/Bundle.properties"
+            destdir="${proxydir}"
+        >
+           <modules dir="${cluster}">
+                <include name="modules/*.jar"/>
+            </modules>
+           <entries dir="${cluster.entries}">
+                <include name="**/modules/*.jar"/>
+                <exclude name="ergonomics*/**/*"/>
+            </entries>
+            <bundlefilter>
+                <concatfilter prepend="${proxyprop}"/>
+            </bundlefilter>
+         </extractlayer>
+    </target>
+
+
+    <target name="-disable-one-cluster">
+        <property name="cluster.to.process" location="."/>
+        <mkdir dir="${xmldir}"/>
+        <createmodulexml xmldir="${xmldir}">
+            <disabled dir="${cluster.to.process}">
+                <and>
+                    <filename name="modules/*.jar"/>
+                    <custom
+                        classname="org.netbeans.nbbuild.ModuleStateSelector"
+                        classpath="${anttasks.jar}"
+                    >
+                        <param name="acceptEnabled" value="true"/>
+                    </custom>
+                </and>
+            </disabled>
+        </createmodulexml>
+    </target>
+</project>

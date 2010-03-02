@@ -36,7 +36,25 @@ public class SimpleNode implements Node {
             System.err.println("ERROR: lastToken image is null! : " + jjtGetLastToken());
             return jjtGetLastToken().offset;
         } else {
-            return jjtGetLastToken().offset + jjtGetLastToken().image.length();
+            //#181357 - At the end of the tokens sequence there is the EOF token (kind==0) with
+            //zero lenght but WRONG start offset - it points at the previous offset (real file end - 1).
+            //so tokens of simple code may look like:
+            //Token( 0; 'h1')
+            //Token( 2; ' ')
+            //Token( 3; '{')
+            //Token( 4; ' ')
+            //Token( 5; '}')
+            //Token( 5; '') <-- here the (EOF) token should apparently have offset set to 6.
+            //
+            //sometimes there are even two EOF tokens at the end of the sequence with the same wrong offset!
+            //
+            //why this happens is a mystery to me, maybe caused by some changes to the default javacc
+            //lexing, but I am not sure so I'll workaround it here.
+            if(jjtGetLastToken().kind == CssParserConstants.EOF) {
+                return jjtGetLastToken().offset + 1;
+            } else {
+                return jjtGetLastToken().offset + jjtGetLastToken().image.length();
+            }
         }
     }
 

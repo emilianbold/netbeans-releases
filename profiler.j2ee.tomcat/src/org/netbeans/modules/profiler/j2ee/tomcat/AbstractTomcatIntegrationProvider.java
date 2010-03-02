@@ -684,7 +684,7 @@ public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIn
         }
 
         String profilerOpts = IntegrationUtils.getProfilerAgentCommandLineArgs(targetOS, targetJVM, false, commPort);
-        profilerOpts.replaceAll("\\s-", delimiter + "-");
+        profilerOpts.replace("\\s-", delimiter + "-");
 
         if (nonEmptyOpts) {
             javaOpts.append(delimiter);

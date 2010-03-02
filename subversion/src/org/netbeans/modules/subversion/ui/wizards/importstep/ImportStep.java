@@ -60,7 +60,7 @@ import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
-import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

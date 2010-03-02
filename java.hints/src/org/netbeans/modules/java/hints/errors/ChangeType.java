@@ -121,29 +121,8 @@ public final class ChangeType implements ErrorRule<Void> {
 
                 path = new TreePath(path, efl.getVariable());
                 scope = efl.getVariable();
-                
-                TypeMirror eflExpressionType = info.getTrees().getTypeMirror(new TreePath(path, efl.getExpression()));
 
-                if (eflExpressionType != null) {
-                    switch (eflExpressionType.getKind()) {
-                        case DECLARED:
-                            DeclaredType dt = (DeclaredType) eflExpressionType;
-                            TypeElement jlIterable = info.getElements().getTypeElement("java.lang.Iterable"); //NOI18N
-                            TypeMirror  jlIterableTM = jlIterable != null ? jlIterable.asType() : null;
-
-                            if (   jlIterableTM != null
-                                && info.getTypes().isSubtype(info.getTypes().erasure(dt), info.getTypes().erasure(jlIterableTM))
-                                && dt.getTypeArguments().size() == 1) {
-                                resolved = dt.getTypeArguments().get(0);
-                            }
-                            break;
-                        case ARRAY:
-                            ArrayType at = (ArrayType) eflExpressionType;
-
-                            resolved = at.getComponentType();
-                            break;
-                    }
-                }
+                resolved = org.netbeans.modules.java.hints.errors.Utilities.getIterableGenericType(info, new TreePath(path, efl.getExpression()));
             }
 
             // Is this a VARIABLE tree

@@ -52,10 +52,12 @@ import java.util.List;
 import java.util.Set;
 import org.openide.util.RequestProcessor;
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.modules.cnd.debugger.common.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbCallStackFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
+import org.netbeans.spi.debugger.ui.MethodChooser;
 
 /**
  * Implements non visual part of stepping through code in gdb debugger.
@@ -64,8 +66,10 @@ import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
  * 
  */
 public class StepActionProvider extends GdbDebuggerActionProvider {
+
+    private MethodChooser currentMethodChooser;
     
-    private final Set actions  = new HashSet<Object>(Arrays.asList(new Object[] {
+    private final Set<Object> actions  = new HashSet<Object>(Arrays.asList(new Object[] {
             ActionsManager.ACTION_STEP_INTO,
             ActionsManager.ACTION_STEP_OUT,
             ActionsManager.ACTION_STEP_OVER,
@@ -89,6 +93,7 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
      *
      * @return set of actions supported by this ActionsProvider
      */
+    @Override
     public Set getActions() {
         return actions;
     }
@@ -98,6 +103,7 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
      *
      * @param action an action which has been called
      */
+    @Override
     public void doAction(Object action) {
         runAction(action);
     }
@@ -114,7 +120,7 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
                     if (Disassembly.isInDisasm()) {
                         getDebugger().stepI();
                     } else {
-                        getDebugger().stepInto();
+                        doSmartStepInto();
                     }
                     return;
                 }
@@ -141,6 +147,51 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
             }
         }
     }
+
+    private void doSmartStepInto() {
+        //getDebugger().stepInto();
+
+        synchronized (this) {
+            if (currentMethodChooser != null) {
+                // perform action
+                currentMethodChooser.releaseUI(true);
+                return;
+            }
+        }
+
+        String url = EditorContextBridge.getContext().getCurrentURL();
+        final MethodChooserSupport cSupport = new MethodChooserSupport(getDebugger(), url);
+        boolean continuedDirectly = cSupport.init();
+        if (cSupport.getSegmentsCount() == 0) {
+            return;
+        }
+        if (continuedDirectly) {
+            return;
+        }
+        MethodChooser.ReleaseListener releaseListener = new MethodChooser.ReleaseListener() {
+            @Override
+            public void released(boolean performAction) {
+                synchronized (StepActionProvider.this) {
+                    currentMethodChooser = null;
+                    cSupport.tearDown();
+                    if (performAction) {
+                        cSupport.doStepInto();
+                    }
+                }
+            }
+        };
+        MethodChooser chooser = cSupport.createChooser();
+        chooser.addReleaseListener(releaseListener);
+        boolean success = chooser.showUI();
+        if (success && chooser.isUIActive()) {
+            synchronized (this) {
+                cSupport.tearUp(chooser);
+                currentMethodChooser = chooser;
+            }
+        } else {
+            chooser.removeReleaseListener(releaseListener);
+        }
+    }
     
     /**
      * Post the action and let it process asynchronously.
@@ -155,6 +206,7 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
     @Override
     public void postAction(final Object action, final Runnable actionPerformedNotifier) {
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     doAction(action);
@@ -165,6 +217,7 @@ public class StepActionProvider extends GdbDebuggerActionProvider {
         });
     }
     
+    @Override
     protected void checkEnabled(GdbDebugger.State debuggerState) {
         boolean enabled = debuggerState == GdbDebugger.State.STOPPED;
         for (Object action : getActions()) {

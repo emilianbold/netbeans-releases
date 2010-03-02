@@ -41,8 +41,18 @@
 package org.netbeans.modules.web.beans.model;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
@@ -50,6 +60,7 @@ import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
+import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 
 
 /**
@@ -253,5 +264,123 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "@Target({ANNOTATION_TYPE}) "+          
                 "public @interface Stereotype  {}");
     }
+
+    public final void assertFindParameterResultInjectables(VariableElement element,
+            TestWebBeansModelProviderImpl provider,
+            String... injectables) {
+        Result result = provider.findParameterInjectable(element, null);
+        assertResultInjectables(result, injectables);
+    }
+
+    public final void assertFindParameterResultProductions(VariableElement element,
+            TestWebBeansModelProviderImpl provider,
+            String... injectables) {
+        Result result = provider.findParameterInjectable(element, null);
+        assertResultProductions(result, injectables);
+    }
+
+    public final void assertFindParameterResultProductionsVar(VariableElement element,
+            TestWebBeansModelProviderImpl provider,
+            String... injectables) {
+        Result result = provider.findParameterInjectable(element, null);
+        assertResultProductions(result, true, injectables);
+    }
+
+    public final void assertFindVariableResultInjectables(VariableElement element,
+            TestWebBeansModelProviderImpl provider,
+            String... injectables) {
+        Result result = provider.findVariableInjectable(element, null);
+        assertResultInjectables(result, injectables);
+    }
+
+    public final void assertFindVariableResultProductions(VariableElement element,
+            TestWebBeansModelProviderImpl provider,
+            String... injectables) {
+        Result result = provider.findVariableInjectable(element, null);
+        assertResultProductions(result, injectables);
+    }
+
+    public final void assertFindVariableResultProductionsVar(VariableElement element,
+            TestWebBeansModelProviderImpl provider,
+            String... injectables) {
+        Result result = provider.findVariableInjectable(element, null);
+        assertResultProductions(result, true, injectables);
+    }
+
+    public final void assertFindVariableResultAllProductions(VariableElement element,
+            TestWebBeansModelProviderImpl provider,
+            String... injectables) {
+        Result result = provider.findVariableInjectable(element, null);
+        assertResultAllProductions(result, injectables);
+    }
+
+    public final void assertResultInjectables(Result result, String... injectables) {
+        assertNotNull(result);
+        assertTrue("not ResultImpl instance: "+result, result instanceof ResultImpl);
+
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        if (injectables == null) {
+            assertEquals("no injectables expected, but found: "+typeElements, 0, typeElements.size());
+        }
+        assertTrue("number of injectables does not match: returned="+typeElements+" expected="+Arrays.asList(injectables), injectables.length == typeElements.size());
+        Set<String> set = new HashSet<String>();
+        for (TypeElement injactable : typeElements) {
+            set.add(injactable.getQualifiedName().toString());
+        }
+        for (String inj : injectables) {
+            assertTrue("Result of typesafe resolution should contain " + inj
+                    + " class definition in "+set, set.contains(inj));
+        }
+    }
+
+    public final void assertResultProductions(Result result, String... producers) {
+        assertResultProductions(result, false, producers);
+    }
+
+    public final void assertResultProductions(Result result, boolean variable, String... producers) {
+        assertNotNull(result);
+        assertTrue("not ResultImpl instance: "+result, result instanceof ResultImpl);
+
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+        if (producers == null) {
+            assertEquals("no producers expected, but found: "+productions, 0, productions.size());
+        }
+        assertTrue("number of productions does not match: returned="+productions+" expected="+Arrays.asList(producers), producers.length == productions.size());
+        Set<String> set = new HashSet<String>();
+        for (Element injectable : productions) {
+            if (variable) {
+                assertTrue("injectable should be a production method," + " but found :"
+                        + injectable.getKind(), injectable instanceof VariableElement);
+            } else {
+                assertTrue("injectable should be a production method," + " but found :"
+                        + injectable.getKind(), injectable instanceof ExecutableElement);
+            }
+            set.add(injectable.getSimpleName().toString());
+        }
+        for (String prod : producers) {
+            assertTrue("Result of typesafe resolution should contain " + prod
+                    + " producer in "+set, set.contains(prod));
+        }
+    }
+
+    public final void assertResultAllProductions(Result result, String... injectables) {
+        assertNotNull(result);
+        assertTrue("not ResultImpl instance: "+result, result instanceof ResultImpl);
+
+        List<DeclaredType> typeElements = ((ResultImpl) result).getAllProductions().values().iterator().next();
+        if (injectables == null) {
+            assertEquals("no injectables expected, but found: "+typeElements, 0, typeElements.size());
+        }
+        assertTrue("number of injectables does not match: returned="+typeElements+" expected="+Arrays.asList(injectables), injectables.length == typeElements.size());
+        Set<String> set = new HashSet<String>();
+        for (DeclaredType injactable : typeElements) {
+            set.add(((TypeElement)injactable.asElement()).getQualifiedName().toString());
+        }
+        for (String inj : injectables) {
+            assertTrue("Result of typesafe resolution should contain " + inj
+                    + " class definition in "+set, set.contains(inj));
+        }
+    }
+
 
 }

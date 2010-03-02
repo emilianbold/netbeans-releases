@@ -115,6 +115,20 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         }
     }
 
+    public VariableImpl(CsmFile file, int startOffset, int endOffset, CsmType type, String name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
+        super(file, startOffset, endOffset);
+        this._static = _static;
+        this._extern = _extern;
+        this.name = NameCache.getManager().getString(name);
+        this.type = type;
+        _setScope(scope);
+        if (registerInProject) {
+            registerInProject();
+        } else {
+            Utils.setSelfUID(this);
+        }
+    }
+
     public static int getStartOffset(AST node) {
         if (node != null) {
             CsmAST csmAst = AstUtil.getFirstCsmAST(node);

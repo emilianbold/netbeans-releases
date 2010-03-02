@@ -104,6 +104,8 @@ Microsystems, Inc. All Rights Reserved.
 
 
         <!--<copy file="${basedir}/getport/dist/getport.jar" tofile="${scriptsdir}/getport.jar"/>        -->
+
+        <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
         
         <echo message="Building glassfish-v3-sun-${glassfish.v3.sun.id}.pkg into ${basedir}/../build/glassfish-v3-sun-${glassfish.v3.sun.id}.pkg"/>
         <exec executable="sh" failonerror="yes">

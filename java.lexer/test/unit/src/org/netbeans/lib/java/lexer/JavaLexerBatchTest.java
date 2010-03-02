@@ -41,10 +41,12 @@
 
 package org.netbeans.lib.java.lexer;
 
+import java.util.EnumSet;
 import junit.framework.TestCase;
 import org.netbeans.api.java.lexer.JavaStringTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.lexer.JavadocTokenId;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -415,4 +417,29 @@ public class JavaLexerBatchTest extends TestCase {
         
         assertFalse(ts.moveNext());
     }
+
+    public void testExoticIdentifiers() {
+        String text = "a #\" \" #\"\\\"\"";
+        InputAttributes attr = new InputAttributes();
+        attr.setValue(JavaTokenId.language(), "version", Integer.valueOf(7), true);
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, JavaTokenId.language(), EnumSet.of(JavaTokenId.WHITESPACE), attr);
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "a");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "#\" \"");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "#\"\\\"\"");
+    }
+
+    public void testNoExoticIdentifiers() {
+        String text = "a #\" \"";
+        InputAttributes attr = new InputAttributes();
+        attr.setValue(JavaTokenId.language(), "version", Integer.valueOf(5), true);
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, JavaTokenId.language(), EnumSet.of(JavaTokenId.WHITESPACE), attr);
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "a");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.ERROR, "#");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.STRING_LITERAL, "\" \"");
+    }
+
 }

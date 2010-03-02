@@ -49,6 +49,7 @@ import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.Paint;
@@ -393,11 +394,13 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
         imp.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), ACTION_COLLAPSE);
 
+        if (!GraphicsEnvironment.isHeadless()) {
         imp.put(
             KeyStroke.getKeyStroke(
                 KeyEvent.VK_HOME, KeyEvent.SHIFT_DOWN_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()
             ), ACTION_EDCLASS
         );
+        }
 
         imp.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), ACTION_NEXT);
 

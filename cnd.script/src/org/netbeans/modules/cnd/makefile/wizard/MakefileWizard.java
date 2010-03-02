@@ -61,7 +61,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.settings.MakeSettings;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.DialogDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.OpenCookie;
@@ -933,7 +933,7 @@ public class MakefileWizard implements TemplateWizard.Iterator {
                 if (makefileDir.equals(baseDir)) {
                     buildDirectory = ("."); // NOI18N
                 } else {
-                    buildDirectory = IpeUtils.getRelativePath(makefileDir, baseDir);
+                    buildDirectory = CndPathUtilitities.getRelativePath(makefileDir, baseDir);
                 }
                 mes.setBuildDirectory(buildDirectory);
 
@@ -941,7 +941,7 @@ public class MakefileWizard implements TemplateWizard.Iterator {
                 String fullBuildDirectoryPath = buildDirectory;
                 int aIndex = fullMakefilePath.lastIndexOf(File.separatorChar);
                 if (aIndex >= 0) {
-                    fullBuildDirectoryPath = IpeUtils.toAbsolutePath(fullMakefilePath.substring(0, aIndex), fullBuildDirectoryPath);
+                    fullBuildDirectoryPath = CndPathUtilitities.toAbsolutePath(fullMakefilePath.substring(0, aIndex), fullBuildDirectoryPath);
                 }
 
                 // Send creation event
@@ -1046,7 +1046,7 @@ public class MakefileWizard implements TemplateWizard.Iterator {
         // Create and set makefile name based on name from targetChooser panel and basedirectory
         MakefileData md = getMakefileData();
         String makefileName = getTemplateWizard().getTargetName();
-        String dir = IpeUtils.trimSlashes(md.getMakefileDirName());
+        String dir = CndPathUtilitities.trimSlashes(md.getMakefileDirName());
         if (makefileName == null) {
             makefileName = uniqDefaultName(dir, "Makefile"); // NOI18N
         }

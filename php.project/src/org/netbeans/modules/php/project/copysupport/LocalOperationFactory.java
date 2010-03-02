@@ -48,8 +48,9 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -135,7 +136,7 @@ final class LocalOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    protected Callable<Boolean> createCopyHandlerInternal(final FileObject source) {
+    protected Callable<Boolean> createCopyHandlerInternal(final FileObject source, FileEvent fileEvent) {
         LOGGER.log(Level.FINE, "Creating COPY handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         // createCopyFolderRecursivelyHandler used because of external changes
         // fire just one FS event for top most folder. See #172139
@@ -204,7 +205,7 @@ final class LocalOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    protected Callable<Boolean> createRenameHandlerInternal(final FileObject source, final String oldName) {
+    protected Callable<Boolean> createRenameHandlerInternal(final FileObject source, final String oldName, FileRenameEvent fileRenameEvent) {
         LOGGER.log(Level.FINE, "Creating RENAME handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
@@ -246,7 +247,7 @@ final class LocalOperationFactory extends FileOperationFactory {
     }
 
     @Override
-    protected Callable<Boolean> createDeleteHandlerInternal(final FileObject source) {
+    protected Callable<Boolean> createDeleteHandlerInternal(final FileObject source, FileEvent fileEvent) {
         LOGGER.log(Level.FINE, "Creating DELETE handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {
             public Boolean call() throws Exception {
@@ -341,5 +342,10 @@ final class LocalOperationFactory extends FileOperationFactory {
 
     private static boolean isPairValid(Pair<FileObject, File> pair) {
         return pair != null && pair.first != null && pair.second != null;
+    }
+
+    @Override
+    protected boolean isValid(FileEvent fileEvent) {
+        return true;
     }
 }

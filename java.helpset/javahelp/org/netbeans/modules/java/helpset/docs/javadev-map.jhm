@@ -63,6 +63,8 @@
 <!-- Topic for Debugger Instances view - need help id -->
 <!-- <mapID target="" url="debug/CSH/instances_view.html" /> --> 
 
+<!-- CSH help id for Attach Debugger window mapped to remote debugging topic -->
+<mapID target="debug.jpda.attach" url="debug/debug_remote.html" />
 
 <!--Start of Projects section -->
 <mapID target="proj_about" url="project/proj_about.html" />

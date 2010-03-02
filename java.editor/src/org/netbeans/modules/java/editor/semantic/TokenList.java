@@ -190,7 +190,7 @@ public class TokenList {
                     ;
 
                 if (next) {
-                    if (name.equals(ts.token().text().toString())) {
+                    if (name.equals(info.getTreeUtilities().decodeIdentifier(ts.token().text()).toString())) {
                         tree2Token.put(tp.getLeaf(), ts.token());
                     } else {
 //                            System.err.println("looking for: " + name + ", not found");
@@ -216,7 +216,7 @@ public class TokenList {
                 
                 Token t = ts.token();
 
-                if (t.id() == JavaTokenId.IDENTIFIER && tree.getName().toString().equals(t.text().toString())) {
+                if (t.id() == JavaTokenId.IDENTIFIER && tree.getName().toString().equals(info.getTreeUtilities().decodeIdentifier(t.text()).toString())) {
     //                System.err.println("visit ident 1");
                     tree2Token.put(tree, ts.token());
                 } else {

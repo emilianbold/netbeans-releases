@@ -81,7 +81,7 @@ import org.openide.text.NbDocument;
  *
  * @author Tomas Zezula
  */
-public class SourceFileObject implements DocumentProvider, FileObjects.InferableJavaFileObject {
+public class SourceFileObject implements DocumentProvider, InferableJavaFileObject {
 
     final Handle handle;
     private final Kind kind;

@@ -108,6 +108,8 @@ public final class NativeProjectProvider {
             return NativeFileItem.Language.CPP;
         } else if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
             return NativeFileItem.Language.C;
+        } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
+            return NativeFileItem.Language.FORTRAN;
         } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
             return NativeFileItem.Language.C_HEADER;
         }

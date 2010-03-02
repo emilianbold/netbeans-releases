@@ -118,7 +118,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         }        
         String url_key_base = getModuleInfo().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; //NOI18N
         String url_key = sequence == 0 ? url_key_base : url_key_base + '_' + sequence; // NOI18N
-        cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "url_key", url_key)); //NOI18N
         cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, "enabled", Boolean.TRUE)); //NOI18N
         
         // write into bundle
@@ -128,6 +127,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         localizingBundle = localizingBundle.replace ('/', '.');
         cmf.add (cmf.createLayerAttribute (pathToAutoUpdateType, 
                 "displayName", "bundlevalue:" + localizingBundle + "#" + pathToAutoUpdateType));
+        cmf.add(cmf.createLayerAttribute(pathToAutoUpdateType, "url", "bundlevalue:" + localizingBundle + "#" + url_key)); //NOI18N
         
         cmf.add (cmf.bundleKeyDefaultBundle (pathToAutoUpdateType, ucDisplayName));
         cmf.add (cmf.bundleKeyDefaultBundle (url_key, ucUrl));

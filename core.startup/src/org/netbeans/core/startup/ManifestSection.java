@@ -268,6 +268,7 @@ public abstract class ManifestSection<T> {
             // no section tag
             return null;
         } else if (sectionName.equalsIgnoreCase("Action")) { // NOI18N
+            warnObsolete(sectionName, module);
             return new ActionSection(name, module);
         } else if (sectionName.equalsIgnoreCase("Option")) { // NOI18N
             warnObsolete(sectionName, module);

@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor.lib2.highlighting;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -103,7 +104,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         }
     }
 
-    public HighlightsSequence getHighlights(int startOffset, int endOffset) {
+    public @Override HighlightsSequence getHighlights(int startOffset, int endOffset) {
         synchronized (this) {
             if (hierarchy == null) {
                 hierarchy = TokenHierarchy.get(document);
@@ -122,7 +123,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
     //  TokenHierarchyListener implementation
     // ----------------------------------------------------------------------
 
-    public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
+    public @Override void tokenHierarchyChanged(TokenHierarchyEvent evt) {
         if (evt.type() == TokenHierarchyEventType.ACTIVITY || evt.type() == TokenHierarchyEventType.LANGUAGE_PATHS) {
             // ignore
             return;
@@ -137,7 +138,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             TokenSequence<?> ts = hierarchy.tokenSequence();
             
             sb.append("\n"); //NOI18N
-            sb.append("Tokens after change: <" + evt.affectedStartOffset() + ", " + evt.affectedEndOffset() + ">\n"); //NOI18N
+            sb.append("Tokens after change: <").append(evt.affectedStartOffset()).append(", ").append(evt.affectedEndOffset()).append(">\n"); //NOI18N
             dumpSequence(ts, sb);
             sb.append("--------------------------------------------\n\n"); //NOI18N
             
@@ -264,7 +265,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             }
         }
         
-        public boolean moveNext() {
+        public @Override boolean moveNext() {
             synchronized (SyntaxHighlighting.this) {
                 if (checkVersion()) {
                     if (sequences == null) {
@@ -273,9 +274,13 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                         // initialize
                         TokenSequence<?> seq = scanner.tokenSequence();
                         if (seq != null) {
-                            seq.move(startOffset);
-                            sequences.add(seq);
-                            state = S_NORMAL;
+                            try {
+                                seq.move(startOffset);
+                                sequences.add(seq);
+                                state = S_NORMAL;
+                            } catch (ConcurrentModificationException cme) {
+                                state = S_DONE;
+                            }
                         } else {
                             state = S_DONE;
                         }
@@ -284,59 +289,69 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                     state = S_DONE;
                 }
 
-                switch (state) {
-                    case S_NORMAL:
-                        // The current token is a normal one
-                        state = moveTheSequence();
-                        break;
+                try {
+                    switch (state) {
+                        case S_NORMAL:
+                            // The current token is a normal one
+                            state = moveTheSequence();
+                            break;
 
-                    case S_EMBEDDED_HEAD:
-                        // The current token contains embedded language and we have processed it's head
-                        TokenSequence<?> seq = sequences.get(sequences.size() - 1);
-                        seq.moveStart();
-                        if (seq.moveNext()) {
-                            state = S_NORMAL;
-                        } else {
-                            throw new IllegalStateException("Invalid state"); //NOI18N
-                        }
-                        break;
+                        case S_EMBEDDED_HEAD:
+                            // The current token contains embedded language and we have processed it's head
+                            TokenSequence<?> seq = sequences.get(sequences.size() - 1);
+                            seq.moveStart();
+                            if (seq.moveNext()) {
+                                state = S_NORMAL;
+                            } else {
+                                throw new IllegalStateException("Invalid state"); //NOI18N
+                            }
+                            break;
 
-                    case S_EMBEDDED_TAIL:
-                        // The current token contains embedded language and we have processed it's tail
-                        sequences.remove(sequences.size() - 1);
-                        state = moveTheSequence();
-                        break;
+                        case S_EMBEDDED_TAIL:
+                            // The current token contains embedded language and we have processed it's tail
+                            sequences.remove(sequences.size() - 1);
+                            state = moveTheSequence();
+                            break;
 
-                    case S_DONE:
-                        // We have gone through all the tokens in all sequences
-                        break;
+                        case S_DONE:
+                            // We have gone through all the tokens in all sequences
+                            break;
 
-                    default:
-                        throw new IllegalStateException("Invalid state: " + state); //NOI18N
+                        default:
+                            throw new IllegalStateException("Invalid state: " + state); //NOI18N
+                    }
+                } catch (ConcurrentModificationException cme) {
+                    state = S_DONE;
                 }
 
                 if (state == S_NORMAL) {
-                    // We have moved to the next normal token, so look what it is
-                    TokenSequence<?> seq = sequences.get(sequences.size() - 1);
-                    TokenSequence<?> embeddedSeq = seq.embedded();
-                    while (embeddedSeq != null && embeddedSeq.moveNext()) {
-                        sequences.add(sequences.size(), embeddedSeq);
+                    try {
+                        // We have moved to the next normal token, so look what it is
+                        TokenSequence<?> seq = sequences.get(sequences.size() - 1);
+                        TokenSequence<?> embeddedSeq = seq.embedded();
+                        while (embeddedSeq != null && embeddedSeq.moveNext()) {
+                            sequences.add(sequences.size(), embeddedSeq);
 
-                        if (embeddedSeq.offset() + embeddedSeq.token().length() < startOffset) {
-                            embeddedSeq.move(startOffset);
-                            if (!embeddedSeq.moveNext()) {
-                                state = S_EMBEDDED_TAIL;
+                            if (embeddedSeq.offset() + embeddedSeq.token().length() < startOffset) {
+                                embeddedSeq.move(startOffset);
+                                if (!embeddedSeq.moveNext()) {
+                                    state = S_EMBEDDED_TAIL;
+                                    break;
+                                }
+                            } else if (embeddedSeq.offset() > seq.offset()) {
+                                state = S_EMBEDDED_HEAD;
                                 break;
                             }
-                        } else if (embeddedSeq.offset() > seq.offset()) {
-                            state = S_EMBEDDED_HEAD;
-                            break;
+
+                            seq = embeddedSeq;
+                            embeddedSeq = seq.embedded();
                         }
-                        
-                        seq = embeddedSeq;
-                        embeddedSeq = seq.embedded();
+                    } catch (ConcurrentModificationException cme) {
+                        state = S_DONE;
                     }
-                } else if (state == S_DONE) {
+                }
+
+                if (state == S_DONE) {
                     attribsCache.clear();
                 }
 
@@ -344,11 +359,11 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                     if (state != S_DONE) {
                         logHelper.tokenCount++;
                     } else {
-                        LOG.fine("SyntaxHighlighting for " + scanner.inputSource() +
-                                ":\n-> returned " + logHelper.tokenCount + " token highlights for <" +
-                                startOffset + "," + endOffset +
-                                "> in " +
-                                (System.currentTimeMillis() - logHelper.startTime) + " ms.\n");
+                        LOG.fine("SyntaxHighlighting for " + scanner.inputSource() + //NOI18N
+                                ":\n-> returned " + logHelper.tokenCount + " token highlights for <" + //NOI18N
+                                startOffset + "," + endOffset + //NOI18N
+                                "> in " + //NOI18N
+                                (System.currentTimeMillis() - logHelper.startTime) + " ms.\n"); //NOI18N
                     }
                 }
 
@@ -365,7 +380,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             }
         }
 
-        public int getStartOffset() {
+        public @Override int getStartOffset() {
             synchronized (SyntaxHighlighting.this) {
                 switch (state) {
                     case S_NORMAL: {
@@ -394,7 +409,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             }
         }
 
-        public int getEndOffset() {
+        public @Override int getEndOffset() {
             synchronized (SyntaxHighlighting.this) {
                 switch (state) {
                     case S_NORMAL: {
@@ -424,7 +439,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             }
         }
 
-        public AttributeSet getAttributes() {
+        public @Override AttributeSet getAttributes() {
             synchronized (SyntaxHighlighting.this) {
                 switch (state) {
                     case S_NORMAL:

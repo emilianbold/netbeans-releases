@@ -378,8 +378,15 @@ public final class JUnitAntLogger extends AntLogger {
                 }
             }catch(Exception e){}
             Properties props = new Properties();
-            for(String propName: event.getPropertyNames()){
-                props.setProperty(propName, event.getProperty(propName));
+            //Passing only really used properties
+            //as some others may highlight build script errors
+            //(See #178798)
+            String[] propsOfInterest = {"javac.includes", "classname","methodname"};//NOI18N
+            for(String prop:propsOfInterest) {
+                String val = event.getProperty(prop);
+                if (val!=null) {
+                    props.setProperty(prop, val);
+                }
             }
             outputReader = new JUnitOutputReader(
                                         session,

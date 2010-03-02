@@ -292,6 +292,9 @@ public final class CategoryModel implements LookupListener {
 
     private Map<String, OptionsCategory> loadOptionsCategories() {
         Lookup lookup = Lookups.forPath(OD_LAYER_FOLDER_NAME);
+        if (result != null) {
+            result.removeLookupListener(this);
+        }
         result = lookup.lookup(new Lookup.Template<OptionsCategory>(OptionsCategory.class));
         result.addLookupListener(this);
         Map<String, OptionsCategory> m = new LinkedHashMap<String, OptionsCategory>();

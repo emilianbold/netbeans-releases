@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -54,7 +54,9 @@ made subject to such option by the copyright holder.
                 </file>
                 <folder name="text">
                     <folder name="x-java">
-                        <file name="org-netbeans-modules-web-core-syntax-indent-JspJavaIndentTaskFactory.instance"/>
+                        <file name="org-netbeans-modules-web-core-syntax-indent-JspJavaIndentTaskFactory.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
+                        </file>
                         <folder name="CodeTemplates">
                             <folder name="Defaults">
                                 <file name="codetemplates.shadow">
@@ -90,10 +92,18 @@ made subject to such option by the copyright holder.
                         <attr name="scrollable" boolvalue="false"/>
                     </file>
                 </folder>
-                <file name="org-netbeans-modules-web-core-syntax-indent-JspIndentTaskFactory.instance"/>
-                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
-                <file name="org-netbeans-modules-web-core-syntax-EmbeddedSectionsHighlighting$Factory.instance"/>
-                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
+                <file name="org-netbeans-modules-web-core-syntax-indent-JspIndentTaskFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
+                </file>
+                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+                <file name="org-netbeans-modules-web-core-syntax-EmbeddedSectionsHighlighting$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
                 <file name="org-netbeans-modules-csl-core-GsfParserFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.ParserFactory"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.csl.core.GsfParserFactory.create"/>
@@ -146,9 +156,26 @@ made subject to such option by the copyright holder.
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 <folder name="Popup">
-                    <file name="format">
-                        <attr name="position" intvalue="1125"/>
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+                        <attr name="position" intvalue="1280"/>
                     </file>
+                    <file name="SeparatorAfterWhereUsed.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+		    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+			<attr name="position" intvalue="1500"/>
+		    </file>
+                    <file name="format">
+                        <attr name="position" intvalue="1562"/>
+                    </file>
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1600"/>
+                    </file>
+
                     <file name="SeparatorProperties.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="4100"/>
@@ -179,12 +206,20 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
-                <file name="org-netbeans-modules-web-core-syntax-JspParserFactory.instance"/>
-                <file name="org-netbeans-modules-web-core-syntax-EmbeddingProviderImpl$Factory.instance"/>
-                <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance"/>
+                <file name="org-netbeans-modules-web-core-syntax-JspParserFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.ParserFactory"/>
+                </file>
+                <file name="org-netbeans-modules-web-core-syntax-EmbeddingProviderImpl$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
+                <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
             </folder>
             <folder name="x-el">
-                <file name="org-netbeans-modules-web-core-syntax-indent-ExpressionLanguageIndentTaskFactory.instance"/>
+                <file name="org-netbeans-modules-web-core-syntax-indent-ExpressionLanguageIndentTaskFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
+                </file>
             </folder>
             <folder name="x-tag">
                 <file name="TagImportProcesor.instance">
@@ -208,10 +243,18 @@ made subject to such option by the copyright holder.
                         <attr name="scrollable" boolvalue="false"/>
                     </file>
                 </folder>
-                <file name="org-netbeans-modules-web-core-syntax-indent-JspIndentTaskFactory.instance"/>
-                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
-                <file name="org-netbeans-modules-web-core-syntax-EmbeddedSectionsHighlighting$Factory.instance"/>
-                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
+                <file name="org-netbeans-modules-web-core-syntax-indent-JspIndentTaskFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
+                </file>
+                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+                <file name="org-netbeans-modules-web-core-syntax-EmbeddedSectionsHighlighting$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
@@ -223,23 +266,24 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
                 <folder name="Popup">
-                    <folder name="goto">
-                        <!--
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.editor.Bundle"/>
-                        <file name="goto"/>
-                        <file name="org-netbeans-modules-editor-java-JavaFastOpenAction.instance">
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaFastOpenAction.getInstance"/>
-                        </file>
-                        <attr name="goto/org-netbeans-modules-editor-java-JavaFastOpenAction.instance" boolvalue="true"/>
-                        -->
-                        <attr name="position" intvalue="900"/>
-                    </folder>
-                    <file name="format">
-                        <attr name="position" intvalue="1333"/>
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+                        <attr name="position" intvalue="1280"/>
                     </file>
-                    <file name="Separator5.instance">
+                    <file name="SeparatorAfterWhereUsed.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1666"/>
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+		    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+			<attr name="position" intvalue="1500"/>
+		    </file>
+                    <file name="format">
+                        <attr name="position" intvalue="1562"/>
+                    </file>
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1600"/>
                     </file>
                     <file name="SeparatorProperties.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -285,8 +329,12 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
-                <file name="org-netbeans-modules-web-core-syntax-EmbeddingProviderImpl$Factory.instance"/>
-                <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance"/>
+                <file name="org-netbeans-modules-web-core-syntax-EmbeddingProviderImpl$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
+                <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
             </folder>
         </folder>
     </folder>
@@ -298,5 +346,16 @@ made subject to such option by the copyright holder.
                 <file name="x-el" url="ELExample"/>
             </folder>
         </folder>
+    </folder>
+    <folder name="org-netbeans-modules-java-hints">
+        <folder name="rules">
+            <folder name="errors">
+                <folder name="text">
+                    <folder name="x-jsp">
+                        <file name="org-netbeans-modules-java-hints-errors-ImportClass.instance"/>
+                    </folder>
+                </folder>
+            </folder>
+         </folder>
     </folder>
 </filesystem>

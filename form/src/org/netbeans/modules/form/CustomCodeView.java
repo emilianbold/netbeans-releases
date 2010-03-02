@@ -569,6 +569,7 @@ class CustomCodeView extends javax.swing.JPanel {
         }
 
         class EditSwitchL implements ActionListener {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (ignoreComboAction)
                     return; // not invoked by user, ignore
@@ -635,16 +636,19 @@ class CustomCodeView extends javax.swing.JPanel {
     private class DocumentL implements DocumentListener {
         boolean active = true;
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             if (active)
                 contentChange(e);
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             if (active)
                 contentChange(e);
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
         }
 
@@ -848,6 +852,7 @@ class CustomCodeView extends javax.swing.JPanel {
             blockIndex = index;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (ignoreComboAction)
                 return; // not invoked by user, ignore
@@ -944,10 +949,12 @@ class CustomCodeView extends javax.swing.JPanel {
             this.positions = positionMap;
         }
 
+        @Override
         public void addLayoutComponent(Component comp, Object constraints) {
             positions.put(comp, (Position)constraints);
         }
 
+        @Override
         public void layoutContainer(Container parent) {
             StyledDocument doc = (StyledDocument)editor.getDocument();
             for (Component comp : parent.getComponents()) {
@@ -963,10 +970,12 @@ class CustomCodeView extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public void removeLayoutComponent(Component comp) {
             positions.remove(comp);
         }
 
+        @Override
         public Dimension preferredLayoutSize(Container parent) {
             int prefWidth = 0;
             for (Component comp : positions.keySet()) {
@@ -978,25 +987,31 @@ class CustomCodeView extends javax.swing.JPanel {
                                  editor.getPreferredSize().height);
         }
 
+        @Override
         public Dimension minimumLayoutSize(Container parent) {
             return preferredLayoutSize(parent);
         }
 
+        @Override
         public Dimension maximumLayoutSize(Container parent) {
             return preferredLayoutSize(parent);
         }
 
+        @Override
         public float getLayoutAlignmentX(Container target) {
             return .5f;
         }
 
+        @Override
         public float getLayoutAlignmentY(Container target) {
             return .5f;
         }
 
+        @Override
         public void invalidateLayout(Container target) {
         }
 
+        @Override
         public void addLayoutComponent(String name, Component comp) {
         }
 

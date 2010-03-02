@@ -76,8 +76,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.UserQuestionException;
 
 /**
@@ -614,6 +617,29 @@ public final class GsfUtilities {
         }
 
         return -1;
+    }
+
+    /**
+     * Gets the CloneableEditorSupport for given FileObject
+     *
+     * @param fo A FileObject to get the CES for.
+     * @return Instance of CloneableEditorSupport
+     */
+    public static CloneableEditorSupport findCloneableEditorSupport(FileObject fo) {
+	try {
+	    DataObject dob = DataObject.find(fo);
+	    Object obj = dob.getCookie(OpenCookie.class);
+	    if (obj instanceof CloneableEditorSupport) {
+		return (CloneableEditorSupport)obj;
+	    }
+	    obj = dob.getCookie(org.openide.cookies.EditorCookie.class);
+	    if (obj instanceof CloneableEditorSupport) {
+		return (CloneableEditorSupport)obj;
+	    }
+	} catch (DataObjectNotFoundException ex) {
+	    Exceptions.printStackTrace(ex);
+	}
+        return null;
     }
 
     // this is called from tests

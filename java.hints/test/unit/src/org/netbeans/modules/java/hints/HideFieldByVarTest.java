@@ -44,6 +44,7 @@ import com.sun.source.util.TreePath;
 import java.util.List;
 import java.util.Locale;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -98,6 +99,7 @@ public class HideFieldByVarTest extends TreeRuleTestBase {
             "}";
         
         for (int i = 0; i < text.length(); i++) {
+            SourceUtils.waitScanFinished();
             clearWorkDir();
             performAnalysisTest("test/Test.java", "// index: " + i + "\n" + text, i);
         }

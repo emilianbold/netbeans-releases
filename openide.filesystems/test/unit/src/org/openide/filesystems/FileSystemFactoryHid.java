@@ -75,15 +75,15 @@ public abstract class FileSystemFactoryHid extends NbTestSetup {
      * createTestedFS.
      * @param testName name of test 
      * @return  array of FileSystems that should be tested in test named: "testName"*/    
-    final static FileSystem[] createFileSystem (String testName,String[] resources, Test test) throws IOException {
-         return getInstance (test,true).createFileSystem(testName, resources);
+    static FileSystem[] createFileSystem (String testName,String[] resources, Test test) throws IOException {
+         return getInstance (test,false).createFileSystem(testName, resources);
     }
 
     /**
      * Intended to allow prepare tested environment for each individual test.
      * @param testName name of test
      * @return  array of FileSystems that should be tested in test named: "testName"*/
-    final static FileSystem createXMLSystem (String testName, Test test, URL... layers) throws IOException {
+    static FileSystem createXMLSystem (String testName, Test test, URL... layers) throws IOException {
         FileSystemFactoryHid factory = getInstance(test, false);
         if (factory instanceof XMLFileSystemTestHid.Factory) {
             XMLFileSystemTestHid.Factory f = (XMLFileSystemTestHid.Factory) factory;
@@ -91,7 +91,7 @@ public abstract class FileSystemFactoryHid extends NbTestSetup {
         }
         throw new IllegalStateException("You need to implement XMLFileSystemTestHid.Factory to use the AttributesTestHidden!");
     }
-    final static boolean switchXMLSystem (FileSystem fs, Test test, URL... layers) throws IOException {
+    static boolean switchXMLSystem (FileSystem fs, Test test, URL... layers) throws IOException {
         FileSystemFactoryHid factory = getInstance(test, false);
         if (factory instanceof XMLFileSystemTestHid.Factory) {
             XMLFileSystemTestHid.Factory f = (XMLFileSystemTestHid.Factory) factory;
@@ -100,25 +100,29 @@ public abstract class FileSystemFactoryHid extends NbTestSetup {
         throw new IllegalStateException("You need to implement XMLFileSystemTestHid.Factory to use the AttributesTestHidden!");
     }
       
-    final static void destroyFileSystem (String testName, Test test)  throws IOException  {
+    static void destroyFileSystem (String testName, Test test)  throws IOException  {
         getInstance (test,false).destroyFileSystem(testName);
     }    
     
-    final static String getResourcePrefix (String testName, Test test, String[] resources) {
+    static String getResourcePrefix (String testName, Test test, String[] resources) {
         return getInstance (test,false).getResourcePrefix(testName, resources);
     }    
 
     
     
-    private final static  FileSystemFactoryHid getInstance (Test test, boolean delete) {
+    private static  FileSystemFactoryHid getInstance (Test test, boolean delete) {
             FileSystemFactoryHid factory = getFromMap (test,delete);
             if (factory != null)
                 className  =  factory.getClass().getName();
         return factory;
     }
     
-    final static  String getTestClassName () {
+    static  String getTestClassName () {
         return (className != null) ? className : "Unknown TestSetup";
+    }
+
+    static void setServices(Test test, Class<?>... classes) {
+        getInstance(test, false).setServices(classes);
     }
     
     /**
@@ -130,6 +134,16 @@ public abstract class FileSystemFactoryHid extends NbTestSetup {
 
     protected String getResourcePrefix (String testName, String[] resources) {
         return "";
+    }
+
+    /** Registers services into default lookup. By default it uses
+     * MockServices.setServices. Subclasses may override and register
+     * additional classes into the lookup as well.
+     * 
+     * @param services the classes that shall be accessible from Lookup.getDefault()
+     */
+    protected void setServices(Class<?>... services) {
+        MockServices.setServices(services);
     }
     
 

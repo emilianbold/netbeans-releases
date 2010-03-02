@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.css.editor.lexer;
 
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
@@ -62,6 +64,11 @@ public class CssLexerTest extends TestBase {
 
     public void testInput() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testInputGeneratedCode.css.txt",
+                CssTokenId.language());
+    }
+
+    public void testImportsLexing() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/testImportsLexing.css.txt",
                 CssTokenId.language());
     }
 

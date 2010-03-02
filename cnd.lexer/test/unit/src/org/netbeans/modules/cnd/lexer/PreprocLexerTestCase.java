@@ -61,8 +61,11 @@ public class PreprocLexerTestCase extends NbTestCase {
     protected void setUp() throws Exception {
         LexerTestUtilities.setTesting(true);
     }
-    
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
     
     public void testIfdef() {
         String text = "#ifdef MACRO\n";

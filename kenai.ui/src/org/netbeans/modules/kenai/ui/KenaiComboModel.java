@@ -41,10 +41,13 @@ package org.netbeans.modules.kenai.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
@@ -54,53 +57,66 @@ import org.openide.util.WeakListeners;
 public class KenaiComboModel extends AbstractListModel implements ComboBoxModel {
 
     private Object selected = getElementAt(0);
-    private Kenai.Status status;
+    private List<Kenai.Status> statuses;
+    private int addNew = 1;
+
     private PropertyChangeListener listener = new PropertyChangeListener() {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             fireContentsChanged(evt.getSource(), 0, getSize());
         }
     };
 
-    public KenaiComboModel(Kenai.Status status) {
-        this.status = status;
+    public KenaiComboModel(Kenai.Status... statuses) {
+        this(true, statuses);
+    }
+
+    public KenaiComboModel(boolean addNew, Kenai.Status... statuses) {
+        this();
+        this.statuses = Arrays.asList(statuses);
+        this.addNew = addNew?1:0;
     }
 
     public KenaiComboModel() {
         KenaiManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(listener, KenaiManager.getDefault()));
     }
 
+    @Override
     public void setSelectedItem(Object anItem) {
         selected = anItem;
     }
 
+    @Override
     public Object getSelectedItem() {
         return selected;
     }
 
+    @Override
     public Object getElementAt(int index) {
         int i = 0;
         for (Kenai k: KenaiManager.getDefault().getKenais()) {
-            if (status==null || k.getStatus()==status) {
+            if (statuses==null || statuses.contains(k.getStatus())) {
                 i++;
             }
             if (i -1 == index) {
                 return k;
             }
         }
-        return "add new";
+        return NbBundle.getMessage(KenaiComboModel.class, "CTL_AddNew");
     }
 
+    @Override
     public int getSize() {
-        if (status==null) {
-            return KenaiManager.getDefault().getKenais().size() + 1;
+        if (statuses==null) {
+            return KenaiManager.getDefault().getKenais().size() + addNew;
         }
 
         int i=0;
         for (Kenai k: KenaiManager.getDefault().getKenais()) {
-            if (k.getStatus()==status) {
+            if (statuses.contains(k.getStatus())) {
                 i++;
             }
         }
-        return i + 1;
+        return i + addNew;
     }
 }

@@ -43,6 +43,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 
@@ -59,10 +61,22 @@ class TestSourceClassPathImpl extends AbstractProjectClassPathImpl {
         super(proj);
     }
     
+    @Override
     URI[] createPath() {
         Collection<URI> col = new ArrayList<URI>();
         col.addAll(Arrays.asList(getMavenProject().getSourceRoots(true)));
-        col.addAll(Arrays.asList(getMavenProject().getResources(true)));
+        //#180020 remote items from resources that are either duplicate or child roots of source roots.
+        List<URI> resources = new ArrayList<URI>(Arrays.asList(getMavenProject().getResources(false)));
+        Iterator<URI> it = resources.iterator();
+        while (it.hasNext()) {
+            URI res = it.next();
+            for (URI srcs : col) {
+                if (res.toString().startsWith(srcs.toString())) {
+                    it.remove();
+                }
+            }
+        }
+        col.addAll(resources);
         
         URI[] uris = new URI[col.size()];
         uris = col.toArray(uris);

@@ -50,6 +50,7 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 public interface CallbackHandlerConfiguration extends ExtensibilityElement{
 
     public static final String TIMESTAMPTIMEOUT = "TimestampTimeout";     //NOI18N
+    public static final String ITERATIONS = "iterationsForPDK";     //NOI18N
     
     void setVisibility(String vis);
     String getVisibility();
@@ -57,4 +58,6 @@ public interface CallbackHandlerConfiguration extends ExtensibilityElement{
     public void setTimestampTimeout(String tsTimeout);
     public String getTimestampTimeout();
     
+    public void setIterationsForPDK(String iterations);
+    public String getIterationsForPDK();
 }

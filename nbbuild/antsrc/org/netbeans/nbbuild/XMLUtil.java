@@ -117,8 +117,13 @@ public final class XMLUtil extends Object {
         if (entityResolver != null) {
             builder.setEntityResolver(entityResolver);
         }
-        
-        return builder.parse(input);
+
+        try {
+            return builder.parse(input);
+        } finally {
+            builder.setErrorHandler(null);
+            builder.setEntityResolver(null);
+        }
     }
     
     public static Document createDocument(String rootQName) throws DOMException {

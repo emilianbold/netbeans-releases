@@ -99,6 +99,7 @@ class EventProperty extends PropertySupport.ReadWrite {
      * selected event handler (for property sheet), not the Event object.
      * @return String name of the selected event handler attached to the event
      */
+    @Override
     public Object getValue() {
         if (selectedEventHandler == null && event.hasEventHandlers())
             selectedEventHandler = (String) event.getEventHandlerList().get(0);
@@ -116,6 +117,7 @@ class EventProperty extends PropertySupport.ReadWrite {
      * (describing multiple changes in event handlers), or null (to refresh
      * property sheet due to a change in handlers made outside).
      */
+    @Override
     public void setValue(Object val) {
         Change change = null;
         String newSelectedHandler = null;
@@ -236,6 +238,7 @@ class EventProperty extends PropertySupport.ReadWrite {
 
         if ("postSetAction".equals(key)) // NOI18N
             return new javax.swing.AbstractAction() {
+                @Override
                 public void actionPerformed(ActionEvent ev) {
                     // if Enter was pressed without echange or existing handler
                     // chosen, switch to editor
@@ -391,6 +394,7 @@ class EventProperty extends PropertySupport.ReadWrite {
                     new Object [] { getListenerMethod().getName() }),
                 true,
                 new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent evt) {
                         if (evt.getSource().equals(DialogDescriptor.OK_OPTION)) {
                             ed.doChanges();

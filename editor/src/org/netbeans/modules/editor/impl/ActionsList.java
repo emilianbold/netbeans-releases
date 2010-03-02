@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JSeparator;
+import org.openide.awt.AcceleratorBinding;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -142,7 +143,9 @@ public class ActionsList {
             }
             
             if (toAdd instanceof Action) {
-                actions.add((Action) toAdd);
+                Action action = (Action) toAdd;
+                actions.add(action);
+                AcceleratorBinding.setAccelerator(action, item);
             } else if (isSeparator(toAdd)) {
                 if (prohibitSeparatorsAndActionNames) {
                     if (LOG.isLoggable(Level.INFO)) {

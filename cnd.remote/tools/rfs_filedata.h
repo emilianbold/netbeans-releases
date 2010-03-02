@@ -50,19 +50,28 @@ enum file_state {
     INITIAL = 'i',
     TOUCHED = 't',
     COPIED = 'c',
+
+    /** 
+     * Local host already knows that it's owned by remote one;
+     * the file has not been modified remotely during the last build
+     */
     UNCONTROLLED = 'u',
+
+    /** The file has been modified remotely during the last build */
+    MODIFIED = 'm',
+
     ERROR = 'e',
     DIRECTORY = 'D',
-    PENDING = 'p'
+    PENDING = 'p',
+    
+    /** The file does not exist on local host (although belongs to the project) */
+    INEXISTENT = 'n',
 };
 
 typedef struct file_data {
     volatile enum file_state state;
     pthread_mutex_t cond_mutex;
     pthread_cond_t cond;
-    #if TRACE
-    int cnt;
-    #endif
     char filename[];
 } file_data;
 

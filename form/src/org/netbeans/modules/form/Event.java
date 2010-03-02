@@ -101,7 +101,7 @@ public class Event {
     }
 
     public String[] getEventHandlers() {
-        if (eventHandlers == null || eventHandlers.size() == 0)
+        if (eventHandlers == null || eventHandlers.isEmpty())
             return NO_HANDLERS;
 
         String[] handlerNames = new String[eventHandlers.size()];

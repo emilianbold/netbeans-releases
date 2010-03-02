@@ -42,24 +42,7 @@
             <li><b>Generate Dispatch Code</b>If you want to use raw XML messages when invoking the web service, select Generate Dispatch Code. The client code is generated using the <tt>java.xml.ws.Dispatch</tt> interface instead of the usual service endpoint interface. This is an advanced feaure and is unselected by default.</li>
 
         </ul>
-        <h3><a name="j2ee14client"/>JAX-RPC Clients in J2EE 1.4 Web Applications</h3>
-        <p>If you are creating a web service client in a J2EE 1.4 web application, a Client Type drop-down list appears with the following
-            options:</p>
-
-        <ul><li><b>J2EE Container-generated static stub.</b>
-                This type is based on JSR-109, which enhances JSR-101 by defining the packaging
-                of web services into standard J2EE modules, including a new deployment descriptor,
-                and defining web services that are implemented as session beans or servlets.
-                This is the recommended and portable (via J2EE 1.4 specification) type.
-                When you choose this type, the IDE adds deployment information in the
-                deployment descriptors and the container generates the stub and other artifacts.</li>
-            <li><b>IDE-generated static stub.</b> 
-                This type is based on JSR-101, which defines the mapping of WSDL to Java and vice versa.
-                It also defines a client API to invoke a remote web service and a runtime environment
-                on the server to host a web service. This type is not portable.
-                When you choose this type, the IDE generates
-                the stub and other
-                artifacts, packages them in the archive, and deploys them.</li></ul>
+        
 
         <dl>
             <dt><a name="seealso">See Also</a></dt>

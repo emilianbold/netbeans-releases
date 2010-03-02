@@ -48,17 +48,20 @@ made subject to such option by the copyright holder.
             <folder name="Tomcat5">
                 <file name="Descriptor" url="deployment.xml"/>
                 <file name="Factory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.TomcatFactory.create50"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory,javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+                    <attr name="urlPattern" stringvalue="^tomcat:.*$"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.tomcat5.TomcatFactory.create50"/>
+                    <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
                 <file name="TomcatRegistryNodeFactory.instance">                                
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.nodes.TomcatRegistryNodeFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
                 </file>
                 <file name="OptionalFactory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create50"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyOptionalFactory.create"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create50"/>
+                    <attr name="noInitializationFinish" boolvalue="true"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.tomcat5.Bundle#LBL_TomcatFactory"/>
                 </file>
@@ -81,17 +84,20 @@ made subject to such option by the copyright holder.
             <folder name="Tomcat55">
                 <file name="Descriptor" url="deployment55.xml"/>
                 <file name="Factory55.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.TomcatFactory.create55"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory,javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+                    <attr name="urlPattern" stringvalue="^tomcat55:.*$"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.tomcat5.TomcatFactory.create55"/>
+                    <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
                 <file name="TomcatRegistryNodeFactory.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.nodes.TomcatRegistryNodeFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
                 </file>
                 <file name="OptionalFactory55.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create55"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyOptionalFactory.create"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create55"/>
+                    <attr name="noInitializationFinish" boolvalue="true"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.tomcat5.Bundle#LBL_TomcatFactory55"/>
                 </file>
@@ -114,17 +120,20 @@ made subject to such option by the copyright holder.
             <folder name="Tomcat60">
                 <file name="Descriptor" url="deployment60.xml"/>
                 <file name="Factory60.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.TomcatFactory.create60"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory,javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+                    <attr name="urlPattern" stringvalue="^tomcat60:.*$"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.tomcat5.TomcatFactory.create60"/>
+                    <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
                 <file name="TomcatRegistryNodeFactory.instance">                                
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.nodes.TomcatRegistryNodeFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
                 </file>
                 <file name="OptionalFactory60.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create60"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyOptionalFactory.create"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory.create60"/>
+                    <attr name="noInitializationFinish" boolvalue="true"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.tomcat5.Bundle#LBL_TomcatFactory60"/>
                 </file>

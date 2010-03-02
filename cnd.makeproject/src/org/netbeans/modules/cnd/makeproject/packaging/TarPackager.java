@@ -44,7 +44,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import java.util.List;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.openide.util.NbBundle;
@@ -98,7 +98,7 @@ public class TarPackager implements PackagerDescriptor {
     }
 
     public String getTopDir(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
-        String topDir = IpeUtils.getBaseName(packagingConfiguration.getOutputValue());
+        String topDir = CndPathUtilitities.getBaseName(packagingConfiguration.getOutputValue());
 
         int i = topDir.lastIndexOf("."); // NOI18N
         if (i > 0) {
@@ -125,13 +125,13 @@ public class TarPackager implements PackagerDescriptor {
             PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
             List<PackagerFileElement> fileList = packagingConfiguration.getFiles().getValue();
             String output = packagingConfiguration.getOutputValue();
-            String outputRelToTmp = IpeUtils.isPathAbsolute(output) ? output : "../../../../" + output; // NOI18N
+            String outputRelToTmp = CndPathUtilitities.isPathAbsolute(output) ? output : "../../../../" + output; // NOI18N
 
             bw.write("# Copy files and create directories and links\n"); // NOI18N
             for (PackagerFileElement elem : fileList) {
                 bw.write("cd \"${TOP}\"\n"); // NOI18N
                 if (elem.getType() == PackagerFileElement.FileType.FILE) {
-                    String toDir = IpeUtils.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
+                    String toDir = CndPathUtilitities.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
                     if (toDir != null && toDir.length() >= 0) {
                         bw.write("makeDirectory " + "${TMPDIR}/" + toDir + "\n"); // NOI18N
                     }
@@ -139,8 +139,8 @@ public class TarPackager implements PackagerDescriptor {
                 } else if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
                     bw.write("makeDirectory " + " \"${TMPDIR}/" + elem.getTo() + "\"" + " 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
-                    String toDir = IpeUtils.getDirName(elem.getTo());
-                    String toName = IpeUtils.getBaseName(elem.getTo());
+                    String toDir = CndPathUtilitities.getDirName(elem.getTo());
+                    String toName = CndPathUtilitities.getBaseName(elem.getTo());
                     if (toDir != null && toDir.length() >= 0) {
                         bw.write("makeDirectory " + "\"" + "${TMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
                     }

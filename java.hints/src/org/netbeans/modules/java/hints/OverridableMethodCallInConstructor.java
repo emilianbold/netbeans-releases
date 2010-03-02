@@ -44,7 +44,6 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
@@ -81,9 +80,14 @@ public class OverridableMethodCallInConstructor {
     public static ErrorDescription hint(HintContext ctx) {
         MethodInvocationTree mit = (MethodInvocationTree) ctx.getPath().getLeaf();
         CompilationInfo info = ctx.getInfo();
-        Scope scope = info.getTrees().getScope(ctx.getPath());
+        TreePath enclosingMethod = findEnclosingMethodOrConstructor(ctx.getPath());
 
-        ExecutableElement enclosingMethodElement = scope.getEnclosingMethod();
+        if (enclosingMethod == null) {
+            return null;
+        }
+
+        Element enclosingMethodElement = ctx.getInfo().getTrees().getElement(enclosingMethod);
+        
         if (enclosingMethodElement == null || enclosingMethodElement.getKind() != ElementKind.CONSTRUCTOR) {
             return null;
         }
@@ -97,7 +101,7 @@ public class OverridableMethodCallInConstructor {
             return null;
         }
 
-        if (scope.getEnclosingClass() != classElement) {
+        if (!classElement.equals(enclosingMethodElement.getEnclosingElement())) {
             return null;
         }
 
@@ -183,5 +187,17 @@ public class OverridableMethodCallInConstructor {
         }
 
         return false;
+    }
+
+    static TreePath findEnclosingMethodOrConstructor(TreePath from) {
+        while (from != null && from.getLeaf().getKind() != Kind.METHOD && from.getLeaf().getKind() != Kind.CLASS) {
+            from = from.getParentPath();
+        }
+
+        if (from != null && from.getLeaf().getKind() == Kind.METHOD) {
+            return from;
+        }
+
+        return null;
     }
 }

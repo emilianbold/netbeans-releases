@@ -40,20 +40,16 @@
  */
 package org.netbeans.modules.web.jsf.api.metamodel;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
-import com.sun.swing.internal.plaf.synth.resources.synth;
 
 
 
@@ -64,15 +60,7 @@ import com.sun.swing.internal.plaf.synth.resources.synth;
 public class ModelUnit {
     
     public  static final String META_INF = "META-INF";      // NOI18N
-    private static final String WEB_INF = "WEB-INF";        // NOI18N
     public static final String FACES_CONFIG = "faces-config.xml";// NOI18N
-    
-    public static ModelUnit create(ClassPath bootPath, ClassPath compilePath, 
-            ClassPath sourcePath, File mainFacesConfig)
-    {
-        return new ModelUnit(bootPath, compilePath, sourcePath, mainFacesConfig, 
-                null);
-    }
     
     public static ModelUnit create(ClassPath bootPath, ClassPath compilePath, 
             ClassPath sourcePath)
@@ -81,28 +69,10 @@ public class ModelUnit {
     }
     
     public static ModelUnit create(ClassPath bootPath, ClassPath compilePath, 
-            ClassPath sourcePath, FileObject[] configFiles )
-    {
-        return new ModelUnit(bootPath, compilePath, sourcePath, null,configFiles);
-    }
-    
-    public static ModelUnit create(ClassPath bootPath, ClassPath compilePath, 
             ClassPath sourcePath, WebModule webModule )
     {
         return new ModelUnit(bootPath, compilePath, sourcePath, 
                 webModule);
-    }
-
-    private ModelUnit(ClassPath bootPath, ClassPath compilePath, 
-            ClassPath sourcePath, File mainFacesConfig, FileObject[] configFiles ) 
-    {
-        myBootPath= bootPath;
-        myCompilePath = compilePath;
-        mySourcePath = sourcePath;
-        myMainFacesConfig =mainFacesConfig ;
-        myConfigFiles = configFiles;
-        myModule = null;
-        getConfigFiles();
     }
     
     private ModelUnit(ClassPath bootPath, ClassPath compilePath, 
@@ -111,19 +81,7 @@ public class ModelUnit {
         myBootPath= bootPath;
         myCompilePath = compilePath;
         mySourcePath = sourcePath;
-        if (webModule != null) {
-            FileObject[] configs = ConfigurationUtils
-                    .getFacesConfigFiles(webModule);
-            if (configs != null && configs.length > 0) {
-                myMainFacesConfig = FileUtil.toFile(configs[0]);
-            }
-            else {
-                myMainFacesConfig = null;
-            }
-        }
         myModule = webModule;
-        myConfigFiles = null;
-        getConfigFiles();
     }
     
     
@@ -140,37 +98,19 @@ public class ModelUnit {
     }
     
     public synchronized FileObject getMainFacesConfig(){
-        if ( myMainFacesConfig != null && !myMainFacesConfig.exists() ){
-            myMainFacesConfig = null;
-        }
-        return myMainFacesConfig != null ? FileUtil.toFileObject(
-                FileUtil.normalizeFile(myMainFacesConfig)) : null;
+        //return first config from the configs lists
+        //the question if what file takes precedence in runtime if it even does matter
+        Collection<FileObject> configs = getConfigFiles();
+        return configs.isEmpty() ? null : configs.iterator().next();
     }
     
     public synchronized List<FileObject> getConfigFiles(){
-        FileObject[] objects = myModule == null ?  myConfigFiles :
-                ConfigurationUtils.getFacesConfigFiles( myModule );
-        
-        Set<FileObject> configs;
-        if ( objects != null ){
-            configs = new HashSet<FileObject>( Arrays.asList( objects ));
-        }
-        else {
-            configs = new HashSet<FileObject>();
-        }
-        
-        if (myMainFacesConfig == null) {
-            List<FileObject> list = getSourcePath().findAllResources( 
-                    WEB_INF +"/" +FACES_CONFIG); // NOI18N
-            if ( list != null && list.size() > 0 ){
-                myMainFacesConfig =  FileUtil.toFile(list.get(0));
-            }
-        }
-        if ( myMainFacesConfig!= null ){
-            configs.add( FileUtil.toFileObject( 
-                    FileUtil.normalizeFile(myMainFacesConfig) ));
-        }
-        String suffix = "."+FACES_CONFIG;
+        FileObject[] objects = ConfigurationUtils.getFacesConfigFiles( myModule );
+        //add all the configs from WEB-INF/faces-config.xml and all configs declared in faces config DD entry
+        //we need to ensure the original ordering
+        LinkedList<FileObject> configs = new LinkedList<FileObject>(Arrays.asList(objects));
+        //find for configs in meta-inf
+        String suffix = "."+FACES_CONFIG; //NOI18N
         for (FileObject root : getSourcePath().getRoots()) {
             FileObject metaInf = root.getFileObject(META_INF);
             if (metaInf != null) {
@@ -178,19 +118,20 @@ public class ModelUnit {
                 for (FileObject fileObject : children) {
                     String name = fileObject.getNameExt();
                     if ( name.equals( FACES_CONFIG) || name.endsWith(suffix )){
-                        configs.add( fileObject );
+                        if(!configs.contains(fileObject)) {
+                            //do not duplicate
+                            configs.add( fileObject );
+                        }
                     }
                 }
             }
         }
-        return new ArrayList<FileObject>(configs);
+        return configs;
     }
     
     private final ClassPath myBootPath;
     private final ClassPath myCompilePath;
     private final ClassPath mySourcePath;
-    private File myMainFacesConfig;
     private final WebModule myModule;
-    private final FileObject[] myConfigFiles;
 
 }

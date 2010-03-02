@@ -45,7 +45,9 @@ import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -57,6 +59,9 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  */
 public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
     private Map<Object/*getTokenTextKey(token)*/,Integer/*ttype*/> filter = new HashMap<Object,Integer>();
+    private Set<Integer/*ttype*/> keywords = new HashSet<Integer>();
+
+    private boolean caseInsensitive = false;
 
     // uncomment to use reduced memory
 //    private static final int BUFFERED_COUNT = 256;
@@ -78,6 +83,10 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
         return new FilterStream(origStream);
     }
 
+    protected void setCaseInsensitive(boolean caseInsensitive) {
+        this.caseInsensitive = caseInsensitive;
+    }
+
 //    // do necessary initializations in derived classes by calling
 //    // filter() method to fill up the filter
 //    protected abstract void initialize();
@@ -89,6 +98,9 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
      * if original token has the filtered textKey value
      */
     protected void filter(String text, int ttype) {
+        if(caseInsensitive) {
+            text = text.toLowerCase();
+        }
         Object textKey = APTUtils.getTextKey(text);
         // uncomment to use reduced memory
 //        if (ttype < BUFFERED_COUNT) {
@@ -100,13 +112,25 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
 //        assert(val != null);
 //        filter.put(textKey, val);
         filter.put(textKey, Integer.valueOf(ttype));
+        keywords.add(Integer.valueOf(ttype));
     }
 
-    private Token onID(Token token) {
-        Integer newType = filter.get(token.getText());
+    protected Token onID(Token token) {
+        String text = token.getText();
+        if(caseInsensitive) {
+            text = text.toLowerCase();
+        }
+        Integer newType = filter.get(text);
         if (newType != null) {
             int ttype = newType.intValue();
             token = new FilterToken((APTToken)token, ttype);
+        }
+        return token;
+    }
+
+    protected Token onToken(Token token) {
+        if (token.getType() == APTTokenTypes.ID) {
+            token = onID(token);
         }
         return token;
     }
@@ -119,13 +143,28 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
 
         public Token nextToken() throws TokenStreamException {
             Token token = orig.nextToken();
-            if (token.getType() == APTTokenTypes.ID) {
-                token = onID(token);
-            }
+            token = onToken(token);
             return token;
         }
     }
 
+    public boolean isKeyword(Token token) {
+        if (token.getType() == APTTokenTypes.ID) {
+            String text = token.getText();
+            if (caseInsensitive) {
+                text = text.toLowerCase();
+            }
+            Integer newType = filter.get(text);
+            if (newType != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isKeyword(int ttype) {
+        return keywords.contains(Integer.valueOf(ttype));
+    }
     /**
      * A wrapper token that changes original token type
      * and delegates the rest of the methods to original token.

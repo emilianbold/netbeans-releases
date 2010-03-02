@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Vector;
+import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -171,7 +171,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
         // Ensure all item configurations have been created (default are not stored in V >= 57)
         Item[] projectItems = configurationDescriptor.getProjectItems();
-        for (Configuration configuration : configurationDescriptor.getConfs().getConfigurtions()) {
+        for (Configuration configuration : configurationDescriptor.getConfs().getConfigurations()) {
             for (Item item : projectItems) {
                 if (item.getItemConfiguration(configuration) == null) {
                     configuration.addAuxObject(new ItemConfiguration(configuration, item));
@@ -193,6 +193,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
             final String message = NbBundle.getMessage(ConfigurationXMLReader.class, "OLD_VERSION_WARNING", projectFile.getName()); // NOI18N
             Runnable warning = new Runnable() {
 
+                @Override
                 public void run() {
                     NotifyDescriptor nd = new NotifyDescriptor(message,
                             NbBundle.getMessage(ConfigurationXMLReader.class, "CONVERT_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION, // NOI18N
@@ -224,6 +225,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
     // Attach listeners to all disk folders
     private void attachListeners(final MakeConfigurationDescriptor configurationDescriptor){
         Task task = RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 long time = 0;
                 if (MakeProject.TRACE_MAKE_PROJECT_CREATION) {
@@ -234,7 +236,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
                 try {
                     //boolean currentState = configurationDescriptor.getModified();
                     Thread.currentThread().setName("Attach listeners to all disk folders"); // NOI18N
-                    Vector<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
+                    List<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
                     for (Folder f : firstLevelFolders) {
                         if (f.isDiskFolder()) {
                             f.refreshDiskFolder(false);
@@ -257,23 +259,28 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
 
     // interface XMLDecoder
+    @Override
     protected String tag() {
         return null;
     }
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) {
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
     }
 
     // interface XMLDecoder
+    @Override
     public void startElement(String name, Attributes atts) {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String name, String currentText) {
     }
 }

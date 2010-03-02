@@ -64,6 +64,11 @@ public class ExecutionSupportTest extends NbTestCase {
         super.tearDown();
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testExecutionSupport1() throws Exception {
         String source = "CXX=CC CFLAGS=\"-g -xinstrument=datarace\" CXXFLAGS=\"-g -xinstrument=datarace\"";
         List<String> res = ImportUtils.parseEnvironment(source);

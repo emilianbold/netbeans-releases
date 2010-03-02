@@ -935,11 +935,15 @@ public class JarFileSystem extends AbstractFileSystem {
         assert Thread.holdsLock(closeSync);
         if (jar == null && create) {
             try {
-                jar = new JarFile(root);
-                LOGGER.log(Level.FINE, "opened: {0} {1}", new Object[]{System.currentTimeMillis(), root.getAbsolutePath()}); //NOI18N
+                if (root.canRead()) {
+                    jar = new JarFile(root);
+                    LOGGER.log(Level.FINE, "opened: {0} {1}", new Object[]{System.currentTimeMillis(), root.getAbsolutePath()}); //NOI18N
+                    return jar;
+                }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.INFO, ex.getMessage(), ex);
             }
+            LOGGER.log(Level.WARNING, "cannot open {0}", root.getAbsolutePath()); // NOI18N
         }
         return jar;
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.j2seproject;
@@ -44,6 +44,7 @@ import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -183,16 +184,23 @@ public class UpdateProjectImpl implements UpdateImplementation {
     public synchronized EditableProperties getUpdatedProjectProperties () {
         EditableProperties cachedProperties = this.helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         //The javadoc.additionalparam was not in NB 4.0
-        if (cachedProperties.get (J2SEProjectProperties.JAVADOC_ADDITIONALPARAM)==null) {
-            cachedProperties.put (J2SEProjectProperties.JAVADOC_ADDITIONALPARAM,"");    //NOI18N
-        }
-        if (cachedProperties.get ("build.generated.dir")==null) { //NOI18N
-            cachedProperties.put ("build.generated.dir","${build.dir}/generated"); //NOI18N
-        }
-         if (cachedProperties.get ("meta.inf.dir")==null) { //NOI18N
-            cachedProperties.put ("meta.inf.dir","${src.dir}/META-INF"); //NOI18N
-        }
+        ensureValueExists(cachedProperties, J2SEProjectProperties.JAVADOC_ADDITIONALPARAM,"");    //NOI18N
+        ensureValueExists(cachedProperties, "build.generated.dir","${build.dir}/generated"); //NOI18N
+        ensureValueExists(cachedProperties, "meta.inf.dir","${src.dir}/META-INF"); //NOI18N
+        ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_ENABLED, "true"); //NOI18N
+        ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, "false"); //NOI18N
+        ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "true"); //NOI18N
+        ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); //NOI18N
+        ensureValueExists(cachedProperties, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); //NOI18N
+        ensureValueExists(cachedProperties, ProjectProperties.JAVAC_PROCESSORPATH,"${" + ProjectProperties.JAVAC_CLASSPATH + "}"); //NOI18N
+        ensureValueExists(cachedProperties, "javac.test.processorpath","${" + ProjectProperties.JAVAC_TEST_CLASSPATH + "}"); //NOI18N
         return cachedProperties;
+    }
+
+    private static void ensureValueExists(EditableProperties prop, String property, String defaultValue) {
+        if (prop.get(property)==null) { //NOI18N
+            prop.put (property, defaultValue); //NOI18N
+        }
     }
 
     private static void copyDocument (Document doc, Element from, Element to) {

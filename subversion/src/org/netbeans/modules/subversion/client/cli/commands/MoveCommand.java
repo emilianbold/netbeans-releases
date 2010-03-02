@@ -105,14 +105,14 @@ public class MoveCommand extends SvnCommand {
         switch(type) {
             case url2url: 
                 arguments.add(fromUrl);
-                arguments.add(toUrl);        
+                arguments.addNonExistent(toUrl);
                 arguments.add(rev);                        
                 arguments.addMessage(msg);  
                 setCommandWorkingDirectory(new File("."));                
                 break;
             case file2file:                     
-                arguments.add(fromFile);        
-                arguments.add(toFile);
+                arguments.add(fromFile);
+                arguments.add(toFile.getAbsolutePath());
                 if(force) {
                     arguments.add("--force");                    
                 }

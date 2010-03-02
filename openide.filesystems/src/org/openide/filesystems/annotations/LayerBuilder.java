@@ -39,6 +39,7 @@
 
 package org.openide.filesystems.annotations;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
@@ -523,7 +524,16 @@ public final class LayerBuilder {
                 if (processingEnv != null) {
                     String resource = bundle.replace('.', '/') + ".properties";
                     try {
-                        InputStream is = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", resource).openInputStream();
+                        InputStream is;
+                        try {
+                            is = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", resource).openInputStream();
+                        } catch (FileNotFoundException x) { // #181355
+                            try {
+                                is = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", resource).openInputStream();
+                            } catch (IOException x2) {
+                                throw x;
+                            }
+                        }
                         try {
                             Properties p = new Properties();
                             p.load(is);
@@ -613,6 +623,15 @@ public final class LayerBuilder {
                 file = (org.w3c.dom.Element) e.appendChild(doc.createElement("file"));
             }
             file.setAttribute("name", piece);
+            NodeList oldComments = file.getChildNodes();
+            for (int i = 0; i < oldComments.getLength();) {
+                Node node = oldComments.item(i);
+                if (node.getNodeType() == Node.COMMENT_NODE) {
+                    file.removeChild(node);
+                } else {
+                    i++;
+                }
+            }
             if (originatingElement != null) {
                 // Embed comment in generated-layer.xml for easy navigation back to the annotation.
                 String name;

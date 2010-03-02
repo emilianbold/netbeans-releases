@@ -108,7 +108,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
     private boolean hasOutOfClassMemberDefinitions = false;
     private static boolean ALWAYS_USE_ACCESSORS = false;
     private static int FIELD_ACCESS_INDEX = 2;
-    private static int METHOD_ACCESS_INDEX = 2;
+    private static int METHOD_ACCESS_INDEX = 0;
     
     private static final String modifierNames[] = {
         "public", // NOI18N
@@ -539,9 +539,9 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     
     private static <E extends Enum<E> & Comparator<E>> void initEnumCombo(JComboBox combo, E defValue) {
         @SuppressWarnings("unchecked")
-        Vector<E> enumList = new Vector<E>(EnumSet.allOf(defValue.getClass()));
+        List<E> enumList = new ArrayList<E>(EnumSet.allOf(defValue.getClass()));
         Collections.sort(enumList, defValue);
-        combo.setModel(new DefaultComboBoxModel(enumList));
+        combo.setModel(new DefaultComboBoxModel(enumList.toArray()));
         combo.setSelectedItem(defValue);
     }
     

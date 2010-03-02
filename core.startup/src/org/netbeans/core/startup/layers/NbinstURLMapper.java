@@ -46,10 +46,12 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * URLMapper for the nbinst URL protocol.
@@ -61,10 +63,11 @@ import org.openide.util.Exceptions;
  * or ${netbeans.dirs}.
  * @author  Tomas Zezula
  */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.URLMapper.class)
+@ServiceProvider(service=URLMapper.class)
 public class NbinstURLMapper extends URLMapper {
     
     public static final String PROTOCOL = "nbinst";     //NOI18N
+    private static final Logger LOG = Logger.getLogger(NbinstURLMapper.class.getName());
     
     /** Creates a new instance of NbInstURLMapper */
     public NbinstURLMapper() {
@@ -75,14 +78,14 @@ public class NbinstURLMapper extends URLMapper {
      * @param url the URL for which the FileObjects should be find.
      * @return FileObject[], returns null in case of unknown protocol.
      */
-    public FileObject[] getFileObjects(URL url) {         
+    public @Override FileObject[] getFileObjects(URL url) {
         return (PROTOCOL.equals(url.getProtocol())) ? decodeURL (url) : null;
     }
 
     /**
      * Returns null, the translation into URL is doen by default URLMapper
      */
-    public URL getURL(FileObject fo, int type) {
+    public @Override URL getURL(FileObject fo, int type) {
         return null;
     }
 
@@ -100,20 +103,24 @@ public class NbinstURLMapper extends URLMapper {
                 String module = uri.getHost();
                 String path = uri.getPath();
                 if (path.length()>0) {
-                    try {
-                        String relpath = path.substring(1).replaceFirst("/$", ""); // NOI18N
-                        File file = InstalledFileLocator.getDefault().locate(relpath, module, false);
-                        if (file != null) {
-                            return new FileObject[] {URLMapper.findFileObject(file.toURI().toURL())};
+                    String relpath = path.substring(1).replaceFirst("/$", ""); // NOI18N
+                    File file = InstalledFileLocator.getDefault().locate(relpath, module, false);
+                    if (file != null) {
+                        try {
+                            FileObject fo = URLMapper.findFileObject(file.toURI().toURL());
+                            if (fo != null) {
+                                return new FileObject[] {fo};
+                            } else {
+                                LOG.log(Level.WARNING, "could find no FileObject for {0}", file);
+                            }
+                        } catch (MalformedURLException x) {
+                            LOG.log(Level.WARNING, null, x);
                         }
-                    }
-                    catch (MalformedURLException mue) {
-                        Exceptions.printStackTrace(mue);
                     }
                 }
             }
-        } catch (URISyntaxException use) {
-            Exceptions.printStackTrace(use);
+        } catch (URISyntaxException x) {
+            LOG.log(Level.WARNING, null, x);
         }
         return null;
     }

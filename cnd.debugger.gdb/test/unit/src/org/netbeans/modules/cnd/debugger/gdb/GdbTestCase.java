@@ -49,8 +49,7 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger.State;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
@@ -61,6 +60,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolchainProxy;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
@@ -106,8 +109,9 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         this.executable = testapp_dir + '/' + executable;
         project_dir = new File(testapp_dir, testproj).getAbsolutePath();
         conf = new TestConfiguration(args);
-        pae = new ProjectActionEvent(project, ProjectActionEvent.Type.DEBUG_STEPINTO, testapp, executable, conf, null, false);
-        CompilerSetManager.getDefault().getCompilerSet(0).getTool(Tool.DebuggerTool).setPath("/opt/csw/bin/gdb");
+        pae = new ProjectActionEvent(project, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO, executable, conf, null, false);
+        Tool tool = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets().get(0).getTool(PredefinedToolKind.DebuggerTool);
+        ToolchainProxy.setToolPath(tool, "/opt/csw/bin/gdb");
         dm.startDebugging(DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID,
             new Object[]{pae}));
         debugger = GdbDebugger.getGdbDebugger();
@@ -284,16 +288,18 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
 	}
     }
 
+    @Override
     public <T> List<? extends T> lookup(String folder, Class<T> service) {
         return dm.lookup(folder, service);
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public <T> T lookupFirst(String folder, Class<T> service) {
         if (service == ProjectActionEvent.class) {
             if (pae == null) {
                 conf = new TestConfiguration("");
-                pae = new ProjectActionEvent(project, ProjectActionEvent.Type.DEBUG_STEPINTO, testapp, executable, null, null, false);
+                pae = new ProjectActionEvent(project, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO, executable, null, null, false);
             }
             return (T) pae;
         } else {
@@ -301,7 +307,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         }
     }
 
-    class TestConfiguration extends MakeConfiguration {
+    private class TestConfiguration extends MakeConfiguration {
         public TestConfiguration(String args) {
             super(project_dir, testproj, MakeConfiguration.TYPE_APPLICATION, HostInfoUtils.LOCALHOST);
             RunProfile profile = getProfile();
@@ -317,6 +323,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
             this.lock = lock;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             synchronized (lock) {
                 lock.notifyAll();
@@ -325,6 +332,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
     }
 
     private class StackListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             synchronized (BP_WAIT_LOCK) {
                 BP_WAIT_LOCK.notifyAll();

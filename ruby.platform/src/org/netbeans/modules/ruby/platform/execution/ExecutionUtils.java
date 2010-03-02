@@ -43,6 +43,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -345,6 +348,36 @@ public final class ExecutionUtils {
         return sb.toString().trim();
     }
 
+    /**
+     * Creates a new thread factory that prefixes the names of the threads it
+     * creates with the given <code>namePrefix</code>.
+     *
+     * @param namePrefix the prefix to set.
+     * @return
+     */
+    public static ThreadFactory namedThreadFactory(String namePrefix) {
+        return new NamedThreadFactory(namePrefix);
+    }
+
+    private static class NamedThreadFactory implements ThreadFactory {
+
+        private final ThreadFactory delegate;
+        private final String namePrefix;
+        private final AtomicInteger threadNumber = new AtomicInteger(1);
+
+        public NamedThreadFactory(String namePrefix) {
+            this.namePrefix = namePrefix;
+            this.delegate = Executors.defaultThreadFactory();
+        }
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread result = delegate.newThread(r);
+            result.setName(namePrefix + "-" + threadNumber.getAndIncrement());
+            return result;
+        }
+    }
+
     // TODO: find a better place for this method (doesn't have anything to
     // do with external execution)
     public static FileLocation getLocation(String line) {
@@ -408,6 +441,5 @@ public final class ExecutionUtils {
             this.line = line;
         }
     }
-
 
 }

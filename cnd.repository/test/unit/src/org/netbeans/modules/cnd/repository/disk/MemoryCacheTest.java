@@ -73,6 +73,11 @@ public class MemoryCacheTest extends NbTestCase {
         super.setUp();
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testCache() throws Exception {
         MemoryCache cache = new MemoryCache();
         final AtomicBoolean stopFlag = new AtomicBoolean();

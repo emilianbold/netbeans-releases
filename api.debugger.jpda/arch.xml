@@ -672,44 +672,44 @@ Nothing.
         This property can be set through a map of properties that is passed to
         JPDADebugger.attach (), like J2ME_DEBUGGER property.
     </api>
-    <api name="netbeans.debugger.show_hidden_breakpoints" group="property" category="private" type="export">
+    <api name="netbeans.debugger.show_hidden_breakpoints" group="systemproperty" category="private" type="export">
         This system property is causing the breakpoints view to show also hidden
         breakpoints.
     </api>
-    <api name="org.netbeans.modules.debugger.jpda.breakpoints.level" group="property" category="private" type="export">
+    <api name="org.netbeans.modules.debugger.jpda.breakpoints.level" group="systemproperty" category="private" type="export">
         Logging level for informational messages about breakpoint
         submission and hits. They use Level.FINE and Level.FINER levels and
         are printed into the NetBeans message log.
     </api>
-    <api name="netbeans.debugger.start" group="property" category="private" type="export">
+    <api name="netbeans.debugger.start" group="systemproperty" category="private" type="export">
         When this system property is set, informational messages about start of
         JPDA debugger are printed into standard output (console).
     </api>
-    <api name="netbeans.debugger.jditrace" group="property" category="private" type="export">
+    <api name="netbeans.debugger.jditrace" group="systemproperty" category="private" type="export">
         This system property sets the debug mode of the debuggee virtual machine
         via <code>VirtualMachine.setDebugTraceMode()</code> method. See the javadoc
         of that method for the description and possible values.
     </api>
-    <api name="org.netbeans.modules.debugger.jpda.jdievents.level" group="property" category="private" type="export">
+    <api name="org.netbeans.modules.debugger.jpda.jdievents.level" group="systemproperty" category="private" type="export">
         Logging level for informational messages about received JDI events.
         They use Level.FINE level and are printed into the NetBeans message log.
     </api>
-    <api name="netbeans.debugger.smartstepping" group="property" category="private" type="export">
+    <api name="netbeans.debugger.smartstepping" group="systemproperty" category="private" type="export">
         When this system property is set, informational messages about the smart
         stepping process are printed into standard output (console).
     </api>
-    <api name="netbeans.debugger.noInvokeMethods" group="property" category="private" type="export">
+    <api name="netbeans.debugger.noInvokeMethods" group="systemproperty" category="private" type="export">
         When this system property is set, methods invocation in debuggee is disabled.
     </api>
-    <api name="org.netbeans.modules.debugger.jpda.invokeMethod.level" group="property" category="private" type="export">
+    <api name="org.netbeans.modules.debugger.jpda.invokeMethod.level" group="systemproperty" category="private" type="export">
         Logging level for messages about method invocation.
         They use Level.FINE level and are printed into the NetBeans message log.
     </api>
-    <api name="org.netbeans.modules.debugger.jpda.getValue.level" group="property" category="private" type="export">
+    <api name="org.netbeans.modules.debugger.jpda.getValue.level" group="systemproperty" category="private" type="export">
         Logging level for messages about variables evaluation.
         They use Level.FINE level and are printed into the NetBeans message log.
     </api>
-    <api name="netbeans.debugger.viewrefresh" group="property" category="private" type="export">
+    <api name="netbeans.debugger.viewrefresh" group="systemproperty" category="private" type="export">
         When this system property is set, informational messages about the tasks
         that refresh debugger views are printed into standard output (console).
         The value of that property should contain 'w' for watches view, 'l' for

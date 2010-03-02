@@ -55,25 +55,19 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
-import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -194,8 +188,8 @@ public class ProjectCreator {
 
         // TODO: create localhost based project
         MakeConfiguration extConf = new MakeConfiguration(dirF.getPath(), target, MakeConfiguration.TYPE_MAKEFILE, HostInfoUtils.LOCALHOST);
-        String workingDirRel = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(workingDir));
-        workingDirRel = FilePathAdaptor.normalize(workingDirRel);
+        String workingDirRel = CndPathUtilitities.toRelativePath(dirF.getPath(), CndPathUtilitities.naturalize(workingDir));
+        workingDirRel = CndPathUtilitities.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         if (displayName.indexOf(".lib.")>0 || displayName.indexOf(".cmd.")>0) { // NOI18N
             extConf.getMakefileConfiguration().getBuildCommand().setValue("bldenv -d ../../../../"+buildScript+" 'dmake all'"); // NOI18N
@@ -235,13 +229,13 @@ public class ProjectCreator {
         Iterator<String> importantItemsIterator = null;
         if (makefilePath != null && makefilePath.length() > 0) {
             List<String> importantItems = new ArrayList<String>();
-            makefilePath = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(makefilePath));
-            makefilePath = FilePathAdaptor.normalize(makefilePath);
+            makefilePath = CndPathUtilitities.toRelativePath(dirF.getPath(), CndPathUtilitities.naturalize(makefilePath));
+            makefilePath = CndPathUtilitities.normalize(makefilePath);
             importantItems.add(makefilePath);
             importantItemsIterator = importantItems.iterator();
         }
 
-        Iterator it = null;
+        Iterator<File> it = null;
         if (sourceFiles != null) {
             it = sourceFiles.iterator();
         }
@@ -260,7 +254,7 @@ public class ProjectCreator {
      * @throws IOException in case something went wrong
      */
     public AntProjectHelper createProject(File dir, String displayName, String makefileName, Configuration[] confs,
-                            Iterator sourceFiles, Iterator<String> importantItems,
+                            Iterator<File> sourceFiles, Iterator<String> importantItems,
                             Set<String> folders, Set<String> libs) throws IOException {
         FileObject dirFO = createProjectDir(dir);
         AntProjectHelper h = createProject(dirFO, displayName, makefileName, confs, sourceFiles, importantItems);
@@ -277,7 +271,7 @@ public class ProjectCreator {
 
     //Create a project with specified project folder, makefile, name, source files and important items
     private AntProjectHelper createProject(FileObject dirFO, String displayName, String makefileName,
-            Configuration[] confs, Iterator sourceFiles, Iterator<String> importantItems) throws IOException {
+            Configuration[] confs, Iterator<File> sourceFiles, Iterator<String> importantItems) throws IOException {
         //Create a helper object
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, TYPE);
         Element data = h.getPrimaryConfigurationData(true);
@@ -300,10 +294,10 @@ public class ProjectCreator {
         projectDescriptor.setProjectMakefileName(makefileName);
         projectDescriptor.init(confs);
         baseDir = projectDescriptor.getBaseDir();
-        projectDescriptor.initLogicalFolders(null, false, importantItems, null);
+        projectDescriptor.initLogicalFolders(null, false, null, importantItems, null);
         rootFolder = projectDescriptor.getLogicalFolders();
         //projectDescriptor.addSourceRootRaw(workingDir);
-        projectDescriptor.addSourceRootRaw(IpeUtils.toRelativePath(baseDir, workingDir));
+        projectDescriptor.addSourceRootRaw(CndPathUtilitities.toRelativePath(baseDir, workingDir));
         
         addFiles(sourceFiles);
         
@@ -323,15 +317,15 @@ public class ProjectCreator {
     }
     
     //add source files from filelist
-    private void addFiles(Iterator filelist) {
+    private void addFiles(Iterator<File> filelist) {
         if (filelist == null) {
             return;
         }
         while (filelist.hasNext()) {
-            File f = (File) filelist.next();
-            String path = IpeUtils.toRelativePath(workingDir, f.getPath());
+            File f = filelist.next();
+            String path = CndPathUtilitities.toRelativePath(workingDir, f.getPath());
             StringTokenizer tok = new StringTokenizer(path, File.separator);
-            String relativePath = IpeUtils.toRelativePath(baseDir, f.getPath());
+            String relativePath = CndPathUtilitities.toRelativePath(baseDir, f.getPath());
             addFile(rootFolder, tok, f.getPath(), relativePath);
         }
     }
@@ -414,29 +408,6 @@ public class ProjectCreator {
         assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
         dirFO.getFileSystem().refresh(false);
     }
-
-    private Set<String> getIncludePaths(MakeConfigurationDescriptor makeConfigurationDescriptor, MakeConfiguration conf){
-        Set<String> paths = new HashSet<String>();
-        for(Item item: makeConfigurationDescriptor.getProjectItems()){
-            ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);
-            if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
-                continue;
-            }
-            BooleanConfiguration excl =itemConfiguration.getExcluded();
-            if (excl.getValue()){
-                excl.setValue(false);
-            }
-            BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
-            if (compilerConfiguration instanceof CCCCompilerConfiguration) {
-                CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
-                for(String path: cccCompilerConfiguration.getIncludeDirectories().getValue()){
-                    paths.add(path);
-                }
-            }
-        }
-        return paths;
-    }
-
 
     private void createAdditionalRequiredProjects(Project project, String displayName, 
             Set<String> folders, Set<String> libraries){

@@ -163,6 +163,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.junit</friend>
                 <friend>org.netbeans.modules.maven.junit</friend>
                 <friend>org.netbeans.modules.php.project</friend>

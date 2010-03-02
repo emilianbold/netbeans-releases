@@ -1585,9 +1585,8 @@ public class CasualDiff {
         localPointer = diffTree(oldT.clazz, newT.clazz, clazzBounds);
         if (!listsMatch(oldT.arguments, newT.arguments)) {
             int pos = oldT.arguments.nonEmpty() ? getOldPos(oldT.arguments.head) : endPos(oldT.clazz);
-            if (newT.arguments.nonEmpty())
-                copyTo(localPointer, pos);
-            boolean printBrace = oldT.arguments.isEmpty() || newT.arguments.isEmpty();
+            copyTo(localPointer, pos);
+            boolean printBrace = false;
             localPointer = diffParameterList(
                     oldT.arguments,
                     newT.arguments,

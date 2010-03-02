@@ -41,6 +41,7 @@
 
 package org.netbeans.performance.languages;
 
+
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
@@ -58,7 +59,8 @@ public class ScriptingMeasureActionsTest1 {
         System.setProperty("suitename", ScriptingMeasureActionsTest1.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness Scripting Actions suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(SavingPHPProjectPropertiesTest.class)
+
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                 .addTest(SavingPHPProjectPropertiesTest.class)
                 //needs to be fixed  .addTest(CreateScriptingPackFilesTest.class)
                 .addTest(ScriptingExpandFolderTest.class)

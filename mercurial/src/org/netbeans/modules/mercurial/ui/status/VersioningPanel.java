@@ -45,7 +45,6 @@ import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
-import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -59,7 +58,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.*;
-import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -77,7 +75,6 @@ import java.util.LinkedList;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.logging.Level;
-import org.netbeans.modules.mercurial.util.HgCommand;
 
 /**
  * The main class of the Synchronize view, shows and acts on set of file roots.
@@ -180,6 +177,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         mercurial.getFileStatusCache().addPropertyChangeListener(this);        
         mercurial.addPropertyChangeListener(this);
         explorerManager.addPropertyChangeListener(this);
+        mercurial.addPropertyChangeListener(syncTable);
         reScheduleRefresh(0);   // the view does not listen for changes when it is not visible
     }
     
@@ -188,6 +186,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         mercurial.getFileStatusCache().removePropertyChangeListener(this);
         mercurial.removePropertyChangeListener(this);
         explorerManager.removePropertyChangeListener(this);
+        mercurial.removePropertyChangeListener(syncTable);
         super.removeNotify();
     }
     

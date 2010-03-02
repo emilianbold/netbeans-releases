@@ -18,6 +18,12 @@ if [ "$action" = "build" ]; then
     testmodule api.java.classpath
     testmodule api.progress
     testmodule api.visual
+    testmodule apisupport.crudsample
+    testmodule apisupport.feedreader
+    testmodule apisupport.harness
+    testmodule apisupport.osgidemo
+    testmodule apisupport.paintapp
+    testmodule apisupport.project
     testmodule autoupdate.services
     testmodule autoupdate.ui
     testmodule core.execution
@@ -41,6 +47,10 @@ if [ "$action" = "build" ]; then
     testmodule javahelp
     testmodule keyring
     testmodule masterfs
+    testmodule maven
+    testmodule maven.embedder
+    testmodule maven.indexer
+    testmodule maven.model
     testmodule nbjunit
     testmodule o.apache.tools.ant.module
     testmodule o.n.bootstrap

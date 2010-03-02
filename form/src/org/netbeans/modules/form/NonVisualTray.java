@@ -88,6 +88,7 @@ public class NonVisualTray extends JPanel implements ExplorerManager.Provider {
      *
      * @return explorer manager for the list view.
      */
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -154,6 +155,7 @@ public class NonVisualTray extends JPanel implements ExplorerManager.Provider {
             button.setPreferredSize(new Dimension(64+2*4, 50+fontSize));
         }
         
+        @Override
         public Component getListCellRendererComponent(JList list,
             Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Node node = Visualizer.findNode(value);
@@ -176,6 +178,7 @@ public class NonVisualTray extends JPanel implements ExplorerManager.Provider {
      */
     private class Listener implements PropertyChangeListener {
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                 if (evt.getSource() == manager) {

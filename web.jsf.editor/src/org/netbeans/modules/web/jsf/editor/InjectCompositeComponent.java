@@ -75,6 +75,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -149,7 +150,8 @@ public class InjectCompositeComponent {
 	TemplateWizard templateWizard = new TemplateWizard();
 	templateWizard.putProperty("project", project); //NOI18N
 	templateWizard.putProperty("selectedText", selectedText); //NOI18N
-	templateWizard.setTitle("Insert Composite Component"); //NOI18N
+	templateWizard.setTitle(NbBundle.getMessage(InjectCompositeComponent.class, "MSG_InsertCompositeComponent")); //NOI18N
+        templateWizard.putProperty("fromEditor", true); //NOI18N
 	DataFolder templatesFolder = templateWizard.getTemplatesFolder();
 	FileObject template = templatesFolder.getPrimaryFile().getFileObject(TEMPLATES_FOLDER + "/" + TEMPLATE_NAME);   //NOI18N
 	DataObject templateDO;
@@ -174,7 +176,7 @@ public class InjectCompositeComponent {
 	ParserManager.parse(Collections.singleton(source), new UserTask() {
 	    @Override
 	    public void run(ResultIterator resultIterator) throws Exception {
-		ResultIterator ri = Utils.getResultIterator(resultIterator, HtmlKit.HTML_MIME_TYPE);
+		ResultIterator ri = WebUtils.getResultIterator(resultIterator, HtmlKit.HTML_MIME_TYPE);
 		if (ri != null) {
 		    HtmlParserResult result = (HtmlParserResult) ri.getParserResult();
 		    if(result != null) {

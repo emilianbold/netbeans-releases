@@ -155,6 +155,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     // -----
 
     // Transaction (registered via RefactoringElementsBag.registerTransaction)
+    @Override
     public void commit() {
         if (previewElement != null && !previewElement.isEnabled()) {
             return;
@@ -215,6 +216,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     }
 
     // Transaction (registered via RefactoringElementsBag.registerTransaction)
+    @Override
     public void rollback() {
         if (previewElement != null && !previewElement.isEnabled()) {
             return;
@@ -238,6 +240,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     }
 
     // RefactoringElementImplementation (registered via RefactoringElementsBag.addFileChange)
+    @Override
     public void performChange() {
         if (previewElement != null && !previewElement.isEnabled()) {
             return;
@@ -332,6 +335,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
         final FormEditorSupport fes = formDataObject.getFormEditorSupport();
         if (fes.isOpened()) {
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     formEditor = fes.reloadFormEditor();
                     formMove2(/*saveAll*/);
@@ -482,6 +486,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                 final FormEditorSupport fes = formDataObject.getFormEditorSupport();
                 if (fes.isOpened()) {
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             formEditor = fes.reloadFormEditor();
                             updateForm(true);
@@ -667,6 +672,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             }
         } else { // file does not exist - will be created; to undo we must delete it
            id = new BackupFacility.Handle() {
+                @Override
                 public void restore() throws IOException {
                     FileObject file = URLMapper.findFileObject(url);
                     if (file != null) {
@@ -715,25 +721,31 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             this.file = file;
         }
 
+        @Override
         public String getText() {
             return "GUI form update"; // NOI18N
         }
 
+        @Override
         public String getDisplayText() {
             return NbBundle.getMessage(FormRefactoringUpdate.class, "CTL_RefactoringUpdate1"); // NOI18N
         }
 
+        @Override
         public void performChange() {
         }
 
+        @Override
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
 
+        @Override
         public FileObject getParentFile() {
             return file;
         }
 
+        @Override
         public PositionBounds getPosition() {
             return null;
         }
@@ -742,26 +754,31 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     // -----
 
     // RefactoringElementImplementation
+    @Override
     public String getText() {
         return "GUI form update";
     }
 
     // RefactoringElementImplementation
+    @Override
     public String getDisplayText() {
         return NbBundle.getMessage(FormRefactoringUpdate.class, "CTL_RefactoringUpdate2"); // NOI18N
     }
 
     // RefactoringElementImplementation
+    @Override
     public Lookup getLookup() {
         return Lookup.EMPTY;
     }
 
     // RefactoringElementImplementation
+    @Override
     public FileObject getParentFile() {
         return changingFile;
     }
 
     // RefactoringElementImplementation
+    @Override
     public PositionBounds getPosition() {
         return null;
     }

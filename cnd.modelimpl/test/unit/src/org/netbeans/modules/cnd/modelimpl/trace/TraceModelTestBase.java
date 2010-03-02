@@ -41,11 +41,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.PrintStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModel;
@@ -118,7 +115,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         if (file instanceof FileImpl) {
             ((FileImpl) file).markReparseNeeded(true);
             try {
-                ((FileImpl) file).scheduleParsing(true);
+                file.scheduleParsing(true);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }

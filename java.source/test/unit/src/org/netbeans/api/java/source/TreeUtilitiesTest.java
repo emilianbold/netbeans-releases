@@ -430,4 +430,23 @@ public class TreeUtilitiesTest extends NbTestCase {
 
         assertEquals(golden, uncaughtExceptionStrings);
     }
+
+    public void testExoticIdentifiers() throws Exception {
+        performExoticIdentiferDecodeTest("#\"a\"", "a");
+        for (char c : TreeUtilities.EXOTIC_ESCAPE) {
+            performExoticIdentiferDecodeTest("#\"\\" + c + "\"", "\\" + c);
+        }
+        performExoticIdentiferDecodeTest("#\"\\n\"", "\n");
+
+        performExoticIdentiferDecodeTest("a", "a");
+        performExoticIdentiferEncodeTest("\n", "#\"\\n\"");
+    }
+
+    private void performExoticIdentiferDecodeTest(String exotic, String golden) throws Exception {
+        assertEquals(golden, TreeUtilities.decodeIdentifierInternal(exotic).toString());
+    }
+    
+    private void performExoticIdentiferEncodeTest(String exotic, String golden) throws Exception {
+        assertEquals(golden, TreeUtilities.encodeIdentifierInternal(exotic).toString());
+    }
 }

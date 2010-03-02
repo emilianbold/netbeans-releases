@@ -242,16 +242,19 @@ public class BindingPanel extends SectionInnerPanel {
         }
 
         model.addComponentListener(new ComponentListener() {
+            @Override
             public void valueChanged(ComponentEvent evt) {
                 if (!doNotSync) {
                     sync();
                 }
             }
+            @Override
             public void childrenAdded(ComponentEvent evt) {
                 if (!doNotSync) {
                     sync();
                 }
             }
+            @Override
             public void childrenDeleted(ComponentEvent evt) {
                 if (!doNotSync) {
                     sync();
@@ -420,6 +423,7 @@ public class BindingPanel extends SectionInnerPanel {
         if (source.equals(securityChBox)) {
             String profile = (String) profileCombo.getSelectedItem();
             if (securityChBox.isSelected()) {
+                Util.checkMetroRtLibrary(project, true);
                 profileCombo.setSelectedItem(profile);
                 if (devDefaultsChBox.isSelected()) {
                     DefaultSettings.fillDefaults(project, false,true);
@@ -532,8 +536,10 @@ public class BindingPanel extends SectionInnerPanel {
     @Override
     protected void endUIChange() { }
 
+    @Override
     public void linkButtonPressed(Object ddBean, String ddProperty) { }
 
+    @Override
     public javax.swing.JComponent getErrorComponent(String errorId) {
         return new JButton();
     }

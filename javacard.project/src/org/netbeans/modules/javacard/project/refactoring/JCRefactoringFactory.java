@@ -46,6 +46,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
@@ -66,6 +67,19 @@ public class JCRefactoringFactory implements RefactoringPluginFactory {
                     return new JCRenameRefactoringPlugin(r);
                 }
             }
+        }
+        if (refactoring instanceof MoveRefactoring) {
+            MoveRefactoring m = (MoveRefactoring) refactoring;
+            ClasspathInfo info = m.getContext().lookup(ClasspathInfo.class);
+            ClassPath cp = info.getClassPath(ClasspathInfo.PathKind.SOURCE);
+            FileObject[] roots = cp.getRoots();
+            if (roots != null && roots.length > 0) {
+                Project p = FileOwnerQuery.getOwner(roots[0]);
+                if (p != null && p.getLookup().lookup(JCProject.class) != null) {
+                    return new JCRenameRefactoringPlugin(m);
+                }
+            }
+
         }
         return null;
     }

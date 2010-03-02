@@ -47,7 +47,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -56,13 +56,13 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="separator" alignment="1" max="32767" attributes="0"/>
-          <Component id="dummyCommentsPanel" alignment="0" max="32767" attributes="0"/>
+          <Component id="separator" alignment="1" pref="730" max="32767" attributes="0"/>
+          <Component id="dummyCommentsPanel" alignment="0" pref="730" max="32767" attributes="0"/>
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="headerLabel" max="32767" attributes="0"/>
+                      <Component id="headerField" pref="222" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="tasklistButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -73,6 +73,10 @@
                       <Component id="separatorLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="reloadButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="separatorLabel3" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="showInBrowserButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
@@ -96,7 +100,7 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="dummyAttachmentsPanel" max="32767" attributes="0"/>
+                          <Component id="dummyAttachmentsPanel" pref="556" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="issueTypeCombo" max="32767" attributes="1"/>
@@ -204,7 +208,7 @@
                           </Group>
                           <Component id="scrollPane1" alignment="0" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="summaryField" max="32767" attributes="0"/>
+                              <Component id="summaryField" pref="530" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="summaryWarning" min="-2" pref="16" max="-2" attributes="0"/>
                           </Group>
@@ -213,12 +217,12 @@
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="messagePanel" alignment="0" max="32767" attributes="0"/>
-                          <Component id="customFieldsPanelRight" alignment="0" max="32767" attributes="0"/>
+                          <Component id="messagePanel" alignment="0" pref="556" max="32767" attributes="0"/>
+                          <Component id="customFieldsPanelRight" alignment="0" pref="556" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -227,12 +231,14 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="headerLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="headerField" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="separatorLabel2" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="tasklistButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="separatorLabel" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="reloadButton" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="refreshButton" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="separatorLabel3" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="showInBrowserButton" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -802,7 +808,15 @@
     </Container>
     <Component class="javax.swing.JSeparator" name="separator">
     </Component>
-    <Component class="javax.swing.JLabel" name="headerLabel">
+    <Component class="javax.swing.JTextField" name="headerField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+          </Border>
+        </Property>
+      </Properties>
     </Component>
     <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="refreshButton">
       <Properties>
@@ -835,6 +849,16 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reloadButtonActionPerformed"/>
       </Events>
     </Component>
+    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="showInBrowserButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.showInBrowserButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showInBrowserButtonActionPerformed"/>
+      </Events>
+    </Component>
     <Component class="javax.swing.JLabel" name="separatorLabel">
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -862,6 +886,15 @@
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="separatorLabel2">
+      <Properties>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
+            <LineBorder/>
+          </Border>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="separatorLabel3">
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">

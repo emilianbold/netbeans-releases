@@ -154,9 +154,6 @@ file_data *add_file_data(const char* filename, enum file_state state) {
     pthread_cond_init(&node->fd->cond, NULL);
     strcpy(node->fd->filename, filename);
     node->fd->state = state;
-#if DEBUG_FILE_DATA
-    node->fd->cnt = 0;
-#endif
     node->next = adding_file_data_root;
     adding_file_data_root = node;
 }

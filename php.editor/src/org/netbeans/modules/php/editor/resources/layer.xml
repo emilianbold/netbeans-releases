@@ -41,8 +41,12 @@
                         <attr name="position" intvalue="0"/>
                     </file>
                 </folder>
-                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
-                <file name="org-netbeans-modules-php-editor-PhpEmbeddingProvider$Factory.instance"/>
+                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+                <file name="org-netbeans-modules-php-editor-PhpEmbeddingProvider$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -119,6 +123,9 @@
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
                         <attr name="position" intvalue="500"/>
                     </folder>
+                    <file name="in-place-refactoring">
+                        <attr intvalue="680" name="position"/>
+                    </file>
                     <file name="fast-import">
                         <attr name="position" intvalue="1181"/>
                     </file>
@@ -182,6 +189,11 @@
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtTabsIndents.getController"/>
                             <attr name="position" intvalue="100"/>
                         </file>
+			<file name="Alignment.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtAlignment.getController"/>
+                            <attr name="position" intvalue="200"/>
+                        </file>
                         <file name="Braces.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtBraces.getController"/>
@@ -191,6 +203,21 @@
                           <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
                           <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtBlankLines.getController"/>
                           <attr name="position" intvalue="500"/>
+                      </file>
+                      <file name="Spaces.instance">
+                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtSpaces.getController"/>
+                          <attr name="position" intvalue="700"/>
+                      </file>
+		      <file name="Wrapping.instance">
+                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtWrapping.getController"/>
+                          <attr name="position" intvalue="750"/>
+                      </file>
+		      <file name="Style.instance">
+                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtStyle.getController"/>
+                          <attr name="position" intvalue="900"/>
                       </file>
                     </folder>
                 </folder>

@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.java.j2seproject;
 
 import java.beans.PropertyChangeEvent;
@@ -47,8 +46,18 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 //retouche:
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
@@ -68,9 +77,21 @@ import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesProvider;
 import org.netbeans.modules.j2ee.persistence.spi.support.EntityMappingsMetadataModelHelper;
 import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -80,14 +101,22 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
 
     private final J2SEProject project;
     private final ClassPathProviderImpl cpProvider;
-
     private final ScopeImpl scopeImpl = new ScopeImpl();
     private final PersistenceScope persistenceScope = PersistenceScopeFactory.createPersistenceScope(scopeImpl);
     private final EntityClassScope entityClassScope = EntityClassScopeFactory.createEntityClassScope(scopeImpl);
-
     private final PersistenceScopesHelper scopesHelper = new PersistenceScopesHelper();
     private final EntityMappingsMetadataModelHelper modelHelper;
+//    private final PersistenceXmlChangeListener puChangeListener = new PersistenceXmlChangeListener();
+    private final PropertyChangeListener scopeListener = new PropertyChangeListener() {
 
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            Object newV = evt.getNewValue();
+            if (Boolean.TRUE.equals(newV)) {
+                puChanged();
+            }
+        }
+    };
     private ClassPath projectSourcesClassPath;
 
     public J2SEPersistenceProvider(J2SEProject project, ClassPathProviderImpl cpProvider) {
@@ -98,10 +127,12 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
         sourcesChanged();
     }
 
+    @Override
     public FileObject getLocation() {
         return getMetaInfFolder();
     }
 
+    @Override
     public FileObject createLocation() throws IOException {
         FileObject root = getFirstSourceRoot();
         if (root == null) {
@@ -115,9 +146,13 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
         } else {
             metaInf = root.createFolder("META-INF"); // NOI18N
         }
+//        //
+//        FileUtil.addFileChangeListener(puChangeListener, new File(FileUtil.toFile(metaInf), "persistence.xml"));
+        //
         return metaInf;
     }
 
+    @Override
     public PersistenceScope findPersistenceScope(FileObject fo) {
         Project project = FileOwnerQuery.getOwner(fo);
         if (project != null) {
@@ -126,7 +161,8 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
         }
         return null;
     }
-    
+
+    @Override
     public EntityClassScope findEntityClassScope(FileObject fo) {
         Project project = FileOwnerQuery.getOwner(fo);
         if (project != null) {
@@ -136,6 +172,7 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
         return null;
     }
 
+    @Override
     public PersistenceScopes getPersistenceScopes() {
         return scopesHelper.getPersistenceScopes();
     }
@@ -178,10 +215,9 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
     private ClassPath getProjectSourcesClassPath() {
         synchronized (this) {
             if (projectSourcesClassPath == null) {
-                projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[] {
-                    cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
-                    cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
-                });
+                projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[]{
+                            cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
+                            cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),});
             }
             return projectSourcesClassPath;
         }
@@ -189,11 +225,12 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
 
     private EntityMappingsMetadataModelHelper createEntityMappingsHelper() {
         return EntityMappingsMetadataModelHelper.create(
-            cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
-            cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
-            cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE));
+                cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
+                cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE));
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent event) {
         sourcesChanged();
     }
@@ -205,7 +242,7 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
             // if there is a META-INF folder, expect persistence.xml to be created there
             File metaInfFile = FileUtil.toFile(metaInf);
             if (metaInfFile != null) {
-                 persistenceXmlFile = new File(metaInfFile, "persistence.xml"); //NOI18N
+                persistenceXmlFile = new File(metaInfFile, "persistence.xml"); //NOI18N
             }
         } else {
             FileObject firstSourceRoot = getFirstSourceRoot();
@@ -218,6 +255,7 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
             if (persistenceXmlFile != null) {
                 scopesHelper.changePersistenceScope(persistenceScope, persistenceXmlFile);
                 modelHelper.changePersistenceXml(persistenceXmlFile);
+                scopesHelper.getPersistenceScopes().addPropertyChangeListener(scopeListener);
             } else {
                 scopesHelper.changePersistenceScope(null, null);
                 modelHelper.changePersistenceXml(null);
@@ -230,6 +268,7 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
      */
     private final class ScopeImpl implements PersistenceScopeImplementation, EntityClassScopeImplementation {
 
+        @Override
         public FileObject getPersistenceXml() {
             FileObject location = getLocation();
             if (location == null) {
@@ -238,16 +277,54 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
             return location.getFileObject("persistence.xml"); // NOI18N
         }
 
+        @Override
         public ClassPath getClassPath() {
             return getProjectSourcesClassPath();
         }
 
+        @Override
         public MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(String persistenceUnitName) {
             return modelHelper.getEntityMappingsModel(persistenceUnitName);
         }
-        
+
+        @Override
         public MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(boolean withDeps) {
             return modelHelper.getDefaultEntityMappingsModel(withDeps);
         }
+    }
+
+    private void puChanged() {
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            @Override
+            public void run() {
+                ProjectManager.mutex().writeAccess(new Runnable() {
+                    @Override
+                    public void run() {
+                        EditableProperties prop = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        String ap = prop.getProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST);
+
+                        if (ap == null) {
+                            ap = "";
+                        }
+                        //TODO: consider add dependency on j2ee.persistence and get class from persistence provider
+                        if (ap.indexOf("org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor") == -1) {
+                            Sources sources = ProjectUtils.getSources(project);
+                            SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                            SourceGroup firstGroup = groups[0];
+                            FileObject fo = firstGroup.getRootFolder();
+                            ClassPath compile = ClassPath.getClassPath(fo, JavaClassPathConstants.PROCESSOR_PATH);
+                            if (compile.findResource("org/eclipse/persistence/internal/jpa/modelgen/CanonicalModelProcessor.class") != null) {
+                                ap = ap + (ap.length() > 1 ? "," : "") + "org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor"; //NOI18N
+                                prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ap);
+                                //also a workaround for eclipselink processor issue with  persistence.xml
+                                //
+                                project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
+                            }
+                        }
+                    }
+                });
+            }
+        });
     }
 }

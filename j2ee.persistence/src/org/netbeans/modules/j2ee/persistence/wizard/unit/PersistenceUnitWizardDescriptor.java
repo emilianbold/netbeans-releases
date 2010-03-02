@@ -176,6 +176,10 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
     public String getDatasource() {
         return datasourcePanel == null ? null : datasourcePanel.getDatasource();
     }
+
+    public String getDBResourceSelection() {
+        return getPersistenceConnection()!=null ? getPersistenceConnection().getName() : getDatasource();
+    }
     
     public boolean isContainerManaged() {
         return isContainerManaged;

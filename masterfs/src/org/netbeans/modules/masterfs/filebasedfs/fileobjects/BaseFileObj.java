@@ -108,7 +108,9 @@ public abstract class BaseFileObj extends FileObject {
        
     @Override
     public final String toString() {
-        return getFileName().toString();
+        String mineHex = Integer.toHexString(System.identityHashCode(this));
+        String fnHex = Integer.toHexString(System.identityHashCode(getFileName()));
+        return "MasterFileObject[" + getFileName().toString() + "@" + fnHex + ":" + mineHex + ",valid=" + isValid() + "]"; // NOI18N
     }
 
     @Override
@@ -230,7 +232,7 @@ public abstract class BaseFileObj extends FileObject {
                 //(especially for many files to be moved)
                 target.refresh(true);
                 result = target.getFileObject(name, ext);
-                assert (result != null);                        
+                assert result != null : "Cannot find " + target + " with " + name + "." + ext;
             }
         } else {
             result = super.move(lock, target, name, ext);
@@ -250,7 +252,11 @@ public abstract class BaseFileObj extends FileObject {
             result = (BaseFileObj) FileBasedFileSystem.getFileObject(
                     new File(target.getFileName().getFile(), nameExt));
             if (result != null) {
-                result.fireFileDataCreatedEvent(false);
+                if (result.isData()) {
+                    result.fireFileDataCreatedEvent(false);
+                } else {
+                    result.fireFileFolderCreatedEvent(false);
+                }
                 break;
             }
             // #179109 - result is sometimes null, probably when moved file

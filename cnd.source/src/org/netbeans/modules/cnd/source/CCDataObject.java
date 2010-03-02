@@ -48,16 +48,17 @@ import org.openide.nodes.Node;
 
 
 /** Represents a C++ object in the Repository */
-public class CCDataObject extends CndDataObject {
+public class CCDataObject extends SourceDataObject {
 
     /** Serial version number */
     static final long serialVersionUID = -5855103267479484214L;
 
-    public CCDataObject(FileObject pf, CndAbstractDataLoader loader)
+    public CCDataObject(FileObject pf, SourceAbstractDataLoader loader)
 			    throws DataObjectExistsException {
 	super(pf, loader);
     }
 
+    @Override
     protected Node createNodeDelegate() {
 	return new CCDataNode(this);
     }

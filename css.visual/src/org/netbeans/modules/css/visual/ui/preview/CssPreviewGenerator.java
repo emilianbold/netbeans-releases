@@ -86,7 +86,7 @@ public class CssPreviewGenerator {
         //extract all rules from all included models
         Collection<CssModel> models = new ArrayList<CssModel>();
         models.add(content.model());
-        models.addAll(content.model().getImportedFileModelsRecursively());
+        models.addAll(content.model().getImportedFileModels());
 
         for (CssModel model : models) {
             for (CssRule rule : model.rules()) {

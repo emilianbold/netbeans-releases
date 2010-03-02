@@ -47,6 +47,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.nativeexecution.AbstractNativeProcess;
+import org.netbeans.modules.nativeexecution.PtyNativeProcess;
 import org.netbeans.modules.nativeexecution.LocalNativeProcess;
 import org.netbeans.modules.nativeexecution.NativeProcessInfo;
 import org.netbeans.modules.nativeexecution.RemoteNativeProcess;
@@ -152,6 +153,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
      *             in this builder
      * @throws IOException if the process could not be created
      */
+    @Override
     public NativeProcess call() throws IOException {
         AbstractNativeProcess process = null;
 
@@ -165,40 +167,52 @@ public final class NativeProcessBuilder implements Callable<Process> {
             throw new IllegalStateException("No executable nor command line is specified"); // NOI18N
         }
 
-        if (info.getExecutionEnvironment().isRemote()) {
-            process = new RemoteNativeProcess(info);
+        if (info.isPtyMode()) {
+            process = new PtyNativeProcess(info);
         } else {
-            if (externalTerminal != null) {
-                boolean canProceed = true;
-                boolean available = externalTerminal.isAvailable(info.getExecutionEnvironment());
+            if (info.getExecutionEnvironment().isRemote()) {
+                process = new RemoteNativeProcess(info);
+            } else {
+                if (externalTerminal != null) {
+                    boolean canProceed = true;
+                    boolean available = externalTerminal.isAvailable(info.getExecutionEnvironment());
 
-                if (!available) {
-                    DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoTermianl.text"), // NOI18N
-                            NotifyDescriptor.WARNING_MESSAGE));
-                    canProceed = false;
-                } else {
-                    if (Utilities.isWindows()) {
-                        Shell shell = WindowsSupport.getInstance().getActiveShell();
-                        if (shell == null) {
-                            DialogDisplayer.getDefault().notify(
-                                    new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoShell.text"), // NOI18N
-                                    NotifyDescriptor.WARNING_MESSAGE));
-                            canProceed = false;
+                    if (!available) {
+                        if (Boolean.getBoolean("nativeexecution.mode.unittest")) {
+                            System.err.println(loc("NativeProcessBuilder.processCreation.NoTermianl.text"));
                         } else {
-                            ShellValidationStatus validationStatus = ShellValidationSupport.getValidationStatus(shell);
+                            DialogDisplayer.getDefault().notify(
+                                    new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoTermianl.text"), // NOI18N
+                                    NotifyDescriptor.WARNING_MESSAGE));
+                        }
+                        canProceed = false;
+                    } else {
+                        if (Utilities.isWindows()) {
+                            Shell shell = WindowsSupport.getInstance().getActiveShell();
+                            if (shell == null) {
+                                if (Boolean.getBoolean("nativeexecution.mode.unittest")) {
+                                    System.err.println(loc("NativeProcessBuilder.processCreation.NoShell.text"));
+                                } else {
+                                    DialogDisplayer.getDefault().notify(
+                                            new NotifyDescriptor.Message(loc("NativeProcessBuilder.processCreation.NoShell.text"), // NOI18N
+                                            NotifyDescriptor.WARNING_MESSAGE));
+                                }
+                                canProceed = false;
+                            } else {
+                                ShellValidationStatus validationStatus = ShellValidationSupport.getValidationStatus(shell);
 
-                            if (!validationStatus.isValid()) {
-                                canProceed = ShellValidationSupport.confirm(
-                                        loc("NativeProcessBuilder.processCreation.BrokenShellConfirmationHeader.text"), // NOI18N
-                                        loc("NativeProcessBuilder.processCreation.BrokenShellConfirmationFooter.text"), // NOI18N
-                                        validationStatus);
+                                if (!validationStatus.isValid()) {
+                                    canProceed = ShellValidationSupport.confirm(
+                                            loc("NativeProcessBuilder.processCreation.BrokenShellConfirmationHeader.text"), // NOI18N
+                                            loc("NativeProcessBuilder.processCreation.BrokenShellConfirmationFooter.text"), // NOI18N
+                                            validationStatus);
+                                }
                             }
                         }
-                    }
 
-                    if (canProceed) {
-                        process = new TerminalLocalNativeProcess(info, externalTerminal);
+                        if (canProceed) {
+                            process = new TerminalLocalNativeProcess(info, externalTerminal);
+                        }
                     }
                 }
             }
@@ -302,5 +316,29 @@ public final class NativeProcessBuilder implements Callable<Process> {
 
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(NativeProcessBuilder.class, key, params);
+    }
+
+    /**
+     * Configure whether process starts in a prseudo-terminal or not.
+     * 
+     * @param usePty - if true, process builder will start the process in
+     * a pty mode
+     * @return this
+     */
+    public NativeProcessBuilder setUsePty(boolean usePty) {
+        info.setPtyMode(usePty);
+        return this;
+    }
+
+    /**
+     * Process builder try to expand, escape, quote command line according to subset of shell man.
+     * By default builder do this. This method allows to forbid  preprocessing of command line.
+     *
+     * @param expandMacros - if false, process builder do not preprocess command line
+     * @return this
+     */
+    public NativeProcessBuilder setMacroExpansion(boolean expandMacros) {
+        info.setExpandMacros(expandMacros);
+        return this;
     }
 }

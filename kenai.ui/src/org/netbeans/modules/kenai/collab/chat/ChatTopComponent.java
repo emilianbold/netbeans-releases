@@ -761,6 +761,12 @@ public class ChatTopComponent extends TopComponent {
                 });
             } else if (Kenai.PROP_XMPP_LOGIN.equals(e.getPropertyName())) {
                 if (e.getNewValue() == null) {
+                    for (Kenai k:KenaiManager.getDefault().getKenais()) {
+                        if (k.getStatus()==Kenai.Status.ONLINE) {
+                            contactList.updateContacts();
+                            return;
+                        }
+                    }
                     putLoginScreen();
                 } else {
                     final KenaiConnection kec = KenaiConnection.getDefault((Kenai) e.getSource());

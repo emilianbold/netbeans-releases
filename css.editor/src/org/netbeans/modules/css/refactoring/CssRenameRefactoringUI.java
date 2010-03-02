@@ -39,6 +39,8 @@
 package org.netbeans.modules.css.refactoring;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -60,10 +62,19 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
     private CssElementContext context;
     private RenamePanel panel;
     private boolean folderRename;
+    private CssRefactoringExtraInfo extraInfo;
 
     public CssRenameRefactoringUI(CssElementContext context) {
 	this.context = context;
-	this.refactoring = new RenameRefactoring(Lookups.fixed(context));
+        this.extraInfo = new CssRefactoringExtraInfo();
+        Collection<Object> lookupContent = new ArrayList<Object>();
+        lookupContent.add(context);
+        lookupContent.add(extraInfo);
+        if(context instanceof CssElementContext.File) {
+            //put the fileobject to the lookup only if we are renaming a file
+            lookupContent.add(context.getFileObject());
+        }
+	this.refactoring = new RenameRefactoring(Lookups.fixed(lookupContent.toArray()));
     }
 
     public String getName() {
@@ -87,6 +98,8 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
     }
 
     public Problem setParameters() {
+        extraInfo.setRefactorAll(panel.isRefactorAllOccurances());
+
 	String newName = panel.getNameValue();
 	if (refactoring instanceof RenameRefactoring) {
 	    ((RenameRefactoring) refactoring).setNewName(newName);

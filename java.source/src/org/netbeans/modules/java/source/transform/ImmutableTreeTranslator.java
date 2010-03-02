@@ -46,10 +46,12 @@ import org.netbeans.modules.java.source.query.CommentHandler;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.tools.javac.tree.JCTree.JCTypeAnnotation;
 import com.sun.tools.javac.util.Context;
 import javax.lang.model.element.Element;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.java.source.builder.ASTService;
@@ -463,6 +465,9 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     }
     public Tree visitParameterizedType(ParameterizedTypeTree tree, Object p) {
 	return rewriteChildren(tree);
+    }
+    public Tree visitAnnotatedType(AnnotatedTypeTree node, Object p) {
+        return rewriteChildren(node);
     }
     public Tree visitTypeParameter(TypeParameterTree tree, Object p) {
 	return rewriteChildren(tree);
@@ -1084,6 +1089,30 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	return tree;
     }
     
+    protected final Tree rewriteChildren(AnnotatedTypeTree tree) {
+        List<? extends AnnotationTree> annotations = translate(tree.getAnnotations());
+        ExpressionTree type = (ExpressionTree) translate(tree.getUnderlyingType());
+
+        if (!annotations.equals(tree.getAnnotations()) || type != tree.getUnderlyingType()) {
+            List<AnnotationTree> typeAnnotations = new LinkedList<AnnotationTree>();
+
+            for (AnnotationTree at : annotations) {
+                if (!(at instanceof JCTypeAnnotation)) {//XXX
+                    at = make.TypeAnnotation(at);
+                }
+                typeAnnotations.add(at);
+            }
+
+            AnnotatedTypeTree n = make.AnnotatedType(typeAnnotations, type);
+            model.setType(n, model.getType(tree));
+	    copyCommentTo(tree, n);
+	    tree = n;
+            copyPosTo(tree, n);
+        }
+
+        return tree;
+    }
+
     protected final TypeParameterTree rewriteChildren(TypeParameterTree tree) {
 	List<? extends ExpressionTree> bounds = 
                 (List<? extends ExpressionTree>)translate(tree.getBounds());

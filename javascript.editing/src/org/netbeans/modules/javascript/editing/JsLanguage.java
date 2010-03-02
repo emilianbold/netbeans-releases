@@ -60,6 +60,7 @@ import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 
 
 /*
@@ -68,6 +69,7 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
  * @author Tor Norbye
  */
 @LanguageRegistration(mimeType="text/javascript") //NOI18N
+@PathRecognizerRegistration(mimeTypes="text/javascript", libraryPathIds=JsClassPathProvider.BOOT_CP, binaryLibraryPathIds={})
 public class JsLanguage extends DefaultLanguageConfig {
 
     private static boolean jsClassPathRegistered = false;

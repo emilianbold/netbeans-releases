@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.openide.util.Utilities;
 
 /**
  * @author pzajac
@@ -73,6 +74,9 @@ public class TestEntryTest extends TestBase {
     }
 
     public void testNullsOnShortUNCPath144758() throws IOException {
+        if (!Utilities.isWindows()) {
+            return;
+        }
         TestEntry entry = TestEntry.get(new File("\\\\server\\shared\\tests.jar"));
         assertNotNull(entry);
         assertNull(entry.getTestDistRoot());

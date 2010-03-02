@@ -243,6 +243,10 @@ public class RubyUtilsTest extends TestCase {
         String activesupport222 = "/usr/lib/ruby/gems/1.8/gems/activesupport-2.2.2/something";
         String activesupport232 = "/usr/lib/ruby/gems/1.8/gems/activesupport-2.3.2/something";
         String activesupport24 = "/usr/lib/ruby/gems/1.8/gems/activesupport-2.4/something";
+
+        String activemodel300beta = "/usr/lib/ruby/gems/1.8/gems/activemodel-3.0.0.beta/something";
+        String activemodel300 = "/usr/lib/ruby/gems/1.8/gems/activemodel-3.0.0/something";
+
         String notRails = "/usr/lib/ruby/gems/1.8/gems/gemmy-2.3.2/something";
 
         assertFalse(RubyUtils.isRails23OrHigher(actionmailer210));
@@ -253,6 +257,9 @@ public class RubyUtilsTest extends TestCase {
         assertFalse(RubyUtils.isRails23OrHigher(activesupport222));
         assertTrue(RubyUtils.isRails23OrHigher(activesupport232));
         assertTrue(RubyUtils.isRails23OrHigher(activesupport24));
+
+        assertTrue(RubyUtils.isRails23OrHigher(activemodel300));
+        assertTrue(RubyUtils.isRails23OrHigher(activemodel300beta));
 
         assertFalse(RubyUtils.isRails23OrHigher(notRails));
     }
@@ -274,5 +281,20 @@ public class RubyUtilsTest extends TestCase {
         result = RubyUtils.getParentModules("");
         assertTrue(result.isEmpty());
 
+    }
+
+    public void testBaseName() {
+        assertEquals("Users", RubyUtils.baseName("UsersController"));
+        assertEquals("Users", RubyUtils.baseName("Users"));
+    }
+
+    public void testControllerName() {
+        assertEquals("UsersController", RubyUtils.controllerName("Users"));
+        assertEquals("UsersController", RubyUtils.controllerName("UsersController"));
+    }
+
+    public void testHelperName() {
+        assertEquals("UsersHelper", RubyUtils.helperName("UsersController"));
+        assertEquals("UsersHelper", RubyUtils.helperName("Users"));
     }
 }

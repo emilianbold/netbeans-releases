@@ -116,6 +116,7 @@ made subject to such option by the copyright holder.
         <folder name="Window">
             <file name="org-netbeans-modules-java-navigation-actions-DeclarationAction.instance"/>
             <file name="org-netbeans-modules-java-navigation-actions-JavadocAction.instance"/>
+            <file name="org-netbeans-modules-java-stackanalyzer-AnalyzeStackAction.instance"/>
         </folder>
     </folder>
 
@@ -163,14 +164,19 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-navigation-actions-JavadocAction.instance"/>
                     <attr name="position" intvalue="500"/>
                 </file>
+                <file name="AnalyzeStackAction.shadow">
+                    <attr name="position" intvalue="1000"/>
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-stackanalyzer-AnalyzeStackAction.instance"/>
+                </file>
             </folder>
-            </folder>
+        </folder>
     </folder>
     
     <folder name="Windows2">
         <folder name="Components">
             <file name="DeclarationTopComponent.settings" url="DeclarationTopComponentSettings.xml"/>
             <file name="JavadocTopComponent.settings" url="JavadocTopComponentSettings.xml"/>
+            <file name="AnalyzeStackTopComponent.settings" url="AnalyzeStackTopComponentSettings.xml"/>
         </folder>
         <folder name="Modes">
             <folder name="output">
@@ -180,6 +186,9 @@ made subject to such option by the copyright holder.
                 <file name="JavadocTopComponent.wstcref" url="JavadocTopComponentWstcref.xml">
                     <attr name="position" intvalue="2500"/>
                 </file>
+            </folder>
+            <folder name="properties">
+                <file name="AnalyzeStackTopComponent.wstcref" url="AnalyzeStackTopComponentWstcref.xml"/>
             </folder>
         </folder>
     </folder>

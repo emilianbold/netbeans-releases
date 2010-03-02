@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.toolchain.api;
 
+import org.netbeans.modules.cnd.toolchain.compilerset.WriteRegistryTestCase;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestSuite;

@@ -165,7 +165,7 @@ made subject to such option by the copyright holder.
                     <xsl:apply-templates />
                 </a>
             </xsl:when>
-            <xsl:when test="starts-with($url, 'org-netbeans-')" >
+            <xsl:when test="starts-with($url, 'org-')" >
                 <xsl:comment>Probably reference relative to root</xsl:comment>
                 <a href="{$url}" >
                     <xsl:apply-templates />

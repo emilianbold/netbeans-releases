@@ -169,6 +169,11 @@ public class ComputeAnnotations extends JavaParserResultTask<Result> {
                 }
 
                 Position pos = getPosition(doc, (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), t));
+
+                if (pos == null) {
+                    //#179304: possibly the position is outside document bounds (i.e. <0 or >doc.getLenght())
+                    continue;
+                }
                 
                 annotations.add(new IsOverriddenAnnotation(doc, pos, type, dn, e.getValue()));
             }

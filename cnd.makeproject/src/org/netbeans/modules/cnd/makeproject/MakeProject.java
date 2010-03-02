@@ -69,11 +69,11 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainProject;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -84,11 +84,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -441,10 +441,10 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     }
 
     public static Set<String> createExtensionSet() {
-        if (IpeUtils.isSystemCaseInsensitive()) {
-            return new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
-        } else {
+        if (CndFileUtils.isSystemCaseSensitive()) {
             return new TreeSet<String>();
+        } else {
+            return new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
         }
     }
 
@@ -478,7 +478,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     }
 
     // Package private methods -------------------------------------------------
-    final class AntProjectHelperProvider {
+    private final class AntProjectHelperProvider {
 
         AntProjectHelper getAntProjectHelper() {
             return helper;
@@ -707,8 +707,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
             String baseDir = FileUtil.toFile(getProjectDirectory()).getPath();
             for (String loc : subProjectLocations) {
-                String location = IpeUtils.toAbsolutePath(baseDir, loc);
-                location = FilePathAdaptor.mapToLocal(location); // PC path
+                String location = CndPathUtilitities.toAbsolutePath(baseDir, loc);
                 try {
                     FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile());
                     Project project = ProjectManager.getDefault().findProject(fo);
@@ -944,7 +943,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             List<MakeArtifact> artifacts = new ArrayList<MakeArtifact>();
 
             MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-            Configuration[] confs = projectDescriptor.getConfs().getConfs();
+            Configuration[] confs = projectDescriptor.getConfs().toArray();
 
 //            String projectLocation = null;
 //            int configurationType = 0;
@@ -964,7 +963,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         }
     }
 
-    static class FolderSearchInfo implements SearchInfo {
+    private static class FolderSearchInfo implements SearchInfo {
 
         private ConfigurationDescriptorProvider projectDescriptorProvider;
 
@@ -1000,7 +999,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         return (dc == null) ? null : dc.getExecutionEnvironment();
     }
 
-    class RemoteProjectImpl implements RemoteProject {
+    private class RemoteProjectImpl implements RemoteProject {
         @Override
         public ExecutionEnvironment getDevelopmentHost() {
             DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
@@ -1008,7 +1007,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         }
     }
 
-    class ToolchainProjectImpl implements ToolchainProject {
+    private class ToolchainProjectImpl implements ToolchainProject {
 
         @Override
         public CompilerSet getCompilerSet() {

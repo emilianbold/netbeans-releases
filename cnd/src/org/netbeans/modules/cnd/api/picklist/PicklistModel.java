@@ -41,11 +41,6 @@
 
 package org.netbeans.modules.cnd.api.picklist;
 
-import java.util.Collection;
-
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
-
 /**
  * This interface defines the methods components for a picklist list (Picklist).
  */
@@ -117,7 +112,7 @@ public interface PicklistModel {
      * from this list.
      *
      * @param   elem   the element to be removed.
-     * @return  the element removed if found, null othervise.
+     * @return  the element removed if found, null otherwise.
      */
     public PicklistElement removeElement(PicklistElement elem);
 
@@ -132,7 +127,7 @@ public interface PicklistModel {
      * and less than the current size of the list. <p>
      *
      * @param      index   the index of the object to remove.
-     * @return  the element removed if index valid, null othervise.
+     * @return  the element removed if index valid, null otherwise.
      */
     public PicklistElement removeElementAt(int index);
 
@@ -141,7 +136,7 @@ public interface PicklistModel {
      * specified.
      *
      * @param      index   the index of the object to remove.
-     * @return  the element replaced if index valid, null othervise.
+     * @return  the element replaced if index valid, null otherwise.
      */
     public PicklistElement replaceElementAt(PicklistElement elem, int index);
 
