@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 public class JavaDBSupport {
     public static final String JAVADB_HOME = "javadb.home";
@@ -122,9 +123,14 @@ public class JavaDBSupport {
         File f = null;
         String javaDBHome = System.getProperty(JAVADB_HOME);
         if (javaDBHome == null) {
-            String javaHome = System.getProperty("java.home");
-            // path to JavaDB in JDK6
-            f = new File(javaHome + "/../db/");
+            javaDBHome = NbBundle.getMessage(JavaDBSupport.class, JAVADB_HOME);
+            if (javaDBHome != null) {
+                f = new File(javaDBHome);
+            } else {
+                String javaHome = System.getProperty("java.home");
+                // path to JavaDB in JDK6
+                f = new File(javaHome + "/../db/");
+            }
         } else {
             f = new File(javaDBHome);
         }

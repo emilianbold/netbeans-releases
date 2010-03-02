@@ -37,69 +37,35 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.apisupport.project.queries;
+package org.netbeans.modules.java.freeform;
 
 import java.net.URL;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
-public class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplementation {
+/**
+ * Currently there is no special control over AP other than {@code <classpath mode="processorpath"/>}.
+ */
+class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplementation {
 
-    private final NbModuleProject project;
+    public AnnotationProcessingQueryImpl() {}
 
-    public AnnotationProcessingQueryImpl(NbModuleProject project) {
-        this.project = project;
-    }
-    
     public @Override Result getAnnotationProcessingOptions(FileObject file) {
-        if (inside(project.getSourceDirectory(), file)) {
-            return new ResultImpl(FileUtil.urlForArchiveOrDir(project.getGeneratedClassesDirectory()));
-        } else if (inside(project.getTestSourceDirectory("unit"), file)) {
-            return new ResultImpl(FileUtil.urlForArchiveOrDir(project.getTestGeneratedClassesDirectory("unit")));
-        } else if (inside(project.getTestSourceDirectory("qa-functional"), file)) {
-            return new ResultImpl(FileUtil.urlForArchiveOrDir(project.getTestGeneratedClassesDirectory("qa-functional")));
-        } else {
-            return null;
-        }
-    }
-
-    private static boolean inside(FileObject root, FileObject file) {
-        return root != null && (file == root || FileUtil.isParentOf(root, file));
-    }
-
-    private static final class ResultImpl implements Result {
-
-        private final URL dashS;
-
-        ResultImpl(URL dashS) {
-            this.dashS = dashS;
-        }
-
-        @Override
-        public boolean annotationProcessingEnabled() {
-            return true;
-        }
-
-        @Override
-        public Iterable<? extends String> annotationProcessorsToRun() {
-            return null;
-        }
-
-        @Override
-        public URL sourceOutputDirectory() {
-            return dashS;
-        }
-
-        @Override
-        public void addChangeListener(ChangeListener l) {}
-
-        @Override
-        public void removeChangeListener(ChangeListener l) {}
-
+        return new Result() {
+            public @Override boolean annotationProcessingEnabled() {
+                return true;
+            }
+            public @Override Iterable<? extends String> annotationProcessorsToRun() {
+                return null;
+            }
+            public @Override URL sourceOutputDirectory() {
+                return null;
+            }
+            public @Override void addChangeListener(ChangeListener l) {}
+            public @Override void removeChangeListener(ChangeListener l) {}
+        };
     }
 
 }

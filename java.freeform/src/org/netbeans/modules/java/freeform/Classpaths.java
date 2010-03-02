@@ -63,6 +63,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -222,6 +223,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         ClassPath.BOOT,
         ClassPath.EXECUTE,
         ClassPath.COMPILE,
+        JavaClassPathConstants.PROCESSOR_PATH,
     };
     
     /**
@@ -377,7 +379,8 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     
     private ClassPath getPath(Element compilationUnitEl, List<FileObject> packageRoots, String type) {
         if (type.equals(ClassPath.SOURCE) || type.equals(ClassPath.COMPILE) ||
-                type.equals(ClassPath.EXECUTE) || type.equals(ClassPath.BOOT)) {
+                type.equals(ClassPath.EXECUTE) || type.equals(ClassPath.BOOT) ||
+                type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
             List<String> packageRootNames = findPackageRootNames(compilationUnitEl);
             Map<List<String>,MutableClassPathImplementation> mutablePathImplsByType;
             synchronized (this) {
@@ -482,6 +485,16 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         return urls;
     }
     
+    private List<URL> createProcessorClasspath(Element compilationUnitEl) {
+        for (Element e : Util.findSubElements(compilationUnitEl)) {
+            if (e.getLocalName().equals("classpath") && e.getAttribute("mode").equals("processor")) { // NOI18N
+                return createClasspath(e);
+            }
+        }
+        // None specified; assume it is the same as the compile classpath.
+        return createCompileClasspath(compilationUnitEl);
+    }
+
     private List<URL> createBootClasspath(Element compilationUnitEl) {
         for (Element e : Util.findSubElements(compilationUnitEl)) {
             if (e.getLocalName().equals("classpath") && e.getAttribute("mode").equals("boot")) { // NOI18N
@@ -584,6 +597,8 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
                     roots = createCompileClasspath(compilationUnitEl);
                 } else if (type.equals(ClassPath.EXECUTE)) {
                     roots = createExecuteClasspath(packageRootNames, compilationUnitEl);
+                } else if (type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
+                    roots = createProcessorClasspath(compilationUnitEl);
                 } else {
                     assert type.equals(ClassPath.BOOT) : type;
                     roots = createBootClasspath(compilationUnitEl);
