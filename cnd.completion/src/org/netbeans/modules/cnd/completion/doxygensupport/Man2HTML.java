@@ -47,7 +47,6 @@ import java.io.IOException;
  * Simple man output to HTML formatter. 
  */
 public class Man2HTML {
-
     public static int MAX_WIDTH = 65;
 
     private enum MODE {
@@ -56,6 +55,7 @@ public class Man2HTML {
     };
     private BufferedReader br;
     private MODE mode = MODE.NORMAL;
+    private String previousLine = ""; // Buffer line
 
     /**
      * Simple man output to HTML formatter. Takes the output of the man command as input.
@@ -86,7 +86,42 @@ public class Man2HTML {
         mode = MODE.ITALIC;
     }
 
-    private String previousLine = ""; // Buffer line
+
+    private int countIndent(String line) {
+        int indent = 0;
+        while (indent < line.length() && line.charAt(indent) == ' ') {
+            indent++;
+        }
+        return indent;
+    }
+
+    private int breakAtColumn(String line) {
+        int column = 0;
+        int breakAt = 0;
+        while (breakAt < line.length() && column <= MAX_WIDTH+1) {
+            char ch = line.charAt(breakAt);
+            if (ch == '\b') {
+                column--;
+            } else if (ch == ' ') {
+                column++;
+            } else {
+                column++;
+            }
+            breakAt++;
+        }
+        if (column >= (MAX_WIDTH+1)) {
+            while (--breakAt > 0) {
+                char ch = line.charAt(breakAt);
+                if (ch == ' ') {
+                    break;
+                }
+            }
+            if (breakAt > 0) {
+                return breakAt;
+            }
+        }
+        return -1;
+    }
 
     private String getLine() {
         String line = null;
@@ -118,12 +153,21 @@ public class Man2HTML {
             if (previousLine != null && previousLine.length() == 0 && line != null && line.length() == 0) {
                 line = null;
             }
-            if (line != null && (line.startsWith("    |") || line.startsWith("     _"))) { // NOI18N
+            if (line != null && (line.startsWith("    |") || line.startsWith("     __"))) { // NOI18N
                 line = line.substring(4);
             }
 //            if (line != null && line.startsWith("     ")) { // NOI18N
 //                line = line.substring(4);
 //            }
+            // Break at MAX_COLUMN;
+            if (line != null) {
+                int i = breakAtColumn(line);
+                if (i > 0) {
+                    line = line.substring(0, i) + "\n" + line.substring(0, countIndent(line)) + line.substring(i+1);
+                    int j = 0;
+                }
+            }
+
         }
         previousLine = line;
         return line;
