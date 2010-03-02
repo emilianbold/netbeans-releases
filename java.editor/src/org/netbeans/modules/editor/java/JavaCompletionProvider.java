@@ -3019,7 +3019,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             SourcePositions sourcePositions = env.getSourcePositions();
             List<Tree> argTypes = getArgumentsUpToPos(env, mit.getArguments(), (int)sourcePositions.getEndPosition(root, mit.getMethodSelect()), env.getOffset(), true);
             if (argTypes != null) {
-                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                controller.toPhase(Phase.RESOLVED);
                 TypeMirror[] types = new TypeMirror[argTypes.size()];
                 int j = 0;
                 for (Tree t : argTypes)
@@ -3104,7 +3104,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             SourcePositions sourcePositions = env.getSourcePositions();
             List<Tree> argTypes = getArgumentsUpToPos(env, nct.getArguments(), (int)sourcePositions.getEndPosition(root, nct.getIdentifier()), env.getOffset(), true);
             if (argTypes != null) {
-                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                controller.toPhase(Phase.RESOLVED);
                 TypeMirror[] types = new TypeMirror[argTypes.size()];
                 int j = 0;
                 for (Tree t : argTypes)
@@ -3115,7 +3115,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 final Element el = trees.getElement(path);
                 final Scope scope = env.getScope();
                 final TreeUtilities tu = controller.getTreeUtilities();
-                final boolean isAnonymous = nct.getClassBody() != null || el.getKind().isInterface() || el.getModifiers().contains(ABSTRACT);
+                final boolean isAnonymous = nct.getClassBody() != null || (el != null && (el.getKind().isInterface() || el.getModifiers().contains(ABSTRACT)));
                 ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                     public boolean accept(Element e, TypeMirror t) {
                         return e.getKind() == CONSTRUCTOR && (tu.isAccessible(scope, e, t) || isAnonymous && e.getModifiers().contains(PROTECTED));
