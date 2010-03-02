@@ -78,6 +78,12 @@ public final class KenaiProject {
      */
     public static final String PROP_PROJECT_NOTIFICATION = "project_notification";
 
+    /**
+     * getSource() returns project being deleted
+     * values are undefined
+     */
+    public static final String PROP_PROJECT_REMOVED = "project_removed";
+
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
     private ProjectData     data;
@@ -87,6 +93,7 @@ public final class KenaiProject {
     private KenaiProjectMember[] members;
     private KenaiLicense[] licenses;
     private Kenai kenai;
+    private boolean deleted = false;
 
     /**
      * I assume that this constructor does NOT provide full project information. If it does then
@@ -164,6 +171,7 @@ public final class KenaiProject {
      * @throws KenaiException 
      */
     public synchronized String getDescription() throws KenaiException {
+        checkDeleted();
         fetchDetailsIfNotAvailable();
         return data.description;
     }
@@ -174,6 +182,7 @@ public final class KenaiProject {
      * @throws KenaiException
      */
     public synchronized String getImageUrl() throws KenaiException {
+        checkDeleted();
         fetchDetailsIfNotAvailable();
         return data.image;
     }
@@ -196,6 +205,7 @@ public final class KenaiProject {
      * @throws KenaiException
      */
     public KenaiProjectMember.Role getMyRole() throws KenaiException {
+        checkDeleted();
         PasswordAuthentication passwordAuthentication = kenai.getPasswordAuthentication();
         if (passwordAuthentication==null) {
             return null;
@@ -218,6 +228,7 @@ public final class KenaiProject {
      * @throws KenaiException
      */
     public Icon getProjectIcon() throws KenaiException {
+        checkDeleted();
         if (projectIcon==null) {
             if (SwingUtilities.isEventDispatchThread()) {
                 throw new KenaiException("KenaiProject.getProjectIcon() must not be called from AWT thread unless an icon is cached!");
@@ -238,6 +249,7 @@ public final class KenaiProject {
      *
      */
     public synchronized String getTags() throws KenaiException {
+        checkDeleted();
         fetchDetailsIfNotAvailable();
         return data.tags;
     }
@@ -248,6 +260,7 @@ public final class KenaiProject {
      * @throws KenaiException
      */
     public synchronized boolean isPrivate() throws KenaiException {
+        checkDeleted();
         fetchDetailsIfNotAvailable();
         return data.private_hidden;
     }
@@ -334,6 +347,7 @@ public final class KenaiProject {
      * @see KenaiFeature
      */
     public synchronized KenaiFeature[] getFeatures() throws KenaiException {
+        checkDeleted();
         fetchDetailsIfNotAvailable();
         if (features==null) {
             features=new KenaiFeature[data.features.length];
@@ -352,6 +366,7 @@ public final class KenaiProject {
      * @throws KenaiException
      */
     public synchronized KenaiProjectMember[] getMembers() throws KenaiException {
+        checkDeleted();
         if (members==null) {
             Collection<KenaiProjectMember> projectMembers = kenai.getProjectMembers(getName());
             members = projectMembers.toArray(new KenaiProjectMember[projectMembers.size()]);
@@ -366,6 +381,7 @@ public final class KenaiProject {
      * @throws KenaiException
      */
     public synchronized void addMember(KenaiUser user, KenaiProjectMember.Role role) throws KenaiException {
+        checkDeleted();
         members = null;
         kenai.addMember(this, user, role);
         firePropertyChange(PROP_PROJECT_CHANGED, null, user);
@@ -377,6 +393,7 @@ public final class KenaiProject {
      * @throws KenaiException
      */
     public synchronized void deleteMember(KenaiUser user) throws KenaiException {
+        checkDeleted();
         members = null;
         //if (user.data.href==null) {
             getMembers();
@@ -385,7 +402,29 @@ public final class KenaiProject {
         firePropertyChange(PROP_PROJECT_CHANGED, user, null);
     }
 
+    /**
+     * Delete project on server.
+     * All data will be lost.
+     * @throws KenaiException
+     */
+    public synchronized void delete() throws KenaiException {
+        checkDeleted();
+        kenai.delete(this);
+        synchronized (kenai.projectsCache) {
+            kenai.projectsCache.remove(data.name);
+        }
+        deleted=true;
+        firePropertyChange(PROP_PROJECT_REMOVED, null, null);
+    }
+
+    private void checkDeleted() throws KenaiException {
+        if (deleted) {
+            throw new KenaiException("project " + data.name + " was deleted");
+        }
+    }
+
     public synchronized KenaiUser getOwner() throws KenaiException {
+        checkDeleted();
         fetchDetailsIfNotAvailable();
         if (data.owner==null) {
             return null;
@@ -400,6 +439,7 @@ public final class KenaiProject {
      * @throws KenaiException 
      */
     public synchronized KenaiFeature[] getFeatures(Type type) throws KenaiException {
+        checkDeleted();
         ArrayList<KenaiFeature> fs= new ArrayList();
         for (KenaiFeature f:getFeatures()) {
             if (f.getType().equals(type)) {
@@ -415,6 +455,7 @@ public final class KenaiProject {
      * @see KenaiLicense
      */
     public synchronized KenaiLicense[] getLicenses() throws KenaiException {
+        checkDeleted();
         fetchDetailsIfNotAvailable();
         if (licenses==null) {
             licenses=new KenaiLicense[data.licenses.length];
@@ -448,6 +489,7 @@ public final class KenaiProject {
             String repository_url,
             String browse_url
             ) throws KenaiException {
+        checkDeleted();
         KenaiFeature feature = kenai.createProjectFeature(getName(), name, display_name, description, service, url, repository_url, browse_url);
         refresh();
         return feature;
