@@ -785,7 +785,7 @@ public class JsIndexer extends EmbeddingIndexer {
             if (relative != null) {
                 if (sdocsRootUrl == null) {
                     File sdocs = InstalledFileLocator.getDefault().locate("jsstubs/sdocs.zip",  // NOI18N
-                            "org-netbeans-modules-javascript-editing.jar", false); // NOI18N
+                            "org.netbeans.modules.javascript.editing", false); // NOI18N
                     if (sdocs == null) {
                         sdocsRootUrl = "";
                     } else if (sdocs.exists()) {
@@ -869,26 +869,11 @@ public class JsIndexer extends EmbeddingIndexer {
         return url;
     }
 
-    /** Get the FileObject corresponding to a URL returned from the index */
-    public static FileObject getFileObject(String url) {
-        try {
-            if (url.startsWith(CLUSTER_URL)) {
-                url = getClusterUrl() + url.substring(CLUSTER_URL.length()); // NOI18N
-            }
-
-            return URLMapper.findFileObject(new URL(url));
-        } catch (MalformedURLException mue) {
-            Exceptions.printStackTrace(mue);
-        }
-
-        return null;
-    }
-
     private static String getClusterUrl() {
         if (clusterUrl == null) {
             File f =
-                InstalledFileLocator.getDefault()
-                                    .locate("modules/org-netbeans-modules-javascript-editing.jar", null, false); // NOI18N
+                    InstalledFileLocator.getDefault().locate("jsstubs/sdocs.zip", // NOI18N
+                            "org.netbeans.modules.javascript.editing", false); // NOI18N
 
             if (f == null) {
                 throw new RuntimeException("Can't find cluster");
