@@ -146,13 +146,6 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="simple-files"/>
             </file>
         </folder>
-        <!-- folder for all privileged templates -->
-        <folder name="Privileged">
-	    <file name="Folder.shadow">
-                <attr name="originalFile" stringvalue="Templates/Other/Folder"/>
-                <attr name="position" intvalue="2000"/>
-            </file>
-	</folder>
         <!-- file with default template for properties -->
         <folder name="Properties">
             <attr name="position" intvalue="2900"/>

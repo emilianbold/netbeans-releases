@@ -126,7 +126,11 @@ public class ComputeOverriding {
             if (isCanceled())
                 return null;
 
-            result.putAll(compute(info, td, cancel));
+            Map<ElementHandle<ExecutableElement>, List<ElementDescription>> overrides = compute(info, td, cancel);
+
+            if (overrides != null) {
+                result.putAll(overrides);
+            }
         }
         
         if (isCanceled())

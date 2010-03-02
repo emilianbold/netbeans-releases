@@ -134,7 +134,7 @@ public abstract class BuildSampleApplicationBase extends TestBase {
         return et.result();
     }
 
-    public void testAnInitAndClean() throws Exception {
+    public void testAntInitAndClean() throws Exception {
         int ret = runAntTargetsOnSample(new String[]{"clean"});
         assertEquals("build successful", 0, ret);
 

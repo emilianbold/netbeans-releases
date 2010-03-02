@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -58,9 +58,7 @@ import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.RegisteredDDCatalog;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
-import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
-import org.netbeans.modules.glassfish.spi.Utils;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.filesystems.FileObject;
@@ -68,7 +66,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -119,8 +116,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_REGISTERED_NAME", new Object[]{}),  // NOI18N
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_CREATED_NAME", new Object[]{}),  // NOI18N
                     "GlassFish_v3", // NOI18N
-                    "http://java.net/download/glassfish/v3/promoted/latest-glassfish.zip", // NOI18N
-                    "http://serverplugins.netbeans.org/glassfishv3/v3fcszipfilename.txt", // NOI18N
+                    "http://java.net/download/glassfish/v3/release/glassfish-v3.zip", // NOI18N
+                    "http://serverplugins.netbeans.org/glassfishv3/post68v3.txt", // NOI18N
                     "last-v3ee6-install-root", // NOI18N
                     new String[]{"lib" + File.separator + "schemas" + File.separator + "web-app_3_0.xsd"}, // NOI18N
                     new String[0],
@@ -128,6 +125,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     new String[]{"--nopassword"}, // NOI18N
                     new CommandFactory() {
 
+                @Override
                 public SetPropertyCommand getSetPropertyCommand(String name, String value) {
                     return new ServerCommand.SetPropertyCommand(name, value, "DEFAULT={0}={1}"); // NOI18N
                 }
@@ -150,7 +148,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_CREATED_NAME", new Object[]{}),  // NOI18N
                     PRELUDE_DEFAULT_NAME, 
                     "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", // NOI18N
-                    "http://serverplugins.netbeans.org/glassfishv3/preludezipfilename.txt", // NOI18N
+                    "http://serverplugins.netbeans.org/glassfishv3/post68prelude.txt", // NOI18N
                     "last-install-root", // NOI18N
                     new String[0],
                     new String[]{"lib" + File.separator + "schemas" + File.separator + "web-app_3_0.xsd"}, // NOI18N
@@ -159,6 +157,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     null,
                     new CommandFactory() {
 
+                @Override
                         public SetPropertyCommand getSetPropertyCommand(String name, String value) {
                             return new ServerCommand.SetPropertyCommand(name, value, "target={0}&value={1}"); // NOI18N
                         }
@@ -377,6 +376,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     // ------------------------------------------------------------------------
     // ServerInstanceProvider interface implementation
     // ------------------------------------------------------------------------
+    @Override
     public List<ServerInstance> getInstances() {
 //        return new ArrayList<ServerInstance>(instanceMap.values());
         List<ServerInstance> result = new  ArrayList<ServerInstance>();
@@ -389,10 +389,12 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         return result;
     }
     
+    @Override
     public void addChangeListener(ChangeListener listener) {
         support.addChangeListener(listener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         support.removeChangeListener(listener);
     }

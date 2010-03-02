@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -222,6 +222,9 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                 // message has already been set, do not clear it here (see above).
                 
                 // finish initializing the registration data
+                if (installDir.equals(glassfishDir)) {
+                    installDir = glassfishDir.getParentFile();
+                }
                 wizardIterator.setInstallRoot(installDir.getAbsolutePath());
                 wizardIterator.setGlassfishRoot(glassfishDir.getAbsolutePath());
                 wizardIterator.setDomainLocation(domainDir.getAbsolutePath());

@@ -42,12 +42,15 @@ package org.netbeans.modules.apisupport.osgidemo;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  * Invokes various Ant targets over osgidemo sample in equinox mode.
  *
  * @author Tomas Musil
  */
+@RandomlyFails // build.xml:12: Server returned HTTP response code: 503 for URL:
+               // http://hudson.apidesign.org/hudson/job/netbinox/lastStableBuild/artifact/build/updates/updates.xml
 public class BuildEquinoxSampleApplicationTest extends BuildSampleApplicationBase {
     public BuildEquinoxSampleApplicationTest(String testName) {
         super(testName);
