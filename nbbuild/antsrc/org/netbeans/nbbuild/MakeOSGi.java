@@ -187,6 +187,25 @@ public class MakeOSGi extends Task {
         }
         Set<String> availablePackages = new TreeSet<String>();
         scanClasses(module, info.importedPackages, availablePackages);
+        File antlib = new File(module.getName().replaceFirst("([/\\\\])modules([/\\\\][^/\\\\]+)", "$1ant$1nblib$2"));
+        if (antlib.isFile()) {
+            // ant/nblib/org-netbeans-modules-debugger-jpda-ant.jar references com.sun.jdi.* packages.
+            // AntBridge.MainClassLoader.findClass will refuse to load these,
+            // since it is expected that the module loader, thus also AuxClassLoader, can load them.
+            // So we need to DynamicImport-Package these packages so that will be true.
+            Set<String> antlibPackages = new HashSet<String>();
+            JarFile antlibJF = new JarFile(antlib);
+            try {
+                scanClasses(antlibJF, antlibPackages, new HashSet<String>());
+            } finally {
+                antlibJF.close();
+            }
+            for (String antlibImport : antlibPackages) {
+                if (!antlibImport.startsWith("org.apache.tools.")) {
+                    info.importedPackages.add(antlibImport);
+                }
+            }
+        }
         if (cnb != null) {
             cnb = cnb.replaceFirst("/\\d+$", "");
             String hide = attr.getValue("OpenIDE-Module-Hide-Classpath-Packages");

@@ -443,7 +443,7 @@ public class ListCompletionView extends JList {
         Class<?> icon;
         
         try {
-            icon = Class.forName("sun.swing.plaf.synth.SynthIcon");
+            icon = ClassLoader.getSystemClassLoader().loadClass("sun.swing.plaf.synth.SynthIcon");
         } catch (ClassNotFoundException ex) {
             //OK:
             LOG.log(Level.FINEST, null, ex);
