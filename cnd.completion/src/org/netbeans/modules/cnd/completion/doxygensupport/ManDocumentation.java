@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jan Lahoda
+ * @author thp
  */
 public class ManDocumentation {
 
@@ -105,8 +105,7 @@ public class ManDocumentation {
     }
 
     public static CompletionDocumentation getDocumentation(String name) {
-        return getDocumentation(name, 3/**Supposing all functions goes from chapter 3*/
-                );
+        return getDocumentation(name, 3); /**Supposing all functions goes from chapter 3*/
     }
 
     public static CompletionDocumentation getDocumentation(String name, int chapter) {
@@ -192,7 +191,7 @@ public class ManDocumentation {
         if (getManPath() == null) {
             return null;
         }
-        
+        // TODO: use ProcessUtils.execute(ExecutionEnvironment execEnv, ...) instead of Runtime.getRuntime().exec(...) but problems getting an ExecutionEnvironment
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         Process p0 = Runtime.getRuntime().exec(getManPath() + " " + name, new String[] {"MANWIDTH="+Man2HTML.MAX_WIDTH}); // NOI18N
         InputStream is = p0.getInputStream();
@@ -205,34 +204,6 @@ public class ManDocumentation {
         bos.close();
 
         return text;
-    }
-
-//    private static String manPageRelativePath(String name, int chapter) {
-//        return "man" + chapter + "/" + name + "." + chapter; // NOI18N
-//    }
-
-    private static File resolvePath(String path) {
-        File f = new File("/usr/share/man/", path); // NOI18N
-
-        if (!f.exists()) {
-            f = new File("/usr/share/man/", path + ".gz"); // NOI18N
-        }
-
-        if (f.exists()) {
-            return f;
-        }
-
-        return null;
-    }
-
-    private static String readManPage(String relativePath) throws IOException {
-        File f = resolvePath(relativePath);
-
-        if (f == null) {
-            return null;
-        }
-
-        return readFile(f);
     }
 
     private static final Map<String, String> TRANSLATE;
