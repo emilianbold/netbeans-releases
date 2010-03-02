@@ -415,7 +415,7 @@ final class ToolbarContainer extends JPanel {
         if (!testExecuted) {
             testExecuted = true;
             try {
-                synthIconClass = Class.forName("sun.swing.plaf.synth.SynthIcon");
+                synthIconClass = ClassLoader.getSystemClassLoader().loadClass("sun.swing.plaf.synth.SynthIcon");
             } catch (ClassNotFoundException exc) {
                 LOG.log(Level.INFO, null, exc);
             }

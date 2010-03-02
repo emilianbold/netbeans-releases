@@ -204,7 +204,7 @@ abstract class AbstractFolder extends FileObject {
     public final boolean isValid() {
         // valid
         if (parent == null) {
-            return validFlag;
+            return this == system.getRoot();
         }
 
         boolean isValidRoot = getFileSystem().getRoot() == validRoot;

@@ -79,7 +79,21 @@ public class DependencyQueueTest extends NbTestCase {
         assertEquals(list("0", "2", "1", "3"), q.offer("0", set("0"), set(), set()));
     }
 
-    // XXX testRetract
+    public void testRetract() {
+        DependencyQueue<String,String> q = new DependencyQueue<String,String>();
+        q.offer("1", set(), set(), set());
+        assertEquals(list("1"), q.retract("1"));
+        q = new DependencyQueue<String,String>();
+        q.offer("api", set("api"), set(), set());
+        q.offer("impl", set(), set("api"), set());
+        assertEquals(list("impl"), q.retract("impl"));
+        assertEquals(list("api"), q.retract("api"));
+        q = new DependencyQueue<String,String>();
+        q.offer("api", set("api"), set(), set());
+        q.offer("impl", set(), set("api"), set());
+        assertEquals(list("impl", "api"), q.retract("api"));
+        assertEquals(list(), q.retract("impl"));
+    }
 
     // XXX testGC
 

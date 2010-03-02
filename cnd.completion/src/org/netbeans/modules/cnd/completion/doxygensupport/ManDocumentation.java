@@ -41,7 +41,6 @@
 package org.netbeans.modules.cnd.completion.doxygensupport;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -52,12 +51,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -76,7 +72,6 @@ public class ManDocumentation {
 
     private static final Logger LOG = Logger.getLogger(ManDocumentation.class.getName());
     private static String manPath = null;
-    private static String man2htmlPath = null;
 
     private static String getPath(String cmd) {
         String path = null;
@@ -99,13 +94,6 @@ public class ManDocumentation {
             manPath = getPath("man"); // NOI18N
         }
         return manPath;
-    }
-
-    private static String getMan2HtmlPath() {
-        if (man2htmlPath == null) {
-            man2htmlPath = getPath("man2html"); // NOI18N
-        }
-        return man2htmlPath;
     }
 
     public static CompletionDocumentation getDocumentation(CsmObject obj) {
@@ -179,12 +167,6 @@ public class ManDocumentation {
                 w.append("</p>\n"); // NOI18N
             }
 
-            if (getMan2HtmlPath() == null) { // NOI18N
-                w.append("<p><tt>man2html</tt> "); // NOI18N
-                w.append(getString("IS_REQUIRED")); // NOI18N
-                w.append("</p>\n"); // NOI18N
-            }
-
             return w.toString();
         }
 
@@ -252,62 +234,7 @@ public class ManDocumentation {
 
         return readFile(f);
     }
-    private static final int MAX_DEPTH = 10;
 
-    private static String soElim(String text, int depth) throws IOException {
-        if (depth > MAX_DEPTH) {
-            throw new IOException("Too deep includes."); // NOI18N
-        }
-
-        Pattern soPattern = Pattern.compile("^\\.so (.*)$", Pattern.MULTILINE); // NOI18N
-        Matcher m = soPattern.matcher(text);
-        StringBuffer result = new StringBuffer();
-        int lastOccurrenceEnd = 0;
-
-        while (m.find()) {
-            result.append(text.substring(lastOccurrenceEnd, m.start()));
-            lastOccurrenceEnd = m.end();
-
-            String path = m.group(1);
-            String included = readManPage(path);
-
-            if (included != null) {
-                result.append(soElim(included, depth + 1));
-            } else {
-                LOG.log(Level.WARNING, "Cannot resolve man page: {0}", path); // NOI18N
-            }
-        }
-
-        result.append(text.substring(lastOccurrenceEnd));
-
-        return result.toString();
-    }
-
-    private static final class StreamCopier extends Thread {
-
-        private InputStream ins;
-        private OutputStream out;
-
-        public StreamCopier(String name, InputStream ins, OutputStream out) {
-            this.ins = ins;
-            this.out = out;
-        }
-
-        public void run() {
-            try {
-                int read;
-
-                while ((read = ins.read()) != (-1)) {
-                    System.err.write(read);
-                    out.write(read);
-                }
-
-                out.close();
-            } catch (IOException e) {
-                LOG.log(Level.FINE, null, e);
-            }
-        }
-    }
     private static final Map<String, String> TRANSLATE;
 
     static {
@@ -366,14 +293,17 @@ public class ManDocumentation {
             this.doc = doc;
         }
 
+        @Override
         public String getText() {
             return doc;
         }
 
+        @Override
         public URL getURL() {
             return null;
         }
 
+        @Override
         public CompletionDocumentation resolveLink(String link) {
             String[] parts = link.split("\\?"); // NOI18N
 
@@ -393,6 +323,7 @@ public class ManDocumentation {
             return ManDocumentation.getDocumentation(name, chapter);
         }
 
+        @Override
         public Action getGotoSourceAction() {
             return null;
         }
