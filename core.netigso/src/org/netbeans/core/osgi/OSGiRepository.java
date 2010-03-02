@@ -42,7 +42,7 @@ package org.netbeans.core.osgi;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +55,9 @@ import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.xml.sax.SAXException;
 
 /**
@@ -90,7 +93,7 @@ class OSGiRepository extends Repository {
         }
     }
 
-    private static final class LayerFS extends MultiFileSystem {
+    private static final class LayerFS extends MultiFileSystem implements LookupListener {
 
         static {
             @SuppressWarnings("deprecation") Object _1 = FileSystem.Environment.class; // FELIX-2128
@@ -98,10 +101,13 @@ class OSGiRepository extends Repository {
             Object _3 = FileStatusListener.class;
         }
 
-        private final Map<URL,FileSystem> fss = new HashMap<URL,FileSystem>();
+        private final Map<String,FileSystem> fss = new HashMap<String,FileSystem>();
         private final FileSystem userdir;
+        private final Lookup.Result<FileSystem> dynamic = Lookup.getDefault().lookupResult(FileSystem.class);
 
+        @SuppressWarnings("LeakingThisInConstructor")
         LayerFS() {
+            dynamic.addLookupListener(this);
             reset();
             File config = null;
             String netbeansUser = System.getProperty("netbeans.user");
@@ -125,7 +131,7 @@ class OSGiRepository extends Repository {
         private synchronized void addLayers(URL... resources) {
             for (URL resource : resources) {
                 try {
-                    fss.put(resource, new XMLFileSystem(resource));
+                    fss.put(resource.toString(), new XMLFileSystem(resource));
                 } catch (SAXException x) {
                     LOG.log(Level.WARNING, "Could not parse layer: " + resource, x);
                 }
@@ -134,17 +140,34 @@ class OSGiRepository extends Repository {
         }
 
         private synchronized void removeLayers(URL... resources) {
-            fss.keySet().removeAll(Arrays.asList(resources));
+            for (URL resource : resources) {
+                fss.remove(resource.toString());
+            }
             reset();
         }
 
         private void reset() {
             List<FileSystem> delegates = new ArrayList<FileSystem>(fss.size() + 1);
             delegates.add(userdir);
+            Collection<? extends FileSystem> dyn = dynamic.allInstances();
+            for (FileSystem fs : dyn) {
+                if (Boolean.TRUE.equals(fs.getRoot().getAttribute("fallback"))) { // NOI18N
+                    continue;
+                }
+                delegates.add(fs);
+            }
             delegates.addAll(fss.values());
+            for (FileSystem fs : dyn) {
+                if (Boolean.TRUE.equals(fs.getRoot().getAttribute("fallback"))) { // NOI18N
+                    delegates.add(fs);
+                }
+            }
             setDelegates(delegates.toArray(new FileSystem[delegates.size()]));
             // XXX fails since MFO's ctor has leader==null: assert getRoot().isValid() : "invalid root of " + getRoot().getClass();
-            // XXX also include FileSystem's from lookup
+        }
+
+        public @Override void resultChanged(LookupEvent ev) {
+            reset();
         }
 
     }

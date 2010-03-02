@@ -127,4 +127,12 @@ class OSGiClassLoader extends ClassLoader {
         return Enumerations.concat(Collections.enumeration(resourcess));
     }
 
+    public @Override String toString() {
+        if (context != null) {
+            return "OSGiClassLoader[all bundles]"; // NOI18N
+        } else {
+            return "OSGiClassLoader[" + bundle.getSymbolicName() + "]"; // NOI18N
+        }
+    }
+
 }
