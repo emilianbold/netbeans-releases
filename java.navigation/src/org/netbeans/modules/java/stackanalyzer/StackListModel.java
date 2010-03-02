@@ -61,11 +61,11 @@ class StackListModel extends AbstractListModel {
             try {
                 currentLine = r.readLine();
                 if (currentLine != null) {
-                    Matcher m = AnalyzeStackTopComponent.STACK_TRACE.matcher(currentLine);
+                    Matcher m = AnalyzeStackTopComponent.STACK_LINE_PATTERN.matcher(currentLine);
                     if (m.matches()) {
                         lines.add(currentLine);
                     }
-                    m = AnalyzeStackTopComponent.EXCEPTION_MESSAGE.matcher(currentLine);
+                    m = AnalyzeStackTopComponent.FIRST_LINE_PATTERN.matcher(currentLine);
                     if (m.matches()) {
                         lines.add(currentLine);
                     }
