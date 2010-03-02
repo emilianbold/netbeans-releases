@@ -1,0 +1,35 @@
+<library id="http://java.sun.com/jsf/core">
+    <tag name="convertDateTime">
+        <attr name="dateStyle">
+            <type name="enum">
+                <val>default</val>
+                <val>short</val>
+                <val>medium</val>
+                <val>long</val>
+                <val>full</val>
+            </type>
+        </attr>
+        <attr name="type">
+            <type name="enum">
+                <val>date</val>
+                <val>time</val>
+                <val>both</val>
+            </type>
+        </attr>
+    </tag>
+    <tag name="convertNumber">
+        <attr name="groupingUsed">
+            <type name="bool"/>
+        </attr>
+        <attr name="integerOnly">
+            <type name="bool"/>
+        </attr>
+        <attr name="type">
+            <type name="enum">
+                <val>number</val>
+                <val>currency</val>
+                <val>percent</val>
+            </type>
+        </attr>
+    </tag>
+</library>
