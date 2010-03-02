@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,59 +34,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.editor.lexer;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.lib.lexer.test.LexerTestUtilities;
-import org.netbeans.modules.css.editor.test.TestBase;
-import org.netbeans.modules.css.lexer.api.CssTokenId;
+package org.netbeans.modules.web.common.api;
 
 /**
- * @author  marek.fukala@sun.com
+ * Represents a type of link between two files.
+ *
+ * @author marekfukala
  */
-public class CssLexerTest extends TestBase {
+public enum FileReferenceType {
 
-    public CssLexerTest(String name) {
-        super(name);
-    }
-
-    @Override
-    protected void setUp() throws java.lang.Exception {
-        // Set-up testing environment
-        LexerTestUtilities.setTesting(true);
-    }
-
-    public void testInput() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/testInputGeneratedCode.css.txt",
-                CssTokenId.language());
-    }
-
-    public void testImportsLexing() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/testImportsLexing.css.txt",
-                CssTokenId.language());
-    }
-
-    //http://www.netbeans.org/issues/show_bug.cgi?id=161642
-    public void testIssue161642() throws Exception {
-        String input = "/* c */;";
-        TokenHierarchy th = TokenHierarchy.create(input, CssTokenId.language());
-        TokenSequence ts = th.tokenSequence();
-        ts.moveStart();
-
-        assertTrue(ts.moveNext());
-        assertEquals("/* c */", ts.token().text().toString());
-        assertEquals(CssTokenId.COMMENT, ts.token().id());
-        assertEquals("comment", ts.token().id().primaryCategory());
-
-        assertTrue(ts.moveNext());
-        assertEquals(";", ts.token().text().toString());
-        assertEquals(CssTokenId.SEMICOLON, ts.token().id());
-    }
+    RELATIVE, ABSOLUTE
 
 }

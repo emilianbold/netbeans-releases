@@ -237,43 +237,51 @@ public class CssIndex {
     public DependenciesGraph getDependencies(FileObject cssFile) {
         try {
             DependenciesGraph deps = new DependenciesGraph(cssFile);
-            Collection<? extends IndexResult> results = querySupport.query(CssIndexer.IMPORTS_KEY, "", QuerySupport.Kind.PREFIX, CssIndexer.IMPORTS_KEY);
-
-            //todo: performance - cache and incrementally update the maps?!?!
-            //create map of refering files to the peers and second map vice versa
-            Map<FileObject, Collection<FileObject>> source2dests = new HashMap<FileObject, Collection<FileObject>>();
-            Map<FileObject, Collection<FileObject>> dest2sources = new HashMap<FileObject, Collection<FileObject>>();
-            for (IndexResult result : results) {
-                String importsValue = result.getValue(CssIndexer.IMPORTS_KEY);
-                FileObject file = result.getFile();
-                Collection<String> imports = decodeListValue(importsValue);
-                Collection<FileObject> imported = new HashSet<FileObject>();
-                for (String importedFileName : imports) {
-                    //resolve the file
-                    FileObject resolvedFileObject = WebUtils.resolve(file, importedFileName);
-                    if (resolvedFileObject != null) {
-                        imported.add(resolvedFileObject);
-                        //add reverse dependency
-                        Collection<FileObject> sources = dest2sources.get(resolvedFileObject);
-                        if(sources == null) {
-                            sources = new HashSet<FileObject>();
-                            dest2sources.put(resolvedFileObject, sources);
-                        }
-                        sources.add(file);
-                    }
-                }
-                source2dests.put(file, imported);
-            }
-
-            resolveDependencies(deps.getSourceNode(), source2dests, dest2sources);
-
+            AllDependenciesMaps alldeps = getAllDependencies();
+            resolveDependencies(deps.getSourceNode(), alldeps.getSource2dest(), alldeps.getDest2source());
             return deps;
-
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
 
         return null;
+    }
+
+    /**
+     * Gets two maps wrapped in the AllDependenciesMaps class which contains
+     * all dependencies defined by imports in the current project.
+     *
+     * @return instance of AllDependenciesMaps
+     * @throws IOException
+     */
+    public AllDependenciesMaps getAllDependencies() throws IOException {
+        Collection<? extends IndexResult> results = querySupport.query(CssIndexer.IMPORTS_KEY, "", QuerySupport.Kind.PREFIX, CssIndexer.IMPORTS_KEY);
+        Map<FileObject, Collection<FileObject>> source2dests = new HashMap<FileObject, Collection<FileObject>>();
+        Map<FileObject, Collection<FileObject>> dest2sources = new HashMap<FileObject, Collection<FileObject>>();
+        for (IndexResult result : results) {
+            String importsValue = result.getValue(CssIndexer.IMPORTS_KEY);
+            FileObject file = result.getFile();
+            Collection<String> imports = decodeListValue(importsValue);
+            Collection<FileObject> imported = new HashSet<FileObject>();
+            for (String importedFileName : imports) {
+                //resolve the file
+                FileObject resolvedFileObject = WebUtils.resolve(file, importedFileName);
+                if (resolvedFileObject != null) {
+                    imported.add(resolvedFileObject);
+                    //add reverse dependency
+                    Collection<FileObject> sources = dest2sources.get(resolvedFileObject);
+                    if (sources == null) {
+                        sources = new HashSet<FileObject>();
+                        dest2sources.put(resolvedFileObject, sources);
+                    }
+                    sources.add(file);
+                }
+            }
+            source2dests.put(file, imported);
+        }
+
+        return new AllDependenciesMaps(source2dests, dest2sources);
+
     }
     
 
@@ -316,4 +324,35 @@ public class CssIndex {
         return list;
     }
 
+    public static class AllDependenciesMaps {
+
+        Map<FileObject, Collection<FileObject>> source2dest, dest2source;
+
+        public AllDependenciesMaps(Map<FileObject, Collection<FileObject>> source2dest, Map<FileObject, Collection<FileObject>> dest2source) {
+            this.source2dest = source2dest;
+            this.dest2source = dest2source;
+        }
+
+        /**
+         *
+         * @return reversed map of getSource2dest() (imported file -> collection of
+         * importing files)
+         */
+        public Map<FileObject, Collection<FileObject>> getDest2source() {
+            return dest2source;
+        }
+
+        /**
+         *
+         * @return map of fileobject -> collection of fileobject(s) describing
+         * relations between css file defined by import directive. The key represents
+         * a fileobject which imports the files from the value's collection.
+         */
+        public Map<FileObject, Collection<FileObject>> getSource2dest() {
+            return source2dest;
+        }
+
+    }
+
+    
 }

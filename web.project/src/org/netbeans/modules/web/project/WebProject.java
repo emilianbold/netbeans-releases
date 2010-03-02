@@ -465,6 +465,7 @@ public final class WebProject implements Project, AntProjectListener {
     
     private PropertyEvaluator createEvaluator() {
         // XXX might need to add a custom evaluator to handle active platform substitutions... TBD
+        helper.getStandardPropertyEvaluator();//workaround for issue for #181253, need to call before custom creation
         PropertyEvaluator baseEval2 = PropertyUtils.sequentialPropertyEvaluator(
                 helper.getStockPropertyPreprovider(),
                 helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));

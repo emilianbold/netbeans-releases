@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,59 +34,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.common.api;
 
-package org.netbeans.modules.css.editor.lexer;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.lib.lexer.test.LexerTestUtilities;
-import org.netbeans.modules.css.editor.test.TestBase;
-import org.netbeans.modules.css.lexer.api.CssTokenId;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 
 /**
- * @author  marek.fukala@sun.com
+ * File reference descriptor. Represents a link from one file to another
+ *
+ * @author marekfukala
  */
-public class CssLexerTest extends TestBase {
+public final class FileReference {
 
-    public CssLexerTest(String name) {
-        super(name);
+    private FileObject source, target;
+    private String linkPath;
+    private FileReferenceType type;
+
+    public FileReference(FileObject source, FileObject target, String linkPath, FileReferenceType type) {
+        this.source = source;
+        this.target = target;
+        this.linkPath = linkPath;
+        this.type = type;
+    }
+    
+    public FileObject source() {
+        return source;
     }
 
-    @Override
-    protected void setUp() throws java.lang.Exception {
-        // Set-up testing environment
-        LexerTestUtilities.setTesting(true);
+    public FileObject target() {
+        return target;
     }
 
-    public void testInput() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/testInputGeneratedCode.css.txt",
-                CssTokenId.language());
+    public String linkPath() {
+        return linkPath;
     }
 
-    public void testImportsLexing() throws Exception {
-        LexerTestUtilities.checkTokenDump(this, "testfiles/testImportsLexing.css.txt",
-                CssTokenId.language());
+    /**
+     * @return normalized relative path.
+     */
+    public String optimizedLinkPath() {
+        return type() == FileReferenceType.RELATIVE ?
+            WebUtils.getRelativePath(source, target):
+            linkPath();
     }
 
-    //http://www.netbeans.org/issues/show_bug.cgi?id=161642
-    public void testIssue161642() throws Exception {
-        String input = "/* c */;";
-        TokenHierarchy th = TokenHierarchy.create(input, CssTokenId.language());
-        TokenSequence ts = th.tokenSequence();
-        ts.moveStart();
-
-        assertTrue(ts.moveNext());
-        assertEquals("/* c */", ts.token().text().toString());
-        assertEquals(CssTokenId.COMMENT, ts.token().id());
-        assertEquals("comment", ts.token().id().primaryCategory());
-
-        assertTrue(ts.moveNext());
-        assertEquals(";", ts.token().text().toString());
-        assertEquals(CssTokenId.SEMICOLON, ts.token().id());
+    public FileReferenceType type() {
+        return type;
     }
 
 }
