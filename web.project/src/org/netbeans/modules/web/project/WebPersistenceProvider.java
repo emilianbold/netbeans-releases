@@ -38,11 +38,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -73,11 +73,13 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -90,11 +92,9 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
     private final WebProject project;
     private final PropertyEvaluator evaluator;
     private final ClassPathProviderImpl cpProvider;
-
     private final ScopeImpl scopeImpl = new ScopeImpl();
     private final PersistenceScope persistenceScope = PersistenceScopeFactory.createPersistenceScope(scopeImpl);
     private final EntityClassScope entityClassScope = EntityClassScopeFactory.createEntityClassScope(scopeImpl);
-
     private final PersistenceScopesHelper scopesHelper = new PersistenceScopesHelper();
     private final EntityMappingsMetadataModelHelper modelHelper;
     private final PropertyChangeListener scopeListener = new PropertyChangeListener() {
@@ -127,12 +127,12 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
     public FileObject createLocation() throws IOException {
         // the folder should have been created when the project was generated
         FileObject location = project.getWebModule().getPersistenceXmlDir();
-        
-        if(location == null) {
+
+        if (location == null) {
             // But possibly the folder got deleted by the user
             // or missing for whatever reason (see issue 134870)
             location = FileUtil.createFolder(project.getWebModule().getPersistenceXmlDirAsFile());
-            
+
         }
         return location;
     }
@@ -141,7 +141,7 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
     public PersistenceScope findPersistenceScope(FileObject fo) {
         Project project = FileOwnerQuery.getOwner(fo);
         if (project != null) {
-            WebPersistenceProvider provider = (WebPersistenceProvider)project.getLookup().lookup(WebPersistenceProvider.class);
+            WebPersistenceProvider provider = (WebPersistenceProvider) project.getLookup().lookup(WebPersistenceProvider.class);
             return provider.getPersistenceScope();
         }
         return null;
@@ -151,7 +151,7 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
     public EntityClassScope findEntityClassScope(FileObject fo) {
         Project project = FileOwnerQuery.getOwner(fo);
         if (project != null) {
-            WebPersistenceProvider provider = (WebPersistenceProvider)project.getLookup().lookup(WebPersistenceProvider.class);
+            WebPersistenceProvider provider = (WebPersistenceProvider) project.getLookup().lookup(WebPersistenceProvider.class);
             return provider.getEntityClassScope();
         }
         return null;
@@ -178,10 +178,9 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
         synchronized (this) {
             if (projectSourcesClassPath == null) {
                 ClassPathProviderImpl cpProvider = project.getClassPathProvider();
-                projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[] {
-                    cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
-                    cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
-                });
+                projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[]{
+                            cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
+                            cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),});
             }
             return projectSourcesClassPath;
         }
@@ -189,9 +188,9 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
 
     private EntityMappingsMetadataModelHelper createEntityMappingsHelper() {
         return EntityMappingsMetadataModelHelper.create(
-            cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
-            cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
-            cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE));
+                cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
+                cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE));
     }
 
     @Override
@@ -244,12 +243,14 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
             return modelHelper.getDefaultEntityMappingsModel(withDeps);
         }
     }
+
     private void puChanged() {
         RequestProcessor.getDefault().post(new Runnable() {
 
             @Override
             public void run() {
                 ProjectManager.mutex().writeAccess(new Runnable() {
+
                     @Override
                     public void run() {
                         EditableProperties prop = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -266,9 +267,21 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
                             FileObject fo = firstGroup.getRootFolder();
                             ClassPath compile = ClassPath.getClassPath(fo, JavaClassPathConstants.PROCESSOR_PATH);
                             if (compile.findResource("org/eclipse/persistence/internal/jpa/modelgen/CanonicalModelProcessor.class") != null) {
-                                ap = ap + (ap.length() > 1 ? "," : "") + "org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor"; //NOI18N
+                                ap = ap.trim();
+                                boolean turnOn = ap.length()==0;//we will switch generation on only if there was no processors even by default properties "save" have case on existence of ap
+                                ap = ap + (ap.length() > 0 ? "," : "") + "org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor"; //NOI18N
                                 prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ap);
-                                project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
+                                if( turnOn ) {
+                                    prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, "false");//NOI18N
+                                }
+                                 project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
+                                try {
+                                    ProjectManager.getDefault().saveProject(project);
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (IllegalArgumentException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
                             }
                         }
                     }
