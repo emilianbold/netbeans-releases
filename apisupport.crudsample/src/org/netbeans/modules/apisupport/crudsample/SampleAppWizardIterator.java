@@ -321,7 +321,7 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
                 inputStream.close();
             }
         }
-        projectProperties.setProperty("derbyclient.jar", loc);
+        projectProperties.setProperty("derbyclient.jar", loc + "/lib/derbyclient.jar");
         OutputStream outputStream = null;
         try {
             outputStream = projectPropertiesFO.getOutputStream();
@@ -331,7 +331,37 @@ public class SampleAppWizardIterator implements WizardDescriptor.InstantiatingIt
                 outputStream.close();
             }
         }
-        Logger.getLogger(SampleAppWizardIterator.class.getName()).log(Level.FINE, "Derby location in project.properties is {0}", new Object[]{loc});
+        Logger.getLogger(SampleAppWizardIterator.class.getName()).log(Level.FINE, "derbyclient.jar location in project.properties is {0}", new Object[]{loc + "/lib/derbyclient.jar"});
+
+        File bundleFile = new File(FileUtil.toFile(projectRoot), "CustomerDBAccessLibrary" + File.separator +
+                "src" + File.separator +
+                "org" + File.separator +
+                "netbeans" + File.separator +
+                "modules" + File.separator +
+                "customerdb" + File.separator +
+                "Bundle.properties");
+        FileObject bundleFO = FileUtil.toFileObject(bundleFile);
+        Properties bundleProperties = new Properties();
+        inputStream = null;
+        try {
+            inputStream = bundleFO.getInputStream();
+            bundleProperties.load(inputStream);
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        }
+        bundleProperties.setProperty("javadb.home", loc);
+        outputStream = null;
+        try {
+            outputStream = bundleFO.getOutputStream();
+            bundleProperties.store(outputStream, null);
+        } finally {
+            if (outputStream != null) {
+                outputStream.close();
+            }
+        }
+        Logger.getLogger(SampleAppWizardIterator.class.getName()).log(Level.FINE, "JavaDB home is {0}", new Object[]{loc});
     }
-    
+
 }
