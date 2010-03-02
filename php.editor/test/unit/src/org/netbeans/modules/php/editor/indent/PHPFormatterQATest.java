@@ -250,6 +250,27 @@ public class PHPFormatterQATest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/qa/issues/stable_partialTests/174873_173906_1.php");
     }
 
+    public void test152429_1_stable() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_1.php", options);
+    }
+
+    public void test152429_2_stable() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_2.php", options);
+    }
+
+    public void test152429_3_stable() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_3.php", options);
+    }
+
+
+//    public void test148732() throws Exception {
+//	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+//        reformatFileContents("testfiles/formatting/qa/issues/unstable_newIssues/148732.php", options);
+//    }
+    
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
