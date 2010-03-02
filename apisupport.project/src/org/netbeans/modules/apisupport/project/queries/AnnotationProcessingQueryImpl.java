@@ -42,23 +42,42 @@ package org.netbeans.modules.apisupport.project.queries;
 import java.net.URL;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-/**
- *
- * @author lahvac
- */
 public class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplementation {
 
-    private final Result r = new ResultImpl();
+    private final NbModuleProject project;
 
-    @Override
-    public Result getAnnotationProcessingOptions(FileObject file) {
-        return r;
+    public AnnotationProcessingQueryImpl(NbModuleProject project) {
+        this.project = project;
+    }
+    
+    public @Override Result getAnnotationProcessingOptions(FileObject file) {
+        if (inside(project.getSourceDirectory(), file)) {
+            return new ResultImpl(FileUtil.urlForArchiveOrDir(project.getGeneratedClassesDirectory()));
+        } else if (inside(project.getTestSourceDirectory("unit"), file)) {
+            return new ResultImpl(FileUtil.urlForArchiveOrDir(project.getTestGeneratedClassesDirectory("unit")));
+        } else if (inside(project.getTestSourceDirectory("qa-functional"), file)) {
+            return new ResultImpl(FileUtil.urlForArchiveOrDir(project.getTestGeneratedClassesDirectory("qa-functional")));
+        } else {
+            return null;
+        }
+    }
+
+    private static boolean inside(FileObject root, FileObject file) {
+        return root != null && (file == root || FileUtil.isParentOf(root, file));
     }
 
     private static final class ResultImpl implements Result {
+
+        private final URL dashS;
+
+        ResultImpl(URL dashS) {
+            this.dashS = dashS;
+        }
 
         @Override
         public boolean annotationProcessingEnabled() {
@@ -72,14 +91,14 @@ public class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryI
 
         @Override
         public URL sourceOutputDirectory() {
-            return null;
+            return dashS;
         }
 
         @Override
-        public void addChangeListener(ChangeListener l) {} //neverah changes
+        public void addChangeListener(ChangeListener l) {}
 
         @Override
-        public void removeChangeListener(ChangeListener l) {} //neverah changes
+        public void removeChangeListener(ChangeListener l) {}
 
     }
 
