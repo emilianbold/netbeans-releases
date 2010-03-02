@@ -121,12 +121,14 @@ public final class CheckoutAction extends CallableSystemAction {
                 try {
                     setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
                     setCancellableDelegate(client);
+                    client.addNotifyListener(this);
                     checkout(client, repository, repositoryFiles, workingDir, atWorkingDirLevel, this);
                 } catch (SVNClientException ex) {
                     annotate(ex);
                     return;
                 } finally {
                     Subversion.getInstance().versionedFilesChanged();
+                    client.removeNotifyListener(this);
                 }
                 if(isCanceled()) {
                     return;

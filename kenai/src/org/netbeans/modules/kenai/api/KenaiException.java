@@ -177,6 +177,22 @@ public class KenaiException extends IOException {
     }
 
     /**
+     * getAsString() method mapped to key, value map
+     * @return
+     */
+    public Map<String, String> getAsMap() {
+        if (errorResponse!=null) {
+            PojsonLoad load = PojsonLoad.create();
+            try {
+                return (HashMap<String, String>) load.toCollections(errorResponse);
+            } catch (IOException ex) {
+                return Collections.emptyMap();
+            }
+        }
+        return Collections.emptyMap();
+    }
+
+    /**
      * get status according to
      * <a href="http://kenai.com/projects/kenai/pages/API#Errors">spec</a>
      * @return status

@@ -46,11 +46,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.versioning.util.OpenInEditorAction;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
@@ -75,6 +80,7 @@ public class OutputLogger implements ISVNNotifyListener {
      * and in that case it should be closed again. See getLog().
      */
     private static final HashSet<String> openedWindows = new HashSet<String>(5);
+    private static final Pattern filePattern = Pattern.compile("[AUCGE ][ UC][ BC] (.+)"); //NOI18N
     
     public static OutputLogger getLogger(SVNUrl repositoryRoot) {
         if (repositoryRoot != null) {
@@ -175,10 +181,19 @@ public class OutputLogger implements ISVNNotifyListener {
     }
     
     private void logln(String message, boolean ignore) {
-        log(message + "\n", null, ignore); // NOI18N
+        OpenFileOutputListener ol = null;
+        Matcher m = filePattern.matcher(message);
+        if (m.matches() && m.groupCount() > 0) {
+            String path = m.group(1);
+            File f = new File(path);
+            if (!f.isDirectory()) {
+                ol = new OpenFileOutputListener(FileUtil.normalizeFile(f), m.start(1));
+            }
+        }
+        log(message + "\n", ol, ignore); // NOI18N
     }
-    
-    private void log(String message, OutputListener hyperlinkListener, boolean ignore) {                
+
+    private void log(String message, OpenFileOutputListener hyperlinkListener, boolean ignore) {
         if(ignore) {
             return;
         }
@@ -199,7 +214,10 @@ public class OutputLogger implements ISVNNotifyListener {
         if (writable) {
             if (hyperlinkListener != null) {
                 try {
-                    getLog().getOut().println(message, hyperlinkListener);
+                    String prefix = message.substring(0, hyperlinkListener.filePathStartPos);
+                    getLog().getOut().write(prefix);
+                    String filePath = message.substring(hyperlinkListener.filePathStartPos);
+                    getLog().getOut().println(filePath.endsWith("\n") ? filePath.substring(0, filePath.length() - 1) : filePath, hyperlinkListener); //NOI18N
                 } catch (IOException e) {
                     getLog().getOut().write(message);
                 }
@@ -270,6 +288,28 @@ public class OutputLogger implements ISVNNotifyListener {
 
         public void flushLog() {
         }
+    }
+
+    private static class OpenFileOutputListener implements OutputListener {
+        private final File f;
+        private final int filePathStartPos;
+
+        public OpenFileOutputListener(File f, int filePathStartPos) {
+            this.f = f;
+            this.filePathStartPos = filePathStartPos;
+        }
+
+        @Override
+        public void outputLineSelected(OutputEvent ev) { }
+
+        @Override
+        public void outputLineAction(OutputEvent ev) {
+            new OpenInEditorAction(new File[] {f}).actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, f.getAbsolutePath()));
+        }
+
+        @Override
+        public void outputLineCleared(OutputEvent ev) { }
+
     }
 
 }
