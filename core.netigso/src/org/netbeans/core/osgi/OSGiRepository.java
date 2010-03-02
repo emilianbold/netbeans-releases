@@ -163,7 +163,7 @@ class OSGiRepository extends Repository {
                 }
             }
             setDelegates(delegates.toArray(new FileSystem[delegates.size()]));
-            // XXX fails since MFO's ctor has leader==null: assert getRoot().isValid() : "invalid root of " + getRoot().getClass();
+            assert getRoot().isValid();
         }
 
         public @Override void resultChanged(LookupEvent ev) {
