@@ -279,10 +279,10 @@ class FileMapStorage implements Storage {
      */
     private void unmap(Object buffer) {
         try {
-            Method getCleanerMethod = buffer.getClass().getMethod("cleaner", new Class[0]);
+            Method getCleanerMethod = buffer.getClass().getMethod("cleaner");
             getCleanerMethod.setAccessible(true);
-            sun.misc.Cleaner cleaner = (sun.misc.Cleaner) getCleanerMethod.invoke(buffer, new Object[0]);
-            cleaner.clean();
+            /*sun.misc.Cleaner*/Object cleaner = getCleanerMethod.invoke(buffer);
+            cleaner.getClass().getMethod("clean").invoke(cleaner);
         } catch (Exception e) {
         }
     }
