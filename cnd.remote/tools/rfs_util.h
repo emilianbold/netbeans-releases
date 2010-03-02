@@ -121,7 +121,7 @@ static char *normalize_path(const char *path, char *buffer, int max_size) {
                 // it's "/../"
                 src += 3;
                 dst--; // point the last added one
-                if (*dst == '/') {
+                if (*dst == '/' && dst > buffer) {
                     dst--;
                 }
                 while (dst > buffer && *dst != '/') {
