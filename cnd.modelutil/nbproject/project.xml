@@ -185,6 +185,7 @@
                 <friend>org.netbeans.modules.cnd.profiler.ui</friend>
                 <friend>org.netbeans.modules.cnd.qnavigator</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
+                <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <package>org.netbeans.modules.cnd.modelutil</package>
             </friend-packages>
         </data>

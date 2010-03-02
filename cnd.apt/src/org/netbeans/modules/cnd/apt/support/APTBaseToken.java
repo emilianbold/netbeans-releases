@@ -95,7 +95,7 @@ public class APTBaseToken implements APTToken {
 
     @Override
     public final void setType(int t) {
-        assert t < Short.MAX_VALUE;
+        assert t <= Short.MAX_VALUE;
         type = (short) t;
     }
 
@@ -166,8 +166,12 @@ public class APTBaseToken implements APTToken {
 
     @Override
     public final void setColumn(int c) {
-        assert c < Short.MAX_VALUE;
-        col = (short) c;
+        if (c > Short.MAX_VALUE) {
+            // Column line used for messages, so set in max value in case too long line.
+            c = Short.MAX_VALUE;
+        } else {
+            col = (short) c;
+        }
     }
 
     @Override

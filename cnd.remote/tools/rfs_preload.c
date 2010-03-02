@@ -127,7 +127,7 @@ static void post_open(const char *path, int flags) {
     inside = 1;
 
     if (path[0] != '/') {
-        static __thread char real_path[PATH_MAX];
+        static __thread char real_path[PATH_MAX + 1];
         if ( normalize_path(path, real_path, sizeof real_path)) {
             path = real_path;
         } else {
@@ -189,7 +189,7 @@ static bool pre_open(const char *path, int flags) {
 
     const char* real_path;
     if (path[0] != '/') {
-        static __thread char real_path_buffer[PATH_MAX];
+        static __thread char real_path_buffer[PATH_MAX + 1];
         if ( normalize_path(path, real_path_buffer, sizeof real_path_buffer)) {
             //path = real_path;
             real_path = real_path_buffer;
@@ -278,7 +278,7 @@ pid_t fork() {
 /** gets current process short name */
 static char* get_procname(char* name, int len) {
     #ifdef __linux__
-    char path[PATH_MAX];
+    char path[PATH_MAX + 1];
     if (readlink ("/proc/self/exe", path, sizeof path) != -1) {
         trace("0 %d\n", path);
         char *res = basename(path);
@@ -359,13 +359,13 @@ rfs_startup(void) {
 //#if TRACE
 //    print_dlsym();
 //#endif
-    //curr_dir = malloc(curr_dir_len = PATH_MAX);
+    //curr_dir = malloc(curr_dir_len = PATH_MAX + 1);
     //getcwd(curr_dir, curr_dir_len);
     my_dir = getenv("RFS_CONTROLLER_DIR");
     if (!my_dir) {
         //my_dir = curr_dir;
-        char* p = malloc(PATH_MAX);
-        getcwd(p, PATH_MAX);
+        char* p = malloc(PATH_MAX + 1);
+        getcwd(p, PATH_MAX + 1);
         my_dir = p;
     }
     my_dir_len = strlen(my_dir);

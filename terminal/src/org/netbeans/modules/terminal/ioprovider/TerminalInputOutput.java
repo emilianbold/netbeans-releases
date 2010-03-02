@@ -106,6 +106,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
     private int outputColor = 0;
 
+    @Override
     public Lookup getLookup() {
         return lookup;
     }
@@ -207,6 +208,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
             this.coord = coord;
         }
 
+	@Override
         public void scrollTo() {
             back.scrollTo(coord);
         }
@@ -302,6 +304,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 	@Override
 	protected void addListener(final Listener listener) {
 	    TermListener termListener = new TermListener() {
+		@Override
 		public void sizeChanged(Dimension cells, Dimension pixels) {
 		    // propagate size change notifications from Term
 		    // to Listener
@@ -411,21 +414,11 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
     TerminalInputOutput(String name, Action[] actions, IOContainer ioContainer) {
         this.ioContainer = ioContainer;
 
-	/*
-	 * Other ways of getting a terminal
-
-	public Terminal createTerminal(String name) {
-	    TermTopComponent tc = TermTopComponent.findInstance();
-	    return new Terminal(tc.ioContainer(), null, name);
-	}
-
-	public synchronized Terminal createTerminal(String name, String preferredID) {
-            IOContainer ioContainer = TermTopComponent.getInstance(preferredID);
-	    return new Terminal(ioContainer, null, name);
-	}
-	 */
-
         terminal = new Terminal(ioContainer, actions, name);
+
+	Task task = new Task.Add(ioContainer, terminal);
+	task.dispatch();
+
         term = terminal.term();
 
         if (! (term instanceof ActiveTerm))
@@ -436,6 +429,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         // Set up to convert clicks on active regions, created by OutputWriter.
         // println(), to outputLineAction notifications.
         at.setActionListener(new ActiveTermListener() {
+	    @Override
             public void action(ActiveRegion r, InputEvent e) {
                 OutputListener ol = (OutputListener) r.getUserObject();
                 if (ol == null)
@@ -468,6 +462,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
      * terminal.
      * @return the writer.
      */
+    @Override
     public OutputWriter getOut() {
         if (outputWriter == null)
             outputWriter = new TermOutputWriter();
@@ -478,6 +473,7 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
      * Stream to read from stuff typed into the terminal destined for the process.
      * @return the reader.
      */
+    @Override
     public Reader getIn() {
 	return term.getIn();
     }
@@ -495,42 +491,54 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
      * {@link org.netbeans.lib.termsupport.TermExecutor#start} will
      * pre-combine stderr and stdout.
      */
+    @Override
     public OutputWriter getErr() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void closeInputOutput() {
         terminal.close();
     }
 
+    @Override
     public boolean isClosed() {
         return terminal.isClosed();
     }
 
+    @Override
     public void setOutputVisible(boolean value) {
         // no-op in output2
     }
 
+    @Override
     public void setErrVisible(boolean value) {
         // no-op in output2
     }
 
+    @Override
     public void setInputVisible(boolean value) {
         // no-op
     }
 
+    @Override
     public void select() {
-        terminal.select();
+        // OLD terminal.select();
+	Task task = new Task.Select(ioContainer, terminal);
+	task.dispatch();
     }
 
+    @Override
     public boolean isErrSeparated() {
         return false;
     }
 
+    @Override
     public void setErrSeparated(boolean value) {
         // no-op in output2
     }
 
+    @Override
     public boolean isFocusTaken() {
         return false;
     }
@@ -539,11 +547,13 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
      * output2 considered this to be a "really bad" operation so we will
      * outright not support it.
      */
+    @Override
     public void setFocusTaken(boolean value) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Deprecated
+    @Override
     public Reader flushReader() {
 	return term.getIn();
     }

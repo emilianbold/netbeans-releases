@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.apt.impl.support.APTLiteConstTextToken;
 import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
@@ -153,7 +154,9 @@ public class APTUtils {
             // no need to set text in comment token, but set text len
             ((APTCommentToken)_token).setTextLength(count);
         } else if (_token instanceof APTConstTextToken) {
-            // no need to set text in comment token
+            // no need to set text in const token
+        } else if (_token instanceof APTLiteConstTextToken) {
+            // no need to set text in const token
         } else {
             System.err.printf("unexpected token %s while assigning text %s", _token, new String(buf, start, count));
             _token.setText(new String(buf, start, count));
@@ -162,6 +165,9 @@ public class APTUtils {
 
     public static APTToken createAPTToken(int type, int startOffset, int endOffset, int startColumn, int startLine, int endColumn, int endLine) {
         // TODO: optimize factory
+        if (APTLiteConstTextToken.isApplicable(type, startOffset, startColumn, startLine)){
+            return new APTLiteConstTextToken(type, startOffset, startColumn, startLine);
+        }
         APTToken out = createAPTToken(type);
         out.setType(type);
         out.setColumn(startColumn);
