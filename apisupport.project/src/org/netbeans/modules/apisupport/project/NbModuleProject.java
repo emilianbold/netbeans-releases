@@ -300,7 +300,7 @@ public final class NbModuleProject implements Project {
         ic.add(UILookupMergerSupport.createRecommendedTemplatesMerger());
         ic.add(new TemplateAttributesProvider(this, getHelper(), getModuleType() == NbModuleType.NETBEANS_ORG));
         ic.add(new FileEncodingQueryImpl());
-        ic.add(new AnnotationProcessingQueryImpl());
+        ic.add(new AnnotationProcessingQueryImpl(this));
 
         if (getModuleType() == NbModuleType.SUITE_COMPONENT) {
             ic.add(new SuiteProviderImpl());
