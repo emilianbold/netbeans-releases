@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject.ui.tests;
+package org.netbeans.modules.cnd.testrunner.ui;
 
 import java.io.File;
 import java.util.logging.Logger;

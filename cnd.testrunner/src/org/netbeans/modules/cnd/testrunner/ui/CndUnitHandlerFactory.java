@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui.tests;
+package org.netbeans.modules.cnd.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
