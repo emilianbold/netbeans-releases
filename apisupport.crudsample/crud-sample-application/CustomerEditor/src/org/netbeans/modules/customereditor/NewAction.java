@@ -45,6 +45,7 @@ import java.awt.event.ActionListener;
 
 public final class NewAction implements ActionListener {
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         EditorTopComponent tc = EditorTopComponent.getDefault();
         tc.resetFields();

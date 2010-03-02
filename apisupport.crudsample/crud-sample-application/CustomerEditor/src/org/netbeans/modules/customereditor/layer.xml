@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-customereditor-NewAction.instance">
                 <attr name="delegate" newvalue="org.netbeans.modules.customereditor.NewAction"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.customereditor.Bundle#CTL_NewAction"/>
-                <attr name="iconBase" stringvalue="org/netbeans/modules/customereditor/note-new.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/customereditor/record-new.png"/>
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="noIconInMenu" boolvalue="false"/>
             </file>
