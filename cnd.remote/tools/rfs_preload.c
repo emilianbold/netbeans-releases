@@ -128,7 +128,7 @@ static void post_open(const char *path, int flags) {
 
     if (path[0] != '/') {
         static __thread char real_path[PATH_MAX + 1];
-        if ( normalize_path(path, real_path, sizeof real_path)) {
+        if ( realpath(path, real_path)) {
             path = real_path;
         } else {
             trace_unresolved_path(path);
@@ -190,7 +190,7 @@ static bool pre_open(const char *path, int flags) {
     const char* real_path;
     if (path[0] != '/') {
         static __thread char real_path_buffer[PATH_MAX + 1];
-        if ( normalize_path(path, real_path_buffer, sizeof real_path_buffer)) {
+        if ( realpath(path, real_path_buffer)) {
             //path = real_path;
             real_path = real_path_buffer;
         } else {
