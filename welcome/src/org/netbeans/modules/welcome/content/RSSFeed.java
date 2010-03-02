@@ -270,14 +270,17 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
             l.log(level, "Error message:"+e.getMessage()); //NOI18N
         }
         
+        @Override
         public void error(org.xml.sax.SAXParseException e) {
             message(Level.SEVERE, e); //NOI18N
         }
         
+        @Override
         public void warning(org.xml.sax.SAXParseException e) {
             message(Level.WARNING,e); //NOI18N
         }
         
+        @Override
         public void fatalError(org.xml.sax.SAXParseException e) {
             message(Level.SEVERE,e); //NOI18N
         }
@@ -319,6 +322,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                                 GridBagConstraints.CENTER,GridBagConstraints.VERTICAL,new Insets(0,0,0,0),0,0 ) );
 
                 SwingUtilities.invokeLater( new Runnable() {
+                    @Override
                     public void run() {
 //                        contentPanel.setMinimumSize( contentPanel.getPreferredSize() );
                         setContent( contentPanel );
@@ -330,18 +334,21 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
 
             } catch( UnknownHostException uhE ) {
                 SwingUtilities.invokeLater( new Runnable() {
+                    @Override
                     public void run() {
                         setContent( buildProxyPanel() );
                     }
                 });
             } catch( SocketException sE ) {
                 SwingUtilities.invokeLater( new Runnable() {
+                    @Override
                     public void run() {
                         setContent( buildProxyPanel() );
                     }
                 });
             } catch( IOException ioE ) {
                 SwingUtilities.invokeLater( new Runnable() {
+                    @Override
                     public void run() {
                         setContent( buildProxyPanel() );
                     }
@@ -354,6 +361,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                     return;
                 }
                 SwingUtilities.invokeLater( new Runnable() {
+                    @Override
                     public void run() {
                         setContent( buildErrorLabel() );
                     }
@@ -385,7 +393,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                     new Insets(0,TEXT_INSETS_LEFT+5,2,TEXT_INSETS_RIGHT),0,0 ) );
         }
 
-        WebLink linkButton = new WebLink( stripHtml(item.title), item.link, true, 
+        WebLink linkButton = new WebLink( stripHtml(item.title), item.link, true,
                 Utils.getColor( foregroundColorFlag ? COLOR_HEADER1 : COLOR_HEADER2 ) );
         foregroundColorFlag = !foregroundColorFlag;
         linkButton.getAccessibleContext().setAccessibleName( 
@@ -408,7 +416,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         }
         return panel;
     }
-    
+
     protected static String getTextContent(Node node) {
         Node child = node.getFirstChild();
         if( null == child )
@@ -457,6 +465,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         super.addNotify();
         getMaxDecsriptionLength();
         WindowManager.getDefault().invokeWhenUIReady( new Runnable() {
+            @Override
             public void run() {
                 startReloading();
             }
@@ -500,6 +509,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         if( maxDescriptionChars < 0 && getWidth() > 0 ) {
             if( getWidth() <= 0 ) {
                 SwingUtilities.invokeLater( new Runnable() {
+                    @Override
                     public void run() {
                         getMaxDecsriptionLength();
                     }
@@ -542,6 +552,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
             Mnemonics.setLocalizedText( button, BundleSupport.getLabel( "ProxyConfig" ) );  // NOI18N
             button.setOpaque( false );
             button.addActionListener( new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     HttpProxySettings.getDefault().showConfigurationDialog();
                 }
@@ -590,6 +601,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         Mnemonics.setLocalizedText( button, BundleSupport.getLabel( "Reload" ) );  // NOI18N
         button.setOpaque( false );
         button.addActionListener( new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 lastReload = 0;
                 reload();
@@ -600,6 +612,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         return panel;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if( HttpProxySettings.PROXY_SETTINGS.equals( evt.getPropertyName() ) ) {
             removeAll();
@@ -624,21 +637,27 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
             itemList = new ArrayList<FeedItem>( maxItemCount );
         }
 
+        @Override
         public void setDocumentLocator(Locator locator) {
         }
 
+        @Override
         public void startDocument() throws SAXException {
         }
 
+        @Override
         public void endDocument() throws SAXException {
         }
 
+        @Override
         public void startPrefixMapping(String prefix, String uri) throws SAXException {
         }
 
+        @Override
         public void endPrefixMapping(String prefix) throws SAXException {
         }
 
+        @Override
         public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
             if( itemList.size() < maxItemCount ) {
                 if( "item".equals( localName )
@@ -654,13 +673,14 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                     textBuffer = new StringBuffer( 110 );
 
                     if( "link".equals(localName) && null != currentItem && null != atts.getValue("href") )
-                        currentItem.link = atts.getValue("href");
+                        currentItem.link = fixFeedItemUrl(atts.getValue("href"));
                 } else if( "enclosure".equals( localName ) && null != currentItem ) { //NOI18N
                     currentItem.enclosureUrl = atts.getValue( "url" ); //NOI18N
                 }
             }
         }
 
+        @Override
         public void endElement(String uri, String localName, String qName) throws SAXException {
             if( itemList.size() < maxItemCount ) {
                 if( "item".equals( localName )
@@ -676,7 +696,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                         text = null;
 
                     if( "link".equals( localName ) && null == currentItem.link ) { // NOI18N
-                        currentItem.link = text;
+                        currentItem.link = fixFeedItemUrl(text);
                     } else if( "pubDate".equals( localName ) // NOI18N
                             || "published".equals( localName )
                             || "date".equals( localName ) ) { // NOI18N
@@ -691,22 +711,38 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
             }
         }
 
+        @Override
         public void characters(char[] ch, int start, int length) throws SAXException {
             if( null != textBuffer )
                 textBuffer.append( ch, start, length );
         }
 
+        @Override
         public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
         }
 
+        @Override
         public void processingInstruction(String target, String data) throws SAXException {
         }
 
+        @Override
         public void skippedEntity(String name) throws SAXException {
         }
 
         public ArrayList<FeedItem> getItemList() {
             return itemList;
+        }
+
+        protected String fixFeedItemUrl(String url) {
+            if( null != url && (url.contains(".netbeans.org") || url.contains("/netbeans.org")) ) {//NOI18N
+                if( url.contains("?") ) {
+                    url = url + "&";
+                } else {
+                    url = url + "?";
+                }
+                url += "utm_source=netbeans&utm_campaign=welcomepage";
+            }
+            return url;
         }
     }
 

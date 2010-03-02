@@ -111,6 +111,9 @@ public class CloneAction extends ContextAction {
 
     @Override
     protected void performContextAction(Node[] nodes) {
+        if (!Mercurial.getInstance().isAvailable(true)) {
+            return;
+        }
         VCSContext context = HgUtils.getCurrentContext(nodes);
         final File roots[] = HgUtils.getActionRoots(context);
         if (roots == null || roots.length == 0) return;

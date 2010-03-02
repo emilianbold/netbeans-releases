@@ -97,12 +97,12 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     
     private TableSorter         sorter;
     private String[]            columns;
-    private String[]            sortByColumns;
+    private Map<String, Integer>            sortByColumns;
     private CommitPanel commitPanel;
     private Set<File> modifiedFiles = Collections.<File>emptySet();
     
     
-    public CommitTable(JLabel label, String[] columns, String[] sortByColumns) {
+    public CommitTable(JLabel label, String[] columns, Map<String, Integer> sortByColumns) {
         init(label, columns, null);
         this.sortByColumns = sortByColumns;        
         setSortingStatus();            
@@ -214,20 +214,25 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     }
 
     private void setSortingStatus() {
-        for (int i = 0; i < sortByColumns.length; i++) {
-            String sortByColumn = sortByColumns[i];        
+        for (Map.Entry<String, Integer> e : sortByColumns.entrySet()) {
+            String sortByColumn = e.getKey();
             for (int j = 0; j < columns.length; j++) {
                 String column = columns[j];
                 if(column.equals(sortByColumn)) {
-                    sorter.setSortingStatus(j, column.equals(sortByColumn) ? TableSorter.ASCENDING : TableSorter.NOT_SORTED);                       
+                    sorter.setSortingStatus(j, e.getValue());
                     break;
                 }                    
             }                        
         }        
     }
-    
-    public TableSorter getSorter() {
-        return sorter;
+
+    public LinkedHashMap<String, Integer> getSortingState() {
+        Map<Integer, Integer> sorterState = sorter.getSortingState();
+        LinkedHashMap<String, Integer> sortingStatus = new LinkedHashMap<String, Integer>(sorterState.size());
+        for (Map.Entry<Integer, Integer> e : sorterState.entrySet()) {
+            sortingStatus.put(columns[e.getKey()], e.getValue());
+        }
+        return sortingStatus;
     }
     
     @Override

@@ -218,9 +218,6 @@ final class MultiPassCompileWorker extends CompileWorker {
                             continue;
                         }
                     }
-                } finally {
-                    fileManager.handleOption(AptSourceFileManager.ORIGIN_FILE, Collections.singletonList("").iterator()); //NOI18N
-                }
                 JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), previous.aptGenerated);
                 if (mem.isLowMemory()) {
                     dumpSymFiles(fileManager, jt);
@@ -244,6 +241,9 @@ final class MultiPassCompileWorker extends CompileWorker {
                     continue;
                 }
                 jt.analyze(types);
+                } finally {
+                    fileManager.handleOption(AptSourceFileManager.ORIGIN_FILE, Collections.singletonList("").iterator()); //NOI18N
+                }
                 if (mem.isLowMemory()) {
                     dumpSymFiles(fileManager, jt);
                     mem.isLowMemory();

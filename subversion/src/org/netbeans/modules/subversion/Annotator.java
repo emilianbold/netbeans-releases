@@ -405,6 +405,7 @@ public class Annotator {
             actions.add(SystemAction.get(RelocateAction.class));
             actions.add(null);
             actions.add(SystemAction.get(UpdateWithDependenciesAction.class));
+            actions.add(SystemAction.get(UpdateToAction.class));
             actions.add(null);
             actions.add(SystemAction.get(StatusAction.class));
             actions.add(SystemAction.get(DiffAction.class));
@@ -445,6 +446,7 @@ public class Annotator {
                 if (onlyProjects) {
                     actions.add(new SystemActionBridge(SystemAction.get(UpdateWithDependenciesAction.class), loc.getString("CTL_PopupMenuItem_UpdateWithDeps")));
                 }
+                actions.add(SystemActionBridge.createAction(SystemAction.get(UpdateToAction.class), loc.getString("CTL_PopupMenuItem_UpdateTo"), context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context));
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CreateCopyAction.class), loc.getString("CTL_PopupMenuItem_Copy"), context));
