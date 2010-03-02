@@ -415,6 +415,10 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
         this.ioContainer = ioContainer;
 
         terminal = new Terminal(ioContainer, actions, name);
+
+	Task task = new Task.Add(ioContainer, terminal);
+	task.dispatch();
+
         term = terminal.term();
 
         if (! (term instanceof ActiveTerm))
@@ -519,7 +523,9 @@ public final class TerminalInputOutput implements InputOutput, Lookup.Provider {
 
     @Override
     public void select() {
-        terminal.select();
+        // OLD terminal.select();
+	Task task = new Task.Select(ioContainer, terminal);
+	task.dispatch();
     }
 
     @Override
