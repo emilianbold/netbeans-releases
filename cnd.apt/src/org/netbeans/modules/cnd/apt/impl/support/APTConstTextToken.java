@@ -50,8 +50,8 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * @author gorrus
  */
 public final class APTConstTextToken extends APTTokenAbstact implements APTTokenTypes {
-    private final static String[] constText = new String[APTTokenTypes.LAST_CONST_TEXT_TOKEN];
-    private final static CharSequence[] constTextID = new CharSequence[APTTokenTypes.LAST_CONST_TEXT_TOKEN];
+    final static String[] constText = new String[APTTokenTypes.LAST_CONST_TEXT_TOKEN];
+    final static CharSequence[] constTextID = new CharSequence[APTTokenTypes.LAST_CONST_TEXT_TOKEN];
     private static final int SHIFT = 8;
     private static final int TYPE_MASK = ~(1<<SHIFT);
     protected short type = INVALID_TYPE;
