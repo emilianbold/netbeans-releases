@@ -56,6 +56,7 @@ import org.netbeans.modules.subversion.client.cli.commands.CatCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CheckoutCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CommitCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CopyCommand;
+import org.netbeans.modules.subversion.client.cli.commands.ExportCommand;
 import org.netbeans.modules.subversion.client.cli.commands.ListPropertiesCommand;
 import org.netbeans.modules.subversion.client.cli.commands.ImportCommand;
 import org.netbeans.modules.subversion.client.cli.commands.InfoCommand;
@@ -207,6 +208,16 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     public void checkout(SVNUrl url, File file, SVNRevision revision, boolean recurse) throws SVNClientException {
         CheckoutCommand cmd = new CheckoutCommand(url, file, revision, recurse);
+        exec(cmd);
+    }
+
+    public void doExport(SVNUrl url, File destination, SVNRevision revision, boolean force) throws SVNClientException {
+        ExportCommand cmd = new ExportCommand(url, destination, revision, force);
+        exec(cmd);
+    }
+
+    public void doExport(File fileFrom, File fileTo, boolean force) throws SVNClientException {
+        ExportCommand cmd = new ExportCommand(fileFrom, fileTo, force);
         exec(cmd);
     }
 
@@ -827,14 +838,6 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     public ISVNDirEntry getDirEntry(File arg0, SVNRevision arg1) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void doExport(SVNUrl arg0, File arg1, SVNRevision arg2, boolean arg3) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void doExport(File arg0, File arg1, boolean arg2) throws SVNClientException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

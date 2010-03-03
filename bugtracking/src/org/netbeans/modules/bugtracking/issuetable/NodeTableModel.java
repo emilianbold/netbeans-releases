@@ -283,13 +283,6 @@ class NodeTableModel extends AbstractTableModel {
             }
         }
 
-//        int r = propertyColumns[propertyColumns.length - 2];
-//        propertyColumns[propertyColumns.length - 2] = propertyColumns[propertyColumns.length - 4];
-//        propertyColumns[propertyColumns.length - 4] = r;
-//        r = propertyColumns[propertyColumns.length - 1];
-//        propertyColumns[propertyColumns.length - 1] = propertyColumns[propertyColumns.length - 3];
-//        propertyColumns[propertyColumns.length - 3] = r;
-
         fireTableStructureChanged();
     }
 
@@ -686,10 +679,6 @@ class NodeTableModel extends AbstractTableModel {
         firstConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         firstConstraints.weightx = 1.0;
 
-//        JCheckBox first = new JCheckBox("id" /*treeColumnName + ": " + treeColumnDesc*/, true); // NOI18N
-//        first.setEnabled(false);
-//        panel.add(first, firstConstraints);
-
         String boxtext;
         TreeMap<String, Integer> sort = new TreeMap<String, Integer>();
 
@@ -700,9 +689,7 @@ class NodeTableModel extends AbstractTableModel {
                 continue;
             }
             oldvalues[i] = allPropertyColumns[i].getProperty().isVisible();
-            boxtext = getDisplayNameWithMnemonic( allPropertyColumns[i].getProperty() ) 
-                    /*+ ": "                                                       // NOI18N
-                    + allPropertyColumns[i].getProperty().getShortDescription()*/; // NOI18N
+            boxtext = getDisplayNameWithMnemonic( allPropertyColumns[i].getProperty() );
             sort.put(boxtext, Integer.valueOf(i));
         }
 
@@ -751,13 +738,6 @@ class NodeTableModel extends AbstractTableModel {
             }
 
             // Don't allow the user to disable ALL columns
-
-            /*
-            if (nv == 0) {
-                setVisible( allPropertyColumns[0].getProperty(), true );
-                nv = 1;
-            }
-             */
             if (changed) {
                 computeVisiblePorperties(nv + alwaysVisibleCount);
             }
