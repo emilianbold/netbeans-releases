@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.maven.api;
 
+import org.netbeans.modules.maven.MavenProjectPropsImpl;
+
 /**
  * Various constants used across the integration, Maven property names with a meaning in the IDE,
  * plugin groupIds, artifactIds etc.
@@ -167,5 +169,19 @@ public interface Constants {
      * @since NetBeans 6.8
      */
     public static final String HINT_CHECKSTYLE_FORMATTING = "netbeans.checkstyle.format"; //NOI18N
-    
+
+    /**
+     * Name of element in auxiliary configuration of a NetBeans module project
+     * which defines relative path to NB application module project.
+     * Element's namespace is the same as for project properties.
+     * @since 1.6
+     * @see #NS_PROPERTIES
+     */
+    public static final String PROP_PATH_NB_APPLICATION_MODULE = "pathToNbApplicationModule"; //NOI18N
+
+    /**
+     * Namespace for properties in project's auxiliary configuration.
+     * @since 1.6
+     */
+    public static final String NS_PROPERTIES = MavenProjectPropsImpl.NAMESPACE;
 }
