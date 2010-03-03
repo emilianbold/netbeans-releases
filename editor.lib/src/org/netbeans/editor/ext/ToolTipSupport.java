@@ -54,6 +54,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
@@ -165,7 +166,9 @@ public class ToolTipSupport {
     private static final String HTML_PREFIX_LOWERCASE = "<html"; //NOI18N
     private static final String HTML_PREFIX_UPPERCASE = "<HTML"; //NOI18N
 
-    private static final String MOUSE_MOVE_IGNORED_AREA = "mouseMoveIgnoredArea"; //NOI18N
+    private static final String LAST_TOOLTIP_POSITION = "ToolTipSupport.lastToolTipPosition"; //NOI18N
+    private static final String MOUSE_MOVE_IGNORED_AREA = "ToolTipSupport.mouseMoveIgnoredArea"; //NOI18N
+    private static final String MOUSE_LISTENER = "ToolTipSupport.noOpMouseListener"; //NOI18N
 
     private static final Action NO_ACTION = new TextAction("tooltip-no-action") { //NOI18N
         public @Override void actionPerformed(ActionEvent e) {
@@ -178,6 +181,8 @@ public class ToolTipSupport {
             ToolTipSupport.this.setToolTipVisible(false);
         }
     };
+
+    private static final MouseListener NO_OP_MOUSE_LISTENER = new MouseAdapter() {};
 
     private EditorUI extEditorUI;
 
@@ -265,8 +270,17 @@ public class ToolTipSupport {
         this.horizontalAdjustment = horizontalAdjustment;
         this.verticalAdjustment = verticalAdjustment;
 
+        if (this.toolTip.getClientProperty(MOUSE_LISTENER) == null) {
+            this.toolTip.putClientProperty(MOUSE_LISTENER, NO_OP_MOUSE_LISTENER);
+            this.toolTip.addMouseListener(NO_OP_MOUSE_LISTENER);
+        }
+
         if (status >= STATUS_VISIBILITY_ENABLED) {
-            ensureVisibility();
+            if (oldToolTip == this.toolTip && this.toolTip.getClientProperty(LAST_TOOLTIP_POSITION) != null) {
+                ensureVisibility((Point) this.toolTip.getClientProperty(LAST_TOOLTIP_POSITION));
+            } else {
+                ensureVisibility(getLastMouseEventPoint());
+            }
         }
 
         firePropertyChange(PROP_TOOL_TIP, oldToolTip, this.toolTip);
@@ -484,6 +498,7 @@ public class ToolTipSupport {
                 if (toolTip != null) {
                     if (toolTip.isVisible()){
                         toolTip.setVisible(false);
+                        toolTip.putClientProperty(LAST_TOOLTIP_POSITION, null);
                         toolTip.putClientProperty(MOUSE_MOVE_IGNORED_AREA, null);
                         PopupManager pm = extEditorUI.getPopupManager();
                         if (pm!=null){
@@ -607,12 +622,14 @@ public class ToolTipSupport {
         return (evt != null && evt.getSource() == extEditorUI.getGlyphGutter());
     }
 
-    private void ensureVisibility() {
+    private void ensureVisibility(Point toolTipPosition) {
+        LOG.log(Level.FINE, "toolTipPosition={0}", toolTipPosition); //NOI18N
+        
         // Find the visual position in the document
         JTextComponent component = extEditorUI.getComponent();
         if (component != null) {
             // Try to display the tooltip above (or below) the line it corresponds to
-            int pos = component.viewToModel(getLastMouseEventPoint());
+            int pos = component.viewToModel(toolTipPosition);
             Rectangle cursorBounds = null;
             Rectangle mouseMoveIgnoredArea = null;
             
@@ -633,7 +650,7 @@ public class ToolTipSupport {
                 }
             }
             if (cursorBounds == null) { // get mose rect
-                cursorBounds = new Rectangle(getLastMouseEventPoint(), new Dimension(1, 1));
+                cursorBounds = new Rectangle(toolTipPosition, new Dimension(1, 1));
             }
 
             // updateToolTipBounds();
@@ -642,8 +659,10 @@ public class ToolTipSupport {
             if (toolTip != null && toolTip.isVisible()) {
                 toolTip.setVisible(false);
             }
+            LOG.log(Level.FINE, "model-pos={0}, cursorBounds={1}", new Object [] { pos, cursorBounds });
             pm.install(toolTip, cursorBounds, placement, horizontalBounds, horizontalAdjustment, verticalAdjustment);
             if (toolTip != null) {
+                toolTip.putClientProperty(LAST_TOOLTIP_POSITION, toolTipPosition);
                 toolTip.putClientProperty(MOUSE_MOVE_IGNORED_AREA, mouseMoveIgnoredArea);
                 toolTip.setVisible(true);
             }

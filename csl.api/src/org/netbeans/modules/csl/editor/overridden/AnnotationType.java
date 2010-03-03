@@ -38,15 +38,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.modules.csl.api;
+package org.netbeans.modules.csl.editor.overridden;
 
 /**
  *
- * @author Tor Norbye
+ * @author Jan Lahoda
  */
-public enum ElementKind {
-    CONSTRUCTOR, MODULE, PACKAGE, CLASS, METHOD, FIELD, VARIABLE,
-    ATTRIBUTE, CONSTANT, KEYWORD, OTHER, PARAMETER, GLOBAL,
-    PROPERTY, ERROR, DB, CALL, TAG, RULE, FILE, TEST, INTERFACE
+public enum AnnotationType {
+    HAS_IMPLEMENTATION,
+    IS_OVERRIDDEN,
+    IMPLEMENTS,
+    OVERRIDES,
 }
+

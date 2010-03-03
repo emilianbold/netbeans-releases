@@ -44,8 +44,9 @@ package org.netbeans.modules.debugger.jpda.projects;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Rectangle;
+import java.awt.Font;
 import java.awt.event.ActionListener;
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -53,9 +54,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
-import javax.swing.JToolTip;
 import javax.swing.UIManager;
-import javax.swing.border.LineBorder;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 
 import org.openide.util.ImageUtilities;
@@ -101,7 +100,6 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
         if (contentComponent == null) {
             setLayout (new BorderLayout ());
             contentComponent = new javax.swing.JPanel(new BorderLayout ());
-            contentComponent.setPreferredSize(new Dimension(100, 100));
             
             //tree = Models.createView (Models.EMPTY_MODEL);
             add (contentComponent, BorderLayout.CENTER);  //NOI18N
@@ -203,11 +201,31 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
 
     static class ExpandableTooltip extends JPanel {
 
+        private static final String UI_PREFIX = "ToolTip"; // NOI18N
+        
         private JButton expButton;
 
         public ExpandableTooltip(String toolTipText) {
+            Font font = UIManager.getFont(UI_PREFIX + ".font"); // NOI18N
+            Color backColor = UIManager.getColor(UI_PREFIX + ".background"); // NOI18N
+            Color foreColor = UIManager.getColor(UI_PREFIX + ".foreground"); // NOI18N
+
+            if (font != null) {
+                setFont(font);
+            }
+            if (foreColor != null) {
+                setForeground(foreColor);
+            }
+            if (backColor != null) {
+                setBackground(backColor);
+            }
+            setOpaque(true);
+            setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(getForeground()),
+                BorderFactory.createEmptyBorder(0, 3, 0, 3)
+            ));
+
             setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-            setBorder(new LineBorder(Color.black, 1));
             Icon expIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
             expButton = new JButton(expIcon);
             expButton.setBorder(null);
@@ -216,7 +234,6 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
             add(expButton);
             JLabel l = new JLabel(toolTipText);
             add(l);
-            setBackground(new JToolTip().getBackground());
         }
 
         void addExpansionListener(ActionListener treeExpansionListener) {
@@ -224,14 +241,18 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
         }
 
         @Override
-        public void setBounds(Rectangle r) {
-            int h = getPreferredSize().height;
-            if (r.height > h) {
-                int d = r.height - h;
-                r.height = h;
-                r.y += d;
+        public void setSize(int width, int height) {
+            Dimension prefSize = getPreferredSize();
+            if (width >= prefSize.width) {
+                width = prefSize.width;
+            } else { // smaller available width
+                super.setSize(width, 10000); // the height is unimportant
+                prefSize = getPreferredSize(); // re-read new pref width
             }
-            super.setBounds(r);
+            if (height >= prefSize.height) { // enough height
+                height = prefSize.height;
+            }
+            super.setSize(width, height);
         }
 
     }

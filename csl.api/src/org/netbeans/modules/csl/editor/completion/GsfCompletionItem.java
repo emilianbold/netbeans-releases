@@ -128,7 +128,8 @@ public abstract class GsfCompletionItem implements CompletionItem {
             case CONSTRUCTOR: return item.isSmart() ? 400 - SMART_TYPE : 400;
             case PACKAGE:
             case MODULE: return item.isSmart() ? 900 - SMART_TYPE : 900;
-            case CLASS: return item.isSmart() ? 800 - SMART_TYPE : 800;
+            case CLASS:
+            case INTERFACE: return item.isSmart() ? 800 - SMART_TYPE : 800;
             case ATTRIBUTE:
             case RULE: return item.isSmart() ? 482 - SMART_TYPE : 482;
             case TAG: return item.isSmart() ? 480 - SMART_TYPE : 480;
@@ -245,6 +246,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
 //            case FIELD:
 //                return getFieldIcon();
 //            case CLASS:
+//            case INTERFACE:
 //                return getClassIcon();
 //            case MODULE:
 //                return getModuleIcon();
@@ -690,6 +692,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
                     sb.append(METHOD_COLOR);
                      break;
                 case CLASS:
+                case INTERFACE:
                     sb.append(CLASS_COLOR);
                     break;
                 case FIELD:
