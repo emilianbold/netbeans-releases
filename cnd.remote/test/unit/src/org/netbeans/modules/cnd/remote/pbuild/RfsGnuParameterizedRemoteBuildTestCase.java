@@ -66,7 +66,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Vladimir Kvashin
  */
-public class RfsGnuParameterizedRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase {
+public class RfsGnuParameterizedRemoteBuildTestCase extends RemoteBuildTestBase {
 
     public static final String SECTION = "remote.rfs.build.parameterized";
 
@@ -76,6 +76,12 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RfsBaseRemoteBuildTe
 
     public RfsGnuParameterizedRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
+    }
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        setupHost("rfs");
     }
 
     private void doTest(String projectKey, String sync, String buildCommand, Level loggersLevel) throws Exception {
