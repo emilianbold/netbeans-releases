@@ -40,6 +40,12 @@ package org.netbeans.modules.cnd.loaders;
 
 import org.netbeans.modules.cnd.execution.BinaryExecSupport;
 import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMESupport;
+import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
@@ -52,9 +58,12 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CndCookieProvider.class, position = 1000)
 public final class CndCookieProviderImpl extends CndCookieProvider {
 
+    @Override
     public void addCookies(DataObject dao, CookieSet cookies) {
         MultiDataObject mdao = (MultiDataObject) dao;
-        cookies.add(BinaryExecSupport.class, new BinaryExecSupportFactory(mdao));
+        if (!MIMENames.isFortranOrHeaderOrCppOrC(dao.getPrimaryFile().getMIMEType())){
+            cookies.add(BinaryExecSupport.class, new BinaryExecSupportFactory(mdao));
+        }
     }
 
     private static final class BinaryExecSupportFactory implements CookieSet.Factory {

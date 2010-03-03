@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.editor;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
@@ -57,7 +58,9 @@ public final class CppEditorSupportProvider extends CndCookieProvider {
     @Override
     public void addCookies(DataObject dao, CookieSet cookies) {
         MultiDataObject mdao = (MultiDataObject) dao;
-        cookies.add(CppEditorSupport.class, new CppEditorSupportFactory(mdao, cookies));
+        if (!MIMENames.isBinary(dao.getPrimaryFile().getMIMEType())){
+            cookies.add(CppEditorSupport.class, new CppEditorSupportFactory(mdao, cookies));
+        }
     }
 
     private static final class CppEditorSupportFactory implements CookieSet.Factory {
@@ -71,6 +74,7 @@ public final class CppEditorSupportProvider extends CndCookieProvider {
             this.cookies = cookies;
         }
 
+        @Override
         public <T extends Cookie> T createCookie(Class<T> klass) {
             return klass.cast(createCppEditorSupport());
         }

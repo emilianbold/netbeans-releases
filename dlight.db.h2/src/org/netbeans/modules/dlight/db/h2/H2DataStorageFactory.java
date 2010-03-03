@@ -61,7 +61,7 @@ import org.openide.util.lookup.ServiceProviders;
  * @author masha
  */
 @ServiceProviders({
-    @ServiceProvider(service = DataStorageFactory.class)
+    @ServiceProvider(service = DataStorageFactory.class,  position = 10)
 })
 public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
 
