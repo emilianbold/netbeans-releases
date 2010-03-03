@@ -308,6 +308,7 @@ public class Subversion {
                 repositoryFiles,
                 localFolder,
                 atLocalFolderLevel,
+                false,                    // false -> do export
                 scanForNewProjects).waitFinished();
 
         try {

@@ -43,11 +43,17 @@ import java.util.List;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.query.QueryController;
+import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
 /**
@@ -120,6 +126,30 @@ public class KenaiQueryController extends QueryController {
         super.closed();
         // override
         scheduleForRefresh();
+    }
+
+    @Override
+    protected void openIssue(BugzillaIssue issue) {
+        if(issue != null) {
+            if(!checkIssueProduct(issue)) {
+                return;
+            }
+        }
+        super.openIssue(issue);
+    }
+
+    private boolean checkIssueProduct(BugzillaIssue issue) {
+        String issueProduct = issue.getFieldValue(IssueField.PRODUCT);
+        if(!issueProduct.equals(product)) {
+            Confirmation dd = new DialogDescriptor.Confirmation(
+                                NbBundle.getMessage(
+                                    KenaiQueryController.class,
+                                    "MSG_WrongProjectWarning",
+                                    new Object[] {issue.getID(), issueProduct}),
+                                Confirmation.YES_NO_OPTION);
+            return DialogDisplayer.getDefault().notify(dd) ==  Confirmation.YES_OPTION;
+        }
+        return true;
     }
 
     protected void logAutoRefreshEvent(boolean autoRefresh) {
