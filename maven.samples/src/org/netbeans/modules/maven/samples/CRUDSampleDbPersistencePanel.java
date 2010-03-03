@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,16 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.maven.samples;
 
 import java.awt.Component;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.libraries.Library;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
@@ -56,42 +55,44 @@ import org.openide.util.NbBundle;
 /**
  * Panel just asking for basic info.
  */
-public class MavenSamplesWizardPanel implements WizardDescriptor.Panel,
+public class CRUDSampleDbPersistencePanel implements WizardDescriptor.Panel,
         WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
     
     private WizardDescriptor wizardDescriptor;
-    private MavenSamplesPanelVisual component;
-    private final boolean isFinishPanel;
+    private CRUDSampleDbPersistenceVisual component;
     
     /** Creates a new instance of templateWizardPanel */
-    public MavenSamplesWizardPanel(boolean isFinishPanel) {
-        this.isFinishPanel = isFinishPanel;
+    public CRUDSampleDbPersistencePanel() {
     }
     
+    @Override
     public Component getComponent() {
         if (component == null) {
-            component = new MavenSamplesPanelVisual(this);
-            component.setName(NbBundle.getMessage(MavenSamplesWizardPanel.class, "LBL_CreateProjectStep"));
-            component.putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(MavenSamplesWizardPanel.class, "LBL_TXT_NewJ2EESample"));
+            component = new CRUDSampleDbPersistenceVisual(this);
+            component.setName(NbBundle.getMessage(CRUDSampleDbPersistencePanel.class, "LBL_CreatePersistenceStep"));
         }
         return component;
     }
     
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(MavenSamplesWizardPanel.class);
+        return new HelpCtx(CRUDSampleDbPersistencePanel.class);
     }
     
+    @Override
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
     }
     
-    private final Set<ChangeListener> listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -100,7 +101,7 @@ public class MavenSamplesWizardPanel implements WizardDescriptor.Panel,
     protected final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
@@ -108,31 +109,33 @@ public class MavenSamplesWizardPanel implements WizardDescriptor.Panel,
         }
     }
     
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
-        component.read(wizardDescriptor);
-        
-        // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's
-        // title  this name is used in NewProjectWizard to modify the title
-        Object substitute = ((JComponent) component).getClientProperty("NewProjectWizard_Title"); // NOI18N
-        if (substitute != null) {
-            wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); // NOI18N
-        }
     }
     
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
-        d.putProperty("NewProjectWizard_Title", null); // NOI18N
     }
     
+    @Override
     public boolean isFinishPanel() {
-        return isFinishPanel;
+        return true;
     }
     
+    @Override
     public void validate() throws WizardValidationException {
         getComponent();
         component.validate(wizardDescriptor);
+    }
+
+    public String getDerbyLocation() {
+        return component.getDerbyLocation();
+    }
+
+    public Library getSelectedLibrary() {
+        return component.getSelectedLibrary();
     }
     
 }

@@ -83,7 +83,7 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
     
     protected WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new MavenSamplesWizardPanel(false)
+            new MavenSamplesWizardPanel(true)
         };
     }
     
@@ -93,6 +93,7 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
         };
     }
     
+    @Override
     public Set instantiate(ProgressHandle handle) throws IOException {
         handle.start(5);
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
@@ -102,6 +103,7 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
         FileObject template = Templates.getTemplate(wiz);
         FileObject dir = FileUtil.toFileObject(dirF);
         unZipFile(template.getInputStream(), dir);
+        configureProject(dir);
         ProjectManager.getDefault().clearNonProjectCache();
         
         // Always open top dir as a project:
@@ -113,6 +115,7 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
             if (mvn != null) {
                 //see #163529 for reasoning
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         mvn.downloadDependencyAndJavadocSource();
                     }
@@ -146,6 +149,7 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
         return resultSet;
     }
     
+    @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
@@ -174,6 +178,7 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
         wiz.putProperty(WizardProperties.NAME, template.getName());
     }
     
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz.putProperty(WizardProperties.PROJ_DIR, null);
         this.wiz.putProperty(WizardProperties.NAME, null);
@@ -181,19 +186,23 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
         panels = null;
     }
     
+    @Override
     public String name() {
         return NbBundle.getMessage(MavenSamplesWizardIterator.class, "LBL_Order",
                 new Object[] {new Integer(index + 1), new Integer(panels.length)});
     }
     
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
     
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
     
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -201,6 +210,7 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
         index++;
     }
     
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -208,12 +218,15 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
         index--;
     }
     
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
     
     // If nothing unusual changes in the middle of the wizard, simply:
+    @Override
     public final void addChangeListener(ChangeListener l) {}
+    @Override
     public final void removeChangeListener(ChangeListener l) {}
     
     private static void unZipFile(InputStream source, FileObject projectRoot) throws IOException {
@@ -272,8 +285,11 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
         dirFO.getFileSystem().refresh(false);
     }
 
+    @Override
     public Set instantiate() throws IOException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    protected void configureProject(FileObject dir) throws IOException {}
 
 }
