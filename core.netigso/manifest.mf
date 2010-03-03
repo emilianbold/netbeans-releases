@@ -5,5 +5,4 @@ OpenIDE-Module-Provides: org.netbeans.NetigsoFramework
 OpenIDE-Module-Specification-Version: 1.2
 OpenIDE-Module-Needs: org.osgi.framework.launch.FrameworkFactory
 AutoUpdate-Essential-Module: true
-X-Comment: various OSGi headers are set by the MakeOSGi task
 

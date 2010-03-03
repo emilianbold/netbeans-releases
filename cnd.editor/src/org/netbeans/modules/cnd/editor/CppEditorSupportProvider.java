@@ -39,13 +39,12 @@
 
 package org.netbeans.modules.cnd.editor;
 
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
-import org.openide.nodes.CookieSet;
-import org.openide.nodes.Node.Cookie;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.InstanceContent.Convertor;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -55,33 +54,41 @@ import org.openide.util.lookup.ServiceProvider;
 public final class CppEditorSupportProvider extends CndCookieProvider {
 
     @Override
-    public void addCookies(DataObject dao, CookieSet cookies) {
+    public void addLookup(DataObject dao, InstanceContent ic) {
         MultiDataObject mdao = (MultiDataObject) dao;
-        cookies.add(CppEditorSupport.class, new CppEditorSupportFactory(mdao, cookies));
+        if (!MIMENames.isBinary(dao.getPrimaryFile().getMIMEType())){
+            ic.add(CppEditorSupport.class, new CppEditorSupportFactory(mdao, ic));
+        }
     }
 
-    private static final class CppEditorSupportFactory implements CookieSet.Factory {
+    private static class CppEditorSupportFactory implements Convertor<Class<CppEditorSupport>, CppEditorSupport> {
 
         private final MultiDataObject mdao;
-        private final CookieSet cookies;
-        private Reference<CppEditorSupport> cppEditorSupport;
+        private final InstanceContent ic;
 
-        public CppEditorSupportFactory(MultiDataObject mdao, CookieSet cookies) {
+        public CppEditorSupportFactory(MultiDataObject mdao, InstanceContent ic) {
             this.mdao = mdao;
-            this.cookies = cookies;
+            this.ic = ic;
         }
 
-        public <T extends Cookie> T createCookie(Class<T> klass) {
-            return klass.cast(createCppEditorSupport());
+        @Override
+        public CppEditorSupport convert(Class<CppEditorSupport> obj) {
+            return new CppEditorSupport(mdao, ic);
         }
 
-        private synchronized CppEditorSupport createCppEditorSupport() {
-            CppEditorSupport support = (cppEditorSupport == null) ? null : cppEditorSupport.get();
-            if (support == null) {
-                support = new CppEditorSupport(mdao, cookies);
-                cppEditorSupport = new SoftReference<CppEditorSupport>(support);
-            }
-            return support;
+        @Override
+        public Class<? extends CppEditorSupport> type(Class<CppEditorSupport> obj) {
+            return CppEditorSupport.class;
+        }
+
+        @Override
+        public String id(Class<CppEditorSupport> obj) {
+            return CppEditorSupport.class.getName();
+        }
+
+        @Override
+        public String displayName(Class<CppEditorSupport> obj) {
+            return CppEditorSupport.class.getName();
         }
     }
 }

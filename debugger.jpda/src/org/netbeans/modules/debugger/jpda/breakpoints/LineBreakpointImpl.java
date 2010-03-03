@@ -116,6 +116,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.UserQuestionException;
 
 
 
@@ -684,7 +685,16 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         if (dobj == null) return lineNumber;
         final EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
         if (ec == null) return lineNumber;
-        final BaseDocument doc = (BaseDocument)ec.getDocument();
+        final BaseDocument doc;
+        try {
+            doc = (BaseDocument) ec.openDocument();
+        } catch (UserQuestionException uqex) {
+            // ignored
+            return lineNumber;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return lineNumber;
+        }
         final int rowStartOffset = Utilities.getRowStartFromLineOffset(doc, lineNumber - 1);
         JavaSource js = JavaSource.forFileObject(fileObj);
         if (js == null) return lineNumber;

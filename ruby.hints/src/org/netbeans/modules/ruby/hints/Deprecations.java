@@ -82,13 +82,20 @@ public class Deprecations extends RubyAstRule {
         /** Key: {0} is the old name, {1} is the new name */
         final String descriptionKey;
         final String helpUrl;
+        final boolean enableFix;
 
         public Deprecation(String oldName, String newName, String descriptionKey,
                 String helpUrl) {
+            this(oldName, newName, descriptionKey, helpUrl, true);
+        }
+
+        public Deprecation(String oldName, String newName, String descriptionKey,
+                String helpUrl, boolean enableFix) {
             this.oldName = oldName;
             this.newName = newName;
             this.descriptionKey = descriptionKey;
             this.helpUrl = helpUrl;
+            this.enableFix = enableFix;
         }
     }
     

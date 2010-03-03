@@ -97,12 +97,15 @@ public class CheckoutPanel extends JPanel {
         Mnemonics.setLocalizedText(browseRepositoryButton, getString("CTL_Checkout_Browse1")); // NOI18N
         Mnemonics.setLocalizedText(lblRepoRevision, getString("CTL_Checkout_Revision")); // NOI18N
         Mnemonics.setLocalizedText(searchRevisionButton, getString("CTL_Checkout_Search")); // NOI18N
+        Mnemonics.setLocalizedText(browseRevisionButton, getString("CTL_Checkout_Browse")); // NOI18N
         Mnemonics.setLocalizedText(lblEmptyMeansHead, getString("CTL_Checkout_EmptyHint")); // NOI18N
 
         atWorkingDirLevelCheckBox.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        exportCheckBox.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         atWorkingDirLevelCheckBox.setEnabled(false);
 
         Mnemonics.setLocalizedText(atWorkingDirLevelCheckBox, getString("CTL_Checkout_CheckoutContentEmpty")); // NOI18N
+        Mnemonics.setLocalizedText(exportCheckBox, getString("CTL_Checkout_Export")); // NOI18N
 
         lblLocalFolder.setLabelFor(workdirTextField);
 
@@ -137,9 +140,11 @@ public class CheckoutPanel extends JPanel {
                                         .add(layout.createSequentialGroup()
                                                 .add(revisionTextField, DEFAULT_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
                                                 .addPreferredGap(RELATED)
-                                                .add(searchRevisionButton))
+                                                .add(searchRevisionButton)
+                                                .add(browseRevisionButton))
                                         .add(lblEmptyMeansHead)))
                         .add(atWorkingDirLevelCheckBox)
+                        .add(exportCheckBox)
                         .add(lblSpecifyLocalFolders)
                         .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(LEADING)
@@ -166,11 +171,13 @@ public class CheckoutPanel extends JPanel {
                         .add(layout.createParallelGroup(BASELINE)
                                 .add(lblRepoRevision)
                                 .add(revisionTextField)
-                                .add(searchRevisionButton))
+                                .add(searchRevisionButton)
+                                .add(browseRevisionButton))
                         .addPreferredGap(RELATED)
                         .add(lblEmptyMeansHead)
                         .addPreferredGap(UNRELATED)
                         .add(atWorkingDirLevelCheckBox)
+                        .add(exportCheckBox)
                         .add(28)
                         .add(lblSpecifyLocalFolders)
                         .addPreferredGap(RELATED)
@@ -193,7 +200,9 @@ public class CheckoutPanel extends JPanel {
         lblRepoRevision.getAccessibleContext().setAccessibleDescription(getString("ASCD_Repository_Revision"));  //NOI18N
         browseWorkdirButton.getAccessibleContext().setAccessibleDescription(getString("ASCD_Browse_Local_Directory"));   //NOI18N
         searchRevisionButton.getAccessibleContext().setAccessibleDescription(getString("ASCD_Search_Revision_Number"));  //NOI18N
+        browseRevisionButton.getAccessibleContext().setAccessibleDescription(getString("ASCD_Browse_Revision_Number"));  //NOI18N
         atWorkingDirLevelCheckBox.getAccessibleContext().setAccessibleDescription(getString("ASCD_Checkout_only_folder_contents"));  //NOI18N
+        exportCheckBox.getAccessibleContext().setAccessibleDescription(getString("ASCD_Checkout_Export"));  //NOI18N
     }// </editor-fold>
 
     private static String getString(String msgKey) {
@@ -201,6 +210,7 @@ public class CheckoutPanel extends JPanel {
     }
 
     final JCheckBox atWorkingDirLevelCheckBox = new JCheckBox();
+    final JCheckBox exportCheckBox = new JCheckBox();
     final JButton browseRepositoryButton = new JButton();
     final JButton browseWorkdirButton = new JButton();
     private JLabel lblEmptyMeansHead;
@@ -214,6 +224,7 @@ public class CheckoutPanel extends JPanel {
     final JTextField revisionTextField = new JTextField();
     final JCheckBox scanForProjectsCheckBox = new JCheckBox();
     final JButton searchRevisionButton = new JButton();
+    final JButton browseRevisionButton = new JButton();
     final JTextField workdirTextField = new JTextField();
     final JLabel workingCopy = new JLabel();
     

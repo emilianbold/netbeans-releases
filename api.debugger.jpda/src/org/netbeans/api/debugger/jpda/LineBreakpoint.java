@@ -566,7 +566,7 @@ public class LineBreakpoint extends JPDABreakpoint {
                 }
                 fo = newFO;
                 DebuggerManager.getDebuggerManager().addBreakpoint(this);
-                firePropertyChange("groupProperties", null, null);
+                firePropertyChange(PROP_GROUP_PROPERTIES, null, null);
             } else if (DebuggerEngine.class.getName().equals(evt.getPropertyName())) {
                 enginePropertyChange(evt);
             }

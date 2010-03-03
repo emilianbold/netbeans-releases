@@ -222,12 +222,12 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         return retval;
     }
 
-    private static class AlternativeLocationImpl implements AlternativeLocation {
+    public static class AlternativeLocationImpl implements AlternativeLocation {
 
         private ModelElement modelElement;
         private DeclarationLocation declaration;
 
-        AlternativeLocationImpl(ModelElement modelElement, DeclarationLocation declaration) {
+        public AlternativeLocationImpl(ModelElement modelElement, DeclarationLocation declaration) {
             this.modelElement = modelElement;
             this.declaration = declaration;
         }
