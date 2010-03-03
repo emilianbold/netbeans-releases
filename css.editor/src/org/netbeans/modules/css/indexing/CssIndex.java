@@ -305,7 +305,7 @@ public class CssIndex {
         if(sources != null) {
             //process sources (file this one is refered by)
             for(FileReference sourceReference : sources) {
-                FileObject source = sourceReference.target();
+                FileObject source = sourceReference.source();
                 Node node = base.getDependencyGraph().getNode(source);
                 if(base.addReferingNode(node)) {
                     //recurse only if we haven't been there yet
