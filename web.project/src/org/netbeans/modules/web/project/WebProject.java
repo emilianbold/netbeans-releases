@@ -2169,7 +2169,15 @@ public final class WebProject implements Project, AntProjectListener {
         @Override
         public FileObject getWebRoot(FileObject file) {
             WebModule webModule = WebModule.getWebModule(file);
-            return webModule != null ? webModule.getDocumentBase() : null;
+            FileObject webRoot = webModule != null ? webModule.getDocumentBase() : null;
+            if(webRoot != null) {
+                //#181480 - the WebModule.getWebModule() returns a webmodule instance
+                //also for files outside of document base, which is OK.
+                return FileUtil.isParentOf(webRoot, file) ?
+                    webRoot :
+                    null;
+            }
+            return null;
         }
 
     }
