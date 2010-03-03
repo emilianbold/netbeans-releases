@@ -84,13 +84,14 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
     public final static int BROWSER_FOLDERS_SELECTION_ONLY      = 8;
     public final static int BROWSER_SELECT_ANYTHING = BROWSER_FOLDERS_SELECTION_ONLY | BROWSER_FILES_SELECTION_ONLY;
 
-    public final static String BROWSER_HELP_ID_SEARCH_HISTORY   = "org.netbeans.modules.subversion.ui.browser.searchhistory";
-    public final static String BROWSER_HELP_ID_CHECKOUT         = "org.netbeans.modules.subversion.ui.browser.checkout";
-    public final static String BROWSER_HELP_ID_URL_PATTERN      = "org.netbeans.modules.subversion.ui.browser.urlpattern";
-    public final static String BROWSER_HELP_ID_MERGE            = "org.netbeans.modules.subversion.ui.browser.merge";
-    public final static String BROWSER_HELP_ID_SWITCH_TO        = "org.netbeans.modules.subversion.ui.browser.switchto";
-    public final static String BROWSER_HELP_ID_COPY             = "org.netbeans.modules.subversion.ui.browser.copy";
-    public final static String BROWSER_HELP_ID_IMPORT           = "org.netbeans.modules.subversion.ui.browser.import";
+    public final static String BROWSER_HELP_ID_SEARCH_HISTORY   = "org.netbeans.modules.subversion.ui.browser.searchhistory"; // NOI18N
+    public final static String BROWSER_HELP_ID_CHECKOUT         = "org.netbeans.modules.subversion.ui.browser.checkout";      // NOI18N
+    public final static String BROWSER_HELP_ID_URL_PATTERN      = "org.netbeans.modules.subversion.ui.browser.urlpattern";    // NOI18N
+    public final static String BROWSER_HELP_ID_MERGE            = "org.netbeans.modules.subversion.ui.browser.merge";         // NOI18N
+    public final static String BROWSER_HELP_ID_MERGE_TAG        = "org.netbeans.modules.subversion.ui.browser.mergetag";      // NOI18N
+    public final static String BROWSER_HELP_ID_SWITCH_TO        = "org.netbeans.modules.subversion.ui.browser.switchto";      // NOI18N
+    public final static String BROWSER_HELP_ID_COPY             = "org.netbeans.modules.subversion.ui.browser.copy";          // NOI18N
+    public final static String BROWSER_HELP_ID_IMPORT           = "org.netbeans.modules.subversion.ui.browser.import";        // NOI18N
     
     private final int mode;
     
@@ -220,7 +221,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
     
     private boolean show() {
         final DialogDescriptor dialogDescriptor = 
-                new DialogDescriptor(getBrowserPanel(), NbBundle.getMessage(Browser.class, "CTL_Browser_BrowseFolders_Title")); 
+                new DialogDescriptor(getBrowserPanel(), NbBundle.getMessage(Browser.class, "CTL_Browser_BrowseFolders_Title")); // NOI18N
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(helpID));
         dialogDescriptor.setValid(false);
@@ -238,7 +239,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
         });        
         
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Browser.class, "CTL_Browser_BrowseFolders_Title"));
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Browser.class, "CTL_Browser_BrowseFolders_Title")); // NOI18N
         dialog.setVisible(true);                
 
         return DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue());

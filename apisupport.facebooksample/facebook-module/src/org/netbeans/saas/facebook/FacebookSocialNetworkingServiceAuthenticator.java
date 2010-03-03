@@ -55,6 +55,7 @@ import org.netbeans.saas.RestConnection;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -67,46 +68,46 @@ public class FacebookSocialNetworkingServiceAuthenticator {
     private static String _secret;
     private static String sessionKey;
     private static String sessionSecret;
-    private static final String PROP_FILE = FacebookSocialNetworkingServiceAuthenticator.class.getSimpleName().toLowerCase() + ".properties";
+    private static final String PROP_FILE = FacebookSocialNetworkingServiceAuthenticator.class.getSimpleName().toLowerCase() + ".properties"; //NOI18N
 
     static {
         try {
             Properties props = new Properties();
             props.load(FacebookSocialNetworkingServiceAuthenticator.class.getResourceAsStream(PROP_FILE));
-            _apiKey = props.getProperty("api_key");
-            _secret = props.getProperty("secret");
+            _apiKey = props.getProperty("api_key"); //NOI18N
+            _secret = props.getProperty("secret"); //NOI18N
         } catch (IOException ex) {
             Logger.getLogger(FacebookSocialNetworkingServiceAuthenticator.class.getName()).log(Level.SEVERE, null, ex);
         }
         Preferences pref = NbPreferences.forModule(FacebookSocialNetworkingServiceAuthenticator.class);
-        sessionKey = pref.get("sessionKey", null);
-        sessionSecret = pref.get("sessionSecret", null);
+        sessionKey = pref.get("sessionKey", null); //NOI18N
+        sessionSecret = pref.get("sessionSecret", null); //NOI18N
     }
 
     public static String getApiKey() throws IOException {
         if (_apiKey == null || _apiKey.length() == 0) {
-            throw new IOException("Please specify your api key and secret in the " + PROP_FILE + " file.");
+            throw new IOException("Please specify your api key and secret in the " + PROP_FILE + " file."); //NOI18N
         }
         return _apiKey;
     }
 
     public static String getSessionKey() throws IOException {
         if (sessionKey == null || sessionKey.length() == 0) {
-            throw new IOException("Failed to get a valid session key.");
+            throw new IOException("Failed to get a valid session key."); //NOI18N
         }
         return sessionKey;
     }
 
     private static String getSecret() throws IOException {
         if (_secret == null || _secret.length() == 0) {
-            throw new IOException("Please specify your secret in the " + PROP_FILE + " file.");
+            throw new IOException("Please specify your secret in the " + PROP_FILE + " file."); //NOI18N
         }
         return _secret;
     }
 
     private static String getSessionSecret() throws IOException {
         if (sessionSecret == null || sessionSecret.length() == 0) {
-            throw new IOException("Failed to get a valid session secret.");
+            throw new IOException("Failed to get a valid session secret."); //NOI18N
         }
         return sessionSecret;
     }
@@ -115,94 +116,95 @@ public class FacebookSocialNetworkingServiceAuthenticator {
         if (sessionKey == null) {
             String token = getToken();
 
-            String method = "facebook.auth.getSession";
-            String v = "1.0";
+            String method = "facebook.auth.getSession"; //NOI18N
+            String v = "1.0"; //NOI18N
             String apiKey = getApiKey();
             String secret = getSecret();
 
             String sig = sign(secret,
                     new String[][]{
-                        {"method", method},
-                        {"v", v},
-                        {"api_key", apiKey},
-                        {"auth_token", token}
+                        {"method", method}, //NOI18N
+                        {"v", v}, //NOI18N
+                        {"api_key", apiKey}, //NOI18N
+                        {"auth_token", token} //NOI18N
                     });
 
             RestConnection conn = new RestConnection(
-                    "http://api.facebook.com/restserver.php",
+                    "http://api.facebook.com/restserver.php", //NOI18N
                     new String[][]{
-                        {"method", method},
-                        {"api_key", apiKey},
-                        {"sig", sig},
-                        {"v", v},
-                        {"auth_token", token}
+                        {"method", method}, //NOI18N
+                        {"api_key", apiKey}, //NOI18N
+                        {"sig", sig}, //NOI18N
+                        {"v", v}, //NOI18N
+                        {"auth_token", token} //NOI18N
                     });
 
             String result = conn.get().getDataAsString();
 
             try {
-                sessionKey = result.substring(result.indexOf("<session_key>") + 13,
-                        result.indexOf("</session_key>"));
+                sessionKey = result.substring(result.indexOf("<session_key>") + 13, //NOI18N
+                        result.indexOf("</session_key>")); //NOI18N
 
-                sessionSecret = result.substring(result.indexOf("<secret>") + 8,
-                        result.indexOf("</secret>"));
+                sessionSecret = result.substring(result.indexOf("<secret>") + 8, //NOI18N
+                        result.indexOf("</secret>")); //NOI18N
             } catch (Exception ex) {
-                throw new IOException("Failed to get session key and secret: " + result);
+                throw new IOException("Failed to get session key and secret: " + result); //NOI18N
             }
             Preferences pref = NbPreferences.forModule(FacebookSocialNetworkingServiceAuthenticator.class);
-            pref.put("sessionKey", sessionKey);
-            pref.put("sessionSecret", sessionSecret);
+            pref.put("sessionKey", sessionKey); //NOI18N
+            pref.put("sessionSecret", sessionSecret); //NOI18N
         }
     }
 
     public static void logout() {
+        FacebookSocialNetworkingService.logout();
         Preferences pref = NbPreferences.forModule(FacebookSocialNetworkingServiceAuthenticator.class);
-        pref.remove("sessionKey");
-        pref.remove("sessionSecret");
+        pref.remove("sessionKey"); //NOI18N
+        pref.remove("sessionSecret"); //NOI18N
         sessionKey = null;
         sessionSecret = null;
-        FacebookSocialNetworkingService.logout();
     }
 
     private static String getToken() throws IOException {
         String token = null;
-        String method = "facebook.auth.createToken";
-        String v = "1.0";
+        String method = "facebook.auth.createToken"; //NOI18N
+        String v = "1.0"; //NOI18N
         String apiKey = getApiKey();
         String secret = getSecret();
 
         String sig = sign(secret,
                 new String[][]{
-                    {"method", method},
-                    {"api_key", apiKey},
-                    {"v", v}
+                    {"method", method}, //NOI18N
+                    {"api_key", apiKey}, //NOI18N
+                    {"v", v} //NOI18N
                 });
 
         RestConnection conn = new RestConnection(
-                "http://api.facebook.com/restserver.php",
+                "http://api.facebook.com/restserver.php", //NOI18N
                 new String[][]{
-                    {"method", method},
-                    {"api_key", apiKey},
-                    {"sig", sig},
-                    {"v", v}
+                    {"method", method}, //NOI18N
+                    {"api_key", apiKey}, //NOI18N
+                    {"sig", sig}, //NOI18N
+                    {"v", v} //NOI18N
                 });
         String result = conn.get().getDataAsString();
 
         try {
-            token = result.substring(result.indexOf("<auth_createToken_response"),
-                    result.indexOf("</auth_createToken_response>"));
-            token = token.substring(token.indexOf(">") + 1);
+            token = result.substring(result.indexOf("<auth_createToken_response"), //NOI18N
+                    result.indexOf("</auth_createToken_response>")); //NOI18N
+            token = token.substring(token.indexOf(">") + 1); //NOI18N
         } catch (Exception ex) {
-            throw new IOException("Failed to get session token: " + result);
+            throw new IOException("Failed to get session token: " + result); //NOI18N
         }
 
-        String loginUrl = "http://www.facebook.com/login.php?api_key="
-                + apiKey + "&v=" + v + "&auth_token=" + token + "&req_perms=publish_stream";
+        String loginUrl = "http://www.facebook.com/login.php?api_key=" //NOI18N
+                + apiKey + "&v=" + v + "&auth_token=" + token + "&req_perms=publish_stream"; //NOI18N
 
         URLDisplayer.getDefault().showURL(new URL(loginUrl));
 
-        final NotifyDescriptor nd = new NotifyDescriptor.Confirmation("Allow access to your facebook data in your browser and close this dialog.",
-                "FaceBook Privacy Settings",
+        final NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage(FacebookSocialNetworkingServiceAuthenticator.class, "MSG_allow"),
+                NbBundle.getMessage(FacebookSocialNetworkingServiceAuthenticator.class, "TTL_allow"),
                 NotifyDescriptor.DEFAULT_OPTION,
                 NotifyDescriptor.INFORMATION_MESSAGE);
         DialogDisplayer.getDefault().notify(nd);
@@ -228,16 +230,16 @@ public class FacebookSocialNetworkingServiceAuthenticator {
                 }
             }
 
-            String signature = "";
+            String signature = ""; //NOI18N
             Set<Map.Entry<String, String>> entrySet = map.entrySet();
             for (Map.Entry<String, String> entry : entrySet) {
-                signature += entry.getKey() + "=" + entry.getValue();
+                signature += entry.getKey() + "=" + entry.getValue(); //NOI18N
             }
 
             signature += secret;
 
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] sum = md.digest(signature.getBytes("UTF-8"));
+            MessageDigest md = MessageDigest.getInstance("MD5"); //NOI18N
+            byte[] sum = md.digest(signature.getBytes("UTF-8")); //NOI18N
             BigInteger bigInt = new BigInteger(1, sum);
 
             return bigInt.toString(16);

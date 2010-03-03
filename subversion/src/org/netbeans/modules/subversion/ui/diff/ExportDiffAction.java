@@ -289,7 +289,7 @@ public class ExportDiffAction extends ContextAction {
 
     private static File getCommonParent(File [] files) {
         File root = files[0];
-        if (root.isFile()) root = root.getParentFile();
+        if (!root.exists() || root.isFile()) root = root.getParentFile();
         for (int i = 1; i < files.length; i++) {
             root = Utils.getCommonParent(root, files[i]);
             if (root == null) return null;

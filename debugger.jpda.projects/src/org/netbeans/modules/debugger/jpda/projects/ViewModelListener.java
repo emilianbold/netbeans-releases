@@ -152,7 +152,9 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             DebuggerManager.PROP_CURRENT_ENGINE,
             this
         );
-        final boolean haveModels = treeModels.size() > 0 || nodeModels.size() > 0 || tableModels.size() > 0;
+        final boolean haveModels = (treeModels != null && treeModels.size() > 0) ||
+                (nodeModels != null && nodeModels.size() > 0) ||
+                (tableModels != null && tableModels.size() > 0);
         if (haveModels && view.getComponentCount() > 0) {
             JComponent tree = (JComponent) view.getComponent(0);
             if (!(tree instanceof javax.swing.JTabbedPane)) {

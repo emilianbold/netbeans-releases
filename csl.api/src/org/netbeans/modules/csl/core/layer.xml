@@ -14,6 +14,12 @@
         <file name="org-netbeans-modules-csl-editor-semantic-MarkOccurrencesHighlighterFactory.instance"/>
         <file name="org-netbeans-modules-csl-editor-fold-GsfFoldManagerTaskFactory.instance"/>
         <file name="org-netbeans-modules-csl-navigation-CaretListeningFactory.instance"/>
+        <file name="org-netbeans-modules-csl-editor-overridden-ComputeAnnotations$FactoryImpl.instance"/>
+        <folder name="GlyphGutterActions">
+            <file name="org-netbeans-modules-csl-editor-overridden-IsOverriddenAnnotationAction.instance">
+                <attr name="position" intvalue="110"/>
+            </file>
+        </folder>
     </folder>
 
 </filesystem>

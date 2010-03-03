@@ -684,18 +684,21 @@ public class QueryController extends BugtrackingController implements DocumentLi
             public void run() {
                 handle.start();
                 try {
-                    Issue issue = repository.getIssue(id);
-                    if (issue != null) {
-                        issue.open();
-                    } else {
-                        // XXX nice message?
-                    }
+                    openIssue((BugzillaIssue)repository.getIssue(id));
                 } finally {
                     handle.finish();
                 }
             }
         });
         t[0].schedule(0);
+    }
+
+    protected void openIssue(BugzillaIssue issue) {
+        if (issue != null) {
+            issue.open();
+        } else {
+            // XXX nice message?
+        }
     }
 
     private void onWeb() {

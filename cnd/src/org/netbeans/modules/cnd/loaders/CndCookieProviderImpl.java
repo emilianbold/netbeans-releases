@@ -40,41 +40,57 @@ package org.netbeans.modules.cnd.loaders;
 
 import org.netbeans.modules.cnd.execution.BinaryExecSupport;
 import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
-import org.openide.nodes.CookieSet;
-import org.openide.nodes.Node.Cookie;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.InstanceContent.Convertor;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * TODO: Is it needed class? All binaries data objects create binary support in constructors.
+ * Source data objects do not need binary support.
+ * Remove class or migrate binaries data objects from CookieSet to Lookup.
+ *
  * @author Alexey Vladykin
  */
 @ServiceProvider(service = CndCookieProvider.class, position = 1000)
 public final class CndCookieProviderImpl extends CndCookieProvider {
 
-    public void addCookies(DataObject dao, CookieSet cookies) {
+    @Override
+    public void addLookup(DataObject dao, InstanceContent ic) {
         MultiDataObject mdao = (MultiDataObject) dao;
-        cookies.add(BinaryExecSupport.class, new BinaryExecSupportFactory(mdao));
+        if (!MIMENames.isFortranOrHeaderOrCppOrC(dao.getPrimaryFile().getMIMEType())){
+            ic.add(BinaryExecSupport.class, new BinaryExecSupportFactory(mdao));
+        }
     }
 
-    private static final class BinaryExecSupportFactory implements CookieSet.Factory {
+    private static class BinaryExecSupportFactory implements Convertor<Class<BinaryExecSupport>, BinaryExecSupport> {
 
         private final MultiDataObject mdao;
-        private BinaryExecSupport binaryExecSupport;
 
         public BinaryExecSupportFactory(MultiDataObject mdao) {
             this.mdao = mdao;
         }
 
-        public <T extends Cookie> T createCookie(Class<T> klass) {
-            return klass.cast(createBinaryExecSupport());
+        @Override
+        public BinaryExecSupport convert(Class<BinaryExecSupport> obj) {
+            return new BinaryExecSupport(mdao.getPrimaryEntry());
         }
 
-        private synchronized BinaryExecSupport createBinaryExecSupport() {
-            if (binaryExecSupport == null) {
-                binaryExecSupport = new BinaryExecSupport(mdao.getPrimaryEntry());
-            }
-            return binaryExecSupport;
+        @Override
+        public Class<? extends BinaryExecSupport> type(Class<BinaryExecSupport> obj) {
+            return BinaryExecSupport.class;
+        }
+
+        @Override
+        public String id(Class<BinaryExecSupport> obj) {
+            return BinaryExecSupport.class.getName();
+        }
+
+        @Override
+        public String displayName(Class<BinaryExecSupport> obj) {
+            return BinaryExecSupport.class.getName();
         }
     }
 }
