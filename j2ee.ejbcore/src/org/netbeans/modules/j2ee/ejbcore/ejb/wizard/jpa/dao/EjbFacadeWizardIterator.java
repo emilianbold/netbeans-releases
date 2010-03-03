@@ -179,18 +179,12 @@ import org.openide.util.NbBundle;
         if (createPersistenceUnit) {
             PersistenceUnitWizardDescriptor puPanel = (PersistenceUnitWizardDescriptor) (panels[panels.length - 1] instanceof PersistenceUnitWizardDescriptor ? panels[panels.length - 1] : null);
             if(puPanel!=null){
-                try {
                     handle.progress(NbBundle.getMessage(EjbFacadeWizardIterator.class, "MSG_AddPU"), step++);
                     PersistenceUnit punit = Util.buildPersistenceUnitUsingData(project, puPanel.getPersistenceUnitName(), puPanel.getPersistenceConnection()!=null ? puPanel.getPersistenceConnection().getName() : puPanel.getDatasource(), TableGeneration.NONE, puPanel.getSelectedProvider());
                     ProviderUtil.setTableGeneration(punit, puPanel.getTableGeneration(), puPanel.getSelectedProvider());
                     if (punit != null){
-                        ProviderUtil.addPersistenceUnit(punit, project);
+                        Util.addPersistenceUnitToProject( project, punit);
                     }
-                } catch (InvalidPersistenceXmlException ipx) {
-                    // just log for debugging purposes, at this point the user has
-                    // already been warned about an invalid persistence.xml
-                    Logger.getLogger(EjbFacadeWizardIterator.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
-                }
             }
         }
 
