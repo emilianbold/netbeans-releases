@@ -46,9 +46,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,7 +53,6 @@ import org.netbeans.api.project.libraries.Library;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 
 public class MavenCRUDSampleWizardIterator extends MavenSamplesWizardIterator {
@@ -90,80 +86,36 @@ public class MavenCRUDSampleWizardIterator extends MavenSamplesWizardIterator {
 
     @Override
     protected void configureProject(FileObject dir) throws IOException {
-//        try {
-//            // copy persistence libraries
-//            copyPersistenceLibraries(configurationPanel.getSelectedLibrary(), dir);
-//        } catch (URISyntaxException ex) {
-//            throw new IOException(ex);
-//        } catch (IllegalStateException ex) {
-//            throw new IOException(ex);
-//        }
-//
+        try {
+            // copy persistence libraries
+            copyPersistenceLibraries(configurationPanel.getSelectedLibrary(), dir);
+        } catch (URISyntaxException ex) {
+            throw new IOException(ex);
+        } catch (IllegalStateException ex) {
+            throw new IOException(ex);
+        }
+
         // set DB location in Derby module
         configureDerby(configurationPanel.getDerbyLocation(), dir);
 
     }
     
     private void copyPersistenceLibraries(Library l, FileObject projectRoot) throws URISyntaxException, IllegalStateException, FileNotFoundException, IOException {
-        // 1) source libraries
-        List<FileObject> libs = new ArrayList<FileObject>();
-        for (URL url : l.getContent("classpath")) { //NOI18N
-            FileObject fo = URLMapper.findFileObject(url);
-            Logger.getLogger(MavenCRUDSampleWizardIterator.class.getName()).log(Level.FINE, "Libary {0} has jar: {1}", new Object[]{l.getName(), fo});
-            FileObject jarFO = null;
-            if ("jar".equals(url.getProtocol())) {  //NOI18N
-                jarFO = FileUtil.getArchiveFile(fo);
-            }
-            if (jarFO == null) {
-                throw new IllegalStateException("No file object on " + url);
-            }
-            libs.add(jarFO);
-        }
-
-        // 2) target place
-        File targetFile = new File(FileUtil.toFile(projectRoot), "persistence-library" + File.separator + "external");
-        targetFile.mkdirs();
-        FileObject targetFO = FileUtil.toFileObject(targetFile);
-
-        // 3) copying
-        for (FileObject fo : libs) {
-            File f = FileUtil.toFile(fo);
-            Logger.getLogger(MavenCRUDSampleWizardIterator.class.getName()).log(Level.FINE, "Copy {0} in {1} as {2}", new Object[]{fo, targetFO, f.getName()});
-            FileUtil.copyFile(fo, targetFO, fo.getName());
-        }
-
-        // 4) modify project.properties
-        // XXX: better to modify project.xml with native jars names
-        File projectPropertiesFile = new File(FileUtil.toFile(projectRoot), "persistence-library" + File.separator +
-                "nbproject" + File.separator + "project.properties");
-        FileObject projectPropertiesFO = FileUtil.toFileObject(projectPropertiesFile);
-        Properties projectProperties = new Properties();
-        InputStream inputStream = null;
-        try {
-            inputStream = projectPropertiesFO.getInputStream();
-            projectProperties.load(inputStream);
-        } finally {
-            if (inputStream != null) {
-                inputStream.close();
-            }
-        }
-        assert libs.size() == 2 : "Just two libraries are processed but " + libs;
-        projectProperties.setProperty("persistence-library1.jar", "external/" + libs.get(0).getNameExt());
-        projectProperties.setProperty("persistence-library2.jar", "external/" + libs.get(1).getNameExt());
-        OutputStream outputStream = null;
-        try {
-            outputStream = projectPropertiesFO.getOutputStream();
-            projectProperties.store(outputStream, null);
-        } finally {
-            if (outputStream != null) {
-                outputStream.close();
-            }
-        }
-        Logger.getLogger(MavenCRUDSampleWizardIterator.class.getName()).log(Level.FINE, "project.properties file written : {0}", new Object[]{projectProperties});
-
-        // 5)  modify $persistencelibrary.xml to persistence.xml
-        File libraryConfFile = new File(FileUtil.toFile(projectRoot), "CustomerDBAccess" + File.separator +
-                "src" + File.separator + "META-INF" + File.separator + l.getName() + ".xml");
+        // get choosen library
+        String libraryName = l.getName();
+        // rename pom.xml - maven.samples/samples_src/MavenCRUDSample/crudsample/eclipselink.xml
+        File libraryFile = new File(FileUtil.toFile(projectRoot), "crudsample" + File.separator + libraryName + ".xml");
+        Logger.getLogger(MavenCRUDSampleWizardIterator.class.getName()).log(Level.FINE, "pom.xml found at {0}", new Object[]{libraryFile});
+        assert libraryFile.exists() : libraryFile + " exists.";
+        File pomFile = new File(FileUtil.toFile(projectRoot), "crudsample" + File.separator + "pom.xml");
+        libraryFile.renameTo(pomFile);
+        // rename persistence.xml - maven.samples/samples_src/MavenCRUDSample/crudsample/src/main/resources/META-INF/toplink.xml
+        File libraryConfFile = new File(FileUtil.toFile(projectRoot), "crudsample" + File.separator +
+                "src" + File.separator +
+                "main" + File.separator +
+                "resources" + File.separator +
+                "META-INF" + File.separator +
+                l.getName() + ".xml");
         Logger.getLogger(MavenCRUDSampleWizardIterator.class.getName()).log(Level.FINE, "META-INF/peristence.xml found at {0}", new Object[]{libraryConfFile});
         assert libraryConfFile.exists() : libraryConfFile + " exists.";
         File persistenceConfFile = new File(libraryConfFile.getParent(), "persistence.xml"); // NOI18N
@@ -171,31 +123,6 @@ public class MavenCRUDSampleWizardIterator extends MavenSamplesWizardIterator {
     }
 
     private void configureDerby(String loc, FileObject projectRoot) throws FileNotFoundException, IOException {
-//        File projectPropertiesFile = new File(FileUtil.toFile(projectRoot), "derbyclient-library" + File.separator +
-//                "nbproject" + File.separator + "project.properties");
-//        FileObject projectPropertiesFO = FileUtil.toFileObject(projectPropertiesFile);
-//        Properties projectProperties = new Properties();
-//        InputStream inputStream = null;
-//        try {
-//            inputStream = projectPropertiesFO.getInputStream();
-//            projectProperties.load(inputStream);
-//        } finally {
-//            if (inputStream != null) {
-//                inputStream.close();
-//            }
-//        }
-//        projectProperties.setProperty("derbyclient.jar", loc);
-//        OutputStream outputStream = null;
-//        try {
-//            outputStream = projectPropertiesFO.getOutputStream();
-//            projectProperties.store(outputStream, null);
-//        } finally {
-//            if (outputStream != null) {
-//                outputStream.close();
-//            }
-//        }
-//        Logger.getLogger(MavenCRUDSampleWizardIterator.class.getName()).log(Level.FINE, "Derby location in project.properties is {0}", new Object[]{loc});
-
         // maven.samples/samples_src/MavenCRUDSample/crudsample/src/main/resources/org/netbeans/modules/crudsampleapplication/dbaccess/Bundle.properties
         File bundleFile = new File(FileUtil.toFile(projectRoot), "crudsample" + File.separator +
                 "src" + File.separator +
