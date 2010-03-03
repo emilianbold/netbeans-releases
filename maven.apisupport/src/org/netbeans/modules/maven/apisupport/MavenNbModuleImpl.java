@@ -69,11 +69,13 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
@@ -416,7 +418,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                     "org.codehaus.mojo", "nbm-maven-plugin", "netbeansInstallation", "run-ide"); //NOI18N
         }
         if (installProp != null) {
-            File fil = new File(installProp);
+            File fil = FileUtilities.convertStringToFile(installProp);
             if (fil.exists()) {
                 return fil;
             }
@@ -425,39 +427,35 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     }
 
     private File findPlatformFolder() {
-        AuxiliaryConfiguration auxConfig = ProjectUtils.getAuxiliaryConfiguration(project);
-        Element e = auxConfig.getConfigurationFragment(Constants.PROP_PATH_NB_APPLICATION_MODULE, Constants.NS_PROPERTIES, true);
-        if( null == e )
-            return null;
-
-        String strPathToApp = e.getTextContent();
+        AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
+        String strPathToApp = props.get(Constants.PROP_PATH_NB_APPLICATION_MODULE, true); //TODO do we want the props to be shareable or not?
         if( null == strPathToApp || strPathToApp.isEmpty() )
             return null;
 
-        FileObject appModuleDir = null;
-        File dir = new File( strPathToApp );
-        if( !dir.isAbsolute() ) {
-            appModuleDir = project.getProjectDirectory().getFileObject(strPathToApp);
-        } else {
-            appModuleDir = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
-        }
+        FileObject appModuleDir = FileUtilities.convertStringToFileObject(strPathToApp);
         if( appModuleDir == null ) {
             Logger.getLogger(MavenNbModuleImpl.class.getName()).log(Level.INFO, "Invalid path to NB application module: " + strPathToApp); //NOI18N
             return null;
         }
         try {
             Project appProject = ProjectManager.getDefault().findProject(appModuleDir);
+            if (appProject == null) {
+                //not a project directory.
+                return null;
+            }
             NbMavenProject watch = appProject.getLookup().lookup(NbMavenProject.class);
+            if (watch == null) {
+                return null; //not a maven project.
+            }
             String outputDir = PluginPropertyUtils.getPluginProperty(watch.getMavenProject(),
                     "org.codehaus.mojo", "nbm-maven-plugin", "outputDirectory", "cluster-app"); //NOI18N
             if( null == outputDir ) {
                 outputDir = "target"; //NOI18N
-                String brandingToken = PluginPropertyUtils.getPluginProperty(watch.getMavenProject(),
-                    "org.codehaus.mojo", "nbm-maven-plugin", "brandingToken", "cluster-app"); //NOI18N
-                File output = new File( FileUtil.toFile(appProject.getProjectDirectory()), outputDir );
-                return FileUtil.normalizeFile(new File( output, brandingToken ));
             }
-            return FileUtil.normalizeFile(new File(outputDir)); //assume absolute path
+
+            String brandingToken = PluginPropertyUtils.getPluginProperty(watch.getMavenProject(),
+                    "org.codehaus.mojo", "nbm-maven-plugin", "brandingToken", "cluster-app"); //NOI18N
+             return FileUtilities.resolveFilePath(FileUtil.toFile(appProject.getProjectDirectory()), outputDir + File.separator + brandingToken);
         } catch( IOException ex ) {
             Exceptions.printStackTrace(ex);
         }

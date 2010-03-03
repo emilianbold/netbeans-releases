@@ -80,6 +80,7 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.execution.ExecutorTask;
@@ -470,23 +471,10 @@ public class ArchetypeWizardUtils {
     }
 
     private static void storeNbAppModuleDirInfo( Project prj, FileObject nbAppModuleDir ) {
-        final AuxiliaryConfiguration auxConfig = prj.getLookup().lookup(AuxiliaryConfiguration.class);
-        ProjectManager.mutex().writeAccess(new Runnable() {
-            @Override
-            public void run() {
-                Element el = auxConfig.getConfigurationFragment(Constants.PROP_PATH_NB_APPLICATION_MODULE,
-                        MavenProjectPropsImpl.NAMESPACE, true);
-                if (el == null) {
-                    el = XMLUtil.createDocument(Constants.PROP_PATH_NB_APPLICATION_MODULE,
-                            MavenProjectPropsImpl.NAMESPACE, null, null).getDocumentElement();
-                }
+        final AuxiliaryProperties auxConfig = prj.getLookup().lookup(AuxiliaryProperties.class);
                 //TODO the following works fine for current nb app suite archetype,
                 //otherwise calculate real relative path from nbAppModuleDir
-                el.setTextContent("../application"); //NOI18N
-
-                auxConfig.putConfigurationFragment(el, true);
-            }
-        });
+        auxConfig.put(Constants.PROP_PATH_NB_APPLICATION_MODULE, "../application", true); //NOI18N
     }
 
     private static void addEARDeps (File earDir, ProjectInfo ejbVi, ProjectInfo webVi, int progressCounter) {
