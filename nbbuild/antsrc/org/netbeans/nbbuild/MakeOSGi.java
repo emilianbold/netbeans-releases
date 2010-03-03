@@ -143,11 +143,12 @@ public class MakeOSGi extends Task {
         }
         List<File> jars = new ArrayList<File>();
         Map<String,Info> infos = new HashMap<String,Info>();
+        log("Prescanning JARs...");
         for (ResourceCollection rc : modules) {
             Iterator<?> it = rc.iterator();
             while (it.hasNext()) {
                 File jar = ((FileResource) it.next()).getFile();
-                log("Prescanning " + jar);
+                log("Prescanning " + jar, Project.MSG_VERBOSE);
                 try {
                     JarFile jf = new JarFile(jar);
                     try {
