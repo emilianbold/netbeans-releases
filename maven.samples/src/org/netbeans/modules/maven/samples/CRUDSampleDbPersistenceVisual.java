@@ -37,7 +37,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.apisupport.crudsample;
+package org.netbeans.modules.maven.samples;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,16 +61,16 @@ import org.openide.filesystems.FileUtil;
  *
  * @author jirka
  */
-public class SampleAppWizardExtraVisual extends JPanel implements DocumentListener {
+public class CRUDSampleDbPersistenceVisual extends JPanel implements DocumentListener {
     public static final String[] SUPPORTED_PU_LIBRARIES = new String[] {"eclipselink", "toplink"};
     public static final String JAVADB_HOME = "javadb.home";
 
-    private final SampleAppWizardExtraPanel panel;
+    private final CRUDSampleDbPersistencePanel panel;
     private Map<String, Library> dn2lib = new HashMap<String, Library>();
 
     /** Creates new form SampleAppWizardExtraPanelVisual */
     @SuppressWarnings("LeakingThisInConstructor")
-    public SampleAppWizardExtraVisual(SampleAppWizardExtraPanel panel) {
+    public CRUDSampleDbPersistenceVisual(CRUDSampleDbPersistencePanel panel) {
         initComponents();
         this.panel = panel;
         this.cbLibrary.setModel(new DefaultComboBoxModel(getLibrariesDN()));
@@ -95,22 +95,22 @@ public class SampleAppWizardExtraVisual extends JPanel implements DocumentListen
         cbLibrary = new javax.swing.JComboBox();
 
         lDerby.setLabelFor(tfDerby);
-        org.openide.awt.Mnemonics.setLocalizedText(lDerby, org.openide.util.NbBundle.getMessage(SampleAppWizardExtraVisual.class, "SampleAppWizardExtraVisual.lDerby.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lDerby, org.openide.util.NbBundle.getMessage(CRUDSampleDbPersistenceVisual.class, "CRUDSampleDbPersistenceVisual.lDerby.text")); // NOI18N
 
         tfDerby.setColumns(280);
-        tfDerby.setText(org.openide.util.NbBundle.getMessage(SampleAppWizardExtraVisual.class, "SampleAppWizardExtraVisual.tfDerby.text")); // NOI18N
+        tfDerby.setText(org.openide.util.NbBundle.getMessage(CRUDSampleDbPersistenceVisual.class, "CRUDSampleDbPersistenceVisual.tfDerby.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(bDerby, org.openide.util.NbBundle.getMessage(SampleAppWizardExtraVisual.class, "SampleAppWizardExtraVisual.bDerby.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bDerby, org.openide.util.NbBundle.getMessage(CRUDSampleDbPersistenceVisual.class, "CRUDSampleDbPersistenceVisual.bDerby.text")); // NOI18N
         bDerby.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bDerbyActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(lDerbyHint, org.openide.util.NbBundle.getMessage(SampleAppWizardExtraVisual.class, "SampleAppWizardExtraVisual.lDerbyHint.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lDerbyHint, org.openide.util.NbBundle.getMessage(CRUDSampleDbPersistenceVisual.class, "CRUDSampleDbPersistenceVisual.lDerbyHint.text")); // NOI18N
 
         lLibarary.setLabelFor(cbLibrary);
-        org.openide.awt.Mnemonics.setLocalizedText(lLibarary, org.openide.util.NbBundle.getMessage(SampleAppWizardExtraVisual.class, "SampleAppWizardExtraVisual.lLibarary.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lLibarary, org.openide.util.NbBundle.getMessage(CRUDSampleDbPersistenceVisual.class, "CRUDSampleDbPersistenceVisual.lLibarary.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -154,7 +154,7 @@ public class SampleAppWizardExtraVisual extends JPanel implements DocumentListen
     private void bDerbyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bDerbyActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(null);
-        chooser.setDialogTitle(org.openide.util.NbBundle.getMessage(SampleAppPanelVisual.class, "SampleAppPanelVisual.select_derby_location"));
+        chooser.setDialogTitle(org.openide.util.NbBundle.getMessage(CRUDSampleDbPersistenceVisual.class, "CRUDSampleDbPersistenceVisual.select_derby_location"));
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         String path = this.tfDerby.getText();
         if (path.length() > 0) {
@@ -189,13 +189,13 @@ public class SampleAppWizardExtraVisual extends JPanel implements DocumentListen
         if (! validateDerby(tfDerby.getText())) {
             if (wizardDescriptor != null) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    org.openide.util.NbBundle.getMessage(SampleAppWizardExtraVisual.class, "SampleAppWizardExtraVisual.invalid_derby_location"));
+                    org.openide.util.NbBundle.getMessage(CRUDSampleDbPersistenceVisual.class, "CRUDSampleDbPersistenceVisual.invalid_derby_location"));
             }
             return false;
         } else if (! validatePersistenceLibrary()) {
             if (wizardDescriptor != null) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    org.openide.util.NbBundle.getMessage(SampleAppWizardExtraVisual.class, "SampleAppWizardExtraVisual.invalid_persistence_libraries"));
+                    org.openide.util.NbBundle.getMessage(CRUDSampleDbPersistenceVisual.class, "CRUDSampleDbPersistenceVisual.invalid_persistence_libraries"));
             }
             return false;
         } else {
@@ -212,7 +212,7 @@ public class SampleAppWizardExtraVisual extends JPanel implements DocumentListen
         List<String> res = new ArrayList<String>();
         for (String name : SUPPORTED_PU_LIBRARIES) {
             Library l = LibraryManager.getDefault().getLibrary(name);
-            Logger.getLogger(SampleAppWizardExtraVisual.class.getName()).log(Level.FINE, "Name {0} has library {1}", new Object[]{name, l});
+            Logger.getLogger(CRUDSampleDbPersistenceVisual.class.getName()).log(Level.FINE, "Name {0} has library {1}", new Object[]{name, l});
             if (l != null) {
                 res.add(l.getDisplayName());
                 dn2lib.put(l.getDisplayName(), l);
@@ -271,7 +271,7 @@ public class SampleAppWizardExtraVisual extends JPanel implements DocumentListen
 
     Library getSelectedLibrary() {
         assert getLibrary((String) cbLibrary.getSelectedItem()) != null : "Some Persistence Library must found.";
-        Logger.getLogger(SampleAppWizardExtraVisual.class.getName()).log(Level.FINE,
+        Logger.getLogger(CRUDSampleDbPersistenceVisual.class.getName()).log(Level.FINE,
                 "Selected library in {0} is {1}", new Object[]{cbLibrary.getSelectedItem(), getLibrary((String) cbLibrary.getSelectedItem())});
         return getLibrary((String) cbLibrary.getSelectedItem());
     }
