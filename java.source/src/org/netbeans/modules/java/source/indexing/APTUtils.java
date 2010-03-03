@@ -120,7 +120,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         for (Entry e : processorPath.entries()) {
             urls.add(e.getURL());
         }
-        ClassLoader cl = new URLClassLoader(urls.toArray(new URL[0]), Context.class.getClassLoader());
+        ClassLoader cl = new URLClassLoader(urls.toArray(new URL[0]), new BypassOpenIDEUtilClassLoader(Context.class.getClassLoader()));
         Collection<Processor> result = lookupProcessors(cl);
         return result;
     }
@@ -222,5 +222,32 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                 sb.append(',');
         }
         return sb.length() > 0 ? sb.toString() : null;
+    }
+
+    private static final class BypassOpenIDEUtilClassLoader extends ClassLoader {
+        public BypassOpenIDEUtilClassLoader(ClassLoader contextCL) {
+            super(contextCL);
+        }
+
+        @Override
+        protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            //#181432: do not load (NetBeans) classes from the runtime NetBeans (from the application classpath):
+            if (name.startsWith("org.openide.") || name.startsWith("org.netbeans.")) {
+                throw new ClassNotFoundException();
+            }
+
+            Class<?> res = super.loadClass(name, resolve);
+
+            //alternate version (tries to exclude any class that is loaded from the application classpath):
+//            if (res.getProtectionDomain().getCodeSource() != null && res.getProtectionDomain().getCodeSource().getLocation() != null) {
+//                if (!System.getProperty("java.class.path", "").contains(res.getProtectionDomain().getCodeSource().getLocation().getPath())) {
+//                    throw new ClassNotFoundException();
+//                }
+//            }
+            
+            return res;
+        }
+
+        //getResource and getResources of module classloaders do not return resources from parent's META-INF, so no need to override them
     }
 }
