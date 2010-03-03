@@ -66,7 +66,9 @@ public class OSGiMainLookup extends ProxyLookup {
     private static BundleContext context;
 
     private static OSGiMainLookup get() {
-        return (OSGiMainLookup) Lookup.getDefault();
+        Object l = Lookup.getDefault();
+        assert l instanceof OSGiMainLookup : "mismatch between " + OSGiMainLookup.class.getClassLoader() + " vs. " + l.getClass().getClassLoader();
+        return (OSGiMainLookup) l;
     }
 
     public static void initialize(BundleContext _context) throws Exception {

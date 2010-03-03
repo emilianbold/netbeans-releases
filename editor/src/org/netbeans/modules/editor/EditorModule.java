@@ -333,14 +333,14 @@ public class EditorModule extends ModuleInstall {
             keyField.setAccessible(true);
             Object key = keyField.get(JEditorPane.class);
             
-            Class appContextClass = getClass().getClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
+            Class<?> appContextClass = ClassLoader.getSystemClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
             Method getAppContext = appContextClass.getDeclaredMethod("getAppContext"); //NOI18N
             Method get = appContextClass.getDeclaredMethod("get", Object.class); //NOI18N
             Method put = appContextClass.getDeclaredMethod("put", Object.class, Object.class); //NOI18N
             Method remove = appContextClass.getDeclaredMethod("remove", Object.class, Object.class); //NOI18N
             
             Object appContext = getAppContext.invoke(null);
-            Hashtable kitMapping = (Hashtable) get.invoke(appContext, key);
+            Hashtable<?,?> kitMapping = (Hashtable<?,?>) get.invoke(appContext, key);
 
             if (kitMapping instanceof HackMap) {
                 if (((HackMap) kitMapping).getOriginal() != null) {
@@ -424,13 +424,13 @@ public class EditorModule extends ModuleInstall {
                     keyField.setAccessible(true);
                     Object key = keyField.get(JEditorPane.class);
                     
-                    Class appContextClass = getClass().getClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
+                    Class<?> appContextClass = ClassLoader.getSystemClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
                     Method getAppContext = appContextClass.getDeclaredMethod("getAppContext"); //NOI18N
                     Method get = appContextClass.getDeclaredMethod("get", Object.class); //NOI18N
                     Method put = appContextClass.getDeclaredMethod("put", Object.class, Object.class); //NOI18N
 
                     Object appContext = getAppContext.invoke(null);
-                    Hashtable kitTypeMapping = (Hashtable) get.invoke(appContext, key);
+                    Hashtable<?,?> kitTypeMapping = (Hashtable<?,?>) get.invoke(appContext, key);
 
                     if (kitTypeMapping != null) {
                         put.invoke(appContext, key, new DebugHashtable(kitTypeMapping));
@@ -453,12 +453,12 @@ public class EditorModule extends ModuleInstall {
                 keyField.setAccessible(true);
                 Object key = keyField.get(JEditorPane.class);
                 
-                Class appContextClass = getClass().getClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
+                Class<?> appContextClass = ClassLoader.getSystemClassLoader().loadClass("sun.awt.AppContext"); //NOI18N
                 Method getAppContext = appContextClass.getDeclaredMethod("getAppContext"); //NOI18N
                 Method get = appContextClass.getDeclaredMethod("get", Object.class); //NOI18N
 
                 Object appContext = getAppContext.invoke(null);
-                Hashtable kitTypeMapping = (Hashtable) get.invoke(appContext, key);
+                Hashtable<?,?> kitTypeMapping = (Hashtable<?,?>) get.invoke(appContext, key);
 
                 if (kitTypeMapping != null) {
                     return (String) kitTypeMapping.get(type);

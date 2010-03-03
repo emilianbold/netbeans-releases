@@ -166,7 +166,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         case BundleEvent.STOPPED:
 //            System.err.println("stopped " + bundle.getSymbolicName());
             List<Bundle> toUnload = queue.retract(bundle);
-            if (framework.getState() == Bundle.STOPPING) {
+            if (framework != null && framework.getState() == Bundle.STOPPING) {
 //                System.err.println("fwork stopping during " + bundle.getSymbolicName());
 //                ActiveQueue.stop();
                 context.removeBundleListener(this);

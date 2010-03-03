@@ -266,6 +266,19 @@ public class MakeOSGi extends Task {
         return cnb;
     }
 
+    private File findDestFile(String bundleName, String bundleVersion) throws IOException {
+        File destFile = new File(destdir, bundleName + (bundleVersion != null ? "-" + bundleVersion : "") + ".jar");
+        for (File stale : destdir.listFiles()) {
+            if (stale.getName().matches("\\Q" + bundleName + "\\E(-.+)?[.]jar") && !stale.equals(destFile)) {
+                log("Deleting copy under old name: " + stale);
+                if (!stale.delete()) {
+                    throw new IOException("Could not delete: " + stale);
+                }
+            }
+        }
+        return destFile;
+    }
+
     private void process(File module, Map<String,Info> infos) throws Exception {
         JarFile jar = new JarFile(module);
         try {
@@ -273,28 +286,31 @@ public class MakeOSGi extends Task {
             Attributes netbeansAttr = netbeans.getMainAttributes();
             String originalBundleName = netbeansAttr.getValue("Bundle-SymbolicName");
             if (originalBundleName != null) { // #180201
-                String originalBundleVersion = netbeansAttr.getValue("Bundle-Version");
                 Copy copy = new Copy();
                 copy.setProject(getProject());
                 copy.setOwningTarget(getOwningTarget());
                 copy.setFile(module);
-                File bundleFile = new File(destdir, originalBundleName + (originalBundleVersion != null ? "-" + originalBundleVersion : "") + ".jar");
+                File bundleFile = findDestFile(originalBundleName, netbeansAttr.getValue("Bundle-Version"));
                 copy.setTofile(bundleFile);
                 copy.execute();
-                log("Copying " + module + " unmodified into " + bundleFile);
+                log("Copying " + module + " unmodified into " + bundleFile, Project.MSG_VERBOSE);
                 return;
             }
             Manifest osgi = new Manifest();
             Attributes osgiAttr = osgi.getMainAttributes();
             translate(netbeansAttr, osgiAttr, infos);
             String cnb = osgiAttr.getValue("Bundle-SymbolicName");
-            String bundleVersion = osgiAttr.getValue("Bundle-Version");
-            File bundleFile = new File(destdir, cnb + (bundleVersion != null ? "-" + bundleVersion : "") + ".jar");
+            File bundleFile = findDestFile(cnb, osgiAttr.getValue("Bundle-Version"));
             if (bundleFile.lastModified() > module.lastModified()) {
                 log("Skipping " + module + " since " + bundleFile + " is newer", Project.MSG_VERBOSE);
                 return;
             }
             log("Processing " + module + " into " + bundleFile);
+            String dynamicImports = osgiAttr.getValue("DynamicImport-Package");
+            if (dynamicImports != null) {
+                log(cnb + " has imports of no known origin: " + dynamicImports, Project.MSG_WARN);
+                log("(you may need to define org.osgi.framework.system.packages.extra in your OSGi container)");
+            }
             Properties localizedStrings = new Properties();
             String locbundle = netbeansAttr.getValue("OpenIDE-Module-Localizing-Bundle");
             if (locbundle != null) {
@@ -461,8 +477,6 @@ public class MakeOSGi extends Task {
         }
         if (dynamicImports.length() > 0) {
             osgi.putValue("DynamicImport-Package", dynamicImports.toString());
-            log("unrecognized imports " + dynamicImports + " of " + cnb + " have no known origin", Project.MSG_WARN);
-            log("(you may need to define org.osgi.framework.system.packages.extra in your OSGi container)", Project.MSG_WARN);
         }
         // ignore OpenIDE-Module-Package-Dependencies; rarely used, and bytecode analysis is probably more accurate anyway
         // XXX OpenIDE-Module-Java-Dependencies => Bundle-RequiredExecutionEnvironment: JavaSE-1.6
