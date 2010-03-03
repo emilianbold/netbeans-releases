@@ -41,7 +41,6 @@
 package org.netbeans.modules.fcb.win;
 
 import facebook.socialnetworkingservice.facebookresponse.User;
-import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.JPanel;
@@ -52,35 +51,30 @@ import org.openide.windows.WindowManager;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.saas.facebook.FacebookSocialNetworkingService;
 import org.netbeans.saas.facebook.FacebookSocialNetworkingServiceAuthenticator;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 /**
  * Top component which displays something.
  */
-@ConvertAsProperties(dtd = "-//org.netbeans.modules.fcb.win//Fcb//EN",
+@ConvertAsProperties(dtd = "-//org.netbeans.modules.fcb.win//Fcb//EN", //NOI18N
 autostore = false)
 public final class FcbTopComponent extends TopComponent {
 
     private static FcbTopComponent instance;
     /** path to the icon used by the component and its open action */
 //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
-    private static final String PREFERRED_ID = "FcbTopComponent";
-    private InstanceContent ic;
+    private static final String PREFERRED_ID = "FcbTopComponent"; //NOI18N
 
     public FcbTopComponent() {
         try {
             FacebookSocialNetworkingServiceAuthenticator.getSessionKey();
             User u = FacebookSocialNetworkingService.getUserInfo();
             initUserPanel(u);
-        } catch (IOException ioe) {
+        } catch (Exception e) {
             initLoginPanel();
         }
         setName(NbBundle.getMessage(FcbTopComponent.class, "CTL_FcbTopComponent"));
         setToolTipText(NbBundle.getMessage(FcbTopComponent.class, "HINT_FcbTopComponent"));
 //        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
-        ic = new InstanceContent();
-        associateLookup(new AbstractLookup(ic));
     }
 
     /** This method is called from within the constructor to
@@ -91,6 +85,8 @@ public final class FcbTopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        setPreferredSize(new java.awt.Dimension(325, 300));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -99,7 +95,7 @@ public final class FcbTopComponent extends TopComponent {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGap(0, 330, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -131,22 +127,22 @@ public final class FcbTopComponent extends TopComponent {
 
     private void initLoginPanel() {
         JPanel p = new LoginPanel();
-        GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap().addComponent(p, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addContainerGap(302, Short.MAX_VALUE)));
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING).addComponent(p, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
         layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap().addComponent(p, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addContainerGap(231, Short.MAX_VALUE)));
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING).addComponent(p, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
     }
 
     private void initUserPanel(User u) {
         JPanel p = new UserPanel(u);
-        GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap().addComponent(p, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addContainerGap(302, Short.MAX_VALUE)));
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING).addComponent(p, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
         layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap().addComponent(p, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addContainerGap(231, Short.MAX_VALUE)));
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING).addComponent(p, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
     }
 
     /**
@@ -156,15 +152,15 @@ public final class FcbTopComponent extends TopComponent {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(FcbTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); //NOI18N
             return getDefault();
         }
         if (win instanceof FcbTopComponent) {
             return (FcbTopComponent) win;
         }
         Logger.getLogger(FcbTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID
-                + "' ID. That is a potential source of errors and unexpected behavior.");
+                "There seem to be multiple components with the '" + PREFERRED_ID //NOI18N
+                + "' ID. That is a potential source of errors and unexpected behavior."); //NOI18N
         return getDefault();
     }
 
@@ -176,8 +172,6 @@ public final class FcbTopComponent extends TopComponent {
     @Override
     public void componentOpened() {
         // TODO add custom code on component opening
-//        jPanel1 = new LoginPanel();
-//        repaint();
     }
 
     @Override
@@ -188,7 +182,7 @@ public final class FcbTopComponent extends TopComponent {
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
         // http://wiki.apidesign.org/wiki/PropertyFiles
-        p.setProperty("version", "1.0");
+        p.setProperty("version", "1.0"); //NOI18N
         // TODO store your settings
     }
 
@@ -201,7 +195,7 @@ public final class FcbTopComponent extends TopComponent {
     }
 
     private void readPropertiesImpl(java.util.Properties p) {
-        String version = p.getProperty("version");
+        String version = p.getProperty("version"); //NOI18N
         // TODO read your settings according to their version
     }
 
