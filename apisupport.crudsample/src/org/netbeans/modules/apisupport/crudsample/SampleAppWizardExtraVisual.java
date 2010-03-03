@@ -154,7 +154,7 @@ public class SampleAppWizardExtraVisual extends JPanel implements DocumentListen
     private void bDerbyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bDerbyActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(null);
-        chooser.setDialogTitle(org.openide.util.NbBundle.getMessage(SampleAppPanelVisual.class, "SampleAppPanelVisual.select_project_location"));
+        chooser.setDialogTitle(org.openide.util.NbBundle.getMessage(SampleAppPanelVisual.class, "SampleAppPanelVisual.select_derby_location"));
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         String path = this.tfDerby.getText();
         if (path.length() > 0) {
