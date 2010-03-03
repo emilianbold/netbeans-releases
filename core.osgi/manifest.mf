@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+AutoUpdate-Essential-Module: true
+Bundle-Localization: org/netbeans/core/osgi/Bundle
+Bundle-Name: %OpenIDE-Module-Name
+Bundle-SymbolicName: org.netbeans.core.osgi
+Bundle-Activator: org.netbeans.core.osgi.Activator
+Bundle-Version: 1.0
+Import-Package: org.osgi.framework, org.osgi.framework.launch, org.osgi.service.url, org.xml.sax
+
