@@ -63,8 +63,13 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public enum TplTokenId implements TokenId {
 
-    PHP_TAG(null, "php_tag"),
+    TEXT(null, "text"),
     ERROR(null, "error"),
+    PHP_VARIABLE(null, "php_variable"),
+    PIPE("|", "pipe"),
+
+
+    PHP_TAG(null, "php_tag"),
     IDENTIFIER(null, "identifier"),
     TEMPLATE_VAR(null, "template_var"),
     DB_LOOP("db_loop", "keyword"),

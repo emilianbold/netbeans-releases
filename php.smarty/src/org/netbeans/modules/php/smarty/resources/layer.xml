@@ -92,7 +92,7 @@
     <!-- Templates registrations -->
     <folder name="Templates">
         <folder name="Scripting">
-            <file name="SMARTY Template" url="nbresloc:/org/netbeans/modules/php/smarty/resources/TplTemplate.tmpl">
+            <file name="SMARTY Template" url="nbresloc:/org/netbeans/modules/php/smarty/resources/TplTemplate.tpl">
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
                 <attr name="position" intvalue="450"/>

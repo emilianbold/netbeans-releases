@@ -43,8 +43,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.swing.text.Document;
-import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -53,112 +51,63 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.netbeans.modules.php.smarty.editor.lexer.TplTokenId;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
-import org.netbeans.modules.php.smarty.editor.utlis.EmbeddingUtils;
 //import org.netbeans.modules.php.smarty.editor.utils.EditorUtils;
 
 /**
- * Provides code completion for T_HTML tokens
+ * Provides model for TPL files.
  *
  */
 public class TplEmbeddingProvider extends EmbeddingProvider {
 
-    /**
-     * Virtual code for entering between two commands of the same language.
-     */
     public static final String GENERATED_CODE = "@@@"; //NOI18N
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
-        // for sending atributes for FuseLexer (dynamic variables)
-        Document doc = snapshot.getSource().getDocument(true);
-        InputAttributes inputAttributes = new InputAttributes();
-        doc.putProperty(InputAttributes.class, inputAttributes);
-
         TokenHierarchy<CharSequence> th = TokenHierarchy.create(snapshot.getText(), TplTopTokenId.language());
         TokenSequence<TplTopTokenId> sequence = th.tokenSequence(TplTopTokenId.language());
 
-        if (sequence == null) {
-            Logger.getLogger("FuseEmbeddingProvider").warning(
+        //issue #159775 logging >>>
+        if(sequence == null) {
+            Logger.getLogger("TplEmbeddingProvider").warning(
                     "TokenHierarchy.tokenSequence(TplTopTokenId.language()) == null " +
-                    "for static immutable Fuse TokenHierarchy!\nFile = '" +
+                    "for static immutable TPL TokenHierarchy!\nFile = '"+
                     snapshot.getSource().getFileObject().getPath() +
                     "' ;snapshot mimepath='" + snapshot.getMimePath() + "'");
 
             return Collections.emptyList();
         }
+        //<<< end of the logging
 
         sequence.moveStart();
         List<Embedding> embeddings = new ArrayList<Embedding>();
 
         int from = -1;
         int len = 0;
-        int state = -1;
-        boolean changed = false;
         while (sequence.moveNext()) {
             Token t = sequence.token();
-            if (t.id() == TplTopTokenId.T_HTML) {
-                if (from < 0) {
+            if (t.id() == TplTopTokenId.T_SMARTY) {
+                if(from < 0) {
                     from = sequence.offset();
                 }
                 len += t.length();
-                if (state != 1) {
-                    changed = true;
-                    state = 1;
-                }
-            } else if (t.id() == TplTopTokenId.T_SMARTY) {
-//                TokenHierarchy<CharSequence> th2 = TokenHierarchy.create(t.text(), snapshot);
-                TokenHierarchy<CharSequence> th2 = EmbeddingUtils.createTplTokenHierarchy(t.text(), snapshot);
-                TokenSequence<TplTokenId> sequence2 = th2.tokenSequence(TplTokenId.language());
-                int lenghtOfIngored = 0;
-                while (sequence2.moveNext()) {
-                    Token t2 = sequence2.token();
-                    if (t2.id() == TplTokenId.IDENTIFIER) {
-                        if (from < 0) {
-                            from = sequence.offset() + lenghtOfIngored;
-                        }
-                        len += t2.length();
-                        if (state != 2) {
-                            changed = true;
-                            state = 2;
-                        }
-                    } else {
-                        lenghtOfIngored = t2.text().length();
+            } else {
+                if (from < 0) {
+                        from = sequence.offset();
                     }
-                }
-//                sequence2.moveStart();
-            } else if (t.id() == TplTopTokenId.T_SMARTY_OPEN_DELIMITER) {
-                embeddings.add(snapshot.create("<?", "text/x-php5"));
-//                embeddings.add(snapshot.create("; ", "text/x-php5"));
-//                embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
-                state = -1;
-                changed = false;
-            } else if (t.id() == TplTopTokenId.T_SMARTY_CLOSE_DELIMITER) {
-                embeddings.add(snapshot.create("; ?>", "text/x-php5"));
-                state = -1;
-                changed = false;
-            }
-            if (changed) {
-                if (from >= 0) {
-                    if (state == 1) {
-                        embeddings.add(snapshot.create(from, len, "text/x-php5")); //NOI18N
-                        embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
-                    } else {
-//                        embeddings.add(snapshot.create(";?><?php; ", "text/x-php5"));
-                        embeddings.add(snapshot.create(from, len, "text/x-php5")); //NOI18N
-//                        embeddings.add(snapshot.create("; ", "text/x-php5"));
-//                        embeddings.add(snapshot.create(GENERATED_CODE, "text/x-php5"));
-                    }
-                }
+                len += t.length();
+                if(from >= 0) {
+                    embeddings.add(snapshot.create(from, len, "text/html")); //NOI18N
+                    embeddings.add(snapshot.create(GENERATED_CODE, "text/html"));
+                } 
 
                 from = -1;
                 len = 0;
             }
         }
 
-        if (from >= 0) {
-            embeddings.add(snapshot.create(from, len, "text/x-php5")); //NOI18N
+        if(from >= 0) {
+            embeddings.add(snapshot.create(from, len, "text/html")); //NOI18N
         }
 
         if (embeddings.isEmpty()) {
@@ -170,7 +119,7 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
 
     @Override
     public int getPriority() {
-        return 90;
+        return 130;
     }
 
     @Override
@@ -178,9 +127,6 @@ public class TplEmbeddingProvider extends EmbeddingProvider {
         //do nothing
     }
 
-    /**
-     * Factory for creating new FuseEmbeddingProvider.
-     */
     public static final class Factory extends TaskFactory {
 
         @Override

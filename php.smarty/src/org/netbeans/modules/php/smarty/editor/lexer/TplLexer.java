@@ -40,9 +40,7 @@
  */
 package org.netbeans.modules.php.smarty.editor.lexer;
 
-import java.util.ArrayList;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -50,7 +48,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
 /**
- * Lexical analyzer for FUSE tmpl templates
+ * Lexical analyzer for FUSE tpl templates
  * 
  * @author Martin Fousek
  */
@@ -58,127 +56,126 @@ public class TplLexer implements Lexer<TplTokenId> {
 
     private static final int EOF = LexerInput.EOF;
     private final LexerInput input;
-    private boolean afterInclude = false;
     private final TokenFactory<TplTokenId> tokenFactory;
     private final InputAttributes inputAttributes;
+    private int lexerState = INIT;
+    
+    // Internal states
+    private static final int INIT = 0;
+    private static final int ISI_TEXT = 1;          // Plain text
+    private static final int ISI_ERROR = 2;         // Syntax error in TPL syntax
+    private static final int ISA_DOLLAR = 3;        // After dollar char - "$_"
+    private static final int ISI_VAR_PHP = 4;       // PHP-like variables - "$v_" "$va_"
+    private static final int ISP_VAR_PHP_X = 5;     // X-switch after variable name
+    private static final int ISI_VAR_CONFIG = 6;    // CONFIG-like variables - "#var#"
+    private static final int ISA_PIPE = 7;          // Is after pipe - "$var|_"
+    private static final int ISI_PIPE = 8;          // Is in pipe syntax - "$var|da_"
+
 
     /**
      * Create new TplLexer.
-     * @param info from which place it should start again.
+     * @param info from which place it should start again
      */
     public TplLexer(LexerRestartInfo<TplTokenId> info) {
         this.input = info.input();
         this.inputAttributes = info.inputAttributes();
         this.tokenFactory = info.tokenFactory();
-        assert (info.state() == null); // never set to non-null value in state()
+        if (info.state() == null) {
+            this.lexerState = INIT;
+        } else {
+            lexerState = (Integer) info.state();
+        }
     }
 
     public Object state() {
-        return null; // always in default state after token recognition
+        return lexerState; // always in default state after token recognition
+    }
+
+    private final boolean isVariablePart(int character) {
+        return Character.isJavaIdentifierPart(character);
+    }
+
+    private final boolean isWS(int character) {
+        return Character.isWhitespace(character);
     }
 
     public Token<TplTokenId> nextToken() {
-        boolean endingTag = false;
+        int actChar;
+
         while (true) {
-            int c = input.read();
-            switch (c) {
-                case 'I':
-                    switch (c = input.read()) {
-                        case 'F':
-                            return keywordOrIdentifier(TplTokenId.IF, endingTag);
-                        case 'T':
-                            if ((c = input.read()) == 'E' && (c = input.read()) == 'R' && (c = input.read()) == 'A' && (c = input.read()) == 'T' && (c = input.read()) == 'O' && (c = input.read()) == 'R') {
-                                return keywordOrIdentifier(TplTokenId.ITERATOR, endingTag);
-                            }
+            actChar = input.read();
+
+            if (actChar == EOF) {
+                if (input.readLengthEOF() == 1) {
+                    return null; //just EOL is read
+                }
+            }
+            switch (lexerState) {
+                case INIT:
+                    switch (actChar) {
+                        case '$':
+                            lexerState = ISA_DOLLAR;
+                            break;
+                        default:
+                            lexerState = ISI_TEXT;
                             break;
                     }
-                    return finishIdentifier(c);
+                    break;
 
-                case 'D':
-                    switch (c = input.read()) {
-                        case 'B':
-                            if ((c = input.read()) == '_' && (c = input.read()) == 'L' && (c = input.read()) == 'O' && (c = input.read()) == 'O' && (c = input.read()) == 'P') {
-                                return keywordOrIdentifier(TplTokenId.DB_LOOP, endingTag);
-                            }
-                            break;
-                    }
-                    return finishIdentifier(c);
-
-                case 'E':
-                    switch (c = input.read()) {
-                        case 'L':
-                            if ((c = input.read()) == 'S' && (c = input.read()) == 'E') {
-                                return keywordOrIdentifier(TplTokenId.ELSE);
-                            }
-                            break;
-                    }
-                    return finishIdentifier(c);
-
-                case 'L':
-                    if ((c = input.read()) == 'O' && (c = input.read()) == 'O' && (c = input.read()) == 'P') {
-                        return keywordOrIdentifier(TplTokenId.LOOP, endingTag);
-                    }
-                    return finishIdentifier(c);
-
-                case 'W':
-                    if ((c = input.read()) == 'H' && (c = input.read()) == 'I' && (c = input.read()) == 'L' && (c = input.read()) == 'E') {
-                        return keywordOrIdentifier(TplTokenId.WHILE, endingTag);
-                    }
-                    return finishIdentifier(c);
-
-                case '/':
-                    endingTag = true;
-                    continue;
-
-                case EOF:
-                    if (endingTag) {
-                        return finishIdentifier(c);
+                case ISA_DOLLAR:            // '$_'
+                    if (Character.isJavaIdentifierStart(actChar)) {
+                        lexerState = ISI_VAR_PHP;
                     } else {
-                        return null;
+                        input.backup(1);
+                        lexerState = ISI_ERROR;
                     }
+                    break;
+
+                case ISI_VAR_PHP:           // '$a_'
+                    if (isVariablePart(actChar)) {
+                        break;    // Still in tag identifier, eat next char
+                    }
+                    lexerState = ISP_VAR_PHP_X;
+                    if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
+                        input.backup(1);
+                        return token(TplTokenId.PHP_VARIABLE);
+                    }
+                    break;
+
+                case ISP_VAR_PHP_X:         // '$var _', '$var?|'
+                    if( isWS( actChar ) ) {
+                        break;
+                    }
+                    switch( actChar ) {
+                        case '|':           // Pipe after vairable, e.g. $var|
+                            lexerState = ISA_PIPE;
+                            return token(TplTokenId.PIPE);
+                        case EOF:           // End of command, e.g. {$var}, {$var }
+                            lexerState = INIT;
+                            break;
+                        default:
+                            lexerState = ISI_ERROR;
+                            input.backup(1);
+                            break;
+                    }
+                    break;
+
+                case ISI_ERROR:
+                    lexerState = INIT;
+                    return token(TplTokenId.ERROR);
 
                 default:
-                    return finishIdentifier(c); //token(TplTokenId.ERROR);
+                    return token(TplTokenId.TEXT);
             } // end of switch (c)
         } // end of while(true)
-    }
 
-    private Token<TplTokenId> finishIdentifier() {
-        return finishIdentifier(input.read());
-    }
-
-    private Token<TplTokenId> finishIdentifier(int c) {
-        String lexedText = "";
-        while (true) {
-            if (c == EOF || !(Character.isJavaIdentifierPart(c))) {
-                return tokenFactory.createToken(TplTokenId.IDENTIFIER);
-            }
-            lexedText += (char) c;
-            c = input.read();
-        }
-    }
-
-    private Token<TplTokenId> keywordOrIdentifier(TplTokenId keywordId, boolean endingTag) {
-        return keywordOrIdentifier(keywordId, input.read(), endingTag);
-    }
-
-    private Token<TplTokenId> keywordOrIdentifier(TplTokenId keywordId) {
-        return keywordOrIdentifier(keywordId, input.read(), false);
-    }
-
-    private Token<TplTokenId> keywordOrIdentifier(TplTokenId keywordId, int c, boolean endingTag) {
-        // Check whether the given char is non-ident and if so then return keyword
-        if (c == EOF || !(Character.isJavaIdentifierPart(c))) {
-            if (endingTag) {
-                return tokenFactory.createToken(TplTokenId.valueOf(keywordId.name() + "_END"));
-            } else {
-                return tokenFactory.createToken(TplTokenId.valueOf(keywordId.name()));
-            }
-
-        }
-        return finishIdentifier();
+//        return token(TplTokenId.TEXT);
     }
 
     public void release() {
+    }
+
+    private Token<TplTokenId> token(TplTokenId tplTokenId) {
+        return tokenFactory.createToken(tplTokenId);
     }
 }

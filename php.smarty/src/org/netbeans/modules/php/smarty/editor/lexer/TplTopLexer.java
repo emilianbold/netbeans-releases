@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.smarty.editor.lexer;
 
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.php.smarty.SmartyFramework;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -116,7 +117,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                 switch (state) {
                     case INIT:
                     case OUTER:
-                        if (cc == '{') {
+                        if (cc == SmartyFramework.TPL_OPEN_DELIMITER) {
                             state = State.OPEN_DELIMITER;
                             if (textLength > 1) {
                                 input.backup(1);
@@ -134,7 +135,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                         state = State.OUTER;
                         return TplTopTokenId.T_SMARTY_CLOSE_DELIMITER;
                     case IN_SMARTY:
-                        if (cc == '}') {
+                        if (cc == SmartyFramework.TPL_CLOSE_DELIMITER) {
                             if (textLength == 1) {
                                 state = State.OUTER;
                                 return TplTopTokenId.T_SMARTY_CLOSE_DELIMITER;
@@ -152,6 +153,10 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                 c = input.read();
             }
 
+            return getTokenId(state);
+        }
+
+        private TplTopTokenId getTokenId(State state) {
             switch (state) {
                 case IN_SMARTY:
                     return TplTopTokenId.T_SMARTY;

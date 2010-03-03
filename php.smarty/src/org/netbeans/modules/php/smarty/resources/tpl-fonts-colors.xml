@@ -4,12 +4,13 @@
     <fontcolor name="smarty_delimiter" foreColor="bf0101">
         <font style="bold" />
     </fontcolor>
-    <fontcolor name="include" foreColor="218429">
+    <fontcolor name="pipe" foreColor="FF9300">
         <font style="bold" />
     </fontcolor>
-    <fontcolor name="keyword" foreColor="D60000">
-        <font style="bold"/>
-    </fontcolor>
+    <fontcolor name="php_variable" foreColor="6D3206"/>
+    <fontcolor name="error" default="error"/>
+
+
     <fontcolor name="template_var" foreColor="844D18" >
         <font style="bold"/>
     </fontcolor>
