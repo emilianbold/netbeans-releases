@@ -61,7 +61,7 @@ import javax.xml.transform.stream.StreamSource;
  */
 public class RestResponse {
     private ByteArrayOutputStream os;
-    private String contentType = "text/plain";
+    private String contentType = "text/plain"; //NOI18N
     private String contentEncoding;
     private int responseCode;
     private String responseMsg;
@@ -119,7 +119,7 @@ public class RestResponse {
         return lastModified;
     }
     
-    public void write(byte[] bytes, int start, int length) {
+    public final void write(byte[] bytes, int start, int length) {
         os.write(bytes, start, length);
     }
     
@@ -129,7 +129,7 @@ public class RestResponse {
     
     public String getDataAsString() {
         try {
-            return os.toString("UTF-8");
+            return os.toString("UTF-8"); //NOI18N
         } catch (Exception ex) {
             Logger.getLogger(RestConnection.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -52,9 +52,12 @@
     </folder>
     <folder name="Menu">
         <folder name="Window">
-            <file name="FcbAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-fcb-win-FcbAction.instance"/>
-            </file>
+            <folder name="Other">
+                <file name="FcbAction.shadow">
+                    <attr name="position" intvalue="99"/>
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-fcb-win-FcbAction.instance"/>
+                </file>
+            </folder>
         </folder>
     </folder>
     <folder name="Windows2">

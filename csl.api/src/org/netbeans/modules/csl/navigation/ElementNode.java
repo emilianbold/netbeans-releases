@@ -429,7 +429,7 @@ public class ElementNode extends AbstractNode {
                     case FIELD:
                         return 3;
                     case CLASS:
-//                    case INTERFACE:
+                    case INTERFACE:
 //                    case ENUM:
 //                    case ANNOTATION_TYPE:                        
 //                        return 4;

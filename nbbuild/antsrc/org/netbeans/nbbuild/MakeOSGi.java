@@ -156,6 +156,9 @@ public class MakeOSGi extends Task {
                         String cnb = prescan(jf, info);
                         if (cnb == null) {
                             log(jar + " does not appear to be either a module or a bundle; skipping", Project.MSG_WARN);
+                        } else if (cnb.matches("org[.]netbeans[.](core[.]netigso|libs[.](felix|osgi))")) {
+                            log("Skipping " + jar);
+                            continue;
                         } else if (infos.containsKey(cnb)) {
                             log(jar + " appears to not be the only module named " + cnb, Project.MSG_WARN);
                         } else {
@@ -287,14 +290,18 @@ public class MakeOSGi extends Task {
             Attributes netbeansAttr = netbeans.getMainAttributes();
             String originalBundleName = netbeansAttr.getValue("Bundle-SymbolicName");
             if (originalBundleName != null) { // #180201
+                File bundleFile = findDestFile(originalBundleName, netbeansAttr.getValue("Bundle-Version"));
+                if (bundleFile.lastModified() > module.lastModified()) {
+                    log("Skipping " + module + " since " + bundleFile + " is newer", Project.MSG_VERBOSE);
+                    return;
+                }
                 Copy copy = new Copy();
                 copy.setProject(getProject());
                 copy.setOwningTarget(getOwningTarget());
                 copy.setFile(module);
-                File bundleFile = findDestFile(originalBundleName, netbeansAttr.getValue("Bundle-Version"));
                 copy.setTofile(bundleFile);
+                copy.setVerbose(true);
                 copy.execute();
-                log("Copying " + module + " unmodified into " + bundleFile, Project.MSG_VERBOSE);
                 return;
             }
             Manifest osgi = new Manifest();
@@ -395,11 +402,10 @@ public class MakeOSGi extends Task {
             throw new IllegalArgumentException("Does not appear to be a NetBeans module");
         }
         String cnb = codename.replaceFirst("/\\d+$", "");
-        if (cnb.equals("org.netbeans.core.netigso")) {
-            // special handling...
+        osgi.putValue("Bundle-SymbolicName", cnb);
+        if (cnb.equals("org.netbeans.core.osgi")) {
             osgi.putValue("Bundle-Activator", "org.netbeans.core.osgi.Activator");
         }
-        osgi.putValue("Bundle-SymbolicName", cnb);
         Info myInfo = infos.get(cnb);
         String spec = netbeans.getValue("OpenIDE-Module-Specification-Version");
         String bundleVersion = null;
@@ -435,9 +441,11 @@ public class MakeOSGi extends Task {
             }
         }
         StringBuilder requireBundles = new StringBuilder();
-        /* XXX does not work, perhaps because of cyclic dependencies:
-        // do not need to import any API, just need it to be started:
-        requireBundles.append("org.netbeans.core.netigso");
+        /* XXX does not work for unknown reasons:
+        if (!cnb.matches("org[.](core[.]startup[.]|netbeans[.]bootstrap|openide[.](filesystems|modules|util|util[.]lookup))")) {
+            // do not need to import any API, just need it to be started:
+            requireBundles.append("org.netbeans.core.osgi");
+        }
          */
         Set<String> imports = new TreeSet<String>(myInfo.importedPackages);
         hideImports(imports, myInfo);

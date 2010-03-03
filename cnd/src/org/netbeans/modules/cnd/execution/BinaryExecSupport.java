@@ -41,7 +41,6 @@
 package org.netbeans.modules.cnd.execution;
 
 import java.io.IOException;
-import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.openide.loaders.MultiDataObject.Entry;
 import org.openide.nodes.PropertySupport;
@@ -136,12 +135,7 @@ public final class BinaryExecSupport extends ExecutionSupport {
             }
         }
     }
-    private ResourceBundle bundle = null;
-
     private String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(BinaryExecSupport.class);
-        }
-        return bundle.getString(s);
+        return NbBundle.getBundle(BinaryExecSupport.class).getString(s);
     }
 }
