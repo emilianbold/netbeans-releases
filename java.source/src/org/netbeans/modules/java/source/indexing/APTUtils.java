@@ -68,7 +68,9 @@ import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -81,6 +83,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private static final String APT_ENABLED = "aptEnabled"; //NOI18N
     private static final String ANNOTATION_PROCESSORS = "annotationProcessors"; //NOI18N
     private static final Map<FileObject,Reference<APTUtils>> map = new WeakHashMap<FileObject,Reference<APTUtils>>();
+    private static final Lookup HARDCODED_PROCESSORS = Lookups.forPath("Editors/text/x-java/AnnotationProcessors");
     private final FileObject root;
     private final ClassPath processorPath;
     private final AnnotationProcessingQuery.Result aptOptions;
@@ -154,6 +157,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                 LOG.log(Level.FINE, null, t);
             }
         }
+        result.addAll(HARDCODED_PROCESSORS.lookupAll(Processor.class));
         return result;
     }
 
