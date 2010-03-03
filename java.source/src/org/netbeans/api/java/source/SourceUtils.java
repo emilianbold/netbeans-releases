@@ -49,6 +49,8 @@ import java.net.URI;
 import java.net.URL;
 import java.util.*;
 
+import javax.annotation.processing.Completion;
+import javax.annotation.processing.Processor;
 import javax.lang.model.element.*;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -94,6 +96,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.indexing.APTUtils;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
@@ -167,7 +170,58 @@ public class SourceUtils {
         Type.TypeVar bound = ((Type.WildcardType)wildcardType).bound;
         return bound != null ? bound.bound : null;
     }
-    
+
+    /**
+     * Returns a list of completions for an annotation attribute value suggested by
+     * annotation processors.
+     * 
+     * @param info the CompilationInfo used to resolve annotation processors
+     * @param element the element being annotated
+     * @param annotation the (perhaps partial) annotation being applied to the element
+     * @param member the annotation member to return possible completions for
+     * @param userText source code text to be completed
+     * @return suggested completions to the annotation member
+     * 
+     * @since 0.57
+     */
+    public static List<? extends Completion> getAttributeValueCompletions(CompilationInfo info, Element element, AnnotationMirror annotation, ExecutableElement member, String userText) {
+        List<Completion> completions = new LinkedList<Completion>();
+        if (info.getPhase().compareTo(Phase.ELEMENTS_RESOLVED) >= 0) {
+            String fqn = ((TypeElement) annotation.getAnnotationType().asElement()).getQualifiedName().toString();
+            Iterable<? extends Processor> processors = info.impl.getJavacTask().getProcessors();
+            if (processors != null) {
+                for (Processor processor : processors) {
+                    boolean match = false;
+                    for (String sat : processor.getSupportedAnnotationTypes()) {
+                        if ("*".equals(sat)) { //NOI18N
+                            match = true;
+                            break;
+                        } else if (sat.endsWith(".*")) { //NOI18N
+                            sat = sat.substring(0, sat.length() - 1);
+                            if (fqn.startsWith(sat)) {
+                                match = true;
+                                break;
+                            }
+                        } else if (fqn.equals(sat)) {
+                            match = true;
+                            break;
+                        }
+                    }
+                    if (match) {
+                        try {
+                            for (Completion c : processor.getCompletions(element, annotation, member, userText)) {
+                                completions.add(c);
+                            }
+                        } catch (Exception e) {
+                            Logger.getLogger(processor.getClass().getName()).log(Level.INFO, e.getMessage(), e);
+                        }
+                    }
+                }
+            }
+        }
+        return completions;
+    }
+
     /**
      * Returns the type element within which this member or constructor
      * is declared. Does not accept packages

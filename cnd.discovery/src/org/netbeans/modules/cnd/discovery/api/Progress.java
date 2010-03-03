@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.discovery.api;
  * @author Alexander Simon
  */
 public interface Progress {
+    void start();
     void start(int length);
     void increment();
     void done();
