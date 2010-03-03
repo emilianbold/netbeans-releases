@@ -1,0 +1,7 @@
+{
+    String[] queryParamNames = new String[] {"api_key", "session_key", "v" , "method"};
+    String[] queryParamValues = new String[] {api_key, session_key, "1.0", "facebook.auth.expireSession"};
+    String sig = signParams(session_secret, queryParamNames, queryParamValues);
+    String resp = webResource.queryParams(getQueryOrFormParams(queryParamNames, queryParamValues)).queryParam("sig", sig).get(String.class);
+    session_key = null;
+}
