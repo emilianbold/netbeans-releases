@@ -30,7 +30,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="analyzeScroll" alignment="0" pref="393" max="32767" attributes="0"/>
+                  <Component id="scrollPane" alignment="0" pref="393" max="32767" attributes="0"/>
                   <Component id="insertButton" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -43,7 +43,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="insertButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="analyzeScroll" pref="367" max="32767" attributes="0"/>
+              <Component id="scrollPane" pref="367" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -66,9 +66,9 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="insertButtonActionPerformed"/>
       </Events>
     </Component>
-    <Container class="javax.swing.JScrollPane" name="analyzeScroll">
+    <Container class="javax.swing.JScrollPane" name="scrollPane">
       <Properties>
-        <Property name="name" type="java.lang.String" value="analyzeScroll" noResource="true"/>
+        <Property name="name" type="java.lang.String" value="scrollPane" noResource="true"/>
       </Properties>
       <AuxValues>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
@@ -76,14 +76,11 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JList" name="analyzePane">
+        <Component class="javax.swing.JList" name="list">
           <Properties>
             <Property name="selectionMode" type="int" value="0"/>
-            <Property name="name" type="java.lang.String" value="analyzePane" noResource="true"/>
+            <Property name="name" type="java.lang.String" value="list" noResource="true"/>
           </Properties>
-          <Events>
-            <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="analyzePaneValueChanged"/>
-          </Events>
         </Component>
       </SubComponents>
     </Container>

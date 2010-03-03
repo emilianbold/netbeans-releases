@@ -45,6 +45,10 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
@@ -87,14 +91,35 @@ final class AnalyzeStackTopComponent extends TopComponent {
         setToolTipText (NbBundle.getMessage (AnalyzeStackTopComponent.class, "HINT_AnalyzeStackTopComponent"));
         getActionMap ().put (DefaultEditorKit.pasteAction, new AbstractActionImpl ());
         insertButton.getActionMap ().put (DefaultEditorKit.pasteAction, new AbstractActionImpl ());
-        analyzeScroll.getActionMap ().put (DefaultEditorKit.pasteAction, new AbstractActionImpl ());
-        analyzePane.getActionMap ().put (DefaultEditorKit.pasteAction, new AbstractActionImpl ());
+        scrollPane.getActionMap ().put (DefaultEditorKit.pasteAction, new AbstractActionImpl ());
+        list.getActionMap ().put (DefaultEditorKit.pasteAction, new AbstractActionImpl ());
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
-        analyzePane.setCellRenderer (new AnalyserCellRenderer ());
+        list.setCellRenderer (new AnalyserCellRenderer ());
+        list.addKeyListener (new KeyAdapter () {
+
+            @Override
+            public void keyTyped (KeyEvent e) {
+                if (e.getKeyChar () == KeyEvent.VK_ENTER) {
+                    String currentLine = (String) list.getSelectedValue ();
+                    select (currentLine);
+                }
+            }
+        });
+        list.addMouseListener (new MouseAdapter () {
+
+            @Override
+            public void mouseClicked (MouseEvent e) {
+                if (e.getClickCount () != 2) return;
+                int i = list.locationToIndex (e.getPoint ());
+                if (i < 0) return;
+                String currentLine = (String) list.getModel ().getElementAt (i);
+                select (currentLine);
+            }
+        });
     }
 
     private void fillIn (Reader stackTrace) {
-        analyzePane.setModel (new StackListModel (stackTrace));
+        list.setModel (new StackListModel (stackTrace));
     }
 
     /** This method is called from within the constructor to
@@ -106,8 +131,8 @@ final class AnalyzeStackTopComponent extends TopComponent {
     private void initComponents() {
 
         insertButton = new javax.swing.JButton();
-        analyzeScroll = new javax.swing.JScrollPane();
-        analyzePane = new javax.swing.JList();
+        scrollPane = new javax.swing.JScrollPane();
+        list = new javax.swing.JList();
 
         setName("Form"); // NOI18N
 
@@ -119,16 +144,11 @@ final class AnalyzeStackTopComponent extends TopComponent {
             }
         });
 
-        analyzeScroll.setName("analyzeScroll"); // NOI18N
+        scrollPane.setName("scrollPane"); // NOI18N
 
-        analyzePane.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        analyzePane.setName("analyzePane"); // NOI18N
-        analyzePane.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                analyzePaneValueChanged(evt);
-            }
-        });
-        analyzeScroll.setViewportView(analyzePane);
+        list.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        list.setName("list"); // NOI18N
+        scrollPane.setViewportView(list);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -137,7 +157,7 @@ final class AnalyzeStackTopComponent extends TopComponent {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(analyzeScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
+                    .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
                     .add(insertButton))
                 .addContainerGap())
         );
@@ -147,7 +167,7 @@ final class AnalyzeStackTopComponent extends TopComponent {
                 .addContainerGap()
                 .add(insertButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(analyzeScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)
+                .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -169,16 +189,10 @@ final class AnalyzeStackTopComponent extends TopComponent {
         }
     }
 
-    private void analyzePaneValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_analyzePaneValueChanged
-        String line = (String) analyzePane.getSelectedValue ();
-        if (line != null) {
-            select (line);
-        }
-    }//GEN-LAST:event_analyzePaneValueChanged
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JList analyzePane;
-    private javax.swing.JScrollPane analyzeScroll;
     private javax.swing.JButton insertButton;
+    private javax.swing.JList list;
+    private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
 
     /**
