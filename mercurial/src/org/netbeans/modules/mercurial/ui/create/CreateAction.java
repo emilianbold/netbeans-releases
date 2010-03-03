@@ -218,7 +218,7 @@ public class CreateAction extends ContextAction {
             public void run() {
                 String validatedPath = panel.tfRootPath.getText();
                 String errorMessage = null;
-                boolean valid = true;
+                boolean valid = !validatedPath.trim().isEmpty();
                 File dir = new File(validatedPath);
                 // must be an existing directory
                 if (!dir.isDirectory()) {
@@ -251,7 +251,7 @@ public class CreateAction extends ContextAction {
                 }
                 if (valid) {
                     // warning message (validation does not fail) for directories under a project
-                    FileObject fo = FileUtil.toFileObject(dir);
+                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
                     Project p = FileOwnerQuery.getOwner(fo);
                     if (p != null) {
                         FileObject projectDir = p.getProjectDirectory();

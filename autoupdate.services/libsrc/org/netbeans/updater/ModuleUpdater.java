@@ -42,7 +42,6 @@
 package org.netbeans.updater;
 
 import java.io.*;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.jar.*;
 
@@ -533,51 +532,12 @@ public final class ModuleUpdater extends Thread {
         if (isWindows() || executableFiles.isEmpty()) {
             return;
         }
-        // Determine if java.io.File.setExecutable method is supported
-        Method setExecutableMethod = null;
-        try {
-            setExecutableMethod = File.class.getMethod("setExecutable", Boolean.TYPE, Boolean.TYPE);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
 
-        if (setExecutableMethod != null) {
-            for (File executableFile : executableFiles) {
-                try {
-                    setExecutableMethod.invoke(executableFile, true, false);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-            // Find chmod
-            File chmod = new File("/bin/chmod"); // NOI18N
-            if (!chmod.isFile()) {
-                chmod = new File("/usr/bin/chmod"); // NOI18N
-            }
-            if (chmod.isFile()) {
-                Process process = null;
-                try {
-                    List<String> command = new ArrayList<String>();
-                    command.add(chmod.getAbsolutePath());
-                    command.add("a+x");
-                    for (File executableFile : executableFiles) {
-                        command.add(executableFile.getAbsolutePath());
-                    }
-                    process = new ProcessBuilder(command).start();
-                    process.waitFor();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    if (process != null) {
-                        process.destroy();
-                    }
-                }
-
-            }
-        }
+        for (File executableFile : executableFiles) {
+            executableFile.setExecutable(true, false);
+         }
     }
-
+        
     public static boolean trickyDeleteOnWindows(File destFile) {
         assert isWindows() : "Call it only on Windows but system is " + System.getProperty("os.name");
         File f = new File(destFile.getParentFile(), destFile.getName());

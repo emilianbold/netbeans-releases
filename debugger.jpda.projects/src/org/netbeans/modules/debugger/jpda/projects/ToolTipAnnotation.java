@@ -41,13 +41,9 @@
 
 package org.netbeans.modules.debugger.jpda.projects;
 
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,10 +51,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.ElementKind;
-import javax.swing.BoxLayout;
+import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-import javax.swing.border.LineBorder;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -82,7 +77,6 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.editor.PopupManager;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -244,22 +238,24 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         }
 
         if (false && tooltipVariable != null) {
-            ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTipText);
+            final ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTipText);
             final ObjectVariable var = tooltipVariable;
-// XXX:           final MouseEvent lastMouseEvent = Utilities.getEditorUI(ep).getToolTipSupport().getLastMouseEvent();
-            //panel.add(et);
             et.addExpansionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    final JPanel panel = new JPanel();
-                    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-                    panel.setBorder(new LineBorder(Color.black, 1));
-                    panel.add(ToolTipView.getToolTipView(expression, var));
-// XXX:                   Utilities.getEditorUI(ep).getToolTipSupport().mouseMoved(lastMouseEvent);
-                    Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(panel);
+                    et.setBorder(BorderFactory.createLineBorder(et.getForeground()));
+                    et.removeAll();
+                    et.add(ToolTipView.getToolTipView(expression, var));
+                    et.revalidate();
+                    et.repaint();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public @Override void run() {
+                            Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(et);
+                        }
+                    });
                 }
             });
-            Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(et, PopupManager.ScrollBarBounds, PopupManager.AbovePreferred);
+            Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(et);
         } else {
             firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
         }

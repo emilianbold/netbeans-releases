@@ -287,7 +287,7 @@ public class JPDABreakpoint extends Breakpoint {
             if (newEngine != null) {
                 engines.add(newEngine);
             }
-            firePropertyChange("groupProperties", null, null);
+            firePropertyChange(PROP_GROUP_PROPERTIES, null, null);
         }
     }
 

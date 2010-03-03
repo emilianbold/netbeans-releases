@@ -234,7 +234,10 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         }
         Bundle b;
         try {
-            if (m.getAttribute("Bundle-SymbolicName") != null) { // NOI18N
+            String symbolicName = (String) m.getAttribute("Bundle-SymbolicName");
+            if ("org.netbeans.core.osgi".equals(symbolicName)) { // NOI18N
+                // Always ignore.
+            } else if (symbolicName != null) { // NOI18N
                 if (original != null) {
                     LOG.log(Level.FINE, "Updating bundle {0}", original.getLocation());
                     original.update();
