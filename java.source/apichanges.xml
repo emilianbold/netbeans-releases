@@ -105,6 +105,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="SourceUtils.getAttributeValueCompletions">
+             <api name="general"/>
+             <summary>Added SourceUtils.getAttributeValueCompletions method.</summary>
+             <version major="0" minor="57"/>
+             <date day="2" month="3" year="2010"/>
+             <author login="dbalek"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>SourceUtils.getAttributeValueCompletions</code> method, which
+                 returns a list of completions for an annotation attribute value suggested by
+                 annotation processors.
+             </description>
+             <class package="org.netbeans.api.java.source" name="SourceUtils"/>
+             <issue number="111292"/>
+        </change>
         <change id="TreeUtilities.exotic">
              <api name="general"/>
              <summary>Added support for encoding/decoding exotic identifiers to TreeUtilities.</summary>
