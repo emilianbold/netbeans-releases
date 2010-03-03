@@ -43,12 +43,16 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
@@ -72,6 +76,7 @@ import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
+import org.netbeans.modules.websvc.saas.model.jaxb.TemplateType;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
 import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Request;
@@ -97,7 +102,14 @@ class Wadl2JavaHelper {
     private static final String PROP_PACKAGE_NAME="package_name"; //NOI18N
     private static final String PROP_SOURCE_ROOT="source_root"; //NOI18N
 
-    static ClassTree addHttpMethods(WorkingCopy copy, ClassTree innerClass, WadlSaasResource saasResource) {
+    private static final String API_KEY="api_key";
+    private static final String SESSION_KEY="session_key";
+    private static final String APPLICATION_SECRET="application_secret";
+    private static final String SESSION_SECRET="session_secret";
+    
+
+
+    static ClassTree addHttpMethods(WorkingCopy copy, ClassTree innerClass, WadlSaasResource saasResource, Security security) {
         List<WadlSaasMethod> saasMethods = saasResource.getMethods();
         ClassTree modifiedInnerClass = innerClass;
         TreeMaker maker = copy.getTreeMaker();
@@ -118,7 +130,7 @@ class Wadl2JavaHelper {
             if (httpParams.hasFormParams()) {
                 hasFormParams = true;
             }
-            List<MethodTree> httpMethods = Wadl2JavaHelper.createHttpMethods(copy, saasMethod, httpParams);
+            List<MethodTree> httpMethods = Wadl2JavaHelper.createHttpMethods(copy, saasMethod, httpParams, security);
             for (MethodTree httpMethod : httpMethods) {
                 modifiedInnerClass = maker.addClassMember(modifiedInnerClass, httpMethod);
             }
@@ -195,7 +207,7 @@ class Wadl2JavaHelper {
         return modifiedInnerClass;
     }
 
-    static List<MethodTree> createHttpMethods(WorkingCopy copy, WadlSaasMethod saasMethod, HttpParams httpParams) {
+    static List<MethodTree> createHttpMethods(WorkingCopy copy, WadlSaasMethod saasMethod, HttpParams httpParams, Security security) {
         List<MethodTree> httpMethods = new ArrayList<MethodTree>();
         String methodName = saasMethod.getName();
         Method wadlMethod = saasMethod.getWadlMethod();
@@ -219,7 +231,7 @@ class Wadl2JavaHelper {
                 if (mediaType != null) {
                     for (HttpMimeType mimeType : HttpMimeType.values()) {
                         if (mediaType.equals(mimeType.getMimeType())) {
-                            MethodTree method = createHttpGETMethod(copy, saasMethod, mimeType, multipleMimeTypes, httpParams);
+                            MethodTree method = createHttpGETMethod(copy, saasMethod, mimeType, multipleMimeTypes, httpParams, security);
                             if (method != null) {
                                 httpMethods.add(method);
                             }
@@ -230,7 +242,7 @@ class Wadl2JavaHelper {
                 }
             }
             if (!found) {
-                httpMethods.add(createHttpGETMethod(copy, saasMethod, null, false, httpParams));
+                httpMethods.add(createHttpGETMethod(copy, saasMethod, null, false, httpParams, security));
             }
 
         } else if ( RestConstants.PUT_ANNOTATION.equals(methodType) ||
@@ -253,7 +265,7 @@ class Wadl2JavaHelper {
                 if (mediaType != null) {
                     for (HttpMimeType mimeType : HttpMimeType.values()) {
                         if (mediaType.equals(mimeType.getMimeType())) {
-                            MethodTree method = createHttpPOSTMethod(copy, saasMethod, mimeType, multipleMimeTypes, httpParams);
+                            MethodTree method = createHttpPOSTMethod(copy, saasMethod, mimeType, multipleMimeTypes, httpParams, security);
                             if (method != null) {
                                 httpMethods.add(method);
                             }
@@ -264,13 +276,13 @@ class Wadl2JavaHelper {
                 }
             }
             if (!found) {
-                httpMethods.add(createHttpPOSTMethod(copy, saasMethod, null, false, httpParams));
+                httpMethods.add(createHttpPOSTMethod(copy, saasMethod, null, false, httpParams, security));
             }
         }
         return httpMethods;
     }
 
-    static MethodTree createHttpGETMethod(WorkingCopy copy, WadlSaasMethod saasMethod, HttpMimeType mimeType, boolean multipleMimeTypes, HttpParams httpParams) {
+    static MethodTree createHttpGETMethod(WorkingCopy copy, WadlSaasMethod saasMethod, HttpMimeType mimeType, boolean multipleMimeTypes, HttpParams httpParams, Security security) {
         String methodName = saasMethod.getName() + (multipleMimeTypes ? "_"+mimeType.name() : ""); //NOI18N
 
         TreeMaker maker = copy.getTreeMaker();
@@ -292,7 +304,7 @@ class Wadl2JavaHelper {
         StringBuffer commentBuffer = new StringBuffer("@param responseType Class representing the response\n"); //NOI18N
 
         if (httpParams.hasQueryParams() || httpParams.hasHeaderParams()) {
-            addQueryAndHeaderParams(maker, httpParams, paramList, queryP, queryParamPart, commentBuffer);
+            addQueryAndHeaderParams(maker, httpParams, security, paramList, queryP, queryParamPart, commentBuffer);
         }
 
         commentBuffer.append("@return response object (instance of responseType class)"); //NOI18N
@@ -303,7 +315,14 @@ class Wadl2JavaHelper {
                     "   return webResource"+queryP+".get("+bodyParam+");" :  //NOI18N
                     "   return webResource"+queryP+".accept("+mimeType.getMediaType()+").get("+bodyParam+");") +  //NOI18N
             "}"; //NOI18N
+        
+        List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
         ExpressionTree throwsTree = JavaSourceHelper.createTypeTree(copy, "com.sun.jersey.api.client.UniformInterfaceException"); //NOI18N
+        throwsList.add(throwsTree);
+        if (Security.Authentication.SESSION_KEY == security.getAuthentication()) {
+            ExpressionTree ioExceptionTree = JavaSourceHelper.createTypeTree(copy, "java.io.IOException"); //NOI18N
+            throwsList.add(ioExceptionTree);
+        }
 
         MethodTree method = maker.Method (
                             methodModifier,
@@ -311,7 +330,7 @@ class Wadl2JavaHelper {
                             responseTree,
                             typeParams,
                             paramList,
-                            Collections.singletonList(throwsTree), //throws
+                            throwsList,
                             body,
                             null);
         if (method != null) {
@@ -321,7 +340,7 @@ class Wadl2JavaHelper {
         return method;
     }
 
-    static MethodTree createHttpPOSTMethod(WorkingCopy copy, WadlSaasMethod saasMethod, HttpMimeType requestMimeType, boolean multipleMimeTypes, HttpParams httpParams) {
+    static MethodTree createHttpPOSTMethod(WorkingCopy copy, WadlSaasMethod saasMethod, HttpMimeType requestMimeType, boolean multipleMimeTypes, HttpParams httpParams, Security security) {
         String methodName = saasMethod.getName() + (multipleMimeTypes ? "_"+requestMimeType.name() : ""); //NOI18N
         String methodPrefix = saasMethod.getWadlMethod().getName().toLowerCase();
 
@@ -357,7 +376,7 @@ class Wadl2JavaHelper {
         StringBuffer commentBuffer = new StringBuffer("@param responseType Class representing the response\n"); //NOI18N
 
         if (httpParams.hasFormParams() || httpParams.hasQueryParams() || httpParams.hasHeaderParams()) {
-            addQueryAndHeaderParams(maker, httpParams, paramList, queryP, queryParamPart, commentBuffer);
+            addQueryAndHeaderParams(maker, httpParams, security, paramList, queryP, queryParamPart, commentBuffer);
         }
 
         if (requestMimeType != null) {
@@ -373,7 +392,13 @@ class Wadl2JavaHelper {
 
         commentBuffer.append("@return response object (instance of responseType class)"); //NOI18N
 
+        List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
         ExpressionTree throwsTree = JavaSourceHelper.createTypeTree(copy, "com.sun.jersey.api.client.UniformInterfaceException"); //NOI18N
+        throwsList.add(throwsTree);
+        if (Security.Authentication.SESSION_KEY == security.getAuthentication()) {
+            ExpressionTree ioExceptionTree = JavaSourceHelper.createTypeTree(copy, "java.io.IOException"); //NOI18N
+            throwsList.add(ioExceptionTree);
+        }
 
         String body =
             "{"+queryParamPart + //NOI18N
@@ -388,7 +413,7 @@ class Wadl2JavaHelper {
                 responseTree,
                 typeParams,
                 paramList,
-                Collections.singletonList(throwsTree),
+                throwsList,
                 body,
                 null); //NOI18N
         if (method != null) {
@@ -398,35 +423,59 @@ class Wadl2JavaHelper {
         return method;
     }
 
-    private static void addQueryAndHeaderParams(TreeMaker maker, HttpParams httpParams,  List<VariableTree> paramList, StringBuffer queryP, StringBuffer queryParamPart, StringBuffer commentBuffer) {
+    private static void addQueryAndHeaderParams(TreeMaker maker, HttpParams httpParams, Security security,  List<VariableTree> paramList, StringBuffer queryP, StringBuffer queryParamPart, StringBuffer commentBuffer) {
         ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+        SecurityParams securityParams = security.getSecurityParams();
         // adding form params
         if (httpParams.hasFormParams()) {
             for (String formParam : httpParams.getFormParams()) {
-                String javaIdentifier = makeJavaIdentifier(formParam);
-                VariableTree paramTree = maker.Variable(paramModifier, javaIdentifier, maker.Identifier("String"), null); //NOI18N
-                paramList.add(paramTree);
-                commentBuffer.append("@param "+javaIdentifier+" form parameter\n"); //NOI18N
+                if (securityParams == null ||
+                       (!isSecurityParam(formParam, securityParams) && !isSignatureParam(formParam, securityParams))) {
+                    String javaIdentifier = makeJavaIdentifier(formParam);
+                    VariableTree paramTree = maker.Variable(paramModifier, javaIdentifier, maker.Identifier("String"), null); //NOI18N
+                    paramList.add(paramTree);
+                    commentBuffer.append("@param "+javaIdentifier+" form parameter\n"); //NOI18N
+                }
             }
-            Pair<String> paramPair = getParamList(httpParams.getFormParams(), httpParams.getFixedFormParams());
+            Pair<String> paramPair = null;
+            if (securityParams != null) {
+                paramPair = getParamList(httpParams.getFormParams(), httpParams.getFixedFormParams(), securityParams);
+            } else {
+                paramPair = getParamList(httpParams.getFormParams(), httpParams.getFixedFormParams());
+            }
             queryParamPart.append("String[] formParamNames = new String[] {"+paramPair.getKey()+"}"); //NOI18N
             queryParamPart.append("String[] formParamValues = new String[] {"+paramPair.getValue()+"}"); //NOI18N
-            //queryP.append(".queryParams(getQParams(paramNames, paramValues))"); //NOI18N
         }
         // add query params
         if (httpParams.hasQueryParams()) {
             if (httpParams.hasRequiredQueryParams()) {
+                // adding method parameters
                 for (String requiredParam : httpParams.getRequiredQueryParams()) {
-                    String javaIdentifier = makeJavaIdentifier(requiredParam);
-                    VariableTree paramTree = maker.Variable(paramModifier, javaIdentifier, maker.Identifier("String"), null); //NOI18N
-                    paramList.add(paramTree);
-                    commentBuffer.append("@param "+javaIdentifier+" query parameter[REQUIRED]\n"); //NOI18N
+                   if (securityParams == null ||
+                           (!isSecurityParam(requiredParam, securityParams) && !isSignatureParam(requiredParam, securityParams))) {
+                        String javaIdentifier = makeJavaIdentifier(requiredParam);
+                        VariableTree paramTree = maker.Variable(paramModifier, javaIdentifier, maker.Identifier("String"), null); //NOI18N
+                        paramList.add(paramTree);
+                        commentBuffer.append("@param "+javaIdentifier+" query parameter[REQUIRED]\n"); //NOI18N
+                    }
                 }
+                // adding query params calculation to metthod body
                 if (httpParams.hasMultipleParamsInList()) {
-                    Pair<String> paramPair = getParamList(httpParams.getRequiredQueryParams(), httpParams.getFixedQueryParams());
+                    Pair<String> paramPair = null;
+                    if (securityParams != null) {
+                        paramPair = getParamList(httpParams.getRequiredQueryParams(), httpParams.getFixedQueryParams(), securityParams);
+                    } else {
+                        paramPair = getParamList(httpParams.getRequiredQueryParams(), httpParams.getFixedQueryParams());
+                    }
                     queryParamPart.append("String[] queryParamNames = new String[] {"+paramPair.getKey()+"}"); //NOI18N
                     queryParamPart.append("String[] queryParamValues = new String[] {"+paramPair.getValue()+"}"); //NOI18N
-                    queryP.append(".queryParams(getQueryOrFormParams(queryParamNames, queryParamValues))"); //NOI18N
+                    if (Security.Authentication.SESSION_KEY == security.getAuthentication() && securityParams != null) {
+                        queryParamPart.append("String signature = signParams("+SESSION_SECRET+", queryParamNames, queryParamValues);"); //NOI18N
+                        String sigParam = securityParams.getSignature();
+                        queryP.append(".queryParams(getQueryOrFormParams(queryParamNames, queryParamValues)).queryParam(\""+sigParam+"\", signature)"); //NOI18N
+                    } else {
+                        queryP.append(".queryParams(getQueryOrFormParams(queryParamNames, queryParamValues))"); //NOI18N
+                    }
                 } else {
                     List<String> requiredParams = httpParams.getRequiredQueryParams();
                     if (requiredParams.size() > 0) {
@@ -518,6 +567,47 @@ class Wadl2JavaHelper {
             paramValues.append("\""+fixedParams.get(p)+"\"");
         }
 
+        return new Pair<String>(paramNames.toString(), paramValues.toString());
+    }
+
+    private static Pair<String> getParamList(List<String> requiredParams, Map<String,String> fixedParams, SecurityParams securityParams) {
+        StringBuffer paramNames = new StringBuffer();
+        StringBuffer paramValues = new StringBuffer();
+        boolean first = true;
+        for (String p : requiredParams) {
+            if (!isSignatureParam(p, securityParams)) {
+                if (first) {
+                    first = false;
+                } else {
+                    paramNames.append(",");
+                    paramValues.append(",");
+                }
+                paramNames.append("\""+p+"\"");
+                if (isSecurityParam(p, securityParams)) {
+                    paramValues.append(findGetterForParam(p, securityParams.getMethodDescriptors()));
+                } else {
+                    paramValues.append(makeJavaIdentifier(p));
+                }
+            }
+        }
+        for (String p : fixedParams.keySet()) {
+            if (!isSignatureParam(p, securityParams)) {
+                if (first) {
+                    first = false;
+                } else {
+                    paramNames.append(",");
+                    paramValues.append(",");
+
+                }
+                paramNames.append("\""+p+"\"");
+                if (isSecurityParam(p, securityParams)) {
+                    paramValues.append(findGetterForParam(p, securityParams.getMethodDescriptors()));
+                } else {
+                    paramValues.append("\""+fixedParams.get(p)+"\"");
+                }
+
+            }
+        }
         return new Pair<String>(paramNames.toString(), paramValues.toString());
     }
 
@@ -674,4 +764,135 @@ class Wadl2JavaHelper {
         return FileUtil.getRelativePath(project.getProjectDirectory(), srcRoot);
     }
 
+    private static boolean isSecurityParam(String param, SecurityParams securityParams) {
+        if (securityParams.getParams().contains(param)) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean isSignatureParam(String param, SecurityParams securityParams) {
+        if (param.equals(securityParams.getSignature())) {
+            return true;
+        }
+        return false;
+    }
+
+    private static String findGetterForParam(String param, List<TemplateType.MethodDescriptor> methodDescriptors) {
+        for (TemplateType.MethodDescriptor method : methodDescriptors) {
+            if (param.contentEquals(method.getId())) {
+                return method.getName()+"()"; //NOI18N
+            }
+        }
+        return makeJavaIdentifier(param);
+    }
+
+    static ClassTree addSessionAuthMethods(WorkingCopy copy, ClassTree originalClass, Security security) {
+
+        TreeMaker maker = copy.getTreeMaker();
+        ModifiersTree fieldModif =  maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
+        VariableTree fieldTree = maker.Variable(fieldModif, API_KEY, maker.Identifier("String"), null); //NOI18N
+        ClassTree modifiedClass = maker.addClassMember(originalClass, fieldTree);
+
+        fieldModif =  maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
+        fieldTree = maker.Variable(fieldModif, SESSION_KEY, maker.Identifier("String"), null); //NOI18N
+        modifiedClass = maker.addClassMember(modifiedClass, fieldTree);
+
+        fieldModif =  maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
+        fieldTree = maker.Variable(fieldModif, APPLICATION_SECRET, maker.Identifier("String"), null); //NOI18N
+        modifiedClass = maker.addClassMember(modifiedClass, fieldTree);
+
+        fieldModif =  maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
+        fieldTree = maker.Variable(fieldModif, SESSION_SECRET, maker.Identifier("String"), null); //NOI18N
+        modifiedClass = maker.addClassMember(modifiedClass, fieldTree);
+
+        SecurityParams securityParams = security.getSecurityParams();
+        if (securityParams != null) {
+            for (TemplateType.MethodDescriptor m : securityParams.getMethodDescriptors()) {
+                ModifiersTree methodModifier = null;
+                if ("private".equals(m.getModifier())) { //NOI18N
+                    methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
+                } else {
+                    methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
+                }
+                // add params
+                List<VariableTree> paramList = new ArrayList<VariableTree>();
+                String pList = m.getParamNames();
+                if (pList != null) {
+                    List<String> paramN = getList(pList);
+                    List<String> paramT = getList(m.getParamTypes());
+                    ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+                    for (int i=0; i<paramN.size(); i++) {
+                        Tree paramTypeTree = JavaSourceHelper.createTypeTree(copy, paramT.get(i)); //NOI18N
+                        VariableTree paramTree = maker.Variable(paramModifier, paramN.get(i), paramTypeTree, null); //NOI18N
+                        paramList.add(paramTree);
+                    }
+                }
+                
+                // add throws
+                List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
+                String tList = m.getThrows();
+                if (tList != null) {
+                    for (String thr : getList(tList)) {
+                        throwsList.add(JavaSourceHelper.createTypeTree(copy, thr));
+                    }
+                }
+
+                String body = m.getBody();
+                if (body == null) {
+                    body = getMethodBody(m.getBodyRef());
+                    if (body == null) {
+                        body = ("void".equals(m.getReturnType())? "{}" : "{return null;}"); //NOI18N
+                    }
+                }
+                MethodTree methodTree = maker.Method (
+                        methodModifier,
+                        m.getName(), //NOI18N
+                        JavaSourceHelper.createTypeTree(copy, m.getReturnType()), //NOI18N
+                        Collections.<TypeParameterTree>emptyList(),
+                        paramList,
+                        throwsList,
+                        body,
+                        null); //NOI18N
+                modifiedClass = maker.addClassMember(modifiedClass, methodTree);
+
+            }
+        }
+        return modifiedClass;
+    }
+
+    private static List<String> getList(String s) {
+        List<String> list = new ArrayList<String>();
+        StringTokenizer tokens = new StringTokenizer(s, ",");
+        while (tokens.hasMoreTokens()) {
+            list.add(tokens.nextToken().trim());
+        }
+        return list;
+    }
+
+    private static String getMethodBody(String templatePath) {
+        FileObject templateFo = FileUtil.getConfigFile(templatePath);
+        if (templateFo != null) {
+            try {
+                InputStreamReader is = null;
+                StringWriter writer = null;
+                try {
+                    is = new InputStreamReader(templateFo.getInputStream());
+                    writer = new StringWriter();
+                    char[] buffer = new char[1024];
+                    int b;
+                    while((b=is.read(buffer)) != -1) {
+                        writer.write(buffer,0,b);
+                    }
+                    return writer.toString();
+                } finally {
+                    if (is != null) is.close();
+                    if (writer != null) writer.close();
+                }
+            } catch(java.io.IOException ex) {
+                return null;
+            }
+        }
+        return null;
+    }
 }

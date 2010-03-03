@@ -83,6 +83,13 @@ import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
+import org.netbeans.modules.websvc.saas.model.jaxb.Authenticator;
+import org.netbeans.modules.websvc.saas.model.jaxb.Params;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.Authentication.SessionKey;
+import org.netbeans.modules.websvc.saas.model.jaxb.Sign;
+import org.netbeans.modules.websvc.saas.model.jaxb.TemplateType;
+import org.netbeans.modules.websvc.saas.model.jaxb.UseTemplates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -133,6 +140,15 @@ public class ClientJavaSourceHelper {
                 return;
             }
         }
+
+        // set target project type
+        // PENDING: need to consider web project as well
+        String targetProjectType = "desktop"; //NOI18N
+        Project project = FileOwnerQuery.getOwner(targetFo);
+        if (project != null && Wadl2JavaHelper.isNbProject(project)) {
+            targetProjectType = "nb-project"; //NOI18N
+        }
+        security.setProjectType(targetProjectType);
 
         RestServiceDescription restServiceDesc = resourceNode.getLookup().lookup(RestServiceDescription.class);
         if (restServiceDesc != null) {
@@ -377,7 +393,50 @@ public class ClientJavaSourceHelper {
                 }
             }
         } else if (saasResource != null) {
-            modifiedClass = Wadl2JavaHelper.addHttpMethods(copy, modifiedClass, saasResource);
+            // compute security params from METADATA
+            SaasMetadata saasMetadata = saasResource.getSaas().getSaasMetadata();
+            if (saasMetadata != null) {
+                SaasMetadata.Authentication auth = saasMetadata.getAuthentication();
+                if (auth != null) {
+                    SecurityParams securityParams = new SecurityParams();
+                    SessionKey sessionKey = auth.getSessionKey().get(0);
+                    if (sessionKey != null) {
+                        securityParams.setSignature(sessionKey.getSigId());
+                        Sign sign = sessionKey.getSign();
+                        if (sign != null) {
+                            Params secParams = sign.getParams();
+                            if (secParams != null) {
+                                List<String> params = new ArrayList<String>();
+                                for (Params.Param secParam : secParams.getParam()) {
+                                    params.add(secParam.getName());
+                                }
+                                securityParams.setParams(params);
+                            }
+                        }
+                        Authenticator authenticator = sessionKey.getAuthenticator();
+                        if (authenticator != null) {
+                            UseTemplates useTemplates = authenticator.getUseTemplates();
+                            if (useTemplates != null) {
+                                if ("desktop".equals(security.getProjectType())) { //NOI18N
+                                    TemplateType tt = useTemplates.getDesktop();
+                                    if (tt != null) {
+                                        securityParams.setMethodDescriptors(tt.getMethodDescriptor());
+                                    }
+                                } else if ("web".equals(security.getProjectType())) { //NOI18N
+                                    TemplateType tt = useTemplates.getWeb();
+                                    if (tt != null) {
+                                        securityParams.setMethodDescriptors(tt.getMethodDescriptor());
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                    security.setSecurityParams(securityParams);
+                }
+            }
+
+            modifiedClass = Wadl2JavaHelper.addHttpMethods(copy, modifiedClass, saasResource, security);
         }
 
         // add close()
@@ -396,7 +455,7 @@ public class ClientJavaSourceHelper {
         modifiedClass = maker.addClassMember(modifiedClass, methodTree);
 
         // add security stuff
-        if (Security.Authentication.BASIC == security.getAuthentization()) {
+        if (Security.Authentication.BASIC == security.getAuthentication()) {
             List<VariableTree> authParams = new ArrayList<VariableTree>();
             Tree argTypeTree = maker.Identifier("String"); //NOI18N
             ModifiersTree fieldModifier = maker.Modifiers(Collections.<Modifier>emptySet());
@@ -419,7 +478,10 @@ public class ClientJavaSourceHelper {
                     body,
                     null); //NOI18N
             modifiedClass = maker.addClassMember(modifiedClass, methodTree);
+        } else if (Security.Authentication.SESSION_KEY == security.getAuthentication() && saasResource != null) {
+            modifiedClass = Wadl2JavaHelper.addSessionAuthMethods(copy, modifiedClass, security);
         }
+
         if (security.isSSL()) {
 
             ModifiersTree privateModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
