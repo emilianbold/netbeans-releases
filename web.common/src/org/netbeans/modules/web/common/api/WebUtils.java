@@ -42,6 +42,9 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -58,6 +61,7 @@ import org.openide.filesystems.FileUtil;
 public class WebUtils {
 
     static boolean UNIT_TESTING = false;
+    static FileObject WEB_ROOT;
 
     /**
      * Resolves the relative or absolute link from the base file
@@ -110,18 +114,23 @@ public class WebUtils {
                             //causes that fileobject representing the same file are not equal
                             File resolvedFile = FileUtil.toFile(resolvedFileObject);
                             FileObject resolvedFileObjectInCanonicalForm = FileUtil.toFileObject(resolvedFile.getCanonicalFile());
-                            FileReference ref = new FileReference(source, resolvedFileObjectInCanonicalForm, importedFileName, FileReferenceType.RELATIVE);
+                            //find out the base folder - bottom most folder of the link
+                            FileObject linkBase = findRelativeLinkBase(source, importedFileName);
+                            FileReference ref = new FileReference(source, resolvedFileObjectInCanonicalForm, linkBase, importedFileName, FileReferenceType.RELATIVE);
                             return ref;
                         }
                     }
                 } else {
                     //absolute web path
                     FileObject webRoot = ProjectWebRootQuery.getWebRoot(source); //find web root
+                    if(UNIT_TESTING) {
+                        webRoot = WEB_ROOT;
+                    }
                     if(webRoot != null) {
                         //resolve the link relative to the web root
                         FileObject resolved = webRoot.getFileObject(file.getAbsolutePath());
                         if (resolved != null && resolved.isValid()) {
-                            FileReference ref = new FileReference(source, resolved, importedFileName, FileReferenceType.ABSOLUTE);
+                            FileReference ref = new FileReference(source, resolved, webRoot, importedFileName, FileReferenceType.ABSOLUTE);
                             return ref;
                         }
                     }
@@ -134,6 +143,46 @@ public class WebUtils {
             Logger.getAnonymousLogger().log(Level.INFO, "Cannot resolve import '" + importedFileName + "' from file " + source.getPath(), e); //NOI18N
         }
         return null;
+    }
+
+    private static FileObject findRelativeLinkBase(FileObject source, String link) {
+        //Example:
+        //
+        //  root
+        //   +---A
+        //       +---file0
+        //       +---B
+        //           +---C
+        //           |   +---file1
+        //           |
+        //           +---D
+        //               +---file2
+        //
+        //If there is a link ../C/file1 in file2 the bottom most folder is B
+        //If there is a link ../../file0 in file2 the bottom most folder is A
+        //If there is a link B/C/file1 in file0 the bottom most folder is A
+        assert !source.isFolder();
+        assert !link.startsWith("/"); //NOI18N
+        if(link.startsWith("./")) { //NOI18N
+            link = link.substring(2); //cut off the ./
+        }
+        StringTokenizer st = new StringTokenizer(link, "/");
+        FileObject base = source.getParent();
+        while(st.hasMoreTokens()) {
+            String part = st.nextToken();
+            if(part.equals("..")) {
+                base = base.getParent();
+                if(base == null) {
+                    //cannot resolve
+                    break;
+                }
+            } else {
+                //we are in the ascending path part, return the current base folder
+                return base;
+            }
+        }
+        return null;
+
     }
 
     /** finds first ResultIterator of the given mimetype */
@@ -197,54 +246,55 @@ public class WebUtils {
             FileObject root1 = ProjectWebRootQuery.getWebRoot(source);
             FileObject root2 = ProjectWebRootQuery.getWebRoot(target);
             if(root1 == null) {
-                throw new IllegalArgumentException("Cannot find web root for source file " + source.getPath());
+                throw new IllegalArgumentException("Cannot find web root for source file " + source.getPath()); //NOI18N
             }
             if(root2 == null) {
-                throw new IllegalArgumentException("Cannot find web root for target file " + target.getPath());
+                throw new IllegalArgumentException("Cannot find web root for target file " + target.getPath()); //NOI18N
             }
             if(!root1.equals(root2)) {
-                throw new IllegalArgumentException("Source " + source.getPath() +  "and target " +
-                        target.getPath() + " files have no common web root!");
+                throw new IllegalArgumentException("Source " + source.getPath() +  "and target " + //NOI18N
+                        target.getPath() + " files have no common web root!"); //NOI18N
             }
         }
 
-        if(source.getParent().equals(target.getParent())) {
-            //both files in the same directory
-            //something like:
-            //source: base/file.txt
-            //target: base/target.txt
-            //
-            //result: target.txt
-            return target.getNameExt();
-        } else if(FileUtil.isParentOf(source.getParent(), target)) {
-            //something like:
-            //source: base/file.txt
-            //target: base/folder/target.txt
-            //
-            //result: folder/target.txt
-            return FileUtil.getRelativePath(source.getParent(), target);
-        } else if(FileUtil.isParentOf(target.getParent(), source)){
-            //something like:
-            //source: base/folder/file.txt
-            //target: base/target.txt
-            //
-            //result: ../target.txt
-            StringBuilder b = new StringBuilder();
-            FileObject parent = source.getParent();
-            while(parent != target.getParent()) {
-                b.append("../"); //NOI18N
-                parent = parent.getParent();
-            }
-            b.append(target.getNameExt());
-            return b.toString();
-
-
-        } else {
-            //relatively unmappable in the same web-like project
-            //in theory we should not get here after the initial checks
+        //link: ../../folder/file.txt
+        List<FileObject> targetPathFiles = new ArrayList<FileObject>();
+        FileObject file = target;
+        while ((file = file.getParent()) != null) {
+            assert file.isFolder();
+            targetPathFiles.add(0, file);
         }
 
-        return null;
+        //now iterate the target parent's until we find a common folder
+        FileObject common = null;
+        file = source;
+        StringBuilder link = new StringBuilder();
+        while ((file = file.getParent()) != null) {
+            if (targetPathFiles.contains(file)) {
+                common = file;
+                break;
+            } else {
+                link.append("../");//NOI18N
+            }
+        }
+        if (common == null) {
+            //no common ancestor
+            return null;
+        }
+
+        int commonIndexInSourcePath = targetPathFiles.indexOf(common);
+        assert commonIndexInSourcePath >= 0;
+        assert targetPathFiles.size() > commonIndexInSourcePath;
+
+        for (int i = commonIndexInSourcePath + 1; i < targetPathFiles.size(); i++) {
+            FileObject pathMember = targetPathFiles.get(i);
+            link.append(pathMember.getName());
+            link.append('/'); //NOI18N
+        }
+
+        link.append(target.getNameExt());
+
+        return link.toString();
     }
 
 }
