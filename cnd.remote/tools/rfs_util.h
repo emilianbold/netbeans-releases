@@ -94,6 +94,7 @@ static void _dbg_sleep(int time) {
     }
 }
 
+/*
 static char *normalize_path(const char *path, char *buffer, int max_size) {
     if (path == NULL || buffer == NULL) {
         errno = EINVAL;
@@ -121,7 +122,7 @@ static char *normalize_path(const char *path, char *buffer, int max_size) {
                 // it's "/../"
                 src += 3;
                 dst--; // point the last added one
-                if (*dst == '/') {
+                if (*dst == '/' && dst > buffer) {
                     dst--;
                 }
                 while (dst > buffer && *dst != '/') {
@@ -152,3 +153,4 @@ static char *normalize_path(const char *path, char *buffer, int max_size) {
     trace("normalize: %s -> %s\n", path, buffer);
     return dst;
 }
+*/
