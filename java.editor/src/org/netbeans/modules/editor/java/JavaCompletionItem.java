@@ -216,6 +216,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new AttributeItem(elem, type, substitutionOffset, isDeprecated);
     }
     
+    public static final JavaCompletionItem createAttributeValueItem(String value, TypeElement element, int substitutionOffset) {
+        return new AttributeValueItem(value, element, substitutionOffset);
+    }
+
     public static final JavaCompletionItem createStaticMemberItem(DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated) {
         switch (memberElem.getKind()) {
             case METHOD:
@@ -2597,6 +2601,80 @@ public abstract class JavaCompletionItem implements CompletionItem {
         public String toString() {
             return simpleName;
         }        
+    }
+
+    static class AttributeValueItem extends JavaCompletionItem {
+
+        private static final String ATTRIBUTE_VALUE = "org/netbeans/modules/java/editor/resources/attribute_value_16.png"; // NOI18N
+        private static final String ATTRIBUTE_VALUE_COLOR = "<font color=#404040>"; //NOI18N
+        private static ImageIcon icon;
+
+        private JavaCompletionItem delegate;
+        private String value;
+        private String leftText;
+
+        private AttributeValueItem(String value, TypeElement element, int substitutionOffset) {
+            super(substitutionOffset);
+            this.value = value;
+            if (element != null)
+                delegate = createTypeItem(element, (DeclaredType)element.asType(), substitutionOffset, true, false, false, false, false);
+        }
+
+        public int getSortPriority() {
+            return -SMART_TYPE;
+        }
+
+        public CharSequence getSortText() {
+            return delegate != null ? delegate.getSortText() : value;
+        }
+
+        public CharSequence getInsertPrefix() {
+            return delegate != null ? delegate.getInsertPrefix() : value;
+        }
+
+        public CompletionTask createDocumentationTask() {
+            return null;
+        }
+
+        protected ImageIcon getIcon() {
+            if (delegate != null)
+                return delegate.getIcon();
+            if (icon == null)
+                icon = ImageUtilities.loadImageIcon(ATTRIBUTE_VALUE, false);
+            return icon;
+        }
+
+        protected String getLeftHtmlText() {
+            if (leftText == null) {
+                if (delegate != null) {
+                    leftText = delegate.getLeftHtmlText();
+                } else {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(ATTRIBUTE_VALUE_COLOR);
+                    sb.append(value);
+                    sb.append(COLOR_END);
+                    leftText = sb.toString();
+                }
+            }
+            return leftText;
+        }
+
+        protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
+            if (delegate != null) {
+                if (toAdd == null || ".".equals(toAdd)) { //NOI18N
+                    toAdd = ".class"; //NOI18N
+                } else {
+                    toAdd = ".class" + toAdd; //NOI18N
+                }
+                delegate.substituteText(c, offset, len, toAdd);
+            } else {
+                super.substituteText(c, offset, len, toAdd);
+            }
+        }
+
+        public String toString() {
+            return value;
+        }
     }
 
     static class StaticMemberItem extends JavaCompletionItem {
