@@ -60,18 +60,26 @@ import hidden.org.codehaus.plexus.util.DirectoryScanner;
 import hidden.org.codehaus.plexus.util.IOUtil;
 import hidden.org.codehaus.plexus.util.xml.Xpp3DomBuilder;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -288,8 +296,13 @@ public class MavenNbModuleImpl implements NbModuleProvider {
 
     @Override
     public boolean prepareContext() throws IllegalStateException {
-        //todo if PROP_NETBEANS_INSTALL isn't set yet then ask user to browse for
-        //app suite module to provide correct 'layer in context' class path
+        File platformDir = findPlatformFolder();
+        if( null == platformDir ) {
+            //ask to find nb app module
+        }
+        if( null != platformDir && (!platformDir.exists() || platformDir.list().length == 0) ) {
+            //platform needs to be built
+        }
         return true;
     }
     
@@ -392,7 +405,11 @@ public class MavenNbModuleImpl implements NbModuleProvider {
 
     @Override
     public File getActivePlatformLocation() {
-        NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
+        File platformDir = findPlatformFolder();
+        if( null != platformDir && platformDir.exists() && platformDir.isDirectory() )
+            return platformDir;
+        Project suitProject = project;
+        NbMavenProject watch = suitProject.getLookup().lookup(NbMavenProject.class);
         String installProp = watch.getMavenProject().getProperties().getProperty(PROP_NETBEANS_INSTALL);
         if (installProp == null) {
             installProp = PluginPropertyUtils.getPluginProperty(watch.getMavenProject(), 
@@ -407,4 +424,43 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         return null;
     }
 
+    private File findPlatformFolder() {
+        AuxiliaryConfiguration auxConfig = ProjectUtils.getAuxiliaryConfiguration(project);
+        Element e = auxConfig.getConfigurationFragment(Constants.PROP_PATH_NB_APPLICATION_MODULE, Constants.NS_PROPERTIES, true);
+        if( null == e )
+            return null;
+
+        String strPathToApp = e.getTextContent();
+        if( null == strPathToApp || strPathToApp.isEmpty() )
+            return null;
+
+        FileObject appModuleDir = null;
+        File dir = new File( strPathToApp );
+        if( !dir.isAbsolute() ) {
+            appModuleDir = project.getProjectDirectory().getFileObject(strPathToApp);
+        } else {
+            appModuleDir = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
+        }
+        if( appModuleDir == null ) {
+            Logger.getLogger(MavenNbModuleImpl.class.getName()).log(Level.INFO, "Invalid path to NB application module: " + strPathToApp); //NOI18N
+            return null;
+        }
+        try {
+            Project appProject = ProjectManager.getDefault().findProject(appModuleDir);
+            NbMavenProject watch = appProject.getLookup().lookup(NbMavenProject.class);
+            String outputDir = PluginPropertyUtils.getPluginProperty(watch.getMavenProject(),
+                    "org.codehaus.mojo", "nbm-maven-plugin", "outputDirectory", "cluster-app"); //NOI18N
+            if( null == outputDir ) {
+                outputDir = "target"; //NOI18N
+                String brandingToken = PluginPropertyUtils.getPluginProperty(watch.getMavenProject(),
+                    "org.codehaus.mojo", "nbm-maven-plugin", "brandingToken", "cluster-app"); //NOI18N
+                File output = new File( FileUtil.toFile(appProject.getProjectDirectory()), outputDir );
+                return FileUtil.normalizeFile(new File( output, brandingToken ));
+            }
+            return FileUtil.normalizeFile(new File(outputDir)); //assume absolute path
+        } catch( IOException ex ) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
 }
