@@ -231,7 +231,7 @@ public class PresenceIndicator {
                                     try {
                                         for(Kenai kenai: KenaiManager.getDefault().getKenais()) {
                                             PasswordAuthentication passwordAuthentication = kenai.getPasswordAuthentication();
-                                            if (passwordAuthentication!=null) {
+                                            if (passwordAuthentication!=null && Utilities.isChatSupported(kenai)) {
                                                 kenai.login(passwordAuthentication.getUserName(), passwordAuthentication.getPassword(), onlineCheckBox.isSelected());
                                             }
                                         }

@@ -246,7 +246,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         if (false && tooltipVariable != null) {
             ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTipText);
             final ObjectVariable var = tooltipVariable;
-            final MouseEvent lastMouseEvent = Utilities.getEditorUI(ep).getToolTipSupport().getLastMouseEvent();
+// XXX:           final MouseEvent lastMouseEvent = Utilities.getEditorUI(ep).getToolTipSupport().getLastMouseEvent();
             //panel.add(et);
             et.addExpansionListener(new ActionListener() {
                 @Override
@@ -255,7 +255,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                     panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
                     panel.setBorder(new LineBorder(Color.black, 1));
                     panel.add(ToolTipView.getToolTipView(expression, var));
-                    Utilities.getEditorUI(ep).getToolTipSupport().mouseMoved(lastMouseEvent);
+// XXX:                   Utilities.getEditorUI(ep).getToolTipSupport().mouseMoved(lastMouseEvent);
                     Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(panel);
                 }
             });

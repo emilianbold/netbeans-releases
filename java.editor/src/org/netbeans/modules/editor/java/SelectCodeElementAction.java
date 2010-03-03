@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -58,6 +59,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseAction;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -113,7 +115,7 @@ final class SelectCodeElementAction extends BaseAction {
             if (selectionEndOffset > selectionStartOffset || selectNext) {
                 SelectionHandler handler = (SelectionHandler)target.getClientProperty(SelectionHandler.class);
                 if (handler == null) {
-                    handler = new SelectionHandler(target);
+                    handler = new SelectionHandler(target, getShortDescription());
                     target.addCaretListener(handler);
                     // No need to remove the listener above as the handler
                     // is stored is the client-property of the component itself
@@ -132,24 +134,30 @@ final class SelectCodeElementAction extends BaseAction {
     private static final class SelectionHandler implements CaretListener, Task<CompilationController>, Runnable {
         
         private JTextComponent target;
+        private String name;
         private SelectionInfo[] selectionInfos;
         private int selIndex = -1;
         private boolean ignoreNextCaretUpdate;
+        private AtomicBoolean cancel;
 
-        SelectionHandler(JTextComponent target) {
+        SelectionHandler(JTextComponent target, String name) {
             this.target = target;
         }
 
         public void selectNext() {
             if (selectionInfos == null) {
-                JavaSource js = JavaSource.forDocument(target.getDocument());
-                try {
-                    js.runUserActionTask(this, true);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            
+                final JavaSource js = JavaSource.forDocument(target.getDocument());
+                cancel = new AtomicBoolean();
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    public void run() {
+                        try {
+                            js.runUserActionTask(SelectionHandler.this, true);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }, name, cancel, false);
+            }            
             run();
         }
 
@@ -184,7 +192,11 @@ final class SelectCodeElementAction extends BaseAction {
 
         public void run(CompilationController cc) {
             try {
+                if (cancel != null && cancel.get())
+                    return;
                 cc.toPhase(Phase.RESOLVED);
+                if (cancel != null && cancel.get())
+                    return;
                 selectionInfos = initSelectionPath(target, cc);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
