@@ -46,6 +46,21 @@ made subject to such option by the copyright holder.
 <apidef name="csl.api">Common Scripting Language API</apidef>
 </apidefs>
 <changes>
+    <change id="overriding-annotations">
+        <api name="csl.api"/>
+        <summary>Adding OverridingMethods to compute overriding annotations</summary>
+        <version major="2" minor="3"/>
+        <date day="3" month="3" year="2010"/>
+        <author login="jlahoda"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" source="compatible" deprecation="yes"/>
+        <description>
+            <p>
+                Adding OverridingMethods API class that allows to compute overriding/is overridden annotations.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.csl.api" name="OverridingMethods"/>
+        <issue number="177571"/>
+    </change>
     <change id="ToggleBlockCommentAction-noarg-ctor">
         <api name="csl.api"/>
         <summary>Adding no-arg constructor to ToggleBlockCommentAction</summary>

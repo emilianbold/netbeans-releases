@@ -1104,7 +1104,7 @@ public class GoToSupportTest extends NbTestCase {
         doc.putProperty("mimeType", "text/x-java");
         
         if (tooltip)
-            return GoToSupport.getGoToElementTooltip(doc, offset, false);
+            return GoToSupport.getGoToElementTooltip(doc, offset, false, null);
         else
             GoToSupport.goTo(doc, offset, false);
         

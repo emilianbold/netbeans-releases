@@ -59,6 +59,7 @@ import org.netbeans.modules.csl.api.GsfLanguage;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.OverridingMethods;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.editor.semantic.ColoringManager;
@@ -99,6 +100,7 @@ public final class Language {
     private KeystrokeHandler keystrokeHandler;
     private EmbeddingIndexerFactory indexerFactory;
     private StructureScanner structure;
+    private OverridingMethods overridingMethods;
     private HintsProvider hintsProvider;
     private GsfHintsManager hintsManager;
     private IndexSearcher indexSearcher;
@@ -114,6 +116,7 @@ public final class Language {
     private FileObject keystrokeHandlerFile;
     private FileObject indexerFile;
     private FileObject structureFile;
+    private FileObject overridingMethodsFile;
     private FileObject hintsProviderFile;
     //private FileObject paletteFile;
     private FileObject semanticFile;
@@ -738,4 +741,31 @@ public final class Language {
         }
         return binaryLibraryPathIds;
     }
+
+    /**
+     * Return the overriding methods computer for this language
+     */
+    @NonNull
+    public OverridingMethods getOverridingMethods() {
+        if (overridingMethods == null) {
+            if (overridingMethodsFile != null) {
+                overridingMethods = (OverridingMethods)createInstance(overridingMethodsFile);
+                if (overridingMethods == null) {
+                    // Don't keep trying
+                    overridingMethodsFile = null;
+                }
+            } else {
+                getGsfLanguage(); // Also initializes languageConfig
+                if (languageConfig != null) {
+                    overridingMethods = languageConfig.getOverridingMethods();
+                }
+            }
+        }
+        return overridingMethods;
+    }
+
+    void setOverridingMethodsFile(FileObject fo) {
+        this.overridingMethodsFile = fo;
+    }
+
 }

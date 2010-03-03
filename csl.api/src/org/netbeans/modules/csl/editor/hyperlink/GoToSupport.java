@@ -276,6 +276,12 @@ public class GoToSupport {
     }
     
     private static boolean chooseAlternatives(Document doc, int offset, List<AlternativeLocation> alternatives) {
+        String caption = NbBundle.getMessage(GoToSupport.class, "ChooseDecl");
+
+        return chooseAlternatives(doc, offset, caption, alternatives);
+    }
+
+    public static boolean chooseAlternatives(Document doc, int offset, String caption, List<AlternativeLocation> alternatives) {
         Collections.sort(alternatives);
         
         // Prune results a bit
@@ -307,7 +313,6 @@ public class GoToSupport {
                 Point point = new Point(rectangle.x, rectangle.y+rectangle.height);
                 SwingUtilities.convertPointToScreen(point, target);
 
-                String caption = NbBundle.getMessage(GoToSupport.class, "ChooseDecl");
                 PopupUtil.showPopup(new DeclarationPopup(caption, alternatives), caption, point.x, point.y, true, 0);
 
                 return true;

@@ -530,6 +530,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private void initializeTabs () {
          tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
          tabbedPane.addTab(NbBundle.getMessage(CommitPanel.class, "CTL_CommitDialog_Tab_Commit"), basePanel); //NOI18N
+         tabbedPane.setPreferredSize(basePanel.getPreferredSize());
          add(tabbedPane);
          tabbedPane.addChangeListener(this);
     }

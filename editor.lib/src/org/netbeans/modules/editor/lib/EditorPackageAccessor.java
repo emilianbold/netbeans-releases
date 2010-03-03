@@ -51,7 +51,7 @@ import org.netbeans.modules.editor.lib.impl.MultiMark;
 
 
 /**
- * Accessor for the package-private functionality in org.netbeans.api.editor.
+ * Accessor for the package-private functionality in org.netbeans.editor package.
  *
  * @author Miloslav Metelka
  * @version 1.00
