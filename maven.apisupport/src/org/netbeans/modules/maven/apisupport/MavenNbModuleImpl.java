@@ -124,12 +124,14 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         }
     }
     
+    @Override
     public String getSpecVersion() {
         NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
         String specVersion = AdaptNbVersion.adaptVersion(watch.getMavenProject().getVersion(), AdaptNbVersion.TYPE_SPECIFICATION);
         return specVersion;
     }
 
+    @Override
     public String getCodeNameBase() {
         try {
             Xpp3Dom dom = getModuleDom();
@@ -151,11 +153,13 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         return prj.getGroupId() + "." + prj.getArtifactId(); //NOI18N
     }
 
+    @Override
     public String getSourceDirectoryPath() {
         //TODO
         return "src/main/java"; //NOI18N
     }
 
+    @Override
     public FileObject getSourceDirectory() {
         FileObject fo = project.getProjectDirectory().getFileObject(getSourceDirectoryPath());
         if (fo == null) {
@@ -170,6 +174,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         return fo;
     }
 
+    @Override
     public FileObject getManifestFile() {
         String path = "src/main/nbm/manifest.mf";  //NOI18N
 
@@ -187,6 +192,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         return project.getProjectDirectory().getFileObject(path);
     }
 
+    @Override
     public String getResourceDirectoryPath(boolean isTest) {
         if (isTest) {
             return "src/test/resources"; //NOI18N
@@ -194,6 +200,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         return "src/main/resources"; //NOI18N
     }
 
+    @Override
     public boolean addDependency(String codeNameBase, String releaseVersion,
                                  SpecificationVersion version,
                                  boolean useInCompiler) throws IOException {
@@ -258,6 +265,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
      * and add it as an external binary cluster.
      * @return null
      */
+    @Override
     public File getModuleJarLocation() {
         return null;
     }
@@ -292,9 +300,11 @@ public class MavenNbModuleImpl implements NbModuleProvider {
             toAdd.add(dep);
         }
         
+        @Override
         public void run() {
             FileObject fo = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
             ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                @Override
                 public void performOperation(POMModel model) {
                     synchronized (MavenNbModuleImpl.DependencyAdder.this) {
                         for (Dependency dep : toAdd) {
@@ -314,11 +324,13 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     }
             
 
+    @Override
     public NbModuleType getModuleType() {
         return NbModuleProvider.STANDALONE;
     }
 
 
+    @Override
     public String getProjectFilePath() {
         return "pom.xml"; //NOI18N
     }
@@ -328,6 +340,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
      * The module isn't necessary a project dependency, more a property of the associated 
      * netbeans platform.
      */ 
+    @Override
     public SpecificationVersion getDependencyVersion(String codenamebase) throws IOException {
         String artifactId = codenamebase.replaceAll("\\.", "-"); //NOI18N
         NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
@@ -377,9 +390,14 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         return null;
     }
 
+    @Override
     public File getActivePlatformLocation() {
         NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
         String installProp = watch.getMavenProject().getProperties().getProperty(PROP_NETBEANS_INSTALL);
+        if (installProp == null) {
+            installProp = PluginPropertyUtils.getPluginProperty(watch.getMavenProject(), 
+                    "org.codehaus.mojo", "nbm-maven-plugin", "netbeansInstallation", "run-ide"); //NOI18N
+        }
         if (installProp != null) {
             File fil = new File(installProp);
             if (fil.exists()) {
