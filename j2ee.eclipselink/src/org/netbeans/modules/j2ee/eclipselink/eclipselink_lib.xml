@@ -47,7 +47,8 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.j2ee.eclipselink.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/eclipselink/eclipselink-2.0.0.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/eclipselink/eclipselink-2.0.1.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/eclipselink/eclipselink-jpa-modelgen-2.0.1.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/eclipselink/eclipselink-javax.persistence-2.0.jar!/</resource>
     </volume>
     <volume>
@@ -57,7 +58,8 @@ made subject to such option by the copyright holder.
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
+        <resource>http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo/org/eclipse/persistence/eclipselink/2.0.1/eclipselink-2.0.1.pom</resource>
+        <resource>http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo/org/eclipse/persistence/org.eclipse.persistence.jpa.modelgen/2.0.1/org.eclipse.persistence.jpa.modelgen-2.0.1.pom</resource>
         <resource>http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo/org/eclipse/persistence/javax.persistence/2.0.0/javax.persistence-2.0.0.pom</resource>
-        <resource>http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo/org/eclipse/persistence/eclipselink/2.0.0/eclipselink-2.0.0.pom</resource>
     </volume>
 </library>
