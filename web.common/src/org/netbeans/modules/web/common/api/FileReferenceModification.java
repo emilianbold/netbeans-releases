@@ -39,53 +39,48 @@
 
 package org.netbeans.modules.web.common.api;
 
-import java.awt.Color;
-import org.netbeans.modules.csl.api.test.CslTestBase;
+import java.util.Map;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author marekfukala
  */
-public class WebUtilsTest extends CslTestBase {
+public class FileReferenceModification {
 
-    public WebUtilsTest(String testName) {
-        super(testName);
+    private Map<FileObject, String> items; //keys order preserving map
+    private boolean absolutePathLink;
+
+    FileReferenceModification(Map<FileObject, String> items, boolean absolutePathLink) {
+        this.items = items;
+        this.absolutePathLink = absolutePathLink;
     }
 
-    public void toHexColorCode() {
-        assertEquals("#ff0000", WebUtils.toHexCode(Color.RED));
-        assertEquals("#2201aa", WebUtils.toHexCode(Color.decode("#2201aa")));
+    public boolean rename(FileObject file, String newName) {
+        if(items.get(file) == null) {
+            return false;
+        }
+        String item = items.get(file);
+        if(FileReference.DESCENDING_PATH_ITEM.equals(item)) {
+            return false; // ../ path items is not affected by folder rename
+        }
+
+        items.put(file, newName); //LinkedHashMap preserves the key orders on put of existing key
+        return true;
     }
 
-    public void testResolve() {
-        FileObject one = getTestFile("one.txt");
-        assertNotNull(one);
-        FileObject two = getTestFile("third.txt");
-        assertNotNull(two);
-
-        FileObject resolved = WebUtils.resolve(one, "third.txt");
-        assertNotNull(resolved);
-        assertEquals(two, resolved);
-
-    }
-
-    public void testResolveFolderReferences() {
-        FileObject one = getTestFile("one.txt");
-        assertNotNull(one);
-        FileObject two = getTestFile("folder/second.txt");
-        assertNotNull(two);
-
-        //test resolve path reference
-        FileObject resolved = WebUtils.resolve(one, "folder/second.txt");
-        assertNotNull(resolved);
-        assertEquals(two, resolved);
-
-        //test resolve path reference backward
-        resolved = WebUtils.resolve(two, "../one.txt");
-        assertNotNull(resolved);
-        assertEquals(one, resolved);
-
+    public String getModifiedReferencePath() {
+        StringBuilder b = new StringBuilder();
+        if(absolutePathLink) {
+            b.append('/'); //initial slash
+        }
+        for(FileObject file : items.keySet()) {
+            String item = items.get(file);
+            b.append(item);
+            b.append('/'); //NOI18N
+        }
+        //remove last slash after filename
+        return b.deleteCharAt(b.length() - 1).toString();
     }
 
 }
