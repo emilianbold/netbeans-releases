@@ -83,8 +83,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
 
     private static final String DEFAULT_USERNAME = "weblogic"; // NOI18N
 
-    private static final String DEFAULT_PASSWORD = "weblogic"; // NOI18N
-
     private transient WLInstantiatingIterator instantiatingIterator;
     
     /**
@@ -142,7 +140,14 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_INVALID_PORT"))); // NOI18N
         }
 
-        // no checks for username & password as they may be intentionally blank
+        Instance item = (Instance) localInstancesCombo.getSelectedItem();
+        // show a hint for sample domain
+        if (item != null && item.getName().startsWith("examples")) { // NOI18N
+            if (passwordField.getPassword().length <= 0) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
+                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_EMPTY_PASSWORD"))); // NOI18N
+            }
+        }
 
         // save the data to the parent instantiating iterator
         instantiatingIterator.setUrl(getUrl());
@@ -615,7 +620,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         jPanel1.add(passwordLabel, gridBagConstraints);
 
         passwordField.setColumns(15);
-        passwordField.setText(DEFAULT_PASSWORD);
         passwordField.getDocument().addDocumentListener(updateListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
