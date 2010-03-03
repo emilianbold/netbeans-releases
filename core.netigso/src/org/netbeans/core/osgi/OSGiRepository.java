@@ -42,6 +42,7 @@ package org.netbeans.core.osgi;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -68,13 +69,13 @@ class OSGiRepository extends Repository {
     private static final Logger LOG = Logger.getLogger(OSGiRepository.class.getName());
     public static final OSGiRepository DEFAULT = new OSGiRepository();
 
-    private final LayerFS fs;
+    private final SFS fs;
 
     private OSGiRepository() {
-        this(new LayerFS());
+        this(new SFS());
     }
 
-    private OSGiRepository(LayerFS fs) {
+    private OSGiRepository(SFS fs) {
         super(fs);
         this.fs = fs;
     }
@@ -93,7 +94,7 @@ class OSGiRepository extends Repository {
         }
     }
 
-    private static final class LayerFS extends MultiFileSystem implements LookupListener {
+    private static final class SFS extends MultiFileSystem implements LookupListener {
 
         static {
             @SuppressWarnings("deprecation") Object _1 = FileSystem.Environment.class; // FELIX-2128
@@ -101,14 +102,24 @@ class OSGiRepository extends Repository {
             Object _3 = FileStatusListener.class;
         }
 
+        private static final class Layers extends MultiFileSystem {
+            Layers() {
+                setPropagateMasks(true);
+            }
+            void _setDelegates(Collection<FileSystem> delegates) {
+                setDelegates(delegates.toArray(new FileSystem[delegates.size()]));
+            }
+        }
+
         private final Map<String,FileSystem> fss = new HashMap<String,FileSystem>();
         private final FileSystem userdir;
+        private final Layers layers;
         private final Lookup.Result<FileSystem> dynamic = Lookup.getDefault().lookupResult(FileSystem.class);
 
         @SuppressWarnings("LeakingThisInConstructor")
-        LayerFS() {
+        SFS() {
             dynamic.addLookupListener(this);
-            reset();
+            layers = new Layers();
             File config = null;
             String netbeansUser = System.getProperty("netbeans.user");
             if (netbeansUser != null) {
@@ -126,9 +137,11 @@ class OSGiRepository extends Repository {
                 // no persisted configuration
                 userdir = FileUtil.createMemoryFileSystem();
             }
+            resetAll();
         }
 
         private synchronized void addLayers(URL... resources) {
+            LOG.log(Level.FINE, "addLayers: {0}", Arrays.asList(resources));
             for (URL resource : resources) {
                 try {
                     fss.put(resource.toString(), new XMLFileSystem(resource));
@@ -136,18 +149,22 @@ class OSGiRepository extends Repository {
                     LOG.log(Level.WARNING, "Could not parse layer: " + resource, x);
                 }
             }
-            reset();
+            resetLayers();
         }
 
         private synchronized void removeLayers(URL... resources) {
             for (URL resource : resources) {
                 fss.remove(resource.toString());
             }
-            reset();
+            resetLayers();
         }
 
-        private void reset() {
-            List<FileSystem> delegates = new ArrayList<FileSystem>(fss.size() + 1);
+        private void resetLayers() {
+            layers._setDelegates(fss.values());
+        }
+
+        private void resetAll() {
+            List<FileSystem> delegates = new ArrayList<FileSystem>();
             delegates.add(userdir);
             Collection<? extends FileSystem> dyn = dynamic.allInstances();
             for (FileSystem fs : dyn) {
@@ -156,7 +173,7 @@ class OSGiRepository extends Repository {
                 }
                 delegates.add(fs);
             }
-            delegates.addAll(fss.values());
+            delegates.add(layers);
             for (FileSystem fs : dyn) {
                 if (Boolean.TRUE.equals(fs.getRoot().getAttribute("fallback"))) { // NOI18N
                     delegates.add(fs);
@@ -164,10 +181,11 @@ class OSGiRepository extends Repository {
             }
             setDelegates(delegates.toArray(new FileSystem[delegates.size()]));
             assert getRoot().isValid();
+            assert !isReadOnly() : delegates;
         }
 
         public @Override void resultChanged(LookupEvent ev) {
-            reset();
+            resetAll();
         }
 
     }

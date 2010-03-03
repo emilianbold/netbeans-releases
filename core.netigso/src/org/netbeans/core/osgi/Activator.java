@@ -109,7 +109,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         this.context = context;
         framework = ((Framework) context.getBundle(0));
         if (framework.getState() == Bundle.STARTING) {
-//            System.err.println("framework still starting");
+            LOG.fine("framework still starting");
             final AtomicReference<FrameworkListener> frameworkListener = new AtomicReference<FrameworkListener>();
             frameworkListener.set(new FrameworkListener() {
                 public @Override void frameworkEvent(FrameworkEvent event) {
@@ -123,6 +123,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             });
             context.addFrameworkListener(frameworkListener.get());
         } else {
+            LOG.fine("framework already started");
             context.addBundleListener(this);
             processLoadedBundles();
         }
@@ -147,12 +148,13 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
     }
 
     private void unloadAll(List<Bundle> toUnloadInitial) {
+        List<Bundle> toUnload = new ArrayList<Bundle>(toUnloadInitial);
         for (Bundle b : context.getBundles()) {
             if (b.getState() == Bundle.ACTIVE) {
-                toUnloadInitial.addAll(queue.retract(b));
+                toUnload.addAll(queue.retract(b));
             }
         }
-        unload(toUnloadInitial, true);
+        unload(toUnload, true);
     }
 
     public @Override void bundleChanged(BundleEvent event) {

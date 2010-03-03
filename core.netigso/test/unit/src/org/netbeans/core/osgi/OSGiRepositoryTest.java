@@ -127,4 +127,33 @@ public class OSGiRepositoryTest extends NbTestCase {
         }
     }
 
+    public void testMasks() throws Exception {
+        // XXX does not fail even when masks do not work in real apps, why?
+        new OSGiProcess(getWorkDir()).
+                newModule().sourceFile("m1/layer.xml", "<filesystem><folder name='Menu'>",
+                "<folder name='original'><file name='something'/></folder>",
+                "</folder></filesystem>").manifest(
+                "OpenIDE-Module: m1",
+                "OpenIDE-Module-Layer: m1/layer.xml"
+                ).done().
+                newModule().clazz(MasksInstall.class).sourceFile("m2/layer.xml", "<filesystem><folder name='Menu'>",
+                "<file name='original_hidden'/>",
+                "<folder name='substitute'/>",
+                "</folder></filesystem>").manifest(
+                "OpenIDE-Module: m2",
+                "OpenIDE-Module-Install: " + MasksInstall.class.getName(),
+                "OpenIDE-Module-Layer: m2/layer.xml",
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.filesystems, m1").done().backwards().run();
+        assertEquals("false", System.getProperty("original.visible"));
+        assertEquals("true", System.getProperty("substitute.visible"));
+        assertEquals("false", System.getProperty("mask.visible"));
+    }
+    public static class MasksInstall extends ModuleInstall {
+        public @Override void restored() {
+            System.setProperty("original.visible", Boolean.toString(FileUtil.getConfigFile("Menu/original") != null));
+            System.setProperty("mask.visible", Boolean.toString(FileUtil.getConfigFile("Menu/original_hidden") != null));
+            System.setProperty("substitute.visible", Boolean.toString(FileUtil.getConfigFile("Menu/substitute") != null));
+        }
+    }
+
 }
