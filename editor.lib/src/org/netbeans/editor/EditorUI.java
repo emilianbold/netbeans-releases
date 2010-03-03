@@ -86,6 +86,7 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.editor.lib.ColoringMap;
+import org.netbeans.modules.editor.lib.EditorExtPackageAccessor;
 import org.netbeans.modules.editor.lib.drawing.DrawLayerList;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
@@ -1665,7 +1666,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
 
     public ToolTipSupport getToolTipSupport() {
         if (toolTipSupport == null) {
-            toolTipSupport = new ToolTipSupport(this);
+            toolTipSupport = EditorExtPackageAccessor.get().createToolTipSupport(this);
         }
         return toolTipSupport;
     }

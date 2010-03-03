@@ -44,9 +44,12 @@ package org.netbeans.modules.java.editor.hyperlink;
 import java.util.EnumSet;
 import java.util.Set;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.editor.java.GoToSupport;
+import org.netbeans.modules.java.editor.overridden.GoToImplementation;
 
 /**
  * Implementation of the hyperlink provider for java language.
@@ -59,12 +62,11 @@ import org.netbeans.modules.editor.java.GoToSupport;
  */
 public final class JavaHyperlinkProvider implements HyperlinkProviderExt {
  
-    /** Creates a new instance of JavaHyperlinkProvider */
     public JavaHyperlinkProvider() {
     }
 
     public Set<HyperlinkType> getSupportedHyperlinkTypes() {
-        return EnumSet.of(HyperlinkType.GO_TO_DECLARATION);
+        return EnumSet.of(HyperlinkType.GO_TO_DECLARATION, HyperlinkType.ALT_HYPERLINK);
     }
 
     public boolean isHyperlinkPoint(Document doc, int offset, HyperlinkType type) {
@@ -76,11 +78,23 @@ public final class JavaHyperlinkProvider implements HyperlinkProviderExt {
     }
 
     public void performClickAction(Document doc, int offset, HyperlinkType type) {
-        GoToSupport.goTo(doc, offset, false);
+        switch (type) {
+            case GO_TO_DECLARATION:
+                GoToSupport.goTo(doc, offset, false);
+                break;
+            case ALT_HYPERLINK:
+                JTextComponent focused = EditorRegistry.focusedComponent();
+                
+                if (focused.getDocument() == doc) {
+                    focused.setCaretPosition(offset);
+                    GoToImplementation.goToImplementation(focused);
+                }
+                break;
+        }
     }
 
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
-        return GoToSupport.getGoToElementTooltip(doc, offset, false);
+        return GoToSupport.getGoToElementTooltip(doc, offset, false, type == HyperlinkType.GO_TO_DECLARATION ? "TP_OverriddenTooltipSugg" : "TP_GoToOverriddenTooltipSugg");
     }
 
 }

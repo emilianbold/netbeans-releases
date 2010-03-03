@@ -51,8 +51,10 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
+import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel.MyProgress;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
@@ -105,12 +107,18 @@ public class DiscoveryExtension implements IteratorExtension {
     }
     
     public boolean isApplicable(DiscoveryDescriptor descriptor) {
-        if (isApplicableDwarfExecutable(descriptor)){
-            return true;
-        } else if (isApplicableMakeLog(descriptor)){
-            return true;
+        Progress progress = new MyProgress();
+        progress.start(0);
+        try {
+            if (isApplicableDwarfExecutable(descriptor)){
+                return true;
+            } else if (isApplicableMakeLog(descriptor)){
+                return true;
+            }
+            return isApplicableDwarfFolder(descriptor);
+        } finally {
+            progress.done();
         }
-        return isApplicableDwarfFolder(descriptor);
     }
     
     private boolean isApplicableDwarfExecutable(DiscoveryDescriptor descriptor){

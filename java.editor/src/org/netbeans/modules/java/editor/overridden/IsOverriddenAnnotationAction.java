@@ -284,8 +284,8 @@ public final class IsOverriddenAnnotationAction extends AbstractAction {
     }
 
     private static final Set<String> COMBINED_TYPES = new HashSet<String>(Arrays.asList(
-            "org-netbeans-modules-editor-java-implements-has-implementations-combined",
-            "org-netbeans-modules-editor-java-implements-is-overridden-combined",
-            "org-netbeans-modules-editor-java-override-is-overridden-combined"
+            "org-netbeans-modules-editor-annotations-implements-has-implementations-combined",
+            "org-netbeans-modules-editor-annotations-implements-is-overridden-combined",
+            "org-netbeans-modules-editor-annotations-override-is-overridden-combined"
     ));
 }
