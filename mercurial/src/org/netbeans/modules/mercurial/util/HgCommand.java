@@ -1146,7 +1146,7 @@ public class HgCommand {
             throw new HgException(ex.getMessage());
         } catch (HgException e) {
             Mercurial.LOG.log(Level.WARNING, "command: " + HgUtils.replaceHttpPassword(command)); // NOI18N
-            Mercurial.LOG.log(Level.WARNING, null, e); // NOI18N
+            Mercurial.LOG.log(Level.INFO, null, e); // NOI18N
             throw new HgException(e.getMessage());
         } finally {
             Utils.deleteRecursively(tempFolder);
@@ -1604,7 +1604,7 @@ public class HgCommand {
             command.add(file.getCanonicalPath());
         } catch (IOException e) {
             Mercurial.LOG.log(Level.WARNING, "command: " + HgUtils.replaceHttpPassword(command)); // NOI18N
-            Mercurial.LOG.log(Level.WARNING, null, e); // NOI18N
+            Mercurial.LOG.log(Level.INFO, null, e); // NOI18N
             throw new HgException(e.getMessage());
         }
         List<String> list = exec(command);
