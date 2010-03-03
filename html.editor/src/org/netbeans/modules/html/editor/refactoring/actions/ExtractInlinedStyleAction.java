@@ -38,185 +38,32 @@
  */
 package org.netbeans.modules.html.editor.refactoring.actions;
 
-import java.awt.Toolkit;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.html.editor.api.Utils;
-import org.netbeans.modules.web.common.api.WebUtils;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
+import org.netbeans.modules.html.editor.refactoring.HtmlSpecificActionsImplementationFactory;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  * TODO use the refactoring preview!!!
  *
  * @author marekfukala
  */
-public class ExtractInlinedStyleAction extends NodeAction {
+public class ExtractInlinedStyleAction extends HtmlRefactoringGlobalAction {
 
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-	JTextComponent tc = EditorRegistry.lastFocusedComponent();
-        Document doc = tc.getDocument();
-        int from = tc.getSelectionStart();
-        int to = tc.getSelectionEnd();
-        extractInlinedStyle(doc, from, to);
+    public ExtractInlinedStyleAction() {
+        super(NbBundle.getMessage(ExtractInlinedStyleAction.class, "MSG_ExtractInlinedStyle"), null); // NOI18N
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
     @Override
-    protected boolean enable(Node[] activatedNodes) {
-	//enables the action only if the first activated node
-	//contains DataObject instance which is currently associated
-	//with edited document
-	if (activatedNodes.length > 0) {
-	    Node node = activatedNodes[0]; //multiselection doesn't make sense
-	    DataObject dobj = node.getLookup().lookup(DataObject.class);
-	    if (dobj != null) {
-		JTextComponent tc = EditorRegistry.lastFocusedComponent();
-		if (tc != null && tc.getSelectedText() != null) { //disable w/o editor selection
-		    DataObject editedDobj = NbEditorUtilities.getDataObject(tc.getDocument());
-		    if (editedDobj.equals(dobj)) {
-			return true;
-		    }
-		}
-	    }
-	}
-	return false;
+    public void performAction(Lookup context) {
+        HtmlSpecificActionsImplementationFactory.doChangeParameters(context);
     }
 
     @Override
-    public String getName() {
-	return NbBundle.getMessage(ExtractInlinedStyleAction.class, "MSG_ConvertToCompositeComponents"); //NOI18N
+    protected boolean enable(Lookup context) {
+        return HtmlSpecificActionsImplementationFactory.canExtractInlineStyle(context);
     }
 
-    @Override
-    public HelpCtx getHelpCtx() {
-	return null;
-    }
 
-    private void extractInlinedStyle(final Document doc, final int from, final int to) {
-        final AtomicReference<ActionContext> ref = new AtomicReference<ActionContext>();
-        doc.render(new Runnable() {
-            @Override
-            public void run() {
-                ActionContext context = new ActionContext();
-                context.infos = findInlinedStyles(doc, from, to);
-                ref.set(context);
-            }
-        });
-
-        ActionContext context = ref.get();
-        if(context == null) {
-            return ;
-        }
-        if(context.infos.isEmpty()) {
-            return ; //nothing to refactor
-        }
-
-        if(context.firstEmbeddedStyleRange == null) {
-            //no embedded css in the file
-            //what to do?
-            //1. check existing links to css's => open dialog so user may choose which one to use
-            //2. if there's none open a dialog where user can choose if he want's to generate embedded
-            //   css section or create a new file or link an existing one an use it.
-            //3. merge all above into one dialog!
-            //
-            //TODO implement
-        }
-
-        //ok there's an embedded css section we may use to generate the id selectors
-
-        
-        
-        
-
-    }
-
-    private List<InlinedStyleInfo> findInlinedStyles(Document doc, int from, int to) {
-        List<InlinedStyleInfo> found = new LinkedList<InlinedStyleInfo>();
-        TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc, from);
-        //the joined ts is moved to the from offset and a token already selected (moveNext/Previous() == true)
-        //seek for all tag's attributes with css embedding representing an inlined style
-        String tag = null;
-        String attr = null;
-        String tagsClass = null;
-        OffsetRange range = null;
-        do {
-            Token<HTMLTokenId> t = ts.token();
-            if(t.id() == HTMLTokenId.TAG_OPEN) {
-                tag = t.text().toString();
-                attr = tagsClass = null;
-                range = null;
-            } else if(t.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
-                //closing tag, produce the info
-                if(tag != null && range != null) {
-                    //some inlined code found
-                    found.add(new InlinedStyleInfo(tag, tagsClass, attr, range));
-                }
-            } else if(t.id() == HTMLTokenId.ARGUMENT) {
-                attr = t.text().toString();
-            } else if(t.id() == HTMLTokenId.VALUE_CSS) {
-                //check if this is an inlined code, not class or id representation
-                String csstype = (String)t.getProperty(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY);
-                if(csstype == null) {
-                    //inlined code
-                    int diff = WebUtils.isValueQuoted(t.text()) ? 1 : 0;
-                    range = new OffsetRange(ts.offset() + diff, ts.offset() + t.length() - diff);
-                }
-            } else if(t.id() == HTMLTokenId.VALUE) {
-                //TODO use TagMetadata for getting the info a the attribute represents a css or not
-                if("class".equals(attr)) { //NOI18N
-                    tagsClass = t.text().toString();
-                }
-            }
-
-        } while (ts.moveNext() && ts.offset() <= to);
-
-        return found;
-    }
-
-    private static class ActionContext {
-        List<InlinedStyleInfo> infos;
-        OffsetRange firstEmbeddedStyleRange;
-    }
-
-    private static class InlinedStyleInfo {
-        private String tag, tagsClass, attr;
-        private OffsetRange range;
-
-        public InlinedStyleInfo(String tag, String tagsClass, String attr, OffsetRange range) {
-            this.tag = tag;
-            this.tagsClass = tagsClass;
-            this.attr = attr;
-            this.range = range;
-        }
-
-        public String getAttr() {
-            return attr;
-        }
-
-        public OffsetRange getRange() {
-            return range;
-        }
-
-        public String getTag() {
-            return tag;
-        }
-
-        public String getTagsClass() {
-            return tagsClass;
-        }
-
-    }
+   
 }

@@ -36,33 +36,23 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.html.editor.refactoring;
 
-import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
-import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author marekfukala
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position = 120)
-public class HtmlRefactoringPluginFactory implements RefactoringPluginFactory {
+public class HtmlSpecificActionsImplementationProvider {
 
-    @Override
-    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-	if (refactoring instanceof RenameRefactoring) {
-	    if (null != refactoring.getRefactoringSource().lookup(FileObject.class)) {
-		return new HtmlRenameRefactoringPlugin((RenameRefactoring)refactoring);
-	    }
-	} else if(refactoring instanceof ExtractInlinedStyleRefactoring) {
-            return new ExtractInlinedStyleRefactoringPlugin((ExtractInlinedStyleRefactoring)refactoring);
-        }
-        
-	return null;
-
+    public boolean canExtractInlineStyle(Lookup lookup) {
+        return false;
     }
+
+    public void doExtractInlineStyle(Lookup lookup) {
+        throw new UnsupportedOperationException("Not implemented"); // NOI18N
+    }
+    
 }

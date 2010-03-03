@@ -36,33 +36,40 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.html.editor.refactoring;
 
-import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
-import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author marekfukala
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position = 120)
-public class HtmlRefactoringPluginFactory implements RefactoringPluginFactory {
+public class HtmlSpecificActionsImplementationFactory {
 
-    @Override
-    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-	if (refactoring instanceof RenameRefactoring) {
-	    if (null != refactoring.getRefactoringSource().lookup(FileObject.class)) {
-		return new HtmlRenameRefactoringPlugin((RenameRefactoring)refactoring);
-	    }
-	} else if(refactoring instanceof ExtractInlinedStyleRefactoring) {
-            return new ExtractInlinedStyleRefactoringPlugin((ExtractInlinedStyleRefactoring)refactoring);
-        }
-        
-	return null;
-
+    private HtmlSpecificActionsImplementationFactory() {
     }
+
+    private static final Lookup.Result<HtmlSpecificActionsImplementationProvider> implementations =
+        Lookup.getDefault().lookup(new Lookup.Template(HtmlSpecificActionsImplementationProvider.class));
+
+    public static boolean canExtractInlineStyle(Lookup lookup) {
+        for (HtmlSpecificActionsImplementationProvider rafi: implementations.allInstances()) {
+            if (rafi.canExtractInlineStyle(lookup)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void doChangeParameters(Lookup lookup) {
+        for (HtmlSpecificActionsImplementationProvider rafi: implementations.allInstances()) {
+            if (rafi.canExtractInlineStyle(lookup)) {
+                rafi.doExtractInlineStyle(lookup);
+                return;
+            }
+        }
+    }
+
+
 }
