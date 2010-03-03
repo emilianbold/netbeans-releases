@@ -403,6 +403,9 @@ public class MakeOSGi extends Task {
         }
         String cnb = codename.replaceFirst("/\\d+$", "");
         osgi.putValue("Bundle-SymbolicName", cnb);
+        if (cnb.equals("org.netbeans.core.osgi")) {
+            osgi.putValue("Bundle-Activator", "org.netbeans.core.osgi.Activator");
+        }
         Info myInfo = infos.get(cnb);
         String spec = netbeans.getValue("OpenIDE-Module-Specification-Version");
         String bundleVersion = null;

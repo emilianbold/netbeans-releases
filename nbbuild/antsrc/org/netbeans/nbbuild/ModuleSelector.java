@@ -105,7 +105,7 @@ public final class ModuleSelector extends BaseExtendSelector {
                 JarFile jar = new JarFile(file);
                 Manifest m = jar.getManifest();
                 if (m != null) {
-                    module = JarWithModuleAttributes.extractCodeName(m.getMainAttributes());
+                    module = m.getMainAttributes().getValue("OpenIDE-Module");
                 }
                 jar.close();
             } catch (IOException ex) {
