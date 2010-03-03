@@ -51,7 +51,7 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  *
  * @author Vladimir Kvashin
  */
-public class RfsSunStudioRemoteBuildTest extends RfsBaseRemoteBuildTestCase {
+public class RfsSunStudioRemoteBuildTest extends RemoteBuildTestBase {
 
     public RfsSunStudioRemoteBuildTest(String testName) {
         super(testName);
@@ -59,6 +59,12 @@ public class RfsSunStudioRemoteBuildTest extends RfsBaseRemoteBuildTestCase {
 
     public RfsSunStudioRemoteBuildTest(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);       
+    }
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        setupHost("rfs");
     }
 
     @ForAllEnvironments
