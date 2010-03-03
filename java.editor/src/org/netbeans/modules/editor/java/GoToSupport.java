@@ -128,38 +128,62 @@ public class GoToSupport {
         return od != null ? od.getPrimaryFile() : null;
     }
     
-    public static String getGoToElementTooltip(Document doc, final int offset, final boolean goToSource) {
-        return performGoTo(doc, offset, goToSource, true, false);
+    public static String getGoToElementTooltip(final Document doc, final int offset, final boolean goToSource, final String key) {
+        try {
+            final FileObject fo = getFileObject(doc);
+
+            if (fo == null)
+                return null;
+
+            final String[] result = new String[1];
+
+            ParserManager.parse(Collections.singleton (Source.create(doc)), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result res = resultIterator.getParserResult (offset);
+                    CompilationController controller = CompilationController.get(res);
+                    if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
+                        return;
+
+                    Context resolved = resolveContext(controller, doc, offset, goToSource);
+
+                    if (resolved != null) {
+                        result[0] = computeTooltip(controller, resolved, key);
+                    }
+                }
+            });
+
+            return result[0];
+        } catch (ParseException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
     
     private static boolean isError(Element el) {
         return el == null || el.asType() == null || el.asType().getKind() == TypeKind.ERROR;
     }
     
-    private static String performGoTo(final Document doc, final int offset, final boolean goToSource, final boolean tooltip, final boolean javadoc) {
-        if (!tooltip && !javadoc) {
+    private static void performGoTo(final Document doc, final int offset, final boolean goToSource, final boolean javadoc) {
+        if (!javadoc) {
             final AtomicBoolean cancel = new AtomicBoolean();
             
             ProgressUtils.runOffEventDispatchThread(new Runnable() {
                 public void run() {
-                    performGoToImpl(doc, offset, goToSource, tooltip, javadoc, cancel);
+                    performGoToImpl(doc, offset, goToSource, javadoc, cancel);
                 }
             }, NbBundle.getMessage(GoToSupport.class, goToSource ? "LBL_GoToSource" : "LBL_GoToDeclaration"), cancel, false);
-            
-            return null;
         } else {
-            return performGoToImpl(doc, offset, goToSource, tooltip, javadoc, null);
+            performGoToImpl(doc, offset, goToSource, javadoc, null);
         }
     }
 
-    private static String performGoToImpl (final Document doc, final int offset, final boolean goToSource, final boolean tooltip, final boolean javadoc, final AtomicBoolean cancel) {
+    private static void performGoToImpl (final Document doc, final int offset, final boolean goToSource, final boolean javadoc, final AtomicBoolean cancel) {
         try {
             final FileObject fo = getFileObject(doc);
             
             if (fo == null)
-                return null;
+                return ;
             
-            final String[] result = new String[1];
             final int[] offsetToOpen = new int[] {-1};
             final ElementHandle[] elementToOpen = new ElementHandle[1];
             final String[] displayNameForError = new String[1];
@@ -176,165 +200,23 @@ public class GoToSupport {
                     if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
                         return;
                     cpInfo[0] = controller.getClasspathInfo();
-                    Token<JavaTokenId>[] token = new Token[1];
-                    int[] span = getIdentifierSpan(doc, offset, token);
-                    
-                    if (span == null) {
+
+                    Context resolved = resolveContext(controller, doc, offset, goToSource);
+
+                    if (resolved == null) {
                         CALLER.beep(goToSource, javadoc);
-                        return ;
-                    }
-                    
-                    int exactOffset = controller.getPositionConverter().getJavaSourcePosition(span[0] + 1);
-                    
-                    Element el = null;
-                    TypeMirror classType = null;
-                    boolean insideImportStmt = false;
-                    TreePath path = controller.getTreeUtilities().pathFor(exactOffset);
-                    
-                    if (token[0] != null && token[0].id() == JavaTokenId.JAVADOC_COMMENT) {
-                        el = JavadocImports.findReferencedElement(controller, offset);
-                    } else {
-                        TreePath parent = path.getParentPath();
-
-                        if (parent != null) {
-                            Tree parentLeaf = parent.getLeaf();
-
-                            if (parentLeaf.getKind() == Kind.NEW_CLASS && ((NewClassTree) parentLeaf).getIdentifier() == path.getLeaf()) {
-                                if (!isError(controller.getTrees().getElement(path.getParentPath()))) {
-                                    path = path.getParentPath();
-                                }
-                            } else if (parentLeaf.getKind() == Kind.IMPORT && ((ImportTree) parentLeaf).isStatic()) {
-                                el = handleStaticImport(controller, (ImportTree) parentLeaf);
-                                insideImportStmt = true;
-                            } else {
-                                if (   parentLeaf.getKind() == Kind.PARAMETERIZED_TYPE
-                                    && parent.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS
-                                    && ((ParameterizedTypeTree) parentLeaf).getType() == path.getLeaf()) {
-                                    if (!isError(controller.getTrees().getElement(parent.getParentPath()))) {
-                                        path = parent.getParentPath();
-                                        classType = controller.getTrees().getTypeMirror(path);
-                                    }
-                                }
-                            }
-
-                            if (el == null) {
-                                el = controller.getTrees().getElement(path);
-
-                                if (parentLeaf.getKind() == Kind.METHOD_INVOCATION && isError(el)) {
-                                    ExecutableElement ee = Utilities.fuzzyResolveMethodInvocation(controller, path.getParentPath(), new TypeMirror[1], new int[1]);
-
-                                    if (ee != null) {
-                                        el = ee;
-                                    } else {
-                                        ExpressionTree select = ((MethodInvocationTree)parentLeaf).getMethodSelect();
-                                        Name methodName = null;
-                                        switch (select.getKind()) {
-                                            case IDENTIFIER:
-                                                Scope s = controller.getTrees().getScope(path);
-                                                el = s.getEnclosingClass();
-                                                methodName = ((IdentifierTree)select).getName();
-                                                break;
-                                            case MEMBER_SELECT:
-                                                el = controller.getTrees().getElement(new TreePath(path, ((MemberSelectTree)select).getExpression()));
-                                                methodName = ((MemberSelectTree)select).getIdentifier();
-                                                break;
-                                        }
-                                        if (el != null) {
-                                            for (ExecutableElement m : ElementFilter.methodsIn(el.getEnclosedElements())) {
-                                                if (m.getSimpleName() == methodName) {
-                                                    el = m;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            if (!tooltip)
-                                CALLER.beep(goToSource, javadoc);
-                            else
-                                result[0] = null;
-                            return;
-                        }
-                    }
-                    
-                    if (isError(el)) {
-                        if (!tooltip)
-                            CALLER.beep(goToSource, javadoc);
-                        else
-                            result[0] = null;
                         return;
                     }
                     
-                    if (goToSource && !insideImportStmt) {
-                        TypeMirror type = null;
-                        
-                        if (el instanceof VariableElement)
-                            type = el.asType();
-                        
-                        if (type != null && type.getKind() == TypeKind.DECLARED) {
-                            el = ((DeclaredType)type).asElement();
-                        }
-                    }
-                    
-                    if (isError(el)) {
-                        if (!tooltip)
-                            CALLER.beep(goToSource, javadoc);
-                        else
-                            result[0] = null;
-                        return;
-                    }
-
-                    TypeMirror parentTypeForAnonymous = null;
-
-                    if (controller.getElementUtilities().isSynthetic(el) && el.getKind() == ElementKind.CONSTRUCTOR) {
-                        //check for annonymous innerclasses:
-                        TypeMirror[] classTypeRef = new TypeMirror[] {classType };
-
-                        el = handlePossibleAnonymousInnerClass(controller, el, classTypeRef);
-
-                        classType = parentTypeForAnonymous = classTypeRef[0];
-                    }
-                    
-                    if (isError(el)) {
-                        if (!tooltip)
-                            CALLER.beep(goToSource, javadoc);
-                        else
-                            result[0] = null;
-                        return;
-                    }
-                    
-                    if (el.getKind() != ElementKind.CONSTRUCTOR && (token[0].id() == JavaTokenId.SUPER || token[0].id() == JavaTokenId.THIS)) {
-                        if (!tooltip)
-                            CALLER.beep(goToSource, javadoc);
-                        else
-                            result[0] = null;
-                        return;
-                    }
-                    
-                    if (tooltip) {
-                        DisplayNameElementVisitor v = new DisplayNameElementVisitor(controller);
-
-                        if (el.getKind() == ElementKind.CONSTRUCTOR && classType != null && classType.getKind() == TypeKind.DECLARED) {
-                            v.printExecutable(((ExecutableElement) el), (DeclaredType) classType, tooltip);
-                        } else if (el.getKind() == ElementKind.INTERFACE && parentTypeForAnonymous != null && parentTypeForAnonymous.getKind() == TypeKind.DECLARED) {
-                            v.printType(((TypeElement) el), (DeclaredType) classType, tooltip);
-                        } else  {
-                            v.visit(el, true);
-                        }
-                        
-                        result[0] = "<html><body>" + v.result.toString();
-                    } else if (javadoc) {
-                        result[0] = null;
-                        URL url = SourceUtils.getJavadoc(el, controller.getClasspathInfo());
+                    if (javadoc) {
+                        URL url = SourceUtils.getJavadoc(resolved.resolved, controller.getClasspathInfo());
                         if (url != null) {
                             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
                         } else {
                             CALLER.beep(goToSource, javadoc);
                         }
                     } else {
-                        TreePath elpath = getPath(controller, el);
+                        TreePath elpath = getPath(controller, resolved.resolved);
                         
                         if (elpath != null) {
                             Tree tree = elpath.getLeaf();
@@ -347,15 +229,15 @@ public class GoToSupport {
                                 } else {
                                     //#71272: it is necessary to translate the offset:
                                     offsetToOpen[0] = controller.getPositionConverter().getOriginalPosition((int) startPos);
-                                    displayNameForError[0] = Utilities.getElementName(el, false).toString();
+                                    displayNameForError[0] = Utilities.getElementName(resolved.resolved, false).toString();
                                     tryToOpen[0] = true;
                                 }
                             } else {
                                 CALLER.beep(goToSource, javadoc);
                             }
                         } else {
-                            elementToOpen[0] = ElementHandle.create(el);
-                            displayNameForError[0] = Utilities.getElementName(el, false).toString();
+                            elementToOpen[0] = ElementHandle.create(resolved.resolved);
+                            displayNameForError[0] = Utilities.getElementName(resolved.resolved, false).toString();
                             tryToOpen[0] = true;
                         }
                     }
@@ -363,11 +245,9 @@ public class GoToSupport {
             });
             
             if (tryToOpen[0]) {
-                assert result[0] == null;
-
                 boolean openSucceeded = false;
 
-                if (cancel.get()) return null;
+                if (cancel.get()) return ;
 
                 if (offsetToOpen[0] >= 0) {
                     openSucceeded = CALLER.open(fo, offsetToOpen[0]);
@@ -380,19 +260,160 @@ public class GoToSupport {
                     CALLER.warnCannotOpen(displayNameForError[0]);
                 }
             }
-            
-            return result[0];
         } catch (ParseException ex) {
             throw new IllegalStateException(ex);
         }
     }
     
     public static void goTo(final Document doc, final int offset, final boolean goToSource) {
-        performGoTo(doc, offset, goToSource, false, false);
+        performGoTo(doc, offset, goToSource, false);
     }
     
     public static void goToJavadoc(Document doc, int offset) {
-        performGoTo(doc, offset, false, false, true);
+        performGoTo(doc, offset, false, true);
+    }
+
+    public static Context resolveContext(CompilationInfo controller, Document doc, int offset, boolean goToSource) {
+        Token<JavaTokenId>[] token = new Token[1];
+        int[] span = getIdentifierSpan(doc, offset, token);
+
+        if (span == null) {
+            return null;
+        }
+
+        int exactOffset = controller.getPositionConverter().getJavaSourcePosition(span[0] + 1);
+
+        Element el = null;
+        TypeMirror classType = null;
+        boolean insideImportStmt = false;
+        TreePath path = controller.getTreeUtilities().pathFor(exactOffset);
+
+        if (token[0] != null && token[0].id() == JavaTokenId.JAVADOC_COMMENT) {
+            el = JavadocImports.findReferencedElement(controller, offset);
+        } else {
+            TreePath parent = path.getParentPath();
+
+            if (parent != null) {
+                Tree parentLeaf = parent.getLeaf();
+
+                if (parentLeaf.getKind() == Kind.NEW_CLASS && ((NewClassTree) parentLeaf).getIdentifier() == path.getLeaf()) {
+                    if (!isError(controller.getTrees().getElement(path.getParentPath()))) {
+                        path = path.getParentPath();
+                    }
+                } else if (parentLeaf.getKind() == Kind.IMPORT && ((ImportTree) parentLeaf).isStatic()) {
+                    el = handleStaticImport(controller, (ImportTree) parentLeaf);
+                    insideImportStmt = true;
+                } else {
+                    if (   parentLeaf.getKind() == Kind.PARAMETERIZED_TYPE
+                        && parent.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS
+                        && ((ParameterizedTypeTree) parentLeaf).getType() == path.getLeaf()) {
+                        if (!isError(controller.getTrees().getElement(parent.getParentPath()))) {
+                            path = parent.getParentPath();
+                            classType = controller.getTrees().getTypeMirror(path);
+                        }
+                    }
+                }
+
+                if (el == null) {
+                    el = controller.getTrees().getElement(path);
+
+                    if (parentLeaf.getKind() == Kind.METHOD_INVOCATION && isError(el)) {
+                        ExecutableElement ee = Utilities.fuzzyResolveMethodInvocation(controller, path.getParentPath(), new TypeMirror[1], new int[1]);
+
+                        if (ee != null) {
+                            el = ee;
+                        } else {
+                            ExpressionTree select = ((MethodInvocationTree)parentLeaf).getMethodSelect();
+                            Name methodName = null;
+                            switch (select.getKind()) {
+                                case IDENTIFIER:
+                                    Scope s = controller.getTrees().getScope(path);
+                                    el = s.getEnclosingClass();
+                                    methodName = ((IdentifierTree)select).getName();
+                                    break;
+                                case MEMBER_SELECT:
+                                    el = controller.getTrees().getElement(new TreePath(path, ((MemberSelectTree)select).getExpression()));
+                                    methodName = ((MemberSelectTree)select).getIdentifier();
+                                    break;
+                            }
+                            if (el != null) {
+                                for (ExecutableElement m : ElementFilter.methodsIn(el.getEnclosedElements())) {
+                                    if (m.getSimpleName() == methodName) {
+                                        el = m;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                return null;
+            }
+        }
+
+        if (isError(el)) {
+            return null;
+        }
+
+        if (goToSource && !insideImportStmt) {
+            TypeMirror type = null;
+
+            if (el instanceof VariableElement)
+                type = el.asType();
+
+            if (type != null && type.getKind() == TypeKind.DECLARED) {
+                el = ((DeclaredType)type).asElement();
+            }
+        }
+
+        if (isError(el)) {
+            return null;
+        }
+
+        TypeMirror parentTypeForAnonymous = null;
+
+        if (controller.getElementUtilities().isSynthetic(el) && el.getKind() == ElementKind.CONSTRUCTOR) {
+            //check for annonymous innerclasses:
+            TypeMirror[] classTypeRef = new TypeMirror[] {classType };
+
+            el = handlePossibleAnonymousInnerClass(controller, el, classTypeRef);
+
+            classType = parentTypeForAnonymous = classTypeRef[0];
+        }
+
+        if (isError(el)) {
+            return null;
+        }
+
+        if (el.getKind() != ElementKind.CONSTRUCTOR && (token[0].id() == JavaTokenId.SUPER || token[0].id() == JavaTokenId.THIS)) {
+            return null;
+        }
+
+        return new Context(classType, parentTypeForAnonymous, el);
+    }
+
+    private static String computeTooltip(CompilationInfo controller, Context resolved, String key) {
+        DisplayNameElementVisitor v = new DisplayNameElementVisitor(controller);
+
+        if (resolved.resolved.getKind() == ElementKind.CONSTRUCTOR && resolved.classType != null && resolved.classType.getKind() == TypeKind.DECLARED) {
+            v.printExecutable(((ExecutableElement) resolved.resolved), (DeclaredType) resolved.classType, true);
+        } else if (resolved.resolved.getKind() == ElementKind.INTERFACE && resolved.parentTypeForAnonymous != null && resolved.parentTypeForAnonymous.getKind() == TypeKind.DECLARED) {
+            v.printType(((TypeElement) resolved.resolved), (DeclaredType) resolved.classType, true);
+        } else  {
+            v.visit(resolved.resolved, true);
+        }
+
+        String result = v.result.toString();
+        int overridableKind = overridableKind(resolved.resolved);
+
+        if (overridableKind != (-1) && key != null) {
+            result = NbBundle.getMessage(GoToSupport.class, key, overridableKind, result);
+        }
+
+        result = "<html><body>" + result;
+
+        return result;
     }
     
     private static final Set<JavaTokenId> USABLE_TOKEN_IDS = EnumSet.of(JavaTokenId.IDENTIFIER, JavaTokenId.THIS, JavaTokenId.SUPER);
@@ -578,6 +599,23 @@ public class GoToSupport {
             Exceptions.printStackTrace(iOException);
             return false;
         }
+    }
+
+    private static int overridableKind(Element el) {
+        if (   el.getModifiers().contains(Modifier.FINAL)
+            || el.getModifiers().contains(Modifier.PRIVATE)) {
+            return -1;
+        }
+
+        if (el.getKind().isClass() || el.getKind().isInterface()) {
+            return 0;
+        }
+
+        if (el.getKind() == ElementKind.METHOD) {
+            return 1;
+        }
+
+        return -1;
     }
 
     private static TreePath getPath(final CompilationInfo info, Element el) {
@@ -939,5 +977,16 @@ public class GoToSupport {
         public void beep(boolean goToSource, boolean goToJavadoc);
         public boolean open(ClasspathInfo info, ElementHandle<?> el);
         public void warnCannotOpen(String displayName);
+    }
+
+    public static final class Context {
+        public final TypeMirror classType;
+        public final TypeMirror parentTypeForAnonymous;
+        public final Element resolved;
+        public Context(TypeMirror classType, TypeMirror parentTypeForAnonymous, Element resolved) {
+            this.classType = classType;
+            this.parentTypeForAnonymous = parentTypeForAnonymous;
+            this.resolved = resolved;
+        }
     }
 }
