@@ -84,9 +84,7 @@ public abstract class SourceDataObject extends MultiDataObject {
 
     @Override
     public <T extends Cookie> T getCookie(Class<T> type) {
-        T obj = getLookup().lookup(type);
-        System.err.println("getCookie "+type.getName()+"->"+(obj != null ? obj.getClass().getName():"null"));
-        return obj;
+        return getLookup().lookup(type);
     }
 
     @Override
