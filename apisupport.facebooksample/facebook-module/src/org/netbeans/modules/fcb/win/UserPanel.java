@@ -41,12 +41,20 @@
 package org.netbeans.modules.fcb.win;
 
 import facebook.socialnetworkingservice.facebookresponse.User;
+import java.awt.EventQueue;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
-import org.openide.util.Exceptions;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.saas.facebook.FacebookSocialNetworkingService;
 import org.netbeans.saas.facebook.FacebookSocialNetworkingServiceAuthenticator;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -54,21 +62,21 @@ import org.netbeans.saas.facebook.FacebookSocialNetworkingServiceAuthenticator;
  */
 public class UserPanel extends javax.swing.JPanel {
 
-    private User u;
     private URL photoUrl;
-    private String tmpStatus;
+    private User u;
 
     /** Creates new form UserPanel */
     public UserPanel(User u) {
+        this.u = u;
         try {
             photoUrl = new URL(u.getPic().getValue());
         } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(UserPanel.class.getName()).log(Level.WARNING, ex.getMessage(), ex);
         }
         initComponents();
-        jLabel1.setToolTipText(u.getName());
-        jLabel2.setText(u.getName());
-        jTextArea1.setText(u.getStatus().getValue().getMessage());
+        jLabel1.setToolTipText(u.getFirstName());
+        String currentStatus = u.getStatus().getValue().getMessage().trim();
+        setStatus(currentStatus);
     }
 
     /** This method is called from within the constructor to
@@ -84,39 +92,31 @@ public class UserPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
         jButton1 = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTextPane1 = new javax.swing.JTextPane();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
 
         setBackground(java.awt.Color.white);
         setPreferredSize(new java.awt.Dimension(315, 239));
 
         jLabel1.setIcon(new ImageIcon(photoUrl));
+        jLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         jLabel1.setFocusable(false);
         jLabel1.setPreferredSize(new java.awt.Dimension(100, 300));
 
-        jTextArea1.setColumns(18);
-        jTextArea1.setEditable(false);
+        jTextArea1.setFont(new java.awt.Font("Arial", 0, 14));
         jTextArea1.setLineWrap(true);
         jTextArea1.setRows(5);
         jTextArea1.setTabSize(4);
+        jTextArea1.setMargin(new java.awt.Insets(5, 8, 5, 8));
         jScrollPane1.setViewportView(jTextArea1);
 
-        jButton1.setBackground(java.awt.Color.white);
         jButton1.setText(org.openide.util.NbBundle.getMessage(UserPanel.class, "UserPanel.jButton1.text")); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
-            }
-        });
-
-        jLabel2.setBackground(java.awt.Color.white);
-        jLabel2.setForeground(java.awt.Color.blue);
-
-        jButton2.setText(org.openide.util.NbBundle.getMessage(UserPanel.class, "UserPanel.jButton2.text")); // NOI18N
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
             }
         });
 
@@ -127,89 +127,174 @@ public class UserPanel extends javax.swing.JPanel {
             }
         });
 
+        jScrollPane2.setBorder(null);
+        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        jTextPane1.setBorder(null);
+        jTextPane1.setContentType(org.openide.util.NbBundle.getMessage(UserPanel.class, "UserPanel.jTextPane1.contentType")); // NOI18N
+        jTextPane1.setEditable(false);
+        jScrollPane2.setViewportView(jTextPane1);
+
+        jLabel2.setBackground(java.awt.Color.white);
+        jLabel2.setFont(new java.awt.Font("Arial", 0, 10));
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(UserPanel.class, "TTIP_newStatus")); // NOI18N
+        jLabel2.setFocusable(false);
+
+        jLabel3.setBackground(java.awt.Color.white);
+        jLabel3.setFont(new java.awt.Font("Arial", 1, 10));
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(UserPanel.class, "UserPanel.jLabel3.text")); // NOI18N
+        jLabel3.setFocusable(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(96, 96, 96)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton3))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane1)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jButton3, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton3)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jButton3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane2)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton2)
-                    .addComponent(jButton1))
-                .addContainerGap())
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton1)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UserPanel.class, "TTIP_newStatus")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        String ac = evt.getActionCommand();
-        if ("Edit".equals(ac)) {
-            jTextArea1.setEditable(true);
-            jButton1.setText("Post");
-            jButton2.setText("Cancel");
-            tmpStatus = jTextArea1.getText();
-        } else {
-            jTextArea1.setEditable(false);
-            jButton1.setText("Edit");
-            jButton2.setText("Clear");
-            FacebookSocialNetworkingService.updateStatus(jTextArea1.getText());
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(UserPanel.class, "MSG_statusUpdate"));
+        class X implements Runnable {
+
+            void init() {
+                handle.start();
+                jButton1.setEnabled(false);
+                jButton3.setEnabled(false);
+                jTextArea1.setEnabled(false);
+                RequestProcessor.getDefault().post(this);
+            }
+
+            @Override
+            public void run() {
+                if (EventQueue.isDispatchThread()) {
+                    finish();
+                } else {
+                    handle.progress(NbBundle.getMessage(UserPanel.class, "MSG_connecting"));
+                    try {
+                        FacebookSocialNetworkingService.updateStatus(jTextArea1.getText());
+                    } catch (Exception ioe) {
+                        if (!(ioe instanceof IOException)) {
+                            throw new RuntimeException(ioe);
+                        }
+                    }
+                    EventQueue.invokeLater(this);
+                }
+            }
+
+            void finish() {
+                jButton1.setEnabled(true);
+                jButton3.setEnabled(true);
+                setStatus(jTextArea1.getText().trim());
+                jTextArea1.setText("");
+                jTextArea1.setEnabled(true);
+                handle.finish();
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(UserPanel.class, "MSG_statusUpdate_done"));
+            }
         }
+        new X().init();
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        String ac = evt.getActionCommand();
-        if ("Clear".equals(ac)) {
-            jTextArea1.setEditable(false);
-            FacebookSocialNetworkingService.updateStatus(null);
-            jTextArea1.setText("");
-        } else {
-            jTextArea1.setEditable(false);
-            jTextArea1.setText(tmpStatus);
-            jButton1.setText("Edit");
-            jButton2.setText("Clear");
-            FacebookSocialNetworkingService.updateStatus(jTextArea1.getText());
-        }
-    }//GEN-LAST:event_jButton2ActionPerformed
-
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        FacebookSocialNetworkingServiceAuthenticator.logout();
-        FcbTopComponent.openLoginPanel();
-    }//GEN-LAST:event_jButton3ActionPerformed
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(UserPanel.class, "MSG_fcbLogout"));
+        class X implements Runnable {
 
+            void init() {
+                handle.start();
+                jButton1.setEnabled(false);
+                jButton3.setEnabled(false);
+                jTextArea1.setEnabled(false);
+                RequestProcessor.getDefault().post(this);
+            }
+
+            @Override
+            public void run() {
+                if (EventQueue.isDispatchThread()) {
+                    finish();
+                } else {
+                    handle.progress(NbBundle.getMessage(UserPanel.class, "MSG_connecting"));
+                    try {
+                        FacebookSocialNetworkingServiceAuthenticator.logout();
+                    } catch (Exception ioe) {
+                        if (!(ioe instanceof IOException)) {
+                            throw new RuntimeException(ioe);
+                        }
+                    }
+                    EventQueue.invokeLater(this);
+                }
+            }
+
+            void finish() {
+                jButton1.setEnabled(true);
+                jButton3.setEnabled(true);
+                jTextArea1.setEnabled(true);
+                FcbTopComponent.openLoginPanel();
+                handle.finish();
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(UserPanel.class, "MSG_loggedOut"));
+            }
+        }
+        new X().init();
+    }//GEN-LAST:event_jButton3ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextPane jTextPane1;
     // End of variables declaration//GEN-END:variables
+
+    private void setStatus(String text) {
+        if (text.length() > 0) {
+            jTextPane1.setText(NbBundle.getMessage(
+                    UserPanel.class, "TXT_status", u.getName(), text));
+        } else {
+            jTextPane1.setText(NbBundle.getMessage(
+                    UserPanel.class, "TXT_statusEmpty", u.getName()));
+        }
+    }
 
 }
