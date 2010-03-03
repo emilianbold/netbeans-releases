@@ -56,7 +56,6 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 /**
  * RestConnection
  *
@@ -66,9 +65,8 @@ public class RestConnection {
 
     static {
         //set the identification of the client
-        System.setProperty("http.agent", System.getProperty("user.name") + " (from NetBeans IDE)");
+        System.setProperty("http.agent", System.getProperty("user.name") + " (from NetBeans IDE)"); //NOI18N
     }
-
     private HttpURLConnection conn;
     private String date;
 
@@ -97,9 +95,9 @@ public class RestConnection {
             conn.setDefaultUseCaches(false);
             conn.setAllowUserInteraction(true);
 
-            SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
+            SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z"); //NOI18N
             date = format.format(new Date());
-            conn.setRequestProperty("Date", date);
+            conn.setRequestProperty("Date", date); //NOI18N
         } catch (Exception ex) {
             Logger.getLogger(RestConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -118,7 +116,7 @@ public class RestConnection {
     }
 
     public RestResponse get(String[][] headers) throws IOException {
-        conn.setRequestMethod("GET");
+        conn.setRequestMethod("GET"); //NOI18N
         return connect(headers, null);
     }
 
@@ -127,7 +125,7 @@ public class RestConnection {
     }
 
     public RestResponse head(String[][] headers) throws IOException {
-        conn.setRequestMethod("HEAD");
+        conn.setRequestMethod("HEAD"); //NOI18N
         return connect(headers, null);
     }
 
@@ -137,29 +135,31 @@ public class RestConnection {
 
     public RestResponse put(String[][] headers, String data) throws IOException {
         InputStream is = null;
-        if(data != null)
-            is = new ByteArrayInputStream(data.getBytes("UTF-8"));
+        if (data != null) {
+            is = new ByteArrayInputStream(data.getBytes("UTF-8")); //NOI18N
+        }
         return put(headers, is);
     }
 
     public RestResponse put(String[][] headers, InputStream is) throws IOException {
-        conn.setRequestMethod("PUT");
+        conn.setRequestMethod("PUT"); //NOI18N
         return connect(headers, is);
     }
-    
+
     public RestResponse post(String[][] headers) throws IOException {
         return post(headers, (InputStream) null);
     }
 
     public RestResponse post(String[][] headers, String data) throws IOException {
         InputStream is = null;
-        if(data != null)
-            is = new ByteArrayInputStream(data.getBytes("UTF-8"));
+        if (data != null) {
+            is = new ByteArrayInputStream(data.getBytes("UTF-8")); //NOI18N
+        }
         return post(headers, is);
     }
-    
+
     public RestResponse post(String[][] headers, InputStream is) throws IOException {
-        conn.setRequestMethod("POST");
+        conn.setRequestMethod("POST"); //NOI18N
         return connect(headers, is);
     }
 
@@ -167,14 +167,14 @@ public class RestConnection {
      * Used by post method whose contents are like form input
      */
     public RestResponse post(String[][] headers, String[][] params) throws IOException {
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("ContentType", "application/x-www-form-urlencoded");
+        conn.setRequestMethod("POST"); //NOI18N
+        conn.setRequestProperty("ContentType", "application/x-www-form-urlencoded"); //NOI18N
         String data = encodeParams(params);
-        return connect(headers, new ByteArrayInputStream(data.getBytes("UTF-8")));
+        return connect(headers, new ByteArrayInputStream(data.getBytes("UTF-8"))); //NOI18N
     }
 
     public RestResponse delete(String[][] headers) throws IOException {
-        conn.setRequestMethod("DELETE");
+        conn.setRequestMethod("DELETE"); //NOI18N
         return connect(headers, null);
     }
 
@@ -190,15 +190,15 @@ public class RestConnection {
             setHeaders(headers);
 
             String method = conn.getRequestMethod();
-            
+
             byte[] buffer = new byte[1024];
             int count = 0;
-            
-            if (method.equals("PUT") || method.equals("POST")) {
+
+            if (method.equals("PUT") || method.equals("POST")) { //NOI18N
                 if (data != null) {
                     conn.setDoOutput(true);
                     OutputStream os = conn.getOutputStream();
-                    
+
                     while ((count = data.read(buffer)) != -1) {
                         os.write(buffer, 0, count);
                     }
@@ -208,7 +208,7 @@ public class RestConnection {
 
             RestResponse response = new RestResponse();
             InputStream is = conn.getInputStream();
-         
+
             while ((count = is.read(buffer)) != -1) {
                 response.write(buffer, 0, count);
             }
@@ -218,17 +218,17 @@ public class RestConnection {
             response.setContentType(conn.getContentType());
             response.setContentEncoding(conn.getContentEncoding());
             response.setLastModified(conn.getLastModified());
-            
+
             return response;
         } catch (Exception e) {
-            String errMsg = "Cannot connect to :" + conn.getURL();
+            String errMsg = "Cannot connect to :" + conn.getURL(); //NOI18N
             try {
                 BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
                 String line;
-                StringBuffer buf = new StringBuffer();
+                StringBuilder buf = new StringBuilder();
                 while ((line = rd.readLine()) != null) {
                     buf.append(line);
-                    buf.append('\n');
+                    buf.append('\n'); //NOI18N
                 }
                 errMsg = buf.toString();
             } finally {
@@ -244,7 +244,7 @@ public class RestConnection {
                 String key = pathParams[i][0];
                 String value = pathParams[i][1];
                 if (value == null) {
-                    value = "";
+                    value = ""; //NOI18N
                 }
                 url = url.replace(key, value);
             }
@@ -255,13 +255,13 @@ public class RestConnection {
     private String encodeUrl(String baseUrl, String[][] params) {
         String encodedParams = encodeParams(params);
         if (encodedParams.length() > 0) {
-            encodedParams = "?"+ encodedParams;
+            encodedParams = "?" + encodedParams; //NOI18N
         }
         return baseUrl + encodedParams;
     }
 
     private String encodeParams(String[][] params) {
-        String p = "";
+        String p = ""; //NOI18N
 
         if (params != null) {
             for (int i = 0; i < params.length; i++) {
@@ -270,7 +270,7 @@ public class RestConnection {
 
                 if (value != null) {
                     try {
-                        p += key + "=" + URLEncoder.encode(value, "UTF-8") + "&";
+                        p += key + "=" + URLEncoder.encode(value, "UTF-8") + "&"; //NOI18N
                     } catch (UnsupportedEncodingException ex) {
                         Logger.getLogger(RestConnection.class.getName()).log(Level.SEVERE, null, ex);
                     }

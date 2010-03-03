@@ -43,9 +43,13 @@ package org.netbeans.modules.fcb.win;
 import facebook.socialnetworkingservice.facebookresponse.User;
 import java.awt.EventQueue;
 import java.io.IOException;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.saas.facebook.FacebookSocialNetworkingService;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -57,7 +61,6 @@ public class LoginPanel extends javax.swing.JPanel {
     /** Creates new form LoginPanel */
     public LoginPanel() {
         initComponents();
-        jProgressBar1.setVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -71,6 +74,9 @@ public class LoginPanel extends javax.swing.JPanel {
 
         jButton1 = new javax.swing.JButton();
 
+        setBackground(java.awt.Color.white);
+        setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 100, 100));
+
         jButton1.setText(org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.jButton1.text")); // NOI18N
         jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -78,44 +84,19 @@ public class LoginPanel extends javax.swing.JPanel {
                 jButton1ActionPerformed(evt);
             }
         });
-
-        jProgressBar1.setString(org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.jProgressBar1.string")); // NOI18N
-        jProgressBar1.setStringPainted(true);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(99, 99, 99)
-                        .addComponent(jButton1)))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jButton1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 42, Short.MAX_VALUE)
-                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
+        add(jButton1);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(LoginPanel.class, "MSG_fcbLogin"));
         class X implements Runnable {
 
             User u;
 
             void init() {
-                jProgressBar1.setIndeterminate(true);
-                jProgressBar1.setVisible(true);
+                jButton1.setEnabled(false);
+                handle.start();
                 RequestProcessor.getDefault().post(this);
             }
 
@@ -124,7 +105,8 @@ public class LoginPanel extends javax.swing.JPanel {
                 if (EventQueue.isDispatchThread()) {
                     finish();
                 } else {
-                    jProgressBar1.setString("Signing in...");
+                    handle.progress(NbBundle.getMessage(
+                            LoginPanel.class, "MSG_connecting"));
                     try {
                         u = FacebookSocialNetworkingService.getUserInfo();
                     } catch (Exception ioe) {
@@ -137,11 +119,15 @@ public class LoginPanel extends javax.swing.JPanel {
             }
 
             void finish() {
-                jProgressBar1.setVisible(false);
+                jButton1.setEnabled(true);
+                handle.finish();
                 if (u != null) {
                     FcbTopComponent.setUser(u);
+                    StatusDisplayer.getDefault().setStatusText(
+                            NbBundle.getMessage(LoginPanel.class, "MSG_loggedIn"));
                 } else {
-                    final NotifyDescriptor nd = new NotifyDescriptor.Message("Try again...",
+                    final NotifyDescriptor nd = new NotifyDescriptor.Message(
+                            NbBundle.getMessage(LoginPanel.class, "MSG_tryAgain"),
                             NotifyDescriptor.INFORMATION_MESSAGE);
                     DialogDisplayer.getDefault().notify(nd);
                 }
@@ -151,6 +137,5 @@ public class LoginPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jButton1ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
-    private final javax.swing.JProgressBar jProgressBar1 = new javax.swing.JProgressBar();
     // End of variables declaration//GEN-END:variables
 }
