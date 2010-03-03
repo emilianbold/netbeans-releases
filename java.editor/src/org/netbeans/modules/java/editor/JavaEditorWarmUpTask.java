@@ -235,7 +235,8 @@ public class JavaEditorWarmUpTask implements Runnable{
                     try {
                         final View rootView = Utilities.getDocumentView(pane);
                         LockView lockView = LockView.get(rootView);
-                        lockView.lock();
+                        if (lockView != null)
+                            lockView.lock();
                         try {
                             int viewCount = rootView.getViewCount();
 
@@ -291,7 +292,8 @@ public class JavaEditorWarmUpTask implements Runnable{
                             }
 
                         } finally {
-                            lockView.unlock();
+                            if (lockView != null)
+                                lockView.unlock();
                         }
                     } finally {
                         doc.readUnlock();
