@@ -216,6 +216,11 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         exec(cmd);
     }
 
+    public void doExport(File fileFrom, File fileTo, boolean force) throws SVNClientException {
+        ExportCommand cmd = new ExportCommand(fileFrom, fileTo, force);
+        exec(cmd);
+    }
+
     public long commit(File[] files, String message, boolean recurse) throws SVNClientException {
         return commit(files, message, false, recurse);
     }
@@ -833,10 +838,6 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     public ISVNDirEntry getDirEntry(File arg0, SVNRevision arg1) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void doExport(File arg0, File arg1, boolean arg2) throws SVNClientException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

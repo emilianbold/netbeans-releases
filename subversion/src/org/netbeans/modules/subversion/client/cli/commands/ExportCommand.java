@@ -69,12 +69,12 @@ public class ExportCommand extends SvnCommand {
         this.file = null;
     }
 
-    public ExportCommand(File file, File destination, SVNRevision revision, boolean force) {
+    public ExportCommand(File file, File destination, boolean force) {
         this.file = file;
         this.destination = destination;
-        this.revision = revision;
         this.force = force;
 
+        this.revision = null;
         this.url = null;
     }
 
@@ -85,8 +85,10 @@ public class ExportCommand extends SvnCommand {
 
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {
-        arguments.add("export");
-        arguments.add(revision);
+        arguments.add("export"); // NOI18N
+        if(revision != null) {
+            arguments.add(revision);
+        }
         if(url != null) {
             arguments.add(url);
             arguments.add(destination);
@@ -95,7 +97,7 @@ public class ExportCommand extends SvnCommand {
             arguments.add(destination);
         }
         if (force) {
-            arguments.add("--force");
+            arguments.add("--force"); // NOI18N
         }
         setCommandWorkingDirectory(destination);
     }
