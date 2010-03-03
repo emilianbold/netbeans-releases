@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.editor;
 import java.io.IOException;
 
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
-import org.openide.text.*;
 import org.openide.loaders.DataObject;
 
 import org.openide.cookies.CloseCookie;
@@ -56,8 +55,8 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
-import org.openide.nodes.CookieSet;
-import org.openide.nodes.Node.Cookie;
+import org.openide.text.DataEditorSupport;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.CloneableOpenSupport;
 
 /**
@@ -72,22 +71,23 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
     private final SaveCookie saveCookie = new SaveCookie() {
 
         /** Implements <code>SaveCookie</code> interface. */
+        @Override
         public void save() throws IOException {
             CppEditorSupport.this.saveDocument();
             CppEditorSupport.this.getDataObject().setModified(false);
         }
     };
 
-    private final CookieSet cookies;
+    private final InstanceContent ic;
     private boolean readonly;
 
     /**
      *  Create a new Editor support for the given C/C++/Fortran source.
      *  @param entry The (primary) file entry representing the C/C++/f95 source file
      */
-    public CppEditorSupport(DataObject obj, CookieSet cookies) {
+    public CppEditorSupport(DataObject obj, InstanceContent ic) {
         super(obj, new Environment(obj));
-        this.cookies = cookies;
+        this.ic = ic;
     }
 
     /** 
@@ -122,19 +122,13 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
     /** Helper method. Adds save cookie to the data object. */
     private void addSaveCookie() {
         // Adds save cookie to the data object.
-        if (cookies.getCookie(SaveCookie.class) == null) {
-            cookies.add(saveCookie);
-        }
+        ic.add(saveCookie);
     }
 
     /** Helper method. Removes save cookie from the data object. */
     private void removeSaveCookie() {
         // Remove save cookie from the data object.
-        Cookie cookie = cookies.getCookie(SaveCookie.class);
-
-        if (cookie != null && cookie.equals(saveCookie)) {
-            cookies.remove(saveCookie);
-        }
+        ic.remove(saveCookie);
     }
 
     @Override

@@ -50,9 +50,11 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.Cookie;
 import org.openide.util.NbBundle;
-import org.openide.nodes.CookieSet;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *  Abstract superclass of a C/C++/Fortran DataObject.
@@ -61,17 +63,28 @@ public abstract class SourceDataObject extends MultiDataObject {
 
     /** Serial version number */
     static final long serialVersionUID = -6788084224129713370L;
+    private InstanceContent ic;
+    private Lookup myLookup;
+
 
     public SourceDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
-
-        CookieSet cookies = getCookieSet();
-        CndCookieProvider.getDefault().addCookies(this, cookies);
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    public synchronized Lookup getLookup() {
+        if (myLookup == null) {
+            ic = new InstanceContent();
+            ic.add(this);
+            CndCookieProvider.getDefault().addLookup(this, ic);
+            myLookup = new AbstractLookup(ic);
+        }
+        return myLookup;
+    }
+
+    @Override
+    public <T extends Cookie> T getCookie(Class<T> type) {
+        return getLookup().lookup(type);
     }
 
     @Override

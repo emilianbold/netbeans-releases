@@ -45,8 +45,8 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.CookieSet;
 import org.openide.util.WeakSet;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -56,14 +56,15 @@ import org.openide.util.lookup.ServiceProvider;
 public final class NativeFileItemSetProvider extends CndCookieProvider {
 
     @Override
-    public void addCookies(DataObject dao, CookieSet cookies) {
-        cookies.add(new NativeFileItemSetImpl());
+    public void addLookup(DataObject dao, InstanceContent ic) {
+        ic.add(new NativeFileItemSetImpl());
     }
 
     private static final class NativeFileItemSetImpl implements NativeFileItemSet {
 
         private Set<NativeFileItem> items = new WeakSet<NativeFileItem>(1);
 
+        @Override
         public synchronized Collection<NativeFileItem> getItems() {
             ArrayList<NativeFileItem> res = new ArrayList<NativeFileItem>(items.size());
             for(NativeFileItem item : items) {
@@ -74,6 +75,7 @@ public final class NativeFileItemSetProvider extends CndCookieProvider {
             return res;
         }
 
+        @Override
         public synchronized void add(NativeFileItem item) {
             if (item == null) {
                 return;
@@ -81,6 +83,7 @@ public final class NativeFileItemSetProvider extends CndCookieProvider {
             items.add(item);
         }
 
+        @Override
         public synchronized void remove(NativeFileItem item) {
             if (item == null) {
                 return;
@@ -88,6 +91,7 @@ public final class NativeFileItemSetProvider extends CndCookieProvider {
             items.remove(item);
         }
 
+        @Override
         public boolean isEmpty() {
             return items.isEmpty();
         }

@@ -107,7 +107,7 @@ public class ModalMessageDlg extends javax.swing.JPanel {
         };
 
         JPanel panel;
-        if (canceller != null) {
+        if (canceller == null) {
             panel = new ModalMessageDlgPane(message);
         } else {
             Cancellable wrapper = new Cancellable() {

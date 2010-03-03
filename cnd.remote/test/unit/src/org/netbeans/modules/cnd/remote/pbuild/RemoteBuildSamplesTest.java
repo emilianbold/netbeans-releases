@@ -63,12 +63,18 @@ public class RemoteBuildSamplesTest extends RemoteBuildTestBase {
         super(testName, execEnv);       
     }
 
-    public void buildOnce(Sync sync, Toolchain toolchain, String projectName, String projectDir) throws Exception {
+    protected void buildSample(Sync sync, Toolchain toolchain, String projectName, String projectDir, int count) throws Exception {
+        int timeout = getSampleBuildTimeout();
+        buildSample(sync, toolchain, projectName, projectDir, count, timeout, timeout);
+    }
+
+    protected void buildSample(Sync sync, Toolchain toolchain, String projectName, String projectDir, 
+            int count, int firstTimeout, int subsequentTimeout) throws Exception {
 
         setupHost();
         setSyncFactory(sync.ID);
 
-        assertEquals("Wrong sybc factory:", sync.ID,
+        assertEquals("Wrong sync factory:", sync.ID,
                 ServerList.get(getTestExecutionEnvironment()).getSyncFactory().getID());
 
         setDefaultCompilerSet(toolchain.ID);
@@ -78,29 +84,22 @@ public class RemoteBuildSamplesTest extends RemoteBuildTestBase {
         clearRemoteSyncRoot();
         FileObject projectDirFO = prepareSampleProject(projectName, "Args_01");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
+        for (int i = 0; i < count; i++) {
+            if (count > 0) {
+                System.err.printf("BUILDING %s, PASS %d\n", projectName, i);
+            }
+            buildProject(makeProject, firstTimeout, TimeUnit.SECONDS);
+        }        
     }
 
     @ForAllEnvironments
     public void testBuildSample_Rfs_Gnu_Arguments_Once() throws Exception {        
-        buildOnce(Sync.RFS, Toolchain.GNU, "Arguments", "Args_01");
+        buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_01", 1);
     }
-
-
 
     @ForAllEnvironments
     public void testBuildSampleArgumentsTwice() throws Exception {
-        setupHost();
-        setSyncFactory("scp");
-        clearRemoteSyncRoot();
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_02");
-        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        System.err.printf("BUILDING FIRST TIME\n");
-        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
-        System.err.printf("BUILDING SECOND TIME\n");
-        buildProject(makeProject, getSampleBuildTimeout()/2, TimeUnit.SECONDS);
-        System.err.printf("BUILDING THIRD TIME\n");
-        buildProject(makeProject, getSampleBuildTimeout()/2, TimeUnit.SECONDS);
+        buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_02", 3, getSampleBuildTimeout(), getSampleBuildTimeout()/3);
     }
 
     public static Test suite() {
