@@ -80,14 +80,7 @@ public class SubversionVisibilityQuery extends VCSVisibilityQuery implements Ver
         try {
             // get cached status so you won't block or trigger synchronous shareability calls
             FileInformation info = getCache().getCachedStatus(file);
-            if(info != null) {
-                return info.getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
-            } else {
-                // status isn't cached yet; lets be optimistic here and return true
-                // the visibility will be called again as soon as the refreshes finnishes
-                getCache().refreshAsync(file); 
-                return true;
-            }
+            return info == null || info.getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
         } catch (Exception e) {
             LOG.log(Level.SEVERE, e.getMessage(), e);
             return true;
