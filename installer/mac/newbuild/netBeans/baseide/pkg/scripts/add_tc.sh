@@ -15,15 +15,7 @@ then
   dirname=`dirname "$0"`
   jdk_home=`"$dirname"/get_current_jdk.sh`
   "$jdk_home"/bin/java -cp \
-                           platform/core/core.jar:\
-                           platform/lib/boot.jar:\
-			   platform/lib/org-openide-modules.jar:\
-			   platform/core/org-openide-filesystems.jar:\
-                           platform/lib/org-openide-util.jar:\
-                           platform/lib/org-openide-util-lookup.jar:\
-                           enterprise/modules/org-netbeans-modules-j2eeapis.jar:\
-                           enterprise/modules/org-netbeans-modules-j2eeserver.jar:\
-                           enterprise/modules/org-netbeans-modules-tomcat5.jar \
+                           platform/core/core.jar:platform/lib/boot.jar:platform/lib/org-openide-modules.jar:platform/core/org-openide-filesystems.jar:platform/lib/org-openide-util.jar:platform/lib/org-openide-util-lookup.jar:enterprise/modules/org-netbeans-modules-j2eeapis.jar:enterprise/modules/org-netbeans-modules-j2eeserver.jar:enterprise/modules/org-netbeans-modules-tomcat5.jar \
                            \
                            org.netbeans.modules.tomcat5.registration.AutomaticRegistration \
                            \
