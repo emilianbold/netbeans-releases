@@ -163,7 +163,7 @@ public class Man2HTML {
             if (line != null) {
                 int i = breakAtColumn(line);
                 if (i > 0) {
-                    line = line.substring(0, i) + "\n" + line.substring(0, countIndent(line)) + line.substring(i+1);
+                    line = line.substring(0, i) + "\n" + line.substring(0, countIndent(line)) + line.substring(i+1); // NOI18N
                     int j = 0;
                 }
             }

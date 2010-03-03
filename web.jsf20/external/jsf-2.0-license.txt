@@ -1,6 +1,7 @@
 Name: Java Server Faces
 Version: 2.0.2-b10
 License: CDDL-1.0
+OSR: Sun
 Description: Java Server Faces
 Origin: http://java.sun.com/javaee/javaserverfaces/download.html
 

@@ -74,13 +74,8 @@ import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
-import org.netbeans.modules.cnd.makeproject.ui.tests.CndTestRunnerNodeFactory;
-import org.netbeans.modules.cnd.makeproject.ui.tests.CndUnitHandlerFactory;
-import org.netbeans.modules.cnd.makeproject.ui.tests.TestRunnerLineConvertor;
+import org.netbeans.modules.cnd.makeproject.spi.TestRunnerLineConvertorProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.gsf.testrunner.api.Manager;
-import org.netbeans.modules.gsf.testrunner.api.TestSession;
-import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -94,6 +89,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -295,44 +291,39 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
         }
 
-        NativeExecutionDescriptor descr;
+        NativeExecutionDescriptor descr = null;
 
         if (actionType == PredefinedType.TEST) {
-            final TestSession session = new TestSession("Test", // NOI18N
-                    pae.getProject(),
-                    SessionType.TEST, new CndTestRunnerNodeFactory());
+            TestRunnerLineConvertorProvider p = Lookup.getDefault().lookup(TestRunnerLineConvertorProvider.class);
+            if (p != null) {
+                final LineConvertor convertor = p.createConvertor(pae.getProject());
 
-            //session.setRerunHandler(this);
+                descr = new NativeExecutionDescriptor()
+                        .controllable(true)
+                        .frontWindow(false)
+                        .inputVisible(showInput)
+                        .inputOutput(io)
+                        .outLineBased(true)
+                        .showProgress(true)
+                        .postExecution(processChangeListener)
+                        .errConvertorFactory(new LineConvertorFactory() {
+                            LineConvertor c = convertor;
 
-            final Manager manager = Manager.getInstance();
-            final CndUnitHandlerFactory handlerFactory = new CndUnitHandlerFactory();
+                            @Override
+                            public LineConvertor newLineConvertor() {
+                                return c;
+                            }})
+                        .outConvertorFactory(new LineConvertorFactory() {
+                            LineConvertor c = convertor;
 
-            final TestRunnerLineConvertor outConvertor = new TestRunnerLineConvertor(manager, session, handlerFactory);
-            final TestRunnerLineConvertor errConvertor = new TestRunnerLineConvertor(manager, session, handlerFactory);
-
-            descr = new NativeExecutionDescriptor()
-                    .controllable(true)
-                    .frontWindow(false)
-                    .inputVisible(showInput)
-                    .inputOutput(io)
-                    .outLineBased(true)
-                    .showProgress(true)
-                    .postExecution(processChangeListener)
-                    .errConvertorFactory(new LineConvertorFactory() {
-                        LineConvertor c = errConvertor;
-
-                        @Override
-                        public LineConvertor newLineConvertor() {
-                            return c;
-                        }})
-                    .outConvertorFactory(new LineConvertorFactory() {
-                        LineConvertor c = outConvertor;
-
-                        @Override
-                        public LineConvertor newLineConvertor() {
-                            return c;
-                        }});
-        } else {
+                            @Override
+                            public LineConvertor newLineConvertor() {
+                                return c;
+                            }});
+            }
+        }
+        
+        if(descr == null) {
             descr = new NativeExecutionDescriptor()
                     .controllable(true)
                     .frontWindow(true)

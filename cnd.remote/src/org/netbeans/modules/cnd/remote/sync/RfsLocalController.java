@@ -8,11 +8,14 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.sync.download.HostUpdates;
@@ -32,7 +35,12 @@ class RfsLocalController implements Runnable {
     private final FileData fileData;
     private final RemotePathMap mapper;
     private final Set<File> remoteUpdates;
-    protected final File privProjectStorageDir;
+    private final File privProjectStorageDir;
+    /**
+     * Maps remote canonical remote path remote controller operates with
+     * to the absolute remote path local controller uses
+     */
+    private final Map<String, String> canonicalToAbsolute = new HashMap<String, String>();
     
     private static enum RequestKind {
         REQUEST,
@@ -94,24 +102,28 @@ class RfsLocalController implements Runnable {
         while (true) {
             try {
                 String request = requestReader.readLine();
-                RemoteUtil.LOGGER.finest("LC: REQ " + request);
+                RemoteUtil.LOGGER.log(Level.FINEST, "LC: REQ {0}", request);
                 if (request == null) {
                     break;
                 }
                 String remoteFile = request.substring(2);
                 RequestKind kind = getRequestKind(request);
+                String initialPath = canonicalToAbsolute.get(remoteFile);
+                if (initialPath != null) {
+                    remoteFile = initialPath;
+                }
                 String localFilePath = mapper.getLocalPath(remoteFile);
                 if (localFilePath != null) {
                     File localFile = new File(localFilePath);
                     if (kind == RequestKind.WRITTEN) {
                         fileData.setState(localFile, FileState.UNCONTROLLED);
                         remoteUpdates.add(localFile);
-                        RemoteUtil.LOGGER.finest("LC: uncontrolled " + localFile);
+                        RemoteUtil.LOGGER.log(Level.FINEST, "LC: uncontrolled {0}", localFile);
                     } else {
                         CndUtils.assertTrue(kind == RequestKind.REQUEST, "kind should be RequestKind.REQUEST, but is " + kind);
                         if (localFile.exists() && !localFile.isDirectory()) {
                             //FileState state = fileData.getState(localFile);
-                            RemoteUtil.LOGGER.finest("LC: uploading " + localFile + " to " + remoteFile + " started");
+                            RemoteUtil.LOGGER.log(Level.FINEST, "LC: uploading {0} to {1} started", new Object[]{localFile, remoteFile});
                             long fileTime = System.currentTimeMillis();
                             Future<Integer> task = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 0777, err);
                             try {
@@ -172,6 +184,7 @@ class RfsLocalController implements Runnable {
      * Feeds remote controller with the list of files and their lengths
      */
     void feedFiles(SharabilityFilter filter) {
+        long time = System.currentTimeMillis();
         List<FileGatheringInfo> filesToFeed = new ArrayList<FileGatheringInfo>(512);
         Set<File> externalDirs = new HashSet<File>();
         for (File file : files) {
@@ -210,13 +223,19 @@ class RfsLocalController implements Runnable {
                 }
             }
         });
+        RemoteUtil.LOGGER.log(Level.FINE, "RFS_LC: gathered {0} files", filesToFeed.size());
+        RemoteUtil.LOGGER.log(Level.FINE, "RFS_LC: gathering files took {1} ms", (System.currentTimeMillis() - time));
+        time = System.currentTimeMillis();
         for (FileGatheringInfo info : filesToFeed) {
             sendFileInitRequest(info.file, info.relPath);
         }
         responseStream.printf("\n"); // NOI18N
         responseStream.flush();
+        RemoteUtil.LOGGER.log(Level.FINE, "RFS_LC: file list took {0} ms", (System.currentTimeMillis() - time));
         try {
+            time = System.currentTimeMillis();
             readFileInitResponse();
+            RemoteUtil.LOGGER.log(Level.FINE, "RFS_LC: reading initial response took {0} ms", (System.currentTimeMillis() - time));
         } catch (IOException ex) {
             err.printf("%s\n", ex.getMessage());
         }
@@ -229,18 +248,44 @@ class RfsLocalController implements Runnable {
             if (request.length() == 0) {
                 break;
             }
-            //update info about file where we thought file is copied, but it doesn't
-            // exist remotely (i.e. project directory was removed)
-            if (request.length() < 3 || !request.startsWith("t ")) { // NOI18N
+            if (request.length() < 3) {
                 throw new IllegalArgumentException("Protocol error: " + request); // NOI18N
             }
-            String remoteFile = request.substring(2);
-            String localFilePath = mapper.getLocalPath(remoteFile);
-            if (localFilePath != null) {
-                File localFile = new File(localFilePath);
-                fileData.setState(localFile, FileState.TOUCHED);
+            // temporaraily we support both old and new protocols here
+            if (request.startsWith("*")) { // "*" denotes new protocol
+                char charState = request.charAt(1);
+                FileState state = FileState.fromId(charState);
+                if (state == null) {
+                    throw new IllegalArgumentException("Protocol error: unexpected state: '" + charState + "'"); // NOI18N
+                }
+                String remotePath = request.substring(2);
+                String remoteCanonicalPath = requestReader.readLine();
+                if (remoteCanonicalPath == null) {
+                    throw new IllegalArgumentException("Protocol error: no canoical path for " + remotePath); //NOI18N
+                }
+                String localFilePath = mapper.getLocalPath(remotePath);
+                if (localFilePath != null) {
+                    canonicalToAbsolute.put(remoteCanonicalPath, remotePath);
+                    File localFile = new File(localFilePath);
+                    fileData.setState(localFile, state);
+                } else {
+                    RemoteUtil.LOGGER.log(Level.FINEST, "LC: ERROR no local file for {0}", remotePath);
+                }
             } else {
-                RemoteUtil.LOGGER.finest("LC: ERROR no local file for " + remoteFile);
+                // OLD protocol (temporarily)
+                //update info about file where we thought file is copied, but it doesn't
+                // exist remotely (i.e. project directory was removed)
+                if (request.length() < 3 || !request.startsWith("t ")) { // NOI18N
+                    throw new IllegalArgumentException("Protocol error: " + request); // NOI18N
+                }
+                String remoteFile = request.substring(2);
+                String localFilePath = mapper.getLocalPath(remoteFile);
+                if (localFilePath != null) {
+                    File localFile = new File(localFilePath);
+                    fileData.setState(localFile, FileState.TOUCHED);
+                } else {
+                    RemoteUtil.LOGGER.log(Level.FINEST, "LC: ERROR no local file for {0}", remoteFile);
+                }
             }
         }
     }

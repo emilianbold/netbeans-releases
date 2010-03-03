@@ -76,12 +76,12 @@ import org.openide.util.NbBundle;
  */
 public class Deprecations extends RubyAstRule {
     
-    private static class Deprecation {
-        private String oldName;
-        private String newName;
+    static class Deprecation {
+        final String oldName;
+        final String newName;
         /** Key: {0} is the old name, {1} is the new name */
-        private String descriptionKey;
-        private String helpUrl;
+        final String descriptionKey;
+        final String helpUrl;
 
         public Deprecation(String oldName, String newName, String descriptionKey,
                 String helpUrl) {
@@ -241,7 +241,7 @@ public class Deprecations extends RubyAstRule {
         return null;
     }
     
-    private static class DeprecationCallFix implements PreviewableFix {
+    static class DeprecationCallFix implements PreviewableFix {
 
         private final RubyRuleContext context;
         private final Node node;
@@ -278,7 +278,12 @@ public class Deprecations extends RubyAstRule {
 
         public EditList getEditList() throws Exception {
             BaseDocument doc = context.doc;
-            OffsetRange range = AstUtilities.getCallRange(node);
+            OffsetRange range = null;
+            if (AstUtilities.isCall(node)) {
+                range = AstUtilities.getCallRange(node);
+            } else {
+                range = AstUtilities.getRange(node);
+            }
             
             EditList list = new EditList(doc);
             if (range != OffsetRange.NONE) {

@@ -113,8 +113,10 @@ public final class Terminal extends JComponent {
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
-    private final TerminalContainer terminalContainer;
     private final IOContainer ioContainer;
+    private final Action[] actions;
+    private final String name;
+
     private final CallBacks callBacks = new CallBacks();
 
     private final StreamTerm term;
@@ -125,19 +127,13 @@ public final class Terminal extends JComponent {
     private final TermOptions termOptions;
     private final TermOptionsPCL termOptionsPCL = new TermOptionsPCL();
 
-    private static final String PROP_ACTIONS = "Terminal_ACTIONS";
-    private static final String PROP_TITLE = "Terminal_TITLE";
-
     private String title;
-    // OLD private PtyProcess termProcess;
-    private Action[] actions = new Action[0];
-
-    // OLD private Program lastProgram;
 
     private boolean closing;
     private boolean closed;
 
     private class TermOptionsPCL implements PropertyChangeListener {
+	@Override
         public void propertyChange(PropertyChangeEvent evt) {
             applyTermOptions(false);
         }
@@ -148,30 +144,39 @@ public final class Terminal extends JComponent {
      */
     private class CallBacks implements IOContainer.CallBacks {
 
+	@Override
         public void closed() {
             // System.out.printf("Terminal.CallBacks.closed()\n");
 	    // Causes assertion error in IOContainer/IOWindow.
             // OLD close();
         }
 
+	@Override
         public void selected() {
             // System.out.printf("Terminal.CallBacks.selected()\n");
         }
 
+	@Override
         public void activated() {
             // System.out.printf("Terminal.CallBacks.activated()\n");
         }
 
+	@Override
         public void deactivated() {
             // System.out.printf("Terminal.CallBacks.deactivated()\n");
         }
     }
 
-    public Terminal(IOContainer ioContainer, Action[] actions, String name) {
+    /* package */ Terminal(IOContainer ioContainer, Action[] actions, String name) {
+	if (ioContainer == null)
+	    throw new IllegalArgumentException("ioContainer cannot be null");
+
+        this.ioContainer = ioContainer;
+        this.actions = (actions == null)? new Action[0]: actions;
+	this.name = name;
+
         termOptions = TermOptions.getDefault(prefs);
 
-        this.terminalContainer = null;
-        this.ioContainer = ioContainer;
         // this.term = new StreamTerm();
         this.term = new ActiveTerm();
 
@@ -210,71 +215,18 @@ public final class Terminal extends JComponent {
 ;
         */
 
-        setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout());
         add(term, BorderLayout.CENTER);
 
-        ioContainer.add(this, callBacks());
-        ioContainer.open();
-        ioContainer.requestActive();
-        if (name != null)
-            setTitle(name);
-	setActions(actions);
-    }
-
-
-    Terminal(TerminalContainer termTopComponent, String name) {
-        termOptions = TermOptions.getDefault(prefs);
-
-        this.terminalContainer = termTopComponent;
-        this.ioContainer = null;
-        // this.term = new StreamTerm();
-        this.term = new ActiveTerm();
-
-        this.term.setCursorVisible(true);
-
-        findState = new DefaultFindState(term);
-
-        term.setHorizontallyScrollable(false);
-        term.setEmulation("ansi");
-        term .setBackground(Color.white);
-        term.setHistorySize(4000);
-
-        termOptions.addPropertyChangeListener(termOptionsPCL);
-        applyTermOptions(true);
-
-        term.getScreen().addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (e.isPopupTrigger()) {
-                    Point p = SwingUtilities.convertPoint((Component) e.getSource(),
-                                                          e.getPoint(),
-                                                          term.getScreen());
-                    postPopupMenu(p);
-                }
-            }
-        } );
-
-        // Tell term about keystrokes we use for menu accelerators so
-        // it passes them through.
-        /* LATER
-         * A-V brings up the main View menu.
-        term.getKeyStrokeSet().add(copyAction.getValue(Action.ACCELERATOR_KEY));
-        term.getKeyStrokeSet().add(pasteAction.getValue(Action.ACCELERATOR_KEY));
-        term.getKeyStrokeSet().add(closeAction.getValue(Action.ACCELERATOR_KEY));
-        */
-
-        setLayout(new BorderLayout());
-        add(term, BorderLayout.CENTER);
-
-        termTopComponent.add(this);
-        termTopComponent.topComponent().open();
-        termTopComponent.topComponent().requestActive();
-        if (name != null)
-            setTitle(name);
+	// OLD setActions(actions);
     }
 
     public IOContainer.CallBacks callBacks() {
         return callBacks;
+    }
+
+    public String name() {
+	return name;
     }
 
     @Override
@@ -325,16 +277,6 @@ public final class Terminal extends JComponent {
     }
 
     /**
-     * Make this Terminal and the TopComponent containing it be visible.
-     */
-    public void select() {
-        if (terminalContainer != null)
-            terminalContainer.select(this);
-        else if (ioContainer != null)
-            ioContainer.select(this);
-    }
-    
-    /**
      * Return the underlying Term.
      * @return the underlying StreamTerm.
      */
@@ -343,13 +285,8 @@ public final class Terminal extends JComponent {
     }
 
     public void setTitle(String title) {
-        String oldTitle = title;
         this.title = title;
-        if (terminalContainer != null)
-            terminalContainer.setTitle(this, title);
-        else if (ioContainer != null)
-            ioContainer.setTitle(this, title);
-        pcs.firePropertyChange(PROP_TITLE, oldTitle, title);
+	ioContainer.setTitle(this, title);
     }
 
     public String getTitle() {
@@ -360,75 +297,9 @@ public final class Terminal extends JComponent {
         return findState;
     }
 
-    private void setActions(Action[] actions) {
-        Action[] oldActions = actions;
-        this.actions = actions;
-        if (terminalContainer != null)
-	    terminalContainer.setToolbarActions(this, actions);
-        else if (ioContainer != null)
-	    ioContainer.setToolbarActions(this, actions);
-        pcs.firePropertyChange(PROP_ACTIONS, oldActions, actions);
-    }
-
     Action[] getActions() {
         return actions;
     }
-
-    /* OLD
-    private final class RerunAction extends AbstractAction {
-        public RerunAction() {
-            setEnabled(false);
-        }
-
-        @Override
-        public Object getValue(String key) {
-            if (key.equals(Action.SMALL_ICON)) {
-                return new ImageIcon(Terminal.class.getResource("rerun.png"));
-            } else if (key.equals(Action.SHORT_DESCRIPTION)) {
-                return "Re-run";
-            } else {
-                return super.getValue(key);
-            }
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            System.out.printf("Re-run pressed!\n");
-            if (!isEnabled())
-                return;
-            if (termProcess != null)
-                return;     // still someone running
-            if (lastProgram == null)
-                return;
-            startProgram(lastProgram, true);
-        }
-    }
-
-    private final class StopAction extends AbstractAction {
-        public StopAction() {
-            setEnabled(false);
-        }
-
-        @Override
-        public Object getValue(String key) {
-            if (key.equals(Action.SMALL_ICON)) {
-                return new ImageIcon(Terminal.class.getResource("stop.png"));
-            } else if (key.equals(Action.SHORT_DESCRIPTION)) {
-                return "Stop";
-            } else {
-                return super.getValue(key);
-            }
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            System.out.printf("Stop pressed!\n");
-            if (!isEnabled())
-                return;
-            if (termProcess == null)
-                return;
-            termProcess.terminate();
-        }
-    }
-     */
 
     private final class ClearAction extends AbstractAction {
         public ClearAction() {
@@ -438,6 +309,7 @@ public final class Terminal extends JComponent {
             putValue(ACCELERATOR_KEY, accelerator);
         }
 
+	@Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled())
                 return;
@@ -453,6 +325,7 @@ public final class Terminal extends JComponent {
             putValue(ACCELERATOR_KEY, accelerator);
         }
 
+	@Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled())
                 return;
@@ -469,6 +342,7 @@ public final class Terminal extends JComponent {
             putValue(ACCELERATOR_KEY, accelerator);
         }
 
+	@Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled())
                 return;
@@ -485,6 +359,7 @@ public final class Terminal extends JComponent {
             putValue(ACCELERATOR_KEY, accelerator);
         }
 
+	@Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled())
                 return;
@@ -501,11 +376,13 @@ public final class Terminal extends JComponent {
             putValue(ACCELERATOR_KEY, accelerator);
         }
 
+	@Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled())
                 return;
-            if (terminalContainer != null)
-                terminalContainer.find(Terminal.this);
+	    /* LATER
+	    ioContainer.find(Terminal.this);
+	     */
         }
     }
 
@@ -519,6 +396,7 @@ public final class Terminal extends JComponent {
             putValue(BOOLEAN_STATE_ACTION_KEY, true);
         }
 
+	@Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled())
                 return;
@@ -536,11 +414,6 @@ public final class Terminal extends JComponent {
         }
     }
 
-    /* OLD
-    private final Action stopAction = new StopAction();
-    private final Action rerunAction = new RerunAction();
-     */
-
     private final Action copyAction = new CopyAction();
     private final Action pasteAction = new PasteAction();
     private final Action findAction = new FindAction();
@@ -548,77 +421,12 @@ public final class Terminal extends JComponent {
     private final Action clearAction = new ClearAction();
     private final Action closeAction = new CloseAction();
 
-    /**
-     * Start a {@link Program} under this terminal.
-     * It may be easier to pass it a
-     * {@link org.netbeans.lib.richexecution.Command} or a
-     * {@link org.netbeans.lib.richexecution.Shell}.
-     * <p>
-     * Perhaps it SHOULD return {@link PtyProcess}, but if the program is
-     * restarted then the instance in hand will be OOD.
-     * <br>
-     * Perhaps a "process" property with creation/demise notification might be
-     * more useful?
-     *
-     * @param program The Program to run.
-     * @param restartable If true the Restart/Stop actions will be present.
-     */
-    /* OLD
-    private void startProgram(Program program, final boolean restartable) {
-
-        if (termProcess != null)
-            throw new IllegalStateException("Process already running");
-
-        setTitle(program.name());
-
-        if (restartable) {
-            lastProgram = program;
-            setActions(new Action[] {rerunAction, stopAction});
-        } else { 
-            lastProgram = null;
-            setActions(new Action[0]);
-        }
-
-        TermExecutor executor = new TermExecutor();
-        termProcess = executor.start(program, term());
-
-        if (restartable) {
-            stopAction.setEnabled(true);
-            rerunAction.setEnabled(false);
-        }
-
-        Thread reaperThread = new Thread() {
-            @Override
-            public void run() {
-                termProcess.waitFor();
-                if (restartable && !closing) {
-                    stopAction.setEnabled(false);
-                    rerunAction.setEnabled(true);
-                } else {
-                    closing = true;
-                    closeWork();
-                }
-                // This doesn't yield the desired result because we need to
-                // wait for all the output to be processed:
-                // LATER tprintf("Exited with %d\n\r", termProcess.exitValue());
-                termProcess = null;
-            }
-        };
-        reaperThread.start();
-    }
-    */
-
     private void closeWork() {
         assert closing;
         if (closed)
             return;
-        if (terminalContainer != null) {
-            terminalContainer.removeTerminal(this);
-            closed = true;
-        } else if (ioContainer != null) {
-            closed = true;
-            ioContainer.remove(this);
-        }
+	closed = true;
+	ioContainer.remove(this);
         termOptions.removePropertyChangeListener(termOptionsPCL);
     }
 
@@ -664,10 +472,7 @@ public final class Terminal extends JComponent {
 
     private void postPopupMenu(Point p) {
         JPopupMenu menu = new JPopupMenu();
-        if (terminalContainer != null)
-            menu.putClientProperty("container", terminalContainer); // NOI18N
-        else if (ioContainer != null)
-            menu.putClientProperty("container", ioContainer); // NOI18N
+	menu.putClientProperty("container", ioContainer); // NOI18N
         menu.putClientProperty("component", this);             // NOI18N
 
         Action[] acts = getActions();
@@ -695,10 +500,13 @@ public final class Terminal extends JComponent {
         term.setKeyStrokeSet(term.getKeyStrokeSet());
 
         menu.addPopupMenuListener(new PopupMenuListener() {
+	    @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
             }
+	    @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
             }
+	    @Override
             public void popupMenuCanceled(PopupMenuEvent e) {
             }
         } );

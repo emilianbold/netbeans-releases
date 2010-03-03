@@ -53,6 +53,7 @@
                 <friend>org.netbeans.modules.cnd.qnavigator</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
+                <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <package>org.netbeans.modules.cnd.api.model</package>
                 <package>org.netbeans.modules.cnd.api.model.deep</package>
                 <package>org.netbeans.modules.cnd.api.model.services</package>

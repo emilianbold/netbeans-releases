@@ -113,6 +113,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
         tabbedPane = TabbedPaneFactory.createCloseButtonTabbedPane();
         tabbedPane.addPropertyChangeListener(new PropertyChangeListener() {
 
+	    @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(TabbedPaneFactory.PROP_CLOSE)) {
                     Object o = evt.getNewValue();
@@ -125,6 +126,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
         });
         tabbedPane.addChangeListener(new ChangeListener() {
 
+	    @Override
             public void stateChanged(ChangeEvent e) {
                 Component component = tabbedPane.getSelectedComponent();
                 if (component instanceof Terminal) {
@@ -146,6 +148,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
         add(actionBar, BorderLayout.WEST);
         findBar = new FindBar(new FindBar.Owner() {
 
+	    @Override
             public void close(FindBar fb) {
                 findBar.getState().setVisible(false);
                 TerminalContainer.super.remove(findBar);
@@ -162,15 +165,18 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
         dummy.setText(null);
         dummy.setIcon(new Icon() {
 
+	    @Override
             public int getIconHeight() {
                 return 16;
             }
 
+	    @Override
             public int getIconWidth() {
                 return 16;
             }
 
             @SuppressWarnings(value = "empty-statement")
+	    @Override
             public void paintIcon(Component c, Graphics g, int x, int y) {
                 ;
             }
@@ -258,6 +264,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
 
+		@Override
                 public void run() {
                     removeTerminal(who);
                 }
@@ -272,7 +279,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
             tabbedPane.remove(who);
         } else {
             assert component0 == who;
-            remove(who);
+            super.remove(who);
             component0 = null;
         }
         if (nTerm == 1) {
@@ -289,6 +296,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
         }
     }
 
+    @Override
     public void setTitle(JComponent who, String title) {
         if (title == null) {
             title = originalName;
@@ -346,30 +354,37 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
         }
     }
 
+    @Override
     public void open() {
 	owner.open();
     }
 
+    @Override
     public void requestActive() {
 	owner.requestActive();
     }
 
+    @Override
     public void requestVisible() {
 	owner.requestVisible();
     }
 
+    @Override
     public boolean isActivated() {
 	return activated;
     }
 
+    @Override
     public void add(JComponent comp, CallBacks cb) {
 	super.add(comp);
     }
 
+    @Override
     public void remove(JComponent comp) {
 	removeTerminal(comp);
     }
 
+    @Override
     public void select(JComponent comp) {
 	if (comp instanceof Terminal) {
 	    select((Terminal) comp);
@@ -379,6 +394,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
 
     }
 
+    @Override
     public JComponent getSelected() {
         if (nTerm > 1)
             return (JComponent) tabbedPane.getSelectedComponent();
@@ -392,14 +408,17 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
     }
      */
 
+    @Override
     public void setToolTipText(JComponent comp, String text) {
 	throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void setIcon(JComponent comp, Icon icon) {
 	throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void setToolbarActions(JComponent comp, Action[] toolbarActions) {
 	// was: setActions()
         if (nTerm == 1) {
@@ -411,6 +430,7 @@ public final class TerminalContainer extends JComponent implements IOContainer.P
         }
     }
 
+    @Override
     public boolean isCloseable(JComponent comp) {
 	throw new UnsupportedOperationException("Not supported yet.");
     }

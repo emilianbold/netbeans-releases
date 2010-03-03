@@ -61,7 +61,7 @@ static void init_trace_flag(const char* env_var) {
 void report_error(const char *format, ...);
 
 static void report_unresolved_path(const char* path) {
-    char pwd[PATH_MAX];
+    char pwd[PATH_MAX + 1];
     getcwd(pwd, sizeof pwd);
     report_error("Can not resolve path: %s  cwd: %s\n", path, pwd);
 }
@@ -79,7 +79,7 @@ void _trace_shutdown();
 #define trace_unresolved_path(path) if (trace_flag) { _trace_unresolved_path(path); }
 static void _trace_unresolved_path(const char* path) {
     if (trace_flag) {
-        char pwd[PATH_MAX];
+        char pwd[PATH_MAX + 1];
         getcwd(pwd, sizeof pwd);
         trace("Can not resolve path: %s  pwd: %s\n", path, pwd);
     }
@@ -94,6 +94,7 @@ static void _dbg_sleep(int time) {
     }
 }
 
+/*
 static char *normalize_path(const char *path, char *buffer, int max_size) {
     if (path == NULL || buffer == NULL) {
         errno = EINVAL;
@@ -121,7 +122,7 @@ static char *normalize_path(const char *path, char *buffer, int max_size) {
                 // it's "/../"
                 src += 3;
                 dst--; // point the last added one
-                if (*dst == '/') {
+                if (*dst == '/' && dst > buffer) {
                     dst--;
                 }
                 while (dst > buffer && *dst != '/') {
@@ -152,3 +153,4 @@ static char *normalize_path(const char *path, char *buffer, int max_size) {
     trace("normalize: %s -> %s\n", path, buffer);
     return dst;
 }
+*/

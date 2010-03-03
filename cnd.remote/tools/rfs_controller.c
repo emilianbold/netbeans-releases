@@ -168,7 +168,7 @@ static void serve_connection(void* data) {
                     case PENDING:   // fall through
                     default:
                         response[0] = response_failure;
-                        trace("File %s state %c - unexpected state, replying %s\n", filename, (char) fd->state, response);
+                        trace("File %s state %c (0x%x)- unexpected state, replying %s\n", filename, (char) fd->state, (char) fd->state, response);
                         break;
                 }
             } else {
@@ -383,6 +383,7 @@ static int init_files() {
         const char *path;
 
         scan_line(buffer, bufsize, &state, &file_size, &path);
+        trace("\t\tpath=%s size=%d state=%c (0x%x)\n", path, file_size, (char) state, (char) state);
 
         if (state == -1) {
             report_error("prodocol error: %s\n", buffer);
@@ -402,7 +403,7 @@ static int init_files() {
                         list = tail;
                     }
                 }
-            } else if (state = UNCONTROLLED || state == INEXISTENT) {
+            } else if (state == UNCONTROLLED || state == INEXISTENT) {
                 // nothing
             } else {
                 report_error("prodocol error: %s\n", buffer);
@@ -418,14 +419,17 @@ static int init_files() {
             }
 
             if (*path == '/') {
-                add_file_data(path, new_state);
-            } else {
-                char real_path [PATH_MAX];
-                if (normalize_path(path, real_path, sizeof real_path)) {
+                char real_path [PATH_MAX + 1];
+                if (realpath(path, real_path)) {
+                    trace("\t\tadded %s with state '%c' (0x%x)\n", real_path, (char) new_state, (char) new_state);
                     add_file_data(real_path, new_state);
                 } else {
                     report_unresolved_path(path);
+                    break;
                 }
+            } else {
+                report_error("prodocol error: %s is not absoulte\n", path);
+                break;
             }
         }
     }

@@ -57,11 +57,12 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Jan Lahoda
+ * @author thp
  */
 @ServiceProvider(service = CompletionDocumentationProvider.class)
 public class CompletionDocumentationProviderImpl implements CompletionDocumentationProvider {
 
+    @Override
     public CompletionTask createDocumentationTask(CompletionItem item) {
         if (!(item instanceof CsmResultItem)) {
             return null;
@@ -84,6 +85,7 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
             this.obj = obj;
         }
 
+        @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             CompletionDocumentation documentation = DoxygenDocumentation.create(obj);
 
@@ -117,18 +119,22 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
             this.text = text;
         }
 
+        @Override
         public String getText() {
             return text;
         }
 
+        @Override
         public URL getURL() {
             return null;
         }
 
+        @Override
         public CompletionDocumentation resolveLink(String link) {
             return null;
         }
 
+        @Override
         public Action getGotoSourceAction() {
             return null;
         }

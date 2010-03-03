@@ -92,7 +92,7 @@ public class RemoteUtil {
                 return null;
             }
 //            RemoteCommandSupport rcs = new RemoteCommandSupport(execEnv, "echo ${HOME}"); //NOI18N
-            ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", "cd; /bin/pwd");
+            ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", "cd; /bin/pwd"); // NOI18N
             if (res.isOK()) {
 //            if (rcs.run() == 0) {
 //                String s = rcs.getOutput().trim();
