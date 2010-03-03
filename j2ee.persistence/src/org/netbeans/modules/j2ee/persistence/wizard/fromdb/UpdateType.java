@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,62 +31,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.persistence.entitygenerator;
 
-import java.util.List;
-import java.util.Set;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
+
+import org.openide.util.NbBundle;
 
 /**
- * This interface describes the tables used to generate
- * classes and these classes. It contains a set of tables
- * and the locations of the classes generated for these tables
- * (the root folder, the package name and the class name).
  *
- * @author Andrei Badea
+ * @author answer
  */
-public interface GeneratedTables {
+public enum UpdateType{
+    NEW(NbBundle.getMessage(UpdateType.class, "LBL_Type_New")),             //NOI18N
+    RECREATE(NbBundle.getMessage(UpdateType.class, "LBL_Type_Recreate")),   //NOI18N
+    UPDATE(NbBundle.getMessage(UpdateType.class, "LBL_Type_Update"));       //NOI18N
 
-    /**
-     * Returns the catalog of the tables
-     */
-    public String getCatalog();
-    
-    /**
-     * Returns the schema of the tables
-     */
-    public String getSchema();
-    
-    /**
-     * Returns the names of the tables which should be used to generate classes.
-     */
-    public Set<String> getTableNames();
+    private String name;
 
-    /**
-     * Returns the root folder of the class which will be generated for
-     * the specified table.
-     */
-    public FileObject getRootFolder(String tableName);
+    private UpdateType(String name){
+        this.name = name;
+    }
 
-    /**
-     * Returns the package of the class which will be generated for
-     * the specified table.
-     */
-    public String getPackageName(String tableName);
-
-    /**
-     * Returns the name of the class to be generated for the specified table.
-     */
-    public String getClassName(String tableName);
-
-    /**
-     * Returns the type of the update the class to be generated for the specified table.
-     */
-    public String getUpdateType(String tableName);
-
-    /**
-     * Returns the unique constraints defined on the table
-     */
-    public Set<List<String>> getUniqueConstraints(String tableName);
+    public String getName(){
+        return name;
+    }
 }
