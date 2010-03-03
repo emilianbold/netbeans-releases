@@ -86,16 +86,16 @@ public class IsOverriddenAnnotation extends Annotation {
         switch(type) {
             case IS_OVERRIDDEN:
 
-                return "org-netbeans-modules-editor-java-is_overridden"; //NOI18N
+                return "org-netbeans-modules-editor-annotations-is_overridden"; //NOI18N
             case HAS_IMPLEMENTATION:
 
-                return "org-netbeans-modules-editor-java-has_implementations"; //NOI18N
+                return "org-netbeans-modules-editor-annotations-has_implementations"; //NOI18N
             case IMPLEMENTS:
 
-                return "org-netbeans-modules-editor-java-implements"; //NOI18N
+                return "org-netbeans-modules-editor-annotations-implements"; //NOI18N
             case OVERRIDES:
 
-                return "org-netbeans-modules-editor-java-overrides"; //NOI18N
+                return "org-netbeans-modules-editor-annotations-overrides"; //NOI18N
             default:
 
                 throw new IllegalStateException("Currently not implemented: " + type); //NOI18N

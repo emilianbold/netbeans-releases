@@ -113,11 +113,11 @@ import org.openide.text.NbDocument;
     public String getAnnotationType() {
         switch(getType()) {
             case IS_OVERRIDDEN:
-                return "org-netbeans-modules-cnd-is_overridden"; //NOI18N
+                return "org-netbeans-modules-editor-annotations-is_overridden"; //NOI18N
             case OVERRIDES:
-                return "org-netbeans-modules-cnd-overrides"; //NOI18N
+                return "org-netbeans-modules-editor-annotations-overrides"; //NOI18N
             case COMBINED:
-                return "org-netbeans-modules-cnd-override-is-overridden-combined"; //NOI18N
+                return "org-netbeans-modules-editor-annotations-override-is-overridden-combined"; //NOI18N
             default:
                 throw new IllegalStateException("Currently not implemented: " + type); //NOI18N
         }

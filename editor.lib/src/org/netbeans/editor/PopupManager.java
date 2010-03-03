@@ -58,6 +58,8 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import javax.swing.SwingUtilities;
 import java.awt.Component;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JViewport;
 import javax.swing.text.BadLocationException;
 
@@ -70,6 +72,8 @@ import javax.swing.text.BadLocationException;
  *  @since   03/2002
  */
 public class PopupManager {
+
+    private static final Logger LOG = Logger.getLogger(PopupManager.class.getName());
     
     private JComponent popup = null;
     private JTextComponent textComponent; 
@@ -134,13 +138,17 @@ public class PopupManager {
      *  root pane of the text component.
      */
     public void uninstall(JComponent popup){
-        if (this.popup != null){
-            if (this.popup.isVisible()) this.popup.setVisible(false);
+        if (this.popup != null) {
+            if (this.popup.isVisible()) {
+                this.popup.setVisible(false);
+            }
             removeFromRootPane(this.popup);
         }
-        
-        if (popup!=this.popup && popup!= null){
-            if (popup.isVisible()) popup.setVisible(false);
+
+        if (popup != this.popup && popup != null) {
+            if (popup.isVisible()) {
+                popup.setVisible(false);
+            }
             removeFromRootPane(popup);
         }
     }
@@ -415,42 +423,53 @@ public class PopupManager {
     }    
 
     /** Popup's key filter */
-    private class PopupKeyListener implements KeyListener{
+    private final class PopupKeyListener implements KeyListener{
         
-        public void keyTyped(KeyEvent e){}
-        public void keyReleased(KeyEvent e){}
+        public @Override void keyTyped(KeyEvent e) {
+            // no-op
+        }
+
+        public @Override void keyReleased(KeyEvent e) {
+            // no-op
+        }
         
-        public void keyPressed(KeyEvent e){
-            if (e == null) return;
-            if (popup != null  && popup.isShowing()){
+        public @Override void keyPressed(KeyEvent e){
+            if (e != null && popup != null && popup.isShowing()) {
                 
                 // get popup's registered keyboard actions
                 ActionMap am = popup.getActionMap();
                 InputMap  im = popup.getInputMap();
                 
                 // check whether popup registers keystroke
-                Object obj = im.get(KeyStroke.getKeyStrokeForEvent(e));
-                if (obj!=null){
+                KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
+                Object obj = im.get(ks);
+                LOG.log(Level.FINE, "Keystroke for event {0}: {1}; action-map-key=", new Object [] { e, ks, obj }); //NOI18N
+                if (obj != null && 
+                    !obj.equals("tooltip-no-action") && obj.equals("tooltip-hide-action") //NOI18N ignore ToolTipSupport installed actions
+                ) {
                     // if yes, gets the popup's action for this keystroke, perform it 
                     // and consume key event
                     Action action = am.get(obj);
+                    LOG.log(Level.FINE, "Popup component''s action: {0}, {1}", new Object [] { action, action != null ? action.getValue(Action.NAME) : null }); //NOI18N
+
                     if (action != null) {
                         action.actionPerformed(null);
                         e.consume();
+                        return;
                     }
                 }
+
+                // hide tooltip if any was shown
+                Utilities.getEditorUI(textComponent).getToolTipSupport().setToolTipVisible(false);
             }
         }
-
-    }
+    } // End of PopupKeyListener class
     
     private final class TextComponentListener extends ComponentAdapter {
-
-        public void componentHidden(ComponentEvent evt) {
+        public @Override void componentHidden(ComponentEvent evt) {
             install(null); // hide popup
         }
-
-    }
+    } // End of TextComponentListener class
     
     /** Placement of popup panel specification */
     public static final class Placement {
@@ -461,11 +480,11 @@ public class PopupManager {
             this.representation = representation;
         }
         
-        public String toString() {
+        public @Override String toString() {
             return representation;
         }
         
-    }    
+    } // End of Placement class
     
     /** Horizontal bounds of popup panel specification */
     public static final class HorizontalBounds {
@@ -476,11 +495,11 @@ public class PopupManager {
             this.representation = representation;
         }
         
-        public String toString() {
+        public @Override String toString() {
             return representation;
         }
         
-    }    
+    } // End of HorizontalBounds class
     
 }
 
