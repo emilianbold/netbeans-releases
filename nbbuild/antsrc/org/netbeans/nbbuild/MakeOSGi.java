@@ -438,9 +438,11 @@ public class MakeOSGi extends Task {
             }
         }
         StringBuilder requireBundles = new StringBuilder();
-        /* XXX does not work, perhaps because of cyclic dependencies:
-        // do not need to import any API, just need it to be started:
-        requireBundles.append("org.netbeans.core.osgi");
+        /* XXX does not work for unknown reasons:
+        if (!cnb.matches("org[.](core[.]startup[.]|netbeans[.]bootstrap|openide[.](filesystems|modules|util|util[.]lookup))")) {
+            // do not need to import any API, just need it to be started:
+            requireBundles.append("org.netbeans.core.osgi");
+        }
          */
         Set<String> imports = new TreeSet<String>(myInfo.importedPackages);
         hideImports(imports, myInfo);
