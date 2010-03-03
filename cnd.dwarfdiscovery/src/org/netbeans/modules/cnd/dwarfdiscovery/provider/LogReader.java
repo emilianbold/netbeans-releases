@@ -588,6 +588,11 @@ public class LogReader {
         if (what == null){
             return false;
         }
+        if (what.endsWith(".s") || what.endsWith(".S")) {  //NOI18N
+            // It seems assembler file was compiled by C compiler.
+            // Exclude assembler files from C/C++ code model.
+            return false;
+        }
         String file = null;
         if (what.startsWith("/")){  //NOI18N
             file = what;
