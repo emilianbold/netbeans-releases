@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,7 +59,10 @@ import java.util.zip.GZIPInputStream;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
 import org.netbeans.modules.nativeexecution.api.util.Path;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -188,10 +192,22 @@ public class ManDocumentation {
     }
 
     private static String createDocumentationForName(String name, int chapter) throws IOException {
+        // TODO: use ProcessUtils.execute(ExecutionEnvironment execEnv, ...) instead of Runtime.getRuntime().exec(...) but problems getting an ExecutionEnvironment
+//        ExitStatus exitStatus = ProcessUtils.execute(execEnv, "man", name); // NOI18N
+//        StringReader sr;
+//        if (exitStatus.isOK() && exitStatus.output.length() > 0) {
+//            sr = new StringReader(exitStatus.output);
+//        } else {
+//            sr = new StringReader(exitStatus.error);
+//        }
+//        BufferedReader br = new BufferedReader(sr);
+//        String text = new Man2HTML(br).getHTML();
+//        br.close();
+
         if (getManPath() == null) {
             return null;
         }
-        // TODO: use ProcessUtils.execute(ExecutionEnvironment execEnv, ...) instead of Runtime.getRuntime().exec(...) but problems getting an ExecutionEnvironment
+        
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         Process p0 = Runtime.getRuntime().exec(getManPath() + " " + name, new String[] {"MANWIDTH="+Man2HTML.MAX_WIDTH}); // NOI18N
         InputStream is = p0.getInputStream();
