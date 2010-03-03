@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.api.IndexSearcher;
+import org.netbeans.modules.csl.api.OverridingMethods;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 
@@ -284,4 +285,9 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
     public IndexSearcher getIndexSearcher() {
         return null;
     }
+
+    public OverridingMethods getOverridingMethods() {
+        return null;
+    }
+
 }
