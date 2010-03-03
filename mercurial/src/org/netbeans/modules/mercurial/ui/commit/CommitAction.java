@@ -398,6 +398,7 @@ public class CommitAction extends ContextAction {
         Map<File, List<File>> addCandidates = new HashMap<File, List<File>>();
         Map<File, List<File>> deleteCandidates = new HashMap<File, List<File>>();
         Map<File, List<File>> commitCandidates = new HashMap<File, List<File>>();
+        Map<File, Set<File>> filesToRefresh = new HashMap<File, Set<File>>();
         Iterator<HgFileNode> it = commitFiles.keySet().iterator();
 
         List<String> excPaths = new ArrayList<String>();
@@ -470,8 +471,7 @@ public class CommitAction extends ContextAction {
                     // XXX handle veto
                 }
             }
-            final Cmd.CommitCmd commitCmd = new Cmd.CommitCmd(commitCandidates, logger, message, support, rootFiles,
-                    locallyModifiedExcluded);
+            final Cmd.CommitCmd commitCmd = new Cmd.CommitCmd(commitCandidates, logger, message, support, rootFiles, locallyModifiedExcluded, filesToRefresh);
             commitCmd.setCommitHooks(context, hooks, hookFiles);
             IndexingBridge.getInstance().runWithoutIndexing(new Callable<Void>() {
                 @Override
@@ -486,7 +486,7 @@ public class CommitAction extends ContextAction {
         } catch (Exception ex) {
             Mercurial.LOG.log(Level.INFO, "Cannot run commit with disabled indexing", ex); //NOI18N
         } finally {
-            cache.refreshAllRoots(rootFiles);
+            cache.refreshAllRoots(filesToRefresh);
             logger.outputInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_DONE")); // NOI18N
             logger.output(""); // NOI18N
         }
@@ -561,14 +561,16 @@ public class CommitAction extends ContextAction {
             private final HgProgressSupport support;
             private File[] hookFiles;
             private final Map<File, Set<File>> rootFilesPerRepository;
+            private final Map<File, Set<File>> refreshFilesPerRepository;
             private final Map<File, Boolean> locallyModifiedExcluded;
 
             public CommitCmd(Map<File, List<File>> m, OutputLogger logger, String commitMessage, HgProgressSupport support,
-                    Map<File, Set<File>> rootFilesPerRepository, Map<File, Boolean> locallyModifiedExcluded) {
+                    Map<File, Set<File>> rootFilesPerRepository, Map<File, Boolean> locallyModifiedExcluded, Map<File, Set<File>> filesToRefresh) {
                 super(m, logger, commitMessage, null);
                 this.support = support;
                 this.rootFilesPerRepository = rootFilesPerRepository;
                 this.locallyModifiedExcluded = locallyModifiedExcluded;
+                this.refreshFilesPerRepository = filesToRefresh;
             }
 
             public void setCommitHooks (HgHookContext context, Collection<HgHook> hooks, File[] hookFiles) {
@@ -588,7 +590,8 @@ public class CommitAction extends ContextAction {
             @Override
             void doCmd(File repository, List<File> candidates) throws HgException {
                 boolean commitAfterMerge = false;
-                try {
+                Set<File> refreshFiles = new HashSet<File>(candidates);
+                try {                    
                     HgCommand.doCommit(repository, candidates, msg, logger);
                 } catch (HgException.HgTooLongArgListException e) {
                     Mercurial.LOG.log(Level.INFO, null, e);
@@ -597,11 +600,13 @@ public class CommitAction extends ContextAction {
                     Set<File> roots = rootFilesPerRepository.get(repository);
                     if (roots != null && roots.size() < 5) {
                         reducedCommitCandidates = new ArrayList<File>(roots);
+                        refreshFiles = new HashSet<File>(roots);
                         for (File f : reducedCommitCandidates) {
                             offeredFileNames += "\n" + f.getName();     //NOI18N
                         }
                     } else {
                         reducedCommitCandidates = Collections.EMPTY_LIST;
+                        refreshFiles = Collections.singleton(repository);
                         offeredFileNames = "\n" + repository.getName(); //NOI18N
                     }
                     NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(CommitAction.class, "MSG_LONG_COMMAND_QUERY", offeredFileNames)); //NOI18N
@@ -625,11 +630,14 @@ public class CommitAction extends ContextAction {
                             return;
                         } else {
                             HgCommand.doCommit(repository, Collections.EMPTY_LIST, msg, logger);
+                            refreshFiles = new HashSet<File>(Mercurial.getInstance().getSeenRoots(repository));
                             commitAfterMerge = true;
                         }
                     } else {
                         throw ex;
                     }
+                } finally {
+                    refreshFilesPerRepository.put(repository, refreshFiles);
                 }
 
                 HgLogMessage tip = HgCommand.doTip(repository, logger);
