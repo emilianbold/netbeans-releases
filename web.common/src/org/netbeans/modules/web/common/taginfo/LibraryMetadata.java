@@ -129,9 +129,17 @@ public class LibraryMetadata {
             if (typeNode.getNodeType() == Node.ELEMENT_NODE){
                 Element elem = (Element) typeNode;
                 String typeName = elem.getAttribute("name"); //NOI18N
-                String legalVals[] = readFromXML_parseAttrValues(elem);
 
-                result.add(new AttrValueType(typeName, legalVals));
+                AttrValueType valueType = null;
+
+                if ("boolean".equals(typeName)){
+                    valueType = AttrValueType.BOOL;
+                } else {
+                    String legalVals[] = readFromXML_parseAttrValues(elem);
+                    valueType = new AttrValueType(typeName, legalVals);
+                }
+
+                result.add(valueType);
             }
         }
 
