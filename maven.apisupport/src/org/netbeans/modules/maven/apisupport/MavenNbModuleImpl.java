@@ -258,7 +258,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
             }
         }
         if (dep.getVersion() == null) {
-            dep.setVersion("RELEASE67"); //NOI18N
+            dep.setVersion("RELEASE68"); //NOI18N
         }
         dependencyAdder.addDependency(dep);
         tsk.schedule(200);
