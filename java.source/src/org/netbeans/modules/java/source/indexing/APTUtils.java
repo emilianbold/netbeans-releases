@@ -48,6 +48,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -228,28 +229,31 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         return sb.length() > 0 ? sb.toString() : null;
     }
 
+    //keep synchronized with libs.javacapi/manifest.mf and libs.javacimpl/manifest.mf
+    //when adding new packages, double-check the quick path in loadClass below:
+    private static final Iterable<? extends String> javacPackages = Arrays.asList("com.sun.javadoc.", "com.sun.source.", "javax.annotation.processing.", "javax.lang.model.", "javax.tools.", "com.sun.tools.javac.", "com.sun.tools.javadoc.");
     private static final class BypassOpenIDEUtilClassLoader extends ClassLoader {
+        private final ClassLoader contextCL;
         public BypassOpenIDEUtilClassLoader(ClassLoader contextCL) {
-            super(contextCL);
+            super(getSystemClassLoader().getParent());
+            this.contextCL = contextCL;
         }
 
         @Override
         protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-            //#181432: do not load (NetBeans) classes from the runtime NetBeans (from the application classpath):
-            if (name.startsWith("org.openide.") || name.startsWith("org.netbeans.")) {
-                throw new ClassNotFoundException();
+            //the 5-th letter of all interesting packages is either 's' or 'x'
+            //using that to prevent (possibly expensive) loop through javacPackages:
+            char f = name.length() > 4 ? name.charAt(4) : '\0';
+
+            if (f == 'x' || f == 's') {
+                for (String pack : javacPackages) {
+                    if (name.startsWith(pack)) {
+                        return contextCL.loadClass(name);
+                    }
+                }
             }
-
-            Class<?> res = super.loadClass(name, resolve);
-
-            //alternate version (tries to exclude any class that is loaded from the application classpath):
-//            if (res.getProtectionDomain().getCodeSource() != null && res.getProtectionDomain().getCodeSource().getLocation() != null) {
-//                if (!System.getProperty("java.class.path", "").contains(res.getProtectionDomain().getCodeSource().getLocation().getPath())) {
-//                    throw new ClassNotFoundException();
-//                }
-//            }
             
-            return res;
+            return super.loadClass(name, resolve);
         }
 
         //getResource and getResources of module classloaders do not return resources from parent's META-INF, so no need to override them
