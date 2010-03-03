@@ -43,6 +43,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Position.Bias;
@@ -62,6 +64,8 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.web.common.api.FileReference;
+import org.netbeans.modules.web.common.api.FileReferenceModification;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
@@ -123,6 +127,86 @@ public class HtmlRenameRefactoringPlugin implements RefactoringPlugin {
             return null;
         }
 
+        ModificationResult modificationResult = new ModificationResult();
+        if(file.isFolder()) {
+            refactorFolder(file, modificationResult, index);
+        } else {
+            refactorFile(file, modificationResult, index);
+        }
+        
+        refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(modificationResult)));
+
+        for (FileObject fo : modificationResult.getModifiedFileObjects()) {
+            for (Difference diff : modificationResult.getDifferences(fo)) {
+                refactoringElements.add(refactoring, DiffElement.create(diff, fo, modificationResult));
+
+            }
+        }
+
+        return null;
+
+    }
+
+    private void refactorFolder(FileObject file, ModificationResult modificationResult, HtmlIndex index) {
+        LOGGER.fine("refactor folder " + file); //NOI18N
+        String newName = refactoring.getNewName();
+        try {
+            HtmlIndex.AllDependenciesMaps alldeps = index.getAllDependencies();
+            Map<FileObject, Collection<FileReference>> source2dest = alldeps.getSource2dest();
+            FileObject renamedFolder = file;
+
+            Map<FileObject, HtmlFileModel> modelsCache = new WeakHashMap<FileObject, HtmlFileModel>();
+            //now I need to find out what links go through the given folder
+            for (FileObject source : source2dest.keySet()) {
+                List<Difference> diffs = new ArrayList<Difference>();
+                Collection<FileReference> destinations = source2dest.get(source);
+                for (FileReference dest : destinations) {
+                    FileReferenceModification modification = dest.createModification();
+                    if (modification.rename(renamedFolder, newName)) {
+                        //the link is affected, we need to update it
+                        //find the css model and the link position in the file
+                        HtmlFileModel model = modelsCache.get(source);
+                        if (model == null) {
+                            try {
+                                model = new HtmlFileModel(Source.create(source)); //use file to parse
+                                modelsCache.put(source, model);
+                            } catch (ParseException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+
+                        if (model != null) {
+                            //we have the model for source file
+                            Collection<Entry> imports = model.getReferences();
+                            //XXX the model should contain string representation 2 entry map
+                            //linear search :-(
+                            for (Entry entry : imports) {
+                                if (entry.isValidInSourceDocument() && entry.getName().equals(dest.linkPath())) {
+                                    //a matching entry found, add the rename refactoring
+                                    CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(source);
+
+                                    diffs.add(new Difference(Difference.Kind.CHANGE,
+                                            editor.createPositionRef(entry.getDocumentRange().getStart(),
+                                            Bias.Forward),
+                                            editor.createPositionRef(entry.getDocumentRange().getEnd(),
+                                            Bias.Backward),
+                                            entry.getName(),
+                                            modification.getModifiedReferencePath(),
+                                            NbBundle.getMessage(HtmlRenameRefactoringPlugin.class, "MSG_Modify_File_Import"))); //NOI18N
+                                }
+                            }
+                        }
+                    }
+                }
+                modificationResult.addDifferences(source, diffs);
+            }
+
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void refactorFile(FileObject file, ModificationResult modificationResult, HtmlIndex index) {
         //refactor a file in explorer
         LOGGER.fine("refactor file " + file.getPath()); //NOI18N
         String newName = refactoring.getNewName();
@@ -132,7 +216,7 @@ public class HtmlRenameRefactoringPlugin implements RefactoringPlugin {
         //c. rename the file itself - done via default rename plugin
         DependenciesGraph deps = index.getDependencies(file);
         Collection<Node> allRefering = deps.getSourceNode().getReferingNodes();
-        ModificationResult modificationResult = new ModificationResult();
+
         for (Node ref : allRefering) {
             FileObject refering = ref.getFile();
             try {
@@ -183,17 +267,5 @@ public class HtmlRenameRefactoringPlugin implements RefactoringPlugin {
             }
 
         }
-
-        refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(modificationResult)));
-
-        for (FileObject fo : modificationResult.getModifiedFileObjects()) {
-            for (Difference diff : modificationResult.getDifferences(fo)) {
-                refactoringElements.add(refactoring, DiffElement.create(diff, fo, modificationResult));
-
-            }
-        }
-
-        return null;
-
     }
 }
