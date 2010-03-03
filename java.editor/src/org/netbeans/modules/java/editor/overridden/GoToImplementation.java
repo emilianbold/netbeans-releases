@@ -38,11 +38,6 @@
  */
 package org.netbeans.modules.java.editor.overridden;
 
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.SourcePositions;
-import com.sun.source.util.TreePath;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -56,21 +51,17 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.SwingUtilities;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionRegistration;
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.editor.java.GoToSupport;
+import org.netbeans.modules.editor.java.GoToSupport.Context;
 import org.netbeans.modules.editor.java.JavaKit;
-import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -91,17 +82,23 @@ public final class GoToImplementation extends BaseAction {
     }
 
     public void actionPerformed(ActionEvent e, final JTextComponent c) {
+        goToImplementation(c);
+    }
+
+    public static void goToImplementation(final JTextComponent c) {
         try {
             JavaSource.forDocument(c.getDocument()).runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController parameter) throws Exception {
                     parameter.toPhase(Phase.RESOLVED);
                     
-                    Element el = resolveElement(parameter, c.getCaretPosition());
+                    Context context = GoToSupport.resolveContext(parameter, c.getDocument(), c.getCaretPosition(), false);
 
-                    if (el == null) {
+                    if (context == null || !SUPPORTED_ELEMENTS.contains(context.resolved.getKind())) {
                         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToImplementation.class, "LBL_NoMethod"));
                         return ;
                     }
+
+                    Element el = context.resolved;
 
                     TypeElement type = el.getKind() == ElementKind.METHOD ? (TypeElement) el.getEnclosingElement() : (TypeElement) el;
                     ExecutableElement method = el.getKind() == ElementKind.METHOD ? (ExecutableElement) el : null;
@@ -137,76 +134,4 @@ public final class GoToImplementation extends BaseAction {
 
     private static Set<ElementKind> SUPPORTED_ELEMENTS = EnumSet.of(ElementKind.METHOD, ElementKind.ANNOTATION_TYPE, ElementKind.CLASS, ElementKind.ENUM, ElementKind.INTERFACE);
     
-    private static Element resolveElement(CompilationInfo info, int caret) {
-        TreePath tp = info.getTreeUtilities().pathFor(caret);
-
-        TokenSequence<JavaTokenId> ts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-
-        ts.move(caret);
-
-        boolean isIdentifier = ts.moveNext() && ts.token().id() == JavaTokenId.IDENTIFIER;
-
-        if (!isIdentifier) {
-            ts.move(caret);
-            isIdentifier = ts.movePrevious() && ts.token().id() == JavaTokenId.IDENTIFIER;
-        }
-        
-        if (isIdentifier) {
-            Element  elementUnderCaret = info.getTrees().getElement(tp);
-
-            if (elementUnderCaret != null && SUPPORTED_ELEMENTS.contains(elementUnderCaret.getKind())) {
-                return (Element) elementUnderCaret;
-            }
-        }
-
-        Element el = resolveHeader(tp, info, caret);
-
-        if (el == null) {
-            tp = info.getTreeUtilities().pathFor(caret + 1);
-            el = resolveHeader(tp, info, caret);
-        }
-
-        return el;
-    }
-    
-    private static Element resolveHeader(TreePath tp, CompilationInfo info, int caret) {
-        while (tp.getLeaf().getKind() != Kind.METHOD && tp.getLeaf().getKind() != Kind.CLASS && tp.getLeaf().getKind() != Kind.COMPILATION_UNIT) {
-            tp = tp.getParentPath();
-        }
-
-        if (tp.getLeaf().getKind() == Kind.COMPILATION_UNIT) {
-            return null;
-        }
-
-        long bodyStart;
-
-        if (tp.getLeaf().getKind() == Kind.METHOD) {
-            MethodTree mt = (MethodTree) tp.getLeaf();
-            SourcePositions sp = info.getTrees().getSourcePositions();
-            BlockTree body = mt.getBody();
-            bodyStart = body != null ? sp.getStartPosition(info.getCompilationUnit(), body) : Integer.MAX_VALUE;
-        } else {
-            assert tp.getLeaf().getKind() == Kind.CLASS;
-            Document doc = info.getSnapshot().getSource().getDocument(false);
-
-            if (doc == null) {
-                return null;
-            }
-
-            bodyStart = Utilities.findBodyStart(tp.getLeaf(), info.getCompilationUnit(), info.getTrees().getSourcePositions(), doc);
-        }
-
-        if (caret >= bodyStart) {
-            return null;
-        }
-
-        Element el = info.getTrees().getElement(tp);
-
-        if (el == null || !SUPPORTED_ELEMENTS.contains(el.getKind())) {
-            return null;
-        }
-        
-        return (Element) el;
-    }
-
 }

@@ -70,9 +70,9 @@ import org.openide.util.NbBundle;
 public class OverrideAnnotationAction extends AbstractAction {
 
     private static final Set<String> COMBINED_TYPES = new HashSet<String>(Arrays.asList(
-            "org-netbeans-modules-cnd-override-is-overridden-combined" // NOI18N
-//            "org-netbeans-modules-cnd-implements-is-overridden-combined",
-//            "org-netbeans-modules-cnd-implements-has-implementations-combined"
+            "org-netbeans-modules-editor-annotations-override-is-overridden-combined" // NOI18N
+//            "org-netbeans-modules-editor-annotations-implements-is-overridden-combined",
+//            "org-netbeans-modules-editor-annotations-implements-has-implementations-combined"
     ));
 
     public OverrideAnnotationAction() {

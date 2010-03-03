@@ -495,15 +495,26 @@ public final class SelectConfigurationPanel extends JPanel {
         }
     }
 
-    private static class MyProgress implements Progress {
+    public static class MyProgress implements Progress {
         private ProgressHandle handle;
         private int done;
+
+        @Override
+        public void start() {
+            start(0);
+        }
+
+        @Override
         public void start(int length) {
+            if (handle != null) {
+                handle.finish();
+            }
             handle = ProgressHandleFactory.createHandle(getString("AnalyzingProjectProgress"));
             handle.start(length);
             done = 0;
         }
 
+        @Override
         public void increment() {
             if (handle != null) {
                 done++;
@@ -511,10 +522,13 @@ public final class SelectConfigurationPanel extends JPanel {
             }
         }
 
+        @Override
         public void done() {
             if (handle != null) {
                 handle.finish();
+                handle = null;
             }
         }
+
     }
 }

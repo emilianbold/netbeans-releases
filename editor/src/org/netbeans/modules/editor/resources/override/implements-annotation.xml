@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -40,16 +40,12 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE type PUBLIC
-          "-//NetBeans//DTD annotation type 1.0//EN"
-          "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
-<type name="org-netbeans-modules-editor-java-implements-is-overridden-combined"
-      description_key="LAB_IsOverridenAnnotation-implements-is-overridden-combined"
-      localizing_bundle="org.netbeans.modules.java.editor.overridden.Bundle"
-      visible="true"
-      glyph="nbresloc:/org/netbeans/modules/java/editor/resources/override-is-overridden-combined.png">
-    <combination tiptext_key="TP_COMBINED-implements-is-overridden-combined">
-        <combine annotationtype="org-netbeans-modules-editor-java-is_overridden"/>
-        <combine annotationtype="org-netbeans-modules-editor-java-implements"/>
-    </combination>
-</type>
+       <!DOCTYPE type PUBLIC
+                 "-//NetBeans//DTD annotation type 1.1//EN"
+                 "http://www.netbeans.org/dtds/annotation-type-1_1.dtd">
+       <type name="org-netbeans-modules-editor-annotations-implements"
+             description_key="LAB_ImplementsAnnotation"
+             localizing_bundle="org.netbeans.modules.editor.resources.override.Bundle"
+             visible="true"
+             glyph="nbresloc:/org/netbeans/modules/editor/resources/override/implements.png"
+             priority="5"/>

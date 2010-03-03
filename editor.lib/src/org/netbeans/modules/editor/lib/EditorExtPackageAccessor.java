@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,48 +39,42 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.stackanalyzer;
+package org.netbeans.modules.editor.lib;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.regex.Matcher;
-import javax.swing.AbstractListModel;
-import org.openide.util.Exceptions;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.ext.ToolTipSupport;
+
+
 /**
- * @author Jan Becicka
+ * Accessor for the package-private functionality in org.netbeans.editor.ext package.
+ *
+ * @author Miloslav Metelka
+ * @version 1.00
  */
-class StackListModel extends AbstractListModel {
-    private ArrayList<String> lines = new ArrayList();
 
-    public StackListModel(Reader stack) {
-        BufferedReader r = new BufferedReader(stack);
-        String currentLine = null;
-        do {
-            try {
-                currentLine = r.readLine();
-                if (currentLine != null) {
-                    Matcher m = AnalyzeStackTopComponent.STACK_LINE_PATTERN.matcher(currentLine);
-                    if (m.matches()) {
-                        lines.add(currentLine);
-                    }
-                    m = AnalyzeStackTopComponent.FIRST_LINE_PATTERN.matcher(currentLine);
-                    if (m.matches()) {
-                        lines.add(currentLine);
-                    }
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        } while (currentLine!=null);
+public abstract class EditorExtPackageAccessor {
+
+    private static EditorExtPackageAccessor ACCESSOR = null;
+
+    public static synchronized void register(EditorExtPackageAccessor accessor) {
+        assert ACCESSOR == null : "Can't register two package accessors!"; //NOI18N
+        ACCESSOR = accessor;
     }
 
-    public int getSize() {
-        return lines.size();
+    public static synchronized EditorExtPackageAccessor get() {
+        // Trying to wake up ToolTipSupport ...
+        try {
+            Class clazz = Class.forName(ToolTipSupport.class.getName());
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
+
+        assert ACCESSOR != null : "There is no package accessor available!"; //NOI18N
+        return ACCESSOR;
     }
 
-    public Object getElementAt(int index) {
-        return lines.get(index);
+    protected EditorExtPackageAccessor() {
     }
+
+    public abstract ToolTipSupport createToolTipSupport(EditorUI eui);
 }
