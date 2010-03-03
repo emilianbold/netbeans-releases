@@ -154,15 +154,11 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         if (createPersistenceUnit) {
             PersistenceUnitWizardDescriptor puPanel = (PersistenceUnitWizardDescriptor) (panels[panels.length - 1] instanceof PersistenceUnitWizardDescriptor ? panels[panels.length - 1] : null);
             if(puPanel!=null) {
-                try {
                     PersistenceUnit punit = Util.buildPersistenceUnitUsingData(project, puPanel.getPersistenceUnitName(), puPanel.getDBResourceSelection(), TableGeneration.NONE, puPanel.getSelectedProvider());
                     ProviderUtil.setTableGeneration(punit, puPanel.getTableGeneration(), puPanel.getSelectedProvider());
                     if (punit != null){
-                        ProviderUtil.addPersistenceUnit(punit, project);
+                        Util.addPersistenceUnitToProject( project, punit );
                     }
-                } catch (InvalidPersistenceXmlException e) {
-                    throw new IOException(e.toString());
-                }
             }
         }
         
