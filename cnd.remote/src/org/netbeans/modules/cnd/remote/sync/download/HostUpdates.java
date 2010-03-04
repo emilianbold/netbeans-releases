@@ -44,6 +44,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,10 +76,19 @@ public class HostUpdates {
     private static final Map<ExecutionEnvironment, HostUpdates> map = new HashMap<ExecutionEnvironment, HostUpdates>();
 
     public static void register(Collection<File> localFiles, ExecutionEnvironment env, File privStorageDir) {
-        HostUpdates.get(env, privStorageDir).register(localFiles);
+        HostUpdates.get(env, true, privStorageDir).register(localFiles);
     }
 
-    private static HostUpdates get(ExecutionEnvironment env, File privStorageDir) {
+    /** test method */
+    /*package*/ static List<FileDownloadInfo> testGetUpdates(ExecutionEnvironment env) {
+        HostUpdates hu = get(env, false, null);
+        if (hu != null) {
+            return new ArrayList<FileDownloadInfo>(hu.infos);
+        }
+        return Collections.<FileDownloadInfo>emptyList();
+    }
+
+    private static HostUpdates get(ExecutionEnvironment env, boolean create, File privStorageDir) {
         synchronized (map) {
             HostUpdates updates = map.get(env);
             if (updates == null) {
