@@ -94,9 +94,9 @@ public final class HostListRootNode extends AbstractNode {
         @Override
         protected boolean createKeys(List<ExecutionEnvironment> toPopulate) {
             for (ExecutionEnvironment env : ServerList.getEnvironments()) {
-                if (env.isRemote()) {
+                //if (env.isRemote()) {
                     toPopulate.add(env);
-                }
+                //}
             }
             return true;
         }

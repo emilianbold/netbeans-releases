@@ -37,8 +37,10 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.pbuild;
+package org.netbeans.modules.cnd.remote.sync.download;
 
+import java.util.List;
+import org.netbeans.modules.cnd.remote.pbuild.*;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -47,27 +49,42 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  *
  * @author Vladimir Kvashin
  */
-public class RemoteBuildSamplesTest extends RemoteBuildTestBase {
+public class RemoteBuildUpdatesDownloadTest extends RemoteBuildTestBase {
 
-    public RemoteBuildSamplesTest(String testName) {
+    public RemoteBuildUpdatesDownloadTest(String testName) {
         super(testName);
     }
 
-    public RemoteBuildSamplesTest(String testName, ExecutionEnvironment execEnv) {
+    public RemoteBuildUpdatesDownloadTest(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
     @ForAllEnvironments
-    public void testBuildSample_Rfs_Gnu_Arguments_Once() throws Exception {        
-        buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_01", 1);
+    public void testBuildSample_Rfs_Gnu_LexYacc() throws Exception {
+        List<FileDownloadInfo> updates;
+        buildSample(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_01", 1);
+        updates = HostUpdates.testGetUpdates(getTestExecutionEnvironment());
+        checkInfo(updates, "y.tab.c", FileDownloadInfo.State.UNCONFIRMED);
+        checkInfo(updates, "y.tab.h", FileDownloadInfo.State.UNCONFIRMED);
+        checkInfo(updates, "lex.yy.c", FileDownloadInfo.State.UNCONFIRMED);
     }
 
-    @ForAllEnvironments
-    public void testBuildSample_Rfs_Gnu_Arguments_Multy() throws Exception {
-        buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_02", 3, getSampleBuildTimeout(), getSampleBuildTimeout()/3);
+    private void checkInfo(List<FileDownloadInfo> updates, String shortFileName, FileDownloadInfo.State state) {
+        FileDownloadInfo info = find(updates, shortFileName);
+        assertNotNull("Can not fine FileDownloadInfo for " + shortFileName, info);
+        assertEquals("Unexpected download info state for "  + shortFileName, state, info.getState());
+    }
+
+    private FileDownloadInfo find(List<FileDownloadInfo> updates, String shortFileName) {
+        for (FileDownloadInfo info : updates) {
+            if (info.getLocalFile().getName().equals(shortFileName)) {
+                return info;
+            }
+        }
+        return null;
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTestSuite(RemoteBuildSamplesTest.class);
+        return new RemoteDevelopmentTestSuite(RemoteBuildUpdatesDownloadTest.class);
     }
 }
