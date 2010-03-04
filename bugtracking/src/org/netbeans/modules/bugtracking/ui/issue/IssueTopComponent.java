@@ -329,11 +329,11 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     }
 
                     IssueAccessor.getInstance().setSelection(issue, context);
-                    controller = issue.getController();
 
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
+                            controller = issue.getController();
                             issuePanel.add(controller.getComponent(), BorderLayout.CENTER);
                             issue.addPropertyChangeListener(IssueTopComponent.this);
                             revalidate();
