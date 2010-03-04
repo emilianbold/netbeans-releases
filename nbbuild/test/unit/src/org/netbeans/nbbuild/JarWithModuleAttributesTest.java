@@ -319,11 +319,11 @@ public class JarWithModuleAttributesTest extends NbTestCase {
         assertEquals("org.netbeans.api.sendopts", value);
 
         String req = file.getManifest().getMainAttributes().getValue("Require-Bundle");
-        if (req.indexOf("com.othercom.anothermodule;bundle-version=\"[2.1.3, 3)\"") == -1) {
+        if (req.indexOf("com.othercom.anothermodule;bundle-version=\"[2.1.3,100)\"") == -1) {
             fail("Wrong dependency on com.othercom.anothermodule:\n" + req);
         }
 
-        if (req.indexOf("org.netbeans.modules.applet;bundle-version=\"[101.7, 102)\"") == -1) {
+        if (req.indexOf("org.netbeans.modules.applet;bundle-version=\"[101.7,200)\"") == -1) {
             fail("Wrong dependency on applet/1:\n" + req);
         }
 
