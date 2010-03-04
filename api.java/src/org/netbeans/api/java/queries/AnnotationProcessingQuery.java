@@ -40,6 +40,8 @@
 package org.netbeans.api.java.queries;
 
 import java.net.URL;
+import java.util.Collections;
+import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -103,6 +105,16 @@ public class AnnotationProcessingQuery {
          */
         public @CheckForNull URL sourceOutputDirectory();
 
+        /**Returns options passed to annotation processors ({@code "-Akey=value"}). Options are
+         * returned in the form of a map from option key to option value. For an option
+         * with no value the corresponding value in the map is {@code null}.
+         *
+         * @return the processor-specific options
+         * @see javax.annotation.processing.ProcessingEnvironment#getOptions()
+         * @since org.netbeans.api.java/1 1.26
+         */
+        public @NonNull Map<? extends String, ? extends String> processorOptions();
+
         /**Add a {@link ChangeListener}.
          *
          * @param l the listener
@@ -127,6 +139,10 @@ public class AnnotationProcessingQuery {
 
         public URL sourceOutputDirectory() {
             return null;
+        }
+
+        public Map<? extends String, ? extends String> processorOptions() {
+            return Collections.emptyMap();
         }
 
         public void addChangeListener(ChangeListener l) {}

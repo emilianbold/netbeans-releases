@@ -136,6 +136,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     public static final String DEFAULT_APPLET_HEIGHT = "300";
 
     private static final String JAR_INDEX = "jar.index";    //NOI18N
+    private static final String JAR_ARCHIVE_DISABLED ="jar.archive.disabled";   //NOI18N
 
     public enum DescType {
         application, applet, component;
@@ -371,6 +372,9 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         //Store jar indexing
         if (editableProps.getProperty(JAR_INDEX) == null) {
             editableProps.setProperty(JAR_INDEX, String.format("${%s}", JNLP_ENABLED));   //NOI18N
+        }
+        if (editableProps.getProperty(JAR_ARCHIVE_DISABLED) == null) {
+            editableProps.setProperty(JAR_ARCHIVE_DISABLED, String.format("${%s}", JNLP_ENABLED));  //NOI18N
         }
         // store properties
         storeProperties(editableProps, extResProperties, JNLP_EXT_RES_PREFIX);
