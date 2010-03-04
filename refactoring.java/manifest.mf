@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.refactoring.java/1
+OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Install: org/netbeans/modules/refactoring/java/RefactoringModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/refactoring/java/resources/mf-layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/refactoring/java/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.11
 AutoUpdate-Show-In-Client: false
 

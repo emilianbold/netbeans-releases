@@ -83,7 +83,7 @@ public class Rails3Deprecations extends RubyAstRule {
         DEPRECATED_CONTROLLER_METHODS.add(new Deprecation("filter_parameter_logging", "config.filter_parameters", null, null)); // NOI18N
 
         DEPRECATED_AR_METHODS.add(new Deprecation("named_scope", "scope", null, null)); // NOI18N
-        DEPRECATED_AR_METHODS.add(new Deprecation("validates_presence_of", "validates...:presence => true", null, null)); // NOI18N
+        DEPRECATED_AR_METHODS.add(new Deprecation("validates_presence_of", "validates...:presence => true", null, null, false)); // NOI18N
     }
 
     private RubyRuleContext context;
@@ -190,8 +190,14 @@ public class Rails3Deprecations extends RubyAstRule {
         ParserResult info = context.parserResult;
         range = LexUtilities.getLexerOffsets(info, range);
         if (range != OffsetRange.NONE) {
-            HintFix fix = new Deprecations.DeprecationCallFix(context, node, deprecation, false);
-            Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range, Collections.singletonList(fix), 100);
+            List<HintFix> fixes;
+            if (deprecation.enableFix) {
+                HintFix fix = new Deprecations.DeprecationCallFix(context, node, deprecation, false);
+                fixes = Collections.singletonList(fix);
+            } else {
+                fixes = Collections.emptyList();
+            }
+            Hint desc = new Hint(this, displayName, RubyUtils.getFileObject(info), range, fixes, 100);
             result.add(desc);
         }
     }

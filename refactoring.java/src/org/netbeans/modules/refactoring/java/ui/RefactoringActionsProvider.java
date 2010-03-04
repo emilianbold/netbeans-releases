@@ -124,16 +124,16 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                                 return info.getFileObject().getParent();
                             }
                         };
-                        return new RenameRefactoringUI(folder);
+                        return wrap(new RenameRefactoringUI(folder));
                     } else if (selected instanceof TypeElement && !((TypeElement)selected).getNestingKind().isNested()) {
                         FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
                         if (f!=null && selected.getSimpleName().toString().equals(f.getName())) {
-                            return new RenameRefactoringUI(f==null?info.getFileObject():f, selectedElement, info);
+                            return wrap(new RenameRefactoringUI(f==null?info.getFileObject():f, selectedElement, info));
                         } else {
-                            return new RenameRefactoringUI(selectedElement, info);
+                            return wrap(new RenameRefactoringUI(selectedElement, info));
                         }
                     } else {
-                        return new RenameRefactoringUI(selectedElement, info);
+                        return wrap(new RenameRefactoringUI(selectedElement, info));
                     }
                 }
             };
@@ -153,7 +153,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
                 @Override
                 protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
-                    return ui;
+                    return wrap(ui);
                 }
                 
             };
@@ -187,7 +187,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                                     : new RenameRefactoringUI(selectedElements[0], null, null);
                         }
                     }
-                    return ui;
+                    return wrap(ui);
                 }
             };
         }
@@ -252,7 +252,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             task = new NodeToFileObjectTask(new HashSet<Node>(lookup.lookupAll(Node.class))) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handle) {
-                    return new CopyClassRefactoringUI(selectedElements[0], getTarget(lookup), getPaste(lookup));
+                    return wrap(new CopyClassRefactoringUI(selectedElements[0], getTarget(lookup), getPaste(lookup)));
                 }
             };
 //        }
@@ -323,7 +323,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             task = new TextComponentTask(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
-                    return new WhereUsedQueryUI(selectedElement, info);
+                    return wrap(new WhereUsedQueryUI(selectedElement, info));
                 }
             };
         } else if (nodeHandle(lookup)) {
@@ -338,7 +338,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
                 @Override
                 protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
-                    return ui;
+                    return wrap(ui);
                 }
                 
             };
@@ -347,7 +347,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement, CompilationInfo info) {
                     if (selectedElement==null)
                         return null;
-                    return new WhereUsedQueryUI(selectedElement, info);
+                    return wrap(new WhereUsedQueryUI(selectedElement, info));
                 }
             };
         }
@@ -410,10 +410,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                             return null;
                         }
                         if (file.getName().equals(selected.getSimpleName().toString())) {
-                            return new SafeDeleteUI(new FileObject[]{file}, Collections.singleton(selectedElement), b);
+                            return wrap(new SafeDeleteUI(new FileObject[]{file}, Collections.singleton(selectedElement), b));
                         }
                     }
-                        return new SafeDeleteUI(new TreePathHandle[]{selectedElement});
+                        return wrap(new SafeDeleteUI(new TreePathHandle[]{selectedElement}));
                     }
             };
         } else if (nodeHandle(lookup)) {
@@ -427,9 +427,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         for (TreePathHandle handle:handles) {
                             files[i++] = handle.getFileObject();
                         }
-                        return new SafeDeleteUI(files, handles, b);
+                        return wrap(new SafeDeleteUI(files, handles, b));
                     } else {
-                        return new SafeDeleteUI(handles.toArray(new TreePathHandle[handles.size()]));
+                        return wrap(new SafeDeleteUI(handles.toArray(new TreePathHandle[handles.size()])));
                     }
                 }
                 
@@ -439,9 +439,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
                     if (pkg[0]!= null) {
-                        return new SafeDeleteUI(pkg[0],b);
+                        return wrap(new SafeDeleteUI(pkg[0],b));
                     } else{                
-                        return new SafeDeleteUI(selectedElements, handles, b);
+                        return wrap(new SafeDeleteUI(selectedElements, handles, b));
                     }
                 }
 
@@ -573,7 +573,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                             if (fo!=null) {
                                 DataObject d = DataObject.find(SourceUtils.getFile(e, info.getClasspathInfo()));
                                 if (d.getName().equals(e.getSimpleName().toString())) {
-                                    return new MoveClassUI(d);
+                                    return wrap(new MoveClassUI(d));
                                 }
                             }
                         } catch (DataObjectNotFoundException ex) {
@@ -582,13 +582,13 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     }
                     if (selectedElement.resolve(info).getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
                         try {
-                            return new MoveClassUI(DataObject.find(info.getFileObject()));
+                            return wrap(new MoveClassUI(DataObject.find(info.getFileObject())));
                         } catch (DataObjectNotFoundException ex) {
                             throw (RuntimeException) new RuntimeException().initCause(ex);
                         }
                     } else {
                         try {
-                            return new MoveClassUI(DataObject.find(info.getFileObject()));
+                            return wrap(new MoveClassUI(DataObject.find(info.getFileObject())));
                         } catch (DataObjectNotFoundException ex) {
                             throw (RuntimeException) new RuntimeException().initCause(ex);
                         }
@@ -604,26 +604,30 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     if (selectedElements.length == 1) {
                         if (!selectedElements[0].isFolder()) {
                             try {
-                                return new MoveClassUI(DataObject.find(selectedElements[0]), tar, paste, handles);
+                                return wrap(new MoveClassUI(DataObject.find(selectedElements[0]), tar, paste, handles));
                             } catch (DataObjectNotFoundException ex) {
                                 throw (RuntimeException) new RuntimeException().initCause(ex);
                             }
                         } else {
                             Set<FileObject> s = new HashSet<FileObject>();
                             s.addAll(Arrays.asList(selectedElements));
-                            return new MoveClassesUI(s, tar, paste);
+                            return wrap(new MoveClassesUI(s, tar, paste));
                         }
                     } else {
                         Set<FileObject> s = new HashSet<FileObject>();
                         s.addAll(Arrays.asList(selectedElements));
-                        return new MoveClassesUI(s, tar, paste);
+                        return wrap(new MoveClassesUI(s, tar, paste));
                     }
                 }
                 
             };
         }
         RetoucheUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
-    }    
+    }
+
+    protected RefactoringUI wrap(RefactoringUI orig) {
+        return orig;
+    }
 
     public static abstract class TreePathHandleTask implements Runnable, CancellableTask<CompilationController> {
         private Collection<TreePathHandle> handles = new ArrayList<TreePathHandle>();

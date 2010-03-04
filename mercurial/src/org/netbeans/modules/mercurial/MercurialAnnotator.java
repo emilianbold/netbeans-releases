@@ -64,9 +64,7 @@ import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
-import org.netbeans.modules.mercurial.ui.diff.ExportBundleAction;
-import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
-import org.netbeans.modules.mercurial.ui.diff.ExportDiffChangesAction;
+import org.netbeans.modules.mercurial.ui.diff.ExportMenu;
 import org.netbeans.modules.mercurial.ui.diff.ImportDiffAction;
 import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
@@ -306,9 +304,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             actions.add(SystemAction.get(UpdateAction.class));
             actions.add(SystemAction.get(CommitAction.class));
             actions.add(null);
-            actions.add(SystemAction.get(ExportDiffAction.class));
-            actions.add(SystemAction.get(ExportDiffChangesAction.class));
-            actions.add(SystemAction.get(ExportBundleAction.class));
+            actions.add(new ExportMenu());
             actions.add(SystemAction.get(ImportDiffAction.class));
 
             actions.add(null);

@@ -147,6 +147,7 @@ public final class Icons {
             img = ImageUtilities.loadImage( ICON_BASE + "test" + PNG_EXTENSION );
             break;
         case CLASS:
+        case INTERFACE:
             img = ImageUtilities.loadImage( ICON_BASE + "class" + PNG_EXTENSION );
             break;
         case TAG:

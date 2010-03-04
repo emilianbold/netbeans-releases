@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.OverridingMethods;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
@@ -64,6 +65,7 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.DeclarationFinderImpl;
 import org.netbeans.modules.php.editor.nav.InstantRenamerImpl;
 import org.netbeans.modules.php.editor.nav.OccurrencesFinderImpl;
+import org.netbeans.modules.php.editor.nav.OverridingMethodsImpl;
 import org.netbeans.modules.php.editor.nav.PHPTypeSearcher;
 import org.netbeans.modules.php.editor.parser.GSFPHPParser;
 import org.netbeans.modules.php.editor.parser.PhpStructureScanner;
@@ -194,6 +196,11 @@ public class PHPLanguage extends DefaultLanguageConfig {
     @Override
     public Set<String> getSourcePathIds() {
         return Collections.singleton(PhpSourcePath.SOURCE_CP);
+    }
+
+    @Override
+    public OverridingMethods getOverridingMethods() {
+        return new OverridingMethodsImpl();
     }
 
 }
