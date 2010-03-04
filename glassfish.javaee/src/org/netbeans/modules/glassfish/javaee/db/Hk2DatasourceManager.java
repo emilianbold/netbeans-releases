@@ -96,6 +96,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
      * @throws ConfigurationException reports problems in retrieving data source
      *         definitions.
      */
+    @Override
     public Set<Datasource> getDatasources() throws ConfigurationException {
         GlassfishModule commonSupport = dm.getCommonServerSupport();
         String domainsDir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
@@ -115,6 +116,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
      * @throws DatasourceAlreadyExistsException if module data source(s) are
      *         conflicting with data source(s) already deployed on the server.
      */
+    @Override
     public void deployDatasources(Set<Datasource> datasources) 
             throws ConfigurationException, DatasourceAlreadyExistsException {
         // since a connection pool is not a Datasource, the deploy has to
@@ -828,8 +830,12 @@ public class Hk2DatasourceManager implements DatasourceManager {
 
         @Override
         public void readChildren(String qname, Attributes attributes) throws SAXException {
-            properties.put(attributes.getValue("name").toLowerCase(Locale.ENGLISH), 
-                    attributes.getValue("value"));
+            if (null != attributes && null != properties) {
+                String key = attributes.getValue("name");  // NOI18N
+                if(key != null && key.length() > 0) {
+                    properties.put(key.toLowerCase(Locale.ENGLISH), attributes.getValue("value"));  // NOI18N
+                }
+            }
         }
         
         @Override
