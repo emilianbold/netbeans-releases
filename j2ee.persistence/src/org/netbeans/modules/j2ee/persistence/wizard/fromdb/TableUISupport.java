@@ -417,7 +417,7 @@ public class TableUISupport {
                     TableClassNamesModel model = (TableClassNamesModel)getModel();
                     Table table = model.getTableAt(row);
                     SelectedTables selectedTables = model.getSelectedTables();
-                    FileObject classFO = selectedTables.getTargetFolder().getFileObject(selectedTables.getClassName(table), "java"); //NOI18N
+                    FileObject classFO = selectedTables.getTargetFolder() != null ? selectedTables.getTargetFolder().getFileObject(selectedTables.getClassName(table), "java") : null; //NOI18N
                     if (classFO != null){
                         return new DefaultCellEditor(new JComboBox(new UpdateType[]{UpdateType.UPDATE, UpdateType.RECREATE}));
                     } else {
