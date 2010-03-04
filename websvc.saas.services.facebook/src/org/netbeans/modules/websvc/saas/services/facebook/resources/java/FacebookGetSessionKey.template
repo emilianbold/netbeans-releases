@@ -1,0 +1,29 @@
+{
+    if (session_key == null) {
+        String auth_token = createToken();
+        String url = "http://www.facebook.com/login.php?api_key="
+                + api_key + "&v=1.0&auth_token=" + auth_token + "&req_perms=publish_stream";
+
+        if (javax.swing.JOptionPane.showInputDialog(null,
+                "Please log into your Facebook account using the following URL to authorize this application and click OK after you are done:",
+                "Facebook Authorization Dialog",
+                javax.swing.JOptionPane.INFORMATION_MESSAGE,
+                null,
+                null,
+                url) == null) {
+            throw new java.io.IOException("Authorization declined");
+        }
+
+        String[] queryParamNames = new String[]{"api_key", "auth_token", "v", "method"};
+        String[] queryParamValues = new String[]{api_key, auth_token, "1.0", "facebook.auth.getSession"};
+        String sig = signParams(application_secret, queryParamNames, queryParamValues);
+        String result = webResource.queryParams(getQueryOrFormParams(queryParamNames, queryParamValues)).queryParam("sig", sig).get(String.class);
+        try {
+             this.session_secret = result.substring(result.indexOf("<secret>") + 8,result.indexOf("</secret>"));
+             session_key = result.substring(result.indexOf("<session_key>") + 13,result.indexOf("</session_key>"));
+        } catch (Exception ex) {
+            throw new java.io.IOException("Failed to get session key: " + result);
+        }
+    }
+    return session_key;
+}
