@@ -88,6 +88,11 @@ public class AddAttributePanel extends javax.swing.JPanel implements ActionListe
         bannedNames.add("MIDlet-Jar-URL"); // NOI18N
         bannedNames.add("MIDlet-Permissions"); // NOI18N
         bannedNames.add("MIDlet-Permissions-Opt"); // NOI18N
+        bannedNames.add("LIBlet-Jar-RSA-SHA1"); // NOI18N
+        bannedNames.add("LIBlet-Jar-Size"); // NOI18N
+        bannedNames.add("LIBlet-Jar-URL"); // NOI18N
+        bannedNames.add("LIBlet-Permissions"); // NOI18N
+        bannedNames.add("LIBlet-Permissions-Opt"); // NOI18N
         riskyNames = new HashSet<String>();
         riskyNames.add("MicroEdition-Configuration"); // NOI18N
         riskyNames.add("MicroEdition-Profile"); // NOI18N
@@ -104,7 +109,7 @@ public class AddAttributePanel extends javax.swing.JPanel implements ActionListe
             riskyNames.add("MIDlet-Delete-Confirm"); //NOI18N
         }
         originalKey = key;
-        jLabel4.setVisible("MIDlet-Version".equals(key)); //NOI18N
+        jLabel4.setVisible("MIDlet-Version".equals(key) || "LIBlet-Version".equals(key)); //NOI18N
         if (editing) {
             cKey.setModel(new DefaultComboBoxModel(tableModel.getNonMandatory()));
             cKey.getEditor().setItem(key);
