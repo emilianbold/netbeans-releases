@@ -39,16 +39,15 @@
 
 package org.netbeans.modules.cnd.remote.pbuild;
 
-import java.util.concurrent.TimeUnit;
+import java.io.IOException;
+import java.util.Collection;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileObject;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.netbeans.modules.nativeexecution.test.RcFile;
+import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 /**
  *
  * @author Vladimir Kvashin
@@ -60,36 +59,12 @@ public class RemoteBuildSamplesTest extends RemoteBuildTestBase {
     }
 
     public RemoteBuildSamplesTest(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);       
+        super(testName, execEnv);
     }
 
     protected void buildSample(Sync sync, Toolchain toolchain, String projectName, String projectDir, int count) throws Exception {
         int timeout = getSampleBuildTimeout();
         buildSample(sync, toolchain, projectName, projectDir, count, timeout, timeout);
-    }
-
-    protected void buildSample(Sync sync, Toolchain toolchain, String projectName, String projectDir, 
-            int count, int firstTimeout, int subsequentTimeout) throws Exception {
-
-        setupHost();
-        setSyncFactory(sync.ID);
-
-        assertEquals("Wrong sync factory:", sync.ID,
-                ServerList.get(getTestExecutionEnvironment()).getSyncFactory().getID());
-
-        setDefaultCompilerSet(toolchain.ID);
-        assertEquals("Wrong tools collection", toolchain.ID,
-                CompilerSetManager.get(getTestExecutionEnvironment()).getDefaultCompilerSet().getName());
-
-        clearRemoteSyncRoot();
-        FileObject projectDirFO = prepareSampleProject(projectName, "Args_01");
-        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        for (int i = 0; i < count; i++) {
-            if (count > 0) {
-                System.err.printf("BUILDING %s, PASS %d\n", projectName, i);
-            }
-            buildProject(makeProject, firstTimeout, TimeUnit.SECONDS);
-        }        
     }
 
     @ForAllEnvironments
@@ -98,8 +73,13 @@ public class RemoteBuildSamplesTest extends RemoteBuildTestBase {
     }
 
     @ForAllEnvironments
-    public void testBuildSampleArgumentsTwice() throws Exception {
+    public void testBuildSample_Rfs_Gnu_Arguments_Multy() throws Exception {
         buildSample(Sync.RFS, Toolchain.GNU, "Arguments", "Args_02", 3, getSampleBuildTimeout(), getSampleBuildTimeout()/3);
+    }
+
+    @ForAllEnvironments
+    public void testBuildSample_Rfs_Gnu_LexYacc() throws Exception {
+        buildSample(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_01", 3, getSampleBuildTimeout(), getSampleBuildTimeout()/3);
     }
 
     public static Test suite() {
