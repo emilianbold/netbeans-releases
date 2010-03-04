@@ -55,12 +55,17 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.core.spi.multiview.CloseOperationHandler;
+import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
@@ -162,6 +167,10 @@ public class BrandingEditor {
         saveAction.setEnabled(isModified && isValid);
     }
 
+    boolean isModified() {
+        return isModified;
+    }
+
     Action getSaveAction() {
         return saveAction;
     }
@@ -196,7 +205,7 @@ public class BrandingEditor {
         }
         MultiViewDescription[] tabs = new MultiViewDescription[panels.length];
         System.arraycopy(panels, 0, tabs, 0, panels.length);
-        TopComponent res = MultiViewFactory.createMultiView(tabs, tabs[0]);
+        TopComponent res = MultiViewFactory.createMultiView(tabs, tabs[0], createCloseHandler());
         res.setDisplayName(title);
         return res;
     }
@@ -232,5 +241,28 @@ public class BrandingEditor {
             lbl.setVisible(!isValid);
         }
         saveAction.setEnabled(isModified && isValid);
+    }
+
+    CloseOperationHandler createCloseHandler() {
+        return new CloseOperationHandler() {
+            @Override
+            public boolean resolveCloseOperation(CloseOperationState[] elements) {
+                if( isModified ) {
+                    Object response = DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Confirmation(NbBundle.getMessage(BrandingEditor.class,
+                            "Ask_SaveBrandingChanges"), tc.getDisplayName())); //NOI18N
+                    if( response == NotifyDescriptor.NO_OPTION ) {
+                        synchronized( project2editor ) {
+                            project2editor.remove(project);
+                        }
+                        return true;
+                    }
+                    if( response == NotifyDescriptor.CANCEL_OPTION )
+                        return false;
+                    doSave();
+                }
+                return true;
+            }
+        };
     }
 }
