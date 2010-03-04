@@ -249,7 +249,7 @@ public final class SelectedTables {
 
     public UpdateType getUpdateType(Table table) {
         assert table != null;
-        FileObject classFO = targetFolder.getFileObject(getClassName(table), "java"); //NOI18N
+        FileObject classFO = targetFolder != null ? targetFolder.getFileObject(getClassName(table), "java") : null;
         UpdateType ut = table2UpdateType.get(table);
 
         if (classFO == null){
