@@ -780,7 +780,7 @@ class Wadl2JavaHelper {
 
     private static String findGetterForParam(String param, List<TemplateType.MethodDescriptor> methodDescriptors) {
         for (TemplateType.MethodDescriptor method : methodDescriptors) {
-            if (param.contentEquals(method.getId())) {
+            if (param.equals(method.getId())) {
                 return method.getName()+"()"; //NOI18N
             }
         }
