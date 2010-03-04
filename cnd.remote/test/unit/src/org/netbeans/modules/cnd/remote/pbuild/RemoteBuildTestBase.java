@@ -46,13 +46,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -231,4 +234,32 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         writeFile(confFile, newText);
     }
 
+    protected void buildSample(Sync sync, Toolchain toolchain, String projectName, String projectDir, int count) throws Exception {
+        int timeout = getSampleBuildTimeout();
+        buildSample(sync, toolchain, projectName, projectDir, count, timeout, timeout);
+    }
+
+    protected void buildSample(Sync sync, Toolchain toolchain, String projectName, String projectDir,
+            int count, int firstTimeout, int subsequentTimeout) throws Exception {
+
+        setupHost();
+        setSyncFactory(sync.ID);
+
+        assertEquals("Wrong sync factory:", sync.ID,
+                ServerList.get(getTestExecutionEnvironment()).getSyncFactory().getID());
+
+        setDefaultCompilerSet(toolchain.ID);
+        assertEquals("Wrong tools collection", toolchain.ID,
+                CompilerSetManager.get(getTestExecutionEnvironment()).getDefaultCompilerSet().getName());
+
+        clearRemoteSyncRoot();
+        FileObject projectDirFO = prepareSampleProject(projectName, "Args_01");
+        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
+        for (int i = 0; i < count; i++) {
+            if (count > 0) {
+                System.err.printf("BUILDING %s, PASS %d\n", projectName, i);
+            }
+            buildProject(makeProject, firstTimeout, TimeUnit.SECONDS);
+        }
+    }
 }
