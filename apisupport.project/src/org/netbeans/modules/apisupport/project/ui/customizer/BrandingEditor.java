@@ -83,7 +83,7 @@ public class BrandingEditor {
     public static void open( SuiteProject suite ) {
         SuiteProperties properties = new SuiteProperties(suite, suite.getHelper(), suite.getEvaluator(), SuiteUtils.getSubProjects(suite));
         BasicBrandingModel model = new BasicBrandingModel(properties);
-        open( properties.getProjectDisplayName() + " - Branding", suite, model );
+        open( properties.getProjectDisplayName() + " - Branding", suite, model, true );
     }
 
     /**
@@ -91,12 +91,14 @@ public class BrandingEditor {
      * @param displayName Branding editor's display name.
      * @param p Project to be branded.
      * @param model Branding model.
+     * @param contextAvailable True if the given project knows which platform
+     * app it belongs and the platform jars/projects are available, false otherwise.
      */
-    public static void open( String displayName, Project p, BasicBrandingModel model ) {
+    public static void open( String displayName, Project p, BasicBrandingModel model, boolean contextAvailable ) {
         synchronized( project2editor ) {
             BrandingEditor editor = project2editor.get(p);
             if( null == editor ) {
-                editor = new BrandingEditor(displayName, p, model);
+                editor = new BrandingEditor(displayName, p, model, contextAvailable);
                 project2editor.put(p, editor);
             }
             editor.open();
@@ -114,10 +116,12 @@ public class BrandingEditor {
     private boolean isModified = false;
     private boolean isValid = true;
     private Set<JLabel> errorLabels = new HashSet<JLabel>(10);
+    private final boolean contextAvailable;
 
-    private BrandingEditor( String title, Project p, final BasicBrandingModel model ) {
+    private BrandingEditor( String title, Project p, final BasicBrandingModel model, boolean contextAvailable ) {
         this.project = p;
         this.title = title;
+        this.contextAvailable = contextAvailable;
         final OpenProjects projects = OpenProjects.getDefault();
         projects.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
@@ -142,6 +146,7 @@ public class BrandingEditor {
             new SplashBrandingPanel(model),
             new WindowSystemBrandingPanel(model)
         };
+        //TODO restrict the functionality of generic resource bundle editor when platform context isn't available
         saveAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
