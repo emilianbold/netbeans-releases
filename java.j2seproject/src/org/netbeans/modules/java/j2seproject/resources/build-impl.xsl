@@ -461,6 +461,7 @@ is divided into following sections:
                             <compilerarg value="-processorpath" />
                             <compilerarg path="@{{processorpath}}" />
                             <compilerarg line="${{ap.processors.internal}}" />
+                            <compilerarg line="${{annotation.processing.processor.options}}" />
                             <compilerarg value="-s" />
                             <compilerarg path="@{{apgeneratedsrcdir}}" />
                             <compilerarg line="${{ap.proc.none.internal}}" />
@@ -883,6 +884,7 @@ is divided into following sections:
             <target name="-init-ap-cmdline-properties">
                 <property name="annotation.processing.enabled" value="true" />
                 <property name="annotation.processing.processors.list" value="" />
+                <property name="annotation.processing.processor.options" value="" />
                 <property name="annotation.processing.run.all.processors" value="true" />
                 <property name="javac.processorpath" value="${{javac.classpath}}" />
                 <property name="javac.test.processorpath" value="${{javac.test.classpath}}"/>

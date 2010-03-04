@@ -52,14 +52,14 @@ import javax.swing.event.DocumentListener;
  *
  * @author Dusan Balek
  */
-class AddAnnotationProcessor extends javax.swing.JPanel {
+class AddProcessorOption extends javax.swing.JPanel {
 
     private ChangeListener changeListener;
 
     /** Creates new form AddAnnotationProcessor */
-    AddAnnotationProcessor() {
+    AddProcessorOption() {
         initComponents();
-        textField.getDocument().addDocumentListener(new DocumentListener() {
+        keyTextField.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -87,8 +87,12 @@ class AddAnnotationProcessor extends javax.swing.JPanel {
         changeListener = null;
     }
 
-    String getProcessorFQN() {
-        return textField.getText().trim();
+    String getOptionKey() {
+        return keyTextField.getText().trim();
+    }
+
+    String getOptionValue() {
+        return valueTextField.getText().trim();
     }
 
     /** This method is called from within the constructor to
@@ -100,11 +104,17 @@ class AddAnnotationProcessor extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        label = new javax.swing.JLabel();
-        textField = new javax.swing.JTextField();
+        keyLabel = new javax.swing.JLabel();
+        keyTextField = new javax.swing.JTextField();
+        valueLabel = new javax.swing.JLabel();
+        valueTextField = new javax.swing.JTextField();
 
-        label.setLabelFor(textField);
-        org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(AddAnnotationProcessor.class, "LBL_AnnotationProcessorFQN")); // NOI18N
+        keyLabel.setLabelFor(keyTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(keyLabel, org.openide.util.NbBundle.getMessage(AddProcessorOption.class, "LBL_ProcessorOptionKey")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(valueLabel, org.openide.util.NbBundle.getMessage(AddProcessorOption.class, "LBL_ProcessorOptionValue")); // NOI18N
+
+        valueTextField.setText(org.openide.util.NbBundle.getMessage(AddProcessorOption.class, "AddProcessorOption.valueTextField.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -112,9 +122,13 @@ class AddAnnotationProcessor extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(label)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(keyLabel)
+                    .addComponent(valueLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(textField, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(valueTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 389, Short.MAX_VALUE)
+                    .addComponent(keyTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 389, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -122,14 +136,20 @@ class AddAnnotationProcessor extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(label)
-                    .addComponent(textField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(keyLabel)
+                    .addComponent(keyTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(valueLabel)
+                    .addComponent(valueTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel label;
-    private javax.swing.JTextField textField;
+    private javax.swing.JLabel keyLabel;
+    private javax.swing.JTextField keyTextField;
+    private javax.swing.JLabel valueLabel;
+    private javax.swing.JTextField valueTextField;
     // End of variables declaration//GEN-END:variables
 }
