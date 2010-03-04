@@ -231,6 +231,7 @@ made subject to such option by the copyright holder.
         <makeupdatedesc desc="${build.updates.dir}/updates.xml" distbase="${catalog.base.url}" automaticgrouping="true" uselicenseurl="${use.license.url.in.catalog}">
             <fileset dir="${build.updates.dir}">
                 <include name="*.nbm"/>
+                <include name="*.jar"/> <!-- #181025: bare OSGi bundles -->
             </fileset>
             <updaterjar>
                 <resources refid="updater.jar"/>
