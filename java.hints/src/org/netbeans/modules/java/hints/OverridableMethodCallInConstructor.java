@@ -57,6 +57,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
@@ -80,7 +81,7 @@ public class OverridableMethodCallInConstructor {
     public static ErrorDescription hint(HintContext ctx) {
         MethodInvocationTree mit = (MethodInvocationTree) ctx.getPath().getLeaf();
         CompilationInfo info = ctx.getInfo();
-        TreePath enclosingMethod = findEnclosingMethodOrConstructor(ctx.getPath());
+        TreePath enclosingMethod = Utilities.findEnclosingMethodOrConstructor(ctx, ctx.getPath());
 
         if (enclosingMethod == null) {
             return null;
@@ -189,15 +190,4 @@ public class OverridableMethodCallInConstructor {
         return false;
     }
 
-    static TreePath findEnclosingMethodOrConstructor(TreePath from) {
-        while (from != null && from.getLeaf().getKind() != Kind.METHOD && from.getLeaf().getKind() != Kind.CLASS) {
-            from = from.getParentPath();
-        }
-
-        if (from != null && from.getLeaf().getKind() == Kind.METHOD) {
-            return from;
-        }
-
-        return null;
-    }
 }
