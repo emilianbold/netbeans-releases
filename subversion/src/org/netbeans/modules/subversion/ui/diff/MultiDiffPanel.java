@@ -373,6 +373,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             commitButton.setEnabled(false);
         } else {
             commitButton.setVisible(false);
+            updateButton.setVisible(false);
             localToggle.setVisible(false);
             remoteToggle.setVisible(false);
             allToggle.setVisible(false);
