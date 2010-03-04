@@ -57,11 +57,11 @@ public final class CppEditorSupportProvider extends CndCookieProvider {
     public void addLookup(DataObject dao, InstanceContent ic) {
         MultiDataObject mdao = (MultiDataObject) dao;
         if (!MIMENames.isBinary(dao.getPrimaryFile().getMIMEType())){
-            ic.add(CppEditorSupport.class, new CppEditorSupportFactory(mdao, ic));
+            ic.add(mdao, new CppEditorSupportFactory(mdao, ic));
         }
     }
 
-    private static class CppEditorSupportFactory implements Convertor<Class<CppEditorSupport>, CppEditorSupport> {
+    private static class CppEditorSupportFactory implements Convertor<MultiDataObject, CppEditorSupport> {
 
         private final MultiDataObject mdao;
         private final InstanceContent ic;
@@ -72,22 +72,22 @@ public final class CppEditorSupportProvider extends CndCookieProvider {
         }
 
         @Override
-        public CppEditorSupport convert(Class<CppEditorSupport> obj) {
+        public CppEditorSupport convert(MultiDataObject obj) {
             return new CppEditorSupport(mdao, ic);
         }
 
         @Override
-        public Class<? extends CppEditorSupport> type(Class<CppEditorSupport> obj) {
+        public Class<? extends CppEditorSupport> type(MultiDataObject obj) {
             return CppEditorSupport.class;
         }
 
         @Override
-        public String id(Class<CppEditorSupport> obj) {
+        public String id(MultiDataObject obj) {
             return CppEditorSupport.class.getName();
         }
 
         @Override
-        public String displayName(Class<CppEditorSupport> obj) {
+        public String displayName(MultiDataObject obj) {
             return CppEditorSupport.class.getName();
         }
     }

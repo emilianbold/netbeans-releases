@@ -55,41 +55,39 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Alexey Vladykin
  */
 @ServiceProvider(service = CndCookieProvider.class, position = 1000)
-public final class CndCookieProviderImpl extends CndCookieProvider {
+public final class CndBinaryExecSupportProvider extends CndCookieProvider {
+    static final BinaryExecSupportFactory staticFactory = new BinaryExecSupportFactory();
 
     @Override
     public void addLookup(DataObject dao, InstanceContent ic) {
         MultiDataObject mdao = (MultiDataObject) dao;
         if (!MIMENames.isFortranOrHeaderOrCppOrC(dao.getPrimaryFile().getMIMEType())){
-            ic.add(BinaryExecSupport.class, new BinaryExecSupportFactory(mdao));
+            ic.add(mdao, staticFactory);
         }
     }
 
-    private static class BinaryExecSupportFactory implements Convertor<Class<BinaryExecSupport>, BinaryExecSupport> {
+    private static class BinaryExecSupportFactory implements Convertor<MultiDataObject, BinaryExecSupport> {
 
-        private final MultiDataObject mdao;
-
-        public BinaryExecSupportFactory(MultiDataObject mdao) {
-            this.mdao = mdao;
+        public BinaryExecSupportFactory() {
         }
 
         @Override
-        public BinaryExecSupport convert(Class<BinaryExecSupport> obj) {
-            return new BinaryExecSupport(mdao.getPrimaryEntry());
+        public BinaryExecSupport convert(MultiDataObject obj) {
+            return new BinaryExecSupport(obj.getPrimaryEntry());
         }
 
         @Override
-        public Class<? extends BinaryExecSupport> type(Class<BinaryExecSupport> obj) {
+        public Class<? extends BinaryExecSupport> type(MultiDataObject obj) {
             return BinaryExecSupport.class;
         }
 
         @Override
-        public String id(Class<BinaryExecSupport> obj) {
+        public String id(MultiDataObject obj) {
             return BinaryExecSupport.class.getName();
         }
 
         @Override
-        public String displayName(Class<BinaryExecSupport> obj) {
+        public String displayName(MultiDataObject obj) {
             return BinaryExecSupport.class.getName();
         }
     }

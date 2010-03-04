@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
-import java.lang.Runtime;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -50,10 +49,8 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.nodes.CookieSet;
 import org.openide.filesystems.FileLock;
 
-import org.netbeans.modules.cnd.execution.BinaryExecSupport;
 
 
 /** Superclass for Elf objects in the Repository.
@@ -69,23 +66,17 @@ public class ExeElfObject extends ExeObject {
 	super(pf, loader);
     }
   
-    protected void init() {
-	CookieSet cookies = getCookieSet();
-    
-	// Add whatever capabilities you need, e.g.:
-	//cookies.add(new BinaryExecSupport(getPrimaryEntry()));
-    }
-  
+    @Override
     protected Node createNodeDelegate() {
 	return new ExeNode(this);
     }
-
 
     /**
      *  Renames all entries and changes their files to new ones.
      *  We only override this to prevent you from changing the template
      *  name to something invalid (like an empty name)
      */
+    @Override
     protected FileObject handleRename(String name) throws IOException {
         FileLock lock = getPrimaryFile().lock();
         int pos = name.lastIndexOf('.');
@@ -104,6 +95,7 @@ public class ExeElfObject extends ExeObject {
         return getPrimaryFile ();
     }
 
+    @Override
     protected DataObject handleCopy(DataFolder df) throws IOException {
 	// let super do the job and then set the execution flag on the copy
 	DataObject dao = super.handleCopy(df);
@@ -111,6 +103,7 @@ public class ExeElfObject extends ExeObject {
 	return dao;
     }
 
+    @Override
     protected FileObject handleMove(DataFolder df) throws IOException {
 	// let super do the job and then set the execution flag on the copy
 	FileObject fob = super.handleMove(df);
@@ -119,9 +112,9 @@ public class ExeElfObject extends ExeObject {
     }
 
     private void setExecutionFlags(FileObject fob) throws IOException {
-	if (fob != null)
-	    Runtime.getRuntime().exec("/bin/chmod +x " + // NOI18N
-		    FileUtil.toFile(fob).getPath());
+	if (fob != null) {
+            Runtime.getRuntime().exec("/bin/chmod +x " + FileUtil.toFile(fob).getPath());
+        }
     }
 }
 
