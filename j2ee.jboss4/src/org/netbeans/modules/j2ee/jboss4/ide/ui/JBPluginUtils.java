@@ -84,6 +84,8 @@ public class JBPluginUtils {
                 "jbossweb.sar" + File.separator + "server.xml"; // NOI18N
 
     public static final Version JBOSS_5_0_0 = new Version("5.0.0"); // NOI18N
+    
+    public static final Version JBOSS_5_0_1 = new Version("5.0.1"); // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(JBPluginUtils.class.getName());
 
