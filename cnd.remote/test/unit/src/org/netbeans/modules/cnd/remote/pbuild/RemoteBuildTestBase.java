@@ -175,7 +175,9 @@ public class RemoteBuildTestBase extends RemoteTestBase {
     protected FileObject prepareSampleProject(String sampleName, String projectDirShortName) throws IOException, InterruptedException, InvocationTargetException {
         // reusing directories makes debugging much more difficult, so we add host name
         projectDirShortName += "_" + getTestHostName();
-        File projectDir = new File(getWorkDir(), projectDirShortName);
+        //File projectDir = new File(getWorkDir(), projectDirShortName);
+        File projectDir = File.createTempFile(projectDirShortName + "_", "", getWorkDir());
+        projectDir.delete();
         instantiateSample(sampleName, projectDir);
         FileObject projectDirFO = FileUtil.toFileObject(projectDir);
         ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
@@ -234,12 +236,12 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         writeFile(confFile, newText);
     }
 
-    protected void buildSample(Sync sync, Toolchain toolchain, String projectName, String projectDir, int count) throws Exception {
+    protected void buildSample(Sync sync, Toolchain toolchain, String sampleName, String projectDir, int count) throws Exception {
         int timeout = getSampleBuildTimeout();
-        buildSample(sync, toolchain, projectName, projectDir, count, timeout, timeout);
+        buildSample(sync, toolchain, sampleName, projectDir, count, timeout, timeout);
     }
 
-    protected void buildSample(Sync sync, Toolchain toolchain, String projectName, String projectDir,
+    protected void buildSample(Sync sync, Toolchain toolchain, String sampleName, String projectDir,
             int count, int firstTimeout, int subsequentTimeout) throws Exception {
 
         setupHost();
@@ -253,11 +255,12 @@ public class RemoteBuildTestBase extends RemoteTestBase {
                 CompilerSetManager.get(getTestExecutionEnvironment()).getDefaultCompilerSet().getName());
 
         clearRemoteSyncRoot();
-        FileObject projectDirFO = prepareSampleProject(projectName, "Args_01");
+        String prjDir = sampleName + "_" + sync.ID;
+        FileObject projectDirFO = prepareSampleProject(sampleName, prjDir);
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         for (int i = 0; i < count; i++) {
             if (count > 0) {
-                System.err.printf("BUILDING %s, PASS %d\n", projectName, i);
+                System.err.printf("BUILDING %s, PASS %d\n", sampleName, i);
             }
             buildProject(makeProject, firstTimeout, TimeUnit.SECONDS);
         }

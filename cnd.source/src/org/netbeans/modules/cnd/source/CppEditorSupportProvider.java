@@ -37,57 +37,46 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor;
+package org.netbeans.modules.cnd.source;
 
 import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
-import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.MultiDataObject;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.InstanceContent.Convertor;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * @author Alexey Vladykin
  */
-@ServiceProvider(service = CndCookieProvider.class)
 public final class CppEditorSupportProvider extends CndCookieProvider {
+    static final CppEditorSupportFactory staticFactory = new CppEditorSupportFactory();
 
     @Override
     public void addLookup(DataObject dao, InstanceContent ic) {
-        MultiDataObject mdao = (MultiDataObject) dao;
-        if (!MIMENames.isBinary(dao.getPrimaryFile().getMIMEType())){
-            ic.add(CppEditorSupport.class, new CppEditorSupportFactory(mdao, ic));
-        }
+        SourceDataObject sdao = (SourceDataObject) dao;
+        ic.add(sdao, staticFactory);
     }
 
-    private static class CppEditorSupportFactory implements Convertor<Class<CppEditorSupport>, CppEditorSupport> {
-
-        private final MultiDataObject mdao;
-        private final InstanceContent ic;
-
-        public CppEditorSupportFactory(MultiDataObject mdao, InstanceContent ic) {
-            this.mdao = mdao;
-            this.ic = ic;
+    private static class CppEditorSupportFactory implements Convertor<SourceDataObject, CppEditorSupport> {
+        public CppEditorSupportFactory() {
         }
 
         @Override
-        public CppEditorSupport convert(Class<CppEditorSupport> obj) {
-            return new CppEditorSupport(mdao, ic);
+        public CppEditorSupport convert(SourceDataObject obj) {
+            return new CppEditorSupport(obj);
         }
 
         @Override
-        public Class<? extends CppEditorSupport> type(Class<CppEditorSupport> obj) {
+        public Class<? extends CppEditorSupport> type(SourceDataObject obj) {
             return CppEditorSupport.class;
         }
 
         @Override
-        public String id(Class<CppEditorSupport> obj) {
+        public String id(SourceDataObject obj) {
             return CppEditorSupport.class.getName();
         }
 
         @Override
-        public String displayName(Class<CppEditorSupport> obj) {
+        public String displayName(SourceDataObject obj) {
             return CppEditorSupport.class.getName();
         }
     }
