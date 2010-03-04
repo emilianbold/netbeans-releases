@@ -101,6 +101,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     /** 
      * Creates new form IndentationPanel.
      */
+    @SuppressWarnings("LeakingThisInConstructor")
     public IndentationPanel(MimePath mimePath, CustomizerSelector.PreferencesFactory prefsFactory, Preferences prefs, Preferences allLangPrefs, PreviewProvider preview) {
         this.mimePath = mimePath;
         this.prefsFactory = prefsFactory;
@@ -168,7 +169,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     // ChangeListener implementation
     // ------------------------------------------------------------------------
 
-    public void stateChanged (ChangeEvent e) {
+    public @Override void stateChanged (ChangeEvent e) {
         if (sNumberOfSpacesPerIndent == e.getSource()) {
             prefs.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, (Integer) sNumberOfSpacesPerIndent.getValue());
             prefs.putInt(SimpleValueNames.SPACES_PER_TAB, (Integer) sNumberOfSpacesPerIndent.getValue());
@@ -183,7 +184,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     // ActionListener implementation
     // ------------------------------------------------------------------------
 
-    public void actionPerformed (ActionEvent e) {
+    public @Override void actionPerformed (ActionEvent e) {
         if (cbOverrideGlobalOptions == e.getSource()) {
             prefs.putBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, cbOverrideGlobalOptions.isSelected());
         } else if (cbExpandTabsToSpaces == e.getSource()) {
@@ -195,7 +196,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     // PreferenceChangeListener implementation
     // ------------------------------------------------------------------------
 
-    public void preferenceChange(PreferenceChangeEvent evt) {
+    public @Override void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getSource() == prefs) {
             prefsChange(evt);
         } else if (evt.getSource() == allLangPrefs) {
@@ -517,7 +518,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             this(prefs, mimeType, NbBundle.getMessage(clazz, bundleKey));
         }
 
-        public JComponent getPreviewComponent() {
+        public @Override JComponent getPreviewComponent() {
             if (jep == null) {
                 jep = new JEditorPane();
                 jep.getAccessibleContext().setAccessibleName(NbBundle.getMessage(IndentationPanel.class, "AN_Preview")); //NOI18N
@@ -529,7 +530,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             return jep;
         }
 
-        public void refreshPreview() {
+        public @Override void refreshPreview() {
             JEditorPane pane = (JEditorPane) getPreviewComponent();
             pane.setText(previewText);
             
@@ -539,7 +540,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                 reformat.lock();
                 try {
                     ((BaseDocument) doc).runAtomic(new Runnable() {
-                        public void run() {
+                        public @Override void run() {
                             if (LOG.isLoggable(Level.FINE)) {
                                 LOG.fine("Refreshing preview: expandTabs=" + IndentUtils.isExpandTabs(doc) //NOI18N
                                         + ", indentLevelSize=" + IndentUtils.indentLevelSize(doc) //NOI18N
@@ -580,7 +581,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     public static final class NoPreview implements PreviewProvider {
         private JComponent component = null;
 
-        public JComponent getPreviewComponent() {
+        public @Override JComponent getPreviewComponent() {
             if (component == null) {
                 JLabel noPreviewLabel = new JLabel(NbBundle.getMessage(IndentationPanel.class, "MSG_no_preview_available")); //NOI18N
                 noPreviewLabel.setOpaque(true);
@@ -593,7 +594,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             return component;
         }
 
-        public void refreshPreview() {
+        public @Override void refreshPreview() {
             // noop
         }
     } // End of NoPreview class
