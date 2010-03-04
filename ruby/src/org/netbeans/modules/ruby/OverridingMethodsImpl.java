@@ -85,7 +85,7 @@ final class OverridingMethodsImpl implements OverridingMethods {
         if (handle.getKind() == ElementKind.CLASS) {
             ClassElement classElement = (ClassElement) handle;
             RubyIndex index = RubyIndex.get(info);
-            return asLocations(index.getSubClasses(classElement.getFqn(), null, null, true));
+            return asLocations(index.getSubClasses(classElement.getFqn(), null, null, false));
         }
         if (handle.getKind() == ElementKind.METHOD) {
             MethodElement methodElement = (MethodElement) handle;
