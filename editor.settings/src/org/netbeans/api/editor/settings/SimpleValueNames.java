@@ -415,6 +415,13 @@ public final class SimpleValueNames {
      */
     public static final String JAVADOC_POPUP_NEXT_TO_CC = "javadoc-popup-next-to-cc"; // NOI18N
 
+    /**
+     * Whether to display non-printable characters (eg. space, tab and new-line).
+     * Values: java.lang.Boolean instances
+     * @since 1.30
+     */
+    public static final String NON_PRINTABLE_CHARACTERS_VISIBLE = "non-printable-characters-visible"; //NOI18N
+    
     @PatchedPublic
     private SimpleValueNames() {
         // to prevent instantialization
