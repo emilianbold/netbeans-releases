@@ -188,10 +188,22 @@ public class ManDocumentation {
     }
 
     private static String createDocumentationForName(String name, int chapter) throws IOException {
+        // TODO: use ProcessUtils.execute(ExecutionEnvironment execEnv, ...) instead of Runtime.getRuntime().exec(...) but problems getting an ExecutionEnvironment
+//        ExitStatus exitStatus = ProcessUtils.execute(execEnv, "man", name); // NOI18N
+//        StringReader sr;
+//        if (exitStatus.isOK() && exitStatus.output.length() > 0) {
+//            sr = new StringReader(exitStatus.output);
+//        } else {
+//            sr = new StringReader(exitStatus.error);
+//        }
+//        BufferedReader br = new BufferedReader(sr);
+//        String text = new Man2HTML(br).getHTML();
+//        br.close();
+
         if (getManPath() == null) {
             return null;
         }
-        // TODO: use ProcessUtils.execute(ExecutionEnvironment execEnv, ...) instead of Runtime.getRuntime().exec(...) but problems getting an ExecutionEnvironment
+        
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         Process p0 = Runtime.getRuntime().exec(getManPath() + " " + name, new String[] {"MANWIDTH="+Man2HTML.MAX_WIDTH}); // NOI18N
         InputStream is = p0.getInputStream();
