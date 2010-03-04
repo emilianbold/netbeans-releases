@@ -183,12 +183,20 @@ public class PHPFormatterQATest extends PHPTestBase {
      * @throws Exception
      */
 
-//    public void test124273_1() throws Exception {
-//        reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/124273_1.php");
+//    public void test175229_1() throws Exception {
+//        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+//        reformatFileContents("testfiles/formatting/qa/issues/unstable_newIssues/175229_1.php", options);
 //    }
 //
-//    public void test124273_2() throws Exception {
-//        reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/124273_2.php");
+//    public void test175229_2() throws Exception {
+//        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+//        reformatFileContents("testfiles/formatting/qa/issues/unstable_newIssues/175229_2.php", options);
+//    }
+
+  
+//    public void test175229_3() throws Exception {
+//        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+//        reformatFileContents("testfiles/formatting/qa/issues/unstable_newIssues/175229_3.php", options);
 //    }
 
     /**
@@ -200,13 +208,7 @@ public class PHPFormatterQATest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/qa/issues/regressions/124273_175247.php", options);
     }
 
-    /**
-     * issue 175229
-     * @throws Exception
-     */
-//    public void test175229 throws Exception {
-//        reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/175229_1.php");
-//    }
+    
 
     /**
      * issue 174653 
@@ -220,6 +222,7 @@ public class PHPFormatterQATest extends PHPTestBase {
 
 
     public void testIfElseStatement_stableFixed() throws Exception {
+
         reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/else_if.php");
     }
 
@@ -228,9 +231,10 @@ public class PHPFormatterQATest extends PHPTestBase {
      * issue 174595
      * @throws Exception
      */
-//    public void test174595_175229() throws Exception {
-//        reformatFileContents("testfiles/formatting/qa/issues/unstable_reopenedIssues/174595_175229.php");
-//    }
+    public void test174595_175229() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/174595_175229.php", options);
+    }
 
     /**
      * issue 174873 - test for missing $e variable only, so created
@@ -246,6 +250,27 @@ public class PHPFormatterQATest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/qa/issues/stable_partialTests/174873_173906_1.php");
     }
 
+    public void test152429_1_stable() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_1.php", options);
+    }
+
+    public void test152429_2_stable() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_2.php", options);
+    }
+
+    public void test152429_3_stable() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/152429_3.php", options);
+    }
+
+
+//    public void test148732() throws Exception {
+//	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+//        reformatFileContents("testfiles/formatting/qa/issues/unstable_newIssues/148732.php", options);
+//    }
+    
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }

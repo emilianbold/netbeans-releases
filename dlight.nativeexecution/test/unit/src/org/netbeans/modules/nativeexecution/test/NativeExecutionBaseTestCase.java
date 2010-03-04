@@ -49,12 +49,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -111,6 +113,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        setupProperties();
         super.setUp();
     }
 
@@ -118,6 +121,16 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
     }
+
+    private void setupProperties() throws IOException, FormatException {
+        RcFile rcFile = NativeExecutionTestSupport.getRcFile();
+        String section = getClass().getSimpleName() + ".properties";
+        Collection<String> keys = rcFile.getKeys(section);
+        for (String key : keys) {
+            String value = rcFile.get(section, key);
+            System.setProperty(key, value);
+        }
+    }    
 
     @Override
     protected int timeOut() {

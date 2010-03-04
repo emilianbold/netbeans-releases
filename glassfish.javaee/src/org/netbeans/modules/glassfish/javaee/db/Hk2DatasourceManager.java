@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -55,6 +55,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -196,16 +197,20 @@ public class Hk2DatasourceManager implements DatasourceManager {
             for (JdbcResource jdbc : jdbcResourceMap.values()) {
                 ConnectionPool pool = connectionPoolMap.get(jdbc.getPoolName());
                 if (pool != null) {
-                    pool.normalize();
+                    try {
+                        pool.normalize();
 
-                    // add to sun datasource list
-                    String url = pool.getProperty("URL"); //NOI18N
-                    if ((url != null) && (!url.equals(""))) { //NOI18N
-                        String username = pool.getProperty("User"); //NOI18N
-                        String password = pool.getProperty("Password"); //NOI18N
-                        String driverClassName = pool.getProperty("driverClass"); //NOI18N
-                        dataSources.add(new SunDatasource(jdbc.getJndiName(), url, username,
-                                password, driverClassName, resourcesDir));
+                        // add to sun datasource list
+                        String url = pool.getProperty("URL"); //NOI18N
+                        if ((url != null) && (!url.equals(""))) { //NOI18N
+                            String username = pool.getProperty("User"); //NOI18N
+                            String password = pool.getProperty("Password"); //NOI18N
+                            String driverClassName = pool.getProperty("driverClass"); //NOI18N
+                            dataSources.add(new SunDatasource(jdbc.getJndiName(), url, username,
+                                    password, driverClassName, resourcesDir));
+                        }
+                    } catch (NullPointerException npe) {
+                        Logger.getLogger("glassfish-javaee").log(Level.INFO, pool.toString(), npe);
                     }
                 }
             }
@@ -288,6 +293,19 @@ public class Hk2DatasourceManager implements DatasourceManager {
         
         public void normalize() {
            DbUtil.normalizePoolMap(properties);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Hk2DatasourceManager$ConnectionPool[");
+            for (Entry<String,String> e : properties.entrySet()) {
+                sb.append(e.getKey());
+                sb.append("=");
+                sb.append(e.getValue());
+                sb.append("--%%--");
+            }
+            return sb.append("]").toString();
         }
         
     }
@@ -732,6 +750,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
     
     private static void writeResourceFile(FileSystem fs, final File sunResourcesXml, final String content) throws IOException {
         fs.runAtomicAction(new FileSystem.AtomicAction() {
+            @Override
             public void run() throws IOException {
                 FileLock lock = null;
                 BufferedWriter writer = null;

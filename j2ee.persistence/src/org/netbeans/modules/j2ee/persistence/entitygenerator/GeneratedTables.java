@@ -87,6 +87,11 @@ public interface GeneratedTables {
     public String getClassName(String tableName);
 
     /**
+     * Returns the type of the update the class to be generated for the specified table.
+     */
+    public String getUpdateType(String tableName);
+
+    /**
      * Returns the unique constraints defined on the table
      */
     public Set<List<String>> getUniqueConstraints(String tableName);

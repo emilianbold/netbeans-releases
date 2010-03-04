@@ -190,7 +190,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             } else {
                 selectedTables.setTableClosureAndTargetFolder(tableClosure, getLocationValue(), getPackageName());
             }
-            selectedTables.ensureUniqueClassNames();
+//            selectedTables.ensureUniqueClassNames();
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
@@ -303,7 +303,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         specifyNamesLabel = new javax.swing.JLabel();
         classNamesLabel = new javax.swing.JLabel();
         classNamesScrollPane = new javax.swing.JScrollPane();
-        classNamesTable = new javax.swing.JTable();
+        classNamesTable = new TableUISupport.ClassNamesTable();
         projectLabel = new javax.swing.JLabel();
         projectTextField = new javax.swing.JTextField();
         locationLabel = new javax.swing.JLabel();
@@ -352,7 +352,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         spacerPanel.setLayout(spacerPanelLayout);
         spacerPanelLayout.setHorizontalGroup(
             spacerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 353, Short.MAX_VALUE)
+            .add(0, 383, Short.MAX_VALUE)
         );
         spacerPanelLayout.setVerticalGroup(
             spacerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -386,10 +386,10 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(spacerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(packageComboBox, 0, 353, Short.MAX_VALUE)
-                    .add(locationComboBox, 0, 353, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
-                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)))
+                    .add(packageComboBox, 0, 383, Short.MAX_VALUE)
+                    .add(locationComboBox, 0, 383, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)))
             .add(cmpFieldsInInterfaceCheckBox)
             .add(generateFinderMethodsCheckBox)
             .add(layout.createSequentialGroup()
