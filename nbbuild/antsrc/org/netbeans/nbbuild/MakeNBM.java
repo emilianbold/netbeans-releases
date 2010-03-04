@@ -78,6 +78,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.taskdefs.SignJar;
 import org.apache.tools.ant.types.FileSet;
@@ -466,12 +467,12 @@ public class MakeNBM extends Task {
             throw new BuildException("Unknown locale: null",getLocation());
         }
         log("Processing module attributes for locale '"+locale+"'", Project.MSG_VERBOSE);
-        Attributes attr = null;
+        Attributes attr;
         if ((!locale.equals("")) && (englishAttr != null)) {
             attr = new Attributes(englishAttr);
             attr.putValue("locale", locale);
             log("Copying English module attributes to localized attributes in locale "+locale,Project.MSG_VERBOSE);
-            String om = JarWithModuleAttributes.extractCodeName(attr);
+            String om = attr.getValue("OpenIDE-Module");
             String omn = attr.getValue("OpenIDE-Module-Name");
             String omdc = attr.getValue("OpenIDE-Module-Display-Category");
             String omsd = attr.getValue("OpenIDE-Module-Short-Description");
@@ -497,7 +498,7 @@ public class MakeNBM extends Task {
         }
         log("Going to open jarfile "+jarName,Project.MSG_VERBOSE);
         File mfile = new File(productDir, jarName );
-        if ((mfile == null) || (!mfile.exists())) {
+        if (!mfile.exists()) {
             // localizing jarfile does not exist, try to return english data
             if (englishAttr != null) {
                 Attributes xattr = new Attributes(englishAttr);
@@ -510,6 +511,10 @@ public class MakeNBM extends Task {
         try {
             JarFile mjar = new JarFile(mfile);
             try {
+                if (mjar.getManifest().getMainAttributes().getValue("Bundle-SymbolicName") != null) {
+                    // #181025: treat bundles specially.
+                    return null;
+                }
                 if (attr.getValue("OpenIDE-Module") == null ) {
                     attr = mjar.getManifest().getMainAttributes();
                     attr.putValue("locale", locale);
@@ -601,19 +606,30 @@ public class MakeNBM extends Task {
         
         
         moduleAttributes = new ArrayList<Attributes> ();
-        moduleAttributes.add(getModuleAttributesForLocale(""));
+        File module = new File( productDir, moduleName );
+        Attributes attr = getModuleAttributesForLocale("");
+        if (attr == null) {
+            // #181025: OSGi bundle, copy unmodified.
+            Copy copy = new Copy();
+            copy.setProject(getProject());
+            copy.setOwningTarget(getOwningTarget());
+            copy.setFile(module);
+            copy.setTofile(new File(nbm.getAbsolutePath().replaceFirst("[.]nbm$", ".jar")));
+            copy.execute();
+            // XXX possibly sign it
+            // XXX could try to run pack200, though not if it was signed
+            return;
+        }
+        moduleAttributes.add(attr);
         for (String locale : locales) {
             Attributes a = getModuleAttributesForLocale(locale);
             if (a != null) moduleAttributes.add(a);
         }
 
-        File module = new File( productDir, moduleName );
         // Will create a file Info/info.xml to be stored in tmp
-        if (module != null) {
             // The normal case; read attributes from its manifest and maybe bundle.
             long mMod = module.lastModified();
             if (mostRecentInput < mMod) mostRecentInput = mMod;
-        }
 
         if (mostRecentInput < nbm.lastModified()) {
             log("Skipping NBM creation as most recent input is younger: " + mostRecentInput + " than the target file: " + nbm.lastModified(), Project.MSG_VERBOSE);
@@ -651,7 +667,7 @@ public class MakeNBM extends Task {
             }
             infoXMLFileSets.add(infoXML);
         }
-        String codename = JarWithModuleAttributes.extractCodeName(englishAttr);
+        String codename = englishAttr.getValue("OpenIDE-Module");
         if (codename == null)
  	    new BuildException( "Can't get codenamebase" );
  	
@@ -929,8 +945,7 @@ public class MakeNBM extends Task {
             sys = "http://www.netbeans.org/dtds/autoupdate-info-2_3.dtd";
         }
         Document doc = domimpl.createDocument(null, "module", domimpl.createDocumentType("module", pub, sys));
-        boolean osgi[] = new boolean[1];
-        String codenamebase = JarWithModuleAttributes.extractCodeName(attr, osgi);
+        String codenamebase = attr.getValue("OpenIDE-Module");
         if (codenamebase == null) {
             Iterator it = attr.keySet().iterator();
             Name key; String val;
@@ -1015,27 +1030,11 @@ public class MakeNBM extends Task {
         it = attrNames.iterator();
         while (it.hasNext()) {
             String name = (String) it.next();
-            String value = attr.getValue(name);
-            if (osgi[0]) {
-                if (name.equals("Bundle-SymbolicName")) {
-                    name = "OpenIDE-Module";
-                }
-                if (name.equals("Bundle-Name")) {
-                    name = "OpenIDE-Module-Name";
-                }
-                if (name.equals("Bundle-Version")) {
-                    name = "OpenIDE-Module-Specification-Version";
-                }
-            }
             if (name.matches("OpenIDE-Module(|-(Name|(Specification|Implementation)-Version|(Module|Package|Java|IDE)-Dependencies|" +
                     "(Short|Long)-Description|Display-Category|Provides|Requires|Recommends|Needs))|AutoUpdate-(Show-In-Client|Essential-Module)")) {
-                el.setAttribute(name, value);
+                el.setAttribute(name, attr.getValue(name));
             }
         }
-        if (osgi[0] && el.getAttributeNode("OpenIDE-Module-Name") == null) {
-            el.setAttribute("OpenIDE-Module-Name", el.getAttribute("OpenIDE-Module"));
-        }
-
         module.appendChild(el);
         // Maybe write out license text.
         if (license != null) {

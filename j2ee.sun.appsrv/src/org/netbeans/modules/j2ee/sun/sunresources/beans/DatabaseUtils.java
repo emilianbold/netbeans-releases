@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -101,7 +101,7 @@ public class DatabaseUtils {
      */
     public static String getUrlPrefix(String inClass, String resType){
         String prefix = null;
-        if(resType.equals("javax.sql.ConnectionPoolDataSource")) { //NOI18N
+        if("javax.sql.ConnectionPoolDataSource".equals(resType)) { //NOI18N
             prefix = getPrefix(cpClassMap, inClass);
         }else {
             prefix = getPrefix(dsClassMap, inClass);

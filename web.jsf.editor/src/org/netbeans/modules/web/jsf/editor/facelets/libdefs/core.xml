@@ -1,4 +1,12 @@
 <library id="http://java.sun.com/jsf/core">
+    <tag name="ajax">
+        <attr name="disabled">
+            <type name="boolean"/>
+        </attr>
+        <attr name="immediate">
+            <type name="boolean"/>
+        </attr>
+    </tag>
     <tag name="convertDateTime">
         <attr name="dateStyle">
             <type name="enum">

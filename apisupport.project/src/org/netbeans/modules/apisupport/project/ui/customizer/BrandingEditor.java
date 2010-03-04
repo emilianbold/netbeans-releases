@@ -51,6 +51,7 @@ import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -123,7 +124,13 @@ public class BrandingEditor {
             public void propertyChange(PropertyChangeEvent evt) {
                 if( OpenProjects.PROPERTY_OPEN_PROJECTS.equals( evt.getPropertyName() ) ) {
                     if( !projects.isProjectOpen(project) && null != tc ) {
-                        tc.close();
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if( null != tc )
+                                    tc.close();
+                            }
+                        });
                         projects.removePropertyChangeListener(this);
                     }
                 }
