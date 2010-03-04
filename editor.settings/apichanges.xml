@@ -105,6 +105,20 @@ is the proper place.
 
     <changes>
 
+        <change id="added.SimpleValueNames.TEXT_LINE_WRAP">
+            <summary>Adding SimpleValueNames.TEXT_LINE_WRAP</summary>
+            <version major="1" minor="29"/>
+            <date day="4" month="3" year="2010"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+            <p>
+                Adding new constant <code>SimpleValueNames.TEXT_LINE_WRAP</code>.
+            </p>
+            </description>
+            <issue number="89894"/>
+        </change>
+
         <change id="added.SimpleValueNames.ALT_HYPERLINK_ACTIVATION_MODIFIERS">
             <summary>Adding SimpleValueNames.ALT_HYPERLINK_ACTIVATION_MODIFIERS</summary>
             <version major="1" minor="24"/>

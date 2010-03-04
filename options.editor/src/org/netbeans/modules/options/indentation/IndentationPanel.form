@@ -31,7 +31,7 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="cbOverrideGlobalOptions" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
+              <Component id="jPanel1" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -60,24 +60,33 @@
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="cbExpandTabsToSpaces" pref="231" max="32767" attributes="1"/>
-                          <EmptySpace min="-2" pref="54" max="-2" attributes="0"/>
+                      <Group type="102" alignment="1" attributes="0">
+                          <Component id="lNumberOfSpacesPerIndent" pref="193" max="32767" attributes="2"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="sNumberOfSpacesPerIndent" linkSize="3" min="-2" pref="53" max="-2" attributes="1"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="lNumberOfSpacesPerIndent" pref="233" max="32767" attributes="2"/>
-                              <Component id="lRightMargin" alignment="0" pref="233" max="32767" attributes="0"/>
-                              <Component id="lTabSize" alignment="1" pref="233" max="32767" attributes="1"/>
-                          </Group>
+                          <Component id="lTabSize" pref="193" max="32767" attributes="1"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="sNumberOfSpacesPerIndent" linkSize="1" alignment="0" pref="42" max="32767" attributes="1"/>
-                              <Component id="sTabSize" linkSize="1" alignment="1" pref="42" max="32767" attributes="1"/>
-                              <Component id="sRightMargin" linkSize="1" alignment="1" pref="42" max="32767" attributes="1"/>
-                          </Group>
+                          <Component id="sTabSize" linkSize="3" min="-2" pref="54" max="-2" attributes="1"/>
+                      </Group>
+                      <Group type="102" alignment="1" attributes="0">
+                          <Component id="lRightMargin" pref="193" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="sRightMargin" linkSize="3" min="-2" pref="62" max="-2" attributes="1"/>
+                      </Group>
+                      <Group type="102" alignment="1" attributes="0">
+                          <Component id="lLineWrap" pref="108" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="cboLineWrap" min="-2" pref="152" max="-2" attributes="0"/>
                       </Group>
                   </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
+              <Group type="102" attributes="0">
+                  <EmptySpace min="20" pref="20" max="20" attributes="0"/>
+                  <Component id="cbExpandTabsToSpaces" pref="231" max="32767" attributes="1"/>
+                  <EmptySpace min="-2" pref="54" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -85,10 +94,7 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <Component id="cbExpandTabsToSpaces" min="-2" pref="19" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="63" max="-2" attributes="0"/>
-              </Group>
-              <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace pref="25" max="32767" attributes="0"/>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="sNumberOfSpacesPerIndent" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="lNumberOfSpacesPerIndent" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -103,6 +109,12 @@
                       <Component id="sRightMargin" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="lRightMargin" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="lLineWrap" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="cboLineWrap" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -226,6 +238,34 @@
           </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ControlledSpinner()"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JLabel" name="lLineWrap">
+          <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="cboLineWrap"/>
+            </Property>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/options/indentation/Bundle.properties" key="CTL_Line_Wrap" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ControlledLabel()"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="cboLineWrap">
+          <Properties>
+            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+              <StringArray count="4">
+                <StringItem index="0" value="Item 1"/>
+                <StringItem index="1" value="Item 2"/>
+                <StringItem index="2" value="Item 3"/>
+                <StringItem index="3" value="Item 4"/>
+              </StringArray>
+            </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ControlledComboBox()"/>
           </AuxValues>
         </Component>
       </SubComponents>
