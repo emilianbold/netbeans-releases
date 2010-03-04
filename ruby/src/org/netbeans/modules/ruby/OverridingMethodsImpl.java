@@ -67,7 +67,7 @@ final class OverridingMethodsImpl implements OverridingMethods {
         if (handle.getKind() == ElementKind.METHOD) {
             MethodElement methodElement = (MethodElement) handle;
             RubyIndex index = RubyIndex.get(info);
-            IndexedMethod superMethod = index.getSuperMethod(methodElement.getIn(), methodElement.getName(), true);
+            IndexedMethod superMethod = index.getSuperMethod(methodElement.getIn(), methodElement.getName(), true, false);
             if (superMethod != null) {
                 return asLocations(Collections.singleton(superMethod));
             }
@@ -90,7 +90,7 @@ final class OverridingMethodsImpl implements OverridingMethods {
         if (handle.getKind() == ElementKind.METHOD) {
             MethodElement methodElement = (MethodElement) handle;
             RubyIndex index = RubyIndex.get(info);
-            return asLocations(index.getOverridingMethods(methodElement.getName(), methodElement.getIn()));
+            return asLocations(index.getOverridingMethods(methodElement.getName(), methodElement.getIn(), true));
         }
 
         return null;
