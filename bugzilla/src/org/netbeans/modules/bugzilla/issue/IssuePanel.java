@@ -227,6 +227,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     public void setIssue(BugzillaIssue issue) {
+        assert SwingUtilities.isEventDispatchThread() : "Accessing Swing components. Do not call outside event-dispatch thread!"; // NOI18N
         if (this.issue == null) {
             IssueCacheUtils.removeCacheListener(issue, cacheListener);
             IssueCacheUtils.addCacheListener(issue, cacheListener);
