@@ -69,6 +69,9 @@ public final class ProjectWebRootQuery {
             ProjectWebRootProvider provider = project.getLookup().lookup(ProjectWebRootProvider.class);
             if (provider != null) {
                 FileObject root = provider.getWebRoot(file);
+                if(root == null) {
+                    return null;
+                }
 
                 assert FileUtil.isParentOf(root, file) : "ProjectWebRootProvider "
                         + provider.getClass().getName() + " returned an invalid web root "

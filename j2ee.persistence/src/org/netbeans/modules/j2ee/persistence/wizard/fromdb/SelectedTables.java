@@ -51,8 +51,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
+import javax.swing.JTable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.table.TableCellEditor;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.persistence.dd.JavaPersistenceQLKeywords;
@@ -74,6 +78,7 @@ public final class SelectedTables {
     private final PersistenceGenerator persistenceGen;
     private final Map<Table, String> table2ClassName = new HashMap<Table, String>();
     private final Map<Table, Set<Problem>> table2Problems = new TreeMap<Table, Set<Problem>>();
+    private final Map<Table, UpdateType> table2UpdateType = new HashMap<Table, UpdateType>();
 
     private final ChangeListener tableClosureListener = new TableClosureListener();
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -129,6 +134,7 @@ public final class SelectedTables {
             }
             this.tableClosure = tableClosure;
             table2ClassName.clear();
+            table2UpdateType.clear();
             this.tableClosure.addChangeListener(tableClosureListener);
             return true;
         }
@@ -232,6 +238,39 @@ public final class SelectedTables {
         changeSupport.fireChange();
     }
 
+    public void setUpdateType(Table table, UpdateType updateType) {
+        assert table != null;
+        assert updateType != null;
+
+        table2UpdateType.put(table, updateType);
+        changeSupport.fireChange();
+    }
+
+
+    public UpdateType getUpdateType(Table table) {
+        assert table != null;
+        FileObject classFO = targetFolder.getFileObject(getClassName(table), "java"); //NOI18N
+        UpdateType ut = table2UpdateType.get(table);
+
+        if (classFO == null){
+            if (ut != null){
+                table2UpdateType.remove(table);
+            }
+            ut = UpdateType.NEW;
+        } else {
+            if (ut == null || ut == UpdateType.NEW){
+                table2UpdateType.remove(table);
+                ut = UpdateType.RECREATE;
+            }
+        }
+
+        return ut;
+    }
+
+    FileObject getTargetFolder(){
+        return targetFolder;
+    }
+
     private void putProblems(Table table, Set<Problem> problems) {
         if (problems.isEmpty()) {
             table2Problems.remove(table);
@@ -248,9 +287,11 @@ public final class SelectedTables {
         if (JavaPersistenceQLKeywords.isKeyword(className)) {
             problems.add(Problem.JPA_QL_IDENTIFIER);
         }
+/* commented to have an ability to update entity classes
         if (targetFolder != null && targetFolder.getFileObject(className, "java") != null) { // NOI18N
             problems.add(Problem.ALREADY_EXISTS);
         }
+ */
         return problems;
     }
 

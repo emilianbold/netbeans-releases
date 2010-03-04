@@ -70,8 +70,9 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
         Collection<Object> lookupContent = new ArrayList<Object>();
         lookupContent.add(context);
         lookupContent.add(extraInfo);
-        if(context instanceof CssElementContext.File) {
-            //put the fileobject to the lookup only if we are renaming a file
+        if(context instanceof CssElementContext.File ||
+                context instanceof CssElementContext.Folder) {
+            //put the fileobject to the lookup only if we are renaming a file or folder
             lookupContent.add(context.getFileObject());
         }
 	this.refactoring = new RenameRefactoring(Lookups.fixed(lookupContent.toArray()));

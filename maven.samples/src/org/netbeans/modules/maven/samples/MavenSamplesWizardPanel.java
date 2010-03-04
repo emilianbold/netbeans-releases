@@ -61,16 +61,16 @@ public class MavenSamplesWizardPanel implements WizardDescriptor.Panel,
     
     private WizardDescriptor wizardDescriptor;
     private MavenSamplesPanelVisual component;
-    private final boolean withDB;
+    private final boolean isFinishPanel;
     
     /** Creates a new instance of templateWizardPanel */
-    public MavenSamplesWizardPanel(boolean withDB) {
-        this.withDB = withDB;
+    public MavenSamplesWizardPanel(boolean isFinishPanel) {
+        this.isFinishPanel = isFinishPanel;
     }
     
     public Component getComponent() {
         if (component == null) {
-            component = new MavenSamplesPanelVisual(this, withDB);
+            component = new MavenSamplesPanelVisual(this);
             component.setName(NbBundle.getMessage(MavenSamplesWizardPanel.class, "LBL_CreateProjectStep"));
             component.putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(MavenSamplesWizardPanel.class, "LBL_TXT_NewJ2EESample"));
         }
@@ -127,7 +127,7 @@ public class MavenSamplesWizardPanel implements WizardDescriptor.Panel,
     }
     
     public boolean isFinishPanel() {
-        return true;
+        return isFinishPanel;
     }
     
     public void validate() throws WizardValidationException {
