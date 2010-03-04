@@ -64,13 +64,15 @@ import org.netbeans.modules.java.hints.jackpot.spi.Hacks;
 public class Pattern {
 
     private final CompilationInfo info;
+    private final String pattern;
     private final Tree patternTree;
     private final Iterable<Tree> antipatterns;
 
     private final Map<String, TypeMirror> constraintsHack;
 
-    public Pattern(CompilationInfo info, Tree patternTree, Iterable<Tree> antipatterns, Map<String, TypeMirror> constraintsHack) {
+    public Pattern(CompilationInfo info, String pattern, Tree patternTree, Iterable<Tree> antipatterns, Map<String, TypeMirror> constraintsHack) {
         this.info = info;
+        this.pattern = pattern;
         this.patternTree = patternTree;
         this.antipatterns = antipatterns;
         this.constraintsHack = constraintsHack;
@@ -101,7 +103,7 @@ public class Pattern {
             antipatternsTrees.add(p);
         }
         
-        return new Pattern(info, patternTree, antipatternsTrees, constraints);
+        return new Pattern(info, pattern, patternTree, antipatternsTrees, constraints);
     }
 
     public Map<String, TreePath> match(TreePath toCheck) {
@@ -126,6 +128,10 @@ public class Pattern {
 
     public Map<String, TypeMirror> getConstraints() {
         return constraintsHack;
+    }
+
+    public String getPatternCode() {
+        return pattern;
     }
 
     public Tree getPattern() {
