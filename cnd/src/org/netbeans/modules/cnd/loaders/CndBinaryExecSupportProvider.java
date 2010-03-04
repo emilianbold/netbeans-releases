@@ -54,7 +54,6 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Alexey Vladykin
  */
-@ServiceProvider(service = CndCookieProvider.class, position = 1000)
 public final class CndBinaryExecSupportProvider extends CndCookieProvider {
     static final BinaryExecSupportFactory staticFactory = new BinaryExecSupportFactory();
 

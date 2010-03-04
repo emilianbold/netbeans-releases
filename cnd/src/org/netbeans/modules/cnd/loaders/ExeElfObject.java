@@ -113,7 +113,7 @@ public class ExeElfObject extends ExeObject {
 
     private void setExecutionFlags(FileObject fob) throws IOException {
 	if (fob != null) {
-            Runtime.getRuntime().exec("/bin/chmod +x " + FileUtil.toFile(fob).getPath());
+            Runtime.getRuntime().exec("/bin/chmod +x " + FileUtil.toFile(fob).getPath()); // NOI18N
         }
     }
 }

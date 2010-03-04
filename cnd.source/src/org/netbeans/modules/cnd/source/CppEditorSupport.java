@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.editor;
+package org.netbeans.modules.cnd.source;
 
 // This file was initially based on org.netbeans.modules.java.JavaEditor
 // (Rev 61)
@@ -85,9 +85,9 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
      *  Create a new Editor support for the given C/C++/Fortran source.
      *  @param entry The (primary) file entry representing the C/C++/f95 source file
      */
-    public CppEditorSupport(DataObject obj, InstanceContent ic) {
+    public CppEditorSupport(SourceDataObject obj) {
         super(obj, new Environment(obj));
-        this.ic = ic;
+        this.ic = obj.getInstanceContent();
     }
 
     /** 
