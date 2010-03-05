@@ -59,6 +59,9 @@ import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
+import org.osgi.framework.Bundle;
 import org.xml.sax.SAXException;
 
 /**
@@ -80,14 +83,51 @@ class OSGiRepository extends Repository {
         this.fs = fs;
     }
 
-    public void addLayers(URL... resources) {
+    private static URL[] layersFor(List<Bundle> bundles) {
+        List<URL> layers = new ArrayList<URL>(2);
+        for (Bundle b : bundles) {
+            if (b.getSymbolicName().equals("org.netbeans.modules.autoupdate.ui")) { // NOI18N
+                // Won't work anyway, so don't even try.
+                continue;
+            }
+            String explicit = (String) b.getHeaders().get("OpenIDE-Module-Layer");
+            if (explicit != null) {
+                String base, ext;
+                int idx = explicit.lastIndexOf('.'); // NOI18N
+                if (idx == -1) {
+                    base = explicit;
+                    ext = ""; // NOI18N
+                } else {
+                    base = explicit.substring(0, idx);
+                    ext = explicit.substring(idx);
+                }
+                for (String suffix : NbCollections.iterable(NbBundle.getLocalizingSuffixes())) {
+                    URL layer = b.getResource(base + suffix + ext);
+                    if (layer != null) {
+                        layers.add(layer);
+                    } else if (suffix.isEmpty()) {
+                        LOG.log(Level.WARNING, "no such layer {0} in {1} of state {2}", new Object[] {explicit, b.getSymbolicName(), b.getState()});
+                    }
+                }
+            }
+            URL generated = b.getResource("META-INF/generated-layer.xml");
+            if (generated != null) {
+                layers.add(generated);
+            }
+        }
+        return layers.toArray(new URL[layers.size()]);
+    }
+
+    public void addLayersFor(List<Bundle> bundles) {
+        URL[] resources = layersFor(bundles);
         if (resources.length > 0) {
 //            System.err.println("adding layers: " + Arrays.toString(resources));
             fs.addLayers(resources);
         }
     }
 
-    public void removeLayers(URL... resources) {
+    public void removeLayersFor(List<Bundle> bundles) {
+        URL[] resources = layersFor(bundles);
         if (resources.length > 0) {
 //            System.err.println("removing layers: " + Arrays.toString(resources));
             fs.removeLayers(resources);
