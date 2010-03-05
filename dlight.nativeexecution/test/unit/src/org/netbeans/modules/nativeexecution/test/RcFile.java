@@ -170,6 +170,7 @@ public final class RcFile {
                 }
             }
         }
+        reader.close();
     }
 
     @Override
