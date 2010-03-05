@@ -36,41 +36,40 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.refactoring.actions;
+package org.netbeans.modules.html.editor.indexing;
 
-import org.netbeans.modules.html.editor.refactoring.HtmlSpecificActionsImplementationFactory;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.csl.api.OffsetRange;
 
-/**
- * TODO use the refactoring preview!!!
- *
- * @author marekfukala
- */
-public class ExtractInlinedStyleAction extends HtmlRefactoringGlobalAction {
+public class Entry {
 
-    public ExtractInlinedStyleAction() {
-        super(NbBundle.getMessage(ExtractInlinedStyleAction.class, "MSG_ExtractInlinedStyle"), null); // NOI18N
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    private String name;
+    private OffsetRange astRange;
+    private OffsetRange documentRange;
+
+    protected Entry(String name, OffsetRange astRange, OffsetRange documentRange) {
+        this.name = name;
+        this.astRange = astRange;
+        this.documentRange = documentRange;
+    }
+
+    public boolean isValidInSourceDocument() {
+        return documentRange != null;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public OffsetRange getDocumentRange() {
+        return documentRange;
+    }
+
+    public OffsetRange getRange() {
+        return astRange;
     }
 
     @Override
-    public void performAction(Lookup context) {
-        HtmlSpecificActionsImplementationFactory.doChangeParameters(context);
+    public String toString() {
+        return "Entry[" + (!isValidInSourceDocument() ? "INVALID! " : "") + getName() + "; " + getRange().getStart() + " - " + getRange().getEnd() + "]"; //NOI18N
     }
-
-    @Override
-    protected boolean enable(Lookup context) {
-        return HtmlSpecificActionsImplementationFactory.canExtractInlineStyle(context);
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-
-
-
-   
 }

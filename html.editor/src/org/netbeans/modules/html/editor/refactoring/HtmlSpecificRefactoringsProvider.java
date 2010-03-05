@@ -39,6 +39,20 @@
 
 package org.netbeans.modules.html.editor.refactoring;
 
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.JEditorPane;
+import javax.swing.text.Document;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.html.editor.api.Utils;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.refactoring.spi.ui.UI;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 
@@ -51,12 +65,97 @@ public class HtmlSpecificRefactoringsProvider extends HtmlSpecificActionsImpleme
 
     @Override
     public boolean canExtractInlineStyle(Lookup lookup) {
-        return true;
+        //the editor cookie is in the lookup only if the file is opened in the editor and is active
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if(ec == null) {
+            return false;
+        }
+        JEditorPane[] panes = ec.getOpenedPanes();
+        if(panes == null || panes.length == 0) {
+            return false;
+        }
+        JEditorPane pane = panes[0]; //get first pane, I hope the activated one is first
+        Document doc = ec.getDocument();
+
+        OffsetRange adjusted = adjustContextRange(doc, pane.getSelectionStart(), pane.getSelectionEnd());
+
+        //enable the action if there are some inlined styles in the selection or at the caret position
+        return !RefactoringContext.findInlinedStyles(doc, adjusted.getStart(), adjusted.getEnd()).isEmpty();
     }
 
     @Override
     public void doExtractInlineStyle(Lookup lookup) {
-        //TODO
+        //the editor cookie is in the lookup only if the file is opened in the editor and is active
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if(ec == null) {
+            return;
+        }
+        JEditorPane[] panes = ec.getOpenedPanes();
+        if(panes == null || panes.length == 0) {
+            return;
+        }
+        JEditorPane pane = panes[0]; //get first pane, I hope the activated one is first
+        if(pane == null) {
+            return ;
+        }
+        Document doc = ec.getDocument();
+
+//        FileObject file = lookup.lookup(FileObject.class);
+        FileObject file = DataLoadersBridge.getDefault().getFileObject(doc);
+        assert file != null;
+
+        //widen the context range to tags' start/end if only partially selected
+        OffsetRange adjusted = adjustContextRange(doc, pane.getSelectionStart(), pane.getSelectionEnd());
+
+        try {
+            RefactoringContext context = RefactoringContext.create(file, doc, adjusted.getStart(), adjusted.getEnd());
+            UI.openRefactoringUI(new ExtractInlinedStyleRefactoringUI(context));
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
     }
 
+    private static OffsetRange adjustContextRange(final Document doc, final int from, final int to) {
+        final AtomicReference<OffsetRange> ret = new AtomicReference<OffsetRange>();
+        ret.set(new OffsetRange(from, to)); //return the same pair by default
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc, from);
+                Token<HTMLTokenId> openTag = Utils.findTagOpenToken(ts);
+                if(openTag == null) {
+                    return ;
+                }
+                int adjustedFrom = ts.offset();
+
+                //now try to find the tag's end
+                ts.move(to);
+                int adjustedTo = -1;
+                while(ts.moveNext()) {
+                    Token<HTMLTokenId> t = ts.token();
+                    if(t.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
+                        adjustedTo = ts.offset() + t.length();
+                        break;
+                    } else if(t.id() == HTMLTokenId.TEXT) {
+                        //do not go too far - out of the tag
+                        break;
+                    }
+                }
+
+                if(adjustedTo == -1) {
+                    return ;
+                }
+
+                //we found the adjusted range
+                ret.set(new OffsetRange(adjustedFrom, adjustedTo));
+
+            }
+
+        });
+        return ret.get();
+    }
+
+    
 }

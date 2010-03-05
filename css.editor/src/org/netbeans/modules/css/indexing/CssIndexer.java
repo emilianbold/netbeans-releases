@@ -67,6 +67,7 @@ public class CssIndexer extends EmbeddingIndexer {
     private static final Logger LOGGER = Logger.getLogger(CssIndexer.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
+    public static final String CSS_CONTENT_KEY = "cssContent"; //NOI18N
     public static final String IMPORTS_KEY = "imports"; //NOI18N
     public static final String IDS_KEY = "ids"; //NOI18N
     public static final String CLASSES_KEY = "classes"; //NOI18N
@@ -85,18 +86,20 @@ public class CssIndexer extends EmbeddingIndexer {
             }
 
             CssFileModel model = new CssFileModel((CssParserResult) parserResult);
-            if (!model.isEmpty()) {
-                IndexingSupport support = IndexingSupport.getInstance(context);
-                IndexDocument document = support.createDocument(indexable);
-                
-                storeEntries(model.getIds(), document, IDS_KEY);
-                storeEntries(model.getClasses(), document, CLASSES_KEY);
-                storeEntries(model.getHtmlElements(), document, HTML_ELEMENTS_KEY);
-                storeEntries(model.getImports(), document, IMPORTS_KEY);
-                storeEntries(model.getColors(), document, COLORS_KEY);
+            IndexingSupport support = IndexingSupport.getInstance(context);
+            IndexDocument document = support.createDocument(indexable);
 
-                support.addDocument(document);
-            }
+            storeEntries(model.getIds(), document, IDS_KEY);
+            storeEntries(model.getClasses(), document, CLASSES_KEY);
+            storeEntries(model.getHtmlElements(), document, HTML_ELEMENTS_KEY);
+            storeEntries(model.getImports(), document, IMPORTS_KEY);
+            storeEntries(model.getColors(), document, COLORS_KEY);
+
+            //this is a marker key so it's possible to find
+            //all stylesheets easily
+            document.addPair(CSS_CONTENT_KEY, Boolean.TRUE.toString(), true, true);
+
+            support.addDocument(document);
 
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

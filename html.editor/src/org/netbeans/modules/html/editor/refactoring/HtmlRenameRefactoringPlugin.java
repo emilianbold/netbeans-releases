@@ -54,7 +54,7 @@ import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.html.editor.indexing.HtmlFileModel;
-import org.netbeans.modules.html.editor.indexing.HtmlFileModel.Entry;
+import org.netbeans.modules.html.editor.indexing.Entry;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
 import org.netbeans.modules.html.editor.indexing.HtmlIndex;
@@ -139,7 +139,6 @@ public class HtmlRenameRefactoringPlugin implements RefactoringPlugin {
         for (FileObject fo : modificationResult.getModifiedFileObjects()) {
             for (Difference diff : modificationResult.getDifferences(fo)) {
                 refactoringElements.add(refactoring, DiffElement.create(diff, fo, modificationResult));
-
             }
         }
 
@@ -177,7 +176,7 @@ public class HtmlRenameRefactoringPlugin implements RefactoringPlugin {
 
                         if (model != null) {
                             //we have the model for source file
-                            Collection<Entry> imports = model.getReferences();
+                            Collection<? extends Entry> imports = model.getReferences();
                             //XXX the model should contain string representation 2 entry map
                             //linear search :-(
                             for (Entry entry : imports) {

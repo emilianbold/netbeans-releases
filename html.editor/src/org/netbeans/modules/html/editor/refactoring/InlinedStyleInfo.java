@@ -36,41 +36,54 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.refactoring.actions;
+package org.netbeans.modules.html.editor.refactoring;
 
-import org.netbeans.modules.html.editor.refactoring.HtmlSpecificActionsImplementationFactory;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.csl.api.OffsetRange;
 
-/**
- * TODO use the refactoring preview!!!
- *
- * @author marekfukala
- */
-public class ExtractInlinedStyleAction extends HtmlRefactoringGlobalAction {
+public class InlinedStyleInfo {
 
-    public ExtractInlinedStyleAction() {
-        super(NbBundle.getMessage(ExtractInlinedStyleAction.class, "MSG_ExtractInlinedStyle"), null); // NOI18N
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    private String tag;
+    private String tagsClass;
+    private String attr;
+    private String inlinedCssValue;
+    private OffsetRange valueRange;
+    private int attributeStartOffset;
+
+    public InlinedStyleInfo(String tag, String tagsClass, String attr, int attributeStartOffset, OffsetRange range, String inlinedCssValue) {
+        this.tag = tag;
+        this.tagsClass = tagsClass;
+        this.attr = attr;
+        this.valueRange = range;
+        this.attributeStartOffset = attributeStartOffset;
+        this.inlinedCssValue = inlinedCssValue;
     }
 
-    @Override
-    public void performAction(Lookup context) {
-        HtmlSpecificActionsImplementationFactory.doChangeParameters(context);
+    public boolean isValueQuoted() {
+        return true; //maybe implement later if nonquoted inlined styles are allowed???
     }
 
-    @Override
-    protected boolean enable(Lookup context) {
-        return HtmlSpecificActionsImplementationFactory.canExtractInlineStyle(context);
+    public String getAttr() {
+        return attr;
     }
 
-    @Override
-    protected boolean asynchronous() {
-        return false;
+    public int getAttributeStartOffset() {
+        return attributeStartOffset;
     }
 
+    public OffsetRange getRange() {
+        return valueRange;
+    }
 
+    public String getTag() {
+        return tag;
+    }
 
+    public String getTagsClass() {
+        return tagsClass;
+    }
 
-   
+    public String getInlinedCssValue() {
+        return inlinedCssValue;
+    }
+
 }
