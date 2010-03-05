@@ -51,8 +51,9 @@ import java.util.regex.Pattern;
  */
 final class HashNameAnalyzer {
 
-    private static final Pattern CONFIGURATION_OPTIONS = Pattern.compile(".*Configuration options:.*");
-    private static final Pattern HASH_NAME = Pattern.compile(".*<tt>:(\\w+)</tt>.*");
+    private static final Pattern CONFIGURATION_OPTIONS = Pattern.compile(".*(Configuration options|Supported options|=== Options|Options are:).*");
+    // matches "<tt>:opt</tt>" and "[:opt]"
+    private static final Pattern HASH_NAME = Pattern.compile(".*(?:<tt>|\\[):(\\w+)(?:</tt>|\\]).*");
     private final List<String> rdocs;
     private final String paramName;
 

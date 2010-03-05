@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,60 +31,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.connections.ui;
+package org.netbeans.modules.html.editor.indexing;
 
-import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.connections.TransferFile;
+import org.netbeans.modules.csl.api.OffsetRange;
 
-/**
- * @author Radek Matous
- */
-public class TransferFileUnit {
+public class Entry {
 
-    private final TransferFile transferFile;
-    private boolean isMarked;
+    private String name;
+    private OffsetRange astRange;
+    private OffsetRange documentRange;
 
-    public TransferFileUnit(TransferFile transferFile, boolean isMarked) {
-        this.transferFile = transferFile;
-        this.isMarked = isMarked;
+    protected Entry(String name, OffsetRange astRange, OffsetRange documentRange) {
+        this.name = name;
+        this.astRange = astRange;
+        this.documentRange = documentRange;
     }
 
-    static int compare(TransferFileUnit o1, TransferFileUnit o2) {
-        return o1.getTransferFile().getRelativePath().compareTo(o2.getTransferFile().getRelativePath());
+    public boolean isValidInSourceDocument() {
+        return documentRange != null;
     }
 
-    protected TransferFile getTransferFile() {
-        return transferFile;
+    public String getName() {
+        return name;
     }
 
-    public boolean isMarked() {
-        return isMarked;
+    public OffsetRange getDocumentRange() {
+        return documentRange;
     }
 
-    public void setMarked(boolean isMarked) {
-        this.isMarked = isMarked;
-    }
-
-    public Integer getId() {
-        return getTransferFile().hashCode();
-    }
-
-    public boolean canBeMarked() {
-        return true;
-    }
-
-    public final boolean isVisible(final String filter) {
-        return getTransferFile().isFile()
-                && (!StringUtils.hasText(filter) || getDisplayName().toLowerCase().contains(filter));
-    }
-
-    String getDisplayName() {
-        return getTransferFile().getRelativePath();
+    public OffsetRange getRange() {
+        return astRange;
     }
 
     @Override
     public String toString() {
-        return getDisplayName();
+        return "Entry[" + (!isValidInSourceDocument() ? "INVALID! " : "") + getName() + "; " + getRange().getStart() + " - " + getRange().getEnd() + "]"; //NOI18N
     }
 }

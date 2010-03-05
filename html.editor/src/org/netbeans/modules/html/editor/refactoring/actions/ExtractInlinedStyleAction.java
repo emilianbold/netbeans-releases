@@ -64,6 +64,13 @@ public class ExtractInlinedStyleAction extends HtmlRefactoringGlobalAction {
         return HtmlSpecificActionsImplementationFactory.canExtractInlineStyle(context);
     }
 
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
+
+
 
    
 }

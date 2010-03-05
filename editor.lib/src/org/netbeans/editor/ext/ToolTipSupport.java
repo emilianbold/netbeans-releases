@@ -184,15 +184,15 @@ public class ToolTipSupport {
 
     private static final MouseListener NO_OP_MOUSE_LISTENER = new MouseAdapter() {};
 
-    private EditorUI extEditorUI;
+    private final EditorUI extEditorUI;
 
     private JComponent toolTip;
 
     private String toolTipText;
     
-    private Timer enterTimer;
+    private final Timer enterTimer;
 
-    private Timer exitTimer;
+    private final Timer exitTimer;
 
     private boolean enabled;
     
@@ -508,7 +508,10 @@ public class ToolTipSupport {
                 }
 
                 setStatus(STATUS_HIDDEN);
-                extEditorUI.getComponent().requestFocusInWindow();
+                JTextComponent jtc = extEditorUI.getComponent();
+                if (jtc != null) {
+                    jtc.requestFocusInWindow();
+                }
             }
         }
     }
