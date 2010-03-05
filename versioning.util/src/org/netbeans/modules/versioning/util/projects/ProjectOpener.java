@@ -71,6 +71,26 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Stupka, Ondra Vrabec
  */
 public class ProjectOpener implements ActionListener, PropertyChangeListener {
+    private final ProjectOpenerType type;
+
+    public enum ProjectOpenerType {
+        EXPORT("EXPORT_"),
+        CHECKOUT("CHECKOUT_");
+        private final String prefix;
+        private ProjectOpenerType(String prefix) {
+            this.prefix = prefix;
+        }
+        @Override
+        public String toString() {
+            return prefix;
+        }
+        String getMessage(String key) {
+            return NbBundle.getMessage(ProjectOpener.class, prefix + key);
+        }
+        String getMessage(String key, Object... params) {
+            return NbBundle.getMessage(ProjectOpener.class, prefix + key, params);
+        }
+    }
 
     private CheckoutCompletedPanel panel;
     private Dialog dialog;
@@ -85,20 +105,21 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
      * @param checkedOutProjects <strong>All projects must have its key/value pair present.</strong> Root projects are in a set under the null key
      * @param workingFolder
      */
-    public ProjectOpener (Map<Project, Set<Project>> checkedOutProjects, File workingFolder) {
+    public ProjectOpener (ProjectOpenerType type, Map<Project, Set<Project>> checkedOutProjects, File workingFolder) {
         this.checkedOutProjects = checkedOutProjects;
         this.workingFolder = workingFolder;
+        this.type = type;
         numberOfProjects = checkedOutProjects.size() - 1;
     }
 
-    public void openCheckedOutProjects () {
-        panel = new CheckoutCompletedPanel();
+    public void openProjects () {
+        panel = new CheckoutCompletedPanel(type);
         panel.openButton.addActionListener(this);
         panel.createButton.addActionListener(this);
         panel.closeButton.addActionListener(this);
         panel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
         panel.againCheckBox.setVisible(false); // XXX as in prior versions it is disabled? Why?
-        String title = NbBundle.getMessage(CheckoutCompletedPanel.class, "BK3008"); // NOI18N
+        String title = type.getMessage("BK3008"); // NOI18N
         DialogDescriptor descriptor = new DialogDescriptor(panel, title);
         descriptor.setModal(true);
 
@@ -110,7 +131,7 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
         Object[] options = null;
         if (numberOfProjects > 1) {
             // more that one project
-            String msg = NbBundle.getMessage(ProjectOpener.class, "BK3009", new Integer(numberOfProjects));   // NOI18N
+            String msg = type.getMessage("BK3009", new Integer(numberOfProjects));   // NOI18N
             panel.jLabel1.setText(msg);
             options = new Object[]{panel.openButton, panel.closeButton};
         } else if (numberOfProjects == 1) {
@@ -118,12 +139,12 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
             Project project = checkedOutProjects.get(null).iterator().next();
             ProjectInformation projectInformation = ProjectUtils.getInformation(project);
             String projectName = projectInformation.getDisplayName();
-            String msg = NbBundle.getMessage(ProjectOpener.class, "BK3011", projectName);                              // NOI18N
+            String msg = type.getMessage("BK3011", projectName);                              // NOI18N
             panel.jLabel1.setText(msg);
             panel.openButton.setText(NbBundle.getMessage(ProjectOpener.class, "BK3012"));                              // NOI18N
             options = new Object[]{panel.openButton, panel.closeButton};
         } else {
-            String msg = NbBundle.getMessage(ProjectOpener.class, "BK3010");                                           // NOI18N
+            String msg = type.getMessage("BK3010");                                  // NOI18N
             panel.jLabel1.setText(msg);
             options = new Object[]{panel.createButton, panel.closeButton};
         }
@@ -132,7 +153,7 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
         descriptor.setOptions(options);
         descriptor.setClosingOptions(options);
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectOpener.class, "ACSD_CheckoutCompleted_Dialog")); // NOI18N
+        dialog.getAccessibleContext().setAccessibleDescription(type.getMessage("ACSD_Completed_Dialog")); // NOI18N
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 dialog.setVisible(true);

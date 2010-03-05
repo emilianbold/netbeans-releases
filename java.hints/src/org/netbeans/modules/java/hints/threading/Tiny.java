@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  */
 public class Tiny {
 
-    @Hint(category="thread")
+    @Hint(category="thread", suppressWarnings="NotifyCalledOnCondition")
     @TriggerPatterns({
         @TriggerPattern(value="$cond.notify()",
                         constraints=@Constraint(variable="$cond", type="java.util.concurrent.locks.Condition")),
@@ -88,7 +88,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, f);
     }
 
-    @Hint(category="thread")
+    @Hint(category="thread", suppressWarnings="WaitCalledOnCondition")
     @TriggerPatterns({
         @TriggerPattern(value="$cond.wait()",
                         constraints=@Constraint(variable="$cond", type="java.util.concurrent.locks.Condition")),
@@ -110,7 +110,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(category="thread")
+    @Hint(category="thread", suppressWarnings="CallToThreadRun")
     @TriggerPattern(value="$thread.run()",
                     constraints=@Constraint(variable="$thread", type="java.lang.Thread"))
     public static ErrorDescription threadRun(HintContext ctx) {
@@ -121,7 +121,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, f);
     }
 
-    @Hint(category="thread")
+    @Hint(category="thread", suppressWarnings="CallToThreadStartDuringObjectConstruction")
     @TriggerPattern(value="$thread.start()",
                     constraints=@Constraint(variable="$thread", type="java.lang.Thread"))
     public static ErrorDescription threadStartInConstructor(HintContext ctx) {
@@ -134,9 +134,8 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(category="thread")
-    @TriggerPattern(value="$thread.yield()",
-                    constraints=@Constraint(variable="$thread", type="java.lang.Thread"))
+    @Hint(category="thread", suppressWarnings="CallToThreadYield")
+    @TriggerPattern(value="java.lang.Thread.yield()")
     public static ErrorDescription threadYield(HintContext ctx) {
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_ThreadYield");
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
@@ -156,7 +155,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(category="thread")
+    @Hint(category="thread", suppressWarnings="NestedSynchronizedStatement")
     @TriggerPattern(value="synchronized ($lock) $block",
                     constraints=@Constraint(variable="$lock", type="java.lang.Object"))
     public static ErrorDescription nestedSynchronized(HintContext ctx) {
@@ -206,7 +205,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(category="thread")
+    @Hint(category="thread", suppressWarnings="EmptySynchronizedStatement")
     @TriggerPattern(value="synchronized ($lock) {}",
                     constraints=@Constraint(variable="$lock", type="java.lang.Object"))
     public static ErrorDescription emptySynchronized(HintContext ctx) {
@@ -214,7 +213,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(category="thread")
+    @Hint(category="thread", suppressWarnings="SynchroniziationOnLockObject")
     @TriggerPattern(value="synchronized ($lock) {$statements$;}",
                     constraints=@Constraint(variable="$lock", type="java.util.concurrent.locks.Lock"))
     public static ErrorDescription synchronizedOnLock(HintContext ctx) {
@@ -225,7 +224,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, f);
     }
 
-    @Hint(category="thread")
+    @Hint(category="thread", suppressWarnings="VolatileArrayField")
     @TriggerPatterns({
 //        @TriggerPattern(value="volatile $mods$ $type[] $name;"),
 //        @TriggerPattern(value="volatile $mods$ $type[] $name = $init;")

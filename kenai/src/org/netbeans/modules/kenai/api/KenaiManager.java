@@ -88,10 +88,12 @@ public final class KenaiManager {
         return addInstance(Kenai.createInstance(name, url));
     }
     
-    private synchronized Kenai addInstance(Kenai instance) {
-        initInstances();
-        instances.put(instance.getUrl().toString(), instance);
-        store();
+    private Kenai addInstance(Kenai instance) {
+        synchronized (this) {
+            initInstances();
+            instances.put(instance.getUrl().toString(), instance);
+            store();
+        }
         propertyChangeSupport.firePropertyChange(PROP_INSTANCES, null, instance);
         return instance;
     }
@@ -114,11 +116,13 @@ public final class KenaiManager {
      * remove kenai instance from manager
      * @param instance
      */
-    public synchronized void removeKenai(Kenai instance) {
-        initInstances();
-        instance.logout();
-        instances.remove(instance.getUrl().toString());
-        store();
+    public void removeKenai(Kenai instance) {
+        synchronized (this) {
+            initInstances();
+            instance.logout();
+            instances.remove(instance.getUrl().toString());
+            store();
+        }
         propertyChangeSupport.firePropertyChange(PROP_INSTANCES, instance, null);
     }
 
@@ -147,12 +151,13 @@ public final class KenaiManager {
                     }
                 }
             }
-        }
-        if (instances.isEmpty()) {
-            try {
-                instances.put("https://kenai.com", Kenai.createInstance("kenai.com", "https://kenai.com"));
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
+        } else {
+            if (instances.isEmpty()) {
+                try {
+                    instances.put("https://kenai.com", Kenai.createInstance("kenai.com", "https://kenai.com"));
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
         instancesInited=true;

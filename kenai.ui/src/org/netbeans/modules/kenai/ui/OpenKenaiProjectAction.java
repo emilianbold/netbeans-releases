@@ -44,7 +44,6 @@ import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.openide.DialogDescriptor;
@@ -62,7 +61,6 @@ public final class OpenKenaiProjectAction extends AbstractAction {
     }
 
     public OpenKenaiProjectAction() {
-        kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -72,7 +70,7 @@ public final class OpenKenaiProjectAction extends AbstractAction {
 
         JButton cancel = new JButton(NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectAction.Cancel"));
 
-        KenaiSearchPanel openPanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.OPEN, true, kenai);
+        KenaiSearchPanel openPanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.OPEN, true, kenai!=null?kenai:Utilities.getPreferredKenai());
         openPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (KenaiDialogDescriptor.PROP_SELECTION_VALID.equals(evt.getPropertyName())) {
