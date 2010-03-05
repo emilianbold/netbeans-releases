@@ -39,10 +39,13 @@
 
 package org.netbeans.core.osgi;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.core.startup.layers.SessionManager;
 import org.openide.LifecycleManager;
+import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -69,11 +72,30 @@ class OSGiLifecycleManager extends LifecycleManager {
     }
 
     public @Override void exit() {
+        ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+        try {
+            if (!((Boolean) loader.loadClass("org.netbeans.core.ExitDialog").getMethod("showDialog").invoke(null))) {
+                return;
+            }
+        } catch (ClassNotFoundException x) {
+            // Fine, core not available
+        } catch (Exception x) {
+            LOG.log(Level.WARNING, "Could not prompt to save open files", x);
+            saveAll(); // backup
+        }
+        for (Map.Entry<Bundle,ModuleInstall> entry : Activator.installers.entrySet()) {
+            String name = entry.getKey().getSymbolicName();
+            LOG.log(Level.FINE, "closing: {0}", name);
+            if (!entry.getValue().closing()) {
+                LOG.log(Level.FINE, "Will not close by request of {0}", name);
+                return;
+            }
+        }
         if (exited.getAndSet(true)) {
             return; // cannot exit twice
         }
         try {
-            Class<?> windowSystemClazz = Lookup.getDefault().lookup(ClassLoader.class).loadClass("org.netbeans.core.WindowSystem");
+            Class<?> windowSystemClazz = loader.loadClass("org.netbeans.core.WindowSystem");
             Object windowSystem = Lookup.getDefault().lookup(windowSystemClazz);
             if (windowSystem != null) {
                 windowSystemClazz.getMethod("hide").invoke(windowSystem);
@@ -84,6 +106,12 @@ class OSGiLifecycleManager extends LifecycleManager {
         } catch (Exception x) {
             LOG.log(Level.WARNING, "Could not shut down window system", x);
         }
+        for (Map.Entry<Bundle,ModuleInstall> entry : Activator.installers.entrySet()) {
+            String name = entry.getKey().getSymbolicName();
+            LOG.log(Level.FINE, "close: {0}", name);
+            entry.getValue().close();
+        }
+        SessionManager.getDefault().close();
         Bundle system = context.getBundle(0);
         if (system instanceof Framework) {
             try {
