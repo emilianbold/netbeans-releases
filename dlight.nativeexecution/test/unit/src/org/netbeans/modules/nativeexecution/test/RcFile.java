@@ -41,6 +41,7 @@ package org.netbeans.modules.nativeexecution.test;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -133,7 +134,11 @@ public final class RcFile {
 
     public RcFile(File file) throws IOException, FormatException {
         this.file = file;
-        read();
+        try {
+            read();
+        } catch (FileNotFoundException e) {
+            // no rcFile, no problems ;-)
+        }
     }
 
     private void read() throws IOException, FormatException {
