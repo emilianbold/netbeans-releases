@@ -205,7 +205,7 @@ public class MakeOSGi extends Task {
                 antlibJF.close();
             }
             for (String antlibImport : antlibPackages) {
-                if (!antlibImport.startsWith("org.apache.tools.")) {
+                if (!antlibImport.startsWith("org.apache.tools.") && !availablePackages.contains(antlibImport)) {
                     info.importedPackages.add(antlibImport);
                 }
             }
