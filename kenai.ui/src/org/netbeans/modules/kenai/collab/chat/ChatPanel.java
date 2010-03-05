@@ -1036,7 +1036,7 @@ public class ChatPanel extends javax.swing.JPanel {
             return b;
         }
         KenaiNotification n = ne.getNotification();
-        if (n.getType() != KenaiService.Type.SOURCE) {
+        if (!((n.getType() == KenaiService.Type.SOURCE) || (n.getType() == KenaiService.Type.ISSUES))) {
             return b;
         }
         int i = b.indexOf(']');
@@ -1046,6 +1046,10 @@ public class ChatPanel extends javax.swing.JPanel {
         } else {
             body = b;
         }
+        if (n.getType() == KenaiService.Type.ISSUES) {
+            return body;
+        }
+
         String id = n.getModifications().get(0).getId();
         String projectName = StringUtils.parseName(m.getFrom());
         if (projectName.contains("@")) { // NOI18N

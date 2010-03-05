@@ -219,13 +219,12 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="200"/>
                     </file>
                 </folder>
-<!--                <folder name="RefactoringActions">
+                <folder name="RefactoringActions">
 		    <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.shadow">
 			<attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.instance"/>
 			<attr name="position" intvalue="430"/>
 		    </file>
 		</folder>
--->
                 <file name="org-netbeans-modules-html-editor-indexing-HtmlIndexer$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"/>
                 </file>
@@ -378,13 +377,13 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
-<!--    <folder name="Actions">
+    <folder name="Actions">
         <folder name="Refactoring">
             <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.html.editor.refactoring.actions.HtmlRefactoringActionsFactory.extractInlinedStyleAction"/>
             </file>
 	</folder>
     </folder>
--->
+
 
 </filesystem>

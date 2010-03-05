@@ -38,20 +38,31 @@
  */
 package org.netbeans.modules.html.editor.refactoring;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.html.editor.api.Utils;
+import javax.swing.text.Position.Bias;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.support.ModificationResult;
+import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
+import org.netbeans.modules.css.refactoring.api.CssRefactoring;
+import org.netbeans.modules.css.refactoring.api.Entry;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.html.editor.refactoring.api.ExtractInlinedStyleRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.web.common.api.WebUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -59,151 +70,178 @@ import org.netbeans.modules.web.common.api.WebUtils;
  */
 public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
 
+    private boolean cancelled;
     private ExtractInlinedStyleRefactoring refactoring;
 
     public ExtractInlinedStyleRefactoringPlugin(ExtractInlinedStyleRefactoring refactoring) {
         this.refactoring = refactoring;
     }
 
+    //TODO implement the checks!
+
     @Override
     public Problem preCheck() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     @Override
     public Problem checkParameters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     @Override
     public Problem fastCheckParameters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     @Override
     public void cancelRequest() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        cancelled = true;
     }
 
     @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if(cancelled) {
+            return null;
+        }
+        ModificationResult modificationResult = new ModificationResult();
+        RefactoringContext context = refactoring.getRefactoringSource().lookup(RefactoringContext.class);
+        assert context != null;
+
+        switch(refactoring.getMode()) {
+            case refactorToExistingEmbeddedSection:
+                refactorToEmbeddedSection(modificationResult, context, refactoringElements);
+        }
+
+        refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(modificationResult)));
+
+        for (FileObject fo : modificationResult.getModifiedFileObjects()) {
+            for (Difference diff : modificationResult.getDifferences(fo)) {
+                refactoringElements.add(refactoring, DiffElement.create(diff, fo, modificationResult));
+            }
+        }
+
+        return null;
+
     }
 
-    private void extractInlinedStyle(final Document doc, final int from, final int to) {
-        final AtomicReference<ActionContext> ref = new AtomicReference<ActionContext>();
+    private void refactorToEmbeddedSection(ModificationResult modifications, RefactoringContext context, RefactoringElementsBag refactoringElements) {
+        List<InlinedStyleInfo> inlinedStyles = context.getInlinedStyles();
+        CloneableEditorSupport currentFileEditor = GsfUtilities.findCloneableEditorSupport(context.getFile());
+        List<Difference> diffs = new LinkedList<Difference>();
+        int embeddedSectionEnd = refactoring.getExistingEmbeddedCssSection().getEnd();
+        assert embeddedSectionEnd >= 0;
+
+
+        //get existing id selectors
+        //XXX clarify the parsing of embedded source model - this call parses the file again!
+        //should be likely done in different way
+        Collection<Entry> existingIds = CssRefactoring.getAllIdSelectors(context.getFile());
+        Collection<String> allIds = new LinkedList<String>();
+        for(Entry e : existingIds) {
+            allIds.add(e.getName());
+        }
+
+        for(InlinedStyleInfo si : inlinedStyles) {
+            try {
+                //TODO define some pattern for the generation in the css options!
+
+                //find first free id selector name
+                String idSelectorNameBase = si.getTag() + "id";
+                String idSelectorName;
+                int counter = 0;
+                while(allIds.contains(idSelectorName = idSelectorNameBase + (counter++ == 0 ? "" : counter))) {
+                }
+                allIds.add(idSelectorName);
+
+                //delete the inlined style - attribute name, equal sign, whitespaces and the value
+                //and replace with id selector reference
+                int deleteFrom = si.getAttributeStartOffset();
+                int deleteTo = si.getRange().getEnd() + (si.isValueQuoted() ? 1 : 0);
+                String idSelectorUsageText = "id=\""+ idSelectorName + "\""; //NOI18N
+
+                Difference changeDiff = new Difference(Difference.Kind.CHANGE,
+                        currentFileEditor.createPositionRef(deleteFrom, Bias.Forward),
+                        currentFileEditor.createPositionRef(deleteTo, Bias.Backward),
+                        context.getDocument().getText(deleteFrom, deleteTo - deleteFrom),
+                        idSelectorUsageText,
+                        NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_ReplaceInlinedStyleWithIdSelectorReference")); //NOI18N
+
+                diffs.add(changeDiff);
+
+                String[] lines = new String[]{
+                    "", //empty line = will add new line
+                    "#" + idSelectorName + "{",
+                    "\t" + WebUtils.unquotedValue(si.getInlinedCssValue()) + ";",
+                    "}"}; //NOI18N
+                String idSelectorText = formatCssCode(context.getDocument(), embeddedSectionEnd, lines);
+                    
+                //generate the embedded id selector section
+                Difference cssIdSelectorDiff = new Difference(Difference.Kind.INSERT,
+                        currentFileEditor.createPositionRef(embeddedSectionEnd, Bias.Forward),
+                        currentFileEditor.createPositionRef(embeddedSectionEnd, Bias.Backward),
+                        null,
+                        idSelectorText,
+                        NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_IntroduceNewIDSelector")); //NOI18N
+                
+                diffs.add(cssIdSelectorDiff);
+
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        modifications.addDifferences(context.getFile(), diffs);
+    }
+
+    //TODO there should be a generic facility allowing to reformat a piece of code
+    //according to the css formatter options. I could possibly invoke the formatter
+    //on an artificial document with the new code content, but since we do not have the
+    //pretty printer it would not help much.
+    private String formatCssCode(final Document doc, final int cssSectionEnd, String... lines) {
+        StringBuilder b = new StringBuilder();
+        final AtomicInteger ret = new AtomicInteger(0); //default is 0 indent if something fails in the later runnable
         doc.render(new Runnable() {
 
             @Override
             public void run() {
-                ActionContext context = new ActionContext();
-                context.infos = findInlinedStyles(doc, from, to);
-                ref.set(context);
+                try {
+                    //find last nonwhite line indent
+                    int firstNonWhiteBw = Utilities.getFirstNonWhiteBwd((BaseDocument) doc, cssSectionEnd);
+                    //get the line indent
+                    ret.set(Utilities.getRowIndent((BaseDocument)doc, firstNonWhiteBw));
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
             }
+
         });
 
-        ActionContext context = ref.get();
-        if (context == null) {
-            return;
-        }
-        if (context.infos.isEmpty()) {
-            return; //nothing to refactor
-        }
+        int baseIndent = ret.get();
+        int indentLevelSize = IndentUtils.indentLevelSize(doc);
 
-        if (context.firstEmbeddedStyleRange == null) {
-            //no embedded css in the file
-            //what to do?
-            //1. check existing links to css's => open dialog so user may choose which one to use
-            //2. if there's none open a dialog where user can choose if he want's to generate embedded
-            //   css section or create a new file or link an existing one an use it.
-            //3. merge all above into one dialog!
-            //
-            //TODO implement
-        }
+        for(String line : lines) {
+            //add base indent
+            b.append(IndentUtils.createIndentString(doc, baseIndent));
 
-        //ok there's an embedded css section we may use to generate the id selectors
-
-
-
-
-
-    }
-
-    private List<InlinedStyleInfo> findInlinedStyles(Document doc, int from, int to) {
-        List<InlinedStyleInfo> found = new LinkedList<InlinedStyleInfo>();
-        TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc, from);
-        //the joined ts is moved to the from offset and a token already selected (moveNext/Previous() == true)
-        //seek for all tag's attributes with css embedding representing an inlined style
-        String tag = null;
-        String attr = null;
-        String tagsClass = null;
-        OffsetRange range = null;
-        do {
-            Token<HTMLTokenId> t = ts.token();
-            if (t.id() == HTMLTokenId.TAG_OPEN) {
-                tag = t.text().toString();
-                attr = tagsClass = null;
-                range = null;
-            } else if (t.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
-                //closing tag, produce the info
-                if (tag != null && range != null) {
-                    //some inlined code found
-                    found.add(new InlinedStyleInfo(tag, tagsClass, attr, range));
-                }
-            } else if (t.id() == HTMLTokenId.ARGUMENT) {
-                attr = t.text().toString();
-            } else if (t.id() == HTMLTokenId.VALUE_CSS) {
-                //check if this is an inlined code, not class or id representation
-                String csstype = (String) t.getProperty(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY);
-                if (csstype == null) {
-                    //inlined code
-                    int diff = WebUtils.isValueQuoted(t.text()) ? 1 : 0;
-                    range = new OffsetRange(ts.offset() + diff, ts.offset() + t.length() - diff);
-                }
-            } else if (t.id() == HTMLTokenId.VALUE) {
-                //TODO use TagMetadata for getting the info a the attribute represents a css or not
-                if ("class".equals(attr)) { //NOI18N
-                    tagsClass = t.text().toString();
+            //replace each \t by proper indentation level size
+            //and copy the line to the buffer
+            for(int i = 0; i < line.length(); i++) {
+                char c = line.charAt(i);
+                if(c == '\t') { //NOI18N
+                    b.append(IndentUtils.createIndentString(doc, indentLevelSize));
+                } else {
+                    b.append(c);
                 }
             }
 
-        } while (ts.moveNext() && ts.offset() <= to);
+            //and new line at the end
+            b.append('\n'); //NOI18N
+        }
 
-        return found;
+
+        return b.toString();
     }
 
-    private static class ActionContext {
-
-        List<InlinedStyleInfo> infos;
-        OffsetRange firstEmbeddedStyleRange;
-    }
-
-    private static class InlinedStyleInfo {
-
-        private String tag, tagsClass, attr;
-        private OffsetRange range;
-
-        public InlinedStyleInfo(String tag, String tagsClass, String attr, OffsetRange range) {
-            this.tag = tag;
-            this.tagsClass = tagsClass;
-            this.attr = attr;
-            this.range = range;
-        }
-
-        public String getAttr() {
-            return attr;
-        }
-
-        public OffsetRange getRange() {
-            return range;
-        }
-
-        public String getTag() {
-            return tag;
-        }
-
-        public String getTagsClass() {
-            return tagsClass;
-        }
-    }
 }

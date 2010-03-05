@@ -103,6 +103,12 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("iz172227.cc", 16, 10, "iz172227.cc", 5, 5);
     }
 
+    public void testBug180828() throws Exception {
+        // Bug 180828 : Highlighting bug
+        performTest("bug180828.cpp", 7, 44, "bug180828.cpp", 4, 5);
+    }
+
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

@@ -1020,6 +1020,32 @@ public final class Utils {
         return false;
     }
 
+    /**
+     * Parses system property value and returns a priority for the given versioning system.
+     * The property should be defined as {@code versioning.versioningSystem.priority}.
+     * @param versioningSystem name of the vcs
+     * @return priority or {@link Integer#MAX_VALUE} as default
+     */
+    public static Integer getPriority (String versioningSystem) {
+        Integer value = null;
+        String propName = "versioning." + versioningSystem + ".priority"; //NOI18N
+        String sValue = System.getProperty(propName, null);
+        if (sValue != null && !sValue.isEmpty()) {
+            try {
+                value = Integer.parseInt(sValue);
+                if (value <= 0) {
+                    value = null;
+                }
+            } catch (NumberFormatException ex) {
+                Logger.getLogger(Utils.class.getName()).log(Level.INFO, "Wrong priority ({0}) value {1}, using default value", new Object[] {propName, sValue}); //NOI18N
+            }
+        }
+        if (value == null) {
+            value = Integer.MAX_VALUE;
+        }
+        return value;
+    }
+
     private static class ViewEnv implements CloneableEditorSupport.Env {
 
         private final FileObject    file;

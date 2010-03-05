@@ -31,7 +31,7 @@
               <EmptySpace min="21" pref="21" max="21" attributes="0"/>
               <Component id="configurationLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="configurationTextField" pref="125" max="32767" attributes="0"/>
+              <Component id="configurationTextField" pref="137" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="configurationBrowseButton" linkSize="1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -48,7 +48,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="suiteTextField" pref="275" max="32767" attributes="0"/>
+                      <Component id="suiteTextField" pref="287" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="suiteBrowseButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -72,7 +72,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="bootstrapLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="bootstrapTextField" pref="181" max="32767" attributes="0"/>
+                      <Component id="bootstrapTextField" pref="193" max="32767" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="bootstrapBrowseButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,30 +38,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.project.connections.ui;
 
-import java.util.List;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.php.project.connections.ui.transfer.table;
 
 /**
- * @author Radek Matous
+ * @author Jiri Rechtacek
  */
-public class TransferFileUploadModel extends TransferFileTableModel {
-    private static final long serialVersionUID = 32124271678426974L;
-
-    public TransferFileUploadModel(List<TransferFileUnit> fileUnits) {
-        setData(fileUnits);
-    }
-
-    protected Type getType() {
-        return TransferFileTableModel.Type.UPLOAD;
-    }
-
-    protected String getTabTitle() {
-        return NbBundle.getMessage(TransferFileUploadModel.class, "FileConfirmationTableModel_Upload_Title");
-    }
-
-    protected String getFirstColumnName() {
-        return NbBundle.getMessage(TransferFileUploadModel.class, "FileConfirmationTableModel_Columns_Upload");
-    }
+public interface TransferFileTableChangeListener {
+    void updateUnitsChanged();
+    void filterChanged();
 }

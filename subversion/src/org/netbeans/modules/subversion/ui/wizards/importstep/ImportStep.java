@@ -265,7 +265,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     }
 
                     RepositoryFile[] repositoryFiles = new RepositoryFile[] { repositoryFile };
-                    CheckoutAction.checkout(client, repositoryUrl, repositoryFiles, importDirectory, false, true, this);
+                    CheckoutAction.checkout(client, repositoryUrl, repositoryFiles, importDirectory, true, false, this);
                     Subversion.getInstance().versionedFilesChanged();
                     SvnUtils.refreshParents(importDirectory);
                     // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
