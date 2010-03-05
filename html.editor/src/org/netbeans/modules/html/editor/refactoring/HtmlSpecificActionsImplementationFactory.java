@@ -64,10 +64,8 @@ public class HtmlSpecificActionsImplementationFactory {
 
     public static void doChangeParameters(Lookup lookup) {
         for (HtmlSpecificActionsImplementationProvider rafi: implementations.allInstances()) {
-            if (rafi.canExtractInlineStyle(lookup)) {
-                rafi.doExtractInlineStyle(lookup);
-                return;
-            }
+            rafi.doExtractInlineStyle(lookup);
+            return;
         }
     }
 

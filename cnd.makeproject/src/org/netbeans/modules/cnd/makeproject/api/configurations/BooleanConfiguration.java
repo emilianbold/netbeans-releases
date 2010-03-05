@@ -42,53 +42,23 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 public class BooleanConfiguration {
 
-    private BooleanConfiguration master;
     private boolean def;
-    private String falseValue;
-    private String trueValue;
     private boolean value;
     private boolean modified;
     private boolean dirty = false;
 
-    public BooleanConfiguration(BooleanConfiguration master, boolean def) {
-        this.master = master;
+    public BooleanConfiguration(boolean def) {
         this.def = def;
-        falseValue = ""; // NOI18N
-        trueValue = ""; // NOI18N
         reset();
-    }
-
-    public BooleanConfiguration(BooleanConfiguration master, boolean def, String falseValue, String trueValue) {
-        this.master = master;
-        this.def = def;
-        this.falseValue = falseValue;
-        this.trueValue = trueValue;
-        reset();
-    }
-
-    protected BooleanConfiguration getMaster() {
-        return master;
-    }
-
-    public void setMaster(BooleanConfiguration master) {
-        this.master = master;
     }
 
     public void setValue(boolean b) {
         this.value = b;
-        if (master != null) {
-            setModified(true);
-        } else {
-            setModified(b != getDefault());
-        }
+        setModified(b != getDefault());
     }
 
     public boolean getValue() {
-        if (master != null && !getModified()) {
-            return master.getValue();
-        } else {
-            return value;
-        }
+        return value;
     }
 
     public final void setModified(boolean b) {
@@ -121,14 +91,6 @@ public class BooleanConfiguration {
         setModified(false);
     }
 
-    public String getOption() {
-        if (getValue()) {
-            return trueValue;
-        } else {
-            return falseValue;
-        }
-    }
-
     // Clone and Assign
     public void assign(BooleanConfiguration conf) {
         dirty |= conf.getValue() ^ getValue();
@@ -138,7 +100,7 @@ public class BooleanConfiguration {
 
     @Override
     public BooleanConfiguration clone() {
-        BooleanConfiguration clone = new BooleanConfiguration(master, def, falseValue, trueValue);
+        BooleanConfiguration clone = new BooleanConfiguration(def);
         clone.setValue(getValue());
         clone.setModified(getModified());
         return clone;
