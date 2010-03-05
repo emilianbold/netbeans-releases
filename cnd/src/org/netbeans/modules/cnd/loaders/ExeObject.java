@@ -70,6 +70,7 @@ public class ExeObject extends MultiDataObject {
         if (myLookup == null) {
             ic = new InstanceContent();
             ic.add(this);
+            ic.add(getPrimaryFile());
             if (needBinarySupport()) {
                 ic.add(this, CndBinaryExecSupportProvider.staticFactory);
             }
