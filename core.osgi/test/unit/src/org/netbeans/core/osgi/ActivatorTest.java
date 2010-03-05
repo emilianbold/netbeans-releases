@@ -140,7 +140,7 @@ public class ActivatorTest extends NbTestCase {
         headers.clear();
         headers.put("Require-Bundle", "org.netbeans.api.progress;bundle-version=\"[101.0.0,200)\", " +
                 "org.netbeans.spi.quicksearch;bundle-version=\"[1.0.0,100)\"");
-        headers.put("OpenIDE-Module-Requires", "org.openide.modules.InstalledFileLocator, org.openide.modules.ModuleFormat2, org.openide.modules.os.Windows");
+        headers.put("OpenIDE-Module-Requires", "org.openide.modules.InstalledFileLocator");
         assertEquals(Collections.emptySet(), Activator.provides(headers));
         assertEquals(new TreeSet<String>(Arrays.asList(
                 "org.netbeans.api.progress",
@@ -154,6 +154,19 @@ public class ActivatorTest extends NbTestCase {
         assertEquals(Collections.emptySet(), Activator.requires(headers));
         assertEquals(Collections.singleton("org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceUtilImpl"), Activator.needs(headers));
         headers.clear();
+        String os = System.getProperty("os.name");
+        System.setProperty("os.name", "Windows 2000");
+        try {
+            headers.put("Bundle-SymbolicName", "org.openide.modules");
+            assertEquals(new TreeSet<String>(Arrays.asList(
+                    "org.openide.modules",
+                    "org.openide.modules.os.Windows"
+                    )), Activator.provides(headers));
+            assertEquals(Collections.emptySet(), Activator.requires(headers));
+            assertEquals(Collections.emptySet(), Activator.needs(headers));
+        } finally {
+            System.setProperty("os.name", os);
+        }
     }
 
     public void testRequireToken() throws Exception {
