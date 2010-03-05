@@ -156,6 +156,8 @@ public final class SuiteActions implements ActionProvider {
                     NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_osgi"), null));
             m.add(ProjectSensitiveActions.projectCommandAction("debug-osgi",
                     NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_osgi"), null));
+            m.add(ProjectSensitiveActions.projectCommandAction("profile-osgi",
+                    NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_profile_osgi"), null));
             return m;
         }
     }
@@ -181,6 +183,7 @@ public final class SuiteActions implements ActionProvider {
             "build-osgi-obr", // NOI18N
             "run-osgi", // NOI18N
             "debug-osgi", // NOI18N
+            "profile-osgi", // NOI18N
             "build-mac", // NOI18N
             "nbms", // NOI18N
             "profile", // NOI18N

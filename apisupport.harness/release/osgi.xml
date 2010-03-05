@@ -139,7 +139,6 @@ made subject to such option by the copyright holder.
         </antcall>
     </target>
 
-    <!-- Does not work due to class loading issues:
     <target name="profile">
         <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
         <nbprofiledirect jvmargsprefix="" jvmargsproperty="profiler.jvmargs">
@@ -160,9 +159,9 @@ made subject to such option by the copyright holder.
         </nbprofiledirect>
         <antcall target="run">
             <param name="osgi.run.args.extra" value='"${profiler.jvmargs}"'/>
+            <param name="felix-sys-prop.org.osgi.framework.bootdelegation" value="org.netbeans.lib.profiler.*"/>
             <reference refid="cluster.path.id"/>
         </antcall>
     </target>
-    -->
 
 </project>

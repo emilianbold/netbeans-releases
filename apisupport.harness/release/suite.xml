@@ -538,6 +538,12 @@ Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distributi
         </ant>
     </target>
 
+    <target name="profile-osgi" depends="build-osgi" description="Profiles this suite in an OSGi container.">
+        <ant antfile="${harness.dir}/osgi.xml" target="profile">
+            <reference refid="cluster.path.id"/>
+        </ant>
+    </target>
+
     <target name="test" depends="build" description="Runs tests for all modules in the suite.">
         <sortsuitemodules unsortedmodules="${modules}" sortedmodulesproperty="modules.test.sorted" sorttests="true"/>
         <property name="continue.after.failing.tests" value="true"/> <!-- fallback -->
